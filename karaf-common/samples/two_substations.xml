@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  profile and statusProfile
+-->
+<configuration version="1.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     targetNamespace="configuration.loader.reef"
+     xmlns="configuration.loader.reef.totalgrid.org"
+     xmlns:eq="equipment.loader.reef.totalgrid.org"
+     xmlns:cm="communications.loader.reef.totalgrid.org"
+     xsi:noNamespaceSchemaLocation="../../xsd/configuration.xsd">
+
+<!--
+<messageModel>
+  <messageSet name="Scada">
+    <message name="OutOfNominal"    priority="4"/>
+    <message name="OutOfReasonable" priority="3"/>
+  </messageSet>
+</messageModel>
+-->
+
+<actionModel>
+
+  <actionSet name="RLC" priority="100">
+    <rising>
+      <message name="Scada.OutOfReasonable"/>
+    </rising>
+    <high moreActions="false">
+      <stripValue/>
+      <setAbnormal/>
+    </high>
+  </actionSet>
+
+  <actionSet name="Nominal" priority="500">
+    <rising>
+      <message name="Scada.OutOfNominal"/>
+    </rising>
+  </actionSet>
+
+  <actionSet name="Everything" priority="1000">
+    <rising>
+      <message name="Scada.OutOfNominal"/>
+    </rising>
+    <high>
+      <!-- <quality validity="questionable" source="PROCESS" detailQuality="2" test="false" operatorBlocked="false"/> -->
+      <stripValue />
+      <setBool value="true"/>
+      <setUnit unit="var"/>
+    </high>
+    <transition>
+    </transition>
+
+  </actionSet>
+
+</actionModel>
+
+
+
+<eq:equipmentModel>
+
+  <eq:profiles>
+
+    <eq:pointProfile name="Analog120">
+      <eq:range actionSet="RLC" low="108" high="130" deadband="3"/>
+      <eq:range actionSet="Nominal" low="114" high="126" deadband="1"/>
+    </eq:pointProfile>
+
+    <eq:pointProfile name="LineCurrent">
+      <eq:range actionSet="RLC" low="10" high="14"/>
+    </eq:pointProfile>
+
+
+
+    <eq:pointProfile name="NormallyFalseAlarmed">
+      <eq:valueMap fromValue="false" toValue="normal" nominal="true"/>
+      <eq:valueMap fromValue="true" toValue="alarmed"/>
+    </eq:pointProfile>
+    <eq:pointProfile name="NormallyTrueAlarmed">
+      <eq:valueMap fromValue="false" toValue="normal" nominal="true"/>
+      <eq:valueMap fromValue="true" toValue="alarmed"/>
+    </eq:pointProfile>
+
+    <eq:equipmentProfile name="Substation">
+      <eq:type name="Substation"/>
+      <eq:type name="EquipmentGroup"/>
+      <!-- could have points for substation-->
+    </eq:equipmentProfile>
+
+    <eq:equipmentProfile name="FullBreaker">
+      <!-- Do we need parent profiles??? -->
+      <eq:equipmentProfile name="DeviceProfileBase"/>
+      <eq:equipmentProfile name="CommonTriggerConfigurations"/>
+      <eq:type name="Breaker"/>
+      <eq:type name="Equipment"/>
+
+      <eq:control name="trip"/>
+      <eq:control name="close"/>
+
+      <eq:status name="Bkr" unit="eq:status">
+        <eq:valueMap fromValue="false" toValue="open"/>
+        <eq:valueMap fromValue="true"  toValue="closed" nominal="true"/>
+        <eq:control name="trip"/>
+        <eq:control name="close"/>
+      </eq:status>
+
+      <eq:status name="APh_Trip" unit="status" pointProfile="NormallyFalseAlarmed"/>
+      <eq:status name="BPh_Trip" unit="status" pointProfile="NormallyFalseAlarmed"/>
+      <eq:status name="Auto_Man" unit="status" pointProfile="NormallyTrueAlarmed"/>
+      <eq:status name="CPh_Trip" unit="status" pointProfile="NormallyFalseAlarmed"/>
+      <eq:status name="50_Trip"  unit="status" pointProfile="NormallyFalseAlarmed"/>
+      <eq:status name="51_Trip"  unit="status" pointProfile="NormallyFalseAlarmed"/>
+      <eq:status name="79_LO"    unit="status" pointProfile="NormallyFalseAlarmed"/>
+      <eq:status name="G_Trip"   unit="status" pointProfile="NormallyFalseAlarmed"/>
+
+    </eq:equipmentProfile>
+
+    <eq:equipmentProfile name="LineWithCurrent">
+      <eq:type name="Line"/>
+      <eq:type name="Equipment"/>
+      <eq:analog name="Mw"   unit="Mw"   pointProfile="LineCurrent"/>
+      <eq:analog name="Mvar" unit="Mvar" pointProfile="LineCurrent"/>
+      <eq:analog name="Ia"   unit="amps" pointProfile="LineCurrent"/>
+      <eq:analog name="Ib"   unit="amps" pointProfile="LineCurrent"/>
+      <eq:analog name="Ic"   unit="amps" pointProfile="LineCurrent"/>
+    </eq:equipmentProfile>
+
+    <eq:equipmentProfile name="Bus24Profile">
+      <eq:type name="Bus"/>
+      <eq:type name="Equipment"/>
+      <eq:analog name="Kv"   unit="kvolt"><eq:range actionSet="RLC" low="21" high="26.5" deadband="1"/></eq:analog>
+    </eq:equipmentProfile>
+
+    <eq:equipmentProfile name="BusWithFreq">
+      <eq:type name="Bus"/>
+      <eq:type name="Equipment"/>
+      <eq:analog name="Kv"   unit="kvolt"><eq:range actionSet="RLC" low="9.9" high="12.1" deadband="0.25"/></eq:analog>
+      <eq:analog name="Freq" unit="Hz"><eq:range actionSet="RLC" low="10" high="30"/></eq:analog>
+    </eq:equipmentProfile>
+
+
+  </eq:profiles>
+
+
+  <eq:equipment name="ChapelHill">
+    <eq:equipmentProfile name="Substation"/>
+    <eq:equipment name="Bus1"><eq:equipmentProfile name="BusWithFreq"/></eq:equipment>
+    <eq:equipment name="L200"><eq:equipmentProfile name="LineWithCurrent"/></eq:equipment>
+<!--    <eq:equipment name="L201"><eq:equipmentProfile name="LineWithCurrent"/></eq:equipment>
+    <eq:equipment name="L155"><eq:equipmentProfile name="LineWithCurrent"/></eq:equipment>
+-->    <!--<eq:equipment name="G1"><eq:equipmentProfile name="generator"/></eq:equipment>-->
+    <!--<eq:equipment name="STATN"><eq:equipmentProfile name="station_with_fire_alarm"/></eq:equipment>-->
+    <eq:equipment name="CB11001"><eq:equipmentProfile name="FullBreaker"/></eq:equipment>
+<!--    <eq:equipment name="CB11002"><eq:equipmentProfile name="FullBreaker"/></eq:equipment>
+    <eq:equipment name="CB11003"><eq:equipmentProfile name="FullBreaker"/></eq:equipment>
+    <eq:equipment name="CB11004"><eq:equipmentProfile name="FullBreaker"/></eq:equipment>
+-->  </eq:equipment>
+
+
+</eq:equipmentModel>
+
+
+
+
+
+<cm:communicationsModel>
+
+  <!--
+    Profiles types:
+      controlProfile
+      pointProfile
+      endpointProfile
+      equipmentProfile
+  -->
+
+  <cm:profiles>
+
+    <cm:pointProfile name="LinePower">
+      <cm:scale rawLow="-50" rawHigh="50" engLow="100.0" engHigh="200.0" engUnit="Mw"/>
+    </cm:pointProfile>
+
+    <cm:pointProfile name="Analog2">
+      <cm:scale slope="0.05" offset="100.0" engUnit="Mvar"/>
+    </cm:pointProfile>
+
+  </cm:profiles>
+
+
+  <!-- Named intefaces -->
+  <cm:interface name="i1" ip="192.168.100.30" netmask="255.255.255.0" port="8003" network="any"/>
+  <cm:interface name="ioBrick" ip="192.168.100.30" netmask="255.255.255.0" port="8001" network="any"/>
+
+
+  <cm:endpoint name="Sel351Endpoint1">
+    <cm:type name="Endpoint"/>
+    <cm:protocol name="dnp3">
+       <cm:configFile name="sel_351_endpoint1.xml"/>
+    </cm:protocol>
+
+    <cm:interface name="i1"/>
+
+    <cm:equipment name="ChapelHill">
+
+      <cm:equipment name="CB11001">
+        <cm:control name="trip"  index="16"><cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/></cm:control>
+        <cm:control name="close" index="17"><cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/></cm:control>
+        <cm:status name="APh_Trip" index="0"/>
+        <cm:status name="BPh_Trip" index="1"/>
+        <cm:status name="Auto_Man" index="10"/>
+        <cm:status name="CPh_Trip" index="2"/>
+        <cm:status name="50_Trip"  index="3"/>
+        <cm:status name="Bkr"      index="4"/>
+        <cm:status name="G_Trip"   index="7"/>
+        <cm:status name="79_LO"    index="8"/>
+        <cm:status name="51_Trip"  index="9"/>
+      </cm:equipment>
+
+      <cm:equipment name="L200">
+        <cm:analog name="Mw"   index="14" pointProfile="LinePower"/>
+        <cm:analog name="Mvar" index="15" pointProfile="Analog2"/>
+        <cm:analog name="Ia"   index="0"/>
+        <cm:analog name="Ib"   index="1"/>
+        <cm:analog name="Ic"   index="2"/>
+      </cm:equipment>
+
+      <cm:equipment name="Bus1">
+        <cm:analog name="Kv"   index="4"/>
+        <cm:analog name="Freq" index="13"/>
+      </cm:equipment>
+
+    </cm:equipment>
+  </cm:endpoint>
+
+
+  <cm:endpoint name="RackSimulatorEndpoint">
+    <cm:type>Endpoint</cm:type>
+    <cm:protocol name="benchmark"/>
+    <cm:interface name="i1"/>
+
+    <cm:equipment name="Apex">
+
+      <cm:equipment name="CB11001">
+        <cm:status name="Auto_Man" index="40"/>
+      </cm:equipment>
+
+      <cm:equipment name="CB11002">
+        <cm:status name="Auto_Man" index="20"/>
+      </cm:equipment>
+
+      <cm:equipment name="CB11003">
+        <cm:control name="trip"  index="0"><cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/></cm:control>
+        <cm:control name="close" index="1"><cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/></cm:control>
+        <cm:status name="51_Trip"  index="4"/>
+        <cm:status name="79_LO"    index="5"/>
+        <cm:status name="Auto_Man" index="6"/>
+      </cm:equipment>
+
+      <cm:equipment name="CB11004">
+        <cm:control name="trip"  index="2"><cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/></cm:control>
+        <cm:control name="close" index="3"><cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/></cm:control>
+        <cm:status name="APh_Trip" index="0"/>
+        <cm:status name="BPh_Trip" index="1"/>
+        <cm:status name="CPh_Trip" index="2"/>
+        <cm:status name="50_Trip"  index="3"/>
+        <cm:status name="Auto_Man" index="7"/>
+        <cm:status name="G_Trip"   index="8"/>
+        <cm:status name="79_LO"    index="9"/>
+        <cm:status name="51_Trip"  index="10"/>
+      </cm:equipment>
+
+      <cm:equipment name="G1">
+        <cm:status name="Mw"   index="30"/>
+        <cm:status name="Mvar" index="31"/>
+      </cm:equipment>
+
+      <cm:equipment name="155">
+        <cm:status name="Mw"   index="50"/>
+        <cm:status name="Mvar" index="51"/>
+      </cm:equipment>
+
+    </cm:equipment>
+  </cm:endpoint>
+
+
+  <cm:endpoint name="IoBrickEndpoint">
+    <cm:type>Endpoint</cm:type>
+    <cm:protocol name="dnp3">
+      <cm:configFile name="io_brick_endpoint.xml"/>
+    </cm:protocol>
+    <cm:interface name="ioBrick"/>
+
+    <cm:equipment name="Apex">
+
+      <cm:equipment name="STATN">
+        <cm:status name="SUPV_OFF_STTS"   index="0"/>
+        <cm:status name="INVERTER_STTS"   index="1"/>
+        <cm:status name="GPS_STTS"        index="2"/>
+        <cm:status name="DOOR_ALARM_STTS" index="3"/>
+        <cm:status name="FIRE_ALARM_STTS" index="4"/>
+      </cm:equipment>
+
+      <cm:equipment name="CB11003">
+        <cm:status name="Bkr"  index="5"/>
+      </cm:equipment>
+
+      <cm:equipment name="CB11004">
+        <cm:status name="Bkr"  index="6"/>
+      </cm:equipment>
+
+      <cm:equipment name="G1">
+        <cm:counter name="Mwh"  index="7"/>
+      </cm:equipment>
+
+    </cm:equipment>
+  </cm:endpoint>
+
+
+</cm:communicationsModel>
+
+
+
+</configuration>

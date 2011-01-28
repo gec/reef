@@ -1,0 +1,9 @@
+package example;
+
+option java_package = "org.totalgrid.reef.proto";
+option java_outer_classname = "Example";
+
+message Foo {
+	optional int64 num = 1;
+}
+

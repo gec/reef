@@ -1,0 +1,66 @@
+package reef.proto.Commands;
+
+option java_package = "org.totalgrid.reef.proto";
+option java_outer_classname = "Commands";
+
+// sent from the validated 
+message CommandRequest {
+
+	enum ValType {
+		INT = 1;
+		DOUBLE = 2;
+		NONE = 3;
+	}
+	
+	// unique name of the control in the system. Whomever executes the control knows protocol specific details (if necessary)
+	optional string  name = 1;
+
+	// correlation id for the request, used to match requests to respones
+	// field used for service/FEP interaction, not client/servier interaction
+	optional string  correlation_id = 2;
+	
+	optional ValType type = 3;
+	optional int32   int_val = 4;
+	optional double  double_val = 5;
+}
+
+enum CommandStatus {	//for now, just use the DNP3 control response codes, but in the future we may map to something else
+	SUCCESS        = 1;
+	TIMEOUT        = 2;
+	NO_SELECT      = 3;
+	FORMAT_ERROR   = 4;
+	NOT_SUPPORTED  = 5;
+	ALREADY_ACTIVE = 6;
+	HARDWARE_ERROR = 7;
+	LOCAL          = 8;
+	TOO_MANY_OPS   = 9;
+	NOT_AUTHORIZED = 10;
+	UNDEFINED      = 11;
+	EXECUTING      = 12;
+}
+
+message CommandResponse {
+	required string        correlation_id = 1; // needs to match id of request
+	required CommandStatus status         = 2; // status code
+}
+
+
+message UserCommandRequest{
+	optional string         uid             = 1;
+	optional CommandRequest command_request = 2;
+	optional CommandStatus  status          = 3;
+	optional string         user            = 4;
+	optional int32          timeout_ms      = 5 [default = 5000];
+}
+
+message CommandAccess {
+  enum AccessMode {
+    ALLOWED = 1;
+    BLOCKED = 2;
+  }
+  optional string       uid             = 1;
+  repeated string       commands        = 2;
+  optional AccessMode   access          = 3;
+  optional uint64       expire_time     = 4;
+  optional string       user            = 5;
+}

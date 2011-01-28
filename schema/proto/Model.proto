@@ -1,0 +1,61 @@
+package reef.proto.Model;
+
+option java_package = "org.totalgrid.reef.proto";
+option java_outer_classname = "Model";
+
+// Subtree of entities, owned by an entity
+message Relationship {
+  optional string relationship = 1;
+  optional bool descendant_of = 2;
+  
+  repeated Entity entities = 10;
+  
+  optional uint32 distance = 15;
+}
+
+// Generic model node, types configurable
+// There is a corresponding Entity for each Equipment, Point, and Command
+message Entity {
+  
+  optional string uid = 1;
+  repeated string types = 2;
+  optional string name = 3;
+  
+  repeated Relationship relations = 10;
+}
+
+// Representation of a one-to-one entity relationship instance
+message EntityEdge {
+  optional string uid = 1;
+  optional Entity parent = 2;
+  optional Entity child = 3;
+  optional string relationship = 4;
+}
+
+// Configured input point for SCADA measurements
+message Point{
+  optional string  uid = 1;
+  optional string  name = 2;
+  optional Entity logicalNode = 5; // live state
+  optional Entity entity   = 7;    // The point entity
+  optional bool    abnormal = 6;   // live state
+}
+
+// Configured output for SCADA control
+message Command{
+  optional string  uid = 1;
+  optional string  name = 2;
+  optional Entity logicalNode = 5;   // TODO: live state: points are sourced by this comm endpoint
+  optional Entity entity   = 6;
+}
+
+// extra protocol specific config files will be configured via external mechanisms, the provider
+// and the protocol adapter must agree and understand the data, the services treat them as an opaque blob
+// of text
+message ConfigFile{
+    optional string uid       = 1;
+    optional string name      = 2;
+    optional string mime_type = 3;
+    optional bytes  file      = 4;
+    optional Entity entity = 5;
+}

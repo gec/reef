@@ -1,0 +1,130 @@
+/**
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  Green Energy Corp licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.totalgrid.reef.messaging
+
+/**
+ * base class for AMQP subscripton modes, provides online/offline notifiers
+ */
+trait AMQPConsumptionPattern extends ChannelObserver with ObserverableBrokerObject {
+
+  def getQueue(broker: BrokerChannel): String
+
+  /// store the queue name we registered with so we can do the resubscribe call correctly
+  var queue: Option[String] = None
+
+  def online(broker: BrokerChannel) = {
+    queue = Some(getQueue(broker))
+    onConnectEvent(true)
+    onChange(true, queue.get)
+  }
+
+  def offline() = {
+    onConnectEvent(false)
+    onChange(false, "")
+    queue = None
+  }
+}
+
+object QueuePatterns {
+
+  /**  Returns a non-exclusive queue name bound to a topic exchange   
+   */
+  def getCompetingConsumer(broker: BrokerChannel, exchange: String, queueName: String, routingKey: String, mc: MessageConsumer): String = {
+    val queue = broker.declareQueue(queueName, false, false)
+    assert(queue == queueName)
+    broker.declareExchange(exchange)
+    broker.bindQueue(queueName, exchange, routingKey)
+    broker.listen(queueName, mc)
+    queueName
+  }
+
+  /**  Listen to a queue that is already bound to an exchange 
+   */
+  def getPreparedQueue(broker: BrokerChannel, queueName: String, mc: MessageConsumer): String = {
+    val queue = broker.declareQueue(queueName, false, false)
+    assert(queue == queueName)
+    broker.listen(queueName, mc)
+    queueName
+  }
+
+  /** Create an exculsive private queue on the message broker, it will need to be bound later.
+   */
+  def getPrivateUnboundQueue(broker: BrokerChannel, mc: MessageConsumer): String = {
+    val queue = broker.declareQueue("*", true, true)
+    broker.listen(queue, mc)
+    queue
+  }
+
+  /** Create an exculsive private queue on the message broker, and bind to an exchange with a specific key
+   */
+  def getExclusiveQueue(broker: BrokerChannel, exchange: String, routingKey: String, mc: MessageConsumer): String = {
+    val queue = broker.declareQueue("*", true, true)
+    broker.declareExchange(exchange)
+    broker.bindQueue(queue, exchange, routingKey)
+    broker.listen(queue, mc)
+    queue
+  }
+
+  /** Create an exclusive private queue on the broker, and bind to an exchange with the name of the queue
+   */
+  def getPrivateResponseQueue(broker: BrokerChannel, exchange: String, mc: MessageConsumer): String = {
+    val queue = broker.declareQueue("*", true, true)
+    broker.declareExchange(exchange)
+    broker.bindQueue(queue, exchange, queue)
+    broker.listen(queue, mc)
+    queue
+  }
+
+}
+
+/** Listen to a shared queue so many consumers can service the same requests.  Queues are declared without
+ * exclusive and autodelete options.
+ */
+class AMQPCompetingConsumer(exchange: String, queueName: String, routingKey: String, mc: MessageConsumer) extends AMQPConsumptionPattern {
+  override def getQueue(broker: BrokerChannel): String =
+    QueuePatterns.getCompetingConsumer(broker, exchange, queueName, routingKey, mc)
+}
+
+/** Listen to a preprepared queue, no checking is done to make sure it exists
+ */
+class AMQPExternallyPreparedQueueListener(queueName: String, mc: MessageConsumer) extends AMQPConsumptionPattern {
+  override def getQueue(broker: BrokerChannel): String =
+    QueuePatterns.getPreparedQueue(broker, queueName, mc)
+}
+
+/** Create an exculsive private queue on the message broker, it will need to be bound later.
+ */
+class AMQPUnboundPrivateQueueListener(mc: MessageConsumer) extends AMQPConsumptionPattern {
+  override def getQueue(broker: BrokerChannel): String =
+    QueuePatterns.getPrivateUnboundQueue(broker, mc)
+}
+
+/** Create an exculsive private queue on the message broker, it will need to be bound later.
+ */
+class AMQPPrivateResponseQueueListener(exchange: String, mc: MessageConsumer) extends AMQPConsumptionPattern {
+  override def getQueue(broker: BrokerChannel): String =
+    QueuePatterns.getPrivateResponseQueue(broker, exchange, mc)
+}
+
+/** Listen to a private queue bound to the exchange, allows duplication of messages, not to be used for big S services.
+ */
+class AMQPExclusiveConsumer(exchange: String, routingKey: String, mc: MessageConsumer) extends AMQPConsumptionPattern {
+  override def getQueue(broker: BrokerChannel): String =
+    QueuePatterns.getExclusiveQueue(broker, exchange, routingKey, mc)
+}

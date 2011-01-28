@@ -1,0 +1,82 @@
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one
+    or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership. Green Energy Corp licenses this file
+    to you under the GNU Affero General Public License Version 3.0
+    (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+
+    <command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
+        <command name="point/list">
+            <action class="org.totalgrid.reef.shell.proto.PointListCommand"/>
+        </command>
+        <command name="command/list">
+            <action class="org.totalgrid.reef.shell.proto.CommandListCommand"/>
+        </command>
+        <command name="command/issue">
+            <action class="org.totalgrid.reef.shell.proto.CommandIssueCommand"/>
+        </command>
+        <command name="command/status">
+            <action class="org.totalgrid.reef.shell.proto.CommandStatusCommand"/>
+        </command>
+        <command name="access/access">
+            <action class="org.totalgrid.reef.shell.proto.AccessCommand"/>
+        </command>
+        <command name="access/block">
+            <action class="org.totalgrid.reef.shell.proto.AccessBlockCommand"/>
+        </command>
+        <command name="access/remove">
+            <action class="org.totalgrid.reef.shell.proto.AccessRemoveCommand"/>
+        </command>
+         <command name="reef/login">
+            <action class="org.totalgrid.reef.shell.proto.ReefLoginCommand"/>
+        </command>
+         <command name="reef/logout">
+            <action class="org.totalgrid.reef.shell.proto.ReefLogoutCommand"/>
+        </command>
+        <command name="entity/type">
+            <action class="org.totalgrid.reef.shell.proto.EntityTypeCommand"/>
+        </command>
+        <command name="entity/children">
+            <action class="org.totalgrid.reef.shell.proto.EntityChildrenCommand"/>
+        </command>
+        <command name="entity/entity">
+            <action class="org.totalgrid.reef.shell.proto.EntityCommand"/>
+        </command>
+        <command name="meas/meas">
+            <action class="org.totalgrid.reef.shell.proto.MeasCommand"/>
+        </command>
+        <command name="meas/from">
+            <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
+        </command>
+        <command name="meas/hist">
+            <action class="org.totalgrid.reef.shell.proto.MeasHistCommand"/>
+        </command>
+        <command name="event/event">
+            <action class="org.totalgrid.reef.shell.proto.EventCommand"/>
+        </command>
+        <command name="alarm/alarm">
+            <action class="org.totalgrid.reef.shell.proto.AlarmCommand"/>
+        </command>
+        <command name="trigger/trigger">
+            <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
+        </command>
+    </command-bundle>
+
+</blueprint>

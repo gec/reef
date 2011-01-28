@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="equipment.loader.reef.totalgrid.org"
+  xmlns="equipment.loader.reef.totalgrid.org"
+  elementFormDefault="qualified"
+  xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+  jaxb:version="1.0">
+
+<!--
+  Reef logical equipment model XSD
+-->
+
+  <!-- Meta data for point types (i.e. status, control, analog, counter) -->
+  <xs:element name="valueMap">
+    <xs:complexType>
+      <xs:attribute name="fromValue" type="xs:string" use="required"/>
+      <xs:attribute name="toValue"   type="xs:string" use="required"/>
+      <xs:attribute name="nominal"   type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="range">
+    <xs:complexType>
+      <xs:attribute name="actionSet" type="xs:string" use="required"/>
+      <xs:attribute name="low" type="xs:double"/>
+      <xs:attribute name="high" type="xs:double"/>
+      <xs:attribute name="deadband" type="xs:double" default="0"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="type">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ___________________ Controls ___________________ -->
+
+  <xs:element name="control">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="displayName" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ___________________ Point Types ___________________ -->
+
+  <!-- Meta data for point types that have values (i.e. not controls) -->
+  <xs:complexType name="PointType" abstract="true">
+    <xs:sequence>
+      <xs:element ref="valueMap" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="range" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="displayName" type="xs:string"/>
+    <xs:attribute name="unit" type="xs:string" use="required"/>
+    <xs:attribute name="pointProfile" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:element name="pointProfile">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="status">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="analog">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="counter">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+
+
+  <!-- ___________________ Profiles  ___________________ -->
+  <xs:element name="profiles">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="pointProfile" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
+  <!--
+    equipment element can specify all contained equipment or reference an equipmentProfile.
+    The only difference between an equipmentProfile and equipment is that equipment has an
+    optional equipmentProfile attribute. Both can specify multiple profiles in descendant
+    elements.
+
+    Multiple equipmentProfile elements can be specified.
+  -->
+  <xs:complexType name="EquipmentType" abstract="true">
+    <xs:sequence>
+      <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
+      <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+  <xs:element name="equipmentProfile">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="EquipmentType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="equipment">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="EquipmentType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ___________________ root element  ___________________ -->
+  <xs:element name="equipmentModel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="profiles" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="equipment" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
+</xs:schema>

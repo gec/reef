@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="communications.loader.reef.totalgrid.org"
+  xmlns="communications.loader.reef.totalgrid.org"
+  elementFormDefault="qualified"
+  xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+  jaxb:version="1.0">
+
+<!--
+  Reef communications model XSD
+-->
+
+  <xs:element name="type">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="configFile">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="protocol">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="configFile" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+
+
+  <!-- ___________________ Controls ___________________ -->
+
+  <!--
+    type        onTime   offTime  count
+    =========== ======== ======== ======
+    PULSE         X        X        X
+    LATCH_ON      -        -        -
+    LATCH_OFF     -        -        -
+    PULSE_CLOSE   X        X        X
+    PUSLE_TRIP    X        X        X
+    SETPOINT      X        X        X
+
+    Note: 'X' are required attributes for given types.
+  -->
+  <xs:element name="optionsDnp3">
+    <xs:complexType>
+      <xs:attribute name="type" type="xs:string" use="required"/>
+      <xs:attribute name="onTime" type="xs:unsignedShort"/>
+      <xs:attribute name="offTime" type="xs:unsignedShort"/>
+      <xs:attribute name="count" type="xs:unsignedShort"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!--
+    A scale is either low/high or slope/offset, not both. Examples:
+
+    <scale rawLow="0" rawHigh="2000" engLow="100.0" engHigh="200.0" engUnit="w"/>
+    <scale slope="0.05" offset="100.0" engUnit="var"/>
+  -->
+  <xs:element name="scale">
+    <xs:complexType>
+      <xs:attribute name="rawLow" type="xs:double"/>
+      <xs:attribute name="rawHigh" type="xs:double"/>
+      <xs:attribute name="rawUnit" type="xs:string" default="raw"/>
+      <xs:attribute name="engLow" type="xs:double"/>
+      <xs:attribute name="engHigh" type="xs:double"/>
+      <xs:attribute name="engUnit" type="xs:string"/>
+      <xs:attribute name="slope" type="xs:double"/>
+      <xs:attribute name="offset" type="xs:double"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="IndexType" abstract="true">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="index" type="xs:unsignedShort"/>
+  </xs:complexType>
+
+  <!-- ___________________ Control Types ___________________ -->
+
+  <xs:complexType name="ControlType" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="IndexType">
+        <xs:sequence>
+          <xs:element ref="controlProfile" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element ref="optionsDnp3" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="controlProfile">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="ControlType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="control">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="ControlType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ___________________ Point Types ___________________ -->
+
+  <!-- Meta data for point types that have values (i.e. not controls) -->
+  <xs:complexType name="PointType" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="IndexType">
+        <xs:sequence>
+          <xs:element ref="scale" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="pointProfile" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="pointProfile">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="status">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="analog">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="counter">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="PointType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+
+
+  <!-- ___________________ Profiles  ___________________ -->
+
+  <xs:element name="profiles">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="controlProfile" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="pointProfile" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="endpointProfile" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
+  <!--
+    equipment element can specify all contained equipment or reference an equipmentProfile.
+    The only difference between an equipmentProfile and equipment is that equipment has an
+    optional equipmentProfile attribute. Both can specify multiple profiles in descendant
+    elements.
+
+    Multiple equipmentProfile elements can be specified.
+  -->
+  <xs:complexType name="EquipmentType" abstract="true">
+    <xs:sequence>
+      <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="equipmentProfile">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="EquipmentType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="equipment">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="EquipmentType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+
+
+  <!-- ___________________ Endpoint ___________________ -->
+
+  <xs:complexType name="endpointType" abstract="true">
+    <xs:sequence>
+      <xs:element ref="endpointProfile" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
+      <xs:element ref="protocol" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="interface" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="endpointProfile">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="endpointType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="endpoint">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="endpointType"/>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+
+  <!-- ___________________ Interfaces ___________________ -->
+
+  <xs:element name="interface">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="ip" type="xs:string"/>
+      <xs:attribute name="netmask" type="xs:string"/>
+      <xs:attribute name="port" type="xs:int"/>
+      <xs:attribute name="network" type="xs:string"/> <!-- remote network location (it's not a netmask) -->
+    </xs:complexType>
+  </xs:element>
+
+
+  <!-- ___________________ root element  ___________________ -->
+  <xs:element name="communicationsModel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="profiles" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="interface" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="endpoint" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
+</xs:schema>

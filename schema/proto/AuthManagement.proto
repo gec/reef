@@ -1,0 +1,34 @@
+
+package reef.proto.Auth;
+
+option java_package = "org.totalgrid.reef.proto";
+option java_outer_classname = "Auth";
+
+message Agent{
+    optional string uid                = 1;
+    optional string name               = 2;
+    optional string password           = 3;
+}
+
+message Permission{
+    optional string  uid      = 1;
+    optional bool    allow    = 2;
+    optional string  resource = 3;
+    optional string  verb     = 4;
+}
+
+message PermissionSet{
+    optional string     uid                     = 1;
+    optional string     name                    = 2;
+    optional uint64     default_expiration_time = 3;
+    repeated Permission permissions             = 4;
+}
+
+message AuthToken{
+    optional string        uid             = 1;
+    optional Agent         agent           = 2;
+    optional string        login_location  = 3;
+    repeated PermissionSet permission_sets = 4;
+    optional string        token           = 5;
+    optional uint64        expiration_time = 6;
+}

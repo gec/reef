@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="configuration.loader.reef.totalgrid.org"
+  xmlns="configuration.loader.reef.totalgrid.org"
+  elementFormDefault="unqualified"
+  xmlns:equ="equipment.loader.reef.totalgrid.org"
+  xmlns:com="communications.loader.reef.totalgrid.org"
+  xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+  jaxb:version="1.0">
+  <xs:import namespace="equipment.loader.reef.totalgrid.org" schemaLocation="equipment.xsd"/>
+  <xs:import namespace="communications.loader.reef.totalgrid.org" schemaLocation="communications.xsd"/>
+
+<!--
+  Reef configuration XSD
+-->
+
+  <!--
+     This uses the additional vendor specific features
+     provided by the JAXB RI
+     They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
+  <xs:annotation>
+     <xs:appinfo>
+        <jaxb:globalBindings generateIsSetMethod="true"/>
+     </xs:appinfo>
+  </xs:annotation>
+
+  <xs:element name="message">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="stripValue">
+  </xs:element>
+
+  <xs:element name="setAbnormal">
+  </xs:element>
+
+  <xs:element name="setBool">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:boolean" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="setUnit">
+    <xs:complexType>
+      <xs:attribute name="unit" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="TriggerType" abstract="true">
+    <xs:sequence>
+      <xs:element ref="message" minOccurs="0" maxOccurs="unbounded"/>
+      <!-- future: <xs:element ref="quality" minOccurs="0" maxOccurs="unbounded"/> -->
+      <xs:element ref="stripValue" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="setAbnormal" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="setBool" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="setUnit" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="moreActions" type="xs:boolean" default="true"/>
+  </xs:complexType>
+
+  <xs:element name="high">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="TriggerType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="low">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="TriggerType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="rising">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="TriggerType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="falling">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="TriggerType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="transition">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="TriggerType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="actionSet">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="high" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="low" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="rising" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="falling" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="transition" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="priority" type="xs:unsignedShort" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="actionModel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="actionSet" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
+  <!-- ___________________ root element  ___________________ -->
+  <xs:element name="configuration">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="actionModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="equ:equipmentModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="com:communicationsModel" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="version" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="1.0"/>
+            <!-- Add new versions here and keep old versions that are backwards compatible -->
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+
+</xs:schema>
