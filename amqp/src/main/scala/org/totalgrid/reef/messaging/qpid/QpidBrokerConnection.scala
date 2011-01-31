@@ -20,9 +20,7 @@ package org.totalgrid.reef.messaging.qpid
 
 import scala.{ Option => ScalaOption }
 
-import org.apache.qpid.transport.{ Connection, Session, SessionListener, SessionException, MessageTransfer }
-import org.apache.qpid.transport.{ DeliveryProperties, MessageProperties, Header, ReplyTo, MessageTransfer }
-import org.apache.qpid.transport.{ Option, MessageAcceptMode, MessageAcquireMode, MessageCreditUnit }
+import org.apache.qpid.transport.{ Connection }
 import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
 
 import org.totalgrid.reef.util.Logging

@@ -18,20 +18,18 @@
  */
 package org.totalgrid.reef.messaging.qpid
 
-import scala.{ Option => O }
-import scala.actors.Actor._
+import scala.{ Option => ScalaOption }
 
-import org.apache.qpid.transport.{ Connection, Session, SessionListener, SessionException, MessageTransfer }
+import org.apache.qpid.transport.{ Session, SessionListener, SessionException }
 import org.apache.qpid.transport.{ DeliveryProperties, MessageProperties, Header, ReplyTo, MessageTransfer }
 import org.apache.qpid.transport.{ Option, MessageAcceptMode, MessageAcquireMode, MessageCreditUnit }
-import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
 
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.messaging.{ BrokerChannel, MessageConsumer, Destination }
 
 class QpidBrokerInterface(session: Session) extends SessionListener with BrokerChannel with Logging {
-  var messageConsumer: O[MessageConsumer] = None
+  var messageConsumer: ScalaOption[MessageConsumer] = None
 
   session.setSessionListener(this)
 
@@ -48,7 +46,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def resumed(s: Session) {}
 
-  case class RecievedData(data: Array[Byte], reply: O[Destination])
+  case class RecievedData(data: Array[Byte], reply: ScalaOption[Destination])
 
   def message(s: Session, msg: MessageTransfer) = {
     val replyTo = msg.getHeader.get(classOf[MessageProperties]).getReplyTo
@@ -121,7 +119,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     session.messageFlow(queue, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT)
   }
 
-  def publish(exchange: String, key: String, b: Array[Byte], replyTo: O[Destination]) = {
+  def publish(exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[Destination]) = {
 
     if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
 
