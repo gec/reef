@@ -7,5 +7,6 @@ bin/client   "features:install reef-core"
 bin/client   "reef:resetdb"
 bin/client   "features:install reef"
 	
-bin/client   "reef:login core core; reef:load -benchmark samples/two_substations.xml"
+bin/client   "reef:login core core; reef:load -benchmark samples/two_substations/config.xml"
+
 
