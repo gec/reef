@@ -53,7 +53,7 @@ object MeasView {
     } else if (q.getDetailQual.getOldData) {
       "O"
     } else if (q.getValidity == Quality.Validity.QUESTIONABLE) {
-	    "A"
+      "A"
     } else if (q.getValidity != Quality.Validity.GOOD) {
       "B"
     } else {
