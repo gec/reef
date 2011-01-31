@@ -29,13 +29,13 @@ object MeasView {
       val repr = if (m.getBoolVal) "HIGH" else "LOW"
       (repr, "Binary")
     } else if (m.getType == Measurement.Type.DOUBLE) {
-      (m.getDoubleVal.toString, "Analog")
+      (String.format("%.3f", m.getDoubleVal.asInstanceOf[AnyRef]), "Analog")
     } else if (m.getType == Measurement.Type.INT) {
       (m.getIntVal.toString, "Analog")
     } else if (m.getType == Measurement.Type.STRING) {
       (m.getStringVal, "String")
     } else {
-      ("unknown", "unknown")
+      ("(unknown)", "(unknown)")
     }
   }
 
@@ -52,6 +52,8 @@ object MeasView {
       "T"
     } else if (q.getDetailQual.getOldData) {
       "O"
+    } else if (q.getValidity == Quality.Validity.QUESTIONABLE) {
+	    "A"
     } else if (q.getValidity != Quality.Validity.GOOD) {
       "B"
     } else {
@@ -98,7 +100,7 @@ object MeasView {
   }
 
   def printTable(list: List[Measurement]) = {
-    Table.printTable(header, list.map(row(_)))
+    Table.printTable(header, list.sortBy(_.getName).map(row(_)))
   }
 
   def printInspect(m: Measurement) = {

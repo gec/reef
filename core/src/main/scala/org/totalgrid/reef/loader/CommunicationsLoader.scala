@@ -616,7 +616,7 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     debug("    SIM POINT  -> " + name)
     val proto = SimMapping.MeasSim.newBuilder
       .setName(name)
-      .setUnit("raw")
+      .setUnit(point.getUnit)
 
     var triggerSet = client.get(toTriggerSet(toPoint(name, toEntityType(name, List("Point"))))).headOption
 
