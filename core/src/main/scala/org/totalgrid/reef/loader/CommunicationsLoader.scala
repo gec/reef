@@ -23,12 +23,13 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.proto.{ Model, Mapping }
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.messaging.SyncServiceClient
 import org.totalgrid.reef.util.Logging
 import java.io.File
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.proto._
 
 object CommunicationsLoader {
   val MAPPING_STATUS = Mapping.DataType.valueOf("BINARY")
@@ -151,7 +152,10 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
     trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
-    configFiles ::= processIndexMapping(endpointName, controls, points)
+    protocol match {
+      case "dnp3" => configFiles ::= processIndexMapping(endpointName, controls, points)
+      case "benchmark" => configFiles ::= createSimulatorMapping(endpointName, controls, points)
+    }
 
     processPointScaling(endpointName, points, equipmentPointUnits)
 
@@ -382,17 +386,7 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
 
         val point = toPoint(name, toEntityType(name, List("Point")))
 
-        var triggerSets = client.get(toTriggerSet(point))
-        var triggerSet = triggerSets.size match {
-          case 0 => TriggerSet.newBuilder.setPoint(point)
-          case 1 => triggerSets.head.toBuilder
-          case n => throw new Exception("Service returned multiple TriggerSets for point '" + name + "'. Should be one or none.")
-        }
-        println("processPointScaling " + name + ": inserting triggers: ")
-        triggerSet = insertTrigger(triggerSet, toTrigger(name, s))
-        val ts = triggerSet.build
-        println("processPointScaling " + name + ": final triggerSet: \n" + ts.toString)
-        client.put(ts)
+        addTriggers(client, point, toTrigger(name, s) :: Nil)
       }
     }
   }
@@ -533,7 +527,7 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     val proto = Mapping.MeasMap.newBuilder
       .setPointName(name)
       .setIndex(point.getIndex)
-      .setUnit("raw")
+      .setUnit(point.getUnit)
 
     val typ = point match {
       case status: Status => MAPPING_STATUS
@@ -588,4 +582,91 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     proto
   }
 
+  def createSimulatorMapping(
+    name: String,
+    controls: HashMap[String, Control],
+    points: HashMap[String, PointType]): Model.ConfigFile.Builder = {
+
+    val controlProtos = for ((key, value) <- controls) yield toCommandSim(key, value).build
+    val pointProtos = for ((key, value) <- points) yield toMeasSim(key, value).build
+
+    val simMap = SimMapping.SimulatorMapping.newBuilder
+
+    simMap.setBatchSize(10)
+    simMap.setDelay(500)
+
+    simMap.addAllMeasurements(pointProtos.toList)
+    simMap.addAllCommands(controlProtos.toList)
+
+    val cf = toConfigFile(name, simMap.build).build
+    client.put(cf)
+    cf.toBuilder
+  }
+
+  def toCommandSim(name: String, control: Control): SimMapping.CommandSim.Builder = {
+
+    SimMapping.CommandSim.newBuilder
+      .setName(name)
+      .setResponseStatus(Commands.CommandStatus.SUCCESS)
+  }
+
+  def toMeasSim(name: String, point: PointType): SimMapping.MeasSim.Builder = {
+    import ProtoUtils._
+
+    debug("    SIM POINT  -> " + name)
+    val proto = SimMapping.MeasSim.newBuilder
+      .setName(name)
+      .setUnit("raw")
+
+    var triggerSet = client.get(toTriggerSet(toPoint(name, toEntityType(name, List("Point"))))).headOption
+
+    var inBoundsRatio = 0.85
+    var changeChance = 1.0
+
+    point match {
+      case status: Status =>
+        proto.setType(Measurements.Measurement.Type.BOOL)
+        val boolTrigger = triggerSet.map { _.getTriggersList.find(_.hasBoolValue) }.flatMap { x => x }
+        val bval = boolTrigger.map { _.getBoolValue }.getOrElse(false)
+        proto.setInitial(if (bval) 1 else 0)
+        changeChance = 0.03
+      case analog: Analog =>
+        proto.setType(Measurements.Measurement.Type.DOUBLE)
+        configureNumericMeasSim(proto, triggerSet, inBoundsRatio)
+      case counter: Counter =>
+        proto.setType(Measurements.Measurement.Type.INT)
+        configureNumericMeasSim(proto, triggerSet, inBoundsRatio)
+        proto.setMaxDelta(proto.getMaxDelta.max(1.0))
+    }
+    proto.setChangeChance(changeChance)
+
+    proto
+  }
+
+  def configureNumericMeasSim(proto: SimMapping.MeasSim.Builder, triggerSet: Option[TriggerSet], inBoundsRatio: Double) {
+    val firstTrigger = triggerSet.map { _.getTriggersList.find(_.hasAnalogLimit).map { _.getAnalogLimit } }.map { x => x.get }
+
+    val min = firstTrigger.map { _.getLowerLimit }.getOrElse(-50.0)
+    val max = firstTrigger.map { _.getUpperLimit }.getOrElse(50.0)
+
+    val range = max - min
+
+    val simRange = range / inBoundsRatio
+    val middle = range / 2 + min
+
+    proto.setMaxDelta(simRange / 50)
+    proto.setMin(middle - simRange / 2)
+    proto.setMax(middle + simRange / 2)
+    proto.setInitial(middle)
+  }
+
+  def toConfigFile(name: String, simMapping: SimMapping.SimulatorMapping): Model.ConfigFile.Builder = {
+    val proto = Model.ConfigFile.newBuilder
+      .setName(name + "-sim.pi")
+      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
+      .setFile(simMapping.toByteString)
+    info(simMapping.toString)
+    println(simMapping.toString)
+    proto
+  }
 }

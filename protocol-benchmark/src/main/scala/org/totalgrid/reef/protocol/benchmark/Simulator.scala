@@ -26,25 +26,28 @@ import org.totalgrid.reef.reactor.{ Reactable, Lifecycle, DelayHandler }
 import java.util.Random
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.{ Mapping, Measurements, Commands }
+import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import Measurements.{ Measurement => Meas }
 
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.protocol.api.IProtocol
 
-class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.Respond, config: Mapping.IndexMapping, reactor: Reactable) extends Lifecycle with Logging {
+class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.Respond, config: SimMapping.SimulatorMapping, reactor: Reactable) extends Lifecycle with Logging {
 
-  case class MeasRecord(name: String, dataType: Measurements.Measurement.Type, currentValue: CurrentValue)
+  case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
-  private var delay = 500
-  private var batchSize = 10
-  private val list = config.getMeasmapList.map { x => MeasRecord(x.getPointName, getType(x.getType), getValueHolder(getType(x.getType))) }
-  private val cmdMap = config.getCommandmapList.map { x => x.getCommandName }.mapify { x => x }
+  private val delay = config.getDelay
+  private val batchSize = config.getBatchSize
+
+  private val measurements = config.getMeasurementsList.map { x => MeasRecord(x.getName, x.getUnit, getValueHolder(x)) }.toList
+  private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
+
   private val rand = new Random
   private var repeater: Option[DelayHandler] = None
 
   override def afterStart() {
+    reactor.execute { update(measurements, true) }
     setUpdateParams(delay, batchSize)
   }
   override def beforeStop() {
@@ -52,32 +55,36 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
   }
 
   def setUpdateParams(newDelay: Int, newBatchSize: Int) = reactor.execute {
-    delay = newDelay
-    batchSize = newBatchSize
     info { "Updating parameters for " + name + ": delay = " + delay + " batch_size = " + batchSize }
     repeater.foreach(_.cancel)
-    repeater = Some(reactor.repeat(delay) { update })
+    if (delay > 0) {
+      repeater = Some(reactor.repeat(delay) {
+        // Pick batchSize random values to update from the map
+        val meases = for (i <- 1 to batchSize) yield measurements(rand.nextInt(measurements.size))
+        update(meases.toList)
+      })
+    }
   }
 
-  /** Pick batchSize random values to update from the map */
-  def update: Unit = {
+  def update(meases: List[MeasRecord], force: Boolean = false): Unit = {
     val batch = Measurements.MeasurementBatch.newBuilder.setWallTime(System.currentTimeMillis)
-    for (i <- 1 to batchSize) {
-      val meas = list(rand.nextInt(list.size))
-      batch.addMeas(getMeas(meas))
+    meases.foreach { meas =>
+      if (meas.currentValue.next(force)) {
+        batch.addMeas(getMeas(meas))
+      }
     }
-    debug { "publishing batch of size: " + batch.getMeasCount }
-    publish(batch.build)
+    if (batch.getMeasCount > 0) {
+      debug { "publishing batch of size: " + batch.getMeasCount }
+      publish(batch.build)
+    }
   }
 
   /** Generate a random measurement */
   private def getMeas(meas: MeasRecord): Meas = {
     val point = Measurements.Measurement.newBuilder.setName(meas.name)
-      .setType(meas.dataType)
       .setQuality(Measurements.Quality.newBuilder.build)
-      .setUnit("raw")
+      .setUnit(meas.unit)
 
-    meas.currentValue.next()
     meas.currentValue.apply(point)
 
     point.build
@@ -88,7 +95,7 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
       case Some(x) =>
         info { "handled command:" + cr }
         val rsp = Commands.CommandResponse.newBuilder
-        rsp.setCorrelationId(cr.getCorrelationId).setStatus(Commands.CommandStatus.SUCCESS)
+        rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
         respondFun(rsp.build)
       case None =>
     }
@@ -98,38 +105,38 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
   // Simple random walk simulation components
   /////////////////////////////////////////////////
 
-  abstract class CurrentValue {
-    def next()
+  def getValueHolder(config: SimMapping.MeasSim): CurrentValue[_] = {
+    config.getType match {
+      case Meas.Type.BOOL => BooleanValue(config.getInitial.toInt == 0, config.getChangeChance)
+      case Meas.Type.DOUBLE => DoubleValue(config.getInitial, config.getMin, config.getMax, config.getMaxDelta, config.getChangeChance)
+      case Meas.Type.INT => IntValue(config.getInitial.toInt, config.getMin.toInt, config.getMax.toInt, config.getMaxDelta.toInt, config.getChangeChance)
+    }
+  }
+
+  abstract class CurrentValue[T](var value: T, val changeChance: Double) {
+
+    def next(force: Boolean): Boolean = {
+      if (force) return true
+      if (rand.nextDouble > changeChance) return false
+      val original = value
+      _next
+      original != value
+    }
+
+    def _next()
     def apply(meas: Measurements.Measurement.Builder)
   }
-  case class DoubleValue(var value: Double, min: Double, max: Double, maxChange: Double) extends CurrentValue {
-    def next() = value = (value + maxChange * 2 * ((rand.nextDouble - 0.5))).max(min).min(max)
-    def apply(meas: Measurements.Measurement.Builder) = meas.setDoubleVal(value)
+  case class DoubleValue(initial: Double, min: Double, max: Double, maxChange: Double, cc: Double) extends CurrentValue[Double](initial, cc) {
+    def _next() = value = (value + maxChange * 2 * ((rand.nextDouble - 0.5))).max(min).min(max)
+    def apply(meas: Measurements.Measurement.Builder) = meas.setDoubleVal(value).setType(Meas.Type.DOUBLE)
   }
-  case class IntValue(var value: Int, min: Int, max: Int, maxChange: Int) extends CurrentValue {
-    def next() = value = (value + rand.nextInt(2 * maxChange) - maxChange).max(min).min(max)
-    def apply(meas: Measurements.Measurement.Builder) = meas.setIntVal(value)
+  case class IntValue(initial: Int, min: Int, max: Int, maxChange: Int, cc: Double) extends CurrentValue[Int](initial, cc) {
+    def _next() = value = (value + rand.nextInt(2 * maxChange + 1) - maxChange).max(min).min(max)
+    def apply(meas: Measurements.Measurement.Builder) = meas.setIntVal(value).setType(Meas.Type.INT)
   }
-  case class BooleanValue(var value: Boolean, chanceOfNotChanging: Double) extends CurrentValue {
-    def next() = value = if (rand.nextDouble < chanceOfNotChanging) value else !value
-    def apply(meas: Measurements.Measurement.Builder) = meas.setBoolVal(value)
-  }
-
-  def getType(dt: Mapping.DataType): Measurements.Measurement.Type = {
-    dt match {
-      case Mapping.DataType.ANALOG => Meas.Type.DOUBLE
-      case Mapping.DataType.BINARY => Meas.Type.BOOL
-      case Mapping.DataType.COUNTER => Meas.Type.INT
-      case Mapping.DataType.CONTROL_STATUS => Meas.Type.BOOL
-      case Mapping.DataType.SETPOINT_STATUS => Meas.Type.DOUBLE
-    }
+  case class BooleanValue(initial: Boolean, cc: Double) extends CurrentValue[Boolean](initial, cc) {
+    def _next() = value = !value
+    def apply(meas: Measurements.Measurement.Builder) = meas.setBoolVal(value) setType (Meas.Type.BOOL)
   }
 
-  def getValueHolder(dt: Measurements.Measurement.Type): CurrentValue = {
-    dt match {
-      case Meas.Type.DOUBLE => DoubleValue(0, -50, 50, 2)
-      case Meas.Type.BOOL => BooleanValue(false, 0.99)
-      case Meas.Type.INT => IntValue(0, 0, 100, 2)
-    }
-  }
 }

@@ -119,7 +119,7 @@ class EquipmentLoader(client: SyncServiceClient) extends Logging {
 
     client.put(commandEntity)
     client.put(command)
-    client.put(toEntityEdge(entity, commandEntity, "owns"))
+    client.put(toEntityEdge(entity, commandEntity, "feedback"))
 
     commandEntity
   }
@@ -150,21 +150,16 @@ class EquipmentLoader(client: SyncServiceClient) extends Logging {
     // Insert range triggers to the existing trigger set in the system. Overwrite any triggers with the same name.
     // Do not clear the current TriggerSet.
     //
-    val ranges = getElements[Range](name, pointT, _.getRange.toList)
-    if (!ranges.isEmpty) {
 
-      var triggerSets = client.get(toTriggerSet(point))
-      var triggerSet = triggerSets.size match {
-        case 0 => TriggerSet.newBuilder.setPoint(point)
-        case 1 => triggerSets.head.toBuilder
-        case n => throw new Exception("Service returned multiple TriggerSets for point '" + name + "'. Should be one or none.")
-      }
-      println("processPointType " + name + ": inserting triggers: ")
-      ranges.foreach(range => triggerSet = insertTrigger(triggerSet, toTrigger(name, range, unit, actionModel)))
-      val ts = triggerSet.build
-      println("processPointType " + name + ": final triggerSet: \n" + ts.toString)
-      client.put(ts)
-    }
+    var triggers = List.empty[Trigger.Builder]
+
+    val ranges = getElements[Range](name, pointT, _.getRange.toList)
+    triggers = triggers ::: ranges.map { range => toTrigger(name, range, unit, actionModel) }
+
+    val unexpectedValues = getElements[Unexpected](name, pointT, _.getUnexpected.toList)
+    triggers = triggers ::: unexpectedValues.map { unexpected => toTrigger(name, unexpected, unit, actionModel) }
+
+    if (!triggers.isEmpty) addTriggers(client, point, triggers)
 
     // TODO: process valueMap
 

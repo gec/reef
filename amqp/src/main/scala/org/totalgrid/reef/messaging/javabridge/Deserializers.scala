@@ -334,6 +334,21 @@ object Deserializers {
     def deserializeBytes(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.ServiceNotification.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Envelope.ServiceNotification]
   }
+  def measSim() = new ProtoDescriptor[org.totalgrid.reef.proto.SimMapping.MeasSim] {
+    def deserializeString(bytes: ByteString) = org.totalgrid.reef.proto.SimMapping.MeasSim.parseFrom(bytes)
+    def deserializeBytes(bytes: Array[Byte]) = org.totalgrid.reef.proto.SimMapping.MeasSim.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.SimMapping.MeasSim]
+  }
+  def commandSim() = new ProtoDescriptor[org.totalgrid.reef.proto.SimMapping.CommandSim] {
+    def deserializeString(bytes: ByteString) = org.totalgrid.reef.proto.SimMapping.CommandSim.parseFrom(bytes)
+    def deserializeBytes(bytes: Array[Byte]) = org.totalgrid.reef.proto.SimMapping.CommandSim.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.SimMapping.CommandSim]
+  }
+  def simulatorMapping() = new ProtoDescriptor[org.totalgrid.reef.proto.SimMapping.SimulatorMapping] {
+    def deserializeString(bytes: ByteString) = org.totalgrid.reef.proto.SimMapping.SimulatorMapping.parseFrom(bytes)
+    def deserializeBytes(bytes: Array[Byte]) = org.totalgrid.reef.proto.SimMapping.SimulatorMapping.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.SimMapping.SimulatorMapping]
+  }
   def fieldDescr() = new ProtoDescriptor[org.totalgrid.reef.proto.Tags.FieldDescr] {
     def deserializeString(bytes: ByteString) = org.totalgrid.reef.proto.Tags.FieldDescr.parseFrom(bytes)
     def deserializeBytes(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.FieldDescr.parseFrom(bytes)

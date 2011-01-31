@@ -1,0 +1,35 @@
+package org.totalgrid.reef.proto.Simulator;
+
+option java_package = "org.totalgrid.reef.proto";
+option java_outer_classname = "SimMapping";
+
+import "Measurements.proto";
+import "Commands.proto";
+
+message MeasSim {
+    
+    required string      name         = 1; // fully qualified name of the point
+    required string      unit         = 2; 
+    required org.totalgrid.reef.proto.Measurements.Measurement.Type type = 3;
+
+    optional double      initial      = 4; // if status use 0 or 1
+    optional double      min          = 5; 
+    optional double      max          = 6; 
+    optional double      max_delta     = 7; // largest jump, needs to be atleast 1 for INT measurements
+    optional double      change_chance = 8; // odds of the point changing, 0 would never change, 1.0 changes everytime
+}
+
+message CommandSim {
+    required string      name         = 1; // fully qualified name of the command
+    // command code to return to commands
+    required org.totalgrid.reef.proto.Commands.CommandStatus  response_status  = 2;
+}
+
+message SimulatorMapping {
+    required uint32      delay         = 1;
+    required uint32      batch_size    = 2;
+    
+    repeated MeasSim     measurements  = 3;
+    repeated CommandSim  commands      = 4;
+}
+

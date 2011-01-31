@@ -23,7 +23,7 @@ package org.totalgrid.reef.protocol.benchmark
 import scala.collection.immutable
 
 import org.totalgrid.reef.reactor.ReactActor
-import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
+import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol, BaseProtocol }
@@ -32,9 +32,6 @@ class BenchmarkProtocol extends BaseProtocol with Logging {
 
   val name: String = "benchmark"
   val requiresPort = false
-
-  protected var rate = 100
-  protected var batchSize = 10
 
   private var map = immutable.Map.empty[String, Simulator]
   private var reactor: Option[ReactActor] = None
@@ -51,27 +48,6 @@ class BenchmarkProtocol extends BaseProtocol with Logging {
     }
   }
 
-  /// rebalance the message load across the simulators
-  def balance(): Unit = {
-    if (map.size > 0) {
-      val ratePerSim = rate / map.size / batchSize
-      if (ratePerSim > 0) {
-        val delay = (1000.0 / ratePerSim).toInt
-        if (delay > 0) {
-          map.values.foreach { sim =>
-            sim.setUpdateParams(delay, batchSize)
-          }
-        } else {
-          warn { "Non-positive delay" }
-        }
-      } else {
-        warn { "Non-positive endpoint rate" }
-      }
-    } else {
-      warn { "No devices to rebalance" }
-    }
-  }
-
   def _addPort(p: FEP.Port) = {}
   def _removePort(port: String) = {}
 
@@ -79,11 +55,10 @@ class BenchmarkProtocol extends BaseProtocol with Logging {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 
-    val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
+    val mapping = SimMapping.SimulatorMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile)
     val sim = new Simulator(endpoint, publish, respond, mapping, getReactor)
     sim.start
     map += endpoint -> sim
-    balance()
     sim.issue
   }
 

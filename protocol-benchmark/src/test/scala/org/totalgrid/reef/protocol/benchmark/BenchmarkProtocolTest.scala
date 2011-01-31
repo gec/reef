@@ -24,38 +24,54 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.{ Model, Mapping, Measurements, Commands }
+import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.SyncVar
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
-  def makeSimpleMapping(cmdName: String = "command") = {
-    Mapping.IndexMapping.newBuilder
-      .addMeasmap(Mapping.MeasMap.newBuilder.setType(Mapping.DataType.ANALOG).setIndex(0).setPointName("test"))
-      .addCommandmap(Mapping.CommandMap.newBuilder.setType(Mapping.CommandType.PULSE).setIndex(0).setCommandName(cmdName))
+  def makeSimpleMapping() = {
+    SimMapping.SimulatorMapping.newBuilder
+      .setDelay(100)
+      .setBatchSize(10)
+      .addMeasurements(makeAnalogSim())
+      .addCommands(makeCommandSim("success", Commands.CommandStatus.SUCCESS))
+      .addCommands(makeCommandSim("fail", Commands.CommandStatus.HARDWARE_ERROR))
       .build
   }
+  def makeAnalogSim(name: String = "test") = {
+    SimMapping.MeasSim.newBuilder
+      .setName(name)
+      .setType(Measurements.Measurement.Type.DOUBLE)
+      .setInitial(0).setMin(-50).setMax(50).setMaxDelta(2).setChangeChance(1.0)
+      .setUnit("raw")
+  }
 
-  def getConfigFiles(index: Mapping.IndexMapping = makeSimpleMapping()) = {
+  def makeCommandSim(name: String, resp: Commands.CommandStatus) = {
+    SimMapping.CommandSim.newBuilder
+      .setName(name)
+      .setResponseStatus(resp)
+  }
+
+  def getConfigFiles(index: SimMapping.SimulatorMapping = makeSimpleMapping()) = {
     Model.ConfigFile.newBuilder().setName("mapping")
-      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping")
+      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(index.toByteString).build :: Nil
   }
 
-  def getCmdRequest(name: String = "command") = {
+  def getCmdRequest(name: String) = {
     Commands.CommandRequest.newBuilder.setName(name).build
   }
 
   class Callbacks {
 
-    val cmdResponses = new SyncVar(List.empty[Commands.CommandResponse])
+    val cmdResponses = new SyncVar(None: Option[Commands.CommandResponse])
     val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
 
     def publish(m: Measurements.MeasurementBatch) {
       measurements.atomic(l => (m :: l).reverse)
     }
     def respond(c: Commands.CommandResponse) {
-      cmdResponses.atomic(l => (c :: l).reverse)
+      cmdResponses.update(Some(c))
     }
   }
 
@@ -81,9 +97,13 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     val cb = new Callbacks
     val issue = protocol.addEndpoint(endpointName, "", getConfigFiles(), cb.publish _, cb.respond _)
 
-    issue(getCmdRequest())
+    issue(getCmdRequest("success"))
 
-    cb.cmdResponses.waitFor(_.size > 0)
+    cb.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.SUCCESS }.getOrElse(false))
+
+    issue(getCmdRequest("fail"))
+
+    cb.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.HARDWARE_ERROR }.getOrElse(false))
 
     protocol.removeEndpoint(endpointName)
   }

@@ -15,7 +15,16 @@
     <xs:complexType>
       <xs:attribute name="fromValue" type="xs:string" use="required"/>
       <xs:attribute name="toValue"   type="xs:string" use="required"/>
-      <xs:attribute name="nominal"   type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="unexpected">
+    <xs:complexType>
+      <xs:attribute name="stringValue" type="xs:string" />
+      <xs:attribute name="booleanValue" type="xs:boolean" />
+      <xs:attribute name="intValue" type="xs:integer" />
+      <xs:attribute name="doubleValue" type="xs:double" />
+      <xs:attribute name="actionSet" type="xs:string" use="required"/>
     </xs:complexType>
   </xs:element>
 
@@ -51,6 +60,7 @@
       <xs:element ref="valueMap" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="range" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="unexpected" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="displayName" type="xs:string"/>

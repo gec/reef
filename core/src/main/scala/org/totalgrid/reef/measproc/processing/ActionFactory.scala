@@ -93,6 +93,7 @@ object Actions {
         .clearIntVal
         .clearStringVal
         .clearBoolVal
+        .setType(Measurement.Type.NONE)
         .build
     }
   }
