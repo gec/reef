@@ -193,7 +193,7 @@
   <cm:endpoint name="Sel351Endpoint1">
     <cm:type name="Endpoint"/>
     <cm:protocol name="dnp3">
-       <cm:configFile name="sel_351_endpoint1.xml"/>
+       <cm:configFile name="comms/sel_351_endpoint1.xml"/>
     </cm:protocol>
 
     <cm:interface name="i1"/>
@@ -284,7 +284,7 @@
   <cm:endpoint name="IoBrickEndpoint">
     <cm:type>Endpoint</cm:type>
     <cm:protocol name="dnp3">
-      <cm:configFile name="io_brick_endpoint.xml"/>
+      <cm:configFile name="comms/io_brick_endpoint.xml"/>
     </cm:protocol>
     <cm:interface name="ioBrick"/>
 
