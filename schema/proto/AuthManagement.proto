@@ -1,5 +1,5 @@
 
-package reef.proto.Auth;
+package org.totalgrid.reef.proto.Auth;
 
 option java_package = "org.totalgrid.reef.proto";
 option java_outer_classname = "Auth";

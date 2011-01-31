@@ -1,4 +1,4 @@
-package reef.proto.Processing;
+package org.totalgrid.reef.proto.Processing;
 
 import "Model.proto";
 import "Measurements.proto";
@@ -6,8 +6,8 @@ import "ApplicationManagement.proto";
 option java_package = "org.totalgrid.reef.proto";
 
 message MeasOverride {
-  required reef.proto.Model.Point point = 1;
-  optional reef.proto.Measurements.Measurement meas = 2;
+  required org.totalgrid.reef.proto.Model.Point point = 1;
+  optional org.totalgrid.reef.proto.Measurements.Measurement meas = 2;
 }
 
 enum ActivationType {
@@ -24,7 +24,7 @@ message Action {
   optional bool disabled = 3;
   
   optional LinearTransform                          linear_transform = 10;
-  optional reef.proto.Measurements.Quality      quality_annotation = 11;
+  optional org.totalgrid.reef.proto.Measurements.Quality      quality_annotation = 11;
   optional bool                                     strip_value = 12;
   optional bool                                     set_bool = 13;
   optional string                                   set_unit = 14;  // "to" unit
@@ -62,11 +62,10 @@ message Trigger {
 
   // Types of triggers:
   //
-  optional AnalogLimit                                    upper_limit = 10;
-  optional AnalogLimit                                    lower_limit = 11;
-  optional reef.proto.Measurements.Quality            quality = 12;
+  optional AnalogLimit                                    analog_limit = 10;
+  optional org.totalgrid.reef.proto.Measurements.Quality            quality = 12;
   optional string                                         unit = 13;       // "from" unit
-  optional reef.proto.Measurements.Measurement.Type   value_type = 14;
+  optional org.totalgrid.reef.proto.Measurements.Measurement.Type   value_type = 14;
   optional bool                                           bool_value = 15;
 }
 
@@ -75,13 +74,14 @@ message Trigger {
 // previous TriggerSet for said point.
 //
 message TriggerSet {
-  optional reef.proto.Model.Point point = 1;
+  optional org.totalgrid.reef.proto.Model.Point point = 1;
   repeated Trigger triggers = 2;
 }
 
 message AnalogLimit {
-  optional double limit = 1;
-  optional double deadband = 2;
+  optional double upper_limit = 1;
+  optional double lower_limit = 2;
+  optional double deadband    = 3;
 }
 
 message MeasurementProcessingRouting{
@@ -92,7 +92,7 @@ message MeasurementProcessingRouting{
 
 message MeasurementProcessingConnection{
     optional string                       uid                   = 1;
-    optional reef.proto.Application.ApplicationConfig meas_proc = 2;
-    optional reef.proto.Model.Entity logicalNode         = 3;
+    optional org.totalgrid.reef.proto.Application.ApplicationConfig meas_proc = 2;
+    optional org.totalgrid.reef.proto.Model.Entity logicalNode         = 3;
     optional MeasurementProcessingRouting routing               = 5;
 }

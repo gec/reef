@@ -1,5 +1,5 @@
 
-package reef.proto.FEP;
+package org.totalgrid.reef.proto.FEP;
 
 import "ApplicationManagement.proto";
 import "Model.proto";
@@ -56,7 +56,7 @@ message CommunicationEndpointRouting{
 message FrontEndProcessor{
     optional string uid       = 1;
     repeated string protocols = 2; // protocol names ex: dnp3, modbus, benchmark
-    optional reef.proto.Application.ApplicationConfig app_config = 3;
+    optional org.totalgrid.reef.proto.Application.ApplicationConfig app_config = 3;
 }
 
 message EndpointOwnership{
@@ -68,11 +68,11 @@ message EndpointOwnership{
 message CommunicationEndpointConfig{
     optional string            uid          = 1;
     optional string            name         = 2;
-    optional reef.proto.Model.Entity entity = 7;
+    optional org.totalgrid.reef.proto.Model.Entity entity = 7;
     optional string            protocol     = 3;
     optional Port              port         = 4;
     optional EndpointOwnership ownerships   = 6;
-    repeated reef.proto.Model.ConfigFile        config_files = 5;
+    repeated org.totalgrid.reef.proto.Model.ConfigFile        config_files = 5;
 }
 
 message CommunicationEndpointConnection{

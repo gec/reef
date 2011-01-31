@@ -78,7 +78,7 @@ end
 
 def processLines(opt_file, deserializers, lines)
   inEnum = false
-  built_ins = ['string','bytes','uint32','bool', 'double', 'sint64', 'uint64','int32', 'int64','Severity', 'Type']
+  built_ins = ['string','bytes','uint32','bool', 'double', 'sint64', 'uint64','int32', 'int64','Severity', 'Type', 'CommandStatus']
   ns = "org.totalgrid.reef.proto"
   cn = false
   lines.each do |line|

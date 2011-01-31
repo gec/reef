@@ -1,4 +1,4 @@
-package reef.proto.Tags;
+package org.totalgrid.reef.proto.Tags;
 
 import "Commands.proto";
 import "Model.proto";
@@ -177,9 +177,9 @@ enum TagAction {
 //
 message TagControl {
   required TagAction     action         = 1;  // The action for this tag: NONE, BLOCKING, WARNING. etc.
-  required reef.proto.Commands.CommandAccess command        = 2;  // The affected command(s) (ex: TRIP, CLOSE, ANY_CONTROL)
+  required org.totalgrid.reef.proto.Commands.CommandAccess command        = 2;  // The affected command(s) (ex: TRIP, CLOSE, ANY_CONTROL)
   optional bool          command_locked = 3;  // True: The commands are locked so the user cannot edit them. 
-  repeated reef.proto.Model.Entity        entity         = 4;  // TODO: Should we specify the valid entity types for this TagControl?
+  repeated org.totalgrid.reef.proto.Model.Entity        entity         = 4;  // TODO: Should we specify the valid entity types for this TagControl?
 }
 
 
@@ -211,8 +211,8 @@ message Tag {
   optional uint64        id      = 1;  // Instance ID. Auto-incrementing unique ID greater than 0.  TODO: can this be combined with "name"?
   optional string        name    = 2;  // User-entered unique name for this tag instance
   required uint64        type_id = 3;  // ID for this tag's tag type
-  required reef.proto.Model.Entity        entity  = 4;  // This tag is _on_ this entity
-  optional reef.proto.Commands.CommandAccess command = 5;  // The control(s) that are blocked by this tag
+  required org.totalgrid.reef.proto.Model.Entity        entity  = 4;  // This tag is _on_ this entity
+  optional org.totalgrid.reef.proto.Commands.CommandAccess command = 5;  // The control(s) that are blocked by this tag
 
   optional uint64        create_time   = 23;  // Date/Time this tag was created.
   optional string        create_user   = 24;  // UserID of user who created tag
