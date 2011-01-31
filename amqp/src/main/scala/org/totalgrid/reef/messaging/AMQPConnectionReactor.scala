@@ -99,7 +99,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
 
   override def closed() {
     info(" Connection closed")
-    if (reconnectOnClose) reconnect()
+    if (reconnectOnClose) this.delay(1000) { reconnect() }
     queue.foreach { a => a.offline() }
     listeners.foreach { _.closed() }
   }
