@@ -122,10 +122,16 @@ trait EventConfigConversion
   }
 
   def createModelEntry(proto: EventConfig): EventConfigStore = {
+    // If it's not an alarm, set the state to 0.
+    val state = proto.getDesignation match {
+      case EventConfig.Designation.ALARM => proto.getAlarmState.getNumber
+      case _ => 0
+    }
+
     EventConfigStore(proto.getEventType,
       proto.getSeverity,
       proto.getDesignation.getNumber,
-      proto.getAlarmState.getNumber,
+      state,
       proto.getResource)
   }
 

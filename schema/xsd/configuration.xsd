@@ -24,11 +24,88 @@
      </xs:appinfo>
   </xs:annotation>
 
+
   <xs:element name="message">
     <xs:complexType>
-      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" type="xs:string" use="required"/>
+          <xs:attribute name="severity">
+            <xs:simpleType>
+              <xs:restriction base="xs:unsignedShort">
+                <xs:minInclusive value="1"/>  <!-- most severe -->
+                <xs:maxInclusive value="8"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="type">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="ALARM"/>
+                <xs:enumeration value="EVENT"/>
+                <xs:enumeration value="LOG"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="state">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="UNACK_AUDIBLE"/>
+                <xs:enumeration value="UNACK_SILENT"/>
+                <xs:enumeration value="ACKNOWLEDGED"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:extension>
+      </xs:simpleContent>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="messageSet">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="messageSet" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="message" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="severity">
+        <xs:simpleType>
+          <xs:restriction base="xs:unsignedShort">
+            <xs:minInclusive value="1"/>  <!-- most severe -->
+            <xs:maxInclusive value="8"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="type">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="ALARM"/>
+            <xs:enumeration value="EVENT"/>
+            <xs:enumeration value="LOG"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="state">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="UNACK_AUDIBLE"/>
+            <xs:enumeration value="UNACK_SILENT"/>
+            <xs:enumeration value="ACKNOWLEDGED"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="messageModel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="messageSet" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="message" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
 
   <xs:element name="stripValue">
   </xs:element>
@@ -132,6 +209,7 @@
   <xs:element name="configuration">
     <xs:complexType>
       <xs:sequence>
+        <xs:element ref="messageModel" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="actionModel" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="equ:equipmentModel" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="com:communicationsModel" minOccurs="0" maxOccurs="1"/>

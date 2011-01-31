@@ -51,8 +51,14 @@ object LoadManager extends Logging {
       var equipmentPointUnits = HashMap[String, String]()
       val actionModel = HashMap[String, ActionSet]()
 
-      if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel)
-        throw new Exception("No EquipmentModel or CommunicationsModel. Nothing to do.")
+      if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
+        throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
+
+      if (xml.isSetMessageModel) {
+        val messageLoader = new MessageLoader(client)
+        val messageModel = xml.getMessageModel
+        messageLoader.load(messageModel)
+      }
 
       if (xml.isSetActionModel) {
         val actionSets = xml.getActionModel.getActionSet.toList
