@@ -46,7 +46,7 @@
         <module>protocol-benchmark</module>
         <module>protocol-dnp3</module>
         <module>karaf-linux</module>
-	<module>karaf-windows</module>
+        <module>karaf-windows</module>
         <module>dependencies</module>
         <module>proto-shell</module>
         <module>admin-shell</module>

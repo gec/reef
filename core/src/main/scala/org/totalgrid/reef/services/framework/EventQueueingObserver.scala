@@ -53,17 +53,26 @@ trait EventQueueingObserver[ProtoType <: GeneratedMessage, T]
   def queueEvent(event: Envelope.Event, entry: T, currentSnapshot: Boolean) = {
     if (currentSnapshot) {
       val (proto, keys) = getEventProtoAndKey(entry)
-      queue { keys.foreach(publishEvent(event, proto, _)) }
+      queueInTransaction { keys.foreach(queuePublishEvent(event, proto, _)) }
     } else
-      queue {
+      queueInTransaction {
         val (proto, keys) = getEventProtoAndKey(entry)
-        keys.foreach(publishEvent(event, proto, _))
+        keys.foreach(queuePublishEvent(event, proto, _))
       }
   }
 
   /**
-   * gets the notification proto and routing keys for a new/deleted/updated sql record, this can
-   * be overriden to allow having a publish routing key that uses information not contained 
+   * once we have "rendered" the event we still need to hold onto it after we close the SQL transaction
+   * that way if the reciever of a subscription update immediatley asks for the object he should find it.
+   * (It might still be missing if some other process has deleted the object but that is a seperate issue)
+   */
+  private def queuePublishEvent(event: Envelope.Event, resp: ProtoType, key: String): Unit = {
+    queuePostTransaction { publishEvent(event, resp, key) }
+  }
+
+  /**
+   *  gets the notification proto and routing keys for a new/deleted/updated sql record, this can
+   * be overriden to allow having a publish routing key that uses information not contained
    * in the proto.
    */
   def getEventProtoAndKey(entry: T): (ProtoType, List[String]) = {

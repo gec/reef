@@ -76,8 +76,9 @@
   </xs:element>
 
   <xs:complexType name="IndexType" abstract="true">
-    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="name"  type="xs:string" use="required"/>
     <xs:attribute name="index" type="xs:unsignedShort"/>
+    <xs:attribute name="unit"  type="xs:string" default="raw"/>
   </xs:complexType>
 
   <!-- ___________________ Control Types ___________________ -->

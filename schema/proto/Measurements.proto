@@ -1,4 +1,4 @@
-package reef.proto.Measurements;
+package org.totalgrid.reef.proto.Measurements;
 
 option java_package = "org.totalgrid.reef.proto";
 option java_outer_classname = "Measurements";

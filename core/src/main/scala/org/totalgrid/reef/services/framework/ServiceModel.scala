@@ -86,14 +86,14 @@ trait ServiceModel[MessageType, ModelType]
   def findRecords(req: MessageType): List[ModelType]
 }
 
-trait EnvHolder extends BasicQueuedEvaluation {
+trait EnvHolder extends QueuedEvaluation {
   var envOption: Option[RequestEnv] = None
   def env: RequestEnv = {
     envOption.get
   }
   def setEnv(s: RequestEnv) = {
     envOption = Some(s)
-    queue { envOption = None }
+    queueInTransaction { envOption = None }
   }
 }
 

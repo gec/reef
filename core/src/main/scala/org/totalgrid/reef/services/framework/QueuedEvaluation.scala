@@ -28,10 +28,16 @@ import scala.collection.immutable
 trait QueuedEvaluation {
 
   /**
-   * Queue function for later evaluation
+   * Queue work for later evaluation inside same SQL transaction
    *   @param fun queued code block
    */
-  def queue(fun: => Unit): Unit
+  def queueInTransaction(fun: => Unit): Unit
+
+  /**
+   * Queue work for after SQL transaction
+   *   @param fun queued code block
+   */
+  def queuePostTransaction(fun: => Unit): Unit
 }
 
 /** 
@@ -39,7 +45,7 @@ trait QueuedEvaluation {
  * functions are evaluated in the order they were received.
  *
  */
-trait BasicQueuedEvaluation extends QueuedEvaluation {
+class BasicQueuedEvaluation {
   protected var evals = immutable.List.empty[() => Unit]
 
   /**
@@ -58,7 +64,7 @@ trait BasicQueuedEvaluation extends QueuedEvaluation {
   /**
    * Clear all queued functions without evaluating
    */
-  def clearBuffer = { evals = immutable.List.empty[() => Unit] } // NOTE: the name collision here is probably telling us this should be has-a or just implements buffer like
+  def clear = { evals = immutable.List.empty[() => Unit] }
 }
 
 /**
@@ -67,8 +73,19 @@ trait BasicQueuedEvaluation extends QueuedEvaluation {
  */
 trait LinkedBufferedEvaluation
     extends LinkedBufferLike
-    with BasicQueuedEvaluation {
+    with QueuedEvaluation {
 
-  protected def onFlush = evaluate
-  protected def onClear = clearBuffer
+  val inTransaction = new BasicQueuedEvaluation
+  val postTransaction = new BasicQueuedEvaluation
+
+  def queueInTransaction(fun: => Unit) = inTransaction.queue(fun)
+  def queuePostTransaction(fun: => Unit) = postTransaction.queue(fun)
+
+  protected def onFlushInTransaction = inTransaction.evaluate
+  protected def onFlushPostTransaction = postTransaction.evaluate
+
+  protected def onClear = {
+    inTransaction.clear
+    postTransaction.clear
+  }
 }

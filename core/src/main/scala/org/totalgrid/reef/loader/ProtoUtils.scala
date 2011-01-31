@@ -20,14 +20,15 @@
  */
 package org.totalgrid.reef.loader
 
+import equipment.{ Unexpected, Range }
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
 import org.totalgrid.reef.loader.communications.Scale
-import org.totalgrid.reef.loader.equipment.Range
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
+import org.totalgrid.reef.messaging.SyncServiceClient
 
 /**
  * Utility methods to crate protos
@@ -86,6 +87,18 @@ object ProtoUtils {
     triggerSet
   }
 
+  def addTriggers(client: SyncServiceClient, point: Point, triggers: List[Trigger.Builder]) {
+    var triggerSets = client.get(toTriggerSet(point))
+    var triggerSet = triggerSets.size match {
+      case 0 => TriggerSet.newBuilder.setPoint(point)
+      case 1 => triggerSets.head.toBuilder
+      case n => throw new Exception("Service returned multiple TriggerSets for point '" + point.getName + "'. Should be one or none.")
+    }
+    triggers.foreach(trigger => triggerSet = insertTrigger(triggerSet, trigger))
+    val ts = triggerSet.build
+    client.put(ts)
+  }
+
   /**
    * Low, High, Deadband
    * Low, Deadband
@@ -101,24 +114,33 @@ object ProtoUtils {
     if (range.getActionSet == "RLC") // TODO: This should be in the communications model and setup correctly.
       proto.setUnit("raw")
 
+    val al = AnalogLimit.newBuilder()
     if (range.isSetLow)
-      proto.setLowerLimit(toAnalogLimit(range.getLow, range.getDeadband)) // deadband defaults to 0
+      al.setLowerLimit(range.getLow)
     if (range.isSetHigh)
-      proto.setUpperLimit(toAnalogLimit(range.getHigh, range.getDeadband)) // deadband defaults to 0
+      al.setUpperLimit(range.getHigh)
+    al.setDeadband(range.getDeadband)
+
+    proto.setAnalogLimit(al)
 
     val actionSet = getActionSet(actionModel, name, range)
-    proto.setPriority(actionSet.getPriority)
+    addActions(name, proto, actionSet)
 
-    if (actionSet.isSetHigh)
-      processTriggerType(proto, name, actionSet.getHigh, ActivationType.HIGH)
-    if (actionSet.isSetLow)
-      processTriggerType(proto, name, actionSet.getLow, ActivationType.LOW)
-    if (actionSet.isSetRising)
-      processTriggerType(proto, name, actionSet.getRising, ActivationType.RISING)
-    if (actionSet.isSetFalling)
-      processTriggerType(proto, name, actionSet.getFalling, ActivationType.FALLING)
-    if (actionSet.isSetTransition)
-      processTriggerType(proto, name, actionSet.getTransition, ActivationType.TRANSITION)
+    proto
+  }
+
+  def toTrigger(pointName: String, unexpected: Unexpected, unit: String, actionModel: HashMap[String, ActionSet]): Trigger.Builder = {
+    val name = pointName + "." + unexpected.getActionSet
+    val proto = Trigger.newBuilder
+      .setTriggerName(name)
+    //  .setUnit(unit)
+
+    // TODO: implement unexpected strings and ints
+    if (unexpected.isSetBooleanValue)
+      proto.setBoolValue(unexpected.isBooleanValue)
+
+    val actionSet = getActionSet(actionModel, name, unexpected)
+    addActions(name, proto, actionSet)
 
     proto
   }
@@ -142,8 +164,8 @@ object ProtoUtils {
     if (actions.isSetSetUnit)
       trigger.addActions(toActionSetUnit(name, aType, actions.getSetUnit))
 
-    //TODO: if (actions.isSetSetAbnormal)
-    //  trigger.addActions(toActionSetAbnormal(name, aType))
+    if (actions.isSetSetAbnormal)
+      trigger.addActions(toActionSetAbnormal(name, aType))
 
   }
 
@@ -157,20 +179,47 @@ object ProtoUtils {
       throw new Exception("range actionSet=\"" + asName + "\"  referenced from '" + elementName + "' was not found in configuration.")
   }
 
+  def getActionSet(actionModel: HashMap[String, ActionSet], elementName: String, unexpected: Unexpected): ActionSet = {
+    if (!unexpected.isSetActionSet)
+      throw new Exception("<unexpected> element used by point '" + elementName + "' does not actionSet attribute.")
+    val asName = unexpected.getActionSet
+    if (actionModel.contains(asName))
+      actionModel(asName)
+    else
+      throw new Exception("unexpected actionSet=\"" + asName + "\"  referenced from '" + elementName + "' was not found in configuration.")
+  }
+
+  def addActions(name: String, proto: Trigger.Builder, actionSet: ActionSet) {
+    proto.setPriority(actionSet.getPriority)
+
+    if (actionSet.isSetRising)
+      processTriggerType(proto, name, actionSet.getRising, ActivationType.RISING)
+    if (actionSet.isSetFalling)
+      processTriggerType(proto, name, actionSet.getFalling, ActivationType.FALLING)
+    if (actionSet.isSetTransition)
+      processTriggerType(proto, name, actionSet.getTransition, ActivationType.TRANSITION)
+    // give priority to edge actions TODO: should allow arbitrary order of actions
+    if (actionSet.isSetHigh)
+      processTriggerType(proto, name, actionSet.getHigh, ActivationType.HIGH)
+    if (actionSet.isSetLow)
+      processTriggerType(proto, name, actionSet.getLow, ActivationType.LOW)
+  }
+
   /**
    * Communications model point scaling.
    */
   def toTrigger(name: String, scale: Scale): Trigger.Builder = {
     val proto = Trigger.newBuilder
       .setTriggerName(name + ".scale")
-      .setPriority(250) // TODO: get form config!
+      .setPriority(250) // TODO: get from config!
+      .setUnit(scale.getRawUnit)
 
     proto.addActions(toActionLinearTransform(name, scale))
 
     //  Set the "from" unit.
     // We've already set engUnit (the "to" unit) in Action.
     // The communications.xsd defaults this to "raw"
-    proto.setUnit(scale.getRawUnit)
+    proto.addActions(toActionSetUnit(name, ActivationType.HIGH, scale.getEngUnit))
 
     proto
   }
@@ -197,10 +246,25 @@ object ProtoUtils {
   }
 
   def toActionSetUnit(name: String, aType: ActivationType, setUnit: SetUnit): Action.Builder = {
+    toActionSetUnit(name, aType, setUnit.getUnit)
+  }
+  def toActionSetUnit(name: String, aType: ActivationType, unit: String): Action.Builder = {
     Action.newBuilder
       .setActionName(name + ".SetUnit")
       .setType(aType)
-      .setSetUnit(setUnit.getUnit) // TODO: check if attribute is there.
+      .setSetUnit(unit) // TODO: check if attribute is there.
+  }
+
+  def toActionSetAbnormal(name: String, aType: ActivationType): Action.Builder = {
+    import org.totalgrid.reef.proto.Measurements._
+    val q = Quality.newBuilder()
+      .setValidity(Quality.Validity.QUESTIONABLE)
+      .setDetailQual(DetailQual.newBuilder.setInconsistent(true))
+
+    Action.newBuilder
+      .setActionName(name + ".SetAbnormal")
+      .setType(aType)
+      .setQualityAnnotation(q)
   }
 
   def toActionLinearTransform(name: String, scale: Scale): Action.Builder = {
@@ -227,7 +291,6 @@ object ProtoUtils {
       .setActionName(name + ".scale")
       .setType(ActivationType.HIGH)
       .setLinearTransform(ltProto)
-      .setSetUnit(scale.getEngUnit) // to "to" unit
 
     proto
   }
@@ -240,14 +303,6 @@ object ProtoUtils {
 
     if (!scale.isSetEngUnit)
       throw new Exception("<scale> element in " + parent + " does not have require attribute engUnit")
-  }
-
-  def toAnalogLimit(limit: Double, deadband: Double): AnalogLimit.Builder = {
-    val proto = AnalogLimit.newBuilder
-      .setLimit(limit)
-    if (deadband != 0.0D)
-      proto.setDeadband(deadband)
-    proto
   }
 
   /**

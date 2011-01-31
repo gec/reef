@@ -113,7 +113,7 @@ class ProcessingNodeIntegration extends Suite with ShouldMatchers {
       .setTriggerName("rlclow")
       .setStopProcessingWhen(ActivationType.HIGH)
       .setUnit("raw")
-      .setLowerLimit(AnalogLimit.newBuilder.setLimit(0).setDeadband(5))
+      .setAnalogLimit(AnalogLimit.newBuilder.setLowerLimit(0).setDeadband(5))
       .addActions(
         Action.newBuilder
         .setActionName("strip")
@@ -162,7 +162,7 @@ class ProcessingNodeIntegration extends Suite with ShouldMatchers {
   def checkStripped(m: Measurement) {
     m.getName should equal("meas01")
     m.getUnit should equal("raw")
-    m.getType should equal(Measurement.Type.DOUBLE)
+    m.getType should equal(Measurement.Type.NONE)
     m.hasDoubleVal should equal(false)
     m.getQuality.getValidity should equal(Quality.Validity.QUESTIONABLE)
   }

@@ -1,4 +1,4 @@
-package reef.proto.Model;
+package org.totalgrid.reef.proto.Model;
 
 option java_package = "org.totalgrid.reef.proto";
 option java_outer_classname = "Model";

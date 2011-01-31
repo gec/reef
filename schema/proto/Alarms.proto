@@ -1,4 +1,4 @@
-package reef.proto.Alarms;
+package org.totalgrid.reef.proto.Alarms;
 
 import "Events.proto";
 
@@ -81,7 +81,7 @@ message Alarm {
 
   optional string   uid      = 1;  // UID of alarm is not equal to event.uid
   optional State    state    = 2;
-  optional reef.proto.Events.Event event = 3;
+  optional org.totalgrid.reef.proto.Events.Event event = 3;
   optional string   rendered = 4;  // This alarm rendered as a localized string.
 }
 
@@ -102,7 +102,7 @@ message AlarmSelect {
   // Select alarms by various event properties.
   // This is ANDed with any state selections above.
   //
-  optional reef.proto.Events.EventSelect eventSelect =  2;
+  optional org.totalgrid.reef.proto.Events.EventSelect eventSelect =  2;
 }
 
 

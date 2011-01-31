@@ -422,9 +422,9 @@ object OptionalProtos {
   class OptTrigger(real: Option[Trigger]) extends OptionalStruct(real) {
     val triggerName = optionally(_.hasTriggerName, _.getTriggerName)
     val stopProcessingWhen = optionally(_.hasStopProcessingWhen, _.getStopProcessingWhen)
+    val priority = optionally(_.hasPriority, _.getPriority)
     val actions = optionally(_.getActionsList.toList.map { i => new OptAction(Some(i)) })
-    val upperLimit = new OptAnalogLimit(optionally(_.hasUpperLimit, _.getUpperLimit))
-    val lowerLimit = new OptAnalogLimit(optionally(_.hasLowerLimit, _.getLowerLimit))
+    val analogLimit = new OptAnalogLimit(optionally(_.hasAnalogLimit, _.getAnalogLimit))
     val quality = new OptMeasurementsQuality(optionally(_.hasQuality, _.getQuality))
     val unit = optionally(_.hasUnit, _.getUnit)
     val valueType = optionally(_.hasValueType, _.getValueType)
@@ -437,7 +437,8 @@ object OptionalProtos {
   }
   implicit def proto2OptAnalogLimit(a: AnalogLimit): OptAnalogLimit = new OptAnalogLimit(Some(a))
   class OptAnalogLimit(real: Option[AnalogLimit]) extends OptionalStruct(real) {
-    val limit = optionally(_.hasLimit, _.getLimit)
+    val upperLimit = optionally(_.hasUpperLimit, _.getUpperLimit)
+    val lowerLimit = optionally(_.hasLowerLimit, _.getLowerLimit)
     val deadband = optionally(_.hasDeadband, _.getDeadband)
   }
   implicit def proto2OptMeasurementProcessingRouting(a: MeasurementProcessingRouting): OptMeasurementProcessingRouting = new OptMeasurementProcessingRouting(Some(a))
@@ -476,6 +477,29 @@ object OptionalProtos {
   class OptEnvelopeServiceNotification(real: Option[org.totalgrid.reef.proto.Envelope.ServiceNotification]) extends OptionalStruct(real) {
     val event = optionally(_.getEvent)
     val payload = optionally(_.getPayload)
+  }
+  implicit def proto2OptSimMappingMeasSim(a: org.totalgrid.reef.proto.SimMapping.MeasSim): OptSimMappingMeasSim = new OptSimMappingMeasSim(Some(a))
+  class OptSimMappingMeasSim(real: Option[org.totalgrid.reef.proto.SimMapping.MeasSim]) extends OptionalStruct(real) {
+    val name = optionally(_.getName)
+    val unit = optionally(_.getUnit)
+    val _type = optionally(_.getType)
+    val initial = optionally(_.hasInitial, _.getInitial)
+    val min = optionally(_.hasMin, _.getMin)
+    val max = optionally(_.hasMax, _.getMax)
+    val maxDelta = optionally(_.hasMaxDelta, _.getMaxDelta)
+    val changeChance = optionally(_.hasChangeChance, _.getChangeChance)
+  }
+  implicit def proto2OptSimMappingCommandSim(a: org.totalgrid.reef.proto.SimMapping.CommandSim): OptSimMappingCommandSim = new OptSimMappingCommandSim(Some(a))
+  class OptSimMappingCommandSim(real: Option[org.totalgrid.reef.proto.SimMapping.CommandSim]) extends OptionalStruct(real) {
+    val name = optionally(_.getName)
+    val responseStatus = optionally(_.getResponseStatus)
+  }
+  implicit def proto2OptSimMappingSimulatorMapping(a: org.totalgrid.reef.proto.SimMapping.SimulatorMapping): OptSimMappingSimulatorMapping = new OptSimMappingSimulatorMapping(Some(a))
+  class OptSimMappingSimulatorMapping(real: Option[org.totalgrid.reef.proto.SimMapping.SimulatorMapping]) extends OptionalStruct(real) {
+    val delay = optionally(_.getDelay)
+    val batchSize = optionally(_.getBatchSize)
+    val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptSimMappingMeasSim(Some(i)) })
+    val commands = optionally(_.getCommandsList.toList.map { i => new OptSimMappingCommandSim(Some(i)) })
   }
   implicit def proto2OptTagsFieldDescr(a: org.totalgrid.reef.proto.Tags.FieldDescr): OptTagsFieldDescr = new OptTagsFieldDescr(Some(a))
   class OptTagsFieldDescr(real: Option[org.totalgrid.reef.proto.Tags.FieldDescr]) extends OptionalStruct(real) {

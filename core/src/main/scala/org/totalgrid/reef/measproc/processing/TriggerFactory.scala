@@ -43,28 +43,29 @@ object TriggerFactory {
     case TypeProto.TRANSITION => Action.Transition
   }
 
-  /** 
-   * Constructs an upper limit condition
+  /**
+   * Constructs either an upper,lower or, most commonly, range condition
    * @param proto   Proto configuration
    * @return        Trigger condition
    */
-  def upperLimit(proto: AnalogLimitProto): Trigger.Condition = {
-    if (proto.hasDeadband)
-      new UpperLimitDeadband(proto.getLimit, proto.getDeadband)
-    else
-      new UpperLimit(proto.getLimit)
-  }
-
-  /** 
-   * Constructs a lower limit condition
-   * @param proto   Proto configuration
-   * @return        Trigger condition
-   */
-  def lowerLimit(proto: AnalogLimitProto): Trigger.Condition = {
-    if (proto.hasDeadband)
-      new LowerLimitDeadband(proto.getLimit, proto.getDeadband)
-    else
-      new LowerLimit(proto.getLimit)
+  def limitCondition(proto: AnalogLimitProto): Trigger.Condition = {
+    // TODO: do we need non-deadbanded limit checks, does deadband == 0 work for all floats
+    if (proto.hasLowerLimit && proto.hasUpperLimit) {
+      if (proto.hasDeadband)
+        new RangeLimitDeadband(proto.getUpperLimit, proto.getLowerLimit, proto.getDeadband)
+      else
+        new RangeLimit(proto.getUpperLimit, proto.getLowerLimit)
+    } else if (proto.hasUpperLimit()) {
+      if (proto.hasDeadband)
+        new UpperLimitDeadband(proto.getUpperLimit, proto.getDeadband)
+      else
+        new UpperLimit(proto.getUpperLimit)
+    } else if (proto.hasLowerLimit()) {
+      if (proto.hasDeadband)
+        new LowerLimitDeadband(proto.getLowerLimit, proto.getDeadband)
+      else
+        new LowerLimit(proto.getLowerLimit)
+    } else throw new IllegalArgumentException("Upper and Lower limit not set in AnalogLimit")
   }
 }
 
@@ -85,8 +86,7 @@ trait TriggerFactory { self: ActionFactory =>
     val cacheID = pointName + "." + proto.getTriggerName
     val stopProc = proto.hasStopProcessingWhen thenGet convertActivation(proto.getStopProcessingWhen)
     val conditions = List(
-      proto.upperLimit.map(upperLimit(_)),
-      proto.lowerLimit.map(lowerLimit(_)),
+      proto.analogLimit.map(limitCondition(_)),
       proto.quality.map(new QualityCondition(_)),
       proto.unit.map(new UnitCondition(_)),
       proto.valueType.map(new TypeCondition(_)),
@@ -105,6 +105,20 @@ object Triggers {
     def apply(m: Measurement, prev: Boolean): Boolean = {
       (m.getType == Measurement.Type.BOOL) &&
         (m.getBoolVal == b)
+    }
+  }
+
+  class RangeLimit(upper: Double, lower: Double) extends Trigger.Condition {
+    def apply(m: Measurement, prev: Boolean): Boolean = {
+      val x = Trigger.analogValue(m) getOrElse { return false }
+      x <= lower || x >= upper
+    }
+  }
+
+  class RangeLimitDeadband(upper: Double, lower: Double, deadband: Double) extends Trigger.Condition {
+    def apply(m: Measurement, prev: Boolean): Boolean = {
+      val x = Trigger.analogValue(m) getOrElse { return false }
+      (prev && (x <= (lower + deadband) || x >= (upper - deadband))) || (!prev && (x <= lower || x >= upper))
     }
   }
 

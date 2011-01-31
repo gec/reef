@@ -1,4 +1,4 @@
-package reef.proto.Utils;
+package org.totalgrid.reef.proto.Utils;
 
 
 option java_package = "org.totalgrid.reef.proto";
