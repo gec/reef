@@ -53,23 +53,27 @@ trait BasicServiceTransactable[+ModelType <: BufferLike]
   def transaction[R](fun: ModelType => R): R = {
     val m = model
     try {
-      PrimitiveTypeMode.transaction {
+      val result: R = PrimitiveTypeMode.transaction {
         // Run logic inside sql transaction
-        val result = fun(m)
+        val resultInner = fun(m)
 
-        // Success, send all event notifications
-        m.flush
+        // Success, render all event notifications that were waiting for the end of the model
+        // transaction to be able to read a consistent state, multi model adds for example
+        m.flushInTransaction
 
         // TODO: re-enable chatty transaction logging
         //        val stats = reef.models.CountingSession.currentSession.stats
         //        if (stats.actions > 30) {
-        //          // TODO: put into env variable
         //          println("Chatty Transaction: " + stats)
         //        }
 
-        // Return result
-        result
+        resultInner
       }
+
+      // now we send all event notifications, knowing
+      m.flushPostTransaction
+
+      result
     } finally {
 
       // On failure, clear the event queue

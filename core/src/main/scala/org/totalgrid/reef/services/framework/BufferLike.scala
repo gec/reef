@@ -28,12 +28,17 @@ import scala.collection.immutable
 trait BufferLike {
 
   /**
-   * Flush buffer
+   * do all work that needs to be in a SQL transaction
    */
-  def flush
+  def flushInTransaction
 
   /**
-   * Clear buffer
+   * do all work that has to happen after we have closed the sql transaction
+   */
+  def flushPostTransaction
+
+  /**
+   * Clears out both queues of deferred work
    */
   def clear
 }
@@ -50,16 +55,22 @@ trait LinkedBufferLike extends BufferLike {
    */
   def link[A <: BufferLike](obj: A): A = { links ::= obj; obj }
 
-  final override def flush = {
-    onFlush
-    links.foreach(_.flush)
+  final override def flushInTransaction = {
+    onFlushInTransaction
+    links.foreach(_.flushInTransaction)
+  }
+
+  final override def flushPostTransaction = {
+    onFlushPostTransaction
+    links.foreach(_.flushPostTransaction)
   }
   final override def clear = {
     onClear
     links.foreach(_.clear)
   }
 
-  protected def onFlush
+  protected def onFlushInTransaction
+  protected def onFlushPostTransaction
   protected def onClear
 }
 
