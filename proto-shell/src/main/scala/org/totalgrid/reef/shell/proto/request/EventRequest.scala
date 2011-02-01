@@ -40,7 +40,7 @@ object EventRequest {
   }
 
   def buildSelect(users: List[String], types: List[String]) = {
-    val sel = EventSelect.newBuilder
+    val sel = EventSelect.newBuilder.setAscending(false).setLimit(100)
     users.foreach(sel.addUserId(_))
     types.foreach(sel.addEventType(_))
     sel.build
