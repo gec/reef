@@ -32,9 +32,25 @@ sudo su postgres -c "psql < postgres.sql"
 Qpid 0.8
 ==============================
 
+The Qpid project has 2 implementations of the broker, java and c++. We have done our testing primarily with the c++
+broker running as a daemon on Ubuntu 10.10 and it is our recommendation for production installations. Unfortunately the
+c++ broker is not as easy to install as it could be, especially on non-fedora linux. We are planning on releasing the
+"sprinkle" scripts we use to install qpid 0.8 c++ on lucid linux. Using the c++ broker on windows appears to require
+modifying windows level users, not necessarily bad but not necessary for development or testing. In general we suggest
+that people use the java broker until it proves inadequate.
+
+Java Broker
+------------------------------
+
+The java broker is very easy to use on all platforms, just download and extract qpid-java-broker-0.8.tar.gz file. Then
+run the appropriate script in the bin directory. qpid-server or qpid-server.bat
+
+C++ broker
+------------------------------
+
 Ubuntu:
 
-You'll have to build from source.
+You'll have to build from source, we will be publishing some ruby scripts to streamline that process in the near future.
 
 Windows:
 
