@@ -14,19 +14,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>gec-snapshot</id>
-            <name>gec snapshots</name>
-            <url>http://svn.plymouthsystems.com:8082/archiva/repository/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>gec-release</id>
-            <name>gec releases</name>
-            <url>http://svn.plymouthsystems.com:8082/archiva/repository/internal</url>
-        </repository>
-    </distributionManagement>
-
     <modules>
         <module>scala-base</module>
         <module>proto</module>
@@ -55,64 +42,38 @@
 
     <repositories>
         <repository>
-            <id>repository.ops4j.org</id>
-            <name>ops4j</name>
-            <url>http://repository.ops4j.org/maven2</url>
-        </repository>
-        <repository>
-            <id>gec-snapshot</id>
-            <name>gec snapshots</name>
-            <url>http://svn.plymouthsystems.com:8082/archiva/repository/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gec-release</id>
-            <name>gec releases</name>
-            <url>http://svn.plymouthsystems.com:8082/archiva/repository/internal</url>
+            <id>totalgrid-release</id>
+            <name>https://repo.totalgrid.org-releases</name>
+            <url>https://repo.totalgrid.org/artifactory/totalgrid-release</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
-            <id>scala-tools-release</id>
+            <id>third-party-release</id>
+            <name>https://repo.totalgrid.org-releases</name>
+            <url>https://repo.totalgrid.org/artifactory/third-party-release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>scala-tools-releases</id>
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
             <snapshots>
                 <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>scala-tools-snapshot</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>gec releases</id>
-            <name>gec releases</name>
-            <url>http://svn.plymouthsystems.com:8082/archiva/repository/internal</url>
+            <id>third-party-release</id>
+            <name>https://repo.totalgrid.org-releases</name>
+            <url>https://repo.totalgrid.org/artifactory/third-party-release</url>
             <snapshots>
                 <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>gec snapshots</id>
-            <name>gec snapshots</name>
-            <url>http://svn.plymouthsystems.com:8082/archiva/repository/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
