@@ -28,7 +28,7 @@ object AMQPProperties {
     val host = cr.getString("org.totalgrid.reef.amqp.host", "127.0.0.1")
     val port = cr.getInt("org.totalgrid.reef.amqp.port", 5672)
     val user = cr.getString("org.totalgrid.reef.amqp.user", "guest")
-    val password = cr.getString("org.totalgrid.reef.amqp.port", "guest")
+    val password = cr.getString("org.totalgrid.reef.amqp.password", "guest")
     val virtualHost = cr.getString("org.totalgrid.reef.amqp.virtualHost", "test")
 
     new BrokerConnectionInfo(host, port, user, password, virtualHost)
