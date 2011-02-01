@@ -39,6 +39,6 @@ class AlarmCommand extends ReefCommandSupport {
     val typList = Option(types).map(_.toList) getOrElse Nil
     val userList = Option(users).map(_.toList) getOrElse Nil
 
-    AlarmView.printTable(AlarmRequest.getAlarms(userList, typList, this))
+    AlarmView.printTable(AlarmRequest.getAlarms(userList, typList, this).reverse)
   }
 }

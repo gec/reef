@@ -128,9 +128,9 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
         from(model.table)(row =>
           where(buildQuery(row, select))
             select (row)
-            orderBy timeOrder(row.time, select)).page(0, limit).toList // page(page_offset, page_length)
+            orderBy timeOrder(row.time, select)).page(0, limit) //.toList // page(page_offset, page_length)
 
-      val respList = EventList.newBuilder.addAllEvents(entries.map(model.convertToProto(_))).build
+      val respList = EventList.newBuilder.addAllEvents(entries.toList.map(model.convertToProto(_))).build
       new Response(Envelope.Status.OK, respList)
     }
   }

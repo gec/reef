@@ -40,6 +40,6 @@ class EventCommand extends ReefCommandSupport {
     val typList = Option(types).map(_.toList) getOrElse Nil
     val userList = Option(users).map(_.toList) getOrElse Nil
 
-    EventView.printEventTable(EventRequest.getEvents(userList, typList, this))
+    EventView.printEventTable(EventRequest.getEvents(userList, typList, this).reverse)
   }
 }
