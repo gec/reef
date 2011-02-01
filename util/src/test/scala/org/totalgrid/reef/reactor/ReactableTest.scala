@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.Conversion.convertIntToTimes
 
 @RunWith(classOf[JUnitRunner])
 class ReactActorTest extends ReactableTestBase {
-  override val maxActorPowerOf2 = 6 // 65536!
+  override val maxActorPowerOf2 = 6 // 64
   def _getActor = new TestActorBase with ReactActor
 }
 
@@ -69,11 +69,11 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
     def waitForStarted = running.waitFor(_ == Some(true), 25) should equal(true)
     def waitForStopped = running.waitFor(_ == Some(false), 25) should equal(true)
 
-    def waitForIncrement(value: Int, until: Long = 100, after: Long = 10) {
+    def waitForIncrement(value: Int, until: Long = 5000, after: Long = 50) {
       called.waitUntil(value, until, false) should equal(true)
       called.waitWhile(value, after, false) should equal(false)
     }
-    def waitForAtleastIncrement(lowLimit: Int, until: Long = 100) {
+    def waitForAtleastIncrement(lowLimit: Int, until: Long = 5000) {
       called.waitFor(_ >= lowLimit, until, false) should equal(true)
     }
     def checkUnchanged(value: Int, after: Long = 50) {
@@ -100,11 +100,11 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
 
   test("revoked delay") {
     val a = getActor
-    val revoker = a.delay(50) { a.increment() }
+    val revoker = a.delay(500) { a.increment() }
     revoker.cancel
 
     // make sure it didn't execute
-    a.waitForIncrement(0, 0, 100)
+    a.waitForIncrement(0, 0, 1000)
   }
 
   test("delay done now") {
@@ -136,12 +136,12 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
     a.waitForAtleastIncrement(5)
 
     revoker.cancel()
-    val stoppedVal = a.called.lastValueAfter(100)
+    val stoppedVal = a.called.lastValueAfter(500)
     a.checkUnchanged(stoppedVal)
   }
 
   test("outstanding repeat on stop") {
-    10.times {
+    5.times {
       val a = getActor
       val revoker = a.repeat(10000) { a.increment() }
       a.waitForIncrement(1)
@@ -151,7 +151,7 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
   }
 
   test("canceled outstanding repeat on stop") {
-    10.times {
+    5.times {
       val a = getActor
       val revoker = a.repeat(10000) { a.increment() }
       revoker.cancel
@@ -172,7 +172,7 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
 
   test("timer doesnt kill parent") {
     // race condition on the unlink, need to repeat to make error occur
-    10.times {
+    5.times {
       val a = getActor
       a.waitForStarted
       a.request { 1 }
@@ -184,7 +184,7 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
   }
 
   test("bind kills linked actors") {
-    10.times {
+    5.times {
       val a = getActor
       val b = getActor
 
@@ -212,14 +212,14 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
   test("killing parent kills timers") {
 
     // race condition on the unlink, need to repeat to make error occur
-    10.times {
+    2.times {
       val a = getActor
       a.waitForStarted
       a.repeat(1) { a.increment() }
       a.waitForAtleastIncrement(5)
       a.stop
       a.waitForStopped
-      val atStop = a.called.lastValueAfter(100)
+      val atStop = a.called.lastValueAfter(500)
       a.checkUnchanged(atStop)
     }
   }
