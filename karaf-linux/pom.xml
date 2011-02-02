@@ -63,6 +63,7 @@
                                     <tasks>
                                         <gunzip src="target/temp/apache-karaf-${karafVers}.tar.gz" dest="target/temp/"/>
                                         <untar src="target/temp/apache-karaf-${karafVers}.tar" dest="target/temp/"/>
+                                        <move file="target/temp/apache-karaf-${karafVers}" toFile="target/temp/${outputName}"/>
                                     </tasks>
                                 </configuration>
                                 <goals>
@@ -79,6 +80,8 @@
     <properties>
         <karafVers>2.1.3</karafVers>
         <karafName>apache-karaf-${karafVers}</karafName>
+        <distName>dist</distName>
+        <outputName>${project.artifactId}-${project.version}-${distName}</outputName>
     </properties>
 
     <pluginRepositories>
