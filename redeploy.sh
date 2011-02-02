@@ -1,17 +1,19 @@
 set -ex
 
-apache-karaf-2.1.3/bin/stop || true
+reefdir=reef-karaf-0.1.1-dist
+
+$reefdir/bin/stop || true
 
 mvn install -DskipTests -P karaf
 
-rm -rf apache-karaf-2.1.3
+rm -rf $reefdir
 tar -xvf karaf-linux/target/reef-karaf*.tar.gz
-chmod +x apache-karaf-2.1.3/bin/*
-chmod +x apache-karaf-2.1.3/*.sh
+chmod +x $reefdir/bin/*
+chmod +x $reefdir/*.sh
 
 current=`pwd`
 
-cd apache-karaf-2.1.3
+cd $reefdir
 
 ./quick_start.sh
 
