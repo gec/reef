@@ -118,8 +118,14 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     val profiles: List[EndpointType] = endpoint.getEndpointProfile.toList.map(p => endpointProfiles(p.getName)) ::: List[EndpointType](endpoint)
     info("load endpoint '" + endpointName + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this endpoint
 
-    var (protocol, configFiles) = processProtocol(profiles, path: File, benchmark)
-    val port: Option[Port.Builder] = if (protocol != "benchmark")
+    //var (protocol, configFiles) = processProtocol(profiles, path: File, benchmark)
+
+    val protocol = findProtocol(profiles)
+    var configFiles = processConfigFiles(protocol, path)
+
+    val protocolName = protocol.getName
+
+    val port: Option[Port.Builder] = if (protocolName != "benchmark")
       Some(processInterface(profiles))
     else
       None
@@ -152,15 +158,19 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
     trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
-    protocol match {
+    protocolName match {
       case "dnp3" => configFiles ::= processIndexMapping(endpointName, controls, points)
-      case "benchmark" => configFiles ::= createSimulatorMapping(endpointName, controls, points)
+      case "benchmark" => {
+        val delay = if (protocol.isSetSimOptions && protocol.getSimOptions.isSetDelay) Some(protocol.getSimOptions.getDelay) else None
+
+        configFiles ::= createSimulatorMapping(endpointName, controls, points, delay)
+      }
     }
 
     processPointScaling(endpointName, points, equipmentPointUnits)
 
     // Now we have a list of all the controls and points for this Endpoint
-    client.put(toCommunicationEndpointConfig(endpointName, protocol, configFiles, port, controls, points).build)
+    client.put(toCommunicationEndpointConfig(endpointName, protocolName, configFiles, port, controls, points).build)
 
   }
 
@@ -193,9 +203,9 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
    * The endppoint may have a fully populated protocol or maybe just an protocol name.
    * One of the endpointProfiles may have an protocol defined.
    */
-  def processProtocol(profiles: List[EndpointType], path: File, benchmark: Boolean): (String, List[Model.ConfigFile.Builder]) = {
-
+  def findProtocol(profiles: List[EndpointType]): Protocol = {
     val endpointName = profiles.last.getName
+
     // Walk the endpointTypes backwards to find the first protocol element
     val protocol: Protocol = profiles.reverse.find(_.isSetProtocol) match {
       case Some(endpoint) => endpoint.getProtocol
@@ -205,26 +215,18 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
           case _ => throw new IllegalArgumentException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify a protocol.")
         }
     }
-
     if (!protocol.isSetName)
       throw new IllegalArgumentException("Endpoint '" + endpointName + "' has a protocol element without a name attribute (ex: <protocol name=\"benchmark\"/>).")
-    var name = protocol.getName
 
-    // if -benchmark on the command line, force all protocols to benchmark
-    if (benchmark)
-      name = "benchmark"
-
-    val configFiles: List[Model.ConfigFile.Builder] = name match {
-      case "benchmark" =>
-        List[Model.ConfigFile.Builder]()
-      case _ =>
-        val cfs = protocol.getConfigFile.toList.map(toConfigFile(path, _).build)
-        cfs.foreach(cf => client.put(cf))
-        cfs.map(_.toBuilder)
-    }
-
-    (name, configFiles)
+    protocol
   }
+
+  def processConfigFiles(protocol: Protocol, path: File): List[Model.ConfigFile.Builder] = {
+    val cfs = protocol.getConfigFile.toList.map(toConfigFile(path, _).build)
+    cfs.foreach(cf => client.put(cf))
+    cfs.map(_.toBuilder)
+  }
+
 
   /**
    * The endpoint may have an interface via:
@@ -585,7 +587,8 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
   def createSimulatorMapping(
     name: String,
     controls: HashMap[String, Control],
-    points: HashMap[String, PointType]): Model.ConfigFile.Builder = {
+    points: HashMap[String, PointType],
+    delay: Option[Int]): Model.ConfigFile.Builder = {
 
     val controlProtos = for ((key, value) <- controls) yield toCommandSim(key, value).build
     val pointProtos = for ((key, value) <- points) yield toMeasSim(key, value).build
@@ -593,7 +596,7 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     val simMap = SimMapping.SimulatorMapping.newBuilder
 
     simMap.setBatchSize(10)
-    simMap.setDelay(500)
+    simMap.setDelay(delay getOrElse 500)
 
     simMap.addAllMeasurements(pointProtos.toList)
     simMap.addAllCommands(controlProtos.toList)

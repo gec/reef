@@ -26,12 +26,17 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="configFile" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element ref="simOptions" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
   </xs:element>
 
-
+  <xs:element name="simOptions">
+      <xs:complexType>
+          <xs:attribute name="delay" type="xs:unsignedShort" use="optional"/>
+      </xs:complexType>
+  </xs:element>
 
   <!-- ___________________ Controls ___________________ -->
 
