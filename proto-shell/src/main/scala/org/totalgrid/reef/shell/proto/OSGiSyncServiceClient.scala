@@ -22,10 +22,12 @@ package org.totalgrid.reef.shell.proto
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.messaging.{ ServiceClient, SyncServiceClient }
-import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ProtoServiceable, ServicesList, RequestEnv }
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.client.{ ServiceClient, SyncServiceClient }
+import org.totalgrid.reef.protoapi.RequestEnv
+
+import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ServicesList }
 import org.totalgrid.reef.messaging.javabridge.ProtoDescriptor
-import org.totalgrid.reef.messaging.ProtoServiceTypes.Response
 
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._

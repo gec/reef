@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.protoapi
 
 import org.totalgrid.reef.proto.Envelope
 
@@ -28,7 +28,7 @@ object ProtoServiceTypes {
 
   type TypedResponseCallback[T] = (Option[Response[T]]) => Unit
 
-  /* ---- Case classes that make the service api easier to use ---- */
+  /* ---- Case classes that make the service protoapi easier to use ---- */
 
   case class Request[T](verb: Envelope.Verb, payload: T, env: RequestEnv)
 

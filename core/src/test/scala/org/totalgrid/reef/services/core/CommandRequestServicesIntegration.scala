@@ -38,7 +38,7 @@ import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 import Envelope._
-import org.totalgrid.reef.messaging.{ RequestEnv, ProtoServiceException }
+import org.totalgrid.reef.protoapi.RequestEnv
 import scala.collection.mutable
 import org.totalgrid.reef.services.{ ServiceEventPublisherMap, ServiceSubscriptionHandler, ServiceResponseTestingHelpers, SilentEventPublishers }
 

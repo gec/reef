@@ -20,37 +20,25 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.models._
-import org.totalgrid.reef.services.core._
-
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.reactor.mock.InstantReactor
-import org.totalgrid.reef.proto.ProcessStatus._
-
-import org.totalgrid.reef.proto.Envelope
-import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry, ServicesList }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
 
 import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.Model.{ Point => PointProto }
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler, ServiceEventPublisherRegistry, ProtoServiceEndpoint }
+import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.util.BlockingQueue
 
-import org.totalgrid.reef.messaging.{ RequestEnv, ServiceHandlerHeaders }
-import ServiceHandlerHeaders._
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
+import ProtoServiceTypes.Event
+
+//implicits
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.squeryl.PrimitiveTypeMode._
+
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class PointServiceIntegrationTest extends EndpointRelatedTestBase {

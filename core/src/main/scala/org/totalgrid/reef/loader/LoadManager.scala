@@ -26,13 +26,14 @@ import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
-import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager, Lifecycle }
+import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.loader.equipment.EquipmentModel
-import org.totalgrid.reef.loader.communications.CommunicationsModel
 
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders._
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv }
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.totalgrid.reef.protoapi.client.SyncServiceClient
+
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.{ File, FileReader }
 import org.totalgrid.reef.util.Logging

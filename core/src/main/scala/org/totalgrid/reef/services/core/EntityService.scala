@@ -20,26 +20,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
-import org.totalgrid.reef.models.{ ApplicationSchema }
-import org.totalgrid.reef.messaging.{ ProtoServiceable, ProtoServiceException, RequestEnv }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
+import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoServiceEndpoint
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.ProtoServiceException
 
-import OptionalProtos._ // implicit proto properties
-import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
 class EntityService extends ProtoServiceable[EntityProto] with ProtoServiceEndpoint {

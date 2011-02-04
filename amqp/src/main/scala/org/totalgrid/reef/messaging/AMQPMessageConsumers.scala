@@ -23,7 +23,9 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ProtoServiceTypes, RequestEnv }
+
+import ProtoServiceTypes._
 
 object AMQPMessageConsumers extends Logging {
 

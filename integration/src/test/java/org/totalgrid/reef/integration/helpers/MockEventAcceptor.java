@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes.*;
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
 import org.totalgrid.reef.messaging.javabridge.*;
 
 public class MockEventAcceptor<T> implements EventAcceptor<T> {

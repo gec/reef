@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.messaging
 
-//import scala.actors.{ Future, TIMEOUT }
-
 import org.totalgrid.reef.proto.Envelope._
 
 /** trait used to present a simple interface to a request/reply interface as a 

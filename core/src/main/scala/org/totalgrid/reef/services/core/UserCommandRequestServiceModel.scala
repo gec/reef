@@ -23,16 +23,14 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.proto.Commands.{ CommandResponse, CommandAccess }
+import org.totalgrid.reef.proto.Commands.CommandAccess
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
-import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
-import com.google.protobuf.GeneratedMessage
-import CommandAccess._
+import org.totalgrid.reef.models.{ UserCommandModel }
+
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
 
 import OptionalProtos._

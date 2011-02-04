@@ -20,39 +20,15 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ ApplicationSchema }
-import org.totalgrid.reef.messaging.{ ProtoServiceable, ProtoServiceException, RequestEnv }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
+import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.messaging.ProtoServiceable
 import org.totalgrid.reef.services.ProtoServiceEndpoint
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.squeryl.PrimitiveTypeMode._
-//import org.squeryl.Table
-//import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
-import OptionalProtos._ // implicit proto properties
-import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
-import scala.collection.JavaConversions._
-
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-//import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
-
-import scala.collection.mutable.HashMap
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.loader.LoadManager
-import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.loader.equipment.EquipmentModel
-import org.totalgrid.reef.loader.communications.CommunicationsModel
-import org.totalgrid.reef.proto.Model.{ ConfigFile, Entity, Relationship, EntityEdge, Point, Command }
-//import org.totalgrid.reef.services.core.{ EntityService, EntityEdgeService }
+import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.proto.Model.ConfigFile
 
 class ConfigService(protected val entityService: EntityService, protected val entityEdgetService: EntityEdgeService)
     extends ProtoServiceable[ConfigFile] with ProtoServiceEndpoint {
@@ -60,7 +36,6 @@ class ConfigService(protected val entityService: EntityService, protected val en
   def deserialize(bytes: Array[Byte]) = ConfigFile.parseFrom(bytes)
   val servedProto: Class[_] = classOf[ConfigFile]
 
-  //override def put(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = noVerb("put")
   override def delete(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = noVerb("delete")
   override def post(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = noVerb("post")
   override def get(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = noVerb("get")

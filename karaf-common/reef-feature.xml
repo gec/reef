@@ -8,6 +8,7 @@
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-amqp/0.1.1</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-proto/0.1.1</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-xml/0.1.1</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-proto-api/0.1.1</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/0.1.1</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-postgresql/0.1.1</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-api/0.1.1</bundle>

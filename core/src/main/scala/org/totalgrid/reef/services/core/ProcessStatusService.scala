@@ -29,17 +29,16 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
+// Implicits
 import OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.squeryl.PrimitiveTypeMode._
 
 class ProcessStatusService(protected val modelTrans: ServiceTransactable[ProcessStatusServiceModel])
     extends BasicProtoService[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel] {

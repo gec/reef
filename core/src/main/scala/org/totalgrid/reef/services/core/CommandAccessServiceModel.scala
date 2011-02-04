@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => Acce
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
 import OptionalProtos._
 

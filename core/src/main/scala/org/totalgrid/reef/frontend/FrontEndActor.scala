@@ -22,19 +22,17 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
-import org.totalgrid.reef.app.{ ServiceHandler, ServiceContext }
+import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-import org.totalgrid.reef.proto.{ Envelope, FEP, Commands }
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ SingleResponse, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto, FrontEndProcessor }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
-import scala.collection.immutable
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified

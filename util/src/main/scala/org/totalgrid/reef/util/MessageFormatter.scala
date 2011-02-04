@@ -21,10 +21,6 @@
 package org.totalgrid.reef.util
 
 import org.totalgrid.reef.proto.Utils
-//import org.totalgrid.reef.services.core.OptionalProtos._
-import com.google.protobuf.ByteString
-import scala.collection.mutable.HashMap
-import scala.collection.JavaConversions._ // toList
 
 /**
  *

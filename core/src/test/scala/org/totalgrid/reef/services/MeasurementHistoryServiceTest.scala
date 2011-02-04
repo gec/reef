@@ -32,7 +32,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.ProtoServiceTypes
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1

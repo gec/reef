@@ -21,8 +21,8 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceException }
-import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Processing._
 
 import org.scalatest.junit.JUnitRunner

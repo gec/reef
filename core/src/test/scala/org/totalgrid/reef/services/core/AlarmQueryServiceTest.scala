@@ -169,15 +169,11 @@ class AlarmQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
   }
 
   def testFailPutAlarmList(fixture: Fixture) {
-    import org.totalgrid.reef.messaging.ProtoServiceException
     import fixture._
     import EventType._
 
     val resp = service.put(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
     resp.status should equal(Envelope.Status.NOT_ALLOWED)
-    //intercept[ProtoServiceException] {
-    //  val resp = service.put(makeAL(0, 0, Scada.ControlExe, USER_ANY, ENTITY_ANY))
-    //}
   }
 
   def testSimpleQueries(fixture: Fixture) {

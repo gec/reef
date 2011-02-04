@@ -24,17 +24,10 @@ import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.ProtoServiceException
 
 import OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam

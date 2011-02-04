@@ -21,7 +21,10 @@
 package org.totalgrid.reef.messaging
 
 import javabridge.Subscription
-import ProtoServiceTypes._
+
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import ProtoServiceTypes.{ TypedResponseCallback, Event }
+import org.totalgrid.reef.protoapi.client.ServiceClient
 
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage

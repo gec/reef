@@ -21,16 +21,14 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.proto.Commands.{ CommandResponse, CommandAccess }
-import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
-import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
-import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.proto.Commands.UserCommandRequest
+import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.models.UserCommandModel
+
 import CommandAccess._
 import BaseProtoService._
 
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
 
 class UserCommandRequestService(

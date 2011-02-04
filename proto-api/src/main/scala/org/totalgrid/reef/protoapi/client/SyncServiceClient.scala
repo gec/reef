@@ -18,10 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.protoapi.client
 
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.Envelope
+
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
 
 trait SyncServiceClient {
 

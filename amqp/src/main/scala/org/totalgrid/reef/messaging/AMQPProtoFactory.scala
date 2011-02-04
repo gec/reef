@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.ProtoServiceTypes._
 import com.google.protobuf.GeneratedMessage
 
 import javabridge.Subscription

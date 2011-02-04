@@ -22,7 +22,10 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.client.ServiceClient
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import ProtoServiceTypes.Event
+
 import org.totalgrid.reef.util.OneArgFunc
 
 /** functions for working with named queues and exchanges rather than 'well known' exchanges queues */

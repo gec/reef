@@ -22,7 +22,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Envelope._
-import org.totalgrid.reef.messaging.{ ProtoServiceException, RequestEnv, ServiceRequestHandler }
+import org.totalgrid.reef.messaging.ServiceRequestHandler
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
 
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }

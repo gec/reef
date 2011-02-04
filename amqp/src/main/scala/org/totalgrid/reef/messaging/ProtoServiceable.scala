@@ -23,12 +23,9 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ProtoServiceException, RequestEnv }
 
-class ProtoServiceException(val msg: String, val status: Envelope.Status = Envelope.Status.BAD_REQUEST) extends RuntimeException(msg) {
-  def getStatus = status
-  def getMsg = msg
-}
+import ProtoServiceTypes.Response
 
 object ServiceRequestHandler {
   /**

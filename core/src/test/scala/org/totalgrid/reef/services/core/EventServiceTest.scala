@@ -26,19 +26,14 @@ import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.util._
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-import org.totalgrid.reef.messaging.{ ProtoServiceException, RequestEnv, ServiceRequestHandler }
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
+import org.totalgrid.reef.messaging.ServiceRequestHandler
 
 import org.totalgrid.reef.models._
 
@@ -47,8 +42,13 @@ import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
 import org.totalgrid.reef.services.SilentEventPublishers
 
+import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
+
 @RunWith(classOf[JUnitRunner])
-class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll { // with RunTestsInsideTransaction {
+class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
   val ALARM = EventConfig.Designation.ALARM.getNumber
   val EVENT = EventConfig.Designation.EVENT.getNumber
   val LOG = EventConfig.Designation.LOG.getNumber

@@ -22,12 +22,12 @@ package org.totalgrid.reef.loader
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
+import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.loader.equipment._
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.proto.Model.{ Entity, Relationship, EntityEdge, Point, Command }
+import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command }
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.messaging.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncServiceClient
 
 /**
  * EquipmentLoader loads the logical model.

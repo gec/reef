@@ -23,7 +23,7 @@ package org.totalgrid.reef.protocol.dnp3
 import scala.collection.mutable
 
 import org.totalgrid.reef.util.Logging
-//import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IResponseAcceptor, CommandResponse }
+
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
 /** Command adapter acts as a command response acceptor, forwarding translated responses to an actor

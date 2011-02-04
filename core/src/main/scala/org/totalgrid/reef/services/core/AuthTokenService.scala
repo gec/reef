@@ -20,8 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.ProtoServiceException
-import org.totalgrid.reef.proto.Envelope.Status
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Auth._

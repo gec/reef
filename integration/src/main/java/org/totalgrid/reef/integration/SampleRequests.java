@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.integration;
 
-import org.totalgrid.reef.messaging.ServiceClient;
+import org.totalgrid.reef.protoapi.client.ServiceClient;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Auth.*;
 import org.totalgrid.reef.proto.Commands.*;
@@ -33,7 +33,7 @@ import org.totalgrid.reef.messaging.javabridge.*;
 import java.util.List;
 import java.util.Random;
 
-import org.totalgrid.reef.messaging.ProtoServiceException;
+import org.totalgrid.reef.protoapi.ProtoServiceException;
 
 @SuppressWarnings("unchecked")
 public class SampleRequests {

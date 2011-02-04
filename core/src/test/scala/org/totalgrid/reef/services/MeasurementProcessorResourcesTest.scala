@@ -25,22 +25,19 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+//import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.squeryl.{ Schema, Table, KeyedEntity }
+//import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+//import org.totalgrid.reef.protoapi.ProtoServiceTypes._
 
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Processing._
-
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Model.Entity
+import org.totalgrid.reef.proto.Model.{ Point, Entity }
 
 import org.totalgrid.reef.services.core.EQ
 

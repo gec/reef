@@ -22,7 +22,8 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.messaging.{ RequestEnv, ServiceRequestHandler, ServiceHandlerHeaders }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.messaging.ServiceRequestHandler
 
 /**
  * simple interface used by service context to attach a service to the bus

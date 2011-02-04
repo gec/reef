@@ -29,7 +29,8 @@ import org.totalgrid.reef.reactor.Lifecycle
 import org.totalgrid.reef.messaging.ServicesList
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.{ ServiceRequestHandler, RequestEnv }
+import org.totalgrid.reef.messaging.ServiceRequestHandler
+import org.totalgrid.reef.protoapi.RequestEnv
 
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.proto.Envelope

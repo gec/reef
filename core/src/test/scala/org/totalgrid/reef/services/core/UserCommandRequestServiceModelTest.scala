@@ -38,7 +38,8 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel
 import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel, CommandBlockJoin }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
-import org.totalgrid.reef.messaging.ProtoServiceException
+
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest

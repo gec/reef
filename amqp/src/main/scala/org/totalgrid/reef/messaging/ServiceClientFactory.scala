@@ -21,7 +21,8 @@
 package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.messaging.ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.client.ServiceClient
 import javabridge.Subscription
 
 /**

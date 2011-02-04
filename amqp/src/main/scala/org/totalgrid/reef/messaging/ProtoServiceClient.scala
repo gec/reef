@@ -25,8 +25,12 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Envelope
-import ProtoSerializer.{ convertProtoToByteString }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import ProtoSerializer.convertProtoToByteString //implicit
+
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
+import org.totalgrid.reef.protoapi.client.ServiceClient
+
+import ProtoServiceTypes.{ TypedResponseCallback, Response }
 
 /** Wraps a regular AMQPProtoServiceClient, layering on machinery for serializing/deserializing
  *	the payload of the service envelope. 

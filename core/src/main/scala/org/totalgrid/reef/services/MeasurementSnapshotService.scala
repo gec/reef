@@ -22,10 +22,11 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.messaging.{ ProtoServiceable, RequestEnv }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
+import org.totalgrid.reef.messaging.ProtoServiceable
+import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementSnapshot }
+import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 
 import scala.collection.JavaConversions._
 

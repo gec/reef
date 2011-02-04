@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.proto.Auth.*;
 
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
-import org.totalgrid.reef.messaging.ProtoServiceException;
+import org.totalgrid.reef.protoapi.ProtoServiceException;
 
 public class TestAuthService extends JavaBridgeTestBase {
 	public TestAuthService() {

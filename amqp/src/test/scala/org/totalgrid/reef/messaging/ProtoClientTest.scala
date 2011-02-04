@@ -22,15 +22,18 @@ package org.totalgrid.reef.messaging
 
 import javabridge.Deserializers
 import org.totalgrid.reef.proto.{ Envelope, Example }
+
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import ProtoServiceTypes.Response
+
+import org.totalgrid.reef.messaging.mock._
+import org.totalgrid.reef.messaging.ServicesList.UnknownServiceException
+import com.google.protobuf.ByteString
+
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-
-import ProtoServiceTypes._
-import org.totalgrid.reef.messaging.mock._
-import org.totalgrid.reef.messaging.ServicesList.UnknownServiceException
-import com.google.protobuf.ByteString
 
 @RunWith(classOf[JUnitRunner])
 class ProtoClientTest extends FunSuite with ShouldMatchers {

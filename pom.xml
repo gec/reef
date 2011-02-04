@@ -17,6 +17,7 @@
     <modules>
         <module>scala-base</module>
         <module>proto</module>
+        <module>proto-api</module>
         <module>xml</module>
         <module>util</module>
         <module>amqp</module>

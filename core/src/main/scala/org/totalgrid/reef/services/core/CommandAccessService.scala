@@ -21,17 +21,13 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel }
-import org.totalgrid.reef.messaging.ProtoServiceException
-import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.models.{ CommandAccessModel => AccessModel }
+import org.totalgrid.reef.protoapi.ProtoServiceException
+
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
-import com.google.protobuf.GeneratedMessage
 
 import BaseProtoService._
 

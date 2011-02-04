@@ -20,10 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.squeryl.PrimitiveTypeMode._
@@ -31,8 +27,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.services.coordinators._
-//import org.totalgrid.reef.services.core._
+
 import org.totalgrid.reef.measproc.MeasurementStreamProcessingNode
 
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
@@ -42,17 +37,17 @@ import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Application._
 
-import scala.actors.Actor._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-
-import org.totalgrid.reef.messaging.{ BrokerObjectConsumerActor, AMQPProtoFactory, ProtoServiceException }
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.messaging.AMQPProtoFactory
 
 import org.totalgrid.reef.messaging.ServicesList
 import org.totalgrid.reef.util.SyncVar
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import scala.collection.JavaConversions._
+
+import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.matchers.ShouldMatchers
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
   override def beforeAll() {

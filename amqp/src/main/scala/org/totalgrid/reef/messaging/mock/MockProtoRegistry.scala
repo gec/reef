@@ -27,8 +27,11 @@ import com.google.protobuf.GeneratedMessage
 import scala.concurrent.{ MailBox, TIMEOUT }
 import scala.collection.immutable
 
-import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
+
+import org.totalgrid.reef.protoapi.client.ServiceClient
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import ProtoServiceTypes.{ TypedResponseCallback, Request, Response, Event }
 
 object MockProtoRegistry {
   val timeout = 5000

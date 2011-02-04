@@ -21,7 +21,8 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.{ ServiceRequestHandler, RequestEnv }
+import org.totalgrid.reef.messaging.ServiceRequestHandler
+import org.totalgrid.reef.protoapi.RequestEnv
 import org.totalgrid.reef.util._
 
 /// the metrics collected on any single service request

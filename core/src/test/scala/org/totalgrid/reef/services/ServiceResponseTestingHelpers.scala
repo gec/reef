@@ -21,18 +21,17 @@
 package org.totalgrid.reef.services
 
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.messaging.{ ServiceClient }
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-
+import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.proto.Envelope.Status
 
-import org.totalgrid.reef.messaging.{ RequestEnv, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
-import org.totalgrid.reef.messaging.ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
+import ProtoServiceTypes.{ Response, Event }
 import org.totalgrid.reef.util.SyncVar
 
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders._
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 object ServiceResponseTestingHelpers extends ShouldMatchers {
   implicit def checkResponse[T](resp: Response[T]): List[T] = {

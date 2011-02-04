@@ -18,10 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.protoapi.client
+
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, RequestEnv }
 
 import ProtoServiceTypes._
-import ServiceHandlerHeaders._
 
 import org.totalgrid.reef.util.{ Logging, Timing }
 import org.totalgrid.reef.proto.Envelope

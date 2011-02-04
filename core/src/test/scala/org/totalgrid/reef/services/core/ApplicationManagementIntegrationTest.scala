@@ -30,24 +30,19 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.services.core._
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.proto.ProcessStatus._
-
-import org.totalgrid.reef.proto.Envelope
-import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
-import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler, ServiceEventPublisherRegistry }
+import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
+import org.totalgrid.reef.services.ServiceEventPublisherRegistry
 
-import org.totalgrid.reef.messaging.{ RequestEnv, ServiceHandlerHeaders }
-import ServiceHandlerHeaders._
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
+import ProtoServiceTypes.Event
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {

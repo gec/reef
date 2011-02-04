@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.javabridge
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders
+import org.totalgrid.reef.protoapi.ServiceHandlerHeaders
 
 /**
  * Non-Thread-Safe factory class to provide service clients to a single thread. The clients

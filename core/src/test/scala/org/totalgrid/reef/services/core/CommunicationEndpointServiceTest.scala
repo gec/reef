@@ -20,13 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-import org.totalgrid.reef.messaging.ProtoServiceException
-
-//import org.totalgrid.reef.models.RunTestsInsideTransaction
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -41,6 +35,9 @@ import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Model._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
+
+import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.matchers.ShouldMatchers
 
 class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
   override def beforeAll() {

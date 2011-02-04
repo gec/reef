@@ -22,21 +22,18 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
-import org.totalgrid.reef.messaging.{ ProtoServiceable, ProtoServiceException, RequestEnv }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
+import ProtoServiceTypes.Response
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoServiceEndpoint
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
-import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoRoutingKeys
 
+import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
+
+import org.squeryl.PrimitiveTypeMode._
 import OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
@@ -44,7 +41,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
+import org.squeryl.dsl.ast.LogicalBoolean
 
 object EventQueryService {
 

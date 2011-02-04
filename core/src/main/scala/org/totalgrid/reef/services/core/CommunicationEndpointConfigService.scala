@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfgProto, EndpointOwnership, Port }
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ConfigFile }

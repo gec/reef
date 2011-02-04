@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.protoapi
 
 /**
  * This class wraps the headers we send/receive in the service envelope with helper
@@ -96,5 +96,5 @@ class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
 }
 
 object ServiceHandlerHeaders {
-  implicit def toServiceHeaders(e: RequestEnv) = new ServiceHandlerHeaders(e)
+  implicit def convertRequestEnvToServiceHeaders(e: RequestEnv) = new ServiceHandlerHeaders(e)
 }

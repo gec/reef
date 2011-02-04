@@ -25,9 +25,10 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ProtoServiceTypes, RequestEnv }
+import ProtoServiceTypes.{ Failure, SingleResponse }
 
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders._
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._

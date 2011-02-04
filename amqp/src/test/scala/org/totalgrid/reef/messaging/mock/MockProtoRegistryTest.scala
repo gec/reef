@@ -28,10 +28,10 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.Timer
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, ProtoServiceException }
 
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders._
+import ProtoServiceTypes.Response
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])
 class MockProtoRegistryTest extends FunSuite with ShouldMatchers {

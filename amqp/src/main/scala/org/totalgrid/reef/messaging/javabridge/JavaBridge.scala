@@ -23,11 +23,10 @@ package org.totalgrid.reef.messaging.javabridge
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.sync._
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import scala.collection.JavaConversions._
+//import scala.collection.JavaConversions._
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs

@@ -20,13 +20,8 @@
  */
 package org.totalgrid.reef.app
 
-import org.scalatest.Suite
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-
-import org.totalgrid.reef.messaging.{ ServiceClient, ProtoRegistry }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.messaging.ProtoRegistry
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.MockProtoRegistry
 import org.totalgrid.reef.proto.{ Processing, Envelope }
 import org.totalgrid.reef.proto.Model.Point
@@ -36,7 +31,7 @@ import Processing._
 import org.totalgrid.reef.reactor.ReactActor
 import scala.concurrent.MailBox
 
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders._
+import org.totalgrid.reef.protoapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 class ServiceHandlerMock(registry: ProtoRegistry, retryMS: Long) {
 
@@ -51,8 +46,12 @@ class ServiceHandlerMock(registry: ProtoRegistry, retryMS: Long) {
 
   def onResponse(result: List[MeasOverride]) = box.send(result)
   def onEvent(event: Envelope.Event, result: MeasOverride) = box.send((event, result))
-
 }
+import org.scalatest.Suite
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
+
 @RunWith(classOf[JUnitRunner])
 class ServiceHandlerTest extends Suite with ShouldMatchers {
 

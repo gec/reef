@@ -24,7 +24,7 @@ import org.totalgrid.reef.services.framework.ServiceTransactable
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.services.ProtoServiceCoordinator
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.proto.Events.Event

@@ -30,7 +30,8 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import scala.concurrent.MailBox
 
-import ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
+import ProtoServiceTypes.Response
 import org.totalgrid.reef.messaging.mock._
 
 import org.totalgrid.reef.util.Conversion.convertIntToTimes

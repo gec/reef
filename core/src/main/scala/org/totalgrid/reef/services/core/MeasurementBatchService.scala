@@ -22,8 +22,9 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceable, RequestEnv, ProtoServiceException }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceable }
+import ProtoServiceTypes.Response
 import org.totalgrid.reef.services.ProtoServiceEndpoint
 
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }

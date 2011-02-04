@@ -21,7 +21,6 @@
 package org.totalgrid.reef.protocol.dnp3
 
 import org.totalgrid.reef.util.Logging
-//import org.totalgrid.reef.protocol.dnp3.{ IDataObserver, Binary, Analog, Counter, ControlStatus, SetpointStatus }
 
 import org.totalgrid.reef.proto.Mapping
 import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }

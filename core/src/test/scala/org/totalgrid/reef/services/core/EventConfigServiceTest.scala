@@ -29,18 +29,12 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
 
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
-import org.totalgrid.reef.event.EventType.eventTypeToString
-import org.totalgrid.reef.event.SilentEventLogPublisher
 import org.totalgrid.reef.services.SilentEventPublishers
 
 @RunWith(classOf[JUnitRunner])

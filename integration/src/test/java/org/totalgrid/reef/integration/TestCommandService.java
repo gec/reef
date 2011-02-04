@@ -28,8 +28,8 @@ import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;
 import java.util.List;
 
-import org.totalgrid.reef.messaging.ProtoServiceTypes.*;
-import org.totalgrid.reef.messaging.ProtoServiceException;
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
+import org.totalgrid.reef.protoapi.ProtoServiceException;
 
 import org.totalgrid.reef.integration.helpers.*;
 import org.totalgrid.reef.messaging.javabridge.*;

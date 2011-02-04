@@ -30,15 +30,10 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
 import org.totalgrid.reef.proto.Model.{ Point => PointProto }
-//import org.totalgrid.reef.models.{ DbConnector, DbInfo, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-
-import org.totalgrid.reef.messaging.BrokerObjectConsumer
-import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {

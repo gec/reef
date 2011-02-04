@@ -47,7 +47,7 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-util</artifactId>
+            <artifactId>reef-proto-api</artifactId>
             <version>0.1.1</version>
             <scope>compile</scope>
         </dependency>

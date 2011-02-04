@@ -21,10 +21,11 @@
 package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
-//import org.totalgrid.reef.models.ModelWithId
+
 import org.totalgrid.reef.services.ProtoServiceEndpoint
-import org.totalgrid.reef.messaging.{ ProtoServiceable, ProtoServiceException, RequestEnv }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._

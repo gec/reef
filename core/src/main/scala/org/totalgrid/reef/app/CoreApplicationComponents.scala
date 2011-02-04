@@ -20,9 +20,7 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.BusTiedEventLogPublisher
-import org.totalgrid.reef.metrics.{ CurrentMetricsValueHolder, NonOpMetricPublisher }
 
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.metrics.{ NonOpMetricPublisher, NonOperationalDataPublisher }
@@ -31,7 +29,9 @@ import org.totalgrid.reef.messaging.{ ServicesList, RoutingKeys }
 
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.reactor.{ ReactActor, PeriodicReactor }
-import org.totalgrid.reef.messaging.{ RoutingKeys, AMQPProtoFactory, AMQPProtoRegistry, RequestEnv }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
+
+import org.totalgrid.reef.protoapi.RequestEnv
 
 /**
  * wraps up all of the common/core components used by bus enabled applications, most of these components get a key

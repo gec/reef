@@ -21,12 +21,10 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.proto.{ FEP, Commands, Measurements }
+import org.totalgrid.reef.proto.{ Commands, Measurements }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
-import org.totalgrid.reef.messaging.{ ProtoRegistry, ServiceClient }
-
-import org.totalgrid.reef.app.ServiceHandler
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.messaging.ProtoRegistry
+import org.totalgrid.reef.protoapi.client.ServiceClient
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified

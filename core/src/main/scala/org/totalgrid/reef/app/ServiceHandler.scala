@@ -24,11 +24,14 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.util.{ Timer, Logging }
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.{ ServiceClient, ProtoRegistry }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.client.ServiceClient
 
-import org.totalgrid.reef.messaging.{ RequestEnv, ServiceHandlerHeaders }
-import ServiceHandlerHeaders._
+import org.totalgrid.reef.messaging.ProtoRegistry
+
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
+import ProtoServiceTypes.{ Failure, MultiResponse, Event }
+
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders //implicit
 
 object ServiceHandler {
 

@@ -23,8 +23,8 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.app.{ CoreApplicationComponents, ApplicationEnroller }
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
-import org.totalgrid.reef.messaging.RequestEnv
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders._
+import org.totalgrid.reef.protoapi.RequestEnv
+import org.totalgrid.reef.protoapi.ServiceHandlerHeaders._
 
 import org.totalgrid.reef.proto.FEP.FrontEndProcessor
 

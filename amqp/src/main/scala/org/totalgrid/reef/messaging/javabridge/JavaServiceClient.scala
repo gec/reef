@@ -20,12 +20,13 @@
  */
 package org.totalgrid.reef.messaging.javabridge
 
-import org.totalgrid.reef.messaging.sync._
 import org.totalgrid.reef.proto.Envelope
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging._
 import com.google.protobuf.GeneratedMessage
+
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv }
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists

@@ -28,9 +28,11 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.mock.MockBrokerInterface
 import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.messaging.mock.MockBrokerInterface
 import org.totalgrid.reef.messaging.ServicesList.UnknownServiceException
+
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 @RunWith(classOf[JUnitRunner])
 class AMQPProtoServiceRegistryTest extends Suite with ShouldMatchers {

@@ -22,8 +22,10 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.proto.Envelope.Status
 
-import org.totalgrid.reef.messaging.{ ProtoServiceable, RequestEnv, ProtoServiceException }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
+import ProtoServiceTypes.Response
+
+import org.totalgrid.reef.messaging.ProtoServiceable
 
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 

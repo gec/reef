@@ -21,8 +21,8 @@
 package org.totalgrid.reef.messaging.javabridge
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-import org.totalgrid.reef.messaging.ServiceHandlerHeaders
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ Event }
+import org.totalgrid.reef.protoapi.ServiceHandlerHeaders
 import com.google.protobuf.{ GeneratedMessage, ByteString, InvalidProtocolBufferException }
 
 /**

@@ -21,21 +21,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.proto.Utils.AttributeList
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
-import org.totalgrid.reef.util.{ Logging, MessageFormatter }
+
+import org.totalgrid.reef.util.MessageFormatter
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import BaseProtoService._
 

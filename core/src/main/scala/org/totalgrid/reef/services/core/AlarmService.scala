@@ -33,7 +33,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.ProtoServiceException
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam

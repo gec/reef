@@ -21,12 +21,10 @@
 package org.totalgrid.reef.loader
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.HashMap
 import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.models.{ EventConfigStore }
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.messaging.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncServiceClient
 
 /**
  * Load the message configuration for alarms, events, and logs.

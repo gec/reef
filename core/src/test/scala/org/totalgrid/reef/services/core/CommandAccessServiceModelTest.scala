@@ -24,17 +24,15 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess => AccessProto }
-import org.totalgrid.reef.messaging.{ ProtoServiceException, ServiceClient }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
+
+import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.protoapi.ProtoServiceException
+
 import org.totalgrid.reef.models.{ ApplicationSchema, Command, CommandAccessModel }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction
-import org.totalgrid.reef.services.framework._
+
 import org.totalgrid.reef.services.SilentServiceSubscriptionHandler
 
 trait CommandTestRig {

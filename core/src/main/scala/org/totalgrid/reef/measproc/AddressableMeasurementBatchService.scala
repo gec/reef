@@ -22,11 +22,12 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceable, RequestEnv, ProtoServiceException }
-import org.totalgrid.reef.messaging.ProtoServiceTypes._
-import org.totalgrid.reef.services.ProtoServiceEndpoint
+import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
+import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
+import org.totalgrid.reef.services.ProtoServiceEndpoint
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 class AddressableMeasurementBatchService(measProc: ProcessingNode) extends ProtoServiceable[MeasurementBatch] with ProtoServiceEndpoint {
 

@@ -20,6 +20,11 @@
  */
 package org.totalgrid.reef.services.core
 
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.protoapi.client.ServiceClient
+
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying
  * to update the same summary values it is easiest conceptually to split apart the inital value calcualtion
@@ -60,10 +65,6 @@ class SilentSummaryPoints(onPublish: (String, Int) => Any = (x, y) => {}) extend
    */
   def getMap(): Map[String, Int] = currentValues.map { case (n, c) => n -> (c.increments + c.initialValue) }
 }
-
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.proto.Measurements
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 
 /**
  * base trait for summary point publishes that holds the initial value and # of increments for each point  
@@ -206,7 +207,6 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
    */
   case class LastAttempt(var nextTime: Long, var success: Boolean)
 
-  import org.totalgrid.reef.messaging.ServiceClient
   private def publishMeasurement(client: ServiceClient, lastAttempt: LastAttempt)(mb: Measurements.MeasurementBatch) {
     val now = System.currentTimeMillis
     if (!lastAttempt.success && now < lastAttempt.nextTime) {
