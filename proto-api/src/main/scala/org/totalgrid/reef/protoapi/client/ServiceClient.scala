@@ -52,7 +52,7 @@ trait ServiceClient extends SyncServiceClient with Logging {
 
   /** All other request functions boil down to using this on in some way
    */
-  def request[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv, callback: TypedResponseCallback[T])
+  def request[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv, callback: Option[Response[T]] => Unit)
 
   /** The default request headers */
   var defaultEnv: Option[RequestEnv] = None

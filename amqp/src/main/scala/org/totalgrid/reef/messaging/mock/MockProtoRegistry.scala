@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
 import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ TypedResponseCallback, Request, Response, Event }
+import ProtoServiceTypes.{ Request, Response, Event }
 
 object MockProtoRegistry {
   val timeout = 5000
@@ -43,7 +43,7 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
 
   def this() = this(MockProtoRegistry.timeout)
 
-  case class Req(callback: TypedResponseCallback[T], req: Request[T])
+  case class Req(callback: Option[Response[T]] => Unit, req: Request[T])
 
   private val in = new MailBox
 

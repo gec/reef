@@ -26,8 +26,6 @@ import org.totalgrid.reef.proto.Envelope
  */
 object ProtoServiceTypes {
 
-  type TypedResponseCallback[T] = (Option[Response[T]]) => Unit
-
   /* ---- Case classes that make the service protoapi easier to use ---- */
 
   case class Request[T](verb: Envelope.Verb, payload: T, env: RequestEnv)

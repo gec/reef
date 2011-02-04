@@ -30,7 +30,7 @@ import ProtoSerializer.convertProtoToByteString //implicit
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 
-import ProtoServiceTypes.{ TypedResponseCallback, Response }
+import ProtoServiceTypes.Response
 
 /** Wraps a regular AMQPProtoServiceClient, layering on machinery for serializing/deserializing
  *	the payload of the service envelope. 
@@ -39,8 +39,8 @@ import ProtoServiceTypes.{ TypedResponseCallback, Response }
  *	@param	timeoutms		The reply timeout in milliseconds
  *	@param 	deserialize 	Function that deserializes the proto (typically parseFrom) 
  */
-class ProtoServiceClient[T <: GeneratedMessage](
-  deserialize: Array[Byte] => T,
+class ProtoServiceClient[A <: GeneratedMessage](
+  deserialize: Array[Byte] => A,
   exchange: String,
   key: String,
   correlator: ServiceResponseCorrelator)
@@ -53,20 +53,20 @@ class ProtoServiceClient[T <: GeneratedMessage](
    * 	@param 	subscribe_queue	Subscribe queue name (onyl valid for verb=Subscribe)
    *	@return					Blocking function for getting the response (a future)
    */
-  def request[A <: GeneratedMessage](verb: Envelope.Verb, payloadA: A, env: RequestEnv, callbackA: TypedResponseCallback[A]) {
+  def request[B <: GeneratedMessage](verb: Envelope.Verb, payload: B, env: RequestEnv, callback: Option[Response[B]] => Unit) {
     // TODO: get rid of these casts
-    val payload = payloadA.asInstanceOf[T] // will explode if type is wrong
-    val callback = callbackA.asInstanceOf[(Option[Response[T]]) => Unit]
+    val payloadA = payload.asInstanceOf[A] // will explode if type is wrong
+    val callbackA = callback.asInstanceOf[(Option[Response[A]]) => Unit]
 
-    val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(payload)
+    val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(payloadA)
 
     val sendEnv = if (defaultEnv.isDefined) env.merge(defaultEnv.get) else env
     sendEnv.asKeyValueList.foreach(kv => request.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
 
-    send(request, callback)
+    send(request, callbackA)
   }
 
-  private def send(request: Envelope.ServiceRequest.Builder, callback: TypedResponseCallback[T]) = {
+  private def send(request: Envelope.ServiceRequest.Builder, callback: Option[Response[A]] => Unit) = {
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {
       val result = resp match {

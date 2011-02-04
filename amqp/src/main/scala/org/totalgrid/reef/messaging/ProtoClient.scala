@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging
 import javabridge.Subscription
 
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ TypedResponseCallback, Event }
+import ProtoServiceTypes.{ Event, Response }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 
 import org.totalgrid.reef.proto.Envelope
@@ -54,8 +54,8 @@ class ProtoClient(
     }
   }
 
-  def request[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv, callback: TypedResponseCallback[T]) {
-    val client = getClient[T](payload.getClass())
+  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv, callback: Option[Response[A]] => Unit) {
+    val client = getClient[A](payload.getClass())
 
     client.request(verb, payload, env, callback)
   }
