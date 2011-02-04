@@ -86,8 +86,8 @@ public class TestEntityService extends JavaBridgeTestBase {
 		Entity request = Entity.newBuilder().addTypes("Substation").build();
 		Map<String, Entity> map = getEntityMap(client.get(request));
 		assertEquals(2, map.size());
-		assertTrue(map.containsKey("Apex"));
-		assertTrue(map.containsKey("Pittsboro"));
+		assertTrue(map.containsKey("Substation01"));
+		assertTrue(map.containsKey("Substation02"));
 	}
 
 	/**
@@ -191,7 +191,6 @@ public class TestEntityService extends JavaBridgeTestBase {
 
 		// the canonical model has these equipment types in each substation
 		assertTrue(equipTypes.contains("Breaker"));
-		assertTrue(equipTypes.contains("Bus"));
 		assertTrue(equipTypes.contains("Line"));
 
 	}

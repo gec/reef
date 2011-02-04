@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  profile and statusProfile
+-->
+<configuration version="1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               targetNamespace="configuration.loader.reef"
+               xmlns="configuration.loader.reef.totalgrid.org"
+               xmlns:eq="equipment.loader.reef.totalgrid.org"
+               xmlns:cm="communications.loader.reef.totalgrid.org"
+               xsi:noNamespaceSchemaLocation="configuration.xsd">
+
+
+    <actionModel>
+
+        <actionSet name="Nominal">
+            <rising>
+                <message name="Scada.OutOfNominal"/>
+            </rising>
+            <high>
+                <setAbnormal/>
+            </high>
+        </actionSet>
+
+    </actionModel>
+
+
+    <eq:equipmentModel>
+
+        <eq:profiles>
+
+            <eq:pointProfile name="NormallyFalseAlarmed">
+                <eq:unexpected booleanValue="true" actionSet="Nominal"/>
+            </eq:pointProfile>
+            <eq:pointProfile name="NormallyTrueAlarmed">
+                <eq:unexpected booleanValue="false" actionSet="Nominal"/>
+            </eq:pointProfile>
+
+
+            <eq:equipmentProfile name="Substation">
+                <eq:type name="Substation"/>
+                <eq:type name="EquipmentGroup"/>
+            </eq:equipmentProfile>
+
+            <eq:equipmentProfile name="MockBreaker">
+                <eq:type name="Breaker"/>
+                <eq:type name="Equipment"/>
+
+                <eq:control name="Trip"/>
+                <eq:control name="Close"/>
+
+                <eq:status name="Bkr" unit="status" pointProfile="NormallyTrueAlarmed">
+                    <eq:control name="Trip"/>
+                    <eq:control name="Close"/>
+                </eq:status>
+
+                <eq:status name="Tripped" unit="status" pointProfile="NormallyFalseAlarmed"/>
+            </eq:equipmentProfile>
+
+             <eq:equipmentProfile name="MockLine">
+                <eq:type name="Line"/>
+                <eq:type name="Equipment"/>
+                 <eq:analog name="Current" unit="A">
+                    <eq:range actionSet="Nominal" low="10" high="20" deadband="0.5"/>
+                </eq:analog>
+            </eq:equipmentProfile>
+
+        </eq:profiles>
+
+        <eq:equipment name="Substation01">
+            <eq:equipmentProfile name="Substation"/>
+            <eq:equipment name="Breaker01">
+                <eq:equipmentProfile name="MockBreaker"/>
+            </eq:equipment>
+            <eq:equipment name="Line01">
+                <eq:equipmentProfile name="MockLine"/>
+            </eq:equipment>
+        </eq:equipment>
+
+        <eq:equipment name="Substation02">
+            <eq:equipmentProfile name="Substation"/>
+            <eq:equipment name="Breaker02">
+                <eq:equipmentProfile name="MockBreaker"/>
+            </eq:equipment>
+            <eq:equipment name="Line02">
+                <eq:equipmentProfile name="MockLine"/>
+            </eq:equipment>
+        </eq:equipment>
+
+    </eq:equipmentModel>
+
+
+    <cm:communicationsModel>
+        <cm:endpoint name="Endpoint01">
+            <cm:type name="Endpoint"/>
+            <cm:protocol name="benchmark">
+                <cm:simOptions delay="0"/>
+            </cm:protocol>
+            <cm:equipment name="Substation01">
+                <cm:equipment name="Breaker01">
+                    <cm:status name="Bkr" index="0"/>
+                    <cm:status name="Tripped" index="1"/>
+                </cm:equipment>
+                <cm:equipment name="Line01">
+                    <cm:analog name="Current" index="0"/>
+                </cm:equipment>
+            </cm:equipment>
+        </cm:endpoint>
+        <cm:endpoint name="Endpoint02">
+            <cm:type name="Endpoint"/>
+            <cm:protocol name="benchmark">
+                <cm:simOptions delay="0"/>
+            </cm:protocol>
+            <cm:equipment name="Substation02">
+                <cm:equipment name="Breaker02">
+                    <cm:status name="Bkr" index="0"/>
+                    <cm:status name="Tripped" index="1"/>
+                </cm:equipment>
+                <cm:equipment name="Line02">
+                    <cm:analog name="Current" index="0"/>
+                </cm:equipment>
+            </cm:equipment>
+        </cm:endpoint>
+    </cm:communicationsModel>
+
+
+</configuration>

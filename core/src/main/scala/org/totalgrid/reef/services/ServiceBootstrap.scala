@@ -49,7 +49,7 @@ object ServiceBootstrap {
     // the measurement batch service acts as a type of manual FEP
     val msg = FrontEndProcessor.newBuilder
     msg.setAppConfig(appConfig)
-    msg.addProtocols("services")
+    msg.addProtocols("null")
     val fepService = new core.FrontEndProcessorService(modelFac.fep)
     fepService.put(msg.build)
 
