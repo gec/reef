@@ -226,7 +226,6 @@ class CommunicationsLoader(client: SyncServiceClient) extends Logging {
     cfs.map(_.toBuilder)
   }
 
-
   /**
    * The endpoint may have an interface via:
    *    - A fully populated interface in this endpoint (i.e. has all attributes)
