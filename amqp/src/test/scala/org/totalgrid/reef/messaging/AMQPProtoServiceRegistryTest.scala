@@ -49,7 +49,7 @@ class AMQPProtoServiceRegistryTest extends Suite with ShouldMatchers {
 
     val client = new ProtoClient(factory, 0, ServicesList.getServiceInfo(_, exchangeMap))
     intercept[ProtoServiceException] {
-      client.get_one(Example.Foo.newBuilder.build)
+      client.getOne(Example.Foo.newBuilder.build)
     }
   }
 
@@ -66,7 +66,7 @@ class AMQPProtoServiceRegistryTest extends Suite with ShouldMatchers {
 
     val client = new ProtoClient(factory, 0, ServicesList.getServiceInfo(_, exchangeMap))
     intercept[UnknownServiceException] {
-      client.get_one(Example.Foo.newBuilder.build)
+      client.getOne(Example.Foo.newBuilder.build)
     }
   }
 

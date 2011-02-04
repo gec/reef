@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.Alarms._
 class ActiveModelException(msg: String) extends Exception(msg)
 
 trait ActiveModel {
-  def has_one[T <: KeyedEntity[Long]](table: Table[T], id: Long): T = {
+  def hasOne[T <: KeyedEntity[Long]](table: Table[T], id: Long): T = {
     table.lookup(id) match {
       case Some(s) => s
       case None =>
@@ -40,22 +40,22 @@ trait ActiveModel {
     }
   }
 
-  def may_have_one[T <: KeyedEntity[Long]](table: Table[T], optId: Option[Long]): Option[T] = {
+  def mayHaveOne[T <: KeyedEntity[Long]](table: Table[T], optId: Option[Long]): Option[T] = {
     optId match {
       case Some(-1) => None
-      case Some(id) => Some(has_one(table, id))
+      case Some(id) => Some(hasOne(table, id))
       case None => None
     }
   }
 
-  def may_have_one[T](query: Query[T]): Option[T] = {
+  def mayHaveOne[T](query: Query[T]): Option[T] = {
     query.toList match {
       case List(x) => Some(x)
       case _ => None
     }
   }
 
-  def may_belong_to[T](query: Query[T]): Option[T] = {
+  def mayBelongTo[T](query: Query[T]): Option[T] = {
 
     query.size match {
       case 1 => Some(query.single)
@@ -63,11 +63,11 @@ trait ActiveModel {
     }
   }
 
-  def belong_to[T](query: Query[T]): T = {
+  def belongTo[T](query: Query[T]): T = {
 
     query.size match {
       case 1 => query.single
-      case _ => throw new ActiveModelException("Missing belong_to relation")
+      case _ => throw new ActiveModelException("Missing belongTo relation")
     }
   }
 }
@@ -81,7 +81,7 @@ case class ApplicationCapability(
     val applicationId: Long,
     val capability: String) extends ModelWithId {
 
-  val application = LazyVar(has_one(ApplicationSchema.apps, applicationId))
+  val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
 case class ApplicationInstance(
@@ -90,7 +90,7 @@ case class ApplicationInstance(
     var location: String,
     var network: String) extends ModelWithId {
 
-  val heartbeat = LazyVar(belong_to(ApplicationSchema.heartbeats.where(p => p.applicationId === id)))
+  val heartbeat = LazyVar(belongTo(ApplicationSchema.heartbeats.where(p => p.applicationId === id)))
 
   val capabilities = LazyVar(ApplicationSchema.capabilities.where(p => p.applicationId === id))
 }
@@ -102,7 +102,7 @@ class HeartbeatStatus(
     var isOnline: Boolean,
     val processId: String) extends ModelWithId {
 
-  val application = LazyVar(has_one(ApplicationSchema.apps, applicationId))
+  val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 
   val instanceName = LazyVar(application.value.instanceName)
 }
@@ -111,7 +111,7 @@ case class CommunicationProtocolApplicationInstance(
     val protocol: String,
     val applicationId: Long) extends ModelWithId {
 
-  val application = LazyVar(has_one(ApplicationSchema.apps, applicationId))
+  val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
 case class Point(
@@ -121,9 +121,9 @@ case class Point(
 
   def this(n: String, entityId: Long) = this(n, entityId, false)
 
-  val entity = LazyVar(has_one(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
 
-  val logicalNode = LazyVar(may_have_one(EQ.getParentOfType(entityId, "source", "LogicalNode")))
+  val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 
   val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
@@ -148,9 +148,9 @@ case class Command(
   def this() = this("", 0, false, Some(0), Some(0))
   def this(name: String, entityId: Long) = this(name, entityId, false, None, None)
 
-  val entity = LazyVar(has_one(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
 
-  val logicalNode = LazyVar(may_have_one(EQ.getParentOfType(entityId, "source", "LogicalNode")))
+  val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 
   val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
@@ -167,7 +167,7 @@ case class FrontEndAssignment(
 
   def this() = this(0, Some(""), Some(0), Some(0), Some(0), Some(0))
 
-  val application = LazyVar(may_have_one(ApplicationSchema.apps, applicationId))
+  val application = LazyVar(mayHaveOne(ApplicationSchema.apps, applicationId))
   val endpoint = LazyVar(ApplicationSchema.endpoints.where(p => p.id === endpointId).headOption)
 
   def online = onlineTime.isDefined
@@ -181,7 +181,7 @@ case class MeasProcAssignment(
 
   def this() = this(0, Some(""), Some(0), Some(0))
 
-  val application = LazyVar(may_have_one(ApplicationSchema.apps, applicationId))
+  val application = LazyVar(mayHaveOne(ApplicationSchema.apps, applicationId))
   val endpoint = LazyVar(ApplicationSchema.endpoints.where(p => p.id === endpointId).headOption)
 }
 
@@ -211,13 +211,13 @@ case class CommunicationEndpoint(
   def this() = this(0, "", Some(0))
   def this(entityId: Long, protocol: String) = this(entityId, protocol, Some(0))
 
-  val port = LazyVar(may_have_one(ApplicationSchema.frontEndPorts, frontEndPortId))
+  val port = LazyVar(mayHaveOne(ApplicationSchema.frontEndPorts, frontEndPortId))
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
   val configFiles = LazyVar(ApplicationSchema.configFiles.where(p => p.entityId === entityId))
 
-  val entity = LazyVar(has_one(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
   val name = LazyVar(entity.value.name)
 
   val points = LazyVar(Entity.asType(ApplicationSchema.points, EQ.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))
@@ -241,7 +241,7 @@ case class EventStore(
 
   val associatedAlarm = LazyVar(ApplicationSchema.alarms.where(a => a.eventUid === id).single)
 
-  val entity = LazyVar(may_have_one(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(mayHaveOne(ApplicationSchema.entities, entityId))
 
   val groups = LazyVar(entityId.map { x => EQ.getParentOfType(x, "owns", "EquipmentGroup").toList }.getOrElse(Nil))
   val equipments = LazyVar(entityId.map { x => EQ.getParentOfType(x, "owns", "Equipment").toList }.getOrElse(Nil))
@@ -269,26 +269,26 @@ case class TriggerConfig(
     val triggerName: String,
     var proto: Array[Byte]) extends ModelWithId {
 
-  val point = LazyVar(has_one(ApplicationSchema.points, pointId))
+  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
 }
 
 case class TriggerSet(
     val pointId: Long,
     var proto: Array[Byte]) extends ModelWithId {
 
-  val point = LazyVar(has_one(ApplicationSchema.points, pointId))
+  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
 }
 
 case class TransformConfig(
     val pointId: Long,
     var proto: Array[Byte]) extends ModelWithId {
-  val point = LazyVar(has_one(ApplicationSchema.points, pointId))
+  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
 }
 
 case class OverrideConfig(
     val pointId: Long,
     var proto: Array[Byte]) extends ModelWithId {
-  val point = LazyVar(has_one(ApplicationSchema.points, pointId))
+  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
 }
 
 /**
@@ -325,7 +325,7 @@ class AlarmModel(
   import AlarmModel._
 
   // Get an EventStore based on an EventType
-  val event = LazyVar(has_one(ApplicationSchema.events, eventUid))
+  val event = LazyVar(hasOne(ApplicationSchema.events, eventUid))
 
   /**
    * Can we transition from our current state to the specified next state?
@@ -373,15 +373,15 @@ class EntityEdge(
     val relationship: String,
     val distance: Int) extends ModelWithId {
 
-  val parent = LazyVar(has_one(ApplicationSchema.entities, parentId))
-  val child = LazyVar(has_one(ApplicationSchema.entities, childId))
+  val parent = LazyVar(hasOne(ApplicationSchema.entities, parentId))
+  val child = LazyVar(hasOne(ApplicationSchema.entities, childId))
 }
 class EntityDerivedEdge(
     val edgeId: Long,
     val parentEdgeId: Long) extends ModelWithId {
 
-  val edge = LazyVar(has_one(ApplicationSchema.edges, edgeId))
-  val parent = LazyVar(has_one(ApplicationSchema.edges, parentEdgeId))
+  val edge = LazyVar(hasOne(ApplicationSchema.edges, edgeId))
+  val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
 
 class Agent(
@@ -410,7 +410,7 @@ class AuthToken(
     val loginLocation: String,
     var expirationTime: Long) extends ModelWithId {
 
-  val agent = LazyVar(has_one(ApplicationSchema.agents, agentId))
+  val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.tokenSetJoins)(p => where(p.authTokenId === id) select (&(p.permissionSetId)))))
 
 }

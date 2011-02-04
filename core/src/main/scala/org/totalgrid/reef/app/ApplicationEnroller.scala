@@ -98,7 +98,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
   private val client = new ProtoClient(amqp, 5000, ServicesList.getServiceInfo)
 
   private def enroll() {
-    client.async_put_one(buildLogin()) {
+    client.asyncPutOne(buildLogin()) {
       _ match {
         case x: Failure =>
           error("Error getting auth token. " + x)
@@ -107,7 +107,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
           val env = new RequestEnv
           env.addAuthToken(authToken.getToken)
           client.setDefaultEnv(env)
-          client.async_put_one(buildConfig(capabilites, instanceName)) {
+          client.asyncPutOne(buildConfig(capabilites, instanceName)) {
             _ match {
               case x: Failure =>
                 error("Error registering application. " + x)

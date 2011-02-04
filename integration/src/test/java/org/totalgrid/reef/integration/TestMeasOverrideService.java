@@ -51,13 +51,13 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 
 		{
 			MeasurementSnapshot ms = SampleProtos.makeMeasSnapshot(p);
-			MeasurementSnapshot rsp = client.get_one(ms, sub);
+			MeasurementSnapshot rsp = client.getOne(ms, sub);
 			assertEquals(rsp.getMeasurementsCount(), 1);
 		}
 
 		Measurement m = SampleProtos.makeIntMeas(p.getName(), 12345, 54321);
 		MeasOverride ovr = SampleProtos.makeMeasOverride(p, m);
-		client.put_one(ovr);
+		client.putOne(ovr);
 
 		assertTrue(mock.waitFor(SampleProtos.makeSubstituted(m), 5000));
 	}

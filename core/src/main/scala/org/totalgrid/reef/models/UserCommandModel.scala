@@ -33,7 +33,7 @@ case class UserCommandModel(
     val expireTime: Long,
     val commandProto: Array[Byte]) extends ModelWithId {
 
-  def command = has_one(ApplicationSchema.commands, commandId)
+  def command = hasOne(ApplicationSchema.commands, commandId)
 }
 
 case class CommandAccessModel(

@@ -60,7 +60,7 @@ public class TestMeasSnapshotService extends JavaBridgeTestBase {
 
 		// make the all points request, w/ subscribe queue set
 		MeasurementSnapshot request = SampleProtos.makeMeasSnapshot(SampleRequests.getAllPoints(client));
-		MeasurementSnapshot response = client.get_one(request, sub);
+		MeasurementSnapshot response = client.getOne(request, sub);
 
 		assertEquals(request.getPointNamesCount(), response.getMeasurementsCount());
 

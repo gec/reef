@@ -40,27 +40,27 @@ class JavaProtoClientWrapper(client: ProtoClient) extends IServiceClient {
   def post[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.post(payload, env.env)
   def put[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.put(payload, env.env)
 
-  def get_one[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.get_one(payload, env.env)
-  def delete_one[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.delete_one(payload, env.env)
-  def put_one[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.put_one(payload, env.env)
+  def getOne[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.getOne(payload, env.env)
+  def deleteOne[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.deleteOne(payload, env.env)
+  def putOne[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.putOne(payload, env.env)
 
   def get[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.get(payload, getEnv(sub))
   def delete[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.delete(payload, getEnv(sub))
   def post[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.post(payload, getEnv(sub))
   def put[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.put(payload, getEnv(sub))
 
-  def get_one[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.get_one(payload, getEnv(sub))
-  def delete_one[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.delete_one(payload, getEnv(sub))
-  def put_one[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.put_one(payload, getEnv(sub))
+  def getOne[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.getOne(payload, getEnv(sub))
+  def deleteOne[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.deleteOne(payload, getEnv(sub))
+  def putOne[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.putOne(payload, getEnv(sub))
 
   def get[T <: GeneratedMessage](payload: T): java.util.List[T] = client.get(payload)
   def delete[T <: GeneratedMessage](payload: T): java.util.List[T] = client.delete(payload)
   def post[T <: GeneratedMessage](payload: T): java.util.List[T] = client.post(payload)
   def put[T <: GeneratedMessage](payload: T): java.util.List[T] = client.put(payload)
 
-  def get_one[T <: GeneratedMessage](payload: T): T = client.get_one(payload)
-  def delete_one[T <: GeneratedMessage](payload: T): T = client.delete_one(payload)
-  def put_one[T <: GeneratedMessage](payload: T): T = client.put_one(payload)
+  def getOne[T <: GeneratedMessage](payload: T): T = client.getOne(payload)
+  def deleteOne[T <: GeneratedMessage](payload: T): T = client.deleteOne(payload)
+  def putOne[T <: GeneratedMessage](payload: T): T = client.putOne(payload)
 
   def addSubscription[T <: GeneratedMessage](pd: ProtoDescriptor[T], ea: EventAcceptor[T]): Subscription = {
     client.addSubscription(pd.getKlass, ea.onEvent)

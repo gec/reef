@@ -35,10 +35,10 @@ trait SyncServiceClient {
   def post[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): List[T]
   def put[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): List[T]
 
-  def get_one[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(get(payload, env))
-  def delete_one[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(delete(payload, env))
-  def post_one[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(post(payload, env))
-  def put_one[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(put(payload, env))
+  def getOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(get(payload, env))
+  def deleteOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(delete(payload, env))
+  def postOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(post(payload, env))
+  def putOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(put(payload, env))
 
   private def oneResult[A <: GeneratedMessage](list: List[A]): A = list match {
     case List(x) => x

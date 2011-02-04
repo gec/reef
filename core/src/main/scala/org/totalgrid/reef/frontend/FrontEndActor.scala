@@ -114,7 +114,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
       msg.addProtocols(p.name)
     }.setAppConfig(appConfig).build
 
-    services.frontend.async_put_one(msg) {
+    services.frontend.asyncPutOne(msg) {
       _ match {
         case SingleResponse(fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
