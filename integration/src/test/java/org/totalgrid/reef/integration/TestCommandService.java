@@ -98,7 +98,7 @@ public class TestCommandService extends JavaBridgeTestBase {
 		MockEventAcceptor<UserCommandRequest> mock = new MockEventAcceptor<UserCommandRequest>();
 		UserCommandRequest request = SampleProtos.makeControlRequest(cmd, "user");
 		Subscription sub = client.addSubscription(Deserializers.userCommandRequest(), mock);
-		client.put_one(request, sub);
+		client.putOne(request, sub);
 
 		// We get 2 events here. Since the subscription is bound before the request is made,
 		// we see the ADDED/EXECUTING and then the MODIFIED/SUCCESS

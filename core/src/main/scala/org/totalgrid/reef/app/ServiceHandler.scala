@@ -51,7 +51,7 @@ trait ServiceHandler extends Logging {
   private def subscribe[A <: GeneratedMessage](client: ServiceClient, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
     val env = new RequestEnv
     env.setSubscribeQueue(queue)
-    client.async_get(searchObj, env) {
+    client.asyncGet(searchObj, env) {
       _ match {
         case x: Failure =>
           error("Error getting subscription for " + x.toString)

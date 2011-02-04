@@ -63,26 +63,26 @@ trait ServiceClient extends SyncServiceClient with Logging {
   type StatusValidator = Envelope.Status => Boolean
 
   /* --- Thick Interface --- All function prevalidate the response code so the client doesn't have to check it */
-  def async_get[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = async_verb_wrapper(Envelope.Verb.GET, payload, env, callback)
-  def async_delete[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = async_verb_wrapper(Envelope.Verb.DELETE, payload, env, callback)
-  def async_post[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = async_verb_wrapper(Envelope.Verb.POST, payload, env, callback)
-  def async_put[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = async_verb_wrapper(Envelope.Verb.PUT, payload, env, callback)
-  def async_verb[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = async_verb_wrapper(verb, payload, env, callback)
+  def asyncGet[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = asyncVerbWrapper(Envelope.Verb.GET, payload, env, callback)
+  def asyncDelete[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = asyncVerbWrapper(Envelope.Verb.DELETE, payload, env, callback)
+  def asyncPost[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = asyncVerbWrapper(Envelope.Verb.POST, payload, env, callback)
+  def asyncPut[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = asyncVerbWrapper(Envelope.Verb.PUT, payload, env, callback)
+  def asyncVerb[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv = new RequestEnv)(callback: MultiResult[T] => Unit): Unit = asyncVerbWrapper(verb, payload, env, callback)
 
-  def async_get_one[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: SingleResult[T] => Unit): Unit = async_get(payload, env) { checkOne(payload, callback) }
-  def async_delete_one[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: SingleResult[T] => Unit): Unit = async_delete(payload, env) { checkOne(payload, callback) }
-  def async_put_one[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: SingleResult[T] => Unit): Unit = async_put(payload, env) { checkOne(payload, callback) }
+  def asyncGetOne[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: SingleResult[T] => Unit): Unit = asyncGet(payload, env) { checkOne(payload, callback) }
+  def asyncDeleteOne[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: SingleResult[T] => Unit): Unit = asyncDelete(payload, env) { checkOne(payload, callback) }
+  def asyncPutOne[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv)(callback: SingleResult[T] => Unit): Unit = asyncPut(payload, env) { checkOne(payload, callback) }
 
-  def get[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { async_get(payload, env) }())
-  def delete[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { async_delete(payload, env) }())
-  def post[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { async_post(payload, env) }())
-  def put[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { async_put(payload, env) }())
+  def get[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { asyncGet(payload, env) }())
+  def delete[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { asyncDelete(payload, env) }())
+  def post[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { asyncPost(payload, env) }())
+  def put[T <: GeneratedMessage](payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { asyncPut(payload, env) }())
 
-  def verb[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { async_verb(verb, payload, env) }())
+  def verb[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv = new RequestEnv): List[T] = throwFailures(makeCallbackIntoFuture { asyncVerb(verb, payload, env) }())
 
-  def async_get_one_scatter[T <: GeneratedMessage](list: List[T])(resp: List[T] => Unit): Unit = async_verb_scatter[T](list, resp, async_get_one[T](_, new RequestEnv))
+  def asyncGetOneScatter[T <: GeneratedMessage](list: List[T])(resp: List[T] => Unit): Unit = asyncVerbScatter[T](list, resp, asyncGetOne[T](_, new RequestEnv))
 
-  private def async_verb_scatter[T <: GeneratedMessage](list: List[T], resp: List[T] => Unit, async_verb: (T) => ((SingleResult[T]) => Unit) => Unit): Unit = {
+  private def asyncVerbScatter[T <: GeneratedMessage](list: List[T], resp: List[T] => Unit, async_verb: (T) => ((SingleResult[T]) => Unit) => Unit): Unit = {
 
     // short circuit so we don't do any unnecessary server queries with a list of length 0
     if (list.size == 0) {
@@ -119,7 +119,7 @@ trait ServiceClient extends SyncServiceClient with Logging {
     callback(expectOneResponse[T](request, multi))
   }
 
-  private def async_verb_wrapper[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv, callback: MultiResult[T] => Unit) {
+  private def asyncVerbWrapper[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: RequestEnv, callback: MultiResult[T] => Unit) {
     def handleResult(resp: Option[Response[T]]) {
       callback(expect[T](isSuccess, payload, resp))
     }

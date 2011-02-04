@@ -174,7 +174,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 				.build();
 
 		// we know we're only expecting one result since we have the uid filled in above
-		Entity sub = client.get_one(eqRequest);
+		Entity sub = client.getOne(eqRequest);
 
 		assertEquals(1, sub.getRelationsCount());
 

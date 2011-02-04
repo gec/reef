@@ -178,7 +178,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
       val serviceSend = amqp.getProtoServiceClient(exchangeName, 100, Example.Foo.parseFrom)
       intercept[Exception] {
-        serviceSend.get_one(request)
+        serviceSend.getOne(request)
       }
 
       amqp.bindService(exchangeName, x3Service _)

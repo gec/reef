@@ -40,19 +40,19 @@ public class SampleRequests {
 
 	public static UserCommandRequest executeControl(IServiceClient client, String user, Command cmd) {
 		UserCommandRequest request = SampleProtos.makeControlRequest(cmd, user);
-		UserCommandRequest result = client.put_one(request);
+		UserCommandRequest result = client.putOne(request);
 		return result;
 	}
 
 	public static CommandAccess putCommandAccess(IServiceClient client, String user, Command cmd, long timeout, boolean allow) {
 		CommandAccess accessRequest = SampleProtos.makeCommandAccess(cmd, user, timeout, allow);
-		CommandAccess result = client.put_one(accessRequest);
+		CommandAccess result = client.putOne(accessRequest);
 		return result;
 	}
 
 	public static CommandAccess deleteCommandAccess(IServiceClient client, String cmdName) {
 		CommandAccess request = CommandAccess.newBuilder().addCommands(cmdName).build();
-		CommandAccess result = client.delete_one(request);
+		CommandAccess result = client.deleteOne(request);
 		return result;
 	}
 
@@ -66,7 +66,7 @@ public class SampleRequests {
 
 	public static CommandAccess getCommandAccess(IServiceClient client, String user, Command cmd) {
 		CommandAccess request = CommandAccess.newBuilder().addCommands(cmd.getName()).build();
-		CommandAccess result = client.get_one(request);
+		CommandAccess result = client.getOne(request);
 		return result;
 	}
 
@@ -84,7 +84,7 @@ public class SampleRequests {
 	 * proto.
 	 */
 	public static List<Measurement> getCurrentValues(IServiceClient client, MeasurementSnapshot request) {
-		MeasurementSnapshot ms = client.get_one(request);
+		MeasurementSnapshot ms = client.getOne(request);
 		return ms.getMeasurementsList();
 	}
 
@@ -110,7 +110,7 @@ public class SampleRequests {
 	public static AuthToken logonAs(IServiceClient client, String user, String password, boolean addAuthTokenForAllClients) {
 		Agent agent = Agent.newBuilder().setName(user).setPassword(password).build();
 		AuthToken b = AuthToken.newBuilder().setAgent(agent).build();
-		AuthToken t = client.put_one(b);
+		AuthToken t = client.putOne(b);
 		if (addAuthTokenForAllClients) {
 			// add the auth token to the list of auth tokens we send with every request
 			client.getDefaultEnv().setAuthToken(t.getToken());
@@ -149,7 +149,7 @@ public class SampleRequests {
 		Alarm.Builder a = Alarm.newBuilder();
 		a.setUid(uid);
 		a.setState(newState);
-		Alarm result = client.put_one(a.build()); // TODO: Check return code.
+		Alarm result = client.putOne(a.build()); // TODO: Check return code.
 		return result;
 	}
 

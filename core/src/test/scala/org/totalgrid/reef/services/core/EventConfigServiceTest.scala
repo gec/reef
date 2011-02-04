@@ -58,8 +58,8 @@ class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAnd
       val client = amqp.getProtoServiceClient("test", 500000, EventConfig.parseFrom)
 
       val sent = makeEC(Scada.ControlExe, 1, Designation.ALARM)
-      val created = client.put_one(sent)
-      val gotten = client.get_one(makeEC(Scada.ControlExe))
+      val created = client.putOne(sent)
+      val gotten = client.getOne(makeEC(Scada.ControlExe))
 
       gotten should equal(created)
     }

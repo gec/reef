@@ -30,7 +30,7 @@ object AlarmRequest {
 
   def getAlarms(users: List[String], types: List[String], client: SyncServiceClient) = {
     val alarms = interpretAs("Bad request.") {
-      client.get_one(AlarmList.newBuilder.setSelect(buildSelect(users, types)).build).getAlarmsList.toList
+      client.getOne(AlarmList.newBuilder.setSelect(buildSelect(users, types)).build).getAlarmsList.toList
     }
     if (alarms.isEmpty) throw RequestFailure("No alarms found.")
 

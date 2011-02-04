@@ -39,7 +39,7 @@ trait FEPOperations extends Logging {
 
   def load(list: List[ConnProto])(next: List[ConnProto] => Unit) {
 
-    services.config.async_get_one_scatter(list.map { _.getEndpoint }) { blankConfigs =>
+    services.config.asyncGetOneScatter(list.map { _.getEndpoint }) { blankConfigs =>
       loadConfig(blankConfigs) { configs =>
 
         val connections = list.zip(configs).map { x =>
@@ -55,9 +55,9 @@ trait FEPOperations extends Logging {
   private def loadConfig(list: List[ConfigProto])(next: List[ConfigProto] => Unit) {
 
     val portsList = list.map { c => if (c.hasPort) Some(c.getPort) else None }.flatMap { t => t }
-    services.port.async_get_one_scatter(portsList) { ports =>
+    services.port.asyncGetOneScatter(portsList) { ports =>
       val allConfig = list.map { cfg => cfg.getConfigFilesList.toList }.flatten
-      services.file.async_get_one_scatter(allConfig) { allConfigs =>
+      services.file.asyncGetOneScatter(allConfig) { allConfigs =>
         val configs = list.map { c =>
           val ret = ConfigProto.newBuilder(c)
           ret.clearConfigFiles

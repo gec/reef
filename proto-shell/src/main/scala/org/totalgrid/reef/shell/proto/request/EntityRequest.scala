@@ -34,7 +34,7 @@ object EntityRequest {
   }
   def getById(id: String, client: SyncServiceClient) = {
     interpretAs("Entity not found.") {
-      client.get_one(EntityRequest.forId(id))
+      client.getOne(EntityRequest.forId(id))
     }
   }
   def getAllOfType(typ: String, client: SyncServiceClient) = {
@@ -58,10 +58,10 @@ object EntityRequest {
 
   def getTriggers(pointId: String, client: SyncServiceClient) = {
     val point = interpretAs("Point not found.") {
-      client.get_one(PointRequest.forEntityRequest(builderForId(pointId).build))
+      client.getOne(PointRequest.forEntityRequest(builderForId(pointId).build))
     }
     interpretAs("Trigger set not found.") {
-      client.get_one(TriggerSet.newBuilder.setPoint(point).build)
+      client.getOne(TriggerSet.newBuilder.setPoint(point).build)
     }
   }
 

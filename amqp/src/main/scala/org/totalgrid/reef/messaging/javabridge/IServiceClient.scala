@@ -70,13 +70,13 @@ trait IServiceClient {
   def post[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T]
   def put[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T]
 
-  def get_one[T <: GeneratedMessage](payload: T): T
-  def delete_one[T <: GeneratedMessage](payload: T): T
-  def put_one[T <: GeneratedMessage](payload: T): T
+  def getOne[T <: GeneratedMessage](payload: T): T
+  def deleteOne[T <: GeneratedMessage](payload: T): T
+  def putOne[T <: GeneratedMessage](payload: T): T
 
-  def get_one[T <: GeneratedMessage](payload: T, sub: Subscription): T
-  def delete_one[T <: GeneratedMessage](payload: T, sub: Subscription): T
-  def put_one[T <: GeneratedMessage](payload: T, sub: Subscription): T
+  def getOne[T <: GeneratedMessage](payload: T, sub: Subscription): T
+  def deleteOne[T <: GeneratedMessage](payload: T, sub: Subscription): T
+  def putOne[T <: GeneratedMessage](payload: T, sub: Subscription): T
 
   def addSubscription[T <: GeneratedMessage](pd: ProtoDescriptor[T], ea: EventAcceptor[T]): Subscription
 

@@ -31,7 +31,7 @@ object EventRequest {
 
   def getEvents(users: List[String], types: List[String], client: SyncServiceClient) = {
     val events = interpretAs("Bad request.") {
-      client.get_one(EventList.newBuilder.setSelect(buildSelect(users, types)).build).getEventsList.toList
+      client.getOne(EventList.newBuilder.setSelect(buildSelect(users, types)).build).getEventsList.toList
     }
     if (events.isEmpty) throw RequestFailure("No events found.")
 
