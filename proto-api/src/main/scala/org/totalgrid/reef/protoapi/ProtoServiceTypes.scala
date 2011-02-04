@@ -26,16 +26,33 @@ import org.totalgrid.reef.proto.Envelope
  */
 object ProtoServiceTypes {
 
-  /* ---- Case classes that make the service protoapi easier to use ---- */
-
-  case class Request[T](verb: Envelope.Verb, payload: T, env: RequestEnv)
-
-  case class Response[T](status: Envelope.Status, error: String, result: List[T]) {
-    def this(status: Envelope.Status, result: List[T]) = this(status, "", result)
-    def this(status: Envelope.Status, result: T) = this(status, "", List(result))
+  /**
+   * Convert a response option into a MultiResult
+   */
+  def convert[A](response: Option[Response[A]]): MultiResult[A] = {
+    response match {
+      case Some(x) =>
+        x match {
+          case Response(status, msg, list) =>
+            if (StatusCodes.isSuccess(status)) MultiResponse(list)
+            else {
+              Failure(status, msg)
+            }
+        }
+      case None => Failure(Envelope.Status.RESPONSE_TIMEOUT, "Service response timeout")
+    }
   }
 
-  case class Event[T](event: Envelope.Event, result: T) {
+  /* ---- Case classes that make the service protoapi easier to use ---- */
+
+  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv)
+
+  case class Response[A](status: Envelope.Status, error: String, result: List[A]) {
+    def this(status: Envelope.Status, result: List[A]) = this(status, "", result)
+    def this(status: Envelope.Status, result: A) = this(status, "", List(result))
+  }
+
+  case class Event[A](event: Envelope.Event, result: A) {
     // accessors for java client
     def getEvent() = event
     def getResult() = result
@@ -43,8 +60,8 @@ object ProtoServiceTypes {
 
   /* ---- Further decomposition that makes matching results even easier to use ---- */
 
-  trait MultiResult[+T]
-  trait SingleResult[+T]
+  trait MultiResult[+A]
+  trait SingleResult[+A]
 
   case class Failure(status: Envelope.Status, error: String) extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
 
@@ -59,7 +76,7 @@ object ProtoServiceTypes {
       new ProtoServiceException(error, status)
   }
 
-  case class SingleResponse[T](result: T) extends SingleResult[T]
-  case class MultiResponse[T](result: List[T]) extends MultiResult[T]
+  case class SingleResponse[A](result: A) extends SingleResult[A]
+  case class MultiResponse[A](result: List[A]) extends MultiResult[A]
 
 }

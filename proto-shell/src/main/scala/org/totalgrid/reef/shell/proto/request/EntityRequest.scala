@@ -21,33 +21,33 @@
 package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Model.{ Relationship, Entity }
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 import RequestFailure._
 import org.totalgrid.reef.proto.Processing.TriggerSet
 
 object EntityRequest {
 
-  def getAll(client: SyncServiceClient) = {
+  def getAll(client: SyncOperations) = {
     val results = client.get(EntityRequest.all)
     if (results.isEmpty) throw RequestFailure("No entities found.")
     results
   }
-  def getById(id: String, client: SyncServiceClient) = {
+  def getById(id: String, client: SyncOperations) = {
     interpretAs("Entity not found.") {
       client.getOne(EntityRequest.forId(id))
     }
   }
-  def getAllOfType(typ: String, client: SyncServiceClient) = {
+  def getAllOfType(typ: String, client: SyncOperations) = {
     client.get(forType(typ))
   }
 
-  def getChildren(parentId: String, relType: Option[String], subTypes: List[String], anyDepth: Boolean, client: SyncServiceClient) = {
+  def getChildren(parentId: String, relType: Option[String], subTypes: List[String], anyDepth: Boolean, client: SyncOperations) = {
     val ents = client.get(EntityRequest.selectChildren(parentId, relType, subTypes, anyDepth))
     if (ents.isEmpty) throw RequestFailure("Root entity not found.")
     ents
   }
 
-  def getAllTriggers(client: SyncServiceClient) = {
+  def getAllTriggers(client: SyncOperations) = {
     val sets = interpretAs("Triggers not found.") {
       client.get(TriggerSet.newBuilder.build).toList
     }
@@ -56,7 +56,7 @@ object EntityRequest {
     sets
   }
 
-  def getTriggers(pointId: String, client: SyncServiceClient) = {
+  def getTriggers(pointId: String, client: SyncOperations) = {
     val point = interpretAs("Point not found.") {
       client.getOne(PointRequest.forEntityRequest(builderForId(pointId).build))
     }

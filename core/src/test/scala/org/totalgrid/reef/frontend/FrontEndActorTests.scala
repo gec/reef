@@ -24,7 +24,6 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.util.OneArgFunc
 import org.totalgrid.reef.proto.{ Envelope }
-//import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.proto.FEP.{ Port, FrontEndProcessor, CommunicationEndpointRouting }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.Application.ApplicationConfig

@@ -23,8 +23,8 @@ package org.totalgrid.reef.shell.proto
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
-import org.totalgrid.reef.protoapi.client.{ ServiceClient, SyncServiceClient }
-import org.totalgrid.reef.protoapi.RequestEnv
+import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.{ RequestEnv, StatusCodes }
 
 import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ServicesList }
 import org.totalgrid.reef.messaging.javabridge.ProtoDescriptor
@@ -37,21 +37,9 @@ import org.totalgrid.reef.proto.Envelope.Verb
 
 import scala.collection.JavaConversions._
 
-/*
-trait ServiceRequestHandler {
-
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse
-}
-*/
-
 class ServiceDispatcher[A <: GeneratedMessage](rh: ServiceRequestHandler, desc: ProtoDescriptor[A]) {
 
-  def get(payload: A, env: RequestEnv): Response[A] = withVerb(Verb.GET, payload, env)
-  def delete(payload: A, env: RequestEnv): Response[A] = withVerb(Verb.DELETE, payload, env)
-  def post(payload: A, env: RequestEnv): Response[A] = withVerb(Verb.POST, payload, env)
-  def put(payload: A, env: RequestEnv): Response[A] = withVerb(Verb.PUT, payload, env)
-
-  private def withVerb(verb: Verb, payload: A, env: RequestEnv) =
+  def request(verb: Verb, payload: A, env: RequestEnv): Response[A] =
     getResponse(rh.respond(getRequest(verb, payload, env), env))
 
   private def getResponse(rsp: Envelope.ServiceResponse): Response[A] = {
@@ -61,38 +49,36 @@ class ServiceDispatcher[A <: GeneratedMessage](rh: ServiceRequestHandler, desc: 
   private def getRequest(verb: Envelope.Verb, payload: A, env: RequestEnv): Envelope.ServiceRequest = {
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId("Console")
     builder.setPayload(payload.toByteString)
-    env.asKeyValueList.foreach { x => builder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(x._1).setValue(x._2)) }
+    env.asKeyValueList.foreach { x =>
+      builder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(x._1).setValue(x._2))
+    }
     builder.build
   }
 
 }
 
-trait OSGiSyncServiceClient extends SyncServiceClient {
+trait OSGiSyncOperations extends SyncOperations {
 
   def getBundleContext: BundleContext
 
-  def get[A <: GeneratedMessage](req: A, env: RequestEnv = getRequestEnv): List[A] = withService(req.getClass)((x: ServiceDispatcher[A]) => x.get(req, env))
-  def put[A <: GeneratedMessage](req: A, env: RequestEnv = getRequestEnv): List[A] = withService(req.getClass)((x: ServiceDispatcher[A]) => x.put(req, env))
-  def delete[A <: GeneratedMessage](req: A, env: RequestEnv = getRequestEnv): List[A] = withService(req.getClass)((x: ServiceDispatcher[A]) => x.delete(req, env))
-  def post[A <: GeneratedMessage](req: A, env: RequestEnv = getRequestEnv): List[A] = withService(req.getClass)((x: ServiceDispatcher[A]) => x.post(req, env))
+  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): List[A] = ServicesList.getServiceOption(payload.getClass) match {
+    case Some(info) =>
+      val rsp = new ServiceDispatcher(getService(info.exchange), info.descriptor.asInstanceOf[ProtoDescriptor[A]]).request(verb, payload, env)
+      if (StatusCodes.isSuccess(rsp.status)) rsp.result
+      else throw new Exception("Status: " + rsp.status + " Error: " + rsp.error)
+    case None =>
+      throw new Exception("Proto not registered: " + payload.getClass)
+  }
 
-  def withService[A <: GeneratedMessage](klass: Class[_])(fun: ServiceDispatcher[A] => Response[A]): List[A] = {
-    ServicesList.getServiceOption(klass) match {
-      case Some(x) =>
-        this.getBundleContext findServices withInterface[ServiceRequestHandler] withFilter "exchange" === x.exchange andApply { (s, _) =>
-          new ServiceDispatcher(s, x.descriptor.asInstanceOf[ProtoDescriptor[A]])
-        } match {
-          case Seq(p) =>
-            val rsp = fun(p)
-            if (ServiceClient.isSuccess(rsp.status)) rsp.result
-            else throw new Exception("Status: " + rsp.status + " Error: " + rsp.error)
-          case Seq(p, list) =>
-            throw new Exception("Found multiple implementations for " + klass)
-          case Nil =>
-            throw new Exception("Service unavailble: " + klass)
-        }
-      case None =>
-        throw new Exception("Proto not registered: " + klass)
+  private def getService(exchange: String): ServiceRequestHandler = {
+    this.getBundleContext findServices withInterface[ServiceRequestHandler] withFilter "exchange" === exchange andApply { x =>
+      x
+    } match {
+      case Seq(p) => p
+      case Seq(_, _) =>
+        throw new Exception("Found multiple implementations for service with exchange " + exchange)
+      case Nil =>
+        throw new Exception("Service unavailble with exchange " + exchange)
     }
   }
 

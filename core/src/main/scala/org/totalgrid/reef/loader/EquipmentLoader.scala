@@ -27,14 +27,14 @@ import org.totalgrid.reef.loader.equipment._
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command }
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 
 /**
  * EquipmentLoader loads the logical model.
  *
  * TODO: generic_type is not set
  */
-class EquipmentLoader(client: SyncServiceClient) extends Logging {
+class EquipmentLoader(client: SyncOperations) extends Logging {
 
   val equipmentProfiles = HashMap[String, EquipmentType]()
   val pointProfiles = HashMap[String, PointProfile]()

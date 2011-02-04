@@ -53,7 +53,7 @@ class ProtoServiceClient[A <: GeneratedMessage](
    * 	@param 	subscribe_queue	Subscribe queue name (onyl valid for verb=Subscribe)
    *	@return					Blocking function for getting the response (a future)
    */
-  def request[B <: GeneratedMessage](verb: Envelope.Verb, payload: B, env: RequestEnv, callback: Option[Response[B]] => Unit) {
+  def asyncRequest[B <: GeneratedMessage](verb: Envelope.Verb, payload: B, env: RequestEnv)(callback: Option[Response[B]] => Unit) {
     // TODO: get rid of these casts
     val payloadA = payload.asInstanceOf[A] // will explode if type is wrong
     val callbackA = callback.asInstanceOf[(Option[Response[A]]) => Unit]

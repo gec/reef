@@ -24,7 +24,7 @@ import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
 import request.RequestFailure
 
-abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncServiceClient {
+abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperations {
 
   protected val requiresLogin = true
 

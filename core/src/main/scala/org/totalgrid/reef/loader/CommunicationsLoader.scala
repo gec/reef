@@ -25,7 +25,7 @@ import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 import org.totalgrid.reef.util.Logging
 import java.io.File
 import org.totalgrid.reef.proto._
@@ -45,7 +45,7 @@ object CommunicationsLoader {
  * TODO: Add serial interfaces
  *
  */
-class CommunicationsLoader(client: SyncServiceClient) extends Logging {
+class CommunicationsLoader(client: SyncOperations) extends Logging {
 
   val controlProfiles = HashMap[String, ControlProfile]()
   val pointProfiles = HashMap[String, PointProfile]()

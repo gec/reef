@@ -54,10 +54,9 @@ class ProtoClient(
     }
   }
 
-  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv, callback: Option[Response[A]] => Unit) {
+  def asyncRequest[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: Option[Response[A]] => Unit) {
     val client = getClient[A](payload.getClass())
-
-    client.request(verb, payload, env, callback)
+    client.asyncRequest(verb, payload, env)(callback)
   }
 
   def addSubscription[T <: GeneratedMessage](ea: (Envelope.Event, T) => Unit): Subscription = {

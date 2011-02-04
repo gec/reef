@@ -22,12 +22,11 @@ package org.totalgrid.reef.services
 
 import org.scalatest.matchers.ShouldMatchers
 
-import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.proto.Envelope.Status
 
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes, StatusCodes }
 import ProtoServiceTypes.{ Response, Event }
 import org.totalgrid.reef.util.SyncVar
 
@@ -35,7 +34,7 @@ import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 object ServiceResponseTestingHelpers extends ShouldMatchers {
   implicit def checkResponse[T](resp: Response[T]): List[T] = {
-    ServiceClient.isSuccess(resp.status) should equal(true)
+    StatusCodes.isSuccess(resp.status) should equal(true)
     resp.result
   }
 
@@ -44,22 +43,16 @@ object ServiceResponseTestingHelpers extends ShouldMatchers {
     many(1, resp.result).head
   }
 
-  def one[T](list: List[T]): T = {
-    many(1, list).head
-  }
+  def one[T](list: List[T]): T = many(1, list).head
 
-  def none[T](list: List[T]) = {
-    many(0, list)
-  }
+  def none[T](list: List[T]) = many(0, list)
 
   def many[T](len: Int, list: List[T]): List[T] = {
     if (len != list.size) throw new Exception("list wrong size: " + list.size + " instead of: " + len + "\n" + list)
     list
   }
 
-  def some[T](list: List[T]): List[T] = {
-    list
-  }
+  def some[T](list: List[T]): List[T] = list
 
   def getEventQueue[T <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => T): (BlockingQueue[T], RequestEnv) = {
 

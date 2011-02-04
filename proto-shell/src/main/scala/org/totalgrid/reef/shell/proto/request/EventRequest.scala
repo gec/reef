@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.shell.proto.request
 
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 import org.totalgrid.reef.proto.Events.{ EventList, EventSelect }
 
 import scala.collection.JavaConversions._
@@ -29,7 +29,7 @@ import RequestFailure._
 
 object EventRequest {
 
-  def getEvents(users: List[String], types: List[String], client: SyncServiceClient) = {
+  def getEvents(users: List[String], types: List[String], client: SyncOperations) = {
     val events = interpretAs("Bad request.") {
       client.getOne(EventList.newBuilder.setSelect(buildSelect(users, types)).build).getEventsList.toList
     }

@@ -33,7 +33,7 @@ import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv }
  */
 class JavaProtoClientWrapper(client: ProtoClient) extends IServiceClient {
 
-  def request[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: ServiceHandlerHeaders) = client.verb(verb, payload, env.env)
+  def request[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: ServiceHandlerHeaders) = client.request(verb, payload, env.env)
 
   def get[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.get(payload, env.env)
   def delete[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.delete(payload, env.env)

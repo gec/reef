@@ -21,7 +21,7 @@
 package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 
 import scala.collection.JavaConversions._
 import RequestFailure._
@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, Measurement, 
 
 object MeasRequest {
 
-  def allMeasurements(client: SyncServiceClient) = {
+  def allMeasurements(client: SyncOperations) = {
     val measList = interpretAs("No measurements found.") {
       client.getOne(forPoints(PointRequest.getAllPoints(client))).getMeasurementsList.toList
     }
@@ -38,7 +38,7 @@ object MeasRequest {
     measList
   }
 
-  def measByName(name: String, client: SyncServiceClient) = {
+  def measByName(name: String, client: SyncOperations) = {
     val measSnap = interpretAs("Measurement not found.") {
       client.getOne(MeasRequest.forPointName(name))
     }
@@ -47,7 +47,7 @@ object MeasRequest {
     measList.head
   }
 
-  def measForEntity(parentId: String, client: SyncServiceClient) = {
+  def measForEntity(parentId: String, client: SyncOperations) = {
     val points = client.get(PointRequest.underEntity(parentId))
     if (points.isEmpty) throw RequestFailure("No points found.")
 
@@ -61,7 +61,7 @@ object MeasRequest {
     measList
   }
 
-  def measHistory(name: String, limit: Int, client: SyncServiceClient) = {
+  def measHistory(name: String, limit: Int, client: SyncOperations) = {
     val req = MeasurementHistory.newBuilder.setPointName(name).setLimit(limit).setAscending(false).build
     val measList = interpretAs("Measurement not found.") {
       client.getOne(req).getMeasurementsList.toList

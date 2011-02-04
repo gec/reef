@@ -21,24 +21,29 @@
 package org.totalgrid.reef.protoapi.client
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
+import org.totalgrid.reef.proto.Envelope
 
-trait SyncServiceClient {
+trait SyncOperations {
 
   // overridable
   protected def getRequestEnv: RequestEnv = new RequestEnv
 
-  def get[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): List[T]
-  def delete[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): List[T]
-  def post[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): List[T]
-  def put[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): List[T]
+  /**
+   * Implement this function to widen the interface
+   */
+  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): List[A]
 
-  def getOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(get(payload, env))
-  def deleteOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(delete(payload, env))
-  def postOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(post(payload, env))
-  def putOne[T <: GeneratedMessage](payload: T, env: RequestEnv = getRequestEnv): T = oneResult(put(payload, env))
+  def get[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = request(Envelope.Verb.GET, payload, env)
+  def delete[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = request(Envelope.Verb.DELETE, payload, env)
+  def post[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = request(Envelope.Verb.POST, payload, env)
+  def put[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = request(Envelope.Verb.PUT, payload, env)
+
+  def getOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = oneResult(get(payload, env))
+  def deleteOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = oneResult(delete(payload, env))
+  def postOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = oneResult(post(payload, env))
+  def putOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = oneResult(put(payload, env))
 
   private def oneResult[A <: GeneratedMessage](list: List[A]): A = list match {
     case List(x) => x

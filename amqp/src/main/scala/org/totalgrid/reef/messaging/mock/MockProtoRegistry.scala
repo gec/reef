@@ -58,7 +58,7 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def request[A](verb: Envelope.Verb, payloadA: A, env: RequestEnv, callbackA: (Option[Response[A]]) => Unit) = {
+  def asyncRequest[A](verb: Envelope.Verb, payloadA: A, env: RequestEnv)(callbackA: Option[Response[A]] => Unit) = {
     val payload = payloadA.asInstanceOf[T]
     val callback = callbackA.asInstanceOf[(Option[Response[T]]) => Unit]
     in send Req(callback, Request(verb, payload, env))

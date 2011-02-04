@@ -22,11 +22,11 @@ package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest, CommandAccess, CommandRequest => ProtoCommandRequest }
 import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 
 object CommandRequest {
 
-  def blockCommands(ids: List[String], user: String, client: SyncServiceClient) = {
+  def blockCommands(ids: List[String], user: String, client: SyncOperations) = {
     val names = ids.map(getNameFromId(_, client))
     val block = CommandAccess.newBuilder
       .setAccess(CommandAccess.AccessMode.BLOCKED)
@@ -35,37 +35,37 @@ object CommandRequest {
     client.putOne(block.build)
   }
 
-  def removeSelects(uids: List[String], user: String, client: SyncServiceClient) = {
+  def removeSelects(uids: List[String], user: String, client: SyncOperations) = {
     uids.map { uid =>
       client.deleteOne(accessEntry(uid, user))
     }
   }
 
-  def statusOf(id: String, client: SyncServiceClient) = {
+  def statusOf(id: String, client: SyncOperations) = {
     client.getOne(requestForUid(id))
   }
 
-  def getNameFromId(id: String, client: SyncServiceClient) = {
+  def getNameFromId(id: String, client: SyncOperations) = {
     if (isEntityUid(id)) {
       client.getOne(forEntityUid(id)).getName
     } else id
   }
 
-  def issueForId(id: String, user: String, client: SyncServiceClient) = {
+  def issueForId(id: String, user: String, client: SyncOperations) = {
     issue(getNameFromId(id, client), user, client)
   }
 
-  def issue(name: String, user: String, client: SyncServiceClient) = {
+  def issue(name: String, user: String, client: SyncOperations) = {
     val access = client.putOne(makeSelect(name, user))
     val result = client.putOne(makeRequest(name, user))
     client.deleteOne(access)
     result
   }
 
-  def getAllAccessEntries(client: SyncServiceClient) = {
+  def getAllAccessEntries(client: SyncOperations) = {
     client.get(allAccessEntries)
   }
-  def getAccessEntry(id: String, client: SyncServiceClient) = {
+  def getAccessEntry(id: String, client: SyncOperations) = {
     client.getOne(accessEntry(id))
   }
 

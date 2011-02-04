@@ -32,7 +32,7 @@ import org.totalgrid.reef.loader.configuration._
 
 import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.{ File, FileReader }
@@ -43,7 +43,7 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def load(client: SyncServiceClient, filename: String, benchmark: Boolean) = {
+  def load(client: SyncOperations, filename: String, benchmark: Boolean) = {
 
     info("Loading configuration '" + filename + "'")
     try {

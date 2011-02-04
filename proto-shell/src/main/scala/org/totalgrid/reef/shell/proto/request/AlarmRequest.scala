@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.shell.proto.request
 
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 import org.totalgrid.reef.proto.Alarms.{ AlarmList, AlarmSelect }
 
 import scala.collection.JavaConversions._
@@ -28,7 +28,7 @@ import RequestFailure._
 
 object AlarmRequest {
 
-  def getAlarms(users: List[String], types: List[String], client: SyncServiceClient) = {
+  def getAlarms(users: List[String], types: List[String], client: SyncOperations) = {
     val alarms = interpretAs("Bad request.") {
       client.getOne(AlarmList.newBuilder.setSelect(buildSelect(users, types)).build).getAlarmsList.toList
     }

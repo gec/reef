@@ -21,11 +21,11 @@
 package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Model.{ Point, Relationship, Entity }
-import org.totalgrid.reef.protoapi.client.SyncServiceClient
+import org.totalgrid.reef.protoapi.client.SyncOperations
 
 object PointRequest {
 
-  def getAllPoints(client: SyncServiceClient) = {
+  def getAllPoints(client: SyncOperations) = {
     val points = client.get(requestAll)
     if (points.isEmpty) throw RequestFailure("No points found.")
     points
