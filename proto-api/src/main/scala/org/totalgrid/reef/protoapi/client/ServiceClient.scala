@@ -30,7 +30,7 @@ import com.google.protobuf.GeneratedMessage
 
 /** Provides a thick interface full of helper functions via implement the single abstract request function
  */
-trait ServiceClient extends SyncOperations with AsyncOperations with ScatterGatherOperations with Logging {
+trait ServiceClient extends SyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with Logging {
 
   /** The default request headers */
   var defaultEnv: Option[RequestEnv] = None
@@ -42,20 +42,11 @@ trait ServiceClient extends SyncOperations with AsyncOperations with ScatterGath
    *    Implements a synchronous request in terms of an asynchronous request
    */
   override def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): List[A] = {
-    val future = makeCallbackIntoFuture { asyncRequest(verb, payload, env) }
-    convert(future()) match {
-      case MultiResponse(list) => list
+    val future = this.requestFuture(verb, payload, env)
+    future() match {
+      case MultiSuccess(list) => list
       case x: Failure => throw x.toException
     }
   }
 
-  /**
-   *
-   */
-  private def makeCallbackIntoFuture[T](fun: (T => Unit) => Unit): () => T = {
-    val mail = new scala.actors.Channel[T]
-    def callback(response: T): Unit = mail ! response
-    fun(callback)
-    () => mail.receive { case x => x.asInstanceOf[T] }
-  }
 }

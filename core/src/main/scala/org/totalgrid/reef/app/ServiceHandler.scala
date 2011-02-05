@@ -29,7 +29,7 @@ import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.messaging.ProtoRegistry
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
-import ProtoServiceTypes.{ Failure, MultiResponse, Event }
+import ProtoServiceTypes.{ Failure, MultiSuccess, Event }
 
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders //implicit
 
@@ -58,7 +58,7 @@ trait ServiceHandler extends Logging {
           Timer.delay(retryMS) {
             subscribe(client, queue, searchObj, retryMS, subHandler) //defined recursively
           }
-        case MultiResponse(list) =>
+        case MultiSuccess(list) =>
           execute(subHandler(list))
       }
     }

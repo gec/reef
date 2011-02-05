@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
 import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ Request, Response, Event }
+import ProtoServiceTypes.{ Request, MultiResult, Response, Event }
 
 object MockProtoRegistry {
   val timeout = 5000
@@ -58,7 +58,7 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def asyncRequest[A](verb: Envelope.Verb, payloadA: A, env: RequestEnv)(callbackA: Option[Response[A]] => Unit) = {
+  def asyncRequest[A](verb: Envelope.Verb, payloadA: A, env: RequestEnv)(callbackA: MultiResult[A] => Unit) = {
     val payload = payloadA.asInstanceOf[T]
     val callback = callbackA.asInstanceOf[(Option[Response[T]]) => Unit]
     in send Req(callback, Request(verb, payload, env))

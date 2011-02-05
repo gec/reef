@@ -34,7 +34,7 @@ object ProtoServiceTypes {
       case Some(x) =>
         x match {
           case Response(status, msg, list) =>
-            if (StatusCodes.isSuccess(status)) MultiResponse(list)
+            if (StatusCodes.isSuccess(status)) MultiSuccess(list)
             else {
               Failure(status, msg)
             }
@@ -63,20 +63,14 @@ object ProtoServiceTypes {
   trait MultiResult[+A]
   trait SingleResult[+A]
 
+  case class SingleSuccess[A](result: A) extends SingleResult[A]
+  case class MultiSuccess[A](result: List[A]) extends MultiResult[A]
+
   case class Failure(status: Envelope.Status, error: String) extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
-
-    override def toString: String = {
-      super.toString + " " + status + " message: " + error
-    }
-    // accessors for java client
-    def getStatus() = status
-    def getError() = error
-
-    def toException: ProtoServiceException =
-      new ProtoServiceException(error, status)
+    override def toString: String = super.toString + " " + status + " message: " + error
+    def toException: ProtoServiceException = new ProtoServiceException(error, status)
   }
 
-  case class SingleResponse[A](result: A) extends SingleResult[A]
-  case class MultiResponse[A](result: List[A]) extends MultiResult[A]
+
 
 }

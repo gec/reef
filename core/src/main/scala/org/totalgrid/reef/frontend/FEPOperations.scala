@@ -20,40 +20,45 @@
  */
 package org.totalgrid.reef.frontend
 
-import scala.collection.JavaConversions._
+
 
 import org.totalgrid.reef.util.{ Logging }
-import scala.actors.Actor.actor
-
-import org.totalgrid.reef.proto.FEP
-
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.protoapi.ProtoServiceTypes
+import ProtoServiceTypes.{Failure, SingleSuccess}
 
 trait FEPOperations extends Logging {
 
   val services: FrontEndServices
 
+  /*
   def load(ep: ConnProto)(resultFun: ConnProto => Unit): Unit = {
     load(ep :: Nil) { l => resultFun(l.head) }
   }
+  */
 
-  def load(list: List[ConnProto])(next: List[ConnProto] => Unit) {
+  def load(list: List[ConnProto]) : List[ConnProto] = {
 
-    services.config.asyncGetOneScatter(list.map { _.getEndpoint }) { blankConfigs =>
-      loadConfig(blankConfigs) { configs =>
 
-        val connections = list.zip(configs).map { x =>
-          // maybe not the most efficient way to do this but certainly the most expressive
-          ConnProto.newBuilder(x._1).setEndpoint(x._2).build
-        }
-        next(connections)
+    //retrieve all the endpoint info
+    val endpoints = services.config.getOneScatterGather(list.map(_.getEndpoint)).map {
+      _ match {
+        case SingleSuccess(x) => x
+        case x : Failure => throw x.toException
       }
     }
+
+    Nil
+
+
+
+
 
   }
 
   private def loadConfig(list: List[ConfigProto])(next: List[ConfigProto] => Unit) {
 
+/*
     val portsList = list.map { c => if (c.hasPort) Some(c.getPort) else None }.flatMap { t => t }
     services.port.asyncGetOneScatter(portsList) { ports =>
       val allConfig = list.map { cfg => cfg.getConfigFilesList.toList }.flatten
@@ -73,5 +78,7 @@ trait FEPOperations extends Logging {
         next(configs)
       }
     }
+     */
   }
+
 }

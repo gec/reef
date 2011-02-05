@@ -26,7 +26,7 @@ import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ SingleResponse, Failure }
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
@@ -54,8 +54,8 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
   def add(ep: ConnProto) = {
-    load(ep) { result =>
-      execute {
+    load(ep).foreach { result =>
+
         tryWrap("Error adding connProto: " + result) {
           // the coordinator assigns FEPs when available but meas procs may not be online yet
           // re sends with routing information when meas_proc is online
@@ -75,7 +75,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
   }
 
   def modify(ep: ConnProto) = {
-    load(ep) { result =>
+    load(ep).foreach { result =>
       execute {
         tryWrap("Error modifying connProto: " + result) {
           if (result.hasRouting) connections.modify(result)
@@ -87,7 +87,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
   // don't do anything
   def subscribed(list: List[ConnProto]) = {
-    load(list) { result =>
+    load(list).foreach { result =>
       execute {
         tryWrap("Error adding list: " + result.size) {
           result.foreach { ep => connections.add(ep) }
@@ -116,7 +116,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
     services.frontend.asyncPutOne(msg) {
       _ match {
-        case SingleResponse(fem) =>
+        case SingleSuccess(fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
           info { "Got uid: " + fem.getUid }
           val query = ConnProto.newBuilder.setFrontEnd(fem).build

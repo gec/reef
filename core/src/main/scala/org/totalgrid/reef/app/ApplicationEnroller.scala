@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
 import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ Failure, SingleResponse }
+import ProtoServiceTypes.{ Failure, SingleSuccess }
 
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
@@ -103,7 +103,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
         case x: Failure =>
           error("Error getting auth token. " + x)
           delay(2000) { enroll() }
-        case SingleResponse(authToken) =>
+        case SingleSuccess(authToken) =>
           val env = new RequestEnv
           env.addAuthToken(authToken.getToken)
           client.setDefaultEnv(env)
@@ -112,7 +112,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
               case x: Failure =>
                 error("Error registering application. " + x)
                 delay(2000) { enroll() }
-              case SingleResponse(app) =>
+              case SingleSuccess(app) =>
                 val components = new CoreApplicationComponents(amqp, app, env)
                 container = Some(setupFun(components))
                 container.get.start

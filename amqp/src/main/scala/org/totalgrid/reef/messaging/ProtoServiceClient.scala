@@ -30,7 +30,7 @@ import ProtoSerializer.convertProtoToByteString //implicit
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 
-import ProtoServiceTypes.Response
+import ProtoServiceTypes.{MultiResult, Response}
 
 /** Wraps a regular AMQPProtoServiceClient, layering on machinery for serializing/deserializing
  *	the payload of the service envelope. 
@@ -53,7 +53,7 @@ class ProtoServiceClient[A <: GeneratedMessage](
    * 	@param 	subscribe_queue	Subscribe queue name (onyl valid for verb=Subscribe)
    *	@return					Blocking function for getting the response (a future)
    */
-  def asyncRequest[B <: GeneratedMessage](verb: Envelope.Verb, payload: B, env: RequestEnv)(callback: Option[Response[B]] => Unit) {
+  def asyncRequest[B <: GeneratedMessage](verb: Envelope.Verb, payload: B, env: RequestEnv)(callback: MultiResult[B] => Unit) {
     // TODO: get rid of these casts
     val payloadA = payload.asInstanceOf[A] // will explode if type is wrong
     val callbackA = callback.asInstanceOf[(Option[Response[A]]) => Unit]
