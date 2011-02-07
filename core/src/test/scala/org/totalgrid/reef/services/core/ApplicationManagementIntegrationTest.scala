@@ -88,7 +88,7 @@ class ApplicationManagementTest extends FunSuite with ShouldMatchers with Before
       val b = ApplicationConfig.newBuilder()
       b.setUserName("proc").setInstanceName("proc01").setNetwork("any").setLocation("farm1").addCapabilites("Processing")
       b.setHeartbeatCfg(HeartbeatConfig.newBuilder.setPeriodMs(100)) // override the default period
-      appClient.putOneThrow(b.build)
+      appClient.putOneOrThrow(b.build)
     }
 
     private def subscribeSnapshotStatus() {
@@ -100,7 +100,7 @@ class ApplicationManagementTest extends FunSuite with ShouldMatchers with Before
 
       val env = new RequestEnv
       env.setSubscribeQueue(eventQueueName.current)
-      val config = processClient.getOneThrow(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env)
+      val config = processClient.getOneOrThrow(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env)
       // do some basic checks to make sure we got the correct initial state
       config.getInstanceName should equal(appConfig.getInstanceName)
       config.getOnline should equal(true)

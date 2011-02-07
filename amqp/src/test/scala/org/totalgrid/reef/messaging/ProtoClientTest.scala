@@ -83,14 +83,14 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
     setupTest { client =>
 
       val fooRequest = Example.Foo.newBuilder.setNum(42).build
-      client.getThrow(fooRequest).size should equal(3)
+      client.getOrThrow(fooRequest).size should equal(3)
 
       val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
-      client.getThrow(headerRequest).size should equal(2)
+      client.getOrThrow(headerRequest).size should equal(2)
 
       intercept[UnknownServiceException] {
         val notificationRequest = Envelope.ServiceNotification.newBuilder.setEvent(Envelope.Event.ADDED).setPayload(ByteString.copyFromUtf8("hi")).build
-        client.getThrow(notificationRequest)
+        client.getOrThrow(notificationRequest)
       }
     }
   }

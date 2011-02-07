@@ -79,7 +79,7 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
    */
   private def batchPublish(client: ServiceClient)(x: Measurements.MeasurementBatch): Unit = {
     try {
-      client.putThrow(x)
+      client.putOrThrow(x)
     } catch {
       case e: Exception => error(e)
     }
@@ -92,7 +92,7 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
     try {
       val cr = Commands.CommandRequest.newBuilder.setCorrelationId(x.getCorrelationId)
       val msg = Commands.UserCommandRequest.newBuilder.setCommandRequest(cr).setStatus(x.getStatus).build
-      client.putThrow(msg)
+      client.putOrThrow(msg)
     } catch {
       case e: Exception => error(e)
     }

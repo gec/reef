@@ -110,9 +110,9 @@ class MessageLoader(client: SyncOperations) extends Logging {
     thisTyp match {
       case "ALARM" =>
         val thisState = getAttributeEx[String](name, message, _.isSetState, _.getState, state, "state")
-        client.putThrow(toEventConfig(name, thisSeverity, thisTyp, thisState, resourceString))
+        client.putOrThrow(toEventConfig(name, thisSeverity, thisTyp, thisState, resourceString))
       case _ =>
-        client.putThrow(toEventConfig(name, thisSeverity, thisTyp, "", resourceString))
+        client.putOrThrow(toEventConfig(name, thisSeverity, thisTyp, "", resourceString))
     }
 
   }

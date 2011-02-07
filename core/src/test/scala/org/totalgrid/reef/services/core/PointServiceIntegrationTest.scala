@@ -50,7 +50,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
     val pointClient = registry.getServiceClient(PointProto.parseFrom _)
 
     val entityClient = registry.getServiceClient(EntityProto.parseFrom _)
-    val parentEntity = entityClient.putOneThrow(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build)
+    val parentEntity = entityClient.putOneOrThrow(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build)
 
     val measPublish = amqp.send("measurement")
 
@@ -65,7 +65,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
     abnormalThunker.addAMQPConsumers(amqp, new InstantReactor {})
 
     def addPoint(proto: PointProto) = {
-      pointClient.putOneThrow(proto.toBuilder.setLogicalNode(parentEntity).build)
+      pointClient.putOneOrThrow(proto.toBuilder.setLogicalNode(parentEntity).build)
     }
     val changedPoints = new BlockingQueue[PointProto]
 
@@ -85,7 +85,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
       val env = new RequestEnv
       env.setSubscribeQueue(eventQueueName.current)
-      pointClient.getThrow(req, env)
+      pointClient.getOrThrow(req, env)
     }
 
     def nextNotification(timeout: Int = 5000) = {

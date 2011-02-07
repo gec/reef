@@ -36,13 +36,13 @@ trait FEPOperations extends Logging {
 
     val cp = ConnProto.newBuilder(conn)
 
-    val ep = services.config.getOneThrow(conn.getEndpoint)
+    val ep = services.config.getOneOrThrow(conn.getEndpoint)
     val endpoint = ConfigProto.newBuilder(ep)
 
     val files: List[ConfigFile] = ep.getConfigFilesList.toList
 
     endpoint.addAllConfigFiles(loadConfigFiles(files))
-    if (ep.hasPort) endpoint.setPort(services.port.getOneThrow(ep.getPort))
+    if (ep.hasPort) endpoint.setPort(services.port.getOneOrThrow(ep.getPort))
     cp.setEndpoint(endpoint).build()
   }
 

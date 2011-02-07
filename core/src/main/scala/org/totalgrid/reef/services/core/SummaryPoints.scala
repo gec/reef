@@ -215,7 +215,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
     }
     try {
       lastAttempt.nextTime = now + 5000
-      client.putThrow(mb)
+      client.putOrThrow(mb)
       lastAttempt.success = true
     } catch {
       case e: Exception =>

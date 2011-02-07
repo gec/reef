@@ -32,22 +32,22 @@ object CommandRequest {
       .setAccess(CommandAccess.AccessMode.BLOCKED)
       .setUser(user)
     names.foreach(block.addCommands(_))
-    client.putOneThrow(block.build)
+    client.putOneOrThrow(block.build)
   }
 
   def removeSelects(uids: List[String], user: String, client: SyncOperations) = {
     uids.map { uid =>
-      client.deleteOneThrow(accessEntry(uid, user))
+      client.deleteOneOrThrow(accessEntry(uid, user))
     }
   }
 
   def statusOf(id: String, client: SyncOperations) = {
-    client.getOneThrow(requestForUid(id))
+    client.getOneOrThrow(requestForUid(id))
   }
 
   def getNameFromId(id: String, client: SyncOperations) = {
     if (isEntityUid(id)) {
-      client.getOneThrow(forEntityUid(id)).getName
+      client.getOneOrThrow(forEntityUid(id)).getName
     } else id
   }
 
@@ -56,17 +56,17 @@ object CommandRequest {
   }
 
   def issue(name: String, user: String, client: SyncOperations) = {
-    val access = client.putOneThrow(makeSelect(name, user))
-    val result = client.putOneThrow(makeRequest(name, user))
-    client.deleteOneThrow(access)
+    val access = client.putOneOrThrow(makeSelect(name, user))
+    val result = client.putOneOrThrow(makeRequest(name, user))
+    client.deleteOneOrThrow(access)
     result
   }
 
   def getAllAccessEntries(client: SyncOperations) = {
-    client.getThrow(allAccessEntries)
+    client.getOrThrow(allAccessEntries)
   }
   def getAccessEntry(id: String, client: SyncOperations) = {
-    client.getOneThrow(accessEntry(id))
+    client.getOneOrThrow(accessEntry(id))
   }
 
   def allAccessEntries = CommandAccess.newBuilder.setUid("*").build

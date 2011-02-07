@@ -43,7 +43,7 @@ trait SyncOperations {
 
   def requestThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(request(verb, payload, env))
 
-  def requestOneThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(requestOne(verb, payload, env))
+  def requestOneOrThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(requestOne(verb, payload, env))
 
   def get[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(GET, payload, env)
 
@@ -61,21 +61,21 @@ trait SyncOperations {
 
   def putOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = expectsOne(put(payload, env))
 
-  def getThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(get(payload, env))
+  def getOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(get(payload, env))
 
-  def deleteThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(delete(payload, env))
+  def deleteOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(delete(payload, env))
 
-  def postThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(post(payload, env))
+  def postOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(post(payload, env))
 
-  def putThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(put(payload, env))
+  def putOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(put(payload, env))
 
-  def getOneThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(getOne(payload, env))
+  def getOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(getOne(payload, env))
 
-  def deleteOneThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(deleteOne(payload, env))
+  def deleteOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(deleteOne(payload, env))
 
-  def postOneThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(postOne(payload, env))
+  def postOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(postOne(payload, env))
 
-  def putOneThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(putOne(payload, env))
+  def putOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(putOne(payload, env))
 
   protected def throwOnFailure[A](response: MultiResult[A]): List[A] = response match {
     case MultiSuccess(list) => list
