@@ -50,7 +50,7 @@ trait ProtoServiceChannel extends RequestReplyChannel[ServiceRequest, ServiceRes
 abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => Array[Byte], deseralize: Array[Byte] => R)
     extends AMQPPublisher(Nil) with RequestReplyChannel[S, R] with MessageConsumer {
 
-  override def close(): Unit = throw new Exception("Unimplemented")
+  override def close(): Unit = {} // TODO: implement close on async request reply
 
   /// where to send the received data, optional to break circular construction dependency, will blow
   /// up if used without setting the destination
