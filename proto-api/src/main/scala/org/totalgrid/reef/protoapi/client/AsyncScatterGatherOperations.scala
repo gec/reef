@@ -35,25 +35,25 @@ trait AsyncScatterGatherOperations extends AsyncOperations {
     val map = new java.util.concurrent.ConcurrentHashMap[Int, MultiResult[T]]
     val latch = new java.util.concurrent.CountDownLatch(payloads.size)
 
-    def gather(idx: Int)(rsp : MultiResult[T]) {
+    def gather(idx: Int)(rsp: MultiResult[T]) {
       map.put(idx, rsp)
       latch.countDown()
-      if(latch.getCount == 0) callback(payloads.indices.map(i => map.get(i)).toList) //last callback orders and calls the callback
+      if (latch.getCount == 0) callback(payloads.indices.map(i => map.get(i)).toList) //last callback orders and calls the callback
     }
 
-    payloads.zipWithIndex.foreach { case(p,i) => asyncRequest(verb, p, env)(gather(i)) }
+    payloads.zipWithIndex.foreach { case (p, i) => asyncRequest(verb, p, env)(gather(i)) }
   }
 
   def asyncGetScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]] => Unit) =
     requestAsyncScatterGather(Verb.GET, payloads, env)(callback)
 
-  def asyncPutScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]]=> Unit) =
+  def asyncPutScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]] => Unit) =
     requestAsyncScatterGather(Verb.PUT, payloads, env)(callback)
 
-  def asyncPostScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]]=> Unit) =
+  def asyncPostScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]] => Unit) =
     requestAsyncScatterGather(Verb.POST, payloads, env)(callback)
 
-  def asyncDeleteScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]]=> Unit) =
+  def asyncDeleteScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[MultiResult[T]] => Unit) =
     requestAsyncScatterGather(Verb.DELETE, payloads, env)(callback)
 
   def asyncGetOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[SingleResult[T]] => Unit) =
@@ -68,10 +68,9 @@ trait AsyncScatterGatherOperations extends AsyncOperations {
   def asyncDeleteOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[SingleResult[T]] => Unit) =
     asyncDeleteScatterGather(payloads, env)(convert(callback))
 
-  private def convert[T  <: GeneratedMessage](callback: List[SingleResult[T]] => Unit) : List[MultiResult[T]] => Unit = {
-    (a: List[MultiResult[T]]) => callback(a.map(x => expectOneResponse(x)))
+  private def convert[T <: GeneratedMessage](callback: List[SingleResult[T]] => Unit): List[MultiResult[T]] => Unit = { (a: List[MultiResult[T]]) =>
+    callback(a.map(x => expectsOne(x)))
   }
-
 
 }
 

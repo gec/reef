@@ -22,19 +22,19 @@ package org.totalgrid.reef.protoapi.client
 
 import org.totalgrid.reef.proto.Envelope.Verb
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.{RequestEnv, ProtoServiceTypes}
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.MultiResult
 
 trait FutureOperations extends AsyncOperations {
 
-  def requestFuture[A <: GeneratedMessage](verb : Verb, payload : A, env : RequestEnv) : () => MultiResult[A] = makeCallbackIntoFuture {
+  def requestFuture[A <: GeneratedMessage](verb: Verb, payload: A, env: RequestEnv): () => MultiResult[A] = makeCallbackIntoFuture {
     asyncRequest(verb, payload, env)
   }
 
-  def getWithFuture[A <: GeneratedMessage](payload : A, env : RequestEnv) = requestFuture(Verb.GET, payload, env)
-  def deleteWithFuture[A <: GeneratedMessage](payload : A, env : RequestEnv) = requestFuture(Verb.DELETE, payload, env)
-  def putWithFuture[A <: GeneratedMessage](payload : A, env : RequestEnv) = requestFuture(Verb.PUT, payload, env)
-  def postWithFuture[A <: GeneratedMessage](payload : A, env : RequestEnv) = requestFuture(Verb.POST, payload, env)
+  def getWithFuture[A <: GeneratedMessage](payload: A, env: RequestEnv) = requestFuture(Verb.GET, payload, env)
+  def deleteWithFuture[A <: GeneratedMessage](payload: A, env: RequestEnv) = requestFuture(Verb.DELETE, payload, env)
+  def putWithFuture[A <: GeneratedMessage](payload: A, env: RequestEnv) = requestFuture(Verb.PUT, payload, env)
+  def postWithFuture[A <: GeneratedMessage](payload: A, env: RequestEnv) = requestFuture(Verb.POST, payload, env)
 
   protected def makeCallbackIntoFuture[A](fun: (A => Unit) => Unit): () => A = {
     val mail = new scala.actors.Channel[A]

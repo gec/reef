@@ -51,14 +51,7 @@ trait AsyncOperations extends Logging {
   def asyncPostOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPost(payload, env) { checkOne(payload, callback) }
 
   private def checkOne[A <: GeneratedMessage](request: A, callback: SingleResult[A] => Unit): (MultiResult[A]) => Unit = { (multi: MultiResult[A]) =>
-    callback(expectOneResponse[A](multi))
-  }
-
-  protected def expectOneResponse[A <: GeneratedMessage](response: MultiResult[A]): SingleResult[A] = response match {
-    case MultiSuccess(List(x)) => SingleSuccess(x)
-    case MultiSuccess(list) =>
-      Failure(Envelope.Status.UNEXPECTED_RESPONSE, "Expected one results, but got: " + list.size)
-    case x: Failure => x
+    callback(expectsOne(multi))
   }
 
 }

@@ -97,7 +97,7 @@ object LoadManager extends Logging {
       val client = new ProtoClient(amqp, 5000, ServicesList.getServiceInfo)
 
       // get an auth token and attach it to the client for all future requests
-      val authToken = client.putOne(ApplicationEnroller.buildLogin())
+      val authToken = client.putOneThrow(ApplicationEnroller.buildLogin())
       val env = new RequestEnv
       env.addAuthToken(authToken.getToken)
       client.setDefaultEnv(env)

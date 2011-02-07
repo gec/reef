@@ -22,9 +22,9 @@ package org.totalgrid.reef.shell.proto
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
 import org.totalgrid.reef.protoapi.client.SyncOperations
-import org.totalgrid.reef.protoapi.{ RequestEnv, StatusCodes }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
+import ProtoServiceTypes.{ Response, MultiResult, Failure }
 
 import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ServicesList }
 import org.totalgrid.reef.messaging.javabridge.ProtoDescriptor
@@ -61,13 +61,12 @@ trait OSGiSyncOperations extends SyncOperations {
 
   def getBundleContext: BundleContext
 
-  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): List[A] = ServicesList.getServiceOption(payload.getClass) match {
+  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
       val rsp = new ServiceDispatcher(getService(info.exchange), info.descriptor.asInstanceOf[ProtoDescriptor[A]]).request(verb, payload, env)
-      if (StatusCodes.isSuccess(rsp.status)) rsp.result
-      else throw new Exception("Status: " + rsp.status + " Error: " + rsp.error)
+      ProtoServiceTypes.convert(Some(rsp))
     case None =>
-      throw new Exception("Proto not registered: " + payload.getClass)
+      Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
   }
 
   private def getService(exchange: String): ServiceRequestHandler = {

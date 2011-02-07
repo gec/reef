@@ -66,7 +66,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory) extends ProtoServiceable[M
           ce.frontEndAssignment.value.serviceRoutingKey match {
             case Some(routingKey) =>
               val client = amqp.getProtoServiceClient("measurement_batch", routingKey, 1000, MeasurementBatch.parseFrom)
-              client.put(batch)
+              client.putThrow(batch)
             // TODO: client.close
             case None =>
               throw new ProtoServiceException("Measurement Stream not ready.")

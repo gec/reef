@@ -31,7 +31,7 @@ object MeasRequest {
 
   def allMeasurements(client: SyncOperations) = {
     val measList = interpretAs("No measurements found.") {
-      client.getOne(forPoints(PointRequest.getAllPoints(client))).getMeasurementsList.toList
+      client.getOneThrow(forPoints(PointRequest.getAllPoints(client))).getMeasurementsList.toList
     }
 
     if (measList.isEmpty) throw RequestFailure("No measurements found.")
@@ -40,7 +40,7 @@ object MeasRequest {
 
   def measByName(name: String, client: SyncOperations) = {
     val measSnap = interpretAs("Measurement not found.") {
-      client.getOne(MeasRequest.forPointName(name))
+      client.getOneThrow(MeasRequest.forPointName(name))
     }
     val measList = measSnap.getMeasurementsList.toList
     if (measList.isEmpty) throw RequestFailure("Measurement not found.")
@@ -48,11 +48,11 @@ object MeasRequest {
   }
 
   def measForEntity(parentId: String, client: SyncOperations) = {
-    val points = client.get(PointRequest.underEntity(parentId))
+    val points = client.getThrow(PointRequest.underEntity(parentId))
     if (points.isEmpty) throw RequestFailure("No points found.")
 
     val measSnap = interpretAs("No measurements found.") {
-      client.getOne(MeasRequest.forPoints(points))
+      client.getOneThrow(MeasRequest.forPoints(points))
     }
 
     val measList = measSnap.getMeasurementsList.toList
@@ -64,7 +64,7 @@ object MeasRequest {
   def measHistory(name: String, limit: Int, client: SyncOperations) = {
     val req = MeasurementHistory.newBuilder.setPointName(name).setLimit(limit).setAscending(false).build
     val measList = interpretAs("Measurement not found.") {
-      client.getOne(req).getMeasurementsList.toList
+      client.getOneThrow(req).getMeasurementsList.toList
     }
     if (measList.isEmpty) throw RequestFailure("Measurement not found.")
     measList

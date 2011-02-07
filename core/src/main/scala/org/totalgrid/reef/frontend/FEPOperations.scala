@@ -20,65 +20,37 @@
  */
 package org.totalgrid.reef.frontend
 
-
-
 import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.protoapi.ProtoServiceTypes
-import ProtoServiceTypes.{Failure, SingleSuccess}
+import ProtoServiceTypes.{ Failure, SingleSuccess }
+
+import scala.collection.JavaConversions._
 
 trait FEPOperations extends Logging {
 
   val services: FrontEndServices
 
-  /*
-  def load(ep: ConnProto)(resultFun: ConnProto => Unit): Unit = {
-    load(ep :: Nil) { l => resultFun(l.head) }
-  }
-  */
+  def loadOrThrow(conn: ConnProto): ConnProto = {
 
-  def load(list: List[ConnProto]) : List[ConnProto] = {
+    val cp = ConnProto.newBuilder(conn)
 
+    val ep = services.config.getOneThrow(conn.getEndpoint)
+    val endpoint = ConfigProto.newBuilder(ep)
 
-    //retrieve all the endpoint info
-    val endpoints = services.config.getOneScatterGather(list.map(_.getEndpoint)).map {
-      _ match {
-        case SingleSuccess(x) => x
-        case x : Failure => throw x.toException
-      }
-    }
+    val files: List[ConfigFile] = ep.getConfigFilesList.toList
 
-    Nil
-
-
-
-
-
+    endpoint.addAllConfigFiles(loadConfigFiles(files))
+    if (ep.hasPort) endpoint.setPort(services.port.getOneThrow(ep.getPort))
+    cp.setEndpoint(endpoint).build()
   }
 
-  private def loadConfig(list: List[ConfigProto])(next: List[ConfigProto] => Unit) {
-
-/*
-    val portsList = list.map { c => if (c.hasPort) Some(c.getPort) else None }.flatMap { t => t }
-    services.port.asyncGetOneScatter(portsList) { ports =>
-      val allConfig = list.map { cfg => cfg.getConfigFilesList.toList }.flatten
-      services.file.asyncGetOneScatter(allConfig) { allConfigs =>
-        val configs = list.map { c =>
-          val ret = ConfigProto.newBuilder(c)
-          ret.clearConfigFiles
-          // TODO: find better algorithm for merging the results back in
-          if (ret.hasPort) {
-            ret.setPort(ports.find { p => c.getPort.getUid == p.getUid }.getOrElse(throw new Exception("Port uid:" + c.getPort.getUid + " not loaded")))
-          }
-          c.getConfigFilesList.toList.foreach { cf =>
-            ret.addConfigFiles(allConfigs.find { p => cf.getUid == p.getUid }.getOrElse(throw new Exception("Config file uid:" + cf.getUid + " not loaded")))
-          }
-          ret.build
-        }
-        next(configs)
-      }
+  private def loadConfigFiles(list: List[ConfigFile]): List[ConfigFile] = services.config.getOneScatterGather(list).map {
+    _ match {
+      case x: Failure => throw x.toException
+      case SingleSuccess(file) => file
     }
-     */
   }
 
 }

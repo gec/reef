@@ -169,7 +169,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
     processPointScaling(endpointName, points, equipmentPointUnits)
 
     // Now we have a list of all the controls and points for this Endpoint
-    client.put(toCommunicationEndpointConfig(endpointName, protocolName, configFiles, port, controls, points).build)
+    client.putThrow(toCommunicationEndpointConfig(endpointName, protocolName, configFiles, port, controls, points).build)
 
   }
 
@@ -222,7 +222,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
 
   def processConfigFiles(protocol: Protocol, path: File): List[Model.ConfigFile.Builder] = {
     val cfs = protocol.getConfigFile.toList.map(toConfigFile(path, _).build)
-    cfs.foreach(cf => client.put(cf))
+    cfs.foreach(cf => client.putThrow(cf))
     cfs.map(_.toBuilder)
   }
 
@@ -285,7 +285,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
       .setIp(ipProto)
       .build
 
-    client.put(portProto)
+    client.putThrow(portProto)
 
     portProto.toBuilder
   }
@@ -352,7 +352,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
     val indexMap = toIndexMapping(controlProtos, pointProtos).build
 
     val cf = toConfigFile(name, indexMap).build
-    client.put(cf)
+    client.putThrow(cf)
     cf.toBuilder
   }
 
@@ -600,7 +600,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
     simMap.addAllCommands(controlProtos.toList)
 
     val cf = toConfigFile(name, simMap.build).build
-    client.put(cf)
+    client.putThrow(cf)
     cf.toBuilder
   }
 
@@ -619,7 +619,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
       .setName(name)
       .setUnit(point.getUnit)
 
-    var triggerSet = client.get(toTriggerSet(toPoint(name, toEntityType(name, List("Point"))))).headOption
+    var triggerSet = client.getThrow(toTriggerSet(toPoint(name, toEntityType(name, List("Point"))))).headOption
 
     var inBoundsRatio = 0.85
     var changeChance = 1.0

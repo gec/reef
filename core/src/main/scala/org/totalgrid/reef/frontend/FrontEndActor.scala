@@ -45,7 +45,7 @@ object FrontEndActor {
 abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
     extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with FEPOperations with Logging {
 
-  //helper objects that sets up all of the services/pulishers from abstract registries
+  //helper objects that sets up all of the services/publishers from abstract registries
   val services = new FrontEndServices(registry)
   val connections = new FrontEndConnections(protocols, registry, this)
 
@@ -53,56 +53,39 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
-  def add(ep: ConnProto) = {
-    load(ep).foreach { result =>
-
-        tryWrap("Error adding connProto: " + result) {
-          // the coordinator assigns FEPs when available but meas procs may not be online yet
-          // re sends with routing information when meas_proc is online
-          if (result.hasRouting) connections.add(result)
-          else connections.remove(result)
-        }
-      }
+  def add(ep: ConnProto) = retrieve(ep) { c =>
+    tryWrap("Error adding connProto: " + c) {
+      // the coordinator assigns FEPs when available but meas procs may not be online yet
+      // re sends with routing information when meas_proc is online
+      if (c.hasRouting) connections.add(c)
+      else connections.remove(c)
     }
   }
 
-  def remove(ep: ConnProto) = {
-    execute {
-      tryWrap("Error removing connProto: " + ep) {
-        connections.remove(ep)
-      }
+  def modify(ep: ConnProto) = retrieve(ep) { c =>
+    tryWrap("Error modifying connProto: " + c) {
+      if (c.hasRouting) connections.modify(c)
+      else connections.remove(c)
     }
   }
 
-  def modify(ep: ConnProto) = {
-    load(ep).foreach { result =>
-      execute {
-        tryWrap("Error modifying connProto: " + result) {
-          if (result.hasRouting) connections.modify(result)
-          else connections.remove(result)
-        }
-      }
-    }
+  def remove(ep: ConnProto) = tryWrap("Error removing connProto: " + ep) {
+    connections.remove(ep)
   }
 
-  // don't do anything
-  def subscribed(list: List[ConnProto]) = {
-    load(list).foreach { result =>
-      execute {
-        tryWrap("Error adding list: " + result.size) {
-          result.foreach { ep => connections.add(ep) }
-        }
-      }
-    }
-  }
+  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = fun(loadOrThrow(conn))
+
+  def subscribed(list: List[ConnProto]) = list.foreach(add)
 
   /* ---- Done implementing ServiceContext[Endpoint] ---- */
 
   override def afterStart() = annouce
 
   override def beforeStop() = {
-    info { "Clearing Connections..." }
-    connections.clear
+    info {
+      "Clearing Connections..."
+    }
+    connections.clear()
   }
 
   // blocking function, uses a service to retrieve the fep uid
@@ -118,13 +101,17 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
       _ match {
         case SingleSuccess(fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
-          info { "Got uid: " + fem.getUid }
+          info {
+            "Got uid: " + fem.getUid
+          }
           val query = ConnProto.newBuilder.setFrontEnd(fem).build
           // this is where we actually bind up the service calls
           this.addServiceContext(registry, retryms, ConnProto.parseFrom, query, this)
         case x: Failure =>
           warn(x)
-          delay(retryms) { annouce }
+          delay(retryms) {
+            annouce
+          }
       }
     }
   }

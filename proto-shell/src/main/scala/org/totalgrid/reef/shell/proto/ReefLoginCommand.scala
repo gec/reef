@@ -35,7 +35,7 @@ class ReefLoginCommand extends ReefCommandSupport {
 
   def doCommand() = {
     val request = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(username).setPassword(password)).build
-    val response = putOne(request)
+    val response = putOneThrow(request)
     this.login(username, response.getToken)
   }
 }

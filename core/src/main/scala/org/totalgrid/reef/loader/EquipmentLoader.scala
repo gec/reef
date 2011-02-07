@@ -85,12 +85,12 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList.map(p => equipmentProfiles(p.getName)) ::: List[EquipmentType](equipment)
     info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this equipment
     val entity = toEntity(name, profiles)
-    client.put(entity)
+    client.putThrow(entity)
 
     // Load all the children and create the edges
     trace("load equipment: " + name + " children")
     val children = profiles.flatMap(_.getEquipment).map(loadEquipment(_, childPrefix, actionModel))
-    children.foreach(child => client.put(toEntityEdge(entity, child, "owns")))
+    children.foreach(child => client.putThrow(toEntityEdge(entity, child, "owns")))
 
     // Commands are controls and setpoints. TODO: setpoints
     trace("load equipment: " + name + " commands")
@@ -117,9 +117,9 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
 
-    client.put(commandEntity)
-    client.put(command)
-    client.put(toEntityEdge(entity, commandEntity, "feedback"))
+    client.putThrow(commandEntity)
+    client.putThrow(command)
+    client.putThrow(toEntityEdge(entity, commandEntity, "feedback"))
 
     commandEntity
   }
@@ -137,15 +137,15 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
     trace("processPointType: " + name)
     val pointEntity = toEntityType(name, List("Point"))
     val point = toPoint(name, pointEntity)
-    client.put(pointEntity)
-    client.put(point)
-    client.put(toEntityEdge(entity, pointEntity, "owns"))
+    client.putThrow(pointEntity)
+    client.putThrow(point)
+    client.putThrow(toEntityEdge(entity, pointEntity, "owns"))
 
     val unit = getAttribute[String](name, pointT, _.isSetUnit, _.getUnit, "unit")
     equipmentPointUnits += (name -> unit)
 
     val controls = getElements[Control](name, pointT, _.getControl.toList)
-    controls.map(c => client.put(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
+    controls.map(c => client.putThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
 
     // Insert range triggers to the existing trigger set in the system. Overwrite any triggers with the same name.
     // Do not clear the current TriggerSet.

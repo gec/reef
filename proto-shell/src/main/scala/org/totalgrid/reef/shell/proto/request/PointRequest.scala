@@ -26,7 +26,7 @@ import org.totalgrid.reef.protoapi.client.SyncOperations
 object PointRequest {
 
   def getAllPoints(client: SyncOperations) = {
-    val points = client.get(requestAll)
+    val points = client.getThrow(requestAll)
     if (points.isEmpty) throw RequestFailure("No points found.")
     points
   }

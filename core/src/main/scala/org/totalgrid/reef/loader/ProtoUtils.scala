@@ -88,7 +88,7 @@ object ProtoUtils {
   }
 
   def addTriggers(client: SyncOperations, point: Point, triggers: List[Trigger.Builder]) {
-    var triggerSets = client.get(toTriggerSet(point))
+    var triggerSets = client.getThrow(toTriggerSet(point))
     var triggerSet = triggerSets.size match {
       case 0 => TriggerSet.newBuilder.setPoint(point)
       case 1 => triggerSets.head.toBuilder
@@ -96,7 +96,7 @@ object ProtoUtils {
     }
     triggers.foreach(trigger => triggerSet = insertTrigger(triggerSet, trigger))
     val ts = triggerSet.build
-    client.put(ts)
+    client.putThrow(ts)
   }
 
   /**

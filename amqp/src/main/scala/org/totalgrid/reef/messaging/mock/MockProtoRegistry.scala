@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
 import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ Request, MultiResult, Response, Event }
+import ProtoServiceTypes._
 
 object MockProtoRegistry {
   val timeout = 5000
@@ -43,7 +43,7 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
 
   def this() = this(MockProtoRegistry.timeout)
 
-  case class Req(callback: Option[Response[T]] => Unit, req: Request[T])
+  case class Req(callback: MultiResult[T] => Unit, req: Request[T])
 
   private val in = new MailBox
 
@@ -52,7 +52,7 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
   def respond(timeout: Long)(f: Request[T] => Option[Response[T]]): Unit = {
     in.receiveWithin(timeout) {
       case Req(callback, request) =>
-        callback(f(request))
+        callback(ProtoServiceTypes.convert(f(request)))
     }
   }
 
@@ -60,11 +60,11 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
 
   def asyncRequest[A](verb: Envelope.Verb, payloadA: A, env: RequestEnv)(callbackA: MultiResult[A] => Unit) = {
     val payload = payloadA.asInstanceOf[T]
-    val callback = callbackA.asInstanceOf[(Option[Response[T]]) => Unit]
+    val callback = callbackA.asInstanceOf[MultiResult[T] => Unit]
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
-        case Req(callback, request) => callback(None)
+        case Req(callback, request) => callback(Failure(Envelope.Status.RESPONSE_TIMEOUT))
         case _ =>
       }
     }

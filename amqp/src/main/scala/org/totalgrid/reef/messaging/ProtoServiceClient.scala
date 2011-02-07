@@ -30,7 +30,7 @@ import ProtoSerializer.convertProtoToByteString //implicit
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 
-import ProtoServiceTypes.{MultiResult, Response}
+import ProtoServiceTypes.{ MultiResult, Response }
 
 /** Wraps a regular AMQPProtoServiceClient, layering on machinery for serializing/deserializing
  *	the payload of the service envelope. 
@@ -56,7 +56,7 @@ class ProtoServiceClient[A <: GeneratedMessage](
   def asyncRequest[B <: GeneratedMessage](verb: Envelope.Verb, payload: B, env: RequestEnv)(callback: MultiResult[B] => Unit) {
     // TODO: get rid of these casts
     val payloadA = payload.asInstanceOf[A] // will explode if type is wrong
-    val callbackA = callback.asInstanceOf[(Option[Response[A]]) => Unit]
+    val callbackA = callback.asInstanceOf[MultiResult[A] => Unit]
 
     val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(payloadA)
 
@@ -66,7 +66,7 @@ class ProtoServiceClient[A <: GeneratedMessage](
     send(request, callbackA)
   }
 
-  private def send(request: Envelope.ServiceRequest.Builder, callback: Option[Response[A]] => Unit) = {
+  private def send(request: Envelope.ServiceRequest.Builder, callback: MultiResult[A] => Unit) = {
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {
       val result = resp match {
@@ -82,7 +82,8 @@ class ProtoServiceClient[A <: GeneratedMessage](
           }
         case None => None
       }
-      callback(result)
+
+      callback(ProtoServiceTypes.convert(result))
     }
 
     correlator.send(request, exchange, key, handleResponse)

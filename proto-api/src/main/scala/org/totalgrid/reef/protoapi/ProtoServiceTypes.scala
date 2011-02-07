@@ -22,25 +22,25 @@ package org.totalgrid.reef.protoapi
 
 import org.totalgrid.reef.proto.Envelope
 
-/** Contains types/case classes used in the proto service interfaces
+/**Contains types/case classes used in the proto service interfaces
  */
 object ProtoServiceTypes {
 
   /**
    * Convert a response option into a MultiResult
    */
-  def convert[A](response: Option[Response[A]]): MultiResult[A] = {
-    response match {
-      case Some(x) =>
-        x match {
-          case Response(status, msg, list) =>
-            if (StatusCodes.isSuccess(status)) MultiSuccess(list)
-            else {
-              Failure(status, msg)
-            }
-        }
-      case None => Failure(Envelope.Status.RESPONSE_TIMEOUT, "Service response timeout")
-    }
+  def convert[A](response: Option[Response[A]]): MultiResult[A] = response match {
+    case Some(Response(status, msg, list)) =>
+      if (StatusCodes.isSuccess(status)) MultiSuccess(list)
+      else Failure(status, msg)
+    case None => Failure(Envelope.Status.RESPONSE_TIMEOUT, "Service response timeout")
+  }
+
+  def expectsOne[A](response: MultiResult[A]): SingleResult[A] = response match {
+    case MultiSuccess(List(x)) => SingleSuccess(x)
+    case MultiSuccess(list) =>
+      Failure(Envelope.Status.UNEXPECTED_RESPONSE, "Expected one result, but got: " + list.size)
+    case x: Failure => x
   }
 
   /* ---- Case classes that make the service protoapi easier to use ---- */
@@ -49,28 +49,31 @@ object ProtoServiceTypes {
 
   case class Response[A](status: Envelope.Status, error: String, result: List[A]) {
     def this(status: Envelope.Status, result: List[A]) = this(status, "", result)
+
     def this(status: Envelope.Status, result: A) = this(status, "", List(result))
   }
 
   case class Event[A](event: Envelope.Event, result: A) {
     // accessors for java client
     def getEvent() = event
+
     def getResult() = result
   }
 
   /* ---- Further decomposition that makes matching results even easier to use ---- */
 
   trait MultiResult[+A]
+
   trait SingleResult[+A]
 
   case class SingleSuccess[A](result: A) extends SingleResult[A]
+
   case class MultiSuccess[A](result: List[A]) extends MultiResult[A]
 
-  case class Failure(status: Envelope.Status, error: String) extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
+  case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
     override def toString: String = super.toString + " " + status + " message: " + error
+
     def toException: ProtoServiceException = new ProtoServiceException(error, status)
   }
-
-
 
 }
