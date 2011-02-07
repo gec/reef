@@ -44,6 +44,7 @@ trait Timer {
  *  the specified function from an actor thread
  * 
  */
+@deprecated("Use Reactable.delay instead, these timers don't get cancel automatically")
 object Timer {
 
   case object Cancel
