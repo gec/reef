@@ -39,7 +39,8 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
     val batchService = new MeasurementBatchService(amqp)
 
     def addFepAndMeasProc() {
-      addProtocols(addApp("both", List("FEP", "Processing")))
+      addFep("fep", List("benchmark"))
+      addMeasProc("meas")
     }
 
   }
@@ -66,16 +67,18 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(1)
       coord.pointsWithBadQuality should equal(1)
 
-      val measProcAssign = one(coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build))
-
-      var mb = coord.listenForMeasurements(measProcAssign)
+      var mb = coord.listenForMeasurements("meas")
 
       one(coord.batchService.put(makeBatch(makeInt("dev1.test_point", 10))))
 
       mb.waitFor({ _.size == 1 }, 1000)
 
-      mb.current.head.getMeasCount should equal(1)
-      mb.current.head.getMeas(0).getName should equal("dev1.test_point")
+      val (device, meas) = mb.current.head
+
+      device should equal("dev1")
+
+      meas.getMeasCount should equal(1)
+      meas.getMeas(0).getName should equal("dev1.test_point")
 
       coord.pointsInDatabase should equal(1)
       coord.pointsWithBadQuality should equal(0)
@@ -93,20 +96,16 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(2)
       coord.pointsWithBadQuality should equal(2)
 
-      val measProcAssign = many(2, coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build))
-
-      measProcAssign.head.getRouting.getServiceRoutingKey should (not be ==(measProcAssign.tail.head.getRouting.getServiceRoutingKey))
-
-      var mb = coord.listenForMeasurements(measProcAssign.head)
-      var mb2 = coord.listenForMeasurements(measProcAssign.tail.head)
+      var mb = coord.listenForMeasurements("meas")
 
       many(2, coord.batchService.put(makeBatch(makeInt("dev1.test_point", 10) :: makeInt("dev2.test_point", 10) :: Nil)))
 
-      mb.waitFor({ _.size == 1 }, 1000)
-      mb2.waitFor({ _.size == 1 }, 1000)
+      mb.waitFor({ _.size == 2 }, 1000)
 
-      mb.current.head.getMeasCount should equal(1)
-      mb2.current.head.getMeasCount should equal(1)
+      val meases = mb.current
+
+      meases.map{_._1} should equal(List("dev1","dev2"))
+      meases.map{_._2.getMeasCount} should equal(List(1,1))
 
       coord.pointsInDatabase should equal(2)
       coord.pointsWithBadQuality should equal(0)

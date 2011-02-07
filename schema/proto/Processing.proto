@@ -95,4 +95,6 @@ message MeasurementProcessingConnection{
     optional org.totalgrid.reef.proto.Application.ApplicationConfig meas_proc = 2;
     optional org.totalgrid.reef.proto.Model.Entity logicalNode         = 3;
     optional MeasurementProcessingRouting routing               = 5;
+    optional uint64                       assignedTime          = 6;
+    optional uint64                       readyTime             = 7;
 }

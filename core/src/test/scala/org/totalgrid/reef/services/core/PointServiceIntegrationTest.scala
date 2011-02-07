@@ -56,10 +56,10 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     // add a summary device and make sure it has an fep/measproc
     addDevice("summary", "abnormals")
-    addProtocols(addApp("both", List("FEP", "Processing")))
+    addFep("fep")
+    addMeasProc("meas")
 
-    val syncs = attachFakeMeasProcs
-    syncs.size should equal(1)
+    val syncs = listenForMeasurements("meas")
 
     val abnormalThunker = new PointAbnormalsThunker(modelFac.points, new SummaryPointPublisher(amqp))
     abnormalThunker.addAMQPConsumers(amqp, new InstantReactor {})
@@ -105,7 +105,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
       measPublish(m, "test_point")
     }
     def waitForValue(name: String, value: Long) {
-      syncs.head.waitFor({ l: List[MeasurementBatch] => getValue(name) == value }, 5000)
+      syncs.waitFor({ l: List[(String,MeasurementBatch)] => getValue(name) == value }, 5000)
     }
   }
 

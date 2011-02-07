@@ -93,7 +93,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     info { "MeasProc Change: added: " + added + " rechecking: " + meas.endpoint.value.get.name.value }
     table.where(fep => fep.endpointId === meas.endpointId).headOption.foreach { assign =>
 
-      val newAssign = if (added && meas.serviceRoutingKey.isDefined) {
+      val newAssign = if (added && meas.readyTime.isDefined && meas.serviceRoutingKey.isDefined) {
         assign.copy(serviceRoutingKey = meas.serviceRoutingKey)
       } else {
         markOffline(assign.endpoint.value.get)
