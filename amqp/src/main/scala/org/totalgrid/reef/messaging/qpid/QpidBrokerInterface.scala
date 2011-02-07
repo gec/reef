@@ -87,7 +87,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     if (!exchange.startsWith("amq.")) {
       // Qpid quietly kills your session if you try to declare a built in queue, reevaluate if we switch to rabbit
       session.exchangeDeclare(exchange, exchangeType, null, null)
-      debug("Declared Exchange: " + exchange)
+      info("Declared Exchange: " + exchange)
     }
   }
 

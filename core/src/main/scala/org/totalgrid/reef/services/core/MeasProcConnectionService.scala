@@ -95,7 +95,7 @@ class MeasurementProcessingConnectionServiceModel(
 
   private def checkAssignment(assign: MeasProcAssignment) {
     val applicationId = getMeasProc().map { _.id }
-    info { assign.endpoint.value.get.name + " assigned MeasProc: " + applicationId }
+    info { assign.endpoint.value.get.name.value + " assigned MeasProc: " + applicationId }
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     val serviceRoutingKey = applicationId.map { x => "meas_batch_" + assign.endpoint.value.get.name.value }
     if (assign.applicationId != applicationId) {

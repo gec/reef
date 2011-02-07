@@ -117,7 +117,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
   private def checkAssignment(assign: FrontEndAssignment, ce: CommunicationEndpoint) {
     val applicationId = getFep(ce).map { _.id }
 
-    info { ce.name + " assigned FEP: " + applicationId }
+    info { ce.name.value + " assigned FEP: " + applicationId + " protocol: " + ce.protocol + " port: " + ce.port.value }
 
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId) {
