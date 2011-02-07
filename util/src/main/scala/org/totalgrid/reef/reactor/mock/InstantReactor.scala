@@ -21,8 +21,9 @@
 package org.totalgrid.reef.reactor.mock
 
 import org.totalgrid.reef.reactor._
+import org.totalgrid.reef.util.Timer
 
-class StubHandler extends DelayHandler {
+class StubHandler extends Timer {
   def cancel = {}
   def now = {}
 }
@@ -46,11 +47,8 @@ trait InstantReactor extends Reactable with Lifecycle {
   }
 
   override def execute(fun: => Unit): Unit = checkDepth(fun)
-  override def delay(msec: Long)(fun: => Unit): DelayHandler = { checkDepth(fun); new StubHandler }
-  override def repeat(msec: Long)(fun: => Unit): DelayHandler = { checkDepth(fun); new StubHandler }
+  override def delay(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
+  override def repeat(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
   override def request[T](fun: => T): T = checkDepth(fun)
-
-  //def doStart() { onStart() }
-  //def doStop() { onStop() }
 
 }

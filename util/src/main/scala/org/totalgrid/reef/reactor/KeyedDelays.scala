@@ -29,7 +29,7 @@ import scala.collection.immutable
  * to manage asynchronously
  */
 trait KeyedDelays[A] extends Reactable {
-  private var delays = immutable.Map[A, DelayHandler]()
+  private var delays = immutable.Map[A, Timer]()
 
   def startRepeat(key: A, msec: Long)(fun: => Unit) = execute {
     if (delays.contains(key))

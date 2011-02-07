@@ -23,7 +23,7 @@ package org.totalgrid.reef.reactor
 import scala.actors.AbstractActor
 import scala.actors.Actor._
 import scala.actors.TIMEOUT
-import org.totalgrid.reef.reactor.DelayHandler._
+import org.totalgrid.reef.util.Timer
 
 /// Companion class with case classes that correspond to Reactable's interface
 object Reactor {
@@ -45,6 +45,9 @@ object Reactor {
  *
  */
 trait Reactor extends Reactable with Lifecycle {
+
+  case object CANCEL
+  case object NOW
 
   import Reactor._
 
@@ -73,20 +76,20 @@ trait Reactor extends Reactable with Lifecycle {
   /// sends a unit of work to the actor
   def execute(fun: => Unit) = myactor ! Execute(() => fun)
 
-  class ActorDelayHandler(a: AbstractActor) extends DelayHandler {
+  class ActorDelayHandler(a: AbstractActor) extends Timer {
     def cancel() = a ! CANCEL
 
     def now() = a ! NOW
   }
 
   /// sends a unit of work to do after a specficied time has elapsed.    
-  def delay(msec: Long)(fun: => Unit): DelayHandler = new ActorDelayHandler(
+  def delay(msec: Long)(fun: => Unit): Timer = new ActorDelayHandler(
     actor {
       link(myactor)
       reactWithin(msec) {
-        case DelayHandler.CANCEL =>
+        case CANCEL =>
           unlink(myactor)
-        case DelayHandler.NOW =>
+        case NOW =>
           unlink(myactor)
           this.execute(fun)
         case TIMEOUT =>
@@ -96,16 +99,16 @@ trait Reactor extends Reactable with Lifecycle {
     })
 
   /// send a unit of work to do immediatley and then repeat function until the actor is killed
-  def repeat(msec: Long)(fun: => Unit): DelayHandler = new ActorDelayHandler(
+  def repeat(msec: Long)(fun: => Unit): Timer = new ActorDelayHandler(
     actor {
       link(myactor)
       this.execute(fun)
       loop {
         reactWithin(msec) {
-          case DelayHandler.CANCEL =>
+          case CANCEL =>
             unlink(myactor)
             exit()
-          case DelayHandler.NOW =>
+          case NOW =>
             this.execute(fun)
           case TIMEOUT =>
             this.execute(fun)

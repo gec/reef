@@ -21,7 +21,8 @@
 package org.totalgrid.reef.protocol.benchmark
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle, DelayHandler }
+import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.util.Timer
 
 import java.util.Random
 import scala.collection.JavaConversions._
@@ -44,7 +45,7 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
   private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
 
   private val rand = new Random
-  private var repeater: Option[DelayHandler] = None
+  private var repeater: Option[Timer] = None
 
   override def afterStart() {
     reactor.execute { update(measurements, true) }

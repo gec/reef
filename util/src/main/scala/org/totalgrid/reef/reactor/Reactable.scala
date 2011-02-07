@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.reactor
 
+import org.totalgrid.reef.util.Timer
+
 /**     Abstracts the execution of work on some thread-like implementation.
  */
 trait Reactable {
@@ -28,10 +30,10 @@ trait Reactable {
   def execute(fun: => Unit): Unit
 
   /// dispatches a unit of work to do after a specficied time has elapsed.  
-  def delay(msec: Long)(fun: => Unit): DelayHandler
+  def delay(msec: Long)(fun: => Unit): Timer
 
   /// dispatches a unit of work immediately and periodically
-  def repeat(msec: Long)(fun: => Unit): DelayHandler
+  def repeat(msec: Long)(fun: => Unit): Timer
 
   /// dispatches a unit of work synchronously with a specific evaluation type T
   def request[T](fun: => T): T
