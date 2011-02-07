@@ -95,10 +95,12 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
   private var container: Option[Lifecycle] = None
 
   // we only need the registry to get the appClient, could special case for ApplicationConfig if bootstrapping exchange names
-  private val client = new ProtoClient(amqp, 5000, ServicesList.getServiceInfo)
+  private var client : Option[ProtoClient] = None
 
   private def enroll() {
-    client.asyncPutOne(buildLogin()) {
+    freshClient
+    client.foreach(c =>
+      c.asyncPutOne(buildLogin()) {
       _ match {
         case x: Failure =>
           error("Error getting auth token. " + x)
@@ -106,8 +108,8 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
         case SingleResponse(authToken) =>
           val env = new RequestEnv
           env.addAuthToken(authToken.getToken)
-          client.setDefaultEnv(env)
-          client.asyncPutOne(buildConfig(capabilites, instanceName)) {
+          c.setDefaultEnv(env)
+          c.asyncPutOne(buildConfig(capabilites, instanceName)) {
             _ match {
               case x: Failure =>
                 error("Error registering application. " + x)
@@ -119,7 +121,18 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
             }
           }
       }
-    }
+    })
+  }
+
+  /**
+   * there is an implementation detail of AMQP that states that the underlying "session" we use to communicate to the broker
+   * will be closed if we try to publish a message to an exchange that hasn't been defined. In our system, if an FEP or HMI
+   * client comes up before the services have started (like after a reboot) and an "exchange not found error" is reported we
+   * need to throw away the client and get a new one for each attempt to talk to the auth service.
+   */
+  private def freshClient(){
+    client.foreach(_.close)
+    client = Some(new ProtoClient(amqp, 5000, ServicesList.getServiceInfo))
   }
 
   /**
@@ -130,6 +143,9 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
   /**
    * stops the contained object
    */
-  override def beforeStop() = container.foreach(_.stop)
+  override def beforeStop() = {
+    container.foreach(_.stop)
+    client.foreach(_.close)
+  }
 
 }
