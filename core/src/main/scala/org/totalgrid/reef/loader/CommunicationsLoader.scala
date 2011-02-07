@@ -122,7 +122,7 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
     val protocol = findProtocol(profiles)
     var configFiles = processConfigFiles(protocol, path)
 
-    val protocolName = protocol.getName
+    val protocolName = if (benchmark) "benchmark" else protocol.getName
 
     val port: Option[Port.Builder] = if (protocolName != "benchmark")
       Some(processInterface(profiles))
