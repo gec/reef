@@ -43,40 +43,14 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def load(client: SyncOperations, filename: String, benchmark: Boolean) = {
+  def loadFile(client: SyncOperations, filename: String, benchmark: Boolean) = {
 
-    info("Loading configuration '" + filename + "'")
+    info("Loading configuration file '" + filename + "'")
     try {
       val file = new File(filename)
       val xml = XMLHelper.read(new FileReader(file), classOf[Configuration])
-      var equipmentPointUnits = HashMap[String, String]()
-      val actionModel = HashMap[String, ActionSet]()
 
-      if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
-        throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
-
-      if (xml.isSetMessageModel) {
-        val messageLoader = new MessageLoader(client)
-        val messageModel = xml.getMessageModel
-        messageLoader.load(messageModel)
-      }
-
-      if (xml.isSetActionModel) {
-        val actionSets = xml.getActionModel.getActionSet.toList
-        actionSets.foreach(as => actionModel += (as.getName -> as))
-      }
-
-      if (xml.isSetEquipmentModel) {
-        val equLoader = new EquipmentLoader(client)
-        val equModel = xml.getEquipmentModel
-        equipmentPointUnits = equLoader.load(equModel, actionModel)
-      }
-
-      if (xml.isSetCommunicationsModel) {
-        val comLoader = new CommunicationsLoader(client)
-        val comModel = xml.getCommunicationsModel
-        comLoader.load(comModel, file.getParentFile, equipmentPointUnits, benchmark)
-      }
+      loadConfiguration(client, xml, benchmark)
 
       info("Finished loading configuration '" + filename + "'")
 
@@ -84,6 +58,39 @@ object LoadManager extends Logging {
       case ex =>
         println("Error loading configuration file '" + filename + "' " + ex.getMessage)
         throw ex
+    }
+
+  }
+
+  def loadConfiguration(client: SyncOperations, xml: Configuration, benchmark: Boolean, path: File = new File(".")) = {
+
+    var equipmentPointUnits = HashMap[String, String]()
+    val actionModel = HashMap[String, ActionSet]()
+
+    if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
+      throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
+
+    if (xml.isSetMessageModel) {
+      val messageLoader = new MessageLoader(client)
+      val messageModel = xml.getMessageModel
+      messageLoader.load(messageModel)
+    }
+
+    if (xml.isSetActionModel) {
+      val actionSets = xml.getActionModel.getActionSet.toList
+      actionSets.foreach(as => actionModel += (as.getName -> as))
+    }
+
+    if (xml.isSetEquipmentModel) {
+      val equLoader = new EquipmentLoader(client)
+      val equModel = xml.getEquipmentModel
+      equipmentPointUnits = equLoader.load(equModel, actionModel)
+    }
+
+    if (xml.isSetCommunicationsModel) {
+      val comLoader = new CommunicationsLoader(client)
+      val comModel = xml.getCommunicationsModel
+      comLoader.load(comModel, path, equipmentPointUnits, benchmark)
     }
 
   }
@@ -102,7 +109,7 @@ object LoadManager extends Logging {
       env.addAuthToken(authToken.getToken)
       client.setDefaultEnv(env)
 
-      load(client, filename, benchmark)
+      loadFile(client, filename, benchmark)
     } finally {
       amqp.stop
     }

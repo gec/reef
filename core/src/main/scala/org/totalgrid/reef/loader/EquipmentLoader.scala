@@ -45,6 +45,17 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
   val equipmentPointUnits = HashMap[String, String]()
 
   /**
+   * Reset all class variables
+   */
+  def reset: Unit = {
+    equipmentProfiles.clear
+    pointProfiles.clear
+    commands.clear
+    commandEntities.clear
+    equipmentPointUnits.clear
+  }
+
+  /**
    * Load this equipment node and all children. Create edges to connect the children.
    * Return equipmentPointUnits - map of points to units
    */
