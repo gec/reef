@@ -105,7 +105,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
       measPublish(m, "test_point")
     }
     def waitForValue(name: String, value: Long) {
-      syncs.waitFor({ l: List[(String,MeasurementBatch)] => getValue(name) == value }, 5000)
+      syncs.waitFor({ l: List[(String, MeasurementBatch)] => getValue(name) == value }, 5000)
     }
   }
 

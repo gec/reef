@@ -33,6 +33,8 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
  */
 trait KeyedMap[T] extends Logging {
 
+  def hasChangedEnoughForReload(updated: T, existing: T): Boolean
+
   def getKey(value: T): String
 
   /**
@@ -91,8 +93,10 @@ trait KeyedMap[T] extends Logging {
   def modify(c: T): Unit = {
     active.get(getKey(c)) match {
       case Some(x) =>
-        remove(c)
-        add(c)
+        if (hasChangedEnoughForReload(c, x)) {
+          remove(c)
+          add(c)
+        }
       case None => add(c)
     }
   }

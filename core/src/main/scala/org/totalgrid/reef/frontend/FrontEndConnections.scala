@@ -44,6 +44,10 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
 
+  def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
+    updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey
+  }
+
   def addEntry(c: ConnProto) = {
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
@@ -60,7 +64,7 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
     if (protocol.requiresPort) protocol.addPort(port)
     val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measurementClient), responsePublish(commandClient))
 
-    info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
+    info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
 
     // TODO: subscribe to command requests by entity
     val subProto = Commands.UserCommandRequest.newBuilder.setStatus(Commands.CommandStatus.EXECUTING).build

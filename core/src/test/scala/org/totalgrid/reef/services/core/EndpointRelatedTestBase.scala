@@ -45,13 +45,13 @@ import scala.collection.JavaConversions._
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.protoapi.{RequestEnv, ServiceHandlerHeaders}
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.measurementstore.{MeasurementStore, InMemoryMeasurementStore}
+import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
-import org.totalgrid.reef.util.{Logging, SyncVar}
+import org.totalgrid.reef.util.{ Logging, SyncVar }
 
-abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging{
+abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
   override def beforeAll() {
     DbConnector.connect(DbInfo.loadInfo("test"))
   }
@@ -70,19 +70,19 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
 
   }
 
-  class MockMeasProc(measProcConnection : MeasurementProcessingConnectionService, rtDb : MeasurementStore, amqp : AMQPProtoFactory){
+  class MockMeasProc(measProcConnection: MeasurementProcessingConnectionService, rtDb: MeasurementStore, amqp: AMQPProtoFactory) {
 
-    val mb = new SyncVar(Nil: List[(String,MeasurementBatch)])
+    val mb = new SyncVar(Nil: List[(String, MeasurementBatch)])
 
-    def onMeasProcAssign(event : Event[MeasurementProcessingConnection]): Unit = {
+    def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
 
       val measProcAssign = event.result
-      if(event.event != Envelope.Event.ADDED) return
+      if (event.event != Envelope.Event.ADDED) return
 
       val measProc = new org.totalgrid.reef.measproc.ProcessingNode {
         def process(m: MeasurementBatch) {
           rtDb.set(m.getMeasList.toList)
-          mb.atomic(x => ((measProcAssign.getLogicalNode.getName,m) :: x).reverse)
+          mb.atomic(x => ((measProcAssign.getLogicalNode.getName, m) :: x).reverse)
         }
 
         def add(over: MeasOverride) {}
@@ -93,7 +93,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
       }
       MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantReactor {})
 
-      info {"attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid}
+      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
 
       measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
     }
@@ -156,7 +156,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
 
       val queueName = new SyncVar("")
       val sub = amqp.getEventQueue(MeasurementProcessingConnection.parseFrom, mockMeas.onMeasProcAssign _)
-      sub.observe((online : Boolean, qname : String) => queueName.update(qname))
+      sub.observe((online: Boolean, qname: String) => queueName.update(qname))
 
       queueName.waitWhile("")
 
