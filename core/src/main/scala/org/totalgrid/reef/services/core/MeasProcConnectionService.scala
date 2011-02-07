@@ -109,6 +109,8 @@ class MeasurementProcessingConnectionServiceModel(
     if (existing.readyTime.isDefined) throw new ProtoServiceException("Measurement processor already marked as ready!")
     if (!proto.hasReadyTime) throw new ProtoServiceException("Measurement processor being updated without ready set!")
 
+    // only update we should get is from the measproc when it is ready to handle measurements
+
     val updated = existing.copy(readyTime = Some(proto.getReadyTime))
     update(updated, existing)
   }
