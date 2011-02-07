@@ -95,33 +95,33 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
   private var container: Option[Lifecycle] = None
 
   // we only need the registry to get the appClient, could special case for ApplicationConfig if bootstrapping exchange names
-  private var client : Option[ProtoClient] = None
+  private var client: Option[ProtoClient] = None
 
   private def enroll() {
     freshClient
     client.foreach(c =>
       c.asyncPutOne(buildLogin()) {
-      _ match {
-        case x: Failure =>
-          error("Error getting auth token. " + x)
-          delay(2000) { enroll() }
-        case SingleResponse(authToken) =>
-          val env = new RequestEnv
-          env.addAuthToken(authToken.getToken)
-          c.setDefaultEnv(env)
-          c.asyncPutOne(buildConfig(capabilites, instanceName)) {
-            _ match {
-              case x: Failure =>
-                error("Error registering application. " + x)
-                delay(2000) { enroll() }
-              case SingleResponse(app) =>
-                val components = new CoreApplicationComponents(amqp, app, env)
-                container = Some(setupFun(components))
-                container.get.start
+        _ match {
+          case x: Failure =>
+            error("Error getting auth token. " + x)
+            delay(2000) { enroll() }
+          case SingleResponse(authToken) =>
+            val env = new RequestEnv
+            env.addAuthToken(authToken.getToken)
+            c.setDefaultEnv(env)
+            c.asyncPutOne(buildConfig(capabilites, instanceName)) {
+              _ match {
+                case x: Failure =>
+                  error("Error registering application. " + x)
+                  delay(2000) { enroll() }
+                case SingleResponse(app) =>
+                  val components = new CoreApplicationComponents(amqp, app, env)
+                  container = Some(setupFun(components))
+                  container.get.start
+              }
             }
-          }
-      }
-    })
+        }
+      })
   }
 
   /**
@@ -130,7 +130,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
    * client comes up before the services have started (like after a reboot) and an "exchange not found error" is reported we
    * need to throw away the client and get a new one for each attempt to talk to the auth service.
    */
-  private def freshClient(){
+  private def freshClient() {
     client.foreach(_.close)
     client = Some(new ProtoClient(amqp, 5000, ServicesList.getServiceInfo))
   }
