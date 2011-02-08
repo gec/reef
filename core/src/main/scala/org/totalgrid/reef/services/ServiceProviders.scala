@@ -30,6 +30,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.messaging.ServicesList
+import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 /**
  * list of all of the service providers in the system

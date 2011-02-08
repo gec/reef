@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
 
 import org.totalgrid.reef.proto.Application._
@@ -33,7 +32,10 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
 import org.squeryl.PrimitiveTypeMode._
-import OptionalProtos._ // implicit proto properties
+import OptionalProtos._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+// implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 

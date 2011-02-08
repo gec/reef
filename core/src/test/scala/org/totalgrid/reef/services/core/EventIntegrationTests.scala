@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
-import org.totalgrid.reef.services.ServiceEventPublisherRegistry
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
@@ -36,6 +35,7 @@ import org.totalgrid.reef.models.{ Entity }
 
 import org.squeryl.PrimitiveTypeMode.transaction
 import org.totalgrid.reef.messaging.{ ServicesList, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 @RunWith(classOf[JUnitRunner])
 class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {

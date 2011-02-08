@@ -30,7 +30,10 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._ // proto list to scala list
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+
+// proto list to scala list
 
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
@@ -40,7 +43,6 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
-import org.totalgrid.reef.services.SilentEventPublishers
 import org.totalgrid.reef.util._
 
 import java.util.{ Date, Calendar }

@@ -21,12 +21,12 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.services.ServiceSubscriptionHandler
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.protoapi.RequestEnv
+import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
 
-/** 
+/**
  * Interface for generic use of models by simple REST services
  */
 trait ServiceModel[MessageType, ModelType]

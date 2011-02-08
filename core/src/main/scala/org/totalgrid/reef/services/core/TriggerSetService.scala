@@ -26,12 +26,12 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.proto.Model.{ Point => PointProto }
 import org.totalgrid.reef.proto.Processing.{ TriggerSet => TriggerProto }
 
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.{ ProtoRoutingKeys }
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.totalgrid.reef.services.core.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class TriggerSetService(protected val modelTrans: ServiceTransactable[TriggerSetServiceModel])
     extends BasicProtoService[TriggerProto, TriggerSet, TriggerSetServiceModel] /*(modelTrans)*/ {

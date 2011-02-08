@@ -24,7 +24,6 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.proto.Utils.AttributeList
@@ -37,7 +36,10 @@ import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import BaseProtoService._
 
-import OptionalProtos._ // implicit proto properties
+import OptionalProtos._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+// implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 

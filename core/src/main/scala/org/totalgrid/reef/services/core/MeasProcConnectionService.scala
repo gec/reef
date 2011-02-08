@@ -25,12 +25,14 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment, ApplicationInstance, CommunicationEndpoint }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.squeryl.PrimitiveTypeMode._
-import OptionalProtos._ // implicit proto properties
+import OptionalProtos._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+// implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 

@@ -48,6 +48,7 @@ import scala.collection.JavaConversions._
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
+import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublisherRegistry }
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
   override def beforeAll() {

@@ -40,12 +40,12 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
-import org.totalgrid.reef.services.SilentEventPublishers
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {

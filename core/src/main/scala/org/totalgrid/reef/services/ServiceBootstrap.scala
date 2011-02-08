@@ -26,6 +26,7 @@ import org.totalgrid.reef.protoapi.ServiceHandlerHeaders._
 
 import org.totalgrid.reef.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.messaging.{ ServicesList, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 object ServiceBootstrap {
   /** 
