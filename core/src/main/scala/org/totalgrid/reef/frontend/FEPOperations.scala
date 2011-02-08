@@ -20,15 +20,11 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
-import org.totalgrid.reef.proto.Model.ConfigFile
-import org.totalgrid.reef.protoapi.ProtoServiceTypes
-import ProtoServiceTypes.{ Failure, SingleSuccess }
 
 import scala.collection.JavaConversions._
 
-trait FEPOperations extends Logging {
+trait FEPOperations {
 
   val services: FrontEndServices
 
@@ -39,18 +35,10 @@ trait FEPOperations extends Logging {
     val ep = services.config.getOneOrThrow(conn.getEndpoint)
     val endpoint = ConfigProto.newBuilder(ep)
 
-    val files: List[ConfigFile] = ep.getConfigFilesList.toList
+    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(services.file.getOneOrThrow(cf)))
 
-    endpoint.addAllConfigFiles(loadConfigFiles(files))
     if (ep.hasPort) endpoint.setPort(services.port.getOneOrThrow(ep.getPort))
     cp.setEndpoint(endpoint).build()
-  }
-
-  private def loadConfigFiles(list: List[ConfigFile]): List[ConfigFile] = services.config.getOneScatterGather(list).map {
-    _ match {
-      case x: Failure => throw x.toException
-      case SingleSuccess(file) => file
-    }
   }
 
 }
