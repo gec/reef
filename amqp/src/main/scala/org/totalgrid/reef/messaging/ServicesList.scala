@@ -20,61 +20,26 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.{ ProtoDescriptor, Deserializers }
-
-object ServicesList {
+object ServiceList {
 
   class UnknownServiceException(msg: String) extends Exception(msg)
 
-  val servicemap: Map[Class[_], ServiceInfo] = Map(
+  type ServiceMap = Map[Class[_], ServiceInfo[_, _]]
+  type ServiceTuple = Tuple2[Class[_], ServiceInfo[_, _]]
 
-    getEntry(Deserializers.port, "front_end_port"),
-    getEntry(Deserializers.frontEndProcessor, "front_end_processor"),
-    getEntry(Deserializers.communicationEndpointConfig, "comm_endpoint"),
-    getEntry(Deserializers.communicationEndpointConnection, "front_end_assignment"),
-    getEntry(Deserializers.measurementProcessingConnection, "meas_proc_assignment"),
-
-    getEntry(Deserializers.measurementBatch, "measurement_batch"),
-    getEntry(Deserializers.measurementHistory, "measurement_history"),
-    getEntry(Deserializers.measurementSnapshot, "measurement_snapshot", Some(Deserializers.measurement), Some("measurement")),
-    getEntry(Deserializers.measOverride, "meas_override"),
-    getEntry(Deserializers.triggerSet, "trigger_set"),
-    getEntry(Deserializers.statusSnapshot, "process_status"),
-
-    getEntry(Deserializers.event, "event"),
-    getEntry(Deserializers.eventList, "event_list"),
-    getEntry(Deserializers.eventConfig, "event_config"),
-    getEntry(Deserializers.alarm, "alarm"),
-    getEntry(Deserializers.alarmList, "alarm_list"),
-    getEntry(Deserializers.authToken, "auth_token"),
-
-    getEntry(Deserializers.userCommandRequest, "user_command_request"),
-    getEntry(Deserializers.commandAccess, "command_access"),
-
-    getEntry(Deserializers.applicationConfig, "app_config"),
-
-    getEntry(Deserializers.configFile, "config_file"),
-    getEntry(Deserializers.command, "command"),
-    getEntry(Deserializers.point, "point"),
-    getEntry(Deserializers.entity, "entity"),
-    getEntry(Deserializers.entityEdge, "entity_edge"))
-
-  private def getEntry[_](descriptor: ProtoDescriptor[_], exchange: String, subClass: Option[ProtoDescriptor[_]] = None, subExchange: Option[String] = None): Tuple2[Class[_], ServiceInfo] = {
-    (descriptor.getKlass -> ServiceInfo(
-      exchange,
-      descriptor,
-      subClass.isDefined,
-      subClass.getOrElse(descriptor),
-      subExchange.getOrElse(exchange + "_events")))
-  }
-
-  def getServiceInfo(klass: Class[_]): ServiceInfo = getServiceInfo(klass, servicemap)
-
-  def getServiceInfo(klass: Class[_], map: Map[Class[_], ServiceInfo]): ServiceInfo = map.get(klass) match {
-    case Some(info) => info
+  def getServiceInfo[A](klass: Class[A], map: ServiceMap): ServiceInfo[A, _] = map.get(klass) match {
+    case Some(info) => info.asInstanceOf[ServiceInfo[A, Any]]
     case None => throw new UnknownServiceException("Unknown service for klass: " + klass)
   }
+}
 
-  def getServiceOption(klass: Class[_]): Option[ServiceInfo] = servicemap.get(klass)
+trait ServiceList {
+  def getServiceInfo[A](klass: Class[A]): ServiceInfo[A, _]
+  def getServiceOption[A](klass: Class[A]): Option[ServiceInfo[A, _]]
+}
+
+class ServiceListOnMap(servicemap: ServiceList.ServiceMap) extends ServiceList {
+  def getServiceInfo[A](klass: Class[A]): ServiceInfo[A, _] = ServiceList.getServiceInfo(klass, servicemap)
+  def getServiceOption[A](klass: Class[A]): Option[ServiceInfo[A, _]] = servicemap.get(klass).asInstanceOf[Option[ServiceInfo[A, _]]]
 }
 

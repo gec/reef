@@ -25,11 +25,9 @@ import org.totalgrid.reef.event.BusTiedEventLogPublisher
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.metrics.{ NonOpMetricPublisher, NonOperationalDataPublisher }
 
-import org.totalgrid.reef.messaging.{ ServicesList, RoutingKeys }
-
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.reactor.{ ReactActor, PeriodicReactor }
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry, ReefServicesList }
 
 import org.totalgrid.reef.protoapi.RequestEnv
 
@@ -46,7 +44,7 @@ class CoreApplicationComponents(
     val defaultEnv: RequestEnv) {
 
   // registry is recreated here so we get service registry from bus if necessary 
-  val registry = new AMQPProtoRegistry(amqp, 5000, ServicesList.getServiceInfo, Some(defaultEnv))
+  val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList, Some(defaultEnv))
 
   /// heartbeatActor sends regular updates to the system to let it know we are still running, if this process
   /// dies the system can notice quickly and recover. Its important that the client start this actor and stop

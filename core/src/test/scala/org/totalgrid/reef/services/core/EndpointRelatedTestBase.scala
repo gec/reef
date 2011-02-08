@@ -40,7 +40,7 @@ import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
-import org.totalgrid.reef.messaging.ServicesList
+import org.totalgrid.reef.messaging.ReefServicesList
 import org.totalgrid.reef.util.SyncVar
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
@@ -61,12 +61,12 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
-    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
+    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
     def attachService[T <: ProtoServiceEndpoint](endpoint: T) = {
-      val exch = ServicesList.getServiceInfo(endpoint.servedProto).exchange
+      val exch = ReefServicesList.getServiceInfo(endpoint.servedProto).exchange
       amqp.bindService(exch, endpoint.respond _, true)
       endpoint
     }

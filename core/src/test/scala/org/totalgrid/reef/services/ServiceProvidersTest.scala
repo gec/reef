@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.Lifecycle
-import org.totalgrid.reef.messaging.ServicesList
+import org.totalgrid.reef.messaging.ReefServicesList
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.ServiceRequestHandler
@@ -49,7 +49,7 @@ class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAf
     def addLifecycleObject(obj: Lifecycle) {}
 
     def attachService(endpoint: ProtoServiceEndpoint): ServiceRequestHandler = {
-      ServicesList.getServiceInfo(endpoint.servedProto)
+      ReefServicesList.getServiceInfo(endpoint.servedProto) //call just so an exception will be thrown if it doesn't exist
       new ServiceRequestHandler {
         def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse =
           Envelope.ServiceResponse.getDefaultInstance

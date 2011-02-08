@@ -39,9 +39,10 @@ import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
 import ProtoServiceTypes.Event
-import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.messaging.{ ServicesList, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.{ ReefServicesList, AMQPProtoFactory }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
+
+import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
@@ -57,7 +58,7 @@ class ApplicationManagementTest extends FunSuite with ShouldMatchers with Before
 
     val start = System.currentTimeMillis
 
-    val modelFac = new ModelFactories(new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo), new SilentSummaryPoints)
+    val modelFac = new ModelFactories(new ServiceEventPublisherRegistry(amqp, ReefServicesList), new SilentSummaryPoints)
 
     val processStatusService = new ProcessStatusService(modelFac.procStatus)
 

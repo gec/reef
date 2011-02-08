@@ -70,8 +70,8 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     def post(req: Example.Foo, env: RequestEnv) = noVerb("post")
   }
 
-  val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-    classOf[Example.Foo] -> new ServiceInfo(exchange, Deserializers.foo))
+  val serviceList = new ServiceListOnMap(Map(
+    classOf[Example.Foo] -> ServiceInfo.get(exchange, Deserializers.foo)))
 
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run { amqp =>
@@ -96,7 +96,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
       amqp.bindService(exchange, service.respond _) // this service just multplies the payload by 3	    	    	    
       val client = amqp.getProtoServiceClient(exchange, 10000, Example.Foo.parseFrom)
 
-      val superClient = new ProtoClient(amqp, 10000, ServicesList.getServiceInfo(_, exchangeMap))
+      val superClient = new ProtoClient(amqp, 10000, serviceList)
 
       // invoke the service future, and check that
       // response payload matches the request

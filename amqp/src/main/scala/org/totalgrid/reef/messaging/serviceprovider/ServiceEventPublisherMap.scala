@@ -21,14 +21,14 @@
 package org.totalgrid.reef.messaging.serviceprovider
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.messaging.ServiceInfo
+import org.totalgrid.reef.messaging.ServiceList
 
 /**
  * mixin that manages the lazy creation and storing of subscription handlers (publishers) 
  * that the models use. This way the models can be constructed multiple times and all publications
  * go through the same publishingactors  
  */
-abstract class ServiceEventPublisherMap(serviceInfo: Class[_] => ServiceInfo) extends ServiceEventPublishers {
+abstract class ServiceEventPublisherMap(lookup: ServiceList) extends ServiceEventPublishers {
 
   /**
    * concrete implementations define this to inject a specific ServiceSubscriptionHandler class
@@ -46,6 +46,6 @@ abstract class ServiceEventPublisherMap(serviceInfo: Class[_] => ServiceInfo) ex
     }
   }
   def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = {
-    getSink(serviceInfo(klass).subExchange)
+    getSink(lookup.getServiceInfo(klass).subExchange)
   }
 }

@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.reactor.mock.InstantReactor
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry, ServicesList }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry, ReefServicesList }
 
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
@@ -45,7 +45,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
   class PointFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp, true) {
 
-    val registry = new AMQPProtoRegistry(amqp, 5000, ServicesList.getServiceInfo)
+    val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
 
     val pointClient = registry.getServiceClient(PointProto.parseFrom _)
 

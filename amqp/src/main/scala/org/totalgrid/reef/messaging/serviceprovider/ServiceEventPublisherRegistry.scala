@@ -20,14 +20,14 @@
  */
 package org.totalgrid.reef.messaging.serviceprovider
 
-import org.totalgrid.reef.messaging.{ ServiceInfo, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.{ ServiceList, AMQPProtoFactory }
 import org.totalgrid.reef.reactor.ReactActor
 
 /**
  * BusTied implementation of the ServiceEventPublishers interface that generates "real" pubslishers that send
  * to a message broker
  */
-class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory, serviceInfo: Class[_] => ServiceInfo) extends ServiceEventPublisherMap(serviceInfo) {
+class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
 
   def createPublisher(exchange: String): ServiceSubscriptionHandler = {
     val reactor = new ReactActor {}

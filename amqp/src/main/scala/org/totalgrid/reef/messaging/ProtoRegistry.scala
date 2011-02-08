@@ -56,10 +56,10 @@ trait ProtoServiceRegistry {
 trait ProtoRegistry extends ProtoServiceRegistry with ProtoQueueRegistry
 
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
-class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, serviceInfo: Class[_] => ServiceInfo, defaultEnv: Option[RequestEnv] = None) extends ProtoRegistry {
+class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends ProtoRegistry {
 
   def getServiceClient[T <: GeneratedMessage](deserialize: Array[Byte] => T, key: String): ServiceClient = {
-    val service = serviceInfo(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]))
+    val service = lookup.getServiceInfo(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]))
     val client = factory.getProtoServiceClient(service.exchange, key, timeoutms, deserialize)
     defaultEnv.foreach(client.setDefaultEnv(_))
     client

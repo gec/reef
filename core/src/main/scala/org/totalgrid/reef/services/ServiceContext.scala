@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.{ ServicesList, AMQPProtoFactory, ServiceRequestHandler }
+import org.totalgrid.reef.messaging.{ ReefServicesList, AMQPProtoFactory, ServiceRequestHandler }
 import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
 import org.totalgrid.reef.util.{ Logging }
 
@@ -56,7 +56,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   }
 
   def attachService(endpoint: ProtoServiceEndpoint): ServiceRequestHandler = {
-    val exchange = ServicesList.getServiceInfo(endpoint.servedProto).exchange
+    val exchange = ReefServicesList.getServiceInfo(endpoint.servedProto).exchange
     val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint, endpoint.useAuth)
 
     // each service gets its own actor so a slow service can't block a fast service but

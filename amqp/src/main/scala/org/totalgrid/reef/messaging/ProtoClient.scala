@@ -36,7 +36,7 @@ import com.google.protobuf.GeneratedMessage
 class ProtoClient(
     factory: ServiceClientFactory,
     timeoutms: Long,
-    serviceInfo: Class[_] => ServiceInfo) extends ServiceClient {
+    lookup: ServiceList) extends ServiceClient {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ServiceClient]
@@ -45,7 +45,7 @@ class ProtoClient(
     clients.get(klass) match {
       case Some(client) => client
       case None =>
-        val info = serviceInfo(klass)
+        val info = lookup.getServiceInfo(klass)
         val deser = (info.descriptor.deserializeBytes _).asInstanceOf[Array[Byte] => T]
         val client = factory.addProtoServiceClient[T](info.exchange, "request", deser, correlator)
         clients = clients + (klass -> client)
@@ -72,7 +72,7 @@ class ProtoClient(
   def addSubscription[T <: GeneratedMessage](klass: Class[_], ea: Event[T] => Unit): Subscription = {
 
     // TODO: lookup by subscription klass instead of serviceKlass
-    val info = serviceInfo(klass)
+    val info = lookup.getServiceInfo(klass)
     val deser = (info.subType.deserializeBytes _).asInstanceOf[Array[Byte] => T]
     val subIsStreamType = info.subIsStreamType
 

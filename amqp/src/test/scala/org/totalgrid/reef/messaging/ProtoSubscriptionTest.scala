@@ -36,8 +36,9 @@ import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, R
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
   val exchange = "ProtoSubscriptionTest"
-  val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-    classOf[Envelope.RequestHeader] -> new ServiceInfo(exchange, Deserializers.requestHeader))
+  val exchangeMap: ServiceList.ServiceMap = Map(
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, Deserializers.requestHeader))
+  val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {
     val connection = new MockBrokerInterface
@@ -51,7 +52,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, true)
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
-        val client = new ProtoClient(syncAmqp, 10000, ServicesList.getServiceInfo(_, exchangeMap))
+        val client = new ProtoClient(syncAmqp, 10000, servicelist)
 
         test(client)
       }

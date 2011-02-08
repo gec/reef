@@ -94,7 +94,7 @@ object LoadManager extends Logging {
 
     try {
       // client that lets us talk to all the services through 1 interface
-      val client = new ProtoClient(amqp, 5000, ServicesList.getServiceInfo)
+      val client = new ProtoClient(amqp, 5000, ReefServicesList)
 
       // get an auth token and attach it to the client for all future requests
       val authToken = client.putOneOrThrow(ApplicationEnroller.buildLogin())

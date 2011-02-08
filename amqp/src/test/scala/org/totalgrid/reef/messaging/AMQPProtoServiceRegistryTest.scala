@@ -30,41 +30,43 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.mock.MockBrokerInterface
-import org.totalgrid.reef.messaging.ServicesList.UnknownServiceException
+import org.totalgrid.reef.messaging.ServiceList.UnknownServiceException
 
 import org.totalgrid.reef.protoapi.ProtoServiceException
 
 @RunWith(classOf[JUnitRunner])
 class AMQPProtoServiceRegistryTest extends Suite with ShouldMatchers {
 
+  private def getServiceList(map: ServiceList.ServiceMap) = new ServiceListOnMap(map)
+
   def testFooExists() {
-    val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-      classOf[Example.Foo] -> new ServiceInfo("foo", Deserializers.foo))
+    val list = getServiceList(Map(
+      classOf[Example.Foo] -> ServiceInfo.get("foo", Deserializers.foo)))
 
     val factory = new AMQPProtoFactory with ReactActor {
       val broker = new MockBrokerInterface
     }
-    val registry = new AMQPProtoRegistry(factory, 0, ServicesList.getServiceInfo(_, exchangeMap))
+    val registry = new AMQPProtoRegistry(factory, 0, list)
     registry.getServiceClient(Example.Foo.parseFrom)
 
-    val client = new ProtoClient(factory, 0, ServicesList.getServiceInfo(_, exchangeMap))
+    val client = new ProtoClient(factory, 0, list)
     intercept[ProtoServiceException] {
       client.getOneOrThrow(Example.Foo.newBuilder.build)
     }
   }
 
   def testUnknownTypeThrowsException() {
-    val exchangeMap = Map.empty[Class[_], ServiceInfo]
+    val list = getServiceList(Map.empty)
     val factory = new AMQPProtoFactory with ReactActor {
       val broker = new MockBrokerInterface
     }
 
-    val registry = new AMQPProtoRegistry(factory, 0, ServicesList.getServiceInfo(_, exchangeMap))
+    val registry = new AMQPProtoRegistry(factory, 0, list)
     intercept[UnknownServiceException] {
       registry.getServiceClient(Example.Foo.parseFrom)
     }
 
-    val client = new ProtoClient(factory, 0, ServicesList.getServiceInfo(_, exchangeMap))
+    val client = new ProtoClient(factory, 0, list)
     intercept[UnknownServiceException] {
       client.getOneOrThrow(Example.Foo.newBuilder.build)
     }

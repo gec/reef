@@ -23,13 +23,9 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.app.CoreApplicationComponents
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics, HistorianMetrics }
 
-import org.totalgrid.reef.event.{ EventRouter }
-
-import org.totalgrid.reef.reactor.ReactActor
-
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
-import org.totalgrid.reef.messaging.ServicesList
+import org.totalgrid.reef.messaging.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 /**
@@ -37,7 +33,7 @@ import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistr
  */
 class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore) {
 
-  val pubs = new ServiceEventPublisherRegistry(components.amqp, ServicesList.getServiceInfo)
+  val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   val summaries = new SummaryPointPublisher(components.amqp)
   val modelFac = new ModelFactories(pubs, summaries, cm)
 

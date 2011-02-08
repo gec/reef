@@ -20,30 +20,19 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.util.{ Logging, ShutdownHook, MetricsHookSource }
-import org.totalgrid.reef.reactor.PeriodicReactor
+import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.event.EventType._
-import org.totalgrid.reef.metrics.{ CurrentMetricsValueHolder, NonOpMetricPublisher }
-
 import org.totalgrid.reef.frontend.KeyedMap
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 
-import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-
-import org.totalgrid.reef.messaging.{ ServicesList, RoutingKeys }
-
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle, LifecycleManager, ReactActor }
+import org.totalgrid.reef.reactor.{ Reactable, Lifecycle, LifecycleManager }
 import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
 
 import org.totalgrid.reef.reactor.ReactActor
-import org.totalgrid.reef.app.{ ServiceHandler, ServiceContext }
-import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.app.{ ServiceHandler, CoreApplicationComponents }
+import org.totalgrid.reef.app.{ ServiceHandler, CoreApplicationComponents, ServiceContext }
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
-import org.totalgrid.reef.persistence.{ InMemoryObjectCache, ObjectCache }
+import org.totalgrid.reef.persistence.{ InMemoryObjectCache }
 import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheAdapter, MeasurementStoreFinder }
 
 abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNode)

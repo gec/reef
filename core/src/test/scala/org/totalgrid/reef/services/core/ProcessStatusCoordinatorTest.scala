@@ -39,7 +39,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.messaging.ServicesList
+import org.totalgrid.reef.messaging.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
 
 @RunWith(classOf[JUnitRunner])
@@ -75,7 +75,7 @@ class ProcessStatusCoordinatorTest extends FunSuite with ShouldMatchers with Bef
     }
   }
 
-  class CountingEventPublishers extends ServiceEventPublisherMap(ServicesList.getServiceInfo) {
+  class CountingEventPublishers extends ServiceEventPublisherMap(ReefServicesList) {
     def createPublisher(exchange: String): ServiceSubscriptionHandler = {
       new CountingSubscriptionHandler
     }

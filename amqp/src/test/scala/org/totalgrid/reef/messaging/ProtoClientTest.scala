@@ -27,7 +27,7 @@ import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes.Response
 
 import org.totalgrid.reef.messaging.mock._
-import org.totalgrid.reef.messaging.ServicesList.UnknownServiceException
+import org.totalgrid.reef.messaging.ServiceList.UnknownServiceException
 import com.google.protobuf.ByteString
 
 import org.scalatest.FunSuite
@@ -57,9 +57,9 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
   val exchangeA = "test.protoClient.A"
   val exchangeB = "test.protoClient.B"
 
-  val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-    classOf[Example.Foo] -> new ServiceInfo(exchangeA, Deserializers.foo),
-    classOf[Envelope.RequestHeader] -> new ServiceInfo(exchangeB, Deserializers.requestHeader))
+  val serviceList = new ServiceListOnMap(Map(
+    classOf[Example.Foo] -> ServiceInfo.get(exchangeA, Deserializers.foo),
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, Deserializers.requestHeader)))
 
   def setupTest(test: ProtoClient => Unit) {
     val connection = new MockBrokerInterface
@@ -72,7 +72,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
       amqp.bindService(exchangeB, (new HeadersX2).respond, true)
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
-        val client = new ProtoClient(syncAmqp, 10000, ServicesList.getServiceInfo(_, exchangeMap))
+        val client = new ProtoClient(syncAmqp, 10000, serviceList)
 
         test(client)
       }

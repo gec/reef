@@ -26,7 +26,7 @@ import org.totalgrid.reef.protoapi.client.SyncOperations
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.{ Response, MultiResult, Failure }
 
-import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ServicesList }
+import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ReefServicesList }
 import org.totalgrid.reef.messaging.javabridge.ProtoDescriptor
 
 import org.osgi.framework.BundleContext
@@ -62,7 +62,7 @@ trait OSGiSyncOperations extends SyncOperations {
 
   def getBundleContext: BundleContext
 
-  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ServicesList.getServiceOption(payload.getClass) match {
+  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
       val rsp = new ServiceDispatcher(getService(info.exchange), info.descriptor.asInstanceOf[ProtoDescriptor[A]]).request(verb, payload, env)
       Some(rsp)
