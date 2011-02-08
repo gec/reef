@@ -43,7 +43,7 @@ public class TestPointService extends JavaBridgeTestBase {
 	@Test
 	public void pointsInSubstation() {
 
-		// Specify all point entities that are under equipment of substation "Apex"
+		// Specify all point entities that are under equipment
 		Entity eqRequest = Entity.newBuilder().addTypes("Substation").addRelations(
 				Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(
 						Entity.newBuilder().addTypes("Equipment").addRelations(

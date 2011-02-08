@@ -32,6 +32,7 @@ import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Events.*;
 
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Random;
 
 
@@ -122,8 +123,8 @@ public class SampleRequests {
 	/**
 	 * Return a list of the most recent alarms (not in the REMOVED state).
 	 */
-	public static List<Alarm> getUnRemovedAlarms(IServiceClient client) {
-		Alarm s = Alarm.newBuilder().build(); // select all State!=REMOVED by default.
+	public static List<Alarm> getUnRemovedAlarms(IServiceClient client, String eventType) {
+		Alarm s = Alarm.newBuilder().setEvent(Event.newBuilder().setEventType(eventType)).build(); // select all State!=REMOVED by default.
 		List<Alarm> list = client.get(s);
 		return list;
 	}
@@ -133,10 +134,11 @@ public class SampleRequests {
 	 * entity could be a substation or a device. In the case of a substation it should return all
 	 * the alarms on the substation entity and all alarms on devices under the substation.
 	 */
-	public static List<Alarm> getAlarmsForEntity(IServiceClient client, Entity entity) {
+	public static List<Alarm> getAlarmsForEntity(IServiceClient client, Entity entity, String eventType) {
 
 		Event.Builder es = Event.newBuilder();
 		es.setEntity(entity);
+        es.setEventType(eventType);
 
 		Alarm p = Alarm.newBuilder().setEvent(es).build();
 		List<Alarm> list = client.get(p);
@@ -165,4 +167,26 @@ public class SampleRequests {
 		Entity substation = substations.get(r.nextInt(substations.size()));
 		return substation;
 	}
+
+    /**
+     * get a flattened list of all children of the entity with name parent.
+     * Examples: all "Points" under "Apex" or all "Commands" under "Breaker2"
+     */
+    public static List<Entity> getChildrenOfType(IServiceClient client, String parent, String type){
+        Entity eqRequest = Entity.newBuilder().setName(parent).addRelations(
+				Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(Entity.newBuilder().addTypes(type)))
+				.build();
+
+        Entity sub = client.getOne(eqRequest);
+
+		List<Entity> entities = new LinkedList<Entity>();
+
+		for (Relationship r : sub.getRelationsList()) {
+			for (Entity e : r.getEntitiesList()) {
+				entities.add(e);
+			}
+        }
+
+		return entities;
+    }
 }

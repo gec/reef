@@ -73,21 +73,21 @@ public class TestEntityService extends JavaBridgeTestBase {
 	public void getAllEntities() {
 		Entity request = Entity.newBuilder().setUid("*").build();
 		List<Entity> list = client.get(request);
-		assertTrue(list.size() > 10); // the number here is arbitrary
+		assertTrue(list.size() > 0); // the number here is arbitrary
 
 	}
 
 	/**
 	 * Ask for all entities of type substation, verify that the returned list matches the seed data
-	 * 
+	 *
 	 * */
 	@Test
 	public void getSubstationEntities() {
 		Entity request = Entity.newBuilder().addTypes("Substation").build();
 		Map<String, Entity> map = getEntityMap(client.get(request));
 		assertEquals(2, map.size());
-		assertTrue(map.containsKey("Substation01"));
-		assertTrue(map.containsKey("Substation02"));
+		assertTrue(map.containsKey("SimulatedSubstation"));
+		assertTrue(map.containsKey("StaticSubstation"));
 	}
 
 	/**
@@ -165,29 +165,17 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 */
 	@Test
 	public void getEquipmentInASubstation() {
-		Entity subRequest = Entity.newBuilder().addTypes("Substation").build();
-		List<Entity> substations = client.get(subRequest);
-		assert (substations.size() > 0);
 
-		Entity eqRequest = Entity.newBuilder(substations.get(0)).addRelations(
-				Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(Entity.newBuilder().addTypes("Equipment")))
-				.build();
+        Entity substation = SampleRequests.getRandomSubstation(client);
 
-		// we know we're only expecting one result since we have the uid filled in above
-		Entity sub = client.getOne(eqRequest);
-
-		assertEquals(1, sub.getRelationsCount());
-
+        List<Entity> entities = SampleRequests.getChildrenOfType(client, substation.getName(), "Equipment");
 		Set<String> equipTypes = new HashSet<String>();
 
-		for (Relationship r : sub.getRelationsList()) {
-			assertEquals("owns", r.getRelationship());
-			for (Entity e : r.getEntitiesList()) {
-				for (String type : e.getTypesList()) {
-					equipTypes.add(type);
-				}
-			}
-		}
+        for (Entity e : entities) {
+            for (String type : e.getTypesList()) {
+                equipTypes.add(type);
+            }
+        }
 
 		// the canonical model has these equipment types in each substation
 		assertTrue(equipTypes.contains("Breaker"));

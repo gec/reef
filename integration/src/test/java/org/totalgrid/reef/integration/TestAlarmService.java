@@ -25,7 +25,9 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.messaging.javabridge.Deserializers;
 import org.totalgrid.reef.messaging.javabridge.Subscription;
+import org.totalgrid.reef.proto.Alarms;
 import org.totalgrid.reef.proto.Alarms.*;
+import org.totalgrid.reef.proto.Events;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.Relationship;
 
@@ -35,12 +37,32 @@ import org.totalgrid.reef.integration.helpers.*;
 
 public class TestAlarmService extends JavaBridgeTestBase {
 
+    /**
+     * insert an event config and post an event of that type to generate the alarm
+     */
+    @Test
+    public void prepareAlarms() {
+        client.putOne(EventConfig.newBuilder()
+                .setEventType("Test.Alarm")
+                .setResource("Alarm")
+                .setDesignation(EventConfig.Designation.ALARM)
+                .setAlarmState(Alarms.Alarm.State.UNACK_AUDIBLE)
+                .setSeverity(1).build()
+        );
+
+        // add an alarm for a point we know is not changing
+        client.putOne(Events.Event.newBuilder()
+                .setEventType("Test.Alarm")
+                .setEntity(Entity.newBuilder().setName("StaticSubstation.Line02.Current")).build()
+        );
+    }
+
 	/** Test that some alarms are returned from the AlarmQuery service */
 	@Test
 	public void simpleQueries() {
 
 		// Get all alarms that are not removed.
-		List<Alarm> alarms = SampleRequests.getUnRemovedAlarms(client);
+		List<Alarm> alarms = SampleRequests.getUnRemovedAlarms(client, "Test.Alarm");
 		assertTrue(alarms.size() > 0);
 
 	}
@@ -53,11 +75,11 @@ public class TestAlarmService extends JavaBridgeTestBase {
 		Entity substation = SampleRequests.getRandomSubstation(client);
 
 		// Get all the points in the substation. Alarms are associated with individual points.
-		Entity eqRequest = Entity.newBuilder(substation).addRelations(
+		Entity eqRequest = Entity.newBuilder().setName("StaticSubstation").addRelations(
 				Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(Entity.newBuilder().addTypes("Point"))).build();
 
 		// Get the alarms on both the substation and devices under the substation.
-		List<Alarm> alarms = SampleRequests.getAlarmsForEntity(client, eqRequest);
+		List<Alarm> alarms = SampleRequests.getAlarmsForEntity(client, eqRequest, "Test.Alarm");
 		assertTrue(alarms.size() > 0);
 	}
 
@@ -66,7 +88,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 	public void updateAlarms() {
 
 		// Get unacknowledged alarms.
-		List<Alarm> alarms = SampleRequests.getUnRemovedAlarms(client);
+		List<Alarm> alarms = SampleRequests.getUnRemovedAlarms(client, "Test.Alarm");
 		assertTrue(alarms.size() > 0);
 
 		// Grab the first unacknowledged alarm and acknowledge it.
@@ -79,19 +101,4 @@ public class TestAlarmService extends JavaBridgeTestBase {
 		}
 	}
 
-	/** Show a subscription to all alarms. */
-	@Test
-	@SuppressWarnings("unchecked")
-	public void subscribeToAllAlarms() throws java.lang.InterruptedException {
-
-		MockEventAcceptor<Alarm> mock = new MockEventAcceptor<Alarm>();
-
-		Subscription sub = client.addSubscription(Deserializers.alarm(), mock);
-
-		List<Alarm> alarms = client.get(Alarm.newBuilder().build(), sub);
-
-		assertTrue(alarms.size() > 0);
-
-		mock.pop(10000);
-	}
 }
