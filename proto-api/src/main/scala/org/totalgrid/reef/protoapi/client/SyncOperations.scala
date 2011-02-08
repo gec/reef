@@ -28,6 +28,8 @@ import ProtoServiceTypes._
 import org.totalgrid.reef.proto.Envelope
 import Envelope.Verb._
 
+import org.totalgrid.reef.protoapi.ProtoConversions._ //implicits
+
 trait SyncOperations {
 
   // overridable
@@ -39,11 +41,11 @@ trait SyncOperations {
   def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): MultiResult[A]
 
   // helpers
-  def requestOne[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = expectsOne(request(verb, payload, env))
+  def requestOne[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = request(verb, payload, env)
 
-  def requestThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(request(verb, payload, env))
+  def requestThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): List[A] = request(verb, payload, env)
 
-  def requestOneOrThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(requestOne(verb, payload, env))
+  def requestOneOrThrow[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): A = requestOne(verb, payload, env)
 
   def get[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(GET, payload, env)
 
@@ -53,38 +55,28 @@ trait SyncOperations {
 
   def put[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(PUT, payload, env)
 
-  def getOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = expectsOne(get(payload, env))
+  def getOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = get(payload, env)
 
-  def deleteOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = expectsOne(delete(payload, env))
+  def deleteOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = delete(payload, env)
 
-  def postOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = expectsOne(post(payload, env))
+  def postOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = post(payload, env)
 
-  def putOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = expectsOne(put(payload, env))
+  def putOne[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = put(payload, env)
 
-  def getOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(get(payload, env))
+  def getOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = get(payload, env)
 
-  def deleteOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(delete(payload, env))
+  def deleteOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = delete(payload, env)
 
-  def postOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(post(payload, env))
+  def postOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = post(payload, env)
 
-  def putOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = throwOnFailure(put(payload, env))
+  def putOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): List[A] = put(payload, env)
 
-  def getOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(getOne(payload, env))
+  def getOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = getOne(payload, env)
 
-  def deleteOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(deleteOne(payload, env))
+  def deleteOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = deleteOne(payload, env)
 
-  def postOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(postOne(payload, env))
+  def postOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = postOne(payload, env)
 
-  def putOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = throwOnFailure(putOne(payload, env))
-
-  protected def throwOnFailure[A](response: MultiResult[A]): List[A] = response match {
-    case MultiSuccess(list) => list
-    case x: Failure => throw x.toException
-  }
-
-  protected def throwOnFailure[A](response: SingleResult[A]): A = response match {
-    case SingleSuccess(x) => x
-    case x: Failure => throw x.toException
-  }
+  def putOneOrThrow[A <: GeneratedMessage](payload: A, env: RequestEnv = getRequestEnv): A = putOne(payload, env)
 
 }

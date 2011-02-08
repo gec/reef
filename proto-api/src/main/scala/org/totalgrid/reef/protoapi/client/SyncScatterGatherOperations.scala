@@ -20,12 +20,12 @@
  */
 package org.totalgrid.reef.protoapi.client
 
+import org.totalgrid.reef.proto.Envelope.Verb
+import com.google.protobuf.GeneratedMessage
+
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes._
-
-import org.totalgrid.reef.proto.Envelope.Verb
-
-import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.protoapi.ProtoConversions._
 
 trait SyncScatterGatherOperations extends FutureOperations {
 
@@ -36,8 +36,6 @@ trait SyncScatterGatherOperations extends FutureOperations {
   def deleteScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.DELETE, payloads, env)
   def putScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.PUT, payloads, env)
   def postScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.POST, payloads, env)
-
-  private implicit def convert[A <: GeneratedMessage](list: List[MultiResult[A]]): List[SingleResult[A]] = list.map { expectsOne }
 
   def getOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[SingleResult[T]] = getScatterGather(payloads, env)
   def deleteOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[SingleResult[T]] = deleteScatterGather(payloads, env)

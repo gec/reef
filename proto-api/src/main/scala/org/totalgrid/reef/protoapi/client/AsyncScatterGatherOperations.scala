@@ -27,6 +27,8 @@ import org.totalgrid.reef.proto.Envelope.Verb
 
 import com.google.protobuf.GeneratedMessage
 
+import org.totalgrid.reef.protoapi.ProtoConversions._ //implicits
+
 trait AsyncScatterGatherOperations extends AsyncOperations {
 
   def requestAsyncScatterGather[T <: GeneratedMessage](verb: Verb, payloads: List[T], env: RequestEnv)(callback: List[MultiResult[T]] => Unit) {
@@ -57,20 +59,16 @@ trait AsyncScatterGatherOperations extends AsyncOperations {
     requestAsyncScatterGather(Verb.DELETE, payloads, env)(callback)
 
   def asyncGetOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[SingleResult[T]] => Unit) =
-    asyncGetScatterGather(payloads, env)(convert(callback))
+    asyncGetScatterGather(payloads, env)(callback)
 
   def asyncPutOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[SingleResult[T]] => Unit) =
-    asyncPutScatterGather(payloads, env)(convert(callback))
+    asyncPutScatterGather(payloads, env)(callback)
 
   def asyncPostOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[SingleResult[T]] => Unit) =
-    asyncPostScatterGather(payloads, env)(convert(callback))
+    asyncPostScatterGather(payloads, env)(callback)
 
   def asyncDeleteOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv)(callback: List[SingleResult[T]] => Unit) =
-    asyncDeleteScatterGather(payloads, env)(convert(callback))
-
-  private def convert[T <: GeneratedMessage](callback: List[SingleResult[T]] => Unit): List[MultiResult[T]] => Unit = { (a: List[MultiResult[T]]) =>
-    callback(a.map(x => expectsOne(x)))
-  }
+    asyncDeleteScatterGather(payloads, env)(callback)
 
 }
 

@@ -26,23 +26,6 @@ import org.totalgrid.reef.proto.Envelope
  */
 object ProtoServiceTypes {
 
-  /**
-   * Convert a response option into a MultiResult
-   */
-  def convert[A](response: Option[Response[A]]): MultiResult[A] = response match {
-    case Some(Response(status, msg, list)) =>
-      if (StatusCodes.isSuccess(status)) MultiSuccess(list)
-      else Failure(status, msg)
-    case None => Failure(Envelope.Status.RESPONSE_TIMEOUT, "Service response timeout")
-  }
-
-  def expectsOne[A](response: MultiResult[A]): SingleResult[A] = response match {
-    case MultiSuccess(List(x)) => SingleSuccess(x)
-    case MultiSuccess(list) =>
-      Failure(Envelope.Status.UNEXPECTED_RESPONSE, "Expected one result, but got: " + list.size)
-    case x: Failure => x
-  }
-
   /* ---- Case classes that make the service protoapi easier to use ---- */
 
   case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv)

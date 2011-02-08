@@ -27,6 +27,8 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.protoapi.RequestEnv
 import org.totalgrid.reef.protoapi.ProtoServiceTypes._
 
+import org.totalgrid.reef.protoapi.ProtoConversions._
+
 trait AsyncOperations extends Logging {
 
   /** All other async functions can be reduced to this
@@ -42,16 +44,12 @@ trait AsyncOperations extends Logging {
 
   def asyncPut[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.PUT, payload, env)(callback)
 
-  def asyncGetOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncGet(payload, env) { checkOne(payload, callback) }
+  def asyncGetOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncGet(payload, env)(callback)
 
-  def asyncDeleteOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncDelete(payload, env) { checkOne(payload, callback) }
+  def asyncDeleteOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncDelete(payload, env)(callback)
 
-  def asyncPutOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPut(payload, env) { checkOne(payload, callback) }
+  def asyncPutOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPut(payload, env)(callback)
 
-  def asyncPostOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPost(payload, env) { checkOne(payload, callback) }
-
-  private def checkOne[A <: GeneratedMessage](request: A, callback: SingleResult[A] => Unit): (MultiResult[A]) => Unit = { (multi: MultiResult[A]) =>
-    callback(expectsOne(multi))
-  }
+  def asyncPostOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPost(payload, env)(callback)
 
 }
