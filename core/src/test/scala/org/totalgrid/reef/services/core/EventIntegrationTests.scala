@@ -29,13 +29,13 @@ import org.totalgrid.reef.models.RunTestsInsideTransaction
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.services.ServiceEventPublisherRegistry
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 import org.totalgrid.reef.models.{ Entity }
 
 import org.squeryl.PrimitiveTypeMode.transaction
+import org.totalgrid.reef.messaging.{ ServicesList, AMQPProtoFactory }
 
 @RunWith(classOf[JUnitRunner])
 class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
@@ -52,7 +52,7 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: AMQPProtoFactory) {
-    val publishers = new ServiceEventPublisherRegistry(amqp)
+    val publishers = new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo)
     val summaries = new SilentSummaryPoints //((name, value) => println(name + " => " + value))
 
     val factories = new ModelFactories(publishers, summaries)

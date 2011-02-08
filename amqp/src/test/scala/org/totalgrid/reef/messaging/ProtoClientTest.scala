@@ -58,8 +58,8 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
   val exchangeB = "test.protoClient.B"
 
   val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-    classOf[Example.Foo] -> ServiceInfo(exchangeA, Deserializers.foo, false, Deserializers.foo),
-    classOf[Envelope.RequestHeader] -> ServiceInfo(exchangeB, Deserializers.requestHeader, false, Deserializers.requestHeader))
+    classOf[Example.Foo] -> new ServiceInfo(exchangeA, Deserializers.foo),
+    classOf[Envelope.RequestHeader] -> new ServiceInfo(exchangeB, Deserializers.requestHeader))
 
   def setupTest(test: ProtoClient => Unit) {
     val connection = new MockBrokerInterface

@@ -20,10 +20,9 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 import scala.collection.immutable
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.messaging.ServicesList
+import org.totalgrid.reef.messaging.{ ServiceInfo, AMQPProtoFactory }
 import org.totalgrid.reef.reactor.ReactActor
 
 // Interface for services to acquire subscription handlers based on message type
@@ -36,7 +35,7 @@ trait ServiceEventPublishers {
  * that the models use. This way the models can be constructed multiple times and all publications
  * go through the same publishingactors  
  */
-trait ServiceEventPublisherMap extends ServiceEventPublishers {
+abstract class ServiceEventPublisherMap(serviceInfo: Class[_] => ServiceInfo) extends ServiceEventPublishers {
 
   /**
    * concrete implementations define this to inject a specific ServiceSubscriptionHandler class
@@ -54,7 +53,7 @@ trait ServiceEventPublisherMap extends ServiceEventPublishers {
     }
   }
   def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = {
-    getSink(ServicesList.lookupEventExchange(klass))
+    getSink(serviceInfo(klass).subExchange)
   }
 }
 
@@ -62,7 +61,7 @@ trait ServiceEventPublisherMap extends ServiceEventPublishers {
  * BusTied implementation of the ServiceEventPublishers interface that generates "real" pubslishers that send
  * to a message broker
  */
-class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory) extends ServiceEventPublisherMap {
+class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory, serviceInfo: Class[_] => ServiceInfo) extends ServiceEventPublisherMap(serviceInfo) {
 
   def createPublisher(exchange: String): ServiceSubscriptionHandler = {
     val reactor = new ReactActor {}
@@ -77,9 +76,9 @@ class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory) extends ServiceEvent
 /**
  * Mock publisher class that just eats all publication and bind messages.
  */
-class SilentEventPublishers extends ServiceEventPublisherMap {
+class SilentEventPublishers extends ServiceEventPublishers {
 
-  def createPublisher(exchange: String): ServiceSubscriptionHandler = {
+  def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = {
     new SilentServiceSubscriptionHandler
   }
 

@@ -29,13 +29,14 @@ import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
+import org.totalgrid.reef.messaging.ServicesList
 
 /**
  * list of all of the service providers in the system
  */
 class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore) {
 
-  val pubs = new ServiceEventPublisherRegistry(components.amqp)
+  val pubs = new ServiceEventPublisherRegistry(components.amqp, ServicesList.getServiceInfo)
   val summaries = new SummaryPointPublisher(components.amqp)
   val modelFac = new ModelFactories(pubs, summaries, cm)
 

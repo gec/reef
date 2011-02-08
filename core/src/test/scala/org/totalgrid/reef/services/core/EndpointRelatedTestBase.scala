@@ -60,7 +60,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
-    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp) else new SilentEventPublishers
+    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
