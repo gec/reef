@@ -23,7 +23,6 @@ package org.totalgrid.reef.messaging.serviceprovider
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.messaging.ServiceInfo
 
-
 /**
  * mixin that manages the lazy creation and storing of subscription handlers (publishers) 
  * that the models use. This way the models can be constructed multiple times and all publications

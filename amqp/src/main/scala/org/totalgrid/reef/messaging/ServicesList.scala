@@ -76,25 +76,5 @@ object ServicesList {
   }
 
   def getServiceOption(klass: Class[_]): Option[ServiceInfo] = servicemap.get(klass)
-
-  //  /**
-  //   * most "service event" exchanges can just be named the same thing as "request"
-  //   * exchange suffixed with _events. There are a few exceptions listed here
-  //   */
-  //  private val eventOverrideMap: Map[Class[_], String] = Map(
-  //    eventEntry(Deserializers.measurementSnapshot, "measurement"))
-  //
-  //  private def eventEntry[_](descriptor: ProtoDescriptor[_], exchange: String): Tuple2[Class[_], String] = {
-  //    (descriptor.getKlass -> exchange)
-  //  }
-  //
-  //  def lookupEventExchange(klass: Class[_]): String = {
-  //    eventOverrideMap.get(klass) match {
-  //      case Some(x) => x
-  //      case None =>
-  //        val exch = servicemap.apply(klass).exchange
-  //        exch + "_events"
-  //    }
-  //  }
 }
 
