@@ -48,6 +48,7 @@ import scala.collection.JavaConversions._
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
+import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublisherRegistry }
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
   override def beforeAll() {
@@ -60,7 +61,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
-    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp) else new SilentEventPublishers
+    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 

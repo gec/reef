@@ -24,6 +24,7 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 //import org.totalgrid.reef.messaging.mock.AMQPFixture
 

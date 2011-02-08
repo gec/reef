@@ -35,7 +35,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
-import org.totalgrid.reef.services.SilentEventPublishers
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach // with RunTestsInsideTransaction

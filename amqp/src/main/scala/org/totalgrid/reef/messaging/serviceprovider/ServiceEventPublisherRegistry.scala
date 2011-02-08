@@ -18,11 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.serviceprovider
 
-import javabridge.ProtoDescriptor
+import org.totalgrid.reef.messaging.{ ServiceInfo, AMQPProtoFactory }
+import org.totalgrid.reef.reactor.ReactActor
 
-case class ServiceInfo(exchange: String, descriptor: ProtoDescriptor[_], subIsStreamType: Boolean, subType: ProtoDescriptor[_], subExchange: String) {
-  def this(exchange: String, descriptor: ProtoDescriptor[_]) = this(exchange, descriptor, false, descriptor, exchange + "_events")
+/**
+ * BusTied implementation of the ServiceEventPublishers interface that generates "real" pubslishers that send
+ * to a message broker
+ */
+class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory, serviceInfo: Class[_] => ServiceInfo) extends ServiceEventPublisherMap(serviceInfo) {
+
+  def createPublisher(exchange: String): ServiceSubscriptionHandler = {
+    val reactor = new ReactActor {}
+    val pubsub = new PublishingSubscriptionActor(exchange, reactor)
+    amqp.add(pubsub)
+    amqp.addReactor(reactor)
+    pubsub
+  }
 }
-

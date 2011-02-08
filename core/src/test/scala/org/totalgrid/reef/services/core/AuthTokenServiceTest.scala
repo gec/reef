@@ -30,7 +30,6 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.services.SilentEventPublishers
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import scala.collection.JavaConversions._
@@ -43,6 +42,7 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
 

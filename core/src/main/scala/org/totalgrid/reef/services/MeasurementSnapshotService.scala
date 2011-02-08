@@ -33,6 +33,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.measurementstore.RTDatabase
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends ProtoServiceable[MeasurementSnapshot] with ProtoServiceEndpoint {
 

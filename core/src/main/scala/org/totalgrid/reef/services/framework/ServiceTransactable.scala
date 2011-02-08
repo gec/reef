@@ -21,7 +21,8 @@
 package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode
-import org.totalgrid.reef.services.{ ServiceSubscriptionHandler }
+
+import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
 
 /**
  * Interface for components capable of constructing a service model.

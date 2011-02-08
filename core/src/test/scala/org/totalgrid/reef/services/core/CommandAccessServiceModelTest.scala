@@ -33,7 +33,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Command, CommandAccessMode
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 
-import org.totalgrid.reef.services.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 
 trait CommandTestRig {
   val commandModel = new CommandServiceModel(new SilentServiceSubscriptionHandler)

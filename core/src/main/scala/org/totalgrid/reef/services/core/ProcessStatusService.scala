@@ -26,12 +26,12 @@ import org.totalgrid.reef.models.HeartbeatStatus
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.ProcessStatus._
 
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // Implicits
 import OptionalProtos._ // implicit proto properties

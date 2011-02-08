@@ -33,7 +33,10 @@ import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenMode
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
 import OptionalProtos._
-import SquerylModel._ // Implicit squeryl list -> query conversion
+import SquerylModel._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+// Implicit squeryl list -> query conversion
 
 /**
  * static seed function to bootstrap users + permissions into the system
@@ -108,8 +111,6 @@ trait AuthTokenConversions
   // TODO: remove createModelEntry from MessageModelConversion trait
   def createModelEntry(proto: AuthToken): AuthTokenModel = throw new Exception
 }
-
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, eventSink: Event => EventStore)
     extends SquerylServiceModel[AuthToken, AuthTokenModel]

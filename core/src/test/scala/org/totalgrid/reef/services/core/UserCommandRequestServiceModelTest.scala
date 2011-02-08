@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.SilentServiceSubscriptionHandler
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -40,6 +39,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
 import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest

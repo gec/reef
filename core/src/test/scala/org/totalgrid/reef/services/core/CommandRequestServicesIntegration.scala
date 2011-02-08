@@ -40,7 +40,8 @@ import CommandAccess._
 import Envelope._
 import org.totalgrid.reef.protoapi.RequestEnv
 import scala.collection.mutable
-import org.totalgrid.reef.services.{ ServiceEventPublisherMap, ServiceSubscriptionHandler, ServiceResponseTestingHelpers, SilentEventPublishers }
+import org.totalgrid.reef.services._
+import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) => Unit) extends ServiceSubscriptionHandler {
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = f(event, resp)
@@ -48,8 +49,8 @@ class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) =
   def bind(subQueue: String, key: String) = {}
 }
 
-class SingleEventPublisher(subHandler: ServiceSubscriptionHandler) extends ServiceEventPublisherMap {
-  def createPublisher(exchange: String): ServiceSubscriptionHandler = subHandler
+class SingleEventPublisher(subHandler: ServiceSubscriptionHandler) extends ServiceEventPublishers {
+  def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = subHandler
 }
 
 @RunWith(classOf[JUnitRunner])

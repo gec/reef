@@ -18,11 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.serviceprovider
 
-import javabridge.ProtoDescriptor
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.messaging.{ BrokerObjectConsumerActor, BrokerChannel }
+import org.totalgrid.reef.reactor.Reactable
 
-case class ServiceInfo(exchange: String, descriptor: ProtoDescriptor[_], subIsStreamType: Boolean, subType: ProtoDescriptor[_], subExchange: String) {
-  def this(exchange: String, descriptor: ProtoDescriptor[_]) = this(exchange, descriptor, false, descriptor, exchange + "_events")
+class PublishingSubscriptionActor(exch: String, reactor: Reactable) extends BrokerObjectConsumerActor(reactor) with PublishingSubscriptionHandler with Logging {
+  val exchange = exch
+
+  override def onConnect(b: BrokerChannel) = {
+    debug("declaring exchange: " + exchange)
+    b.declareExchange(exch)
+  }
+
 }
-

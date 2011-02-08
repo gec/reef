@@ -18,11 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.serviceprovider
 
-import javabridge.ProtoDescriptor
+import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.proto.Envelope
 
-case class ServiceInfo(exchange: String, descriptor: ProtoDescriptor[_], subIsStreamType: Boolean, subType: ProtoDescriptor[_], subExchange: String) {
-  def this(exchange: String, descriptor: ProtoDescriptor[_]) = this(exchange, descriptor, false, descriptor, exchange + "_events")
+class SilentServiceSubscriptionHandler extends ServiceSubscriptionHandler {
+  def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = {}
+
+  def bind(subQueue: String, key: String) = {}
 }
 

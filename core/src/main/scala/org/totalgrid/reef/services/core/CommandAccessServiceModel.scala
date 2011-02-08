@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.squeryl.{ Table, Query }
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
@@ -33,6 +33,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
 import OptionalProtos._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])
     extends BasicModelFactory[AccessProto, CommandAccessServiceModel](pub, classOf[AccessProto]) {

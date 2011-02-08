@@ -18,11 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.serviceprovider
 
-import javabridge.ProtoDescriptor
+import com.google.protobuf.GeneratedMessage
 
-case class ServiceInfo(exchange: String, descriptor: ProtoDescriptor[_], subIsStreamType: Boolean, subType: ProtoDescriptor[_], subExchange: String) {
-  def this(exchange: String, descriptor: ProtoDescriptor[_]) = this(exchange, descriptor, false, descriptor, exchange + "_events")
+// Interface for services to acquire subscription handlers based on message type
+trait ServiceEventPublishers {
+  def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler
 }
-
