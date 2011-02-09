@@ -75,7 +75,7 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
       }
     }
     if (batch.getMeasCount > 0) {
-      debug { "publishing batch of size: " + batch.getMeasCount }
+      debug { name + " publishing batch of size: " + batch.getMeasCount }
       publish(batch.build)
     }
   }

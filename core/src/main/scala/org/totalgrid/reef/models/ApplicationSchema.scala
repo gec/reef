@@ -177,9 +177,10 @@ case class MeasProcAssignment(
     val endpointId: Long,
     val serviceRoutingKey: Option[String],
     val applicationId: Option[Long],
-    var assignedTime: Option[Long]) extends ModelWithId {
+    var assignedTime: Option[Long],
+    var readyTime: Option[Long]) extends ModelWithId {
 
-  def this() = this(0, Some(""), Some(0), Some(0))
+  def this() = this(0, Some(""), Some(0), Some(0), Some(0))
 
   val application = LazyVar(mayHaveOne(ApplicationSchema.apps, applicationId))
   val endpoint = LazyVar(ApplicationSchema.endpoints.where(p => p.id === endpointId).headOption)

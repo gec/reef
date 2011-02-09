@@ -30,7 +30,6 @@ import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.measproc.MeasurementStreamProcessingNode
 
-import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
@@ -38,19 +37,20 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-
-import org.totalgrid.reef.messaging.ServicesList
-import org.totalgrid.reef.util.SyncVar
-
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import scala.collection.JavaConversions._
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublisherRegistry }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
+import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
+import org.totalgrid.reef.util.{ Logging, SyncVar }
+import org.totalgrid.reef.messaging.{ ServiceInfo, AMQPProtoFactory, ServicesList }
+import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 
-abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
+abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
   override def beforeAll() {
     DbConnector.connect(DbInfo.loadInfo("test"))
   }
@@ -58,10 +58,50 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     transaction { ApplicationSchema.reset }
   }
 
+  class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, info: Class[_] => ServiceInfo) extends ServiceEventPublisherMap(info) {
+
+    def createPublisher(exchange: String): ServiceSubscriptionHandler = {
+      val reactor = new InstantReactor {}
+      val pubsub = new PublishingSubscriptionActor(exchange, reactor)
+      amqp.add(pubsub)
+      pubsub
+    }
+
+  }
+
+  class MockMeasProc(measProcConnection: MeasurementProcessingConnectionService, rtDb: MeasurementStore, amqp: AMQPProtoFactory) {
+
+    val mb = new SyncVar(Nil: List[(String, MeasurementBatch)])
+
+    def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
+
+      val measProcAssign = event.result
+      if (event.event != Envelope.Event.ADDED) return
+
+      val measProc = new org.totalgrid.reef.measproc.ProcessingNode {
+        def process(m: MeasurementBatch) {
+          rtDb.set(m.getMeasList.toList)
+          mb.atomic(x => ((measProcAssign.getLogicalNode.getName, m) :: x).reverse)
+        }
+
+        def add(over: MeasOverride) {}
+        def remove(over: MeasOverride) {}
+
+        def add(set: TriggerSet) {}
+        def remove(set: TriggerSet) {}
+      }
+      MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantReactor {})
+
+      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
+
+      measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
+    }
+  }
+
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
-    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
+    val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
@@ -86,12 +126,16 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     val frontEndConnection = attachService(new CommunicationEndpointConnectionService(modelFac.fepConn))
     val measProcConnection = attachService(new MeasurementProcessingConnectionService(modelFac.measProcConn))
 
+    var measProcMap = Map.empty[String, MockMeasProc]
+
     def addApp(name: String, caps: List[String], network: String = "any", location: String = "any"): ApplicationConfig = {
       val b = ApplicationConfig.newBuilder()
       caps.foreach(b.addCapabilites)
       b.setUserName(name).setInstanceName(name).setNetwork(network)
         .setLocation(location)
-      one(appService.put(b.build))
+      val cfg = one(appService.put(b.build))
+      if (caps.find(_ == "Processing").isDefined) setupMockMeasProc(name, cfg)
+      cfg
     }
 
     def addProtocols(app: ApplicationConfig, protocols: List[String] = List("dnp3", "benchmark")): FrontEndProcessor = {
@@ -108,6 +152,27 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
 
     def addMeasProc(name: String): ApplicationConfig = {
       addApp(name, List("Processing"))
+    }
+    def setupMockMeasProc(name: String, meas: ApplicationConfig) {
+
+      val mockMeas = new MockMeasProc(measProcConnection, rtDb, amqp)
+
+      val queueName = new SyncVar("")
+      val sub = amqp.getEventQueue(MeasurementProcessingConnection.parseFrom, mockMeas.onMeasProcAssign _)
+      sub.observe((online: Boolean, qname: String) => queueName.update(qname))
+
+      queueName.waitWhile("")
+
+      val env = new ServiceHandlerHeaders(new RequestEnv)
+      env.setSubscribeQueue(queueName.current)
+
+      val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env.env)
+
+      conns.foreach(c => mockMeas.onMeasProcAssign(new Event(Envelope.Event.ADDED, c)))
+
+      measProcMap += (name -> mockMeas)
+
+      meas
     }
 
     def addDevice(name: String, pname: String = "test_point"): CommunicationEndpointConfig = {
@@ -154,30 +219,8 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
       if (numBad != -1) pointsWithBadQuality should equal(numBad)
     }
 
-    def listenForMeasurements(measProcAssign: MeasurementProcessingConnection) = {
-      val mb = new SyncVar(Nil: List[MeasurementBatch])
-
-      val measProc = new org.totalgrid.reef.measproc.ProcessingNode {
-        def process(m: MeasurementBatch) {
-          rtDb.set(m.getMeasList.toList)
-          mb.update(m :: mb.current)
-        }
-
-        def add(over: MeasOverride) {}
-        def remove(over: MeasOverride) {}
-
-        def add(set: TriggerSet) {}
-        def remove(set: TriggerSet) {}
-      }
-      MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantReactor {})
-      // return the syncvar for the list of incoming measurements
-      mb
-    }
-
-    def attachFakeMeasProcs() = {
-      val measProcAssigns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build)
-
-      measProcAssigns.result.map(listenForMeasurements(_))
+    def listenForMeasurements(measProcName: String) = {
+      measProcMap.get(measProcName).get.mb
     }
 
     def checkFeps(feps: List[CommunicationEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean) {

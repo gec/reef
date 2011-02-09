@@ -64,6 +64,10 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
     map.get(ep.getUid).get.stop
     map -= ep.getUid
   }
+
+  def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
+    updated.getAssignedTime != existing.getAssignedTime
+  }
 }
 
 /**  Non-entry point meas processor setup
