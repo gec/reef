@@ -37,9 +37,6 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-
-import org.totalgrid.reef.messaging.ServicesList
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import scala.collection.JavaConversions._
 
@@ -50,6 +47,8 @@ import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
 import org.totalgrid.reef.util.{ Logging, SyncVar }
+import org.totalgrid.reef.messaging.{ServiceInfo, AMQPProtoFactory, ServicesList}
+import org.totalgrid.reef.messaging.serviceprovider.{SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap}
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
   override def beforeAll() {
@@ -59,7 +58,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     transaction { ApplicationSchema.reset }
   }
 
-  class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory) extends ServiceEventPublisherMap {
+  class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, info : Class[_] => ServiceInfo) extends ServiceEventPublisherMap(info) {
 
     def createPublisher(exchange: String): ServiceSubscriptionHandler = {
       val reactor = new InstantReactor {}
@@ -102,7 +101,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
-    val pubs = if (publishEvents) new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
+    val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
