@@ -23,11 +23,14 @@ package org.totalgrid.reef.messaging
 import javabridge.Subscription
 
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ Event, MultiResult }
+import ProtoServiceTypes.{ Event, MultiResult, Response }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
+
+import org.totalgrid.reef.messaging.ProtoSerializer._
+import scala.collection.JavaConversions._
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
@@ -35,28 +38,39 @@ import com.google.protobuf.GeneratedMessage
  */
 class ProtoClient(
     factory: ServiceClientFactory,
-    timeoutms: Long,
-    lookup: ServiceList) extends ServiceClient {
+    lookup: ServiceList, timeoutms: Long, key: String = "request") extends ServiceClient {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ServiceClient]
 
-  private def getClient[T <: GeneratedMessage](klass: Class[_]): ServiceClient = {
-    clients.get(klass) match {
-      case Some(client) => client
-      case None =>
-        val info = lookup.getServiceInfo(klass)
-        val deser = (info.descriptor.deserializeBytes _).asInstanceOf[Array[Byte] => T]
-        val client = factory.addProtoServiceClient[T](info.exchange, "request", deser, correlator)
-        clients = clients + (klass -> client)
-        defaultEnv.foreach(client.setDefaultEnv(_))
-        client
-    }
-  }
-
   def asyncRequest[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) {
-    val client = getClient[A](payload.getClass)
-    client.asyncRequest(verb, payload, env)(callback)
+
+    val info = lookup.getServiceInfo(payload.getClass.asInstanceOf[Class[A]])
+    val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(payload)
+
+    val sendEnv = if (defaultEnv.isDefined) env.merge(defaultEnv.get) else env
+    sendEnv.asKeyValueList.foreach(kv => request.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
+
+    def handleResponse(resp: Option[Envelope.ServiceResponse]) {
+      val result = resp match {
+        case Some(x) =>
+          try {
+            val list = x.getPayloadList.map { x => info.descriptor.deserializeBytes(x.toByteArray) }.toList
+            val error = if (x.hasErrorMessage) x.getErrorMessage else ""
+            Some(Response(x.getStatus, error, list))
+          } catch {
+            case ex: Exception =>
+              warn("Error deserializing proto: ", ex)
+              None
+          }
+        case None => None
+      }
+
+      import org.totalgrid.reef.protoapi.ProtoConversions._
+      callback(result)
+    }
+
+    correlator.send(request, info.exchange, key, handleResponse)
   }
 
   def addSubscription[T <: GeneratedMessage](ea: (Envelope.Event, T) => Unit): Subscription = {

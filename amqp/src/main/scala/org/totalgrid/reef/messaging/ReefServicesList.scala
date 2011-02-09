@@ -66,7 +66,5 @@ object ReefServiceMap {
   }
 }
 
-object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap) {
-
-}
+object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap)
 

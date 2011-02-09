@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.{ Envelope, Example }
 
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, ProtoServiceException }
 
-import ProtoServiceTypes.Response
+import ProtoServiceTypes.{ Response, Request }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])
@@ -103,11 +103,11 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   test("testMockProtoConsumerRespondTimeout") {
     val reg = new MockServiceClient
-    intercept[MatchError] { reg.respond(1) { x => None } } //when we timeout, we should get a match error
+    intercept[MatchError] { reg.respondWithTimeout[Int](1) { x => None } } //when we timeout, we should get a match error
   }
 
   test("MockProtoConsumerRequestTimeout") {
-    val reg = new MockServiceClient[Example.Foo](1)
+    val reg = new MockServiceClient(1)
     val exc = intercept[ProtoServiceException] {
       reg.putOrThrow(Example.Foo.newBuilder.build)
     }
@@ -116,14 +116,14 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   // Do a full request/respond
   test("ConsumerRequestResponse") {
-    val reg = new MockServiceClient[Example.Foo]
+    val reg = new MockServiceClient
 
     //fire off a read on an actor
     Timer.now {
       reg.putOrThrow(Example.Foo.newBuilder.setNum(4).build)
     }
 
-    reg.respond { request =>
+    reg.respond[Example.Foo] { request: Request[Example.Foo] =>
       request.verb should equal(Envelope.Verb.PUT)
       request.env.subQueue should equal(None)
       request.payload.getNum should equal(4)
@@ -135,16 +135,15 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
   test("MockServiceRegistryException") {
     val reg = new MockProtoServiceRegistry {}
     intercept[NoSuchElementException] {
-      reg.getServiceConsumerMock(classOf[Example.Foo])
+      reg.getMockClient
     }
   }
 
   // tests that once the consumer is requested, the mock will be available
-  test("MockServiceRegistryLookup") {
+  test("MockServiceRegistryLookupDefaultstoREQUEST") {
     val reg = new MockProtoServiceRegistry {}
-
-    reg.getServiceClient(Example.Foo.parseFrom)
-    reg.getServiceConsumerMock(classOf[Example.Foo])
+    reg.getServiceClient()
+    reg.getMockClient
   }
 
 }

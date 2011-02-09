@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Measurements
-import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ReefServicesList }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 
 /**
@@ -186,7 +186,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
                   clients.get(routingKey) match {
                     case Some(callback) => ret = Some(callback)
                     case None =>
-                      val client = amqp.getProtoServiceClient("measurement_batch", routingKey, 1000, Measurements.MeasurementBatch.parseFrom)
+                      val client = amqp.getProtoServiceClient(ReefServicesList, 1000, routingKey)
                       val func = publishMeasurement(client, LastAttempt(0, true)) _
                       clients += (routingKey -> func)
                       ret = Some(func)

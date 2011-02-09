@@ -53,14 +53,14 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
     val port = c.getEndpoint.getPort
 
     // addressable client for the measurement stream
-    val measurementClient = registry.getServiceClient(Measurements.MeasurementBatch.parseFrom, c.getRouting.getServiceRoutingKey)
+    val measClient = registry.getServiceClient(c.getRouting.getServiceRoutingKey)
 
     // extra client to break circular client -> handler -> issuer -> client chain
-    val commandClient = registry.getServiceClient(Commands.UserCommandRequest.parseFrom)
+    val cmdClient = registry.getServiceClient()
 
     // add the device, get the command issuer callback
     if (protocol.requiresPort) protocol.addPort(port)
-    val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measurementClient, 0), responsePublish(commandClient))
+    val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measClient, 0), responsePublish(cmdClient))
 
     info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
 

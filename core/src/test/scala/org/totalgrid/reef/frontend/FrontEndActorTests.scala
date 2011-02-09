@@ -47,9 +47,7 @@ import MockProtocol._
 class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
 
   case class Fixture(reg: MockProtoRegistry, protocol: MockProtocol, a: FrontEndActor) {
-    val config = reg.getServiceConsumerMock(classOf[ConfigProto])
-    val port = reg.getServiceConsumerMock(classOf[Port])
-    val fem = reg.getServiceConsumerMock(classOf[FrontEndProcessor])
+    val client = reg.getMockClient
   }
 
   type FixtureParam = Fixture
@@ -88,7 +86,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
 
     var ret: Option[FrontEndProcessor] = None
 
-    reg.getServiceConsumerMock(classOf[FrontEndProcessor]).respond { request =>
+    reg.getMockClient.respond[FrontEndProcessor] { request =>
       ret = Some(request.payload)
       request.verb should equal(Envelope.Verb.PUT)
       val rsp = FrontEndProcessor.newBuilder(request.payload).setUid("someuid")
@@ -100,15 +98,16 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
 
   def respondToShutdown(reg: MockProtoRegistry): Unit = {
 
-    reg.getServiceConsumerMock(classOf[FrontEndProcessor]).respond { request =>
+    reg.getMockClient.respond[FrontEndProcessor] { request =>
       request.verb should equal(Envelope.Verb.PUT)
       val rsp = FrontEndProcessor.newBuilder(request.payload).setUid("someuid").build
       Some(Response(Envelope.Status.OK, "", List(rsp)))
     }
   }
 
-  def respondToSubscribe[T <: GeneratedMessage](reg: MockProtoRegistry, name: String)(validatePayload: T => List[T]) = {
-    reg.getServiceConsumerMock(OneArgFunc.getParamClass(validatePayload, classOf[List[T]])).respond { request =>
+  def respondToSubscribe(reg: MockProtoRegistry, name: String)(validatePayload: ConnProto => List[ConnProto]) = {
+
+    reg.getMockClient.respond[ConnProto] { request =>
       request.verb should equal(Envelope.Verb.GET)
       request.env.subQueue should equal(Some(name))
       Some(Response(Envelope.Status.OK, "", validatePayload(request.payload)))
@@ -137,13 +136,13 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
   }
 
   def respondToSingleGet(fix: Fixture, portname: String) {
-    fix.config.respond { request =>
+    fix.client.respond[ConfigProto] { request =>
       request.verb should equal(Envelope.Verb.GET)
       val port = Port.newBuilder.setUid(portname).setName(portname).build
       val rsp = ConfigProto.newBuilder(request.payload).setProtocol("mock").setPort(port).build
       Some(Response(Envelope.Status.OK, "", List(rsp)))
     }
-    fix.port.respond { request =>
+    fix.client.respond[Port] { request =>
       request.verb should equal(Envelope.Verb.GET)
       Some(Response(Envelope.Status.OK, "", List(request.payload)))
     }

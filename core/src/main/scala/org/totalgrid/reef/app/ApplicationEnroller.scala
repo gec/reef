@@ -132,7 +132,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
    */
   private def freshClient() {
     client.foreach(_.close)
-    client = Some(new ProtoClient(amqp, 5000, ReefServicesList))
+    client = Some(new ProtoClient(amqp, ReefServicesList, 5000))
   }
 
   /**

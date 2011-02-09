@@ -31,8 +31,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-
-import org.totalgrid.reef.protoapi.ProtoServiceTypes
+import org.totalgrid.reef.messaging.ReefServicesList
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1
@@ -74,9 +73,11 @@ class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with Be
       val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
       val historian = new FakeHistorian(points)
       val service = new MeasurementHistoryService(historian)
-      amqp.bindService("test", service.respond)
+      val info = ReefServicesList.getServiceInfo(classOf[MeasurementHistory])
 
-      val client = amqp.getProtoServiceClient("test", 500000, MeasurementHistory.parseFrom)
+      amqp.bindService(info.exchange, service.respond)
+
+      val client = amqp.getProtoServiceClient(ReefServicesList, 500000)
 
       val getMeas1 = client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").build)
       getMeas1.getMeasurementsCount() should equal(2)

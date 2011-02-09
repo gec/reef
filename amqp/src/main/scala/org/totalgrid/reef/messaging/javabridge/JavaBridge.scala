@@ -53,7 +53,7 @@ class JavaBridge(config: BrokerConnectionInfo, timeoutms: Long) extends IJavaBri
   override def stop() = factory.stop
 
   def newServiceClient(): IServiceClient = {
-    new JavaProtoClientWrapper(new ProtoClient(factory, 5000, ReefServicesList))
+    new JavaProtoClientWrapper(new ProtoClient(factory, ReefServicesList, 5000))
   }
 }
 

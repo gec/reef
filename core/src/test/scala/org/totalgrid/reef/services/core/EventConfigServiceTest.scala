@@ -27,7 +27,9 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
+import org.totalgrid.reef.messaging.{ ServiceInfo, ServiceListOnMap, ReefServicesList }
 import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.messaging.javabridge.Deserializers
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -54,12 +56,15 @@ class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAnd
     AMQPFixture.mock(true) { amqp =>
       val fac = new EventConfigServiceModelFactory(new SilentEventPublishers)
       val service = new EventConfigService(fac)
-      amqp.bindService("test", service.respond) // listen for service requests with the echo service
-      val client = amqp.getProtoServiceClient("test", 500000, EventConfig.parseFrom)
+      val exchange = "test"
+      amqp.bindService(exchange, service.respond) // listen for service requests with the echo service
+      val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(exchange, Deserializers.eventConfig)))
+
+      val client = amqp.getProtoServiceClient(servicelist, 5000)
 
       val sent = makeEC(Scada.ControlExe, 1, Designation.ALARM)
-      val created = client.putOne(sent)
-      val gotten = client.getOne(makeEC(Scada.ControlExe))
+      val created = client.putOneOrThrow(sent)
+      val gotten = client.getOneOrThrow(makeEC(Scada.ControlExe))
 
       gotten should equal(created)
     }

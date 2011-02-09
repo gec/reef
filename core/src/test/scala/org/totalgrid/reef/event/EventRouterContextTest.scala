@@ -20,14 +20,14 @@
  */
 package org.totalgrid.reef.event
 
-import scala.collection.mutable
-import com.google.protobuf.GeneratedMessage
+//import scala.collection.mutable
+
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Model._
-import EventType.eventTypeToString
-import org.totalgrid.reef.app.ServiceContext
 import org.totalgrid.reef.util._
+
+import EventType.eventTypeToString
 
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.matchers.ShouldMatchers

@@ -35,38 +35,11 @@ trait ServiceClientFactory {
    */
   def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
 
+  def getProtoServiceClient(lookup: ServiceList, timeoutms: Long, key: String = "request") = new ProtoClient(this, lookup, timeoutms, key)
+
   /**
    * the factory must create subscription objects of the appropriate type even if its a "stream type"
    */
   def prepareSubscription[T <: GeneratedMessage](deserialize: Array[Byte] => T, subIsStreamType: Boolean, callback: Event[T] => Unit): Subscription
-
-  /**
-   * gets a single proto client with its own correlator
-   */
-  def getProtoServiceClient[T <: GeneratedMessage](exchange: String, key: String, timeoutms: Long, deserialize: Array[Byte] => T): ServiceClient = {
-    val correlator = getServiceResponseCorrelator(timeoutms)
-    addProtoServiceClient(exchange, key, deserialize, correlator)
-  }
-
-  /**
-   *  gets a proto client with default key "request"
-   */
-  def getProtoServiceClient[T <: GeneratedMessage](exchange: String, timeoutms: Long, deserialize: Array[Byte] => T): ServiceClient = {
-    getProtoServiceClient(exchange, "request", timeoutms, deserialize)
-  }
-
-  /**
-   * adds a proto client to a single ServiceResponseCorrelator
-   */
-  def addProtoServiceClient[T <: GeneratedMessage](exchange: String, key: String, deserialize: Array[Byte] => T, correlator: ServiceResponseCorrelator): ServiceClient = {
-    new ProtoServiceClient[T](deserialize, exchange, key, correlator)
-  }
-
-  /**
-   * adds a proto client to a single ServiceResponseCorrelator with default key "request"
-   */
-  def addProtoServiceClient[T <: GeneratedMessage](exchange: String, deserialize: Array[Byte] => T, correlator: ServiceResponseCorrelator): ServiceClient = {
-    addProtoServiceClient(exchange, "request", deserialize, correlator)
-  }
 
 }

@@ -23,11 +23,11 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceable }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceable, ReefServicesList }
 import ProtoServiceTypes.Response
 import org.totalgrid.reef.services.ProtoServiceEndpoint
 
-import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
@@ -65,9 +65,9 @@ class MeasurementBatchService(amqp: AMQPProtoFactory) extends ProtoServiceable[M
         case (ce, batch) =>
           ce.frontEndAssignment.value.serviceRoutingKey match {
             case Some(routingKey) =>
-              val client = amqp.getProtoServiceClient("measurement_batch", routingKey, 1000, MeasurementBatch.parseFrom)
+              val client = amqp.getProtoServiceClient(ReefServicesList, 1000, routingKey)
               client.putOrThrow(batch)
-            // TODO: client.close
+              client.close()
             case None =>
               throw new ProtoServiceException("Measurement Stream not ready.")
           }

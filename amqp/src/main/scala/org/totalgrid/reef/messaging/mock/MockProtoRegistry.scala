@@ -33,7 +33,9 @@ import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes._
 
-import org.totalgrid.reef.protoapi.ProtoConversions._ //implicits for massaging service return types
+import org.totalgrid.reef.protoapi.ProtoConversions._
+
+//implicits for massaging service return types
 
 object MockProtoRegistry {
   val timeout = 5000
@@ -41,28 +43,24 @@ object MockProtoRegistry {
 
 class MockProtoRegistry extends MockProtoServiceRegistry with MockProtoPublisherRegistry with MockProtoSubscriberRegistry with ProtoRegistry
 
-class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
+class MockServiceClient(timeout: Long = MockProtoRegistry.timeout) extends ServiceClient {
 
-  def this() = this(MockProtoRegistry.timeout)
-
-  case class Req(callback: MultiResult[T] => Unit, req: Request[T])
+  private case class Req[A](callback: MultiResult[A] => Unit, req: Request[A])
 
   private val in = new MailBox
 
-  def respond(f: Request[T] => Option[Response[T]]): Unit = respond(timeout)(f)
+  def respond[A](f: Request[A] => Option[Response[A]]): Unit = respondWithTimeout(timeout)(f)
 
-  def respond(timeout: Long)(f: Request[T] => Option[Response[T]]): Unit = {
+  def respondWithTimeout[A](timeout: Long)(f: Request[A] => Option[Response[A]]): Unit = {
     in.receiveWithin(timeout) {
       case Req(callback, request) =>
-        callback(f(request))
+        callback(f(request.asInstanceOf[Request[A]]))
     }
   }
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def asyncRequest[A](verb: Envelope.Verb, payloadA: A, env: RequestEnv)(callbackA: MultiResult[A] => Unit) = {
-    val payload = payloadA.asInstanceOf[T]
-    val callback = callbackA.asInstanceOf[MultiResult[T] => Unit]
+  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) = {
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
@@ -80,7 +78,9 @@ trait MockProtoPublisherRegistry {
   def publish[T <: GeneratedMessage](keygen: T => String, hint: String = ""): T => Unit = {
     val klass = OneArgFunc.getParamClass(keygen, classOf[String])
     pubmap.get((klass, hint)) match {
-      case Some(x) => { x send _ }
+      case Some(x) => {
+        x send _
+      }
       case None =>
         pubmap += (klass, hint) -> new MailBox
         publish(keygen)
@@ -90,7 +90,9 @@ trait MockProtoPublisherRegistry {
   def broadcast[T <: GeneratedMessage](exchangeName: String, keygen: T => String): T => Unit = {
     val klass = OneArgFunc.getParamClass(keygen, classOf[String])
     pubmap.get((klass, exchangeName)) match {
-      case Some(x) => { x send _ }
+      case Some(x) => {
+        x send _
+      }
       case None =>
         pubmap += (klass, exchangeName) -> new MailBox
         publish(keygen)
@@ -98,6 +100,7 @@ trait MockProtoPublisherRegistry {
   }
 
   def getMailbox[T <: GeneratedMessage](klass: Class[T]): MailBox = getMailbox(klass, "")
+
   def getMailbox[T <: GeneratedMessage](klass: Class[T], hint: String): MailBox = pubmap(klass, hint)
 
 }
@@ -153,24 +156,21 @@ case class MockEvent[T](accept: Event[T] => Unit, observer: Option[String => Uni
 trait MockProtoServiceRegistry extends ProtoServiceRegistry {
 
   val eventmail = new MailBox
+
   case class EventSub(val klass: Class[_], val mock: MockEvent[_])
 
   // map classes to protoserviceconsumers
-  var servicemap = immutable.Map.empty[Class[_], Any]
+  var mockclient: Option[MockServiceClient] = None
   var eventqueues = immutable.Map.empty[Class[_], Any]
 
-  def getServiceConsumerMock[T <: GeneratedMessage](klass: Class[T]): MockServiceClient[T] = {
-    servicemap(klass).asInstanceOf[MockServiceClient[T]]
-  }
+  def getMockClient: MockServiceClient = mockclient.get
 
-  def getServiceClient[T <: GeneratedMessage](deserialize: Array[Byte] => T, key: String): ServiceClient = {
-    val klass = OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]])
-    servicemap.get(klass) match {
-      case Some(x) => x.asInstanceOf[ServiceClient]
-      case None =>
-        servicemap += klass -> new MockServiceClient[T]
-        getServiceClient(deserialize)
-    }
+  def getServiceClient(key: String): ServiceClient = mockclient match {
+    case Some(x) => x
+    case None =>
+      val ret = new MockServiceClient
+      mockclient = Some(ret)
+      ret
   }
 
   def getEvent[T](klass: Class[T]): MockEvent[T] = {

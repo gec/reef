@@ -30,10 +30,9 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
+import org.totalgrid.reef.messaging.ReefServicesList
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
-
-//import org.totalgrid.reef.protoapi.ProtoServiceTypes
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -57,9 +56,12 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
     AMQPFixture.mock(true) { amqp =>
       val points = Map("meas1" -> getMeas("meas1", 0), "meas2" -> getMeas("meas2", 0))
       val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
-      amqp.bindService("test", service.respond)
 
-      val client = amqp.getProtoServiceClient("test", 500000, MeasurementSnapshot.parseFrom)
+      val info = ReefServicesList.getServiceInfo(classOf[MeasurementSnapshot])
+
+      amqp.bindService(info.exchange, service.respond)
+
+      val client = amqp.getProtoServiceClient(ReefServicesList, 500000)
 
       val getMeas1 = client.getOneOrThrow(MeasurementSnapshot.newBuilder().addPointNames("meas1").build)
       getMeas1.getMeasurementsCount() should equal(1)

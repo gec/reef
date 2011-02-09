@@ -26,11 +26,12 @@ import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto, CommunicationEndpointConfig => ConfigProto, FrontEndProcessor }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
@@ -43,10 +44,10 @@ object FrontEndActor {
 }
 
 abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
-    extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with FEPOperations with Logging {
+    extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
 
   //helper objects that sets up all of the services/publishers from abstract registries
-  val services = new FrontEndServices(registry)
+  val session = registry.getServiceClient()
   val connections = new FrontEndConnections(protocols, registry, this)
 
   /* ---- Implement ServiceContext[Endpoint] ---- */
@@ -73,7 +74,20 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
     connections.remove(ep)
   }
 
-  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = fun(loadOrThrow(conn))
+  def loadOrThrow(client: ServiceClient, conn: ConnProto): ConnProto = {
+
+    val cp = ConnProto.newBuilder(conn)
+
+    val ep = client.getOneOrThrow(conn.getEndpoint)
+    val endpoint = ConfigProto.newBuilder(ep)
+
+    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getOneOrThrow(cf)))
+
+    if (ep.hasPort) endpoint.setPort(client.getOneOrThrow(ep.getPort))
+    cp.setEndpoint(endpoint).build()
+  }
+
+  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = fun(loadOrThrow(session, conn))
 
   def subscribed(list: List[ConnProto]) = list.foreach(add)
 
@@ -97,7 +111,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
       msg.addProtocols(p.name)
     }.setAppConfig(appConfig).build
 
-    services.frontend.asyncPutOne(msg) {
+    session.asyncPutOne(msg) {
       _ match {
         case SingleSuccess(fem) =>
           eventLog.event(EventType.System.SubsystemStarted)

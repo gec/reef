@@ -42,7 +42,7 @@ trait ProtoQueueRegistry {
 trait ProtoServiceRegistry {
 
   /** Creates a service consumer of type T */
-  def getServiceClient[T <: GeneratedMessage](deserialize: Array[Byte] => T, key: String = "request"): ServiceClient
+  def getServiceClient(key: String = "request"): ServiceClient
 
   /** Creates an event queue of type T that can be monitored using an ObservableSubscription */
   def defineEventQueue[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit): Unit
@@ -58,9 +58,8 @@ trait ProtoRegistry extends ProtoServiceRegistry with ProtoQueueRegistry
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
 class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends ProtoRegistry {
 
-  def getServiceClient[T <: GeneratedMessage](deserialize: Array[Byte] => T, key: String): ServiceClient = {
-    val service = lookup.getServiceInfo(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]))
-    val client = factory.getProtoServiceClient(service.exchange, key, timeoutms, deserialize)
+  def getServiceClient(key: String): ServiceClient = {
+    val client = new ProtoClient(factory, lookup, timeoutms, key)
     defaultEnv.foreach(client.setDefaultEnv(_))
     client
   }

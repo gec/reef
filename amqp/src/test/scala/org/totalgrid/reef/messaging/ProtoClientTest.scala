@@ -27,7 +27,6 @@ import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes.Response
 
 import org.totalgrid.reef.messaging.mock._
-import org.totalgrid.reef.messaging.ServiceList.UnknownServiceException
 import com.google.protobuf.ByteString
 
 import org.scalatest.FunSuite
@@ -72,7 +71,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
       amqp.bindService(exchangeB, (new HeadersX2).respond, true)
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
-        val client = new ProtoClient(syncAmqp, 10000, serviceList)
+        val client = new ProtoClient(syncAmqp, serviceList, 10000)
 
         test(client)
       }

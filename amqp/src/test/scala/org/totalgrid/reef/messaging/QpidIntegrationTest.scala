@@ -28,6 +28,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
+
 import scala.concurrent.MailBox
 
 import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
@@ -42,10 +43,11 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   val payload = Example.Foo.newBuilder.build
   val request = Envelope.ServiceRequest.newBuilder.setId("1").setVerb(Envelope.Verb.GET).setPayload(payload.toByteString).build
   val exchange = "integration.test"
+  val servicelist = new ServiceListOnMap(Map(classOf[Example.Foo] -> ServiceInfo.get(exchange, Deserializers.foo)))
 
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
-      val client = amqp.getProtoServiceClient("integration.failure", 1000, Example.Foo.parseFrom)
+      val client = amqp.getProtoServiceClient(servicelist, 1000)
       intercept[ProtoServiceException] {
         client.getOrThrow(payload)
       }
@@ -78,7 +80,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
       amqp.bindService(exchange, x3Service _) // listen for service requests with the echo service
 
-      val serviceSend = amqp.getProtoServiceClient(exchange, 10000, Example.Foo.parseFrom)
+      val serviceSend = amqp.getProtoServiceClient(servicelist, 1000)
 
       // invoke the service future, and check that
       // response payload matches the request
@@ -94,17 +96,13 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     AMQPFixture.run { amqp =>
 
       amqp.bindService(exchange, service.respond _) // this service just multplies the payload by 3	    	    	    
-      val client = amqp.getProtoServiceClient(exchange, 10000, Example.Foo.parseFrom)
-
-      val superClient = new ProtoClient(amqp, 10000, serviceList)
+      val client = amqp.getProtoServiceClient(servicelist, 10000)
 
       // invoke the service future, and check that
       // response payload matches the request
       val payloads = client.getOrThrow(request)
       payloads.size should equal(3)
       payloads.foreach { _.getNum should equal(request.getNum) }
-
-      superClient.getOrThrow(request) should equal(payloads)
     }
   }
 
@@ -152,7 +150,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
         counts(i) = 0
       }
 
-      val serviceSend = amqp.getProtoServiceClient(exchange, 10000, Example.Foo.parseFrom)
+      val serviceSend = amqp.getProtoServiceClient(servicelist, 10000)
 
       for (i <- 1 to runs) yield {
         val payloads = serviceSend.getOrThrow(payload)

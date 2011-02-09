@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.messaging
 
-object ServiceList {
+class UnknownServiceException(msg: String) extends Exception(msg)
 
-  class UnknownServiceException(msg: String) extends Exception(msg)
+object ServiceList {
 
   type ServiceMap = Map[Class[_], ServiceInfo[_, _]]
   type ServiceTuple = Tuple2[Class[_], ServiceInfo[_, _]]

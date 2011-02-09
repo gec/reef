@@ -69,22 +69,18 @@ class ServiceHandlerTest extends Suite with ShouldMatchers {
     tester.start()
 
     notify("queue01")
-    val cons = reg.getServiceConsumerMock(classOf[MeasOverride])
-    cons.respond(5000) { request =>
-      {
-        request.verb should equal(Envelope.Verb.GET)
-        request.env.subQueue should equal(Some("queue01"))
-        request.payload.getPoint.getName should equal("*")
-        None
-      }
+    val cons = reg.getMockClient
+    cons.respond[MeasOverride] { request =>
+      request.verb should equal(Envelope.Verb.GET)
+      request.env.subQueue should equal(Some("queue01"))
+      request.payload.getPoint.getName should equal("*")
+      None
     }
-    cons.respond(5000) { request =>
-      {
-        request.verb should equal(Envelope.Verb.GET)
-        request.env.subQueue should equal(Some("queue01"))
-        request.payload.getPoint.getName should equal("*")
-        Some(Response[MeasOverride](Envelope.Status.OK, "", List()))
-      }
+    cons.respond[MeasOverride] { request =>
+      request.verb should equal(Envelope.Verb.GET)
+      request.env.subQueue should equal(Some("queue01"))
+      request.payload.getPoint.getName should equal("*")
+      Some(Response[MeasOverride](Envelope.Status.OK, "", List()))
     }
 
     tester.box.receiveWithin(5000) {
@@ -103,14 +99,12 @@ class ServiceHandlerTest extends Suite with ShouldMatchers {
     tester.start()
 
     notify("queue01")
-    val cons = reg.getServiceConsumerMock(classOf[MeasOverride])
-    cons.respond(5000) { request =>
-      {
-        request.verb should equal(Envelope.Verb.GET)
-        request.env.subQueue should equal(Some("queue01"))
-        request.payload.getPoint.getName should equal("*")
-        Some(Response[MeasOverride](Envelope.Status.OK, "", Nil))
-      }
+    val cons = reg.getMockClient
+    cons.respond[MeasOverride] { request =>
+      request.verb should equal(Envelope.Verb.GET)
+      request.env.subQueue should equal(Some("queue01"))
+      request.payload.getPoint.getName should equal("*")
+      Some(Response[MeasOverride](Envelope.Status.OK, "", Nil))
     }
 
     tester.box.receiveWithin(5000) {

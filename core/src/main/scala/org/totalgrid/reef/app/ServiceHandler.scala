@@ -87,7 +87,7 @@ trait ServiceHandler extends Logging {
   def addService[A <: GeneratedMessage](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, subHandler: ResponseHandler[A], evtHandler: EventHandler[A]) = {
 
     // service client which does subscribe calls
-    val client = registry.getServiceClient(deserialize)
+    val client = registry.getServiceClient()
 
     // function to call when events occur
     val evtFun = { evt: Event[A] =>
