@@ -48,7 +48,7 @@ trait ServiceHandler extends Logging {
   def execute(fun: => Unit)
 
   // helper function
-  private def subscribe[A <: GeneratedMessage](client: ServiceClient, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
+  private def subscribe[A <: AnyRef](client: ServiceClient, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
     val env = new RequestEnv
     env.setSubscribeQueue(queue)
     client.asyncGet(searchObj, env) {
@@ -72,7 +72,7 @@ trait ServiceHandler extends Logging {
    *  @param  context         Service context to bind the response/events
    *
    */
-  def addServiceContext[A <: GeneratedMessage](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, context: ServiceContext[A]) =
+  def addServiceContext[A <: AnyRef](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, context: ServiceContext[A]) =
     addService(registry, retryMS, deserialize, searchObj, context.handleResponse _, context.handleEvent _)
 
   /**
@@ -84,7 +84,7 @@ trait ServiceHandler extends Logging {
    *  @param	eventHandler		Callback for service events
    *
    */
-  def addService[A <: GeneratedMessage](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, subHandler: ResponseHandler[A], evtHandler: EventHandler[A]) = {
+  def addService[A <: AnyRef](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, subHandler: ResponseHandler[A], evtHandler: EventHandler[A]) = {
 
     // service client which does subscribe calls
     val client = registry.getServiceClient()

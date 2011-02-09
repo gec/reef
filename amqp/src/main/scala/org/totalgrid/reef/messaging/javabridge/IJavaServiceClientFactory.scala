@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.javabridge
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.ServiceHandlerHeaders
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, TypeDescriptor }
 
 /**
  * Non-Thread-Safe factory class to provide service clients to a single thread. The clients
@@ -43,7 +43,7 @@ trait IJavaServiceClientFactory {
   /**
    *  Returns a JavaServiceClient for interacting with a particular resource type
    */
-  def getServiceClient[T <: GeneratedMessage](pd: ProtoDescriptor[T]): IServiceClient
+  def getServiceClient[T <: GeneratedMessage](pd: TypeDescriptor[T]): IServiceClient
 
   /**
    * closes the client factory and the underlying channel, all serviceClients 

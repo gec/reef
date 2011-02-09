@@ -26,7 +26,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.messaging.Descriptors
 
 import OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -39,8 +39,7 @@ import org.squeryl.PrimitiveTypeMode._
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
     extends BasicProtoService[PortProto, FrontEndPort, FrontEndPortServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = PortProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[PortProto]
+  override val descriptor = Descriptors.port
 }
 
 class FrontEndPortModelFactory(pub: ServiceEventPublishers)

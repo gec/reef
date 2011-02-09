@@ -22,8 +22,7 @@ package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.services.ProtoServiceEndpoint
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
 import org.totalgrid.reef.proto.Envelope
@@ -252,13 +251,12 @@ object BaseProtoService {
 /**
  * Base class for services which handle protobuf messages and act on service models.
  * 
- * Implements ProtoServiceable/ProtoServiceEndpoint interfaces to the messaging system
+ * Implements ServiceEndpoint/ProtoServiceEndpoint interfaces to the messaging system
  * and provides shared types/resource definitions for mixed-in service behavior.
  */
 trait BaseProtoService[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]]
     extends ProtoServiceShared
-    with ProtoServiceable[PT]
-    with ProtoServiceEndpoint {
+    with ServiceEndpoint[PT] {
 
   type ProtoType = PT
   type ModelType = MT

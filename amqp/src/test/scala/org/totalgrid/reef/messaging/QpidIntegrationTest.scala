@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.Deserializers
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
 import org.scalatest.FunSuite
@@ -43,7 +42,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   val payload = Example.Foo.newBuilder.build
   val request = Envelope.ServiceRequest.newBuilder.setId("1").setVerb(Envelope.Verb.GET).setPayload(payload.toByteString).build
   val exchange = "integration.test"
-  val servicelist = new ServiceListOnMap(Map(classOf[Example.Foo] -> ServiceInfo.get(exchange, Deserializers.foo)))
+  val servicelist = new ServiceListOnMap(Map(classOf[Example.Foo] -> ServiceInfo.get(exchange, Descriptors.foo)))
 
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
@@ -64,16 +63,18 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   // same service except that it only responds to get, and only works with validated type Foo
-  class FooServiceX3 extends ProtoServiceable[Example.Foo] {
-    override def deserialize(bytes: Array[Byte]) = Example.Foo.parseFrom(bytes)
-    override def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
+  class FooServiceX3 extends ServiceEndpoint[Example.Foo] {
+
+    override val descriptor = Descriptors.foo
+
+    def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
     def put(req: Example.Foo, env: RequestEnv) = noVerb("put")
     def delete(req: Example.Foo, env: RequestEnv) = noVerb("delete")
     def post(req: Example.Foo, env: RequestEnv) = noVerb("post")
   }
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Example.Foo] -> ServiceInfo.get(exchange, Deserializers.foo)))
+    classOf[Example.Foo] -> ServiceInfo.get(exchange, Descriptors.foo)))
 
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run { amqp =>

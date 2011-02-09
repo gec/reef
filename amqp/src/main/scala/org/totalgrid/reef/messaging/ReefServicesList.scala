@@ -20,43 +20,43 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.{ ProtoDescriptor, Deserializers }
+import org.totalgrid.reef.protoapi.TypeDescriptor
 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(
 
-    getEntry(Deserializers.port, "front_end_port"),
-    getEntry(Deserializers.frontEndProcessor, "front_end_processor"),
-    getEntry(Deserializers.communicationEndpointConfig, "comm_endpoint"),
-    getEntry(Deserializers.communicationEndpointConnection, "front_end_assignment"),
-    getEntry(Deserializers.measurementProcessingConnection, "meas_proc_assignment"),
+    getEntry(Descriptors.port, "front_end_port"),
+    getEntry(Descriptors.frontEndProcessor, "front_end_processor"),
+    getEntry(Descriptors.communicationEndpointConfig, "comm_endpoint"),
+    getEntry(Descriptors.communicationEndpointConnection, "front_end_assignment"),
+    getEntry(Descriptors.measurementProcessingConnection, "meas_proc_assignment"),
 
-    getEntry(Deserializers.measurementBatch, "measurement_batch"),
-    getEntry(Deserializers.measurementHistory, "measurement_history"),
-    getEntry(Deserializers.measurementSnapshot, "measurement_snapshot", Some(Deserializers.measurement), Some("measurement")),
-    getEntry(Deserializers.measOverride, "meas_override"),
-    getEntry(Deserializers.triggerSet, "trigger_set"),
-    getEntry(Deserializers.statusSnapshot, "process_status"),
+    getEntry(Descriptors.measurementBatch, "measurement_batch"),
+    getEntry(Descriptors.measurementHistory, "measurement_history"),
+    getEntry(Descriptors.measurementSnapshot, "measurement_snapshot", Some(Descriptors.measurement), Some("measurement")),
+    getEntry(Descriptors.measOverride, "meas_override"),
+    getEntry(Descriptors.triggerSet, "trigger_set"),
+    getEntry(Descriptors.statusSnapshot, "process_status"),
 
-    getEntry(Deserializers.event, "event"),
-    getEntry(Deserializers.eventList, "event_list"),
-    getEntry(Deserializers.eventConfig, "event_config"),
-    getEntry(Deserializers.alarm, "alarm"),
-    getEntry(Deserializers.alarmList, "alarm_list"),
-    getEntry(Deserializers.authToken, "auth_token"),
+    getEntry(Descriptors.event, "event"),
+    getEntry(Descriptors.eventList, "event_list"),
+    getEntry(Descriptors.eventConfig, "event_config"),
+    getEntry(Descriptors.alarm, "alarm"),
+    getEntry(Descriptors.alarmList, "alarm_list"),
+    getEntry(Descriptors.authToken, "auth_token"),
 
-    getEntry(Deserializers.userCommandRequest, "user_command_request"),
-    getEntry(Deserializers.commandAccess, "command_access"),
+    getEntry(Descriptors.userCommandRequest, "user_command_request"),
+    getEntry(Descriptors.commandAccess, "command_access"),
 
-    getEntry(Deserializers.applicationConfig, "app_config"),
+    getEntry(Descriptors.applicationConfig, "app_config"),
 
-    getEntry(Deserializers.configFile, "config_file"),
-    getEntry(Deserializers.command, "command"),
-    getEntry(Deserializers.point, "point"),
-    getEntry(Deserializers.entity, "entity"),
-    getEntry(Deserializers.entityEdge, "entity_edge"))
+    getEntry(Descriptors.configFile, "config_file"),
+    getEntry(Descriptors.command, "command"),
+    getEntry(Descriptors.point, "point"),
+    getEntry(Descriptors.entity, "entity"),
+    getEntry(Descriptors.entityEdge, "entity_edge"))
 
-  private def getEntry[A, B](descriptor: ProtoDescriptor[A], exchange: String, subClass: Option[ProtoDescriptor[B]] = None, subExchange: Option[String] = None): ServiceList.ServiceTuple = {
+  private def getEntry[A, B](descriptor: TypeDescriptor[A], exchange: String, subClass: Option[TypeDescriptor[B]] = None, subExchange: Option[String] = None): ServiceList.ServiceTuple = {
     (descriptor.getKlass -> ServiceInfo(
       exchange,
       descriptor,

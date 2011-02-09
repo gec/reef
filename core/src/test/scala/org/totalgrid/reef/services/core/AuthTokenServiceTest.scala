@@ -22,8 +22,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Envelope._
-import org.totalgrid.reef.messaging.ServiceRequestHandler
-import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
+import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, TypeDescriptor }
 
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
@@ -192,10 +192,16 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
       req.setPayload(ServiceResponse.newBuilder.setId("").setStatus(Status.BUS_UNAVAILABLE).build.toByteString)
       req.build
     }
-    class NonOpService extends ServiceRequestHandler {
+    class NonOpService extends ServiceDescriptor[Any] {
       /// noOpService that returns OK
       def respond(request: ServiceRequest, env: RequestEnv): ServiceResponse = {
         ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build
+      }
+
+      override val descriptor = new TypeDescriptor[Any] {
+        def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
+        def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
+        def getKlass: Class[Any] = throw new Exception("unimplemented")
       }
     }
 

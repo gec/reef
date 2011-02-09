@@ -28,6 +28,7 @@ import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.messaging.Descriptors
 
 import BaseProtoService._
 
@@ -42,7 +43,7 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
 
   val defaultSelectTime = 30000
 
-  val servedProto = modelTrans.messageType
+  override val descriptor = Descriptors.commandAccess
 
   def deserialize(bytes: Array[Byte]) = AccessProto.parseFrom(bytes)
 

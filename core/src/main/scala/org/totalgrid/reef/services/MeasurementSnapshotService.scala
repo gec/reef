@@ -23,7 +23,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 import ProtoServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
@@ -35,12 +35,11 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
-class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends ProtoServiceable[MeasurementSnapshot] with ProtoServiceEndpoint {
+class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends ServiceEndpoint[MeasurementSnapshot] {
 
   def this(cm: RTDatabase, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementSnapshot]))
-  val servedProto = classOf[MeasurementSnapshot]
 
-  override def deserialize(bytes: Array[Byte]) = MeasurementSnapshot.parseFrom(bytes)
+  override val descriptor = Descriptors.measurementSnapshot
 
   override def put(req: MeasurementSnapshot, env: RequestEnv) = noVerb("put")
   override def delete(req: MeasurementSnapshot, env: RequestEnv) = noVerb("delete")

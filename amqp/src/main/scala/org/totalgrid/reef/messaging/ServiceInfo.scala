@@ -20,12 +20,12 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.ProtoDescriptor
+import org.totalgrid.reef.protoapi.TypeDescriptor
 
 object ServiceInfo {
-  def get[A](exchange: String, descriptor: ProtoDescriptor[A]) =
+  def get[A](exchange: String, descriptor: TypeDescriptor[A]) =
     ServiceInfo[A, A](exchange, descriptor, false, descriptor, exchange + "_events")
 }
 
-case class ServiceInfo[A, B](exchange: String, descriptor: ProtoDescriptor[A], subIsStreamType: Boolean, subType: ProtoDescriptor[B], subExchange: String)
+case class ServiceInfo[A, B](exchange: String, descriptor: TypeDescriptor[A], subIsStreamType: Boolean, subType: TypeDescriptor[B], subExchange: String)
 

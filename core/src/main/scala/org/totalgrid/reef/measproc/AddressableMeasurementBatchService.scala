@@ -22,18 +22,15 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.services.ProtoServiceEndpoint
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
-class AddressableMeasurementBatchService(measProc: ProcessingNode) extends ProtoServiceable[MeasurementBatch] with ProtoServiceEndpoint {
+class AddressableMeasurementBatchService(measProc: ProcessingNode) extends ServiceEndpoint[MeasurementBatch] {
 
-  val servedProto = classOf[MeasurementBatch]
-
-  override def deserialize(bytes: Array[Byte]) = MeasurementBatch.parseFrom(bytes)
+  override val descriptor = Descriptors.measurementBatch
 
   override def delete(req: MeasurementBatch, env: RequestEnv) = noVerb("delete")
   override def get(req: MeasurementBatch, env: RequestEnv) = noVerb("get")

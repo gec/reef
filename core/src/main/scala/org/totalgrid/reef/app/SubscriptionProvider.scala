@@ -26,6 +26,6 @@ import org.totalgrid.reef.app.ServiceHandler._
 
 // Trait allows type to be negotiated between user and provider, and hidden from factory steps in between
 trait SubscriptionProvider {
-  def subscribe[A <: Protobuf](parseFrom: Array[Byte] => A, searchKey: A, respHandler: ResponseHandler[A], eventHandler: EventHandler[A])
+  def subscribe[A <: AnyRef](parseFrom: Array[Byte] => A, searchKey: A, respHandler: ResponseHandler[A], eventHandler: EventHandler[A])
 }
 

@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
 import org.totalgrid.reef.messaging.javabridge.*;
+import org.totalgrid.reef.messaging.Descriptors;
 
 import org.totalgrid.reef.integration.helpers.*;
 
@@ -56,7 +57,7 @@ public class TestMeasSnapshotService extends JavaBridgeTestBase {
 		// mock object that will receive queue and measurement subscription
 		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>();
 
-		Subscription sub = client.addSubscription(Deserializers.measurementSnapshot(), mock);
+		Subscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
 		// make the all points request, w/ subscribe queue set
 		MeasurementSnapshot request = SampleProtos.makeMeasSnapshot(SampleRequests.getAllPoints(client));

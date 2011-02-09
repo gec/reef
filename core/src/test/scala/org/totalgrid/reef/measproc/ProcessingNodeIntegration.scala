@@ -60,7 +60,7 @@ class ProcessingNodeIntegration extends Suite with ShouldMatchers {
 
     val provider = new SubscriptionProvider {
       import org.totalgrid.reef.app.ServiceHandler._
-      def subscribe[A <: GeneratedMessage](parseFrom: Array[Byte] => A, searchKey: A, respHandler: ResponseHandler[A], eventHandler: EventHandler[A]) = {
+      def subscribe[A <: AnyRef](parseFrom: Array[Byte] => A, searchKey: A, respHandler: ResponseHandler[A], eventHandler: EventHandler[A]) = {
         searchKey match {
           case key: TriggerSet => {
             trigEventOpt = Some(eventHandler.asInstanceOf[EventHandler[TriggerSet]])

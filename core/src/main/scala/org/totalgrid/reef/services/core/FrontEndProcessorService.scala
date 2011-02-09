@@ -21,35 +21,25 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.FEP.FrontEndProcessor
-import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.proto.ProcessStatus._
-import org.totalgrid.reef.models.HeartbeatStatus
-import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationInstance, CommunicationProtocolApplicationInstance, ApplicationSchema }
-
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.protoapi.ProtoServiceException
-
-import OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.services.ProtoRoutingKeys
 
-// implicit proto properties
+// implicits
+import org.squeryl.PrimitiveTypeMode._
+import OptionalProtos._
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.messaging.ProtoSerializer._
 
 class FrontEndProcessorService(protected val modelTrans: ServiceTransactable[FrontEndProcessorServiceModel])
     extends BasicProtoService[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = FrontEndProcessor.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[FrontEndProcessor]
+  override val descriptor = Descriptors.frontEndProcessor
 }
 
 class FrontEndProcessorModelFactory(

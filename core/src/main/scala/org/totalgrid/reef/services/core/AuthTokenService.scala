@@ -29,6 +29,7 @@ import org.totalgrid.reef.proto.Envelope.Status
 import org.totalgrid.reef.util._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
+import org.totalgrid.reef.messaging.Descriptors
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
@@ -217,8 +218,7 @@ class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenSe
     with BaseProtoService.DeleteEnabled
     with BaseProtoService.SubscribeDisabled {
   override val useAuth = false
-  val servedProto = modelTrans.messageType
-  def deserialize(bytes: Array[Byte]) = AuthToken.parseFrom(bytes)
+  override val descriptor = Descriptors.authToken
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

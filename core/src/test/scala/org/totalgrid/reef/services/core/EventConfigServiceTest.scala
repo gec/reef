@@ -27,9 +27,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.{ ServiceInfo, ServiceListOnMap, ReefServicesList }
+import org.totalgrid.reef.messaging.{ ServiceInfo, ServiceListOnMap, Descriptors }
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.javabridge.Deserializers
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -58,7 +57,7 @@ class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAnd
       val service = new EventConfigService(fac)
       val exchange = "test"
       amqp.bindService(exchange, service.respond) // listen for service requests with the echo service
-      val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(exchange, Deserializers.eventConfig)))
+      val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(exchange, Descriptors.eventConfig)))
 
       val client = amqp.getProtoServiceClient(servicelist, 5000)
 

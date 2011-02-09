@@ -30,6 +30,7 @@ import org.totalgrid.reef.proto.Processing.MeasOverride;
 import java.util.List;
 
 import org.totalgrid.reef.messaging.javabridge.*;
+import org.totalgrid.reef.messaging.Descriptors;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
@@ -42,7 +43,7 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 		assertTrue(points.size() > 0);
 		Point p = points.get(0);
 		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>();
-		Subscription sub = client.addSubscription(Deserializers.measurementSnapshot(), mock);
+		Subscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
 		{
 			MeasOverride ovr = SampleProtos.makeMeasOverride(p);

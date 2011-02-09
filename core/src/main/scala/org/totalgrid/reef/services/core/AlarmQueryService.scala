@@ -25,25 +25,25 @@ import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
 
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoServiceEndpoint
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ProtoSerializer._
+
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
+import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
+import org.squeryl.dsl.ast.LogicalBoolean
 
 object AlarmQueryService {
 
@@ -63,10 +63,9 @@ object AlarmQueryService {
 }
 
 class AlarmQueryService
-    extends ProtoServiceable[AlarmList] with ProtoServiceEndpoint {
+    extends ServiceEndpoint[AlarmList] {
 
-  def deserialize(bytes: Array[Byte]) = AlarmList.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[AlarmList]
+  override val descriptor = Descriptors.alarmList
 
   override def put(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("put")
   override def delete(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("delete")

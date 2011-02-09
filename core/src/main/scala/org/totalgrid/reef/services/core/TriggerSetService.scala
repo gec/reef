@@ -20,24 +20,23 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.models._
 
-import org.totalgrid.reef.proto.Model.{ Point => PointProto }
 import org.totalgrid.reef.proto.Processing.{ TriggerSet => TriggerProto }
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.{ ProtoRoutingKeys }
-import org.totalgrid.reef.services.framework.SquerylModel._
 import org.totalgrid.reef.services.core.OptionalProtos._
-import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.messaging.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+import org.totalgrid.reef.services.framework.SquerylModel._
+import org.squeryl.PrimitiveTypeMode._
 
 class TriggerSetService(protected val modelTrans: ServiceTransactable[TriggerSetServiceModel])
     extends BasicProtoService[TriggerProto, TriggerSet, TriggerSetServiceModel] /*(modelTrans)*/ {
 
-  def deserialize(bytes: Array[Byte]) = TriggerProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[TriggerProto]
+  override val descriptor = Descriptors.triggerSet
 }
 
 class TriggerSetServiceModelFactory(pub: ServiceEventPublishers)

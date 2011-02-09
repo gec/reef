@@ -43,10 +43,10 @@ class ProtoClient(
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ServiceClient]
 
-  def asyncRequest[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) {
+  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) {
 
     val info = lookup.getServiceInfo(payload.getClass.asInstanceOf[Class[A]])
-    val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(payload)
+    val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(payload))
 
     val sendEnv = if (defaultEnv.isDefined) env.merge(defaultEnv.get) else env
     sendEnv.asKeyValueList.foreach(kv => request.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
@@ -55,7 +55,7 @@ class ProtoClient(
       val result = resp match {
         case Some(x) =>
           try {
-            val list = x.getPayloadList.map { x => info.descriptor.deserializeBytes(x.toByteArray) }.toList
+            val list = x.getPayloadList.map { x => info.descriptor.deserialize(x.toByteArray) }.toList
             val error = if (x.hasErrorMessage) x.getErrorMessage else ""
             Some(Response(x.getStatus, error, list))
           } catch {
@@ -87,7 +87,7 @@ class ProtoClient(
 
     // TODO: lookup by subscription klass instead of serviceKlass
     val info = lookup.getServiceInfo(klass)
-    val deser = (info.subType.deserializeBytes _).asInstanceOf[Array[Byte] => T]
+    val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => T]
     val subIsStreamType = info.subIsStreamType
 
     factory.prepareSubscription(deser, subIsStreamType, ea)

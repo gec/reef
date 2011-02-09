@@ -27,10 +27,11 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import OptionalProtos._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -70,8 +71,7 @@ object EventConfigService {
 class EventConfigService(protected val modelTrans: ServiceTransactable[EventConfigServiceModel])
     extends BasicProtoService[EventConfig, EventConfigStore, EventConfigServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = EventConfig.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[EventConfig]
+  override val descriptor = Descriptors.eventConfig
 }
 
 class EventConfigServiceModelFactory(pub: ServiceEventPublishers)

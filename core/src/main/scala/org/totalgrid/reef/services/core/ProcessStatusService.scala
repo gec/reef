@@ -32,6 +32,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 // Implicits
 import OptionalProtos._ // implicit proto properties
@@ -43,8 +44,7 @@ import org.squeryl.PrimitiveTypeMode._
 class ProcessStatusService(protected val modelTrans: ServiceTransactable[ProcessStatusServiceModel])
     extends BasicProtoService[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = StatusSnapshot.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[StatusSnapshot]
+  override val descriptor = Descriptors.statusSnapshot
 }
 
 class ProcessStatusServiceModelFactory(

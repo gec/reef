@@ -21,12 +21,12 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfg }
 import org.totalgrid.reef.proto.Model.{ Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.messaging.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
@@ -37,8 +37,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends BasicProtoService[CommandProto, Command, CommandServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = CommandProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[CommandProto]
+  override val descriptor = Descriptors.command
 }
 
 class CommandServiceModelFactory(pub: ServiceEventPublishers)

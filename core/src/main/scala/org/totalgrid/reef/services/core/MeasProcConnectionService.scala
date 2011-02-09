@@ -31,6 +31,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.squeryl.PrimitiveTypeMode._
 import OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -39,8 +40,7 @@ import org.totalgrid.reef.util.Optional._
 class MeasurementProcessingConnectionService(protected val modelTrans: ServiceTransactable[MeasurementProcessingConnectionServiceModel])
     extends BasicProtoService[ConnProto, MeasProcAssignment, MeasurementProcessingConnectionServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = ConnProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[ConnProto]
+  override val descriptor = Descriptors.measurementProcessingConnection
 }
 
 class MeasurementProcessingConnectionModelFactory(

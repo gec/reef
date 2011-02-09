@@ -21,14 +21,12 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.models.EventStore
+import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.Response
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoServiceEndpoint
-
 import org.totalgrid.reef.proto.Envelope
 
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
@@ -96,11 +94,10 @@ object EventQueryService {
 }
 
 class EventQueryService(protected val modelTrans: ServiceTransactable[EventServiceModel])
-    extends ProtoServiceable[EventList] with ProtoServiceEndpoint {
+    extends ServiceEndpoint[EventList] {
   import EventQueryService._
 
-  def deserialize(bytes: Array[Byte]) = EventList.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[EventList]
+  override val descriptor = Descriptors.eventList
 
   override def put(req: EventList, env: RequestEnv): Response[EventList] = noVerb("put")
   override def delete(req: EventList, env: RequestEnv): Response[EventList] = noVerb("delete")

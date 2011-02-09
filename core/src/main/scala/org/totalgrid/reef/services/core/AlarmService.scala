@@ -36,6 +36,7 @@ import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -48,8 +49,7 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
     with BaseProtoService.PutPostEnabled
     with BaseProtoService.DeleteEnabled {
 
-  def deserialize(bytes: Array[Byte]) = Alarm.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[Alarm]
+  override val descriptor = Descriptors.alarm
 
   // Alarms are created by events. No create via an Alarm proto.
   override def preCreate(req: Alarm) = {

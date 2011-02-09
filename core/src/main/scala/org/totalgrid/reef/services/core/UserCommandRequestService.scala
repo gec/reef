@@ -30,6 +30,7 @@ import BaseProtoService._
 
 import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.messaging.Descriptors
 
 class UserCommandRequestService(
   protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel])
@@ -39,8 +40,7 @@ class UserCommandRequestService(
     with PutPostEnabled
     with DeleteDisabled {
 
-  val servedProto = classOf[UserCommandRequest]
-  def deserialize(bytes: Array[Byte]) = UserCommandRequest.parseFrom(bytes)
+  override val descriptor = Descriptors.userCommandRequest
 
   override protected def preCreate(proto: UserCommandRequest): UserCommandRequest = {
 

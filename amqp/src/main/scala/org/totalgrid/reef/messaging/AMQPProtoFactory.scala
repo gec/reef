@@ -26,6 +26,7 @@ import com.google.protobuf.GeneratedMessage
 import javabridge.Subscription
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.util.OneArgFunc
 
 /** Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
  *  
@@ -52,12 +53,12 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
 
   /* ---- Functions for subscribing  ---- */
 
-  def subscribe[T](exchange: String, key: String, convert: Array[Byte] => T, accept: T => Unit): ObserverableBrokerObject = {
+  def subscribe[A](exchange: String, key: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
     add(new AMQPExclusiveConsumer(exchange, key, consumer))
   }
 
-  def subscribe[T](exchange: String, convert: Array[Byte] => T, accept: T => Unit): ObserverableBrokerObject = {
+  def subscribe[A](exchange: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
     add(new AMQPPrivateResponseQueueListener(exchange, consumer))
   }
@@ -65,7 +66,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
   /**
    * start message flow from an externally prepared (and usually persistent) queue, no binding is done to any exchange
    */
-  def listen[T](queueName: String, convert: Array[Byte] => T, accept: T => Unit): ObserverableBrokerObject = {
+  def listen[A](queueName: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
     add(new AMQPExternallyPreparedQueueListener(queueName, consumer))
   }
@@ -73,7 +74,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
   /**
    * setup and start message flow from a shared and non-exclusive queue with fixed name and exchange. competing consumer behavior
    */
-  def listen[T](queueName: String, exchange: String, convert: Array[Byte] => T, accept: T => Unit): ObserverableBrokerObject = {
+  def listen[A](queueName: String, exchange: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
     add(new AMQPCompetingConsumer(exchange, queueName, "#", consumer))
   }
@@ -84,25 +85,26 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
    * get a publisher that sends messages to a fixed exchange and generates the routing key
    * based off the content of that message
    */
-  def publish[T <: GeneratedMessage](exchange: String, keygen: T => String): T => Unit = {
-    AMQPConvertingProtoPublisher.wrapSend[T](publish(exchange), keygen)
+  def publish[A <: GeneratedMessage](exchange: String, keygen: A => String): A => Unit = {
+    AMQPConvertingProtoPublisher.wrapSend[A](publish(exchange), keygen)
   }
 
   /**
    * get a publisher that sends messages to a fixed exchange but allow us to manually set the routing_key
    */
-  def send[T <: GeneratedMessage](exchange: String): (T, String) => Unit = {
-    AMQPConvertingProtoPublisher.wrapSendWithKey[T](publish(exchange))
+  def send[A <: GeneratedMessage](exchange: String): (A, String) => Unit = {
+    AMQPConvertingProtoPublisher.wrapSendWithKey[A](publish(exchange))
   }
 
   /**
    * get a publisher that allow us to send proto messages to an arbitrary exchange with arbitrary key
    */
-  def broadcast[T <: GeneratedMessage](): (T, String, String) => Unit = {
+
+  def broadcast[A <: GeneratedMessage](): (A, String, String) => Unit = {
     val pub = new AMQPPublisher with ReactActor
     add(pub)
     addReactor(pub)
-    AMQPConvertingProtoPublisher.wrapSendToExchange[T](pub.send(_, _, _))
+    AMQPConvertingProtoPublisher.wrapSendToExchange[A](pub.send(_, _, _))
   }
 
   /* ---- Service related functions ---- */
@@ -115,26 +117,26 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
     correlator
   }
 
-  def getEventQueue[T](convert: Array[Byte] => T, accept: Event[T] => Unit): ObserverableBrokerObject = {
+  def getEventQueue[A](convert: Array[Byte] => A, accept: Event[A] => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeEventConsumer(convert, accept)
     add(new AMQPUnboundPrivateQueueListener(consumer))
   }
 
-  def getEventQueue[T](convert: Array[Byte] => T, accept: Event[T] => Unit, notify: String => Unit): ObservableSubscription = {
+  def getEventQueue[A](convert: Array[Byte] => A, accept: Event[A] => Unit, notify: String => Unit): ObservableSubscription = {
     val consumer = AMQPMessageConsumers.makeEventConsumer(convert, accept)
     val sub = new AMQPUnboundPrivateQueueListener(consumer)
     sub.resubscribe(notify)
     add(sub)
   }
 
-  def getStreamQueue[T](convert: Array[Byte] => T, accept: Event[T] => Unit, notify: String => Unit): ObservableSubscription = {
+  def getStreamQueue[A](convert: Array[Byte] => A, accept: Event[A] => Unit, notify: String => Unit): ObservableSubscription = {
     val consumer = AMQPMessageConsumers.makeConvertingEventStreamConsumer(convert, accept)
     val sub = new AMQPUnboundPrivateQueueListener(consumer)
     sub.resubscribe(notify)
     add(sub)
   }
 
-  def prepareSubscription[T <: GeneratedMessage](deserialize: Array[Byte] => T, subIsStreamType: Boolean, callback: Event[T] => Unit): Subscription = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): Subscription = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }

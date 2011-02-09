@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.{ Subscription, Deserializers }
+import javabridge.Subscription
 import mock.{ AMQPFixture, MockBrokerInterface }
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -37,7 +37,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
   val exchange = "ProtoSubscriptionTest"
   val exchangeMap: ServiceList.ServiceMap = Map(
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, Deserializers.requestHeader))
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, Descriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {
@@ -59,7 +59,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends ProtoServiceable[Envelope.RequestHeader] {
+  class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends ServiceEndpoint[Envelope.RequestHeader] {
 
     // list of entries
     private var entries = List.empty[Envelope.RequestHeader]
@@ -72,7 +72,8 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       changes.foreach(msg => subHandler.publish(evt, msg, msg.getKey))
     }
 
-    def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
+    val descriptor = Descriptors.requestHeader
+
     def get(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)
 

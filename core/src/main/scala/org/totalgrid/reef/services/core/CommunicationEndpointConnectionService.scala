@@ -34,6 +34,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -44,8 +45,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
     extends BasicProtoService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = ConnProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[ConnProto]
+  override val descriptor = Descriptors.communicationEndpointConnection
 }
 
 class CommunicationEndpointConnectionModelFactory(pub: ServiceEventPublishers, measurementStore: MeasurementStore)

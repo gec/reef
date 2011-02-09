@@ -21,19 +21,17 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
-
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.proto.ProcessStatus._
-import org.totalgrid.reef.proto.Envelope
-
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
+
+//import org.totalgrid.reef.messaging.ProtoSerializer._
 
 import org.squeryl.PrimitiveTypeMode._
 import OptionalProtos._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -44,8 +42,7 @@ import scala.collection.JavaConversions._
 class ApplicationConfigService(protected val modelTrans: ServiceTransactable[ApplicationConfigServiceModel])
     extends BasicProtoService[ApplicationConfig, ApplicationInstance, ApplicationConfigServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = ApplicationConfig.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[ApplicationConfig]
+  override val descriptor = Descriptors.applicationConfig
 }
 
 class ApplicationConfigServiceModelFactory(pub: ServiceEventPublishers, procStatus: ModelFactory[ProcessStatusServiceModel])

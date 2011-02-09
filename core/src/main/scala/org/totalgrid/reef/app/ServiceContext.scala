@@ -32,7 +32,7 @@ import com.google.protobuf.{ GeneratedMessage => Protobuf }
  * with ServiceHandler
  * 
  */
-trait ServiceContext[A <: Protobuf] extends Observable {
+trait ServiceContext[A <: AnyRef] extends Observable {
 
   // Define these functions
   def add(obj: A)

@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceRequestHandler
+import org.totalgrid.reef.messaging.ServiceDescriptor
 import org.totalgrid.reef.app.CoreApplicationComponents
 
 /**
@@ -48,7 +48,7 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// takes an endpoint and either returns that endpoint unaltered or wraps it metrics
   /// collecting code
-  def getInstrumentedRespondFunction(endpoint: ProtoServiceEndpoint, exch: String) = {
+  def getInstrumentedRespondFunction(endpoint: ServiceDescriptor[_], exch: String): ServiceDescriptor[_] = {
     if (serviceConfiguration.metrics) {
       val hooks = if (serviceConfiguration.metricsSplitByService) {
         generateHooks(exch) // make a new hook object for each service
@@ -63,11 +63,11 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
-  def instrumentCallback(exchange: String, endpoint: ProtoServiceEndpoint, auth: Boolean = true) = {
+  def instrumentCallback(exchange: String, endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
 
     val responder = getInstrumentedRespondFunction(endpoint, exchange)
 
-    val authWrappedResponder = if (serviceConfiguration.auth && auth) {
+    val authWrappedResponder = if (serviceConfiguration.auth && endpoint.useAuth) {
       new AuthTokenVerifier(responder, exchange, allAuthMetrics)
     } else {
       responder

@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.Deserializers
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
@@ -37,16 +36,22 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class ProtoClientTest extends FunSuite with ShouldMatchers {
 
-  class FooServiceX3 extends ProtoServiceable[Example.Foo] {
-    def deserialize(bytes: Array[Byte]) = Example.Foo.parseFrom(bytes)
+  class FooServiceX3 extends ServiceEndpoint[Example.Foo] {
+
+    val descriptor = Descriptors.foo
+
     def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
     def put(req: Example.Foo, env: RequestEnv) = noVerb("put")
     def delete(req: Example.Foo, env: RequestEnv) = noVerb("delete")
     def post(req: Example.Foo, env: RequestEnv) = noVerb("post")
   }
 
-  class HeadersX2 extends ProtoServiceable[Envelope.RequestHeader] {
+  class HeadersX2 extends ServiceEndpoint[Envelope.RequestHeader] {
+
+    val descriptor = Descriptors.requestHeader
+
     def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
+
     def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo))
     def put(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("put")
     def delete(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("delete")
@@ -57,8 +62,8 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
   val exchangeB = "test.protoClient.B"
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Example.Foo] -> ServiceInfo.get(exchangeA, Deserializers.foo),
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, Deserializers.requestHeader)))
+    classOf[Example.Foo] -> ServiceInfo.get(exchangeA, Descriptors.foo),
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, Descriptors.requestHeader)))
 
   def setupTest(test: ProtoClient => Unit) {
     val connection = new MockBrokerInterface

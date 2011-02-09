@@ -25,21 +25,21 @@ import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import OptionalProtos._
 import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import SquerylModel._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implict asParam
 
 class ConfigFileService(protected val modelTrans: ServiceTransactable[ConfigFileServiceModel])
     extends BasicProtoService[ConfigProto, ConfigFile, ConfigFileServiceModel] /*(modelTrans)*/ {
 
-  def deserialize(bytes: Array[Byte]) = ConfigProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[ConfigProto]
+  override val descriptor = Descriptors.configFile
 }
 
 class ConfigFileServiceModelFactory(pub: ServiceEventPublishers)

@@ -28,7 +28,7 @@ import org.totalgrid.reef.messaging.ProtoRegistry
 // Trait allows type to be negotiated between user and provider, and hidden from factory steps in between
 class ServiceHandlerProvider(registry: ProtoRegistry, handler: ServiceHandler) extends SubscriptionProvider {
 
-  def subscribe[A <: GeneratedMessage](
+  def subscribe[A <: AnyRef](
     parseFrom: Array[Byte] => A,
     searchKey: A,
     respHandler: ResponseHandler[A],

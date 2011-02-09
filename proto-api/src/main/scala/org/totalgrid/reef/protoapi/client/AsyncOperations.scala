@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.protoapi.client
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.protoapi.RequestEnv
@@ -33,23 +31,23 @@ trait AsyncOperations extends Logging {
 
   /** All other async functions can be reduced to this
    */
-  def asyncRequest[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit)
+  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit)
 
   /* --- Thick Interface --- All function prevalidate the response code so the client doesn't have to check it */
-  def asyncGet[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.GET, payload, env)(callback)
+  def asyncGet[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.GET, payload, env)(callback)
 
-  def asyncDelete[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.DELETE, payload, env)(callback)
+  def asyncDelete[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.DELETE, payload, env)(callback)
 
-  def asyncPost[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.POST, payload, env)(callback)
+  def asyncPost[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.POST, payload, env)(callback)
 
-  def asyncPut[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.PUT, payload, env)(callback)
+  def asyncPut[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: MultiResult[A] => Unit): Unit = asyncRequest(Envelope.Verb.PUT, payload, env)(callback)
 
-  def asyncGetOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncGet(payload, env)(callback)
+  def asyncGetOne[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncGet(payload, env)(callback)
 
-  def asyncDeleteOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncDelete(payload, env)(callback)
+  def asyncDeleteOne[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncDelete(payload, env)(callback)
 
-  def asyncPutOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPut(payload, env)(callback)
+  def asyncPutOne[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPut(payload, env)(callback)
 
-  def asyncPostOne[A <: GeneratedMessage](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPost(payload, env)(callback)
+  def asyncPostOne[A <: AnyRef](payload: A, env: RequestEnv = new RequestEnv)(callback: SingleResult[A] => Unit): Unit = asyncPost(payload, env)(callback)
 
 }

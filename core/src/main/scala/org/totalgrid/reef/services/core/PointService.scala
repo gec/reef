@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ ApplicationSchema, Point, Command, Entity }
+import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
 import org.totalgrid.reef.proto.Model.{ Point => PointProto }
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 
@@ -29,6 +29,7 @@ import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.messaging.Descriptors
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import OptionalProtos._
@@ -41,9 +42,7 @@ import org.totalgrid.reef.util.Optional._
 class PointService(protected val modelTrans: ServiceTransactable[PointServiceModel])
     extends BasicProtoService[PointProto, Point, PointServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = PointProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[PointProto]
-
+  override val descriptor = Descriptors.point
 }
 
 class PointServiceModelFactory(pub: ServiceEventPublishers)

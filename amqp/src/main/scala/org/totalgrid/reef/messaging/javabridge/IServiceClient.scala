@@ -22,21 +22,8 @@ package org.totalgrid.reef.messaging.javabridge
 
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ Event }
-import org.totalgrid.reef.protoapi.ServiceHandlerHeaders
-import com.google.protobuf.{ GeneratedMessage, ByteString, InvalidProtocolBufferException }
-
-/**
- * Helper that adapts the scala deserialization functiosn to a Java interface
- */
-trait ProtoDescriptor[T] {
-  @throws(classOf[InvalidProtocolBufferException])
-  def deserializeString(data: ByteString): T
-
-  @throws(classOf[InvalidProtocolBufferException])
-  def deserializeBytes(data: Array[Byte]): T
-
-  def getKlass: Class[_]
-}
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, TypeDescriptor }
+import com.google.protobuf.GeneratedMessage
 
 /**
  *  Adapts raw events functions to a Java interface
@@ -78,7 +65,7 @@ trait IServiceClient {
   def deleteOne[T <: GeneratedMessage](payload: T, sub: Subscription): T
   def putOne[T <: GeneratedMessage](payload: T, sub: Subscription): T
 
-  def addSubscription[T <: GeneratedMessage](pd: ProtoDescriptor[T], ea: EventAcceptor[T]): Subscription
+  def addSubscription[T <: GeneratedMessage](pd: TypeDescriptor[T], ea: EventAcceptor[T]): Subscription
 
   def getDefaultEnv(): ServiceHandlerHeaders
 

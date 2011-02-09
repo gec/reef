@@ -22,11 +22,11 @@ package org.totalgrid.reef.messaging.javabridge
 
 import org.totalgrid.reef.proto.Envelope
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging._
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv, TypeDescriptor }
+import org.totalgrid.reef.messaging.ProtoClient
 
-import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv }
+import scala.collection.JavaConversions._
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists
@@ -62,7 +62,7 @@ class JavaProtoClientWrapper(client: ProtoClient) extends IServiceClient {
   def deleteOne[T <: GeneratedMessage](payload: T): T = client.deleteOneOrThrow(payload)
   def putOne[T <: GeneratedMessage](payload: T): T = client.putOneOrThrow(payload)
 
-  def addSubscription[T <: GeneratedMessage](pd: ProtoDescriptor[T], ea: EventAcceptor[T]): Subscription = {
+  def addSubscription[T <: GeneratedMessage](pd: TypeDescriptor[T], ea: EventAcceptor[T]): Subscription = {
     client.addSubscription(pd.getKlass, ea.onEvent)
   }
 

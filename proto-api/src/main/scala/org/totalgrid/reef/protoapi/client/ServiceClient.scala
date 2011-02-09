@@ -24,9 +24,7 @@ import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 
 import ProtoServiceTypes._
 
-import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Envelope
-import com.google.protobuf.GeneratedMessage
 
 /** Provides a thick interface full of helper functions via implement the single abstract request function
  */
@@ -41,6 +39,6 @@ trait ServiceClient extends SyncOperations with FutureOperations with AsyncScatt
   /**
    *    Implements a synchronous request in terms of an asynchronous request
    */
-  override def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = requestFuture(verb, payload, env)()
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = requestFuture(verb, payload, env)()
 
 }

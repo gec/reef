@@ -25,15 +25,6 @@ import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
 import org.totalgrid.reef.messaging.ServiceRequestHandler
 
-/**
- * simple interface used by service context to attach a service to the bus
- */
-trait ProtoServiceEndpoint extends ServiceRequestHandler {
-  val servedProto: Class[_]
-  val useAuth = true
-
-}
-
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 

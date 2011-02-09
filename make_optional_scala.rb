@@ -30,9 +30,9 @@ def add_deserializer(file, name, fullName)
   name = name.strip
   fullName = fullName.strip
   file.puts <<EOF
-  def #{camelCase(name)}() = new ProtoDescriptor[#{fullName}] {
-    def deserializeString(bytes: ByteString) = #{fullName}.parseFrom(bytes)
-    def deserializeBytes(bytes: Array[Byte]) = #{fullName}.parseFrom(bytes)
+  def #{camelCase(name)}() = new TypeDescriptor[#{fullName}] {
+    def serialize(typ : #{fullName}) : Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = #{fullName}.parseFrom(bytes)
     def getKlass = classOf[#{fullName}]
   }
 EOF
@@ -158,18 +158,16 @@ object OptionalProtos {
 
 EOF
 
-deseralizers = File.open(File.join(File.dirname(__FILE__),"./amqp/src/main/scala/org/totalgrid/reef/messaging/javabridge/Deserializers.scala"), 'wb')
+deseralizers = File.open(File.join(File.dirname(__FILE__),"./amqp/src/main/scala/org/totalgrid/reef/messaging/TypeDescriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
-package org.totalgrid.reef.messaging.javabridge
+package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.messaging.javabridge._
-
-import com.google.protobuf.{ ByteString, InvalidProtocolBufferException }
+import org.totalgrid.reef.protoapi.TypeDescriptor
 
 #{scala_imports}
 
-object Deserializers {
+object Descriptors {
 
 EOF
 
@@ -207,4 +205,4 @@ deseralizers.puts "}"
 f.close
 deseralizers.close
 
-puts "Generated OptionalProtos.scala and Deserializers.scala"
+puts "Generated OptionalProtos.scala and TypeDescriptors.scala"

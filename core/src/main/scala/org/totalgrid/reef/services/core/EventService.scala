@@ -37,6 +37,7 @@ import org.totalgrid.reef.protoapi.ProtoServiceException
 import BaseProtoService._
 
 import OptionalProtos._
+import org.totalgrid.reef.messaging.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implicit proto properties
@@ -50,8 +51,7 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
     with PostLikeEnabled
     with DeleteEnabled {
 
-  def deserialize(bytes: Array[Byte]) = Event.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[Event]
+  override val descriptor = Descriptors.event
 }
 
 class EventServiceModelFactory(pub: ServiceEventPublishers, eventConfig: ModelFactory[EventConfigServiceModel], alarmServiceModel: ModelFactory[AlarmServiceModel])

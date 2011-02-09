@@ -31,8 +31,10 @@ import java.util.List;
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
 import org.totalgrid.reef.protoapi.ProtoServiceException;
 
+
 import org.totalgrid.reef.integration.helpers.*;
 import org.totalgrid.reef.messaging.javabridge.*;
+import org.totalgrid.reef.messaging.Descriptors;
 
 @SuppressWarnings("unchecked")
 public class TestCommandService extends JavaBridgeTestBase {
@@ -97,7 +99,7 @@ public class TestCommandService extends JavaBridgeTestBase {
 
 		MockEventAcceptor<UserCommandRequest> mock = new MockEventAcceptor<UserCommandRequest>();
 		UserCommandRequest request = SampleProtos.makeControlRequest(cmd, "user");
-		Subscription sub = client.addSubscription(Deserializers.userCommandRequest(), mock);
+		Subscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
 		client.putOne(request, sub);
 
 		// We get 2 events here. Since the subscription is bound before the request is made,

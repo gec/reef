@@ -21,9 +21,10 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.proto.Envelope
-import com.google.protobuf.GeneratedMessage
+//import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ProtoServiceException, RequestEnv }
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ProtoServiceException, RequestEnv, TypeDescriptor }
+import org.totalgrid.reef.messaging.ProtoSerializer._
 
 import ProtoServiceTypes.Response
 
@@ -39,29 +40,30 @@ object ServiceRequestHandler {
  * wrapper that layers functionality on a request 
  */
 trait ServiceRequestHandler {
-
   def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse
+  val useAuth = true
 }
 
-trait ProtoServiceable[T <: GeneratedMessage] extends ServiceRequestHandler with Logging {
+trait ServiceDescriptor[A] extends ServiceRequestHandler {
+  val descriptor: TypeDescriptor[A]
+}
 
-  /// Implement this member to tell the trait how to read it's type
-  def deserialize(bytes: Array[Byte]): T
+trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
 
-  def get(req: T): Response[T] = get(req, new RequestEnv)
-  def put(req: T): Response[T] = put(req, new RequestEnv)
-  def delete(req: T): Response[T] = delete(req, new RequestEnv)
-  def post(req: T): Response[T] = post(req, new RequestEnv)
+  def get(req: A): Response[A] = get(req, new RequestEnv)
+  def put(req: A): Response[A] = put(req, new RequestEnv)
+  def delete(req: A): Response[A] = delete(req, new RequestEnv)
+  def post(req: A): Response[A] = post(req, new RequestEnv)
 
-  def get(req: T, env: RequestEnv): Response[T]
-  def put(req: T, env: RequestEnv): Response[T]
-  def delete(req: T, env: RequestEnv): Response[T]
-  def post(req: T, env: RequestEnv): Response[T]
+  def get(req: A, env: RequestEnv): Response[A]
+  def put(req: A, env: RequestEnv): Response[A]
+  def delete(req: A, env: RequestEnv): Response[A]
+  def post(req: A, env: RequestEnv): Response[A]
 
   /// by default, unimplemented verbs return this response
-  protected def noVerb(verb: String) = Response[T](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb, Nil)
+  protected def noVerb(verb: String) = Response[A](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb, Nil)
 
-  def handleRequest(verb: Envelope.Verb, value: T, env: RequestEnv): Response[T] = {
+  def handleRequest(verb: Envelope.Verb, value: A, env: RequestEnv): Response[A] = {
     verb match {
       case Envelope.Verb.GET => get(value, env)
       case Envelope.Verb.PUT => put(value, env)
@@ -71,9 +73,9 @@ trait ProtoServiceable[T <: GeneratedMessage] extends ServiceRequestHandler with
     }
   }
 
-  def handleRequest(req: Envelope.ServiceRequest, env: RequestEnv): Response[T] = {
+  def handleRequest(req: Envelope.ServiceRequest, env: RequestEnv): Response[A] = {
 
-    val value = deserialize(req.getPayload.toByteArray)
+    val value = descriptor.deserialize(req.getPayload.toByteArray)
     handleRequest(req.getVerb, value, env)
   }
 
@@ -84,9 +86,9 @@ trait ProtoServiceable[T <: GeneratedMessage] extends ServiceRequestHandler with
 
     val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)
 
-    def setRsp(r: Response[T]) = {
+    def setRsp(r: Response[A]) = {
       rsp.setStatus(r.status).setErrorMessage(r.error)
-      r.result.foreach { x: T => rsp.addPayload(x.toByteString) }
+      r.result.foreach { x: A => rsp.addPayload(descriptor.serialize(x)) }
     }
 
     try {

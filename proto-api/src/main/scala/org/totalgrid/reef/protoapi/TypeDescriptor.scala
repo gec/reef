@@ -18,28 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.protoapi
 
-import com.google.protobuf.GeneratedMessage
-import ProtoSerializer._
+import com.google.protobuf.InvalidProtocolBufferException
 
-object AMQPConvertingProtoPublisher {
+/**
+ * Helper that adapts the scala deserialization functiosn to a Java interface
+ */
+trait TypeDescriptor[A] {
 
-  def wrapSend[A <: GeneratedMessage](sendFun: (Array[Byte], String) => Unit, keygen: A => String): A => Unit = { (value: A) =>
-    {
-      sendFun(value, keygen(value))
-    }
-  }
-  def wrapSendWithKey[A <: GeneratedMessage](sendFun: (Array[Byte], String) => Unit): (A, String) => Unit = { (value: A, key: String) =>
-    {
-      sendFun(value, key)
-    }
-  }
+  /*
+  @throws(classOf[InvalidProtocolBufferException])
+  def deserializeString(data: ByteString): A
+  */
 
-  def wrapSendToExchange[A <: GeneratedMessage](sendFun: (Array[Byte], String, String) => Unit): (A, String, String) => Unit = { (value: A, exchange: String, key: String) =>
-    {
-      sendFun(value, exchange, key)
-    }
-  }
+  def serialize(typ: A): Array[Byte]
 
+  @throws(classOf[InvalidProtocolBufferException])
+  def deserialize(data: Array[Byte]): A
+
+  def getKlass: Class[A]
 }

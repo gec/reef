@@ -23,8 +23,8 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.messaging.javabridge.Deserializers;
 import org.totalgrid.reef.messaging.javabridge.Subscription;
+import org.totalgrid.reef.messaging.Descriptors;
 import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.Relationship;
@@ -86,7 +86,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 
 		MockEventAcceptor<Alarm> mock = new MockEventAcceptor<Alarm>();
 
-		Subscription sub = client.addSubscription(Deserializers.alarm(), mock);
+		Subscription sub = client.addSubscription(Descriptors.alarm(), mock);
 
 		List<Alarm> alarms = client.get(Alarm.newBuilder().build(), sub);
 

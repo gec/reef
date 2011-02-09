@@ -32,23 +32,23 @@ import org.totalgrid.reef.util.OneArgFunc
 trait ProtoQueueRegistry {
 
   /** set up a listener that is called whenever a proto is sent to queue */
-  def listen[T](deserialize: (Array[Byte]) => T, queueName: String)(accept: T => Unit): Unit
+  def listen[A](deserialize: (Array[Byte]) => A, queueName: String)(accept: A => Unit): Unit
 
   /** publish a proto to an arbitrary exchange */
-  def broadcast[T <: GeneratedMessage](exchangeName: String, keygen: T => String): T => Unit
+  def broadcast[A <: GeneratedMessage](exchangeName: String, keygen: A => String): A => Unit
 }
 
 /** Abstracts how services and their associated event queues are retrieved */
 trait ProtoServiceRegistry {
 
-  /** Creates a service consumer of type T */
+  /** Creates a service consumer of type A */
   def getServiceClient(key: String = "request"): ServiceClient
 
-  /** Creates an event queue of type T that can be monitored using an ObservableSubscription */
-  def defineEventQueue[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit): Unit
+  /** Creates an event queue of type A that can be monitored using an ObservableSubscription */
+  def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit
 
   /** Overload that defines the subscription in the function call */
-  def defineEventQueueWithNotifier[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit)(notify: String => Unit): Unit
+  def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit
 
 }
 
@@ -64,19 +64,19 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
     client
   }
 
-  def defineEventQueue[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit): Unit = {
+  def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     factory.getEventQueue(deserialize, accept)
   }
 
-  def defineEventQueueWithNotifier[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit)(notify: String => Unit): Unit = {
+  def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
     factory.getEventQueue(deserialize, accept, notify)
   }
 
-  def listen[T](deserialize: (Array[Byte]) => T, queueName: String)(accept: T => Unit): Unit = {
+  def listen[A](deserialize: (Array[Byte]) => A, queueName: String)(accept: A => Unit): Unit = {
     factory.listen(queueName, deserialize, accept)
   }
 
-  def broadcast[T <: GeneratedMessage](exchangeName: String, keygen: T => String): T => Unit = {
+  def broadcast[A <: GeneratedMessage](exchangeName: String, keygen: A => String): A => Unit = {
     factory.publish(exchangeName, keygen)
   }
 

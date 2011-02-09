@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.ServiceRequestHandler
+import org.totalgrid.reef.messaging.ServiceDescriptor
 import org.totalgrid.reef.protoapi.RequestEnv
 import org.totalgrid.reef.util._
 
@@ -44,9 +44,11 @@ trait ProtoServicableHooks {
 /**
  * instruments a service proto request entry point so metrics can be collected (by verb if configured) 
  */
-class ProtoServicableMetrics(real: ServiceRequestHandler, hooks: ProtoServicableHooks, slowQueryThreshold: Long)
-    extends ServiceRequestHandler
+class ProtoServicableMetrics[A](real: ServiceDescriptor[A], hooks: ProtoServicableHooks, slowQueryThreshold: Long)
+    extends ServiceDescriptor[A]
     with Logging {
+
+  override val descriptor = real.descriptor
 
   def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
     hooks.map.get(req.getVerb) match {

@@ -20,17 +20,16 @@
  */
 package org.totalgrid.reef.services
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.Lifecycle
-import org.totalgrid.reef.messaging.ReefServicesList
+import org.totalgrid.reef.messaging.{ ReefServicesList, ServiceDescriptor }
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.ServiceRequestHandler
-import org.totalgrid.reef.protoapi.RequestEnv
+import org.totalgrid.reef.protoapi.{ RequestEnv, TypeDescriptor }
 
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.proto.Envelope
@@ -48,11 +47,17 @@ class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAf
 
     def addLifecycleObject(obj: Lifecycle) {}
 
-    def attachService(endpoint: ProtoServiceEndpoint): ServiceRequestHandler = {
-      ReefServicesList.getServiceInfo(endpoint.servedProto) //call just so an exception will be thrown if it doesn't exist
-      new ServiceRequestHandler {
+    def attachService(endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+      ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass) //call just so an exception will be thrown if it doesn't exist
+      new ServiceDescriptor[Any] {
         def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse =
           Envelope.ServiceResponse.getDefaultInstance
+
+        override val descriptor = new TypeDescriptor[Any] {
+          def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
+          def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
+          def getKlass: Class[Any] = throw new Exception("unimplemented")
+        }
       }
     }
   }

@@ -27,6 +27,7 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._
@@ -38,8 +39,7 @@ import org.totalgrid.reef.util.Optional._
 class OverrideConfigService(protected val modelTrans: ServiceTransactable[OverrideConfigServiceModel])
     extends BasicProtoService[MeasOverride, OverrideConfig, OverrideConfigServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = MeasOverride.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[MeasOverride]
+  override val descriptor = Descriptors.measOverride
 }
 
 class OverrideConfigModelFactory(pub: ServiceEventPublishers)

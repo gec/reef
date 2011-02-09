@@ -21,21 +21,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.Response
-
-import org.totalgrid.reef.services.ProtoServiceEndpoint
+import org.totalgrid.reef.messaging.Descriptors
 
 import org.totalgrid.reef.proto.Envelope
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
 
-class EntityService extends ProtoServiceable[EntityProto] with ProtoServiceEndpoint {
+class EntityService extends ServiceEndpoint[EntityProto] {
 
-  def deserialize(bytes: Array[Byte]) = EntityProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[EntityProto]
+  override val descriptor = Descriptors.entity
 
   override def put(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
 
@@ -61,10 +59,10 @@ class EntityService extends ProtoServiceable[EntityProto] with ProtoServiceEndpo
 import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
-class EntityEdgeService extends ProtoServiceable[EntityEdgeProto] with ProtoServiceEndpoint {
+class EntityEdgeService extends ServiceEndpoint[EntityEdgeProto] {
 
   def deserialize(bytes: Array[Byte]) = EntityEdgeProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[EntityEdgeProto]
+  override val descriptor = Descriptors.entityEdge
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {
     val b = EntityEdgeProto.newBuilder()

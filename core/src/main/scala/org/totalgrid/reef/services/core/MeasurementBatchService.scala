@@ -23,9 +23,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoServiceable, ReefServicesList }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint, ReefServicesList, Descriptors }
 import ProtoServiceTypes.Response
-import org.totalgrid.reef.services.ProtoServiceEndpoint
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -34,11 +33,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
-class MeasurementBatchService(amqp: AMQPProtoFactory) extends ProtoServiceable[MeasurementBatch] with ProtoServiceEndpoint {
+class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[MeasurementBatch] {
 
-  val servedProto = classOf[MeasurementBatch]
-
-  override def deserialize(bytes: Array[Byte]) = MeasurementBatch.parseFrom(bytes)
+  override val descriptor = Descriptors.measurementBatch
 
   override def delete(req: MeasurementBatch, env: RequestEnv) = noVerb("delete")
   override def get(req: MeasurementBatch, env: RequestEnv) = noVerb("get")

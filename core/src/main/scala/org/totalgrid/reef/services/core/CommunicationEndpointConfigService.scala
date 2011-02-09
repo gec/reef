@@ -31,13 +31,12 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.Descriptors
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
     extends BasicProtoService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel] {
 
-  def deserialize(bytes: Array[Byte]) = CommEndCfgProto.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[CommEndCfgProto]
-
+  override val descriptor = Descriptors.communicationEndpointConfig
 }
 
 class CommEndCfgServiceModelFactory(

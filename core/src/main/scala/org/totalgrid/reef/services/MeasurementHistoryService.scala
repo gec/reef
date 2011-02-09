@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Envelope.Status
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
 import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.messaging.ProtoServiceable
+import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 
@@ -33,12 +33,10 @@ import org.totalgrid.reef.measurementstore.Historian
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-class MeasurementHistoryService(cm: Historian) extends ProtoServiceable[MeasurementHistory] with ProtoServiceEndpoint {
+class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[MeasurementHistory] {
   val HISTORY_LIMIT = 10000
 
-  val servedProto = classOf[MeasurementHistory]
-
-  override def deserialize(bytes: Array[Byte]) = MeasurementHistory.parseFrom(bytes)
+  override val descriptor = Descriptors.measurementHistory
 
   override def put(req: MeasurementHistory, env: RequestEnv) = noVerb("put")
   override def delete(req: MeasurementHistory, env: RequestEnv) = noVerb("delete")

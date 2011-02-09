@@ -23,18 +23,16 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.Response
 
-import org.totalgrid.reef.messaging.ProtoServiceable
-import org.totalgrid.reef.services.ProtoServiceEndpoint
+import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.proto.Model.ConfigFile
 
 class ConfigService(protected val entityService: EntityService, protected val entityEdgetService: EntityEdgeService)
-    extends ProtoServiceable[ConfigFile] with ProtoServiceEndpoint {
+    extends ServiceEndpoint[ConfigFile] {
 
-  def deserialize(bytes: Array[Byte]) = ConfigFile.parseFrom(bytes)
-  val servedProto: Class[_] = classOf[ConfigFile]
+  override val descriptor = Descriptors.configFile
 
   override def delete(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = noVerb("delete")
   override def post(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = noVerb("post")

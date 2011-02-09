@@ -26,8 +26,8 @@ import org.totalgrid.reef.protoapi.client.SyncOperations
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.{ Response, MultiResult, Failure }
 
-import org.totalgrid.reef.messaging.{ ServiceRequestHandler, ReefServicesList }
-import org.totalgrid.reef.messaging.javabridge.ProtoDescriptor
+import org.totalgrid.reef.messaging.{ ServiceDescriptor, ReefServicesList }
+import org.totalgrid.reef.protoapi.TypeDescriptor
 
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
@@ -37,19 +37,20 @@ import org.totalgrid.reef.proto.Envelope.Verb
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.protoapi.ProtoConversions._
+import org.totalgrid.reef.messaging.ProtoSerializer._
 
-class ServiceDispatcher[A <: GeneratedMessage](rh: ServiceRequestHandler, desc: ProtoDescriptor[A]) {
+class ServiceDispatcher[A <: AnyRef](rh: ServiceDescriptor[A]) {
 
   def request(verb: Verb, payload: A, env: RequestEnv): Response[A] =
     getResponse(rh.respond(getRequest(verb, payload, env), env))
 
   private def getResponse(rsp: Envelope.ServiceResponse): Response[A] = {
-    Response(rsp.getStatus, rsp.getErrorMessage, rsp.getPayloadList.map(x => desc.deserializeString(x)).toList)
+    Response(rsp.getStatus, rsp.getErrorMessage, rsp.getPayloadList.map(x => rh.descriptor.deserialize(x.toByteArray)).toList)
   }
 
   private def getRequest(verb: Envelope.Verb, payload: A, env: RequestEnv): Envelope.ServiceRequest = {
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId("Console")
-    builder.setPayload(payload.toByteString)
+    builder.setPayload(rh.descriptor.serialize(payload))
     env.asKeyValueList.foreach { x =>
       builder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(x._1).setValue(x._2))
     }
@@ -62,17 +63,17 @@ trait OSGiSyncOperations extends SyncOperations {
 
   def getBundleContext: BundleContext
 
-  def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
+  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
-      val rsp = new ServiceDispatcher(getService(info.exchange), info.descriptor.asInstanceOf[ProtoDescriptor[A]]).request(verb, payload, env)
+      val rsp = new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env)
       Some(rsp)
     case None =>
       Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
   }
 
-  private def getService(exchange: String): ServiceRequestHandler = {
-    this.getBundleContext findServices withInterface[ServiceRequestHandler] withFilter "exchange" === exchange andApply { x =>
-      x
+  private def getService[A](exchange: String): ServiceDescriptor[A] = {
+    this.getBundleContext findServices withInterface[ServiceDescriptor[_]] withFilter "exchange" === exchange andApply { x =>
+      x.asInstanceOf[ServiceDescriptor[A]]
     } match {
       case Seq(p) => p
       case Seq(_, _) =>

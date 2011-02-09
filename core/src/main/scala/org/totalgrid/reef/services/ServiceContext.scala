@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.{ ReefServicesList, AMQPProtoFactory, ServiceRequestHandler }
+import org.totalgrid.reef.messaging.{ ReefServicesList, AMQPProtoFactory, ServiceDescriptor }
 import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
 import org.totalgrid.reef.util.{ Logging }
 
@@ -44,8 +44,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   // all the actual services are created here
   private val providers = new ServiceProviders(components, measStore)
 
-  //list of tuples (ServiceRequestHandler, classOf[Proto])
-  val services = this.attachServices(providers.services).zip(providers.services.map(x => x.servedProto))
+  val services = this.attachServices(providers.services)
 
   this.addCoordinator(providers.coordinators)
 
@@ -55,9 +54,9 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     coord.addAMQPConsumers(components.amqp, reactor)
   }
 
-  def attachService(endpoint: ProtoServiceEndpoint): ServiceRequestHandler = {
-    val exchange = ReefServicesList.getServiceInfo(endpoint.servedProto).exchange
-    val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint, endpoint.useAuth)
+  def attachService(endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+    val exchange = ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass).exchange
+    val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint)
 
     // each service gets its own actor so a slow service can't block a fast service but
     // a slow query will block the next query to that service

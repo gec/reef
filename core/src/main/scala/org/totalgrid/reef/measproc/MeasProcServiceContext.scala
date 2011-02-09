@@ -25,7 +25,7 @@ import com.google.protobuf.{ GeneratedMessage => Protobuf }
 import org.totalgrid.reef.app.ServiceContext
 
 /// Tailored for some of the measproc classes
-trait MeasProcServiceContext[A <: Protobuf] extends ServiceContext[A] with Logging {
+trait MeasProcServiceContext[A <: AnyRef] extends ServiceContext[A] with Logging {
 
   // define add, remove, and clear    
   def clear() // clear out your object cache
