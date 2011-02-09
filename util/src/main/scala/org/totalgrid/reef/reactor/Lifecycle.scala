@@ -88,18 +88,18 @@ trait Lifecycle extends Logging {
 
   final def start() = mutex.synchronized {
     if (started) throw new IllegalStateException("Already started")
-    debug("Starting " + this.getClass())
+    info("Starting " + this.getClass())
     this.dispatchStart()
     started = true
-    debug("Started " + this.getClass())
+    info("Started " + this.getClass())
   }
 
   final def stop() = mutex.synchronized {
     if (!started) if (started) throw new IllegalStateException("Already stopped")
-    debug("Stopping " + this.getClass())
+    info("Stopping " + this.getClass())
     this.dispatchStop()
     started = false
-    debug("Stopped " + this.getClass())
+    info("Stopped " + this.getClass())
   }
 
   /// executes just after starting
