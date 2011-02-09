@@ -47,7 +47,8 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
   }
 
   def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
-    updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey
+    updated.hasRouting != existing.hasRouting ||
+      (updated.hasRouting && updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey)
   }
 
   def addEntry(c: ConnProto) = {

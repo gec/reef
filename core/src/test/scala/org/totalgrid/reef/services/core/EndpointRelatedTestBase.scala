@@ -47,8 +47,8 @@ import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
 import org.totalgrid.reef.util.{ Logging, SyncVar }
-import org.totalgrid.reef.messaging.{ServiceInfo, AMQPProtoFactory, ServicesList}
-import org.totalgrid.reef.messaging.serviceprovider.{SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap}
+import org.totalgrid.reef.messaging.{ ServiceInfo, AMQPProtoFactory, ServicesList }
+import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
   override def beforeAll() {
@@ -58,7 +58,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     transaction { ApplicationSchema.reset }
   }
 
-  class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, info : Class[_] => ServiceInfo) extends ServiceEventPublisherMap(info) {
+  class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, info: Class[_] => ServiceInfo) extends ServiceEventPublisherMap(info) {
 
     def createPublisher(exchange: String): ServiceSubscriptionHandler = {
       val reactor = new InstantReactor {}
@@ -133,7 +133,9 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
       caps.foreach(b.addCapabilites)
       b.setUserName(name).setInstanceName(name).setNetwork(network)
         .setLocation(location)
-      one(appService.put(b.build))
+      val cfg = one(appService.put(b.build))
+      if (caps.find(_ == "Processing").isDefined) setupMockMeasProc(name, cfg)
+      cfg
     }
 
     def addProtocols(app: ApplicationConfig, protocols: List[String] = List("dnp3", "benchmark")): FrontEndProcessor = {
@@ -149,7 +151,9 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     }
 
     def addMeasProc(name: String): ApplicationConfig = {
-      val meas = addApp(name, List("Processing"))
+      addApp(name, List("Processing"))
+    }
+    def setupMockMeasProc(name: String, meas: ApplicationConfig) {
 
       val mockMeas = new MockMeasProc(measProcConnection, rtDb, amqp)
 

@@ -67,7 +67,9 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     val now = System.currentTimeMillis
     markOffline(ce)
 
-    val serviceRoutingKey = ce.measProcAssignment.value.serviceRoutingKey
+    // get routing key if measProc is assigned and ready
+    val measProcAssignment = ce.measProcAssignment.value
+    val serviceRoutingKey = measProcAssignment.readyTime.map { l => measProcAssignment.serviceRoutingKey.get }
 
     val applicationId = getFep(ce).map { _.id }
     val assignedTime = applicationId.map { x => now }
@@ -119,7 +121,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
   private def checkAssignment(assign: FrontEndAssignment, ce: CommunicationEndpoint) {
     val applicationId = getFep(ce).map { _.id }
 
-    info { ce.name.value + " assigned FEP: " + applicationId + " protocol: " + ce.protocol + " port: " + ce.port.value }
+    info { ce.name.value + " assigned FEP: " + applicationId + " protocol: " + ce.protocol + " port: " + ce.port.value + " routingKey: " + assign.serviceRoutingKey }
 
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId) {

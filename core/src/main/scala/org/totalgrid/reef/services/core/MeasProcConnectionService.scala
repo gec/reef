@@ -106,8 +106,9 @@ class MeasurementProcessingConnectionServiceModel(
 
   override def updateFromProto(proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
 
-    if (existing.readyTime.isDefined) throw new ProtoServiceException("Measurement processor already marked as ready!")
     if (!proto.hasReadyTime) throw new ProtoServiceException("Measurement processor being updated without ready set!")
+
+    if (existing.readyTime.isDefined) warn("Measurement processor already marked as ready!")
 
     // only update we should get is from the measproc when it is ready to handle measurements
 
