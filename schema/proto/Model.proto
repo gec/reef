@@ -3,7 +3,38 @@ package org.totalgrid.reef.proto.Model;
 option java_package = "org.totalgrid.reef.proto";
 option java_outer_classname = "Model";
 
-// Subtree of entities, owned by an entity
+
+/*
+  Entity
+
+  Represents a generic component of a system model. Entities are modeled by a name
+  and some number of types which describe the entity's role in the system. Entities
+  also contain a list of Relationship objects which describe connections/associations
+  with other entities in the system.
+
+  Together, entities connected by a certain relationship type form an acyclic directed
+  graph. The model must not include cycles (given a start entity, it must not be possible
+  to "circle back" to the same entity using the same relationship type and direction).
+
+*/
+message Entity {
+
+  optional string uid = 1;
+  repeated string types = 2;
+  optional string name = 3;
+
+  repeated Relationship relations = 10;
+}
+
+
+/*
+  Relationship
+
+  Entity relationships have a type ("relationship"), a direction ("descendant_of"), and
+  a list of Entity objects the relationship connects to. Because relationships are transitive,
+  they also have a distance, or how many edges away the other entities are.
+
+*/
 message Relationship {
   optional string relationship = 1;
   optional bool descendant_of = 2;
@@ -13,18 +44,14 @@ message Relationship {
   optional uint32 distance = 15;
 }
 
-// Generic model node, types configurable
-// There is a corresponding Entity for each Equipment, Point, and Command
-message Entity {
-  
-  optional string uid = 1;
-  repeated string types = 2;
-  optional string name = 3;
-  
-  repeated Relationship relations = 10;
-}
 
-// Representation of a one-to-one entity relationship instance
+/*
+  EntityEdge
+
+  Represents a single directed edge between entities. Puts to the service automatically
+  enforce the transitive property of entity relationships.
+
+*/
 message EntityEdge {
   optional string uid = 1;
   optional Entity parent = 2;
@@ -32,8 +59,18 @@ message EntityEdge {
   optional string relationship = 4;
 }
 
-// Configured input point for SCADA measurements
-message Point{
+/*
+  Point
+
+  Represents a configured input point for data acquisition. Measurements associated with
+  this point all use the point name.
+
+  Every Point is associated with an Entity of type "Point". The point's location in the system
+  model is determined by this entity. Points are also associated with entities designated as
+  "logical nodes", which represent the communications interface/source.
+
+*/
+message Point {
   optional string  uid = 1;
   optional string  name = 2;
   optional Entity logicalNode = 5; // live state
@@ -41,17 +78,36 @@ message Point{
   optional bool    abnormal = 6;   // live state
 }
 
-// Configured output for SCADA control
-message Command{
+
+/*
+  Command
+
+  Represents a configured output point. CommandAccess and UserCommandRequest services use
+  this command name.
+
+  Every Command is associated with an Entity of type "Command". The command's location in the
+  system model is determined by this entity. Commands are also associated with entities designated
+  as "logical nodes", which represent the communications interface/source.
+
+*/
+message Command {
   optional string  uid = 1;
   optional string  name = 2;
-  optional Entity logicalNode = 5;   // TODO: live state: points are sourced by this comm endpoint
+  optional Entity logicalNode = 5;
   optional Entity entity   = 6;
 }
 
-// extra protocol specific config files will be configured via external mechanisms, the provider
-// and the protocol adapter must agree and understand the data, the services treat them as an opaque blob
-// of text
+
+/*
+  ConfigFile
+
+  Contains configuration information for an application (i.e. a protocol implementation). The
+  configuration and the application must agree on how to interpret the data, which is treated
+  as an opaque byte array by the services.
+
+  ConfigFile objects also contain a reference to an entity they are associated with.
+
+*/
 message ConfigFile{
     optional string uid       = 1;
     optional string name      = 2;
