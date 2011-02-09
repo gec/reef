@@ -39,7 +39,7 @@ object CommunicationsLoader {
 /**
  * Loader for the communications model.
  *
- * TODO: Load triggers
+ * TODO: Implement EquipmentProfiles
  * TODO: Handle exceptions when a referenced profile is invalid
  * TODO: Add setpoints
  * TODO: Add serial interfaces
@@ -53,6 +53,17 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
   val equipmentProfiles = HashMap[String, EquipmentType]()
 
   val interfaces = HashMap[String, Interface]()
+
+  /**
+   * Reset all class variables
+   */
+  def reset: Unit = {
+    controlProfiles.clear
+    pointProfiles.clear
+    endpointProfiles.clear
+    equipmentProfiles.clear
+    interfaces.clear
+  }
 
   /**
    * Load this equipment node and all children. Create edges to connect the children.

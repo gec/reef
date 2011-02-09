@@ -27,9 +27,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import java.util.{ Date, Calendar }
 
-import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.loader.equipment.{ EquipmentModel => EQ }
-import org.totalgrid.reef.loader.communications.{ CommunicationsModel => CM }
+//import org.totalgrid.reef.loader.configuration
+//import org.totalgrid.reef.loader.sx
 
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.Alarms._
@@ -41,7 +40,7 @@ import org.totalgrid.reef.protoapi.ProtoServiceTypes._
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  case class Fixture(client: MockSyncOperations, config: Configuration)
+  case class Fixture(client: MockSyncOperations, config: sx.Configuration)
   type FixtureParam = Fixture
 
   /**
@@ -50,8 +49,7 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
   def withFixture(test: OneArgTest) = {
 
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(List[GeneratedMessage]()))
-    val config = new Configuration
-    config.setVersion("1.0")
+    val config = new sx.Configuration("1.0")
 
     test(Fixture(client, config))
   }
@@ -60,25 +58,24 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
     import org.totalgrid.reef.loader.LoadManager
     import fixture._
 
-    val mModel = new MessageModel
+    val mModel = new sx.MessageModel
     config.setMessageModel(mModel)
 
-    val messages = mModel.getMessage
-    messages.add(new XmlMessage("Scada.UserLogin", "EVENT", 1, "User login {status} {reason}"))
+    mModel.add(new sx.Message("Scada.UserLogin", "EVENT", 1, "User login {status} {reason}"))
     LoadManager.loadConfiguration(client, config, true) // T: benchmark
     var protos = List[GeneratedMessage](toEvent("Scada.UserLogin", 1, "User login {status} {reason}"))
     client.getPutQueue should equal(protos)
 
-    messages.clear
+    mModel.reset
     client.reset
-    messages.add(new XmlMessage("Scada.OutOfNominal", "LOG", 8, "User login {status} {reason}"))
+    mModel.add(new sx.Message("Scada.OutOfNominal", "LOG", 8, "User login {status} {reason}"))
     LoadManager.loadConfiguration(client, config, true) // T: benchmark
     protos = List[GeneratedMessage](toLog("Scada.OutOfNominal", 8, "User login {status} {reason}"))
     client.getPutQueue should equal(protos)
 
-    messages.clear
+    mModel.reset
     client.reset
-    messages.add(new XmlMessage("Scada.OutOfNominal", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
+    mModel.add(new sx.Message("Scada.OutOfNominal", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
     LoadManager.loadConfiguration(client, config, true) // T: benchmark
     protos = List[GeneratedMessage](toAlarm("Scada.OutOfNominal", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE))
     client.getPutQueue should equal(protos)
@@ -89,19 +86,17 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
     import org.totalgrid.reef.loader.LoadManager
     import fixture._
 
-    val mModel = new MessageModel
+    val mModel = new sx.MessageModel
     config.setMessageModel(mModel)
 
     // Get a proto stream using MessageSet defaults
     //
-    val messageSets = mModel.getMessageSet
-    var messageSet = new XmlMessageSet("Scada", "EVENT", 1, Alarm.State.UNACK_AUDIBLE.toString)
-    messageSets.add(messageSet)
-    val messages = messageSet.getMessage
-    messages.add(new XmlMessage("one", "", 0, "User login {status} {reason}"))
-    messages.add(new XmlMessage("two", "ALARM", 0, "User login {status} {reason}"))
-    messages.add(new XmlMessage("three", "", 2, "User login {status} {reason}"))
-    messages.add(new XmlMessage("four", "", 0, "Something else"))
+    var messageSet = new sx.MessageSet("Scada", "EVENT", 1, Alarm.State.UNACK_AUDIBLE.toString)
+    mModel.add(messageSet)
+    messageSet.add(new sx.Message("one", "", 0, "User login {status} {reason}"))
+    messageSet.add(new sx.Message("two", "ALARM", 0, "User login {status} {reason}"))
+    messageSet.add(new sx.Message("three", "", 2, "User login {status} {reason}"))
+    messageSet.add(new sx.Message("four", "", 0, "Something else"))
     LoadManager.loadConfiguration(client, config, true) // T: benchmark
     val puts1 = client.getPutQueue.clone
     val ec0 = puts1.head.asInstanceOf[EventConfig]
@@ -116,14 +111,13 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
 
     // Get a proto stream using NO MessageSet defaults
     //
-    messageSets.clear
-    messages.clear
-    messageSet = new XmlMessageSet("Scada")
-    messageSets.add(messageSet)
-    messages.add(new XmlMessage("one", "EVENT", 1, "User login {status} {reason}"))
-    messages.add(new XmlMessage("two", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
-    messages.add(new XmlMessage("three", "EVENT", 2, "User login {status} {reason}"))
-    messages.add(new XmlMessage("four", "EVENT", 1, "Something else"))
+    mModel.reset
+    messageSet = new sx.MessageSet("Scada")
+    messageSet.add(messageSet)
+    messageSet.add(new sx.Message("one", "EVENT", 1, "User login {status} {reason}"))
+    messageSet.add(new sx.Message("two", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
+    messageSet.add(new sx.Message("three", "EVENT", 2, "User login {status} {reason}"))
+    messageSet.add(new sx.Message("four", "EVENT", 1, "Something else"))
     LoadManager.loadConfiguration(client, config, true) // T: benchmark
     val puts2 = client.getPutQueue
 

@@ -28,11 +28,9 @@ import org.junit.runner.RunWith
 import java.util.{ Date, Calendar }
 
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.loader.equipment._
+import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.proto.Alarms._
 
 import org.totalgrid.reef.protoapi.client.MockSyncOperations
 import org.totalgrid.reef.protoapi.ProtoServiceTypes._
@@ -41,7 +39,7 @@ import org.totalgrid.reef.protoapi.ProtoServiceTypes._
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  case class Fixture(client: MockSyncOperations, loader: EquipmentLoader, model: XmlEquipmentModel)
+  case class Fixture(client: MockSyncOperations, loader: EquipmentLoader, model: EquipmentModel)
   type FixtureParam = Fixture
 
   /**
@@ -51,7 +49,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     // For now, pass in a get function that always returns an empty list.
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(List[GeneratedMessage]()))
-    val model = new XmlEquipmentModel
+    val model = new EquipmentModel
     val loader = new EquipmentLoader(client)
 
     test(Fixture(client, loader, model))
@@ -60,10 +58,10 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def testEquipmentModelProfiles(fixture: Fixture) = {
     import fixture._
 
-    val actionModel = HashMap[String, ActionSet]()
+    val actionModel = HashMap[String, configuration.ActionSet]()
     val breakerProfile = makeEquipmentProfile("FullBreaker")
 
-    val profiles = new XmlProfiles
+    val profiles = new Profiles
     model.setProfiles(profiles)
 
     profiles.add(breakerProfile)
@@ -85,7 +83,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def testEquipmentModelProfilesWithTriggers(fixture: Fixture) = {
     import fixture._
 
-    val actionModel = HashMap[String, ActionSet]()
+    val actionModel = HashMap[String, configuration.ActionSet]()
     actionModel += ("Nominal" -> makeActionSetNominal())
 
     val normallyFalse = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
@@ -98,7 +96,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
     val triggerSet = toTriggerSet(point)
     */
 
-    val profiles = new XmlProfiles
+    val profiles = new Profiles
     model.setProfiles(profiles)
 
     profiles.add(breakerProfile)
@@ -125,49 +123,49 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def makeEquipment(
     substationName: String,
     isTrigger: Boolean,
-    equipmentProfile: Option[XmlEquipmentProfile] = None): XmlEquipment = {
+    equipmentProfile: Option[EquipmentProfile] = None): Equipment = {
 
-    val breaker = new XmlEquipment("Brk1")
+    val breaker = new Equipment("Brk1")
     equipmentProfile match {
       case Some(profile) =>
         breaker.add(profile)
       case None =>
-        val status = new XmlStatus("Bkr", "status")
+        val status = new Status("Bkr", "status")
         if (isTrigger)
-          status.add(new XmlUnexpected(false, "Nominal"))
+          status.add(new Unexpected(false, "Nominal"))
         breaker
-          .add(new XmlType("Breaker"))
-          .add(new XmlType("Equipment"))
-          .add(new XmlControl("trip"))
-          .add(new XmlControl("close"))
+          .add(new Type("Breaker"))
+          .add(new Type("Equipment"))
+          .add(new Control("trip"))
+          .add(new Control("close"))
           .add(status)
     }
 
-    new XmlEquipment(substationName)
-      .add(new XmlType("Substation"))
-      .add(new XmlType("EquipmentGroup"))
+    new Equipment(substationName)
+      .add(new Type("Substation"))
+      .add(new Type("EquipmentGroup"))
       .add(breaker)
   }
 
-  def makeEquipmentProfile(profileName: String, pointProfile: Option[XmlPointProfile] = None): XmlEquipmentProfile = {
+  def makeEquipmentProfile(profileName: String, pointProfile: Option[PointProfile] = None): EquipmentProfile = {
 
-    new XmlEquipmentProfile(profileName)
-      .add(new XmlType("Breaker"))
-      .add(new XmlType("Equipment"))
-      .add(new XmlControl("trip"))
-      .add(new XmlControl("close"))
-      .add(new XmlStatus("Bkr", "status", pointProfile))
+    new EquipmentProfile(profileName)
+      .add(new Type("Breaker"))
+      .add(new Type("Equipment"))
+      .add(new Control("trip"))
+      .add(new Control("close"))
+      .add(new Status("Bkr", "status", pointProfile))
   }
 
-  def makePointProfile(profileName: String, value: Boolean, actionSet: String): XmlPointProfile = {
-    new XmlPointProfile(profileName)
-      .add(new XmlUnexpected(value, actionSet))
+  def makePointProfile(profileName: String, value: Boolean, actionSet: String): PointProfile = {
+    new PointProfile(profileName)
+      .add(new Unexpected(value, actionSet))
   }
 
-  def makeActionSetNominal(): XmlActionSet = {
-    val as = new XmlActionSet("Nominal")
+  def makeActionSetNominal(): sx.ActionSet = {
+    val as = new sx.ActionSet("Nominal")
     val rising = new configuration.Rising()
-    rising.getMessage.add(new XmlMessage("Scada.OutOfNominal"))
+    rising.getMessage.add(new sx.Message("Scada.OutOfNominal"))
     val high = new configuration.High
     high.setSetAbnormal(new Object)
     as.setRising(rising)
