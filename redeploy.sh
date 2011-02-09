@@ -19,7 +19,3 @@ cd $reefdir
 
 cd $current
 
-mvn -pl integration -P test test
-
-$reefdir/bin/stop
-
