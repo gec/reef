@@ -24,9 +24,9 @@ import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._

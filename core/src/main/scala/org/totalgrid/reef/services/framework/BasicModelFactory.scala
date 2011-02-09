@@ -21,7 +21,8 @@
 package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 /**
  * Implements ModelFactory/ServiceTransactable interfaces and handles subscription

@@ -83,7 +83,8 @@ class ProtoServiceClient[A <: GeneratedMessage](
         case None => None
       }
 
-      callback(ProtoServiceTypes.convert(result))
+      import org.totalgrid.reef.protoapi.ProtoConversions._
+      callback(result)
     }
 
     correlator.send(request, exchange, key, handleResponse)

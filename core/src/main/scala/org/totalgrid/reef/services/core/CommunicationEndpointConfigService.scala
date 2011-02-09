@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfgProto, EndpointOwnership, Port }
@@ -31,6 +30,7 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
     extends BasicProtoService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel] {

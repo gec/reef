@@ -39,6 +39,8 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
 
   val protocols = comms.mapify { _.name }
 
+  val maxAttemptsToRetryMeasurements = 1
+
   private def getProtocol(name: String): Protocol = protocols.get(name) match {
     case Some(p) => p
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
@@ -62,7 +64,7 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
 
     // add the device, get the command issuer callback
     if (protocol.requiresPort) protocol.addPort(port)
-    val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measurementClient), responsePublish(commandClient))
+    val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measurementClient, 0), responsePublish(commandClient))
 
     info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
 
@@ -81,11 +83,16 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
   /**
    * push measurement batchs to the addressable service
    */
-  private def batchPublish(client: ServiceClient)(x: Measurements.MeasurementBatch): Unit = {
+  private def batchPublish(client: ServiceClient, attempts: Int)(x: Measurements.MeasurementBatch): Unit = {
     try {
       client.putOrThrow(x)
     } catch {
-      case e: Exception => error(e)
+      case e: Exception =>
+        if (attempts >= maxAttemptsToRetryMeasurements) error(e)
+        else {
+          info("Retrying publishing measurements : " + x.getMeasCount)
+          batchPublish(client, attempts + 1)(x)
+        }
     }
   }
 

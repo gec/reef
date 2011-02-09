@@ -39,7 +39,7 @@ class AMQPProtoServiceRegistryTest extends Suite with ShouldMatchers {
 
   def testFooExists() {
     val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-      classOf[Example.Foo] -> ServiceInfo("foo", Deserializers.foo, false, Deserializers.foo))
+      classOf[Example.Foo] -> new ServiceInfo("foo", Deserializers.foo))
 
     val factory = new AMQPProtoFactory with ReactActor {
       val broker = new MockBrokerInterface

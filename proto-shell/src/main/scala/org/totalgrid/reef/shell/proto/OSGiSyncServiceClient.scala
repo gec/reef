@@ -36,6 +36,7 @@ import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.proto.Envelope.Verb
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.protoapi.ProtoConversions._
 
 class ServiceDispatcher[A <: GeneratedMessage](rh: ServiceRequestHandler, desc: ProtoDescriptor[A]) {
 
@@ -64,7 +65,7 @@ trait OSGiSyncOperations extends SyncOperations {
   def request[A <: GeneratedMessage](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
       val rsp = new ServiceDispatcher(getService(info.exchange), info.descriptor.asInstanceOf[ProtoDescriptor[A]]).request(verb, payload, env)
-      ProtoServiceTypes.convert(Some(rsp))
+      Some(rsp)
     case None =>
       Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
   }

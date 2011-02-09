@@ -22,5 +22,7 @@ package org.totalgrid.reef.messaging
 
 import javabridge.ProtoDescriptor
 
-case class ServiceInfo(exchange: String, descriptor: ProtoDescriptor[_], subIsStreamType: Boolean, subType: ProtoDescriptor[_])
+case class ServiceInfo(exchange: String, descriptor: ProtoDescriptor[_], subIsStreamType: Boolean, subType: ProtoDescriptor[_], subExchange: String) {
+  def this(exchange: String, descriptor: ProtoDescriptor[_]) = this(exchange, descriptor, false, descriptor, exchange + "_events")
+}
 

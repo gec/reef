@@ -33,6 +33,8 @@ import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes._
 
+import org.totalgrid.reef.protoapi.ProtoConversions._ //implicits for massaging service return types
+
 object MockProtoRegistry {
   val timeout = 5000
 }
@@ -52,7 +54,7 @@ class MockServiceClient[T <: AnyRef](timeout: Long) extends ServiceClient {
   def respond(timeout: Long)(f: Request[T] => Option[Response[T]]): Unit = {
     in.receiveWithin(timeout) {
       case Req(callback, request) =>
-        callback(ProtoServiceTypes.convert(f(request)))
+        callback(f(request))
     }
   }
 

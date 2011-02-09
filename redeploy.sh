@@ -2,7 +2,7 @@ set -ex
 
 reefdir=reef-karaf-0.1.2-SNAPSHOT-dist
 
-$reefdir/bin/stop || true
+$reefdir/bin/stop > /dev/null 2>&1 || true
 
 mvn install -DskipTests -P karaf
 
@@ -21,5 +21,5 @@ cd $current
 
 mvn -pl integration -P test test
 
-
+$reefdir/bin/stop
 

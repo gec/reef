@@ -38,6 +38,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
   override def beforeAll() {

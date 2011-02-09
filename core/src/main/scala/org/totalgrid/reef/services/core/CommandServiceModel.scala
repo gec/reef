@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfg }
 import org.totalgrid.reef.proto.Model.{ Command => CommandProto, Entity => EntityProto }
@@ -33,6 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
 import OptionalProtos._
 import SquerylModel._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends BasicProtoService[CommandProto, Command, CommandServiceModel] {

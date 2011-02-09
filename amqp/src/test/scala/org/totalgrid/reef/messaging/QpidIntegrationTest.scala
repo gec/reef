@@ -71,7 +71,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   val exchangeMap: Map[Class[_], ServiceInfo] = Map(
-    classOf[Example.Foo] -> ServiceInfo(exchange, Deserializers.foo, false, Deserializers.foo))
+    classOf[Example.Foo] -> new ServiceInfo(exchange, Deserializers.foo))
 
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run { amqp =>

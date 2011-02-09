@@ -31,6 +31,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 
 //import org.totalgrid.reef.protoapi.ProtoServiceTypes
 

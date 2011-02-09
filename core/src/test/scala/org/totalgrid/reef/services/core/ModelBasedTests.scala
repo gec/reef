@@ -34,6 +34,7 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {

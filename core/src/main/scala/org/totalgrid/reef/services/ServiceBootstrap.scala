@@ -21,12 +21,12 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.app.{ CoreApplicationComponents, ApplicationEnroller }
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-
 import org.totalgrid.reef.protoapi.RequestEnv
 import org.totalgrid.reef.protoapi.ServiceHandlerHeaders._
 
 import org.totalgrid.reef.proto.FEP.FrontEndProcessor
+import org.totalgrid.reef.messaging.{ ServicesList, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 object ServiceBootstrap {
   /** 
@@ -35,7 +35,7 @@ object ServiceBootstrap {
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(amqp: AMQPProtoFactory): CoreApplicationComponents = {
-    val pubs = new ServiceEventPublisherRegistry(amqp)
+    val pubs = new ServiceEventPublisherRegistry(amqp, ServicesList.getServiceInfo)
     val modelFac = new core.ModelFactories(pubs, new core.SilentSummaryPoints)
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
     val authService = new core.AuthTokenService(modelFac.authTokens)

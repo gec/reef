@@ -106,13 +106,22 @@ class SampleProtos {
 		return b.build();
 	}
 
-	/**
-	 * Takes a list of Points and prepares a request for the measurement snapshot service which
-	 * provides the current values of the points (and the subscription to new values)
-	 */
-	public static MeasurementSnapshot makeMeasSnapshot(Point p) {
+
+	public static MeasurementSnapshot makeMeasSnapshot(String pointName) {
 		MeasurementSnapshot.Builder b = MeasurementSnapshot.newBuilder();
-		b.addPointNames(p.getName());
+		b.addPointNames(pointName);
+		return b.build();
+	}
+
+    /**
+	 * create a measurementbatch from one or measurements
+	 */
+	public static MeasurementBatch makeMeasBatch(Measurement ... measurements) {
+		MeasurementBatch.Builder b = MeasurementBatch.newBuilder();
+		for (Measurement p : measurements) {
+			b.addMeas(p);
+		}
+        b.setWallTime(System.currentTimeMillis());
 		return b.build();
 	}
 

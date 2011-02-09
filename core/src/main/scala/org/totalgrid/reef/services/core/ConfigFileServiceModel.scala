@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
@@ -31,7 +30,10 @@ import org.squeryl.PrimitiveTypeMode._
 import OptionalProtos._
 import org.totalgrid.reef.protoapi.ProtoServiceException
 
-import SquerylModel._ // implict asParam
+import SquerylModel._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
+// implict asParam
 
 class ConfigFileService(protected val modelTrans: ServiceTransactable[ConfigFileServiceModel])
     extends BasicProtoService[ConfigProto, ConfigFile, ConfigFileServiceModel] /*(modelTrans)*/ {

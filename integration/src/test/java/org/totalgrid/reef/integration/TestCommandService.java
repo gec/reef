@@ -81,40 +81,6 @@ public class TestCommandService extends JavaBridgeTestBase {
 		assertEquals(cmdResponse.getStatus(), CommandStatus.EXECUTING);
 	}
 
-	/**
-	 * The "EXECUTING" status just tells us that the command was received and allowed The response
-	 * from the field device / endpoint comes back via an asynchronous subscription
-	 */
-	@Test
-	public void testCommandSelectExecuteAndSubscribe() throws InterruptedException {
-		Command cmd = SampleRequests.getAllCommands(client).get(0);
-		SampleRequests.clearCommandAccess(client, cmd.getName());
-		CommandAccess accessResponse = SampleRequests.putCommandAccess(client, "user", cmd, 5000, true);
-		assertTrue(accessResponse.getExpireTime() > 0);
 
-		// create infrastructure to execute a control with subscription to
-		// result
-
-		MockEventAcceptor<UserCommandRequest> mock = new MockEventAcceptor<UserCommandRequest>();
-		UserCommandRequest request = SampleProtos.makeControlRequest(cmd, "user");
-		Subscription sub = client.addSubscription(Deserializers.userCommandRequest(), mock);
-		client.putOne(request, sub);
-
-		// We get 2 events here. Since the subscription is bound before the request is made,
-		// we see the ADDED/EXECUTING and then the MODIFIED/SUCCESS
-		{
-			Event<UserCommandRequest> rsp = mock.pop(5000);
-			assertEquals(Envelope.Event.ADDED, rsp.getEvent());
-			assertEquals(CommandStatus.EXECUTING, rsp.getResult().getStatus());
-		}
-		{
-			Event<UserCommandRequest> rsp = mock.pop(5000);
-			assertEquals(Envelope.Event.MODIFIED, rsp.getEvent());
-			assertEquals(CommandStatus.SUCCESS, rsp.getResult().getStatus());
-		}
-
-		// cancel the subscription
-		sub.cancel();
-	}
 
 }
