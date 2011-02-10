@@ -8,34 +8,31 @@ import org.totalgrid.reef.proto.Commands.{CommandRequest, UserCommandRequest}
 
 object Commands extends CommandRequestBuilders
 
+object CommandRequestTestDesc {
+  def desc =
+    "Clients use put to issue a command. The CommandRequest object describes the command " +
+    "to be executed, and timeout can be specified by the client code. " +
+    "Status and user are not specified in put. User is identified from the request header."
+}
 
 @RunWith(classOf[JUnitRunner])
-class CommandRequestTest extends ServiceClientSuite with ShouldMatchers {
-
-  override def beforeAll() {
-    factory.start
-    val waiter = new ServiceClientSuite.BrokerConnectionState
-    factory.addConnectionListener(waiter)
-    waiter.waitUntilStarted()
-  }
-
-  override def afterAll() {
-    factory.stop
-  }
+class CommandRequestTest
+  extends ServiceClientSuite("usercommandrequest.xml", "UserCommandRequest", CommandRequestTestDesc.desc)
+  with ShouldMatchers {
 
 
-  /*test("Testtest") {
-    val req = Commands.allowAccessForCommand("StaticSubstation.Breaker02.Trip")
+  test ("Issue command") {
+    val desc = "Issue a command request for the specified point."
+
+    val cmdName = "StaticSubstation.Breaker02.Trip"
+    val acc = Commands.allowAccessForCommand(cmdName)
+    val accResp = client.putOneOrThrow(acc)
+
+    val req = Commands.executeCommand(cmdName)
     val resp = client.putOneOrThrow(req)
 
-    //Documenter.document("Allow access for command", req, resp)
+    doc.addCase("Issue command", desc, req, resp)
 
-    val req2 = UserCommandRequest.newBuilder.setCommandRequest(CommandRequest.newBuilder.setName("CMD01")).build
-    println(Documenter.messageToXml(req))
-    println(Documenter.messageToXml(req2))
+  }
 
-    val doc = new Documenter("protodoc.xml", "Test Doc")
-    doc.addCase("Allow access for command", req, resp)
-    doc.save
-  }*/
 }

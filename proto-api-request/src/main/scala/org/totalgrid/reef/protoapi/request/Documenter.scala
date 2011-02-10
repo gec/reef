@@ -22,7 +22,7 @@ class Documenter(file: String, title: String, desc: String) {
         {usages.reverse}
       </servicedoc>
 
-    XML.save(file, content, "UTF-8", true)
+    XML.save(/*"servicedoc/" +*/ file, content, "UTF-8", true)
   }
 }
 

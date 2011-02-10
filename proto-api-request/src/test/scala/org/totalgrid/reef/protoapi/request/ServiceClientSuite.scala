@@ -10,7 +10,9 @@ import org.totalgrid.reef.protoapi.{RequestEnv, ServiceHandlerHeaders}
 import org.scalatest.{FunSuite, BeforeAndAfterAll, BeforeAndAfterEach}
 
 
-trait ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+abstract class ServiceClientSuite(file: String, title: String, desc: String) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+  val doc = new Documenter(file, title, desc)
+
   override def beforeAll() {
     factory.start
     val waiter = new ServiceClientSuite.BrokerConnectionState
@@ -20,6 +22,7 @@ trait ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndA
   }
   override def afterAll() {
     factory.stop
+    doc.save
   }
 
 
