@@ -57,12 +57,26 @@
 
     <xsl:template match="request">
         <h4>Request</h4>
-        <xsl:apply-templates select="message"/>
-
+        <!-- NOTE: table is here because I don't know how to get the div width to fit around the content -->
+        <table>
+            <tr>
+                <td>
+                    <xsl:apply-templates select="message"/>
+                </td>
+            </tr>
+        </table>
     </xsl:template>
+
     <xsl:template match="response">
         <h4>Response</h4>
-        <xsl:apply-templates select="message"/>
+        <!-- NOTE: table is here because I don't know how to get the div width to fit around the content -->
+        <table>
+            <tr>
+                <td>
+                    <xsl:apply-templates select="message"/>
+                </td>
+            </tr>
+        </table>
     </xsl:template>
 
     <xsl:template match="message">

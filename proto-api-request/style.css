@@ -19,27 +19,32 @@
  * under the License.
  */
 
+body {
+}
+
 div.message {
-  //background-color: rgb(250, 200, 200);
-  //border: 2px solid gray;
-  margin-left: 10px;
+  background-color: rgb(190, 190, 190);
   padding: 3px;
-  //width: 50%;
+  margin: 0px;
+  font-family: Arial, sans-serif;
+  margin-bottom: 4px;
+}
+
+div.msgTitle {
+  font-weight: bold;
 }
 
 div.msgBody table {
-  border: 2px solid gray;
+  background-color: rgb(240, 240, 240);
   padding: 2px;
 }
 
-
-
-div.fieldName {
-  //clear: left;
-  //float: left;
-  width: 80px;
-  //height: 100%;
+td.fieldName {
+  font-size: 90%;
+  padding-left: 5px;
+  padding-right: 15px;
+  text-align: right;
+  vertical-align: top;
+  font-style: italic;
 }
-div.fieldVal {
-  //float: right;
-}
+
