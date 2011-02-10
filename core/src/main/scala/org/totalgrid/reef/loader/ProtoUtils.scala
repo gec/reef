@@ -71,8 +71,8 @@ object ProtoUtils {
    * Deadband is always optional.
    */
   def insertTrigger(triggerSet: TriggerSet.Builder, trigger: Trigger.Builder): TriggerSet.Builder = {
-    println("insertTrigger: trigger: " + trigger.toString)
-    println("insertTrigger: before insert triggerSet: \n" + triggerSet.toString)
+    //println("insertTrigger: trigger: " + trigger.toString)
+    //println("insertTrigger: before insert triggerSet: \n" + triggerSet.toString)
 
     //  Get the current list of triggers minus the trigger we're inserting (if it existed in the triggerSet).
     var triggers = triggerSet.getTriggersList.toList.filter(_.getTriggerName != trigger.getTriggerName).map(_.toBuilder)
@@ -82,7 +82,7 @@ object ProtoUtils {
     triggerSet.clearTriggers
     triggers.foreach(triggerSet.addTriggers(_))
 
-    println("insertTrigger: after insert triggerSet: \n" + triggerSet.toString)
+    //println("insertTrigger: after insert triggerSet: \n" + triggerSet.toString)
 
     triggerSet
   }

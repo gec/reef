@@ -25,6 +25,8 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment, ApplicationInstance, CommunicationEndpoint }
 
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
@@ -69,7 +71,7 @@ class MeasurementProcessingConnectionServiceModel(
     val assignedTime = applicationId.map { x => now }
     val serviceRoutingKey = applicationId.map { x => "meas_batch_" + ce.name.value }
 
-    create(new MeasProcAssignment(ce.id, serviceRoutingKey, applicationId, assignedTime))
+    create(new MeasProcAssignment(ce.id, serviceRoutingKey, applicationId, assignedTime, None))
   }
 
   def onEndpointUpdated(ce: CommunicationEndpoint) {
@@ -83,7 +85,6 @@ class MeasurementProcessingConnectionServiceModel(
   }
 
   def onAppChanged(app: ApplicationInstance, added: Boolean) {
-
     val rechecks = if (added) {
       table.where(measProc => measProc.applicationId.isNull).toList
     } else {
@@ -95,20 +96,32 @@ class MeasurementProcessingConnectionServiceModel(
 
   private def checkAssignment(assign: MeasProcAssignment) {
     val applicationId = getMeasProc().map { _.id }
-    info { assign.endpoint.value.get.name + " assigned MeasProc: " + applicationId }
+    info { assign.endpoint.value.get.name.value + " assigned MeasProc: " + applicationId }
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     val serviceRoutingKey = applicationId.map { x => "meas_batch_" + assign.endpoint.value.get.name.value }
     if (assign.applicationId != applicationId) {
-      val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, serviceRoutingKey = serviceRoutingKey)
+      val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, serviceRoutingKey = serviceRoutingKey, readyTime = None)
       update(newAssign, assign)
     }
   }
 
+  override def updateFromProto(proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
+
+    if (!proto.hasReadyTime) throw new ProtoServiceException("Measurement processor being updated without ready set!")
+
+    if (existing.readyTime.isDefined) warn("Measurement processor already marked as ready!")
+
+    // only update we should get is from the measproc when it is ready to handle measurements
+
+    val updated = existing.copy(readyTime = Some(proto.getReadyTime))
+    update(updated, existing)
+  }
+
   override def postCreate(sql: MeasProcAssignment) {
-    fepModel.onMeasProcAssignmentChanged(sql, true)
+    fepModel.onMeasProcAssignmentChanged(sql, sql.assignedTime.isDefined && sql.readyTime.isDefined)
   }
   override def postUpdate(sql: MeasProcAssignment, existing: MeasProcAssignment) {
-    fepModel.onMeasProcAssignmentChanged(sql, true)
+    fepModel.onMeasProcAssignmentChanged(sql, sql.assignedTime.isDefined && sql.readyTime.isDefined)
   }
   override def postDelete(sql: MeasProcAssignment) {
     fepModel.onMeasProcAssignmentChanged(sql, false)
@@ -159,6 +172,8 @@ trait MeasurementProcessingConnectionConversion
         .setRawEventDest("raw_events")
       b.setRouting(r)
     })
+    entry.assignedTime.foreach(t => b.setAssignedTime(t))
+    entry.readyTime.foreach(t => b.setReadyTime(t))
 
     b.build
   }

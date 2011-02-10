@@ -22,7 +22,7 @@
     <xs:complexType>
       <xs:attribute name="stringValue" type="xs:string" />
       <xs:attribute name="booleanValue" type="xs:boolean" />
-      <xs:attribute name="intValue" type="xs:integer" />
+      <xs:attribute name="intValue" type="xs:int" />
       <xs:attribute name="doubleValue" type="xs:double" />
       <xs:attribute name="actionSet" type="xs:string" use="required"/>
     </xs:complexType>

@@ -22,6 +22,7 @@ package org.totalgrid.reef.integration;
 
 import org.junit.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.proto.Measurements.*;
@@ -45,41 +46,9 @@ public class TestMeasSnapshotService extends JavaBridgeTestBase {
 	public void measSnapshotCountMatches() {
 		List<Point> plist = SampleRequests.getAllPoints(client);
 		List<Measurement> mlist = SampleRequests.getCurrentValues(client, SampleProtos.makeMeasSnapshot(plist));
-		assertTrue(plist.size() == mlist.size());
+		assertEquals(plist.size(), mlist.size());
 	}
 
-	/**
-	 * Tests subscribing to the measurement snapshot service via a get operation
-	 */
-	@Test
-	public void testMeasSnapshotSubscription() throws java.lang.InterruptedException {
 
-		// mock object that will receive queue and measurement subscription
-		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>();
-
-		Subscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
-
-		// make the all points request, w/ subscribe queue set
-		MeasurementSnapshot request = SampleProtos.makeMeasSnapshot(SampleRequests.getAllPoints(client));
-		MeasurementSnapshot response = client.getOne(request, sub);
-
-		assertEquals(request.getPointNamesCount(), response.getMeasurementsCount());
-
-		// check that at least one measurement has been updated in the queue
-		Event<Measurement> m = mock.pop(10000);
-		assertTrue(m.getEvent() == Envelope.Event.MODIFIED);
-
-		// now cancel the subscription
-		sub.cancel();
-		Thread.sleep(1000);
-		mock.clear();
-
-		try {
-			mock.pop(1000);
-			fail("pop() should raise an Exception");
-		} catch (Exception e) {
-		}
-
-	}
 
 }

@@ -20,37 +20,82 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
+import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
 import org.totalgrid.reef.messaging.javabridge.*;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class MockEventAcceptor<T> implements EventAcceptor<T> {
 
-	private BlockingQueue<Event<T>> queue = new BlockingQueue<Event<T>>();
+    private boolean storeResults;
+    private BlockingQueue<Event<T>> queue = new BlockingQueue<Event<T>>();
+    private List<Event<T>> results = new LinkedList<Event<T>>();
 
-	public void onEvent(Event<T> event) {
-		queue.push(event);
-	}
+    /**
+     *
+     * @param storeResults defaults to false if set we store the retrieved events
+     *                     after "seeing" them using pop or waitFor. This allows us
+     *                     to look through the event stream at the end of a test to
+     */
+    public MockEventAcceptor(boolean storeResults) {
+        this.storeResults = storeResults;
+    }
 
-	public void clear() {
-		queue.clear();
-	}
+    public MockEventAcceptor() {
+        this(false);
+    }
 
-	public Event<T> pop(long timeoutms) throws InterruptedException {
-		return queue.pop(timeoutms);
-	}
+    public void onEvent(Event<T> event) {
+        queue.push(event);
+    }
 
-	public boolean waitFor(T value, long timeoutms) {
-		long start = System.currentTimeMillis();
-		do {
-			try {
-				T ret = queue.pop(timeoutms).getResult();
-				if (ret.equals(value)) return true;
-			} catch (Exception ex) {
-				System.out.println(ex);
-				return false;
-			}
-		} while (start + timeoutms > System.currentTimeMillis());
+    public void clear() {
+        queue.clear();
+    }
 
-		return false;
-	}
+    public Event<T> pop(long timeoutms) throws InterruptedException {
+        Event<T> ret = queue.pop(timeoutms);
+        if (storeResults) results.add(ret);
+        return ret;
+    }
+
+    public boolean waitFor(T value, long timeoutms) {
+        long start = System.currentTimeMillis();
+        do {
+            try {
+                Event<T> ret = queue.pop(timeoutms);
+                if (storeResults) results.add(ret);
+                if (ret.getResult().equals(value)) return true;
+            } catch (Exception ex) {
+                System.out.println(ex);
+                return false;
+            }
+        } while (start + timeoutms > System.currentTimeMillis());
+
+        return false;
+    }
+
+    public List<T> getPayloads() {
+        if (!storeResults) throw new RuntimeException("Not storing results");
+        List<T> list = new LinkedList<T>();
+        for (Event<T> p : results) {
+            list.add(p.getResult());
+        }
+        return list;
+    }
+
+    public List<Envelope.Event> getEventCodes() {
+        if (!storeResults) throw new RuntimeException("Not storing results");
+        List<Envelope.Event> list = new LinkedList<Envelope.Event>();
+        for (Event<T> p : results) {
+            list.add(p.getEvent());
+        }
+        return list;
+    }
+
+    public void clearResults() {
+        results = new LinkedList<Event<T>>();
+    }
 }

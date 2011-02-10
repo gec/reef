@@ -67,7 +67,7 @@
 
         </eq:profiles>
 
-        <eq:equipment name="Substation01">
+        <eq:equipment name="SimulatedSubstation">
             <eq:equipmentProfile name="Substation"/>
             <eq:equipment name="Breaker01">
                 <eq:equipmentProfile name="MockBreaker"/>
@@ -77,7 +77,7 @@
             </eq:equipment>
         </eq:equipment>
 
-        <eq:equipment name="Substation02">
+        <eq:equipment name="StaticSubstation">
             <eq:equipmentProfile name="Substation"/>
             <eq:equipment name="Breaker02">
                 <eq:equipmentProfile name="MockBreaker"/>
@@ -91,30 +91,34 @@
 
 
     <cm:communicationsModel>
-        <cm:endpoint name="Endpoint01">
+        <cm:endpoint name="SimulatedEndpoint">
             <cm:type name="Endpoint"/>
             <cm:protocol name="benchmark">
-                <cm:simOptions delay="0"/>
+                <cm:simOptions delay="100"/>
             </cm:protocol>
-            <cm:equipment name="Substation01">
+            <cm:equipment name="SimulatedSubstation">
                 <cm:equipment name="Breaker01">
                     <cm:status name="Bkr" index="0"/>
                     <cm:status name="Tripped" index="1"/>
+                    <cm:control name="Trip" index="0"/>
+                    <cm:control name="Close" index="1"/>
                 </cm:equipment>
                 <cm:equipment name="Line01">
                     <cm:analog name="Current" index="0"/>
                 </cm:equipment>
             </cm:equipment>
         </cm:endpoint>
-        <cm:endpoint name="Endpoint02">
+        <cm:endpoint name="StaticEndpoint">
             <cm:type name="Endpoint"/>
             <cm:protocol name="benchmark">
                 <cm:simOptions delay="0"/>
             </cm:protocol>
-            <cm:equipment name="Substation02">
+            <cm:equipment name="StaticSubstation">
                 <cm:equipment name="Breaker02">
                     <cm:status name="Bkr" index="0"/>
                     <cm:status name="Tripped" index="1"/>
+                    <cm:control name="Trip" index="0"/>
+                    <cm:control name="Close" index="1"/>
                 </cm:equipment>
                 <cm:equipment name="Line02">
                     <cm:analog name="Current" index="0"/>

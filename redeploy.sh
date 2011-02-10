@@ -2,9 +2,7 @@ set -ex
 
 reefdir=reef-karaf-0.1.2-SNAPSHOT-dist
 
-$reefdir/bin/stop || true
-
-mvn install -DskipTests -P karaf
+$reefdir/bin/stop > /dev/null 2>&1 || true
 
 rm -rf $reefdir
 tar -xvf karaf-linux/target/reef-karaf*.tar.gz
@@ -18,8 +16,4 @@ cd $reefdir
 ./quick_start.sh
 
 cd $current
-
-mvn -pl integration -P test test
-
-
 
