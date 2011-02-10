@@ -24,7 +24,7 @@ class CommandRequestTest extends ServiceClientSuite with ShouldMatchers {
   }
 
 
-  test("Testtest") {
+  /*test("Testtest") {
     val req = Commands.allowAccessForCommand("StaticSubstation.Breaker02.Trip")
     val resp = client.putOneOrThrow(req)
 
@@ -37,5 +37,5 @@ class CommandRequestTest extends ServiceClientSuite with ShouldMatchers {
     val doc = new Documenter("protodoc.xml", "Test Doc")
     doc.addCase("Allow access for command", req, resp)
     doc.save
-  }
+  }*/
 }

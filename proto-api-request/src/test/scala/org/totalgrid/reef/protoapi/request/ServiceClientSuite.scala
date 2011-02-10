@@ -9,8 +9,8 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.protoapi.{RequestEnv, ServiceHandlerHeaders}
 import org.scalatest.{FunSuite, BeforeAndAfterAll, BeforeAndAfterEach}
 
-//trait ServiceClientSuite {
-  trait ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+
+trait ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
   override def beforeAll() {
     factory.start
     val waiter = new ServiceClientSuite.BrokerConnectionState
