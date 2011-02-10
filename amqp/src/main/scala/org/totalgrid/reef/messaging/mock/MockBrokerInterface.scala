@@ -57,7 +57,7 @@ object MockBrokerInterface {
   }
 }
 
-class MockBrokerInterface extends BrokerChannel with BrokerConnection {
+class MockBrokerInterface(connectCorrectly: Boolean = true) extends BrokerChannel with BrokerConnection {
   import MockBrokerInterface._
 
   private var connected = false
@@ -69,11 +69,18 @@ class MockBrokerInterface extends BrokerChannel with BrokerConnection {
     this
   }
 
-  def connect() = { connected = true }
+  def connect() = {
+    if (!connectCorrectly) throw new Exception("Fake bad connect")
+    connected = true
+    listener.foreach(_.opened())
+  }
 
   /// nothing special is needed to shut down the mock broker, there are no circular
   /// dependencies or listeners to unravel
-  def close {}
+  def close {
+    connected = false
+    listener.foreach(_.closed())
+  }
 
   case class ExchangeBinding(key: String, queue: String)
 
@@ -96,12 +103,12 @@ class MockBrokerInterface extends BrokerChannel with BrokerConnection {
             //println("publishing: " + exchange + " + " + routingKey + " => " + queue)
             queues.get(queue) match {
               case Some(roundRobin) =>
-                roundRobin.next()
+                Some(roundRobin.next())
               case None =>
-                throw new Exception("no listeners")
+                None
             }
-          }
-        case None => Nil
+          }.flatten
+        case None => throw new Exception("undefined exchange")
       }
     }
   }
@@ -152,7 +159,10 @@ class MockBrokerInterface extends BrokerChannel with BrokerConnection {
       exchanges.get(exchange) match {
         case Some(l: List[_]) =>
           val eb = new ExchangeBinding(key, queue)
-          exchanges = exchanges - exchange + (exchange -> (eb :: l.asInstanceOf[List[ExchangeBinding]]))
+          if (!l.contains(eb)) {
+            // only add the binding if we dont allready have an exact match
+            exchanges = exchanges - exchange + (exchange -> (eb :: l.asInstanceOf[List[ExchangeBinding]]))
+          }
         case None =>
           declareExchange(exchange)
           bindQueue(queue, exchange, key)
