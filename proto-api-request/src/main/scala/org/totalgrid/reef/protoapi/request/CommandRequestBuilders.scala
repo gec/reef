@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.protoapi.request
 
-import org.totalgrid.reef.proto.Commands.{CommandRequest, UserCommandRequest, CommandAccess}
+import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
 
 trait CommandRequestBuilders {
 
