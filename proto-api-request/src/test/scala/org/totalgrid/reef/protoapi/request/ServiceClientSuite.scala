@@ -24,10 +24,11 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
-import org.totalgrid.reef.messaging.{ BrokerConnectionListener, BrokerConnectionInfo, ServicesList, ProtoClient }
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
+import org.totalgrid.reef.protoapi.{ IConnectionListener, RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
+import org.totalgrid.reef.proto.ReefServicesList
 
 abstract class ServiceClientSuite(file: String, title: String, desc: String) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
   val doc = new Documenter(file, title, desc)
@@ -54,21 +55,20 @@ abstract class ServiceClientSuite(file: String, title: String, desc: String) ext
   lazy val client = connect
 
   def connect = {
-    val client = new ProtoClient(factory, 5000, ServicesList.getServiceInfo)
+    val client = new ProtoClient(factory, ReefServicesList, 5000)
 
     val agent = Agent.newBuilder.setName("core").setPassword("core").build
     val request = AuthToken.newBuilder.setAgent(agent).build
     val response = client.putOneOrThrow(request)
 
-    if (client.defaultEnv.isEmpty) client.defaultEnv = Some(new RequestEnv)
-    client.defaultEnv.get.setAuthToken(response.getToken)
+    client.getDefaultHeaders.addAuthToken(response.getToken)
 
     client
   }
 }
 
 object ServiceClientSuite {
-  class BrokerConnectionState extends BrokerConnectionListener {
+  class BrokerConnectionState extends IConnectionListener {
     private val connected = new SyncVar(false)
 
     override def opened() = connected.update(true)

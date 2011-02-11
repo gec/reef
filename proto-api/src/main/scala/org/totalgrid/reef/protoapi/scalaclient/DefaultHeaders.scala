@@ -30,7 +30,9 @@ trait DefaultHeaders {
   /** */
   def getDefaultHeaders: RequestEnv = defaultEnv match {
     case Some(x) => x
-    case None => new RequestEnv
+    case None =>
+      defaultEnv = Some(new RequestEnv)
+      defaultEnv.get
   }
 
   /** Set the default request headers */
