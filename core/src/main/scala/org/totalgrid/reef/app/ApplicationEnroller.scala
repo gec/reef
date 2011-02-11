@@ -108,7 +108,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
           case SingleSuccess(authToken) =>
             val env = new RequestEnv
             env.addAuthToken(authToken.getToken)
-            c.setDefaultEnv(env)
+            c.setDefaultHeaders(env)
             c.asyncPutOne(buildConfig(capabilites, instanceName)) {
               _ match {
                 case x: Failure =>

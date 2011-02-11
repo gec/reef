@@ -20,19 +20,25 @@
  */
 package org.totalgrid.reef.protoapi.client
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import org.totalgrid.reef.protoapi.RequestEnv
 
-import ProtoServiceTypes._
+trait DefaultHeaders {
 
-import org.totalgrid.reef.proto.Envelope
+  /** The default request headers */
+  private var defaultEnv: Option[RequestEnv] = None
 
-/** Provides a thick interface full of helper functions via implement of a single abstract request function
- */
-trait ServiceClient extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
+  /** */
+  def getDefaultHeaders: RequestEnv = defaultEnv match {
+    case Some(x) => x
+    case None => new RequestEnv
+  }
 
-  /**
-   *    Implements a synchronous request in terms of a future
-   */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = requestFuture(verb, payload, env)()
+  /** Set the default request headers */
+  def setDefaultHeaders(env: RequestEnv) = defaultEnv = Some(env)
+
+  protected def mergeHeaders(env: RequestEnv): RequestEnv = defaultEnv match {
+    case Some(x) => env.merge(x)
+    case None => env
+  }
 
 }

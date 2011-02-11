@@ -22,7 +22,7 @@ package org.totalgrid.reef.shell.proto
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.client.{ SyncOperations, DefaultHeaders }
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.{ Response, MultiResult, Failure }
 
@@ -59,7 +59,7 @@ class ServiceDispatcher[A <: AnyRef](rh: ServiceDescriptor[A]) {
 
 }
 
-trait OSGiSyncOperations extends SyncOperations {
+trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 

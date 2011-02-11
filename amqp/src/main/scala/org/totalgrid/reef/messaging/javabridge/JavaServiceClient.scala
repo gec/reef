@@ -70,7 +70,7 @@ class JavaProtoClientWrapper(client: ProtoClient) extends IServiceClient {
   // env that we control and can update, the underlying client will see any updates
   // TODO: make defaultEnv immutable
   private val defaultEnv = new ServiceHandlerHeaders(new RequestEnv)
-  client.setDefaultEnv(defaultEnv.env)
+  client.setDefaultHeaders(defaultEnv.env)
 
   override def getDefaultEnv = defaultEnv
 
