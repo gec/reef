@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.proto.{ Envelope, Example }
+import org.totalgrid.reef.proto.{ Envelope }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
