@@ -47,7 +47,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Protocol Buffers Library</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.proto</Export-Package>
+                        <Export-Package>org.totalgrid.reef.proto.*;org.totalgrid.reef.messaging.*</Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
