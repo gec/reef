@@ -35,49 +35,49 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.protoapi.{ UnknownServiceException, ServiceInfo, ServiceListOnMap, ITypeDescriptor }
 
 object TestDescriptors {
-  def requestHeader() = new ITypeDescriptor[org.totalgrid.reef.proto.Envelope.RequestHeader] {
-    def serialize(typ: org.totalgrid.reef.proto.Envelope.RequestHeader): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.RequestHeader.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Envelope.RequestHeader]
+  def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
+    def serialize(typ: Envelope.RequestHeader): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
+    def getKlass = classOf[Envelope.RequestHeader]
   }
 
-  def foo() = new ITypeDescriptor[org.totalgrid.reef.proto.Example.Foo] {
-    def serialize(typ: org.totalgrid.reef.proto.Example.Foo): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Example.Foo.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Example.Foo]
+  def serviceNotification() = new ITypeDescriptor[Envelope.ServiceNotification] {
+    def serialize(typ: Envelope.ServiceNotification): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = Envelope.ServiceNotification.parseFrom(bytes)
+    def getKlass = classOf[Envelope.ServiceNotification]
   }
+}
+
+class ServiceNotificationServiceX3 extends ServiceEndpoint[Envelope.ServiceNotification] {
+
+  val descriptor = TestDescriptors.serviceNotification
+
+  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
+  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("put")
+  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("delete")
+  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("post")
+}
+
+class HeadersX2 extends ServiceEndpoint[Envelope.RequestHeader] {
+
+  val descriptor = TestDescriptors.requestHeader
+
+  def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
+
+  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo))
+  def put(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("put")
+  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("delete")
+  def post(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("post")
 }
 
 @RunWith(classOf[JUnitRunner])
 class ProtoClientTest extends FunSuite with ShouldMatchers {
 
-  class FooServiceX3 extends ServiceEndpoint[Example.Foo] {
-
-    val descriptor = TestDescriptors.foo
-
-    def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
-    def put(req: Example.Foo, env: RequestEnv) = noVerb("put")
-    def delete(req: Example.Foo, env: RequestEnv) = noVerb("delete")
-    def post(req: Example.Foo, env: RequestEnv) = noVerb("post")
-  }
-
-  class HeadersX2 extends ServiceEndpoint[Envelope.RequestHeader] {
-
-    val descriptor = TestDescriptors.requestHeader
-
-    def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
-
-    def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo))
-    def put(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("put")
-    def delete(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("delete")
-    def post(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("post")
-  }
-
   val exchangeA = "test.protoClient.A"
   val exchangeB = "test.protoClient.B"
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Example.Foo] -> ServiceInfo.get(exchangeA, TestDescriptors.foo),
+    classOf[Envelope.ServiceNotification] -> ServiceInfo.get(exchangeA, TestDescriptors.serviceNotification),
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, TestDescriptors.requestHeader)))
 
   def setupTest(test: ProtoClient => Unit) {
@@ -87,7 +87,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
 
     AMQPFixture.run(connection, true) { amqp =>
 
-      amqp.bindService(exchangeA, (new FooServiceX3).respond, true)
+      amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, true)
       amqp.bindService(exchangeB, (new HeadersX2).respond, true)
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
@@ -101,29 +101,29 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
   test("ProtoClient handles multiple proto types") {
     setupTest { client =>
 
-      val fooRequest = Example.Foo.newBuilder.setNum(42).build
-      client.getOrThrow(fooRequest).size should equal(3)
+      val notificationRequest = Envelope.ServiceNotification.newBuilder.setEvent(Envelope.Event.ADDED).setPayload(ByteString.copyFromUtf8("hi")).build
+      client.getOrThrow(notificationRequest).size should equal(3)
 
       val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
       client.getOrThrow(headerRequest).size should equal(2)
 
       intercept[UnknownServiceException] {
-        val notificationRequest = Envelope.ServiceNotification.newBuilder.setEvent(Envelope.Event.ADDED).setPayload(ByteString.copyFromUtf8("hi")).build
-        client.getOrThrow(notificationRequest)
+        val responseRequest = Envelope.ServiceResponse.newBuilder.setId("").setStatus(Envelope.Status.BAD_REQUEST).build
+        client.getOrThrow(responseRequest)
       }
     }
   }
   test("Subscribe class inference") {
     setupTest { client =>
 
-      val fooSubFunc = (evt: Envelope.Event, foo: Example.Foo) => {}
+      val fooSubFunc = (evt: Envelope.Event, foo: Envelope.ServiceNotification) => {}
       val fooSub = client.addSubscription(fooSubFunc)
 
       val headerSubFunc = (evt: Envelope.Event, header: Envelope.RequestHeader) => {}
       val headerSub = client.addSubscription(headerSubFunc)
 
       intercept[UnknownServiceException] {
-        val notificationFunc = (evt: Envelope.Event, header: Envelope.ServiceNotification) => {}
+        val notificationFunc = (evt: Envelope.Event, header: Envelope.ServiceResponse) => {}
         client.addSubscription(notificationFunc)
       }
     }

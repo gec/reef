@@ -141,7 +141,7 @@ end
 
 f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/messaging/OptionalProtos.scala"), 'wb')
 
-types = %w[Application Commands Envelope Example FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth Tags]
+types = %w[Application Commands Envelope FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth Tags]
 
 scala_imports = types.collect{|t| "import org.totalgrid.reef.proto.#{t}._"}.join("\n")
 java_imports = scala_imports.gsub("_","*")
