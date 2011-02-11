@@ -24,6 +24,7 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
 import org.totalgrid.reef.protoapi.client.ServiceClient
 import javabridge.Subscription
+import org.totalgrid.reef.protoapi.ServiceList
 
 /**
  * factory trait that defines what we need to construct ServiceClients and subscriptions

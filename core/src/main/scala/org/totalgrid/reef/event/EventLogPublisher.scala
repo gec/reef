@@ -22,10 +22,10 @@ package org.totalgrid.reef.event
 
 import org.totalgrid.reef.proto.{ Events }
 import org.totalgrid.reef.messaging.RoutingKeys
-import org.totalgrid.reef.util._
 
 import EventType.eventTypeToString
 import org.totalgrid.reef.messaging.{ RoutingKeys, AMQPProtoFactory }
+import org.totalgrid.reef.services.core.util.AttributeList
 
 /**
  * thick interface for the creation and publishing of logs and events.

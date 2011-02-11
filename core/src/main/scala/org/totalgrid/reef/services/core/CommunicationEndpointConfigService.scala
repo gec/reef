@@ -100,7 +100,7 @@ class CommEndCfgServiceModel(
     measProcModel.onEndpointDeleted(sql)
     fepModel.onEndpointDeleted(sql)
   }
-  import OptionalProtos._
+  import org.totalgrid.reef.messaging.OptionalProtos._
   def setLinkedObjects(sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
     pointModel.createAndSetOwningNode(request.ownerships.points.getOrElse(Nil), ent)
 
@@ -128,7 +128,7 @@ class CommEndCfgServiceModel(
 trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto, CommunicationEndpoint] with UniqueAndSearchQueryable[CommEndCfgProto, CommunicationEndpoint] {
 
   import org.squeryl.PrimitiveTypeMode._
-  import OptionalProtos._
+  import org.totalgrid.reef.messaging.OptionalProtos._
   import SquerylModel._
 
   val table = ApplicationSchema.endpoints

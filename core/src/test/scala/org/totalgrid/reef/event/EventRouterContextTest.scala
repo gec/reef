@@ -25,7 +25,7 @@ package org.totalgrid.reef.event
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.util._
+import org.totalgrid.reef.services.core.util._
 
 import EventType.eventTypeToString
 

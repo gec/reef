@@ -27,7 +27,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.{ ServiceInfo, ServiceListOnMap, Descriptors }
+import org.totalgrid.reef.messaging.Descriptors
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
 import org.squeryl.PrimitiveTypeMode._
@@ -37,6 +37,7 @@ import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+import org.totalgrid.reef.protoapi.{ ServiceInfo, ServiceListOnMap }
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach // with RunTestsInsideTransaction

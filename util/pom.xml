@@ -62,12 +62,7 @@
             <version>${felixCoreVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-xml</artifactId>

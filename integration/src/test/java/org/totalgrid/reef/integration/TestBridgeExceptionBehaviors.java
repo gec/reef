@@ -24,6 +24,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
+import org.totalgrid.reef.messaging.ReefServicesList;
 import org.totalgrid.reef.messaging.javabridge.*;
 
 public class TestBridgeExceptionBehaviors {
@@ -33,7 +34,7 @@ public class TestBridgeExceptionBehaviors {
 		String reef_ip = System.getProperty("reef_node_ip");
 		if (reef_ip == null) reef_ip = "127.0.0.1";
 
-		IJavaBridge bridge = new JavaBridge(new BrokerConnectionInfo(reef_ip, 5672, "guest", "guest", "test"), 5000);
+		IJavaBridge bridge = new JavaBridge(new BrokerConnectionInfo(reef_ip, 5672, "guest", "guest", "test"), ReefServicesList.getInstance(), 5000);
 
 		try {
 			bridge.newServiceClient();

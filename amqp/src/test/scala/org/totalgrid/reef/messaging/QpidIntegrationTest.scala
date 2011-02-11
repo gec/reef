@@ -35,6 +35,7 @@ import ProtoServiceTypes.Response
 import org.totalgrid.reef.messaging.mock._
 
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import org.totalgrid.reef.protoapi.{ ServiceInfo, ServiceListOnMap }
 
 @RunWith(classOf[JUnitRunner])
 class QpidIntegrationTest extends FunSuite with ShouldMatchers {

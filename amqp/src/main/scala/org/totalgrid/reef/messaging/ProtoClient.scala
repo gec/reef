@@ -23,14 +23,14 @@ package org.totalgrid.reef.messaging
 import javabridge.Subscription
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ Event, MultiResult, Response }
 import org.totalgrid.reef.protoapi.client.ServiceClient
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.protoapi.{ ServiceList, ProtoServiceTypes, RequestEnv }
+import ProtoServiceTypes.{ Event, MultiResult, Response }
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer

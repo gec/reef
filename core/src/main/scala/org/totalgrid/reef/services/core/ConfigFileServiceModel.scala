@@ -29,7 +29,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.messaging.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
-import OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import SquerylModel._

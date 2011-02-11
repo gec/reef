@@ -5,9 +5,9 @@
     <packaging>bundle</packaging>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
-        <artifactId>reef</artifactId>
+        <artifactId>reef-scala-base</artifactId>
         <version>0.1.2-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../scala-base</relativePath>
     </parent>
 
     <licenses>
@@ -19,8 +19,8 @@
     </licenses>
 
     <build>
-        <sourceDirectory>target/generated-sources/protoc</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
+        <!-- <sourceDirectory>target/generated-sources/protoc</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory> -->
         <plugins>
             <plugin>
                 <!-- https://github.com/jadamcrain/maven-protoc-plugin -->
@@ -55,10 +55,11 @@
         </plugins>
     </build>
     <dependencies>
+
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>2.3.0</version>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-proto-api</artifactId>
+            <version>0.1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

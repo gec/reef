@@ -30,13 +30,13 @@ import org.totalgrid.reef.proto.Utils.AttributeList
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.util.MessageFormatter
+import org.totalgrid.reef.services.core.util.MessageFormatter
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.protoapi.ProtoServiceException
 
 import BaseProtoService._
 
-import OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 import org.totalgrid.reef.messaging.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 

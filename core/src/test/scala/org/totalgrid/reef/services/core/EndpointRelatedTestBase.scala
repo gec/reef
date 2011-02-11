@@ -51,8 +51,9 @@ import ProtoServiceTypes.Event
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.util.{ Logging, SyncVar }
-import org.totalgrid.reef.messaging.{ ServiceInfo, AMQPProtoFactory, ServiceList }
+import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
+import org.totalgrid.reef.protoapi.ServiceList
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
   override def beforeAll() {

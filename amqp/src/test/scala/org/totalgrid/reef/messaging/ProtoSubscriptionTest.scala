@@ -31,6 +31,7 @@ import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, RequestEnv }
+import org.totalgrid.reef.protoapi.{ ServiceInfo, ServiceListOnMap, ServiceList }
 
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {

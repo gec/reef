@@ -18,9 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
-
-import org.totalgrid.reef.protoapi.TypeDescriptor
+package org.totalgrid.reef.protoapi
 
 object ServiceInfo {
   def get[A](exchange: String, descriptor: TypeDescriptor[A]) =

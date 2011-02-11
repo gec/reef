@@ -22,14 +22,11 @@ package org.totalgrid.reef.util
 
 import java.io.ByteArrayInputStream
 import javax.xml.bind.{ JAXBContext, Marshaller }
-import com.google.protobuf.ByteString
 import java.io.{ FileWriter, FileReader, StringWriter }
 
 object XMLHelper {
 
   def read[T](text: String, klass: Class[T]): T = read(text.getBytes("UTF-8"), klass)
-
-  def read[T](file: ByteString, klass: Class[T]): T = read(file.toByteArray, klass)
 
   def read[T](bytes: Array[Byte], klass: Class[T]): T = {
     val ctx = JAXBContext.newInstance(klass)

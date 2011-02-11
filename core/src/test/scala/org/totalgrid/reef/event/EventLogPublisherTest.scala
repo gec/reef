@@ -24,7 +24,7 @@ import org.totalgrid.reef.messaging.mock.{ MockProtoRegistry, MockProtoPublisher
 import scala.concurrent.{ MailBox, TIMEOUT }
 import org.totalgrid.reef.proto.{ Events }
 import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.util._
+import org.totalgrid.reef.services.core.util._
 
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.matchers.ShouldMatchers

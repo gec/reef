@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.protoapi.TypeDescriptor
+import org.totalgrid.reef.protoapi.{ ServiceListOnMap, ServiceInfo, TypeDescriptor, ServiceList }
 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(
@@ -57,14 +57,17 @@ object ReefServiceMap {
     getEntry(Descriptors.entityEdge, "entity_edge"))
 
   private def getEntry[A, B](descriptor: TypeDescriptor[A], exchange: String, subClass: Option[TypeDescriptor[B]] = None, subExchange: Option[String] = None): ServiceList.ServiceTuple = {
-    (descriptor.getKlass -> ServiceInfo(
-      exchange,
-      descriptor,
-      subClass.isDefined,
-      subClass.getOrElse(descriptor),
-      subExchange.getOrElse(exchange + "_events")))
+    (descriptor.getKlass -> ServiceInfo
+      (
+        exchange,
+        descriptor,
+        subClass.isDefined,
+        subClass.getOrElse(descriptor),
+        subExchange.getOrElse(exchange + "_events")))
   }
 }
 
-object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap)
+object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap) {
+  def getInstance() = this
+}
 

@@ -30,7 +30,7 @@ import org.totalgrid.reef.messaging.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
-import OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 

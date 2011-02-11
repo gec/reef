@@ -43,7 +43,7 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
-import org.totalgrid.reef.util._
+import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
 

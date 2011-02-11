@@ -93,7 +93,7 @@ class Dnp3Protocol extends BaseProtocol with Logging {
   }
 
   def getMasterConfig(file: Model.ConfigFile): MasterStackConfig = {
-    val xml = XMLHelper.read(file.getFile, classOf[Master])
+    val xml = XMLHelper.read(file.getFile.toByteArray, classOf[Master])
     val config = new MasterStackConfig
     config.setMaster(configure(xml, xml.getStack.getAppLayer.getMaxFragSize))
     config.setApp(configure(xml.getStack.getAppLayer))

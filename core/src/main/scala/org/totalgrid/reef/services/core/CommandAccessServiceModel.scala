@@ -32,7 +32,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.protoapi.ProtoServiceException
 import org.totalgrid.reef.proto.Envelope
-import OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])
@@ -172,7 +172,7 @@ trait CommandAccessConversion
 
   import org.squeryl.PrimitiveTypeMode._
   import AccessProto._
-  import OptionalProtos._
+  import org.totalgrid.reef.messaging.OptionalProtos._
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: AccessProto) = ProtoRoutingKeys.generateRoutingKey {

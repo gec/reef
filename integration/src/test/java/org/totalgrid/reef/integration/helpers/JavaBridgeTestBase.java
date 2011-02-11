@@ -24,6 +24,7 @@ import org.junit.*;
 
 import org.totalgrid.reef.messaging.BrokerConnectionListener;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
+import org.totalgrid.reef.messaging.ReefServicesList;
 import org.totalgrid.reef.messaging.javabridge.*;
 
 import org.totalgrid.reef.integration.SampleRequests;
@@ -54,7 +55,7 @@ public class JavaBridgeTestBase {
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
-	protected IJavaBridge connection = new JavaBridge(getConnectionInfo(), 5000);
+	protected IJavaBridge connection = new JavaBridge(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
 	protected IServiceClient client = null;
 	protected MockConnectionListener listener = new MockConnectionListener();
 

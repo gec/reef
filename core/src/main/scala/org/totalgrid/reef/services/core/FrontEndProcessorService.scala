@@ -30,7 +30,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
-import OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._

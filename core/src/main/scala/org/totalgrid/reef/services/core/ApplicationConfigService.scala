@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.Descriptors
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 
 import org.squeryl.PrimitiveTypeMode._
-import OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

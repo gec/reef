@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.util
+package org.totalgrid.reef.services.core.util
 
 import org.totalgrid.reef.proto.Utils
 

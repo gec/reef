@@ -1,3 +1,5 @@
+package org.totalgrid.reef.services.core.util
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.util
-
 import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

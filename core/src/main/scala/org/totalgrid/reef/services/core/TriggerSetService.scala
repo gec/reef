@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.Processing.{ TriggerSet => TriggerProto }
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.{ ProtoRoutingKeys }
-import org.totalgrid.reef.services.core.OptionalProtos._
+import org.totalgrid.reef.messaging.OptionalProtos._
 import org.totalgrid.reef.messaging.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
