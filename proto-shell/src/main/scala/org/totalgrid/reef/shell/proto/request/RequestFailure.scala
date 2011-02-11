@@ -27,7 +27,7 @@ object RequestFailure {
     try f catch { case _ => throw RequestFailure(why) }
   }
 
-  def interpretNilAs[T](why: String)(f: => List[T]): List[T] = {
+  def interpretNilAs[A](why: String)(f: => List[A]): List[A] = {
     val result = f
     if (result.isEmpty) throw RequestFailure(why)
     result

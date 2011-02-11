@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.messaging
 
+import org.totalgrid.reef.protoapi.IConnectionListener
+
 /** helper to package up ReplyTo address 
  */
 case class Destination(exchange: String, key: String)
@@ -34,12 +36,6 @@ trait MessageConsumer {
 trait ChannelObserver {
   def online(broker: BrokerChannel)
   def offline()
-}
-
-trait BrokerConnectionListener {
-  def closed() {}
-
-  def opened() {}
 }
 
 /**
@@ -78,9 +74,9 @@ trait BrokerConnection {
   def newBrokerChannel(): BrokerChannel
 
   /// sets the connection listener
-  def setConnectionListener(l: Option[BrokerConnectionListener]) = { listener = l }
+  def setConnectionListener(l: Option[IConnectionListener]) = { listener = l }
 
   /// option to hold the connection listener
-  protected var listener: Option[BrokerConnectionListener] = None
+  protected var listener: Option[IConnectionListener] = None
 
 }

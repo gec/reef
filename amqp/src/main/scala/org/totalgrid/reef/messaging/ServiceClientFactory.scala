@@ -21,9 +21,10 @@
 package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
-import org.totalgrid.reef.protoapi.client.ServiceClient
-import javabridge.Subscription
+
+import org.totalgrid.reef.protoapi.scala.client.ServiceClient
+import org.totalgrid.reef.protoapi.{ ServiceTypes, ISubscription }
+import ServiceTypes.Event
 
 /**
  * factory trait that defines what we need to construct ServiceClients and subscriptions
@@ -40,6 +41,6 @@ trait ServiceClientFactory {
   /**
    * the factory must create subscription objects of the appropriate type even if its a "stream type"
    */
-  def prepareSubscription[T <: GeneratedMessage](deserialize: Array[Byte] => T, subIsStreamType: Boolean, callback: Event[T] => Unit): Subscription
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription
 
 }

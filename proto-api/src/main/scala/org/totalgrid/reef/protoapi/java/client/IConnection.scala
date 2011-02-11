@@ -18,11 +18,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi
+package org.totalgrid.reef.protoapi.java.client
 
-import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.protoapi.IConnectionListener
 
-class ProtoServiceException(val msg: String, val status: Envelope.Status = Envelope.Status.BAD_REQUEST) extends RuntimeException(msg) {
-  def getStatus = status
-  def getMsg = msg
+/**
+ * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
+ * of the connection and provides a factory to create service clients.
+ */
+trait IConnection {
+
+  /**
+   * register a listener for open/close events
+   * 
+   * @param listener Interace to call back with open/close events
+   */
+  def addConnectionListener(listener: IConnectionListener)
+
+  /**
+   *  Starts execution of the messaging connection
+   */
+  def start()
+
+  /**
+   *  Halts execution of the messaging connection
+   */
+  def stop()
+
+  /**
+   * creates a non thread-safe (use from single thread only) client
+   */
+  def newSession(): ISession
 }

@@ -30,8 +30,8 @@ import scala.collection.JavaConversions._
 
 import scala.concurrent.MailBox
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
+import ServiceTypes.Response
 import org.totalgrid.reef.messaging.mock._
 
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
@@ -47,7 +47,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
       val client = amqp.getProtoServiceClient(servicelist, 1000)
-      intercept[ProtoServiceException] {
+      intercept[ServiceException] {
         client.getOrThrow(payload)
       }
     }

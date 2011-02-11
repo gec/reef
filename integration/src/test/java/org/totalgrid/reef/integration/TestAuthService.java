@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.proto.Auth.*;
 
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
-import org.totalgrid.reef.protoapi.ProtoServiceException;
+import org.totalgrid.reef.protoapi.ServiceException;
 
 public class TestAuthService extends JavaBridgeTestBase {
 	public TestAuthService() {
@@ -47,7 +47,7 @@ public class TestAuthService extends JavaBridgeTestBase {
 			// will fail because we don't havent logged in to get auth tokens
 			SampleRequests.getAllPoints(client);
 			assertTrue(false);
-		} catch (ProtoServiceException pse) {
+		} catch (ServiceException pse) {
 			assertEquals(pse.getStatus(), Envelope.Status.BAD_REQUEST);
 		}
 		// logon as all permission user

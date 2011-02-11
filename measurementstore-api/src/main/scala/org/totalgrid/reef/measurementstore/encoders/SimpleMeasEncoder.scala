@@ -38,7 +38,7 @@ class SimpleMeasEncoder extends MeasEncoder {
 
   import SimpleMeasEncoder._
 
-  case class EncInfo[T](meas: T, last: Last)
+  case class EncInfo[A](meas: A, last: Last)
 
   def encode(meas: Seq[Meas]): Array[Byte] = {
 

@@ -22,8 +22,8 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
+import ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.mock._
 import com.google.protobuf.ByteString

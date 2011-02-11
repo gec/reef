@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.shell.proto.request
 
-import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.scala.client.SyncOperations
 import org.totalgrid.reef.proto.Alarms.{ AlarmList, AlarmSelect }
 
 import scala.collection.JavaConversions._

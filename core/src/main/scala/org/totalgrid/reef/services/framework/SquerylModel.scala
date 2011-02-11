@@ -186,11 +186,11 @@ object SquerylModel {
 
   implicit def expressionAnder(exps: List[LogicalBoolean]): LogicalBoolean = combineExpressions(exps)
 
-  class FilterStars[T](o: Option[T]) {
-    def asParam[B](f: T => B): Option[B] = {
+  class FilterStars[A](o: Option[A]) {
+    def asParam[B](f: A => B): Option[B] = {
       if (!o.isDefined || o.get == "*") None
       else Some(f(o.get))
     }
   }
-  implicit def makeAsParam[T](o: Option[T]): FilterStars[T] = new FilterStars(o)
+  implicit def makeAsParam[A](o: Option[A]): FilterStars[A] = new FilterStars(o)
 }

@@ -29,7 +29,7 @@ import org.totalgrid.reef.reactor.Lifecycle
 import org.totalgrid.reef.messaging.{ ReefServicesList, ServiceDescriptor }
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.protoapi.{ RequestEnv, TypeDescriptor }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ITypeDescriptor }
 
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.proto.Envelope
@@ -53,7 +53,7 @@ class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAf
         def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse =
           Envelope.ServiceResponse.getDefaultInstance
 
-        override val descriptor = new TypeDescriptor[Any] {
+        override val descriptor = new ITypeDescriptor[Any] {
           def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
           def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
           def getKlass: Class[Any] = throw new Exception("unimplemented")

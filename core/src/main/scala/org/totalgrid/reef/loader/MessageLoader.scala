@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.scala.client.SyncOperations
 
 /**
  * Load the message configuration for alarms, events, and logs.

@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Model.Entity
 import Measurements._
 import Processing._
-import org.totalgrid.reef.app.{ SubscriptionProvider }
+import org.totalgrid.reef.app.SubscriptionProvider
 import org.totalgrid.reef.util.MetricsHooks
 import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.util.Logging

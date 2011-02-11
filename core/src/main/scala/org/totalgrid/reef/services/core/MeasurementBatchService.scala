@@ -22,9 +22,9 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceException, ServiceTypes }
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint, ReefServicesList, Descriptors }
-import ProtoServiceTypes.Response
+import ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -48,13 +48,13 @@ class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[Me
       // TODO: load all endpoints efficiently
 
       if (!points.forall(_.endpoint.value.isDefined)) {
-        throw new ProtoServiceException("Not all points have endpoints set.")
+        throw new ServiceException("Not all points have endpoints set.")
       }
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
 
       val destForBatchs = commEndpoints.size match {
-        case 0 => throw new ProtoServiceException("No Logical Nodes on points: " + names)
+        case 0 => throw new ServiceException("No Logical Nodes on points: " + names)
         case 1 => (commEndpoints.head._1, req) :: Nil
         case _ => rebuildBatches(req, commEndpoints)
       }
@@ -66,7 +66,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[Me
               client.putOrThrow(batch)
               client.close()
             case None =>
-              throw new ProtoServiceException("Measurement Stream not ready.")
+              throw new ServiceException("Measurement Stream not ready.")
           }
       }
       val sentBatches = destForBatchs.map { case (ce, batch) => batch }

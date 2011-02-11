@@ -26,54 +26,54 @@ import org.totalgrid.reef.proto.Envelope.Status
 
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes, StatusCodes }
-import ProtoServiceTypes.{ Response, Event }
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes, StatusCodes }
+import ServiceTypes.{ Response, Event }
 import org.totalgrid.reef.util.SyncVar
 
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 object ServiceResponseTestingHelpers extends ShouldMatchers {
-  implicit def checkResponse[T](resp: Response[T]): List[T] = {
+  implicit def checkResponse[A](resp: Response[A]): List[A] = {
     StatusCodes.isSuccess(resp.status) should equal(true)
     resp.result
   }
 
-  def one[T](status: Status, resp: Response[T]): T = {
+  def one[A](status: Status, resp: Response[A]): A = {
     resp.status should equal(status)
     many(1, resp.result).head
   }
 
-  def one[T](list: List[T]): T = many(1, list).head
+  def one[A](list: List[A]): A = many(1, list).head
 
-  def none[T](list: List[T]) = many(0, list)
+  def none[A](list: List[A]) = many(0, list)
 
-  def many[T](len: Int, list: List[T]): List[T] = {
+  def many[A](len: Int, list: List[A]): List[A] = {
     if (len != list.size) throw new Exception("list wrong size: " + list.size + " instead of: " + len + "\n" + list)
     list
   }
 
-  def some[T](list: List[T]): List[T] = list
+  def some[A](list: List[A]): List[A] = list
 
-  def getEventQueue[T <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => T): (BlockingQueue[T], RequestEnv) = {
+  def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], RequestEnv) = {
 
-    val updates = new BlockingQueue[T]
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[T]) => updates.push(evt.result) })
-
-    (updates, env)
-  }
-
-  def getEventQueueWithCode[T <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => T): (BlockingQueue[Event[T]], RequestEnv) = {
-    val updates = new BlockingQueue[Event[T]]
-
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[T]) => updates.push(evt) })
+    val updates = new BlockingQueue[A]
+    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt.result) })
 
     (updates, env)
   }
 
-  def getSubscriptionQueue[T <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => T, func: Event[T] => Unit) = {
+  def getEventQueueWithCode[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[Event[A]], RequestEnv) = {
+    val updates = new BlockingQueue[Event[A]]
+
+    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt) })
+
+    (updates, env)
+  }
+
+  def getSubscriptionQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A, func: Event[A] => Unit) = {
 
     val eventQueueName = new SyncVar("")
-    val pointSource = amqp.getEventQueue[T](convert, func, { q => eventQueueName.update(q) })
+    val pointSource = amqp.getEventQueue[A](convert, func, { q => eventQueueName.update(q) })
 
     // wait for the queue name to get populated (actor startup delay)
     eventQueueName.waitWhile("")

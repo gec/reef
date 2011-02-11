@@ -23,8 +23,8 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ServiceEndpoint
-import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv }
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
@@ -32,7 +32,7 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 /**
  * Hooks/callbacks for service implementations to modify standard REST behavior
  */
-trait ServiceHooks { self: ProtoServiceTypes =>
+trait ServiceHooks { self: ServiceTypes =>
 
   /**
    * Called before create
@@ -77,7 +77,7 @@ trait ServiceHooks { self: ProtoServiceTypes =>
 /**
  * Common types needed by generic service implementations
  */
-trait ProtoServiceTypes {
+trait ServiceTypes {
   type ProtoType <: GeneratedMessage
   type ModelType
   type ServiceModelType <: ServiceModel[ProtoType, ModelType]
@@ -86,7 +86,7 @@ trait ProtoServiceTypes {
 /**
  * Shared dependencies for generic service implementations
  */
-trait ProtoServiceShared extends ProtoServiceTypes with ServiceHooks {
+trait ProtoServiceShared extends ServiceTypes with ServiceHooks {
   protected val modelTrans: ServiceTransactable[ServiceModelType]
 
   def subscribe(model: ServiceModelType, req: ProtoType, queue: String)
@@ -210,7 +210,7 @@ object BaseProtoService {
    */
   trait GetDisabled { self: ProtoServiceShared =>
     def get(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ProtoServiceException("Get not implemented")
+      throw new ServiceException("Get not implemented")
   }
 
   /**
@@ -218,7 +218,7 @@ object BaseProtoService {
    */
   trait PostDisabled { self: ProtoServiceShared =>
     def post(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ProtoServiceException("Post not allowed")
+      throw new ServiceException("Post not allowed")
   }
 
   /**
@@ -227,7 +227,7 @@ object BaseProtoService {
   trait PutDisabled { self: ProtoServiceShared =>
     def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ProtoServiceException("Put not allowed")
+      throw new ServiceException("Put not allowed")
   }
 
   /**
@@ -235,7 +235,7 @@ object BaseProtoService {
    */
   trait DeleteDisabled { self: ProtoServiceShared =>
     def delete(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ProtoServiceException("Delete not allowed")
+      throw new ServiceException("Delete not allowed")
   }
 
   /**
@@ -243,7 +243,7 @@ object BaseProtoService {
    */
   trait SubscribeDisabled { self: ProtoServiceShared =>
     def subscribe(model: ServiceModelType, req: ProtoType, queue: String) {
-      throw new ProtoServiceException("Subscribe not allowed")
+      throw new ServiceException("Subscribe not allowed")
     }
   }
 }

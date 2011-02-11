@@ -29,29 +29,29 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
  * user code to handle only the "payload" add/remove behavior. User code can therefore skip any checks to make
  * sure that the object isn't allready created/removed.
  * 
- * This class can be mixed in to implement the abstract functions of ServiceContext[T]
+ * This class can be mixed in to implement the abstract functions of ServiceContext[A]
  */
-trait KeyedMap[T] extends Logging {
+trait KeyedMap[A] extends Logging {
 
-  def hasChangedEnoughForReload(updated: T, existing: T): Boolean
+  def hasChangedEnoughForReload(updated: A, existing: A): Boolean
 
-  def getKey(value: T): String
+  def getKey(value: A): String
 
   /**
    * called when a new entry is added to the map
    */
-  def addEntry(c: T)
+  def addEntry(c: A)
   /**
    * called when an entry is deleted from the map
    */
-  def removeEntry(c: T)
+  def removeEntry(c: A)
 
   /* ----- Mutable state -----  */
-  private var active = Map.empty[String, T] //active connections
+  private var active = Map.empty[String, A] //active connections
 
   /**    Load a list of slave device connections
    */
-  def subscribed(list: List[T]): Unit = {
+  def subscribed(list: List[A]): Unit = {
     val map = list.mapify { x => getKey(x) }
     active.values.foreach { c =>
       map.get(getKey(c)) match {
@@ -69,7 +69,7 @@ trait KeyedMap[T] extends Logging {
   }
 
   /* --  Handlers for device connections --*/
-  def add(c: T): Unit = {
+  def add(c: A): Unit = {
     active.get(getKey(c)) match {
       case Some(x) => modify(c)
       case None =>
@@ -80,7 +80,7 @@ trait KeyedMap[T] extends Logging {
 
   }
 
-  def remove(c: T): Unit = {
+  def remove(c: A): Unit = {
     active.get(getKey(c)) match {
       case None => warn { "Remove on unregistered key: " + getKey(c) }
       case Some(x) =>
@@ -90,7 +90,7 @@ trait KeyedMap[T] extends Logging {
     }
   }
 
-  def modify(c: T): Unit = {
+  def modify(c: A): Unit = {
     active.get(getKey(c)) match {
       case Some(x) =>
         if (hasChangedEnoughForReload(c, x)) {

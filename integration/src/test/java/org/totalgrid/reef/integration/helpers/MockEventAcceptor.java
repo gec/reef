@@ -21,13 +21,13 @@
 package org.totalgrid.reef.integration.helpers;
 
 import org.totalgrid.reef.proto.Envelope;
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
-import org.totalgrid.reef.messaging.javabridge.*;
+import org.totalgrid.reef.protoapi.java.client.IEventAcceptor;
+import org.totalgrid.reef.protoapi.ServiceTypes.*;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class MockEventAcceptor<T> implements EventAcceptor<T> {
+public class MockEventAcceptor<T> implements IEventAcceptor<T> {
 
     private boolean storeResults;
     private BlockingQueue<Event<T>> queue = new BlockingQueue<Event<T>>();

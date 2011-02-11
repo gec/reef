@@ -43,7 +43,7 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {
 
-  def pop[T](responses: mutable.Queue[T])(f: T => Unit) = f(responses.dequeue)
+  def pop[A](responses: mutable.Queue[A])(f: A => Unit) = f(responses.dequeue)
 
   def testCommandAndResponse {
     val assoc = Mapping.CommandMap.newBuilder

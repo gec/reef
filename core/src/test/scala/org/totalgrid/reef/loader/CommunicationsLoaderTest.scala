@@ -36,8 +36,8 @@ import collection.mutable.{ Queue, HashMap }
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.protoapi.client.MockSyncOperations
-import org.totalgrid.reef.protoapi.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.scala.client.MockSyncOperations
+import org.totalgrid.reef.protoapi.ServiceTypes._
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {

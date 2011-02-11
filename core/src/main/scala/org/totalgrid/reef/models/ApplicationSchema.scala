@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.Alarms._
 class ActiveModelException(msg: String) extends Exception(msg)
 
 trait ActiveModel {
-  def hasOne[T <: KeyedEntity[Long]](table: Table[T], id: Long): T = {
+  def hasOne[A <: KeyedEntity[Long]](table: Table[A], id: Long): A = {
     table.lookup(id) match {
       case Some(s) => s
       case None =>
@@ -40,7 +40,7 @@ trait ActiveModel {
     }
   }
 
-  def mayHaveOne[T <: KeyedEntity[Long]](table: Table[T], optId: Option[Long]): Option[T] = {
+  def mayHaveOne[A <: KeyedEntity[Long]](table: Table[A], optId: Option[Long]): Option[A] = {
     optId match {
       case Some(-1) => None
       case Some(id) => Some(hasOne(table, id))
@@ -48,14 +48,14 @@ trait ActiveModel {
     }
   }
 
-  def mayHaveOne[T](query: Query[T]): Option[T] = {
+  def mayHaveOne[A](query: Query[A]): Option[A] = {
     query.toList match {
       case List(x) => Some(x)
       case _ => None
     }
   }
 
-  def mayBelongTo[T](query: Query[T]): Option[T] = {
+  def mayBelongTo[A](query: Query[A]): Option[A] = {
 
     query.size match {
       case 1 => Some(query.single)
@@ -63,7 +63,7 @@ trait ActiveModel {
     }
   }
 
-  def belongTo[T](query: Query[T]): T = {
+  def belongTo[A](query: Query[A]): A = {
 
     query.size match {
       case 1 => query.single
@@ -341,7 +341,7 @@ class Entity(
 
   val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
 
-  def asType[T <: { val entityId: Long }](table: Table[T], ofType: String) = {
+  def asType[A <: { val entityId: Long }](table: Table[A], ofType: String) = {
     if (types.value.find(_ == ofType).isEmpty) {
       throw new Exception("entity: " + id + " didnt have type: " + ofType + " but had: " + types)
     }
@@ -354,7 +354,7 @@ class Entity(
 }
 object Entity {
 
-  def asType[T <: { val entityId: Long }](table: Table[T], entites: List[Entity], ofType: Option[String]) = {
+  def asType[A <: { val entityId: Long }](table: Table[A], entites: List[Entity], ofType: Option[String]) = {
     if (ofType.isDefined && !entites.forall(e => { e.types.value.find(_ == ofType.get).isDefined })) {
       throw new Exception("No all entities had type: " + ofType.get)
     }

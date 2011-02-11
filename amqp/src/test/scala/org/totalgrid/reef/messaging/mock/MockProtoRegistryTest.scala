@@ -28,9 +28,9 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.Timer
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, ProtoServiceException }
+import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceHandlerHeaders, ServiceException }
 
-import ProtoServiceTypes.{ Response, Request }
+import ServiceTypes.{ Response, Request }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])
@@ -108,7 +108,7 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   test("MockProtoConsumerRequestTimeout") {
     val reg = new MockServiceClient(1)
-    val exc = intercept[ProtoServiceException] {
+    val exc = intercept[ServiceException] {
       reg.putOrThrow(Example.Foo.newBuilder.build)
     }
     exc.status should equal(Envelope.Status.RESPONSE_TIMEOUT)

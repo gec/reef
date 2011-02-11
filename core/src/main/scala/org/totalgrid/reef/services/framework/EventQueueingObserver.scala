@@ -26,18 +26,18 @@ import com.google.protobuf.GeneratedMessage
 /**
  * Component that observes model changes in order to queue service events
  */
-trait EventQueueingObserver[ProtoType <: GeneratedMessage, T]
-    extends ModelObserver[T] { self: MessageModelConversion[ProtoType, T] with QueuedEvaluation =>
+trait EventQueueingObserver[ProtoType <: GeneratedMessage, A]
+    extends ModelObserver[A] { self: MessageModelConversion[ProtoType, A] with QueuedEvaluation =>
 
   protected def publishEvent(event: Envelope.Event, resp: ProtoType, key: String): Unit
 
-  protected def onCreated(entry: T): Unit = {
+  protected def onCreated(entry: A): Unit = {
     queueEvent(Envelope.Event.ADDED, entry, false)
   }
-  protected def onUpdated(entry: T): Unit = {
+  protected def onUpdated(entry: A): Unit = {
     queueEvent(Envelope.Event.MODIFIED, entry, false)
   }
-  protected def onDeleted(entry: T): Unit = {
+  protected def onDeleted(entry: A): Unit = {
     queueEvent(Envelope.Event.REMOVED, entry, true)
   }
 
@@ -50,7 +50,7 @@ trait EventQueueingObserver[ProtoType <: GeneratedMessage, T]
    *      sql object will been deleted and lost access to all linked resources at end of 
    *      transaction, if adding, child objects are not generally ready till end of transaction
    */
-  def queueEvent(event: Envelope.Event, entry: T, currentSnapshot: Boolean) = {
+  def queueEvent(event: Envelope.Event, entry: A, currentSnapshot: Boolean) = {
     if (currentSnapshot) {
       val (proto, keys) = getEventProtoAndKey(entry)
       queueInTransaction { keys.foreach(queuePublishEvent(event, proto, _)) }
@@ -75,7 +75,7 @@ trait EventQueueingObserver[ProtoType <: GeneratedMessage, T]
    * be overriden to allow having a publish routing key that uses information not contained
    * in the proto.
    */
-  def getEventProtoAndKey(entry: T): (ProtoType, List[String]) = {
+  def getEventProtoAndKey(entry: A): (ProtoType, List[String]) = {
     val proto = convertToProto(entry)
     val key = getRoutingKey(proto)
     (proto, key :: Nil)

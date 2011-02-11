@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command, CommandAccessModel }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
@@ -135,7 +135,7 @@ class CommandAccessServiceModelTest
 
     // Can't select blocked command
     val expireTime = System.currentTimeMillis + 5000
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       r.model.selectCommands("user02", Some(expireTime), List("cmd01"))
     }
 
@@ -259,12 +259,12 @@ class CommandAccessServiceModelTest
     r.model.userHasSelect(cmd, "user01", expireTime - 1000) should equal(true)
     r.model.userHasSelect(cmd, "user01", expireTime + 1000) should equal(false)
 
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       r.model.selectCommands("user02", Some(expireTime), List("cmd01"))
     }
 
     // Same user
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       r.model.selectCommands("user01", Some(expireTime), List("cmd01"))
     }
   }

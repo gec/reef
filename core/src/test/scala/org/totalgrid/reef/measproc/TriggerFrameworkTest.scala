@@ -31,22 +31,22 @@ import org.totalgrid.reef.measproc.ProtoHelper._
 import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.proto.Measurements._
 
-class MockObjectCache[T] extends ObjectCache[T] {
+class MockObjectCache[A] extends ObjectCache[A] {
 
   val delQueue = mutable.Queue[String]()
-  val putQueue = mutable.Queue[(String, T)]()
+  val putQueue = mutable.Queue[(String, A)]()
 
-  val map = mutable.Map[String, T]()
+  val map = mutable.Map[String, A]()
 
-  def update(name: String, obj: T) {
+  def update(name: String, obj: A) {
     map.update(name, obj)
   }
 
-  def put(name: String, obj: T) {
+  def put(name: String, obj: A) {
     putQueue.enqueue((name, obj))
     map.update(name, obj)
   }
-  def get(name: String): Option[T] = {
+  def get(name: String): Option[A] = {
     map.get(name)
   }
   def delete(name: String) {

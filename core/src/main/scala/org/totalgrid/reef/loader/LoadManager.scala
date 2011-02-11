@@ -32,7 +32,7 @@ import org.totalgrid.reef.loader.configuration._
 
 import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.scala.client.SyncOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.{ File, FileReader }

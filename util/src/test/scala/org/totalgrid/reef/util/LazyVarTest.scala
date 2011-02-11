@@ -96,7 +96,7 @@ class LazyVarTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
   test("LazyVar implict") {
     val lv = LazyVar("default")
 
-    implicit def convertToValue[T](lv: LazyVar[T]): T = lv.value
+    implicit def convertToValue[A](lv: LazyVar[A]): A = lv.value
     val value: String = lv
 
     value should equal("default")

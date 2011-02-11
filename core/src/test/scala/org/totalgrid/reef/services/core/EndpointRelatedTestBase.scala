@@ -46,8 +46,8 @@ import scala.collection.JavaConversions._
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
-import ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
+import ServiceTypes.Event
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.util.{ Logging, SyncVar }

@@ -23,10 +23,10 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.proto.Envelope
 //import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ProtoServiceException, RequestEnv, TypeDescriptor }
+import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceException, RequestEnv, ITypeDescriptor }
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
-import ProtoServiceTypes.Response
+import ServiceTypes.Response
 
 object ServiceRequestHandler {
   /**
@@ -45,7 +45,7 @@ trait ServiceRequestHandler {
 }
 
 trait ServiceDescriptor[A] extends ServiceRequestHandler {
-  val descriptor: TypeDescriptor[A]
+  val descriptor: ITypeDescriptor[A]
 }
 
 trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
@@ -94,7 +94,7 @@ trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
     try {
       setRsp(handleRequest(req, env))
     } catch {
-      case px: ProtoServiceException =>
+      case px: ServiceException =>
         error(px)
         rsp.setStatus(px.status).setErrorMessage(px.toString)
       case x: Exception =>

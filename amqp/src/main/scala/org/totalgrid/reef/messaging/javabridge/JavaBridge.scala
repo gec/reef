@@ -26,20 +26,21 @@ import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
 
-//import scala.collection.JavaConversions._
+import org.totalgrid.reef.protoapi.IConnectionListener
+import org.totalgrid.reef.protoapi.java.client.{ IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
  *    
  */
-class JavaBridge(config: BrokerConnectionInfo, timeoutms: Long) extends IJavaBridge {
+class JavaBridge(config: BrokerConnectionInfo, timeoutms: Long) extends IConnection {
 
   /// Scala factory class we're wrapping to simplify access to java clients
   private val factory = new AMQPSyncFactory with ReactActor {
     val broker = new QpidBrokerConnection(config)
   }
 
-  override def addConnectionListener(listener: BrokerConnectionListener) =
+  override def addConnectionListener(listener: IConnectionListener) =
     factory.addConnectionListener(listener)
 
   /**
@@ -52,8 +53,8 @@ class JavaBridge(config: BrokerConnectionInfo, timeoutms: Long) extends IJavaBri
    */
   override def stop() = factory.stop
 
-  def newServiceClient(): IServiceClient = {
-    new JavaProtoClientWrapper(new ProtoClient(factory, ReefServicesList, 5000))
+  def newSession(): ISession = {
+    new Session(new ProtoClient(factory, ReefServicesList, 5000))
   }
 }
 

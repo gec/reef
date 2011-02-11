@@ -28,7 +28,7 @@ import org.totalgrid.reef.models.UserCommandModel
 import CommandAccess._
 import BaseProtoService._
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.messaging.Descriptors
 
@@ -46,14 +46,14 @@ class UserCommandRequestService(
 
     // Verify the necessary request fields
     if (!proto.hasCommandRequest)
-      throw new ProtoServiceException("Request must specify command information", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Request must specify command information", Envelope.Status.BAD_REQUEST)
 
     if (!proto.getCommandRequest.hasName)
-      throw new ProtoServiceException("Request must specify command name", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Request must specify command name", Envelope.Status.BAD_REQUEST)
 
     // If the request included a status, reject it because the client may not be doing what he thinks he's doing
     if (proto.hasStatus)
-      throw new ProtoServiceException("Request must not specify status", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Request must not specify status", Envelope.Status.BAD_REQUEST)
 
     // NOTE: at the moment relying on protobuf to ensure a valid timeout
     proto
@@ -63,10 +63,10 @@ class UserCommandRequestService(
 
     // Verify the necessary request fields
     if (!proto.hasCommandRequest)
-      throw new ProtoServiceException("Update must specify command information", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Update must specify command information", Envelope.Status.BAD_REQUEST)
 
     if (!proto.hasStatus)
-      throw new ProtoServiceException("Update must specify status", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Update must specify status", Envelope.Status.BAD_REQUEST)
 
     proto
   }
