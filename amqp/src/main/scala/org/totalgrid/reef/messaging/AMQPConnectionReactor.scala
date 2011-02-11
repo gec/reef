@@ -23,11 +23,12 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
+import org.totalgrid.reef.protoapi.IConnectionListener
 
 /** Keeps the connection to qpid up. Notifies linked AMQPSessionHandler 
  */
 trait AMQPConnectionReactor extends Reactor with Lifecycle
-    with BrokerConnectionListener with Logging {
+    with IConnectionListener with Logging {
 
   /// must be defined in concrete class
   protected val broker: BrokerConnection
@@ -37,18 +38,18 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
    *   
    *	@param handler class that will receive new session notifications 	
    */
-  def add[T <: ChannelObserver](handler: T): T = {
+  def add[A <: ChannelObserver](handler: A): A = {
     execute { addChannelObserver(handler) }
     handler
   }
 
-  def addConnectionListener(listener: BrokerConnectionListener): Unit =
+  def addConnectionListener(listener: IConnectionListener): Unit =
     listeners = listeners.enqueue(listener)
 
   def getChannel(): BrokerChannel = broker.newBrokerChannel()
 
   /// mutable state
-  private var listeners = Queue.empty[BrokerConnectionListener]
+  private var listeners = Queue.empty[IConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
   private var reconnectOnClose = true
 

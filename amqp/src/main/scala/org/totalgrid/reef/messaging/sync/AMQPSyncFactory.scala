@@ -23,15 +23,14 @@ package org.totalgrid.reef.messaging.sync
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging._
-import javabridge.Subscription
 
-import org.totalgrid.reef.protoapi.ServiceHandlerHeaders
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ISubscription }
+import org.totalgrid.reef.protoapi.ServiceTypes.Event
 
 /**
  * syncronous subscription object, allows canceling
  */
-class SyncSubscription(channel: BrokerChannel, consumer: MessageConsumer) extends Subscription {
+class SyncSubscription(channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription {
   private val queue = QueuePatterns.getPrivateUnboundQueue(channel, consumer)
   override def configure(headers: ServiceHandlerHeaders) =
     headers.setSubscribeQueue(queue)
@@ -50,7 +49,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
     new ServiceResponseCorrelator(timeoutms, reqReply)
   }
 
-  def prepareSubscription[T <: GeneratedMessage](deserialize: Array[Byte] => T, subIsStreamType: Boolean, callback: Event[T] => Unit): Subscription = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription = {
     val channel = getChannel()
 
     val consumer = if (subIsStreamType)

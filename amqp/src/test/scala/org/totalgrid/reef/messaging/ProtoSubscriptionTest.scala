@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.Subscription
 import mock.{ AMQPFixture, MockBrokerInterface }
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -30,7 +29,7 @@ import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, ServiceHandlerHeaders, RequestEnv }
+import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceHandlerHeaders, RequestEnv, ISubscription }
 
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
@@ -82,7 +81,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
         case s => entries.find(_.getKey == s).toList
       }
 
-      ProtoServiceTypes.Response(Envelope.Status.OK, "", response)
+      ServiceTypes.Response(Envelope.Status.OK, "", response)
     }
     def post(req: Envelope.RequestHeader, env: RequestEnv) = put(req, env)
     def put(req: Envelope.RequestHeader, env: RequestEnv) = {
@@ -98,7 +97,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       }
       entries = entries.filterNot(_.getKey == req.getKey) ::: List(req)
 
-      ProtoServiceTypes.Response(status, "", List(req))
+      ServiceTypes.Response(status, "", List(req))
     }
     def delete(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)
@@ -106,17 +105,17 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       entries = _entries._2
       publish(Envelope.Event.REMOVED, _entries._1)
 
-      ProtoServiceTypes.Response(Envelope.Status.DELETED, "", _entries._1)
+      ServiceTypes.Response(Envelope.Status.DELETED, "", _entries._1)
     }
   }
 
-  def getEnv(sub: Subscription): RequestEnv = {
+  def getEnv(sub: ISubscription): RequestEnv = {
     val headers = new ServiceHandlerHeaders(new RequestEnv)
     sub.configure(headers)
     headers.env
   }
 
-  test("ProtoClient Subscriptions") {
+  test("ProtoClient ISubscriptions") {
     setupTest { client =>
 
       val updates = new SyncVar[List[(Envelope.Event, Envelope.RequestHeader)]](Nil)
@@ -124,7 +123,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       val headerSub = client.addSubscription(headerSubFunc)
 
       val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, getEnv(headerSub)) match {
-        case ProtoServiceTypes.MultiSuccess(Nil) =>
+        case ServiceTypes.MultiSuccess(Nil) =>
         case _ => false should equal(true)
       }
 

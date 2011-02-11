@@ -27,6 +27,8 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.ReactActor
 
+import org.totalgrid.reef.protoapi.IConnectionListener
+
 import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.messaging._
@@ -34,7 +36,7 @@ import org.totalgrid.reef.messaging._
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
-  class MockConnectionListener extends BrokerConnectionListener {
+  class MockConnectionListener extends IConnectionListener {
     val connected = new SyncVar(false)
 
     override def opened() = connected.update(true)

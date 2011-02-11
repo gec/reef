@@ -31,10 +31,10 @@ import org.totalgrid.reef.reactor.Reactable
 trait ConnectionOperations[ConnType] {
 
   type AsyncOperation = ConnType => Unit
-  type SyncOperation[T] = ConnType => Option[T]
+  type SyncOperation[A] = ConnType => Option[A]
 
   def doAsync(func: AsyncOperation)
-  def doSync[T](func: SyncOperation[T]): Option[T]
+  def doSync[A](func: SyncOperation[A]): Option[A]
 }
 
 /**
@@ -46,7 +46,7 @@ class LockStepConnection[ConnectionType](r: ConnectionType) extends ConnectionOp
   def doAsync(fun: AsyncOperation): Unit = {
     fun(r)
   }
-  def doSync[T](fun: SyncOperation[T]): Option[T] = {
+  def doSync[A](fun: SyncOperation[A]): Option[A] = {
     fun(r)
   }
 }
@@ -98,14 +98,14 @@ abstract class AsyncBufferReactor[ConnType](val reactor: Reactable, obs: Connect
     }
   }
 
-  def doSync[T](fun: SyncOperation[T]): Option[T] = {
+  def doSync[A](fun: SyncOperation[A]): Option[A] = {
     gets(1)
     //TODO : fix the timingHook so that it doesn't require a dynamic cast
     getLatency {
       reactor.request {
         op { fun }
       }
-    }.asInstanceOf[Option[T]]
+    }.asInstanceOf[Option[A]]
   }
 
   protected def op(f: (ConnType) => Unit): Boolean = {
@@ -123,7 +123,7 @@ abstract class AsyncBufferReactor[ConnType](val reactor: Reactable, obs: Connect
     }
   }
 
-  protected def op[T](f: (ConnType) => Option[T]): Option[T] = {
+  protected def op[A](f: (ConnType) => Option[A]): Option[A] = {
     try {
       connection match {
         case Some(c) => f(c)

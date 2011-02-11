@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.framework
 /** 
  * Interface for CRUD model operations
  */
-trait ModelCrud[T] {
+trait ModelCrud[A] {
 
   /**
    * Create a model entry
@@ -31,7 +31,7 @@ trait ModelCrud[T] {
    * @param entry   Object to be created
    * @return        Result of store creation/insertion
    */
-  def create(entry: T): T
+  def create(entry: A): A
 
   /**
    * Update an existing model entry
@@ -40,7 +40,7 @@ trait ModelCrud[T] {
    * @param existing    Existing entry to be replaced
    * @return            Result stored in data base and whether it was modified
    */
-  def update(entry: T, existing: T): (T, Boolean)
+  def update(entry: A, existing: A): (A, Boolean)
 
   /**
    * Delete an existing entry
@@ -48,27 +48,27 @@ trait ModelCrud[T] {
    * @param entry       Existing entry to be deleted
    * @return            Result of store delete
    */
-  def delete(entry: T): T
+  def delete(entry: A): A
 }
 
 /** 
  * Hooks/callbacks for modifying behavior without
  *  reimplementing generic CRUD operations
  */
-trait ModelHooks[T] {
+trait ModelHooks[A] {
 
   /**
    * Called before create 
    * @param entry   Object to be created
    * @return        Verified/modified object
    */
-  protected def preCreate(entry: T): T = entry
+  protected def preCreate(entry: A): A = entry
 
   /**
    * Called after successful create
    * @param entry   Created entry
    */
-  protected def postCreate(entry: T): Unit = {}
+  protected def postCreate(entry: A): Unit = {}
 
   /**
    * Called before update
@@ -76,40 +76,40 @@ trait ModelHooks[T] {
    * @param existing    Existing entry to be replaced
    * @return            Verified/modified object
    */
-  protected def preUpdate(entry: T, existing: T): T = entry
+  protected def preUpdate(entry: A, existing: A): A = entry
 
   /**
    * Called after successful update
    * @param entry       Updated (current) entry
    * @param previous    Previous entry
    */
-  protected def postUpdate(entry: T, previous: T): Unit = {}
+  protected def postUpdate(entry: A, previous: A): Unit = {}
 
   /**
    * Called before delete
    * @param entry       Existing entry to be deleted
    */
-  protected def preDelete(entry: T): Unit = {}
+  protected def preDelete(entry: A): Unit = {}
 
   /**
    * Called after successful delete
    * @param previous    Previous entry
    */
-  protected def postDelete(previous: T): Unit = {}
+  protected def postDelete(previous: A): Unit = {}
 
   /**
    * checks whether a new entry that is going to override a current entry
    * has actually modified that entry (to avoid unnecssary writes/events and
    * so we can send back correct status code
    */
-  def isModified(entry: T, previous: T): Boolean
+  def isModified(entry: A, previous: A): Boolean
 }
 
 /**
  * Interface for observing model changes
  */
-trait ModelObserver[T] {
-  protected def onCreated(entry: T): Unit
-  protected def onUpdated(entry: T): Unit
-  protected def onDeleted(entry: T): Unit
+trait ModelObserver[A] {
+  protected def onCreated(entry: A): Unit
+  protected def onUpdated(entry: A): Unit
+  protected def onDeleted(entry: A): Unit
 }

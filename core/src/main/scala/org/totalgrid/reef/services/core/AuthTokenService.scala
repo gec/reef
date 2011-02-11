@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Auth._
@@ -180,7 +180,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
   def postLoginException(agentName: String, currentTime: Long, status: Status, reason: String): AgentModel = {
     postLoginEvent(agentName, currentTime, status, reason)
-    throw new ProtoServiceException(reason, status)
+    throw new ServiceException(reason, status)
   }
 
   override def updateFromProto(req: AuthToken, existing: AuthTokenModel): (AuthTokenModel, Boolean) = {

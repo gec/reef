@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.integration;
 
-import org.totalgrid.reef.messaging.javabridge.IServiceClient;
-import org.totalgrid.reef.protoapi.ProtoServiceException;
+import org.totalgrid.reef.protoapi.java.client.ISession;
+import org.totalgrid.reef.protoapi.ServiceException;
 
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Auth.*;
@@ -40,33 +40,33 @@ import java.util.Random;
 @SuppressWarnings("unchecked")
 public class SampleRequests {
 
-	public static UserCommandRequest executeControl(IServiceClient client, String user, Command cmd) {
+	public static UserCommandRequest executeControl(ISession client, String user, Command cmd) {
 		UserCommandRequest request = SampleProtos.makeControlRequest(cmd, user);
 		UserCommandRequest result = client.putOne(request);
 		return result;
 	}
 
-	public static CommandAccess putCommandAccess(IServiceClient client, String user, Command cmd, long timeout, boolean allow) {
+	public static CommandAccess putCommandAccess(ISession client, String user, Command cmd, long timeout, boolean allow) {
 		CommandAccess accessRequest = SampleProtos.makeCommandAccess(cmd, user, timeout, allow);
 		CommandAccess result = client.putOne(accessRequest);
 		return result;
 	}
 
-	public static CommandAccess deleteCommandAccess(IServiceClient client, String cmdName) {
+	public static CommandAccess deleteCommandAccess(ISession client, String cmdName) {
 		CommandAccess request = CommandAccess.newBuilder().addCommands(cmdName).build();
 		CommandAccess result = client.deleteOne(request);
 		return result;
 	}
 
-	public static void clearCommandAccess(IServiceClient client, String cmdName) {
+	public static void clearCommandAccess(ISession client, String cmdName) {
 		try {
 			deleteCommandAccess(client, cmdName);
-		} catch (ProtoServiceException pse) {
+		} catch (ServiceException pse) {
 
 		}
 	}
 
-	public static CommandAccess getCommandAccess(IServiceClient client, String user, Command cmd) {
+	public static CommandAccess getCommandAccess(ISession client, String user, Command cmd) {
 		CommandAccess request = CommandAccess.newBuilder().addCommands(cmd.getName()).build();
 		CommandAccess result = client.getOne(request);
 		return result;
@@ -75,7 +75,7 @@ public class SampleRequests {
 	/**
 	 * Asks for all points regardless of who owns them.
 	 */
-	public static List<Point> getAllPoints(IServiceClient client) {
+	public static List<Point> getAllPoints(ISession client) {
 		Point p = Point.newBuilder().setName("*").build();
 		List<Point> list = client.get(p);
 		return list;
@@ -85,7 +85,7 @@ public class SampleRequests {
 	 * Requests the current values (most recent measurement) for points in MeasurementSnapshot
 	 * proto.
 	 */
-	public static List<Measurement> getCurrentValues(IServiceClient client, MeasurementSnapshot request) {
+	public static List<Measurement> getCurrentValues(ISession client, MeasurementSnapshot request) {
 		MeasurementSnapshot ms = client.getOne(request);
 		return ms.getMeasurementsList();
 	}
@@ -95,7 +95,7 @@ public class SampleRequests {
 	 *            connection object to use
 	 * @return List of all command objects
 	 */
-	public static List<Command> getAllCommands(IServiceClient client) {
+	public static List<Command> getAllCommands(ISession client) {
 		Command c = Command.newBuilder().setName("*").build();
 		return client.get(c);
 	}
@@ -109,7 +109,7 @@ public class SampleRequests {
 	 *            If set the authToken is added to the defaultEnvs for all clients using that bridge
 	 * @return The AuthToken proto returned by the server, .getToken has the magic string.
 	 */
-	public static AuthToken logonAs(IServiceClient client, String user, String password, boolean addAuthTokenForAllClients) {
+	public static AuthToken logonAs(ISession client, String user, String password, boolean addAuthTokenForAllClients) {
 		Agent agent = Agent.newBuilder().setName(user).setPassword(password).build();
 		AuthToken b = AuthToken.newBuilder().setAgent(agent).build();
 		AuthToken t = client.putOne(b);
@@ -123,7 +123,7 @@ public class SampleRequests {
 	/**
 	 * Return a list of the most recent alarms (not in the REMOVED state).
 	 */
-	public static List<Alarm> getUnRemovedAlarms(IServiceClient client, String eventType) {
+	public static List<Alarm> getUnRemovedAlarms(ISession client, String eventType) {
 		Alarm s = Alarm.newBuilder().setEvent(Event.newBuilder().setEventType(eventType)).build(); // select all State!=REMOVED by default.
 		List<Alarm> list = client.get(s);
 		return list;
@@ -134,7 +134,7 @@ public class SampleRequests {
 	 * entity could be a substation or a device. In the case of a substation it should return all
 	 * the alarms on the substation entity and all alarms on devices under the substation.
 	 */
-	public static List<Alarm> getAlarmsForEntity(IServiceClient client, Entity entity, String eventType) {
+	public static List<Alarm> getAlarmsForEntity(ISession client, Entity entity, String eventType) {
 
 		Event.Builder es = Event.newBuilder();
 		es.setEntity(entity);
@@ -148,7 +148,7 @@ public class SampleRequests {
 	/**
 	 * Update the state of an existing alarm.
 	 */
-	public static Alarm updateAlarm(IServiceClient client, String uid, Alarm.State newState) {
+	public static Alarm updateAlarm(ISession client, String uid, Alarm.State newState) {
 		Alarm.Builder a = Alarm.newBuilder();
 		a.setUid(uid);
 		a.setState(newState);
@@ -159,7 +159,7 @@ public class SampleRequests {
 	/**
 	 * Randomly choose a substation or fail test if there are no substations
 	 */
-	public static Entity getRandomSubstation(IServiceClient client) {
+	public static Entity getRandomSubstation(ISession client) {
 		Entity request = Entity.newBuilder().addTypes("Substation").build();
 		List<Entity> substations = client.get(request);
 		if (substations.size() == 0) throw new RuntimeException("No Subsations");		
@@ -172,7 +172,7 @@ public class SampleRequests {
      * get a flattened list of all children of the entity with name parent.
      * Examples: all "Points" under "Apex" or all "Commands" under "Breaker2"
      */
-    public static List<Entity> getChildrenOfType(IServiceClient client, String parent, String type){
+    public static List<Entity> getChildrenOfType(ISession client, String parent, String type){
         Entity eqRequest = Entity.newBuilder().setName(parent).addRelations(
 				Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(Entity.newBuilder().addTypes(type)))
 				.build();

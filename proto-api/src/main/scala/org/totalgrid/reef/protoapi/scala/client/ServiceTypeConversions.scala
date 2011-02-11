@@ -18,10 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi
+package org.totalgrid.reef.protoapi.scala.client
 
-import ProtoServiceTypes._
 import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.protoapi.{ ServiceTypes, StatusCodes }
+import ServiceTypes._
 
 /**
  *

@@ -22,8 +22,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.messaging.ServiceEndpoint
-import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
+import ServiceTypes.Response
 import org.totalgrid.reef.messaging.Descriptors
 
 import org.totalgrid.reef.proto.Envelope

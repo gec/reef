@@ -22,8 +22,8 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.proto.Envelope.Status
 
-import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceException, ProtoServiceTypes }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceException, ServiceTypes }
+import ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 
@@ -44,7 +44,7 @@ class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[Measureme
 
   override def get(req: MeasurementHistory, env: RequestEnv): Response[MeasurementHistory] = {
 
-    env.subQueue.foreach(queueName => throw new ProtoServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
 
     val pointName = req.getPointName()
     val ascending = req.getAscending()

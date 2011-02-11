@@ -27,7 +27,7 @@ import com.google.protobuf.GeneratedMessage
  */
 class SilentEventPublishers extends ServiceEventPublishers {
 
-  def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = {
+  def getEventSink[A <: GeneratedMessage](klass: Class[A]): ServiceSubscriptionHandler = {
     new SilentServiceSubscriptionHandler
   }
 

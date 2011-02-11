@@ -29,7 +29,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Envelope
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import OptionalProtos._
@@ -134,10 +134,10 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
 
   override def updateFromProto(proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
     if (existing.application.value.isEmpty)
-      throw new ProtoServiceException("No application assigned", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("No application assigned", Envelope.Status.BAD_REQUEST)
 
     if (proto.getOnline == existing.online)
-      throw new ProtoServiceException("Already online: " + existing.online, Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Already online: " + existing.online, Envelope.Status.BAD_REQUEST)
 
     val endpoint = existing.endpoint.value
 

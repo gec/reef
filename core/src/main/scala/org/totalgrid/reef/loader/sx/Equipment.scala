@@ -64,7 +64,7 @@ class Unexpected private (_actionSet: String) extends equipment.Unexpected {
   }
 }
 
-trait PointType[T] { self: equipment.PointType =>
+trait PointType[A] { self: equipment.PointType =>
   def init(_name: String, _unit: String = "", _pointProfile: String = "") = {
     setName(_name)
     if (_unit.length > 0)
@@ -72,10 +72,10 @@ trait PointType[T] { self: equipment.PointType =>
     if (_pointProfile.length > 0)
       setPointProfile(_pointProfile)
   }
-  def add(x: Range): T = { getRange.add(x); this.asInstanceOf[T] }
-  def add(x: Control): T = { getControl.add(x); this.asInstanceOf[T] }
-  def add(x: Unexpected): T = { getUnexpected.add(x); this.asInstanceOf[T] }
-  //def add( x: ValueMap*): T = { getValueMap.add(x); this.asInstanceOf[T] }
+  def add(x: Range): A = { getRange.add(x); this.asInstanceOf[A] }
+  def add(x: Control): A = { getControl.add(x); this.asInstanceOf[A] }
+  def add(x: Unexpected): A = { getUnexpected.add(x); this.asInstanceOf[A] }
+  //def add( x: ValueMap*): A = { getValueMap.add(x); this.asInstanceOf[A] }
 }
 class PointProfile(_name: String) extends equipment.PointProfile {
   setName(_name)
@@ -94,14 +94,14 @@ class Counter(_name: String, _unit: String = "", _pointProfile: String = "") ext
   init(_name, _unit, _pointProfile)
 }
 
-trait EquipmentType[T] { self: equipment.EquipmentType =>
-  def add(x: org.totalgrid.reef.loader.equipment.EquipmentProfile) = { getEquipmentProfile.add(x); this.asInstanceOf[T] }
-  def add(x: org.totalgrid.reef.loader.equipment.Type) = { getType.add(x); this.asInstanceOf[T] }
-  def add(x: org.totalgrid.reef.loader.equipment.Control) = { getControl.add(x); this.asInstanceOf[T] }
-  def add(x: org.totalgrid.reef.loader.equipment.Status) = { getStatus.add(x); this.asInstanceOf[T] }
-  def add(x: org.totalgrid.reef.loader.equipment.Analog) = { getAnalog.add(x); this.asInstanceOf[T] }
-  def add(x: org.totalgrid.reef.loader.equipment.Counter) = { getCounter.add(x); this.asInstanceOf[T] }
-  def add(x: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipment.add(x); this.asInstanceOf[T] }
+trait EquipmentType[A] { self: equipment.EquipmentType =>
+  def add(x: org.totalgrid.reef.loader.equipment.EquipmentProfile) = { getEquipmentProfile.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Type) = { getType.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Control) = { getControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Status) = { getStatus.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Analog) = { getAnalog.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Counter) = { getCounter.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipment.add(x); this.asInstanceOf[A] }
 }
 
 class EquipmentProfile(_name: String) extends equipment.EquipmentProfile with EquipmentType[EquipmentProfile] {

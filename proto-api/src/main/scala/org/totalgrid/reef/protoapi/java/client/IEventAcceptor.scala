@@ -18,21 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.client
+package org.totalgrid.reef.protoapi.java.client
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import org.totalgrid.reef.protoapi.ServiceTypes.Event
 
-import ProtoServiceTypes._
-
-import org.totalgrid.reef.proto.Envelope
-
-/** Provides a thick interface full of helper functions via implement of a single abstract request function
+/**
+ *  Adapts raw events functions to a Java interface
  */
-trait ServiceClient extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
-
-  /**
-   *    Implements a synchronous request in terms of a future
-   */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = requestFuture(verb, payload, env)()
-
+trait IEventAcceptor[A] {
+  def onEvent(event: Event[A]): Unit
 }

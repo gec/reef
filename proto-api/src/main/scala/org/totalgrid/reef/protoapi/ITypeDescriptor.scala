@@ -20,22 +20,12 @@
  */
 package org.totalgrid.reef.protoapi
 
-import com.google.protobuf.InvalidProtocolBufferException
-
 /**
- * Helper that adapts the scala deserialization functiosn to a Java interface
+ * Describes how to (de)serialize a type and it's class
  */
-trait TypeDescriptor[A] {
-
-  /*
-  @throws(classOf[InvalidProtocolBufferException])
-  def deserializeString(data: ByteString): A
-  */
+trait ITypeDescriptor[A] {
 
   def serialize(typ: A): Array[Byte]
-
-  @throws(classOf[InvalidProtocolBufferException])
   def deserialize(data: Array[Byte]): A
-
   def getKlass: Class[A]
 }

@@ -23,13 +23,13 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ProtoServiceTypes, RequestEnv }
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ServiceTypes, RequestEnv }
 
-import ProtoServiceTypes._
+import ServiceTypes._
 
 object AMQPMessageConsumers extends Logging {
 
-  def makeStreamConsumer[T](deserialize: Array[Byte] => T, accept: T => Unit): MessageConsumer = {
+  def makeStreamConsumer[A](deserialize: Array[Byte] => A, accept: A => Unit): MessageConsumer = {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
@@ -39,7 +39,7 @@ object AMQPMessageConsumers extends Logging {
     }
   }
 
-  def makeEventConsumer[T](convert: Array[Byte] => T, accept: Event[T] => Unit): MessageConsumer = {
+  def makeEventConsumer[A](convert: Array[Byte] => A, accept: Event[A] => Unit): MessageConsumer = {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
@@ -50,7 +50,7 @@ object AMQPMessageConsumers extends Logging {
     }
   }
 
-  def makeConvertingEventStreamConsumer[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit): MessageConsumer = {
+  def makeConvertingEventStreamConsumer[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): MessageConsumer = {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
@@ -95,7 +95,7 @@ object AMQPMessageConsumers extends Logging {
   /**
    * push the receive to another thread using a reactor
    */
-  def dispatchToReactor[T](reactor: Reactable, binding: MessageConsumer): MessageConsumer = {
+  def dispatchToReactor[A](reactor: Reactable, binding: MessageConsumer): MessageConsumer = {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         reactor.execute {
@@ -110,7 +110,7 @@ object AMQPMessageConsumers extends Logging {
   /**
    * run the passed in function in a try/catch block with common error handling
    */
-  private def safeExecute[T](fun: => T) {
+  private def safeExecute[A](fun: => A) {
     try {
       fun
     } catch {

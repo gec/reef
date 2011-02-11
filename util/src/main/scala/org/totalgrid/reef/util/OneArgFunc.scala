@@ -22,17 +22,17 @@ package org.totalgrid.reef.util
 
 object OneArgFunc {
 
-  def getParamClass[T](f: T => _, klass: Class[_]): Class[T] = {
+  def getParamClass[A](f: A => _, klass: Class[_]): Class[A] = {
     f.getClass.getDeclaredMethods.find { x =>
       x.getName.equals("apply") && x.getParameterTypes.size == 1 && x.getReturnType == klass
     } match {
       case None => throw new Exception("No such method")
-      case Some(x) => x.getParameterTypes.apply(0).asInstanceOf[Class[T]]
+      case Some(x) => x.getParameterTypes.apply(0).asInstanceOf[Class[A]]
     }
   }
 
   // takes any function that returns T, and returns a class representing it's type
-  def getReturnClass[T](f: _ => T, klass: Class[_]): Class[T] = {
-    f.getClass.getDeclaredMethod("apply", klass).getReturnType.asInstanceOf[Class[T]]
+  def getReturnClass[A](f: _ => A, klass: Class[_]): Class[A] = {
+    f.getClass.getDeclaredMethod("apply", klass).getReturnType.asInstanceOf[Class[A]]
   }
 }

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.scala.client.SyncOperations
 
 import scala.collection.JavaConversions._
 import RequestFailure._

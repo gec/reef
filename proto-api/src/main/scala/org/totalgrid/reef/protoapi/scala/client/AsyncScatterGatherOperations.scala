@@ -18,16 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.client
+package org.totalgrid.reef.protoapi.scala.client
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
+import ServiceTypes._
 
 import org.totalgrid.reef.proto.Envelope.Verb
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.ProtoConversions._ //implicits
+import ProtoConversions._ //implicits
 
 trait AsyncScatterGatherOperations {
 

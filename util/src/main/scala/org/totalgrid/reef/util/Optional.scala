@@ -26,15 +26,15 @@ object Optional {
    * calls the has (or all of the has) functions, taking advantage of short circuiting, to return None if any of the has functions
    * fail or the result of the get function wrapped in Some.
    */
-  def hasGet[T](has: => Boolean, get: => T): Option[T] = if (has) Some(get) else None
-  def hasGet[T](has: => Boolean, has1: => Boolean, get: => T): Option[T] = if (has && has1) Some(get) else None
-  def hasGet[T](has: => Boolean, has1: => Boolean, has2: => Boolean, get: => T): Option[T] = if (has && has1 && has2) Some(get) else None
+  def hasGet[A](has: => Boolean, get: => A): Option[A] = if (has) Some(get) else None
+  def hasGet[A](has: => Boolean, has1: => Boolean, get: => A): Option[A] = if (has && has1) Some(get) else None
+  def hasGet[A](has: => Boolean, has1: => Boolean, has2: => Boolean, get: => A): Option[A] = if (has && has1 && has2) Some(get) else None
 
   // if (isTrue) Some(obj) else None   --->    isTrue thenGet obj | isTrue ? obj
   implicit def boolWrapper(b: Boolean) = new OptionalBoolean(b)
   class OptionalBoolean(b: Boolean) {
-    def ?[T](t: T): Option[T] = thenGet(t) // Precedence different
-    def thenGet[T](t: => T): Option[T] = if (b) Some(t) else None
+    def ?[A](t: A): Option[A] = thenGet(t) // Precedence different
+    def thenGet[A](t: => A): Option[A] = if (b) Some(t) else None
   }
 
   // Fall-through/flattening for Option
@@ -55,8 +55,8 @@ object Optional {
 
   // Implicit wrappers for protos/others that convert has/get to optional and preserve responsivity
   // at any depth (you can look up Alarm -> ContextInfo -> Attr even if Alarm has no ContextInfo)
-  trait Optional[T] { def getOption: Option[T] }
-  implicit def optAttrToOpt[T](optional: Optional[T]): Option[T] = optional.getOption
+  trait Optional[A] { def getOption: Option[A] }
+  implicit def optAttrToOpt[A](optional: Optional[A]): Option[A] = optional.getOption
 
   class OptionalStruct[A](myself: Option[A]) extends Optional[A] {
     def getOption = myself

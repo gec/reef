@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
+import ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
 import org.totalgrid.reef.services.ServiceProviderHeaders._
@@ -40,7 +40,7 @@ class ConfigService(protected val entityService: EntityService, protected val en
 
   override def put(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = {
 
-    env.subQueue.foreach(queueName => throw new ProtoServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
 
     //  TODO: load a file by name or, even better, use getFile to get the bytes of the file
     if (req.hasName) {

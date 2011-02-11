@@ -114,7 +114,7 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     }
   }
 
-  abstract class CurrentValue[T](var value: T, val changeChance: Double) {
+  abstract class CurrentValue[A](var value: A, val changeChance: Double) {
 
     def next(force: Boolean): Boolean = {
       if (force) return true

@@ -50,7 +50,7 @@ class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) =
 }
 
 class SingleEventPublisher(subHandler: ServiceSubscriptionHandler) extends ServiceEventPublishers {
-  def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = subHandler
+  def getEventSink[A <: GeneratedMessage](klass: Class[A]): ServiceSubscriptionHandler = subHandler
 }
 
 @RunWith(classOf[JUnitRunner])

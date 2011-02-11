@@ -35,21 +35,21 @@ class Times(num: Int) {
   }
 }
 
-class Mapified[T](i: Iterable[T]) {
+class Mapified[A](i: Iterable[A]) {
 
-  def mapify[U](keygen: T => U): immutable.Map[U, T] = {
-    i.foldLeft(immutable.Map.empty[U, T]) { (sum, x) =>
+  def mapify[B](keygen: A => B): immutable.Map[B, A] = {
+    i.foldLeft(immutable.Map.empty[B, A]) { (sum, x) =>
       sum + (keygen(x) -> x)
     }
   }
 }
 
-class TakeRand[T](l: List[T]) {
+class TakeRand[A](l: List[A]) {
 
   /**
    * @return an Option with either a random element from the list or None if list is empty 
    */
-  def takeRand: Option[T] = {
+  def takeRand: Option[A] = {
     if (l.size == 0) None
     else Some(l.apply(new scala.util.Random().nextInt(l.size)))
   }

@@ -65,9 +65,9 @@ class Scale() extends communications.Scale {
   }
 }
 
-trait ControlType[T] { self: communications.ControlType =>
-  def add(x: ControlProfile): T = { getControlProfile.add(x); this.asInstanceOf[T] }
-  def set(x: OptionsDnp3): T = { setOptionsDnp3(x); this.asInstanceOf[T] }
+trait ControlType[A] { self: communications.ControlType =>
+  def add(x: ControlProfile): A = { getControlProfile.add(x); this.asInstanceOf[A] }
+  def set(x: OptionsDnp3): A = { setOptionsDnp3(x); this.asInstanceOf[A] }
 }
 
 class ControlProfile(_name: String) extends communications.ControlProfile with ControlType[ControlProfile] {
@@ -87,14 +87,14 @@ class Control(_name: String, _index: Int) extends communications.Control with Co
   }
 }
 
-trait PointType[T] { self: communications.PointType =>
+trait PointType[A] { self: communications.PointType =>
   def init(_name: String, _index: Int, _unit: Option[String], _pointProfile: Option[PointProfile]) = {
     setName(_name)
     setIndex(_index)
     _unit.foreach(setUnit)
     _pointProfile.foreach(p => setPointProfile(p.getName))
   }
-  def set(x: Scale): T = { setScale(x); this.asInstanceOf[T] }
+  def set(x: Scale): A = { setScale(x); this.asInstanceOf[A] }
 }
 
 class PointProfile(_name: String, _unit: Option[String] = None, _index: Option[Int] = None) extends communications.PointProfile with PointType[PointProfile] {
@@ -130,13 +130,13 @@ class Profiles extends communications.Profiles {
   def add(p: EquipmentProfile) = { getEquipmentProfile.add(p); this }
 }
 
-trait EquipmentType[T] { self: communications.EquipmentType =>
-  def add(x: EquipmentProfile) = { getEquipmentProfile.add(x); this.asInstanceOf[T] }
-  def add(x: Control) = { getControl.add(x); this.asInstanceOf[T] }
-  def add(x: Status) = { getStatus.add(x); this.asInstanceOf[T] }
-  def add(x: Analog) = { getAnalog.add(x); this.asInstanceOf[T] }
-  def add(x: Counter) = { getCounter.add(x); this.asInstanceOf[T] }
-  def add(x: Equipment) = { getEquipment.add(x); this.asInstanceOf[T] }
+trait EquipmentType[A] { self: communications.EquipmentType =>
+  def add(x: EquipmentProfile) = { getEquipmentProfile.add(x); this.asInstanceOf[A] }
+  def add(x: Control) = { getControl.add(x); this.asInstanceOf[A] }
+  def add(x: Status) = { getStatus.add(x); this.asInstanceOf[A] }
+  def add(x: Analog) = { getAnalog.add(x); this.asInstanceOf[A] }
+  def add(x: Counter) = { getCounter.add(x); this.asInstanceOf[A] }
+  def add(x: Equipment) = { getEquipment.add(x); this.asInstanceOf[A] }
 }
 
 class EquipmentProfile(_name: String) extends communications.EquipmentProfile with EquipmentType[EquipmentProfile] {
@@ -147,7 +147,7 @@ class Equipment(_name: String) extends communications.Equipment with EquipmentTy
   setName(_name)
 }
 
-trait EndpointType[T] { self: communications.EndpointType =>
+trait EndpointType[A] { self: communications.EndpointType =>
   def init(_name: String, _protocolName: Option[String], _configFileName: Option[String]): Unit = {
     setName(_name)
     add(new Type("Endpoint"))
@@ -155,10 +155,10 @@ trait EndpointType[T] { self: communications.EndpointType =>
       setProtocol(new Protocol(_protocolName.get, _configFileName))
     }
   }
-  def add(x: EndpointProfile) = { getEndpointProfile.add(x); this.asInstanceOf[T] }
-  def add(x: Type) = { getType.add(x); this.asInstanceOf[T] }
-  def add(x: Equipment) = { getEquipment.add(x); this.asInstanceOf[T] }
-  def set(x: Interface) = { setInterface(x); this.asInstanceOf[T] }
+  def add(x: EndpointProfile) = { getEndpointProfile.add(x); this.asInstanceOf[A] }
+  def add(x: Type) = { getType.add(x); this.asInstanceOf[A] }
+  def add(x: Equipment) = { getEquipment.add(x); this.asInstanceOf[A] }
+  def set(x: Interface) = { setInterface(x); this.asInstanceOf[A] }
 }
 class EndpointProfile(_name: String, _protocolName: Option[String] = Some("benchmark"), _configFileName: Option[String] = None) extends communications.EndpointProfile with EndpointType[EndpointProfile] {
   init(_name, _protocolName, _configFileName)

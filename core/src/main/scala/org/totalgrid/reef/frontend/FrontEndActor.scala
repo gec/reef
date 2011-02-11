@@ -26,8 +26,8 @@ import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.protoapi.client.ServiceClient
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ SingleSuccess, Failure }
+import org.totalgrid.reef.protoapi.scala.client.ServiceClient
+import org.totalgrid.reef.protoapi.ServiceTypes.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
@@ -134,7 +134,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
    * when setting up asynchronous callbacks it is doubly important to catch exceptions 
    * near where they are thrown or else they will bubble all the way up into the calling code
    */
-  private def tryWrap[T](msg: String)(fun: => T) {
+  private def tryWrap[A](msg: String)(fun: => A) {
     try {
       fun
     } catch {

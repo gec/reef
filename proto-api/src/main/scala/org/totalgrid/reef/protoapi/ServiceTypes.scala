@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Envelope
 
 /**Contains types/case classes used in the proto service interfaces
  */
-object ProtoServiceTypes {
+object ServiceTypes {
 
   /* ---- Case classes that make the service protoapi easier to use ---- */
 
@@ -56,7 +56,7 @@ object ProtoServiceTypes {
   case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
     override def toString: String = super.toString + " " + status + " message: " + error
 
-    def toException: ProtoServiceException = new ProtoServiceException(error, status)
+    def toException: ServiceException = new ServiceException(error, status)
   }
 
 }

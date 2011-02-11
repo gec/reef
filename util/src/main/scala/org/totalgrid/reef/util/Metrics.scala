@@ -119,12 +119,12 @@ trait MetricsHookFunctions {
     getHook(name, MetricsHooks.Average)
   }
 
-  protected def timingHook[T](name: String): (=> T) => T = {
+  protected def timingHook[A](name: String): (=> A) => A = {
     val metric = averageHook(name)
     if (metric != MetricsHookFunctions.nop) Timing.time(t => metric(t.toInt)) _
     else {
       /// only necessary to make scala compiler happy, couldn't define anonymously
-      def nothing[T]()(block: => T) = { block }
+      def nothing[A]()(block: => A) = { block }
       nothing() _
     }
   }

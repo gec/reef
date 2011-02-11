@@ -29,13 +29,12 @@ import scala.collection.immutable
 
 import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
-import org.totalgrid.reef.protoapi.client.ServiceClient
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes._
-
-import org.totalgrid.reef.protoapi.ProtoConversions._
+import org.totalgrid.reef.protoapi.scala.client.ServiceClient
+import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
+import ServiceTypes._
 
 //implicits for massaging service return types
+import org.totalgrid.reef.protoapi.scala.client.ProtoConversions._
 
 object MockProtoRegistry {
   val timeout = 5000
@@ -75,7 +74,7 @@ trait MockProtoPublisherRegistry {
 
   private var pubmap = immutable.Map.empty[Tuple2[Class[_], String], MailBox]
 
-  def publish[T <: GeneratedMessage](keygen: T => String, hint: String = ""): T => Unit = {
+  def publish[A <: GeneratedMessage](keygen: A => String, hint: String = ""): A => Unit = {
     val klass = OneArgFunc.getParamClass(keygen, classOf[String])
     pubmap.get((klass, hint)) match {
       case Some(x) => {
@@ -87,7 +86,7 @@ trait MockProtoPublisherRegistry {
     }
   }
 
-  def broadcast[T <: GeneratedMessage](exchangeName: String, keygen: T => String): T => Unit = {
+  def broadcast[A <: GeneratedMessage](exchangeName: String, keygen: A => String): A => Unit = {
     val klass = OneArgFunc.getParamClass(keygen, classOf[String])
     pubmap.get((klass, exchangeName)) match {
       case Some(x) => {
@@ -99,9 +98,9 @@ trait MockProtoPublisherRegistry {
     }
   }
 
-  def getMailbox[T <: GeneratedMessage](klass: Class[T]): MailBox = getMailbox(klass, "")
+  def getMailbox[A <: GeneratedMessage](klass: Class[A]): MailBox = getMailbox(klass, "")
 
-  def getMailbox[T <: GeneratedMessage](klass: Class[T], hint: String): MailBox = pubmap(klass, hint)
+  def getMailbox[A <: GeneratedMessage](klass: Class[A], hint: String): MailBox = pubmap(klass, hint)
 
 }
 
@@ -111,11 +110,11 @@ trait MockProtoSubscriberRegistry {
 
   private var submap = immutable.Map.empty[Tuple2[Class[_], String], Any]
 
-  def getAcceptor[T](klass: Class[T]): T => Unit = getAcceptor(klass, "", MockProtoRegistry.timeout)
+  def getAcceptor[A](klass: Class[A]): A => Unit = getAcceptor(klass, "", MockProtoRegistry.timeout)
 
-  def getAcceptor[T](klass: Class[T], timeout: Long): T => Unit = getAcceptor(klass, "", timeout)
+  def getAcceptor[A](klass: Class[A], timeout: Long): A => Unit = getAcceptor(klass, "", timeout)
 
-  def getAcceptor[T](klass: Class[T], hint: String, timeout: Long): T => Unit = {
+  def getAcceptor[A](klass: Class[A], hint: String, timeout: Long): A => Unit = {
     if (timeout > 0) {
       submap.get(klass, hint) match {
         case None =>
@@ -126,11 +125,11 @@ trait MockProtoSubscriberRegistry {
       }
     }
 
-    submap(klass, hint).asInstanceOf[T => Unit]
+    submap(klass, hint).asInstanceOf[A => Unit]
 
   }
 
-  def subscribe[T](deserialize: Array[Byte] => T, key: String, hint: String = "")(accept: T => Unit): Unit = {
+  def subscribe[A](deserialize: Array[Byte] => A, key: String, hint: String = "")(accept: A => Unit): Unit = {
     val klass = OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]])
     submap.get(klass, hint) match {
       case Some(x) =>
@@ -140,7 +139,7 @@ trait MockProtoSubscriberRegistry {
     }
   }
 
-  def listen[T](deserialize: (Array[Byte]) => T, queueName: String)(accept: T => Unit): Unit = {
+  def listen[A](deserialize: (Array[Byte]) => A, queueName: String)(accept: A => Unit): Unit = {
     val klass = OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]])
     submap.get(klass, queueName) match {
       case Some(x) =>
@@ -151,7 +150,7 @@ trait MockProtoSubscriberRegistry {
 
 }
 
-case class MockEvent[T](accept: Event[T] => Unit, observer: Option[String => Unit])
+case class MockEvent[A](accept: Event[A] => Unit, observer: Option[String => Unit])
 
 trait MockProtoServiceRegistry extends ProtoServiceRegistry {
 
@@ -173,9 +172,9 @@ trait MockProtoServiceRegistry extends ProtoServiceRegistry {
       ret
   }
 
-  def getEvent[T](klass: Class[T]): MockEvent[T] = {
+  def getEvent[A](klass: Class[A]): MockEvent[A] = {
     eventqueues.get(klass) match {
-      case Some(x) => x.asInstanceOf[MockEvent[T]]
+      case Some(x) => x.asInstanceOf[MockEvent[A]]
       case None =>
         eventmail.receiveWithin(MockProtoRegistry.timeout) {
           case EventSub(k, m) =>
@@ -185,12 +184,12 @@ trait MockProtoServiceRegistry extends ProtoServiceRegistry {
     }
   }
 
-  def defineEventQueue[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit): Unit = {
-    eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[T](accept, None))
+  def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
+    eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, None))
   }
 
-  def defineEventQueueWithNotifier[T](deserialize: Array[Byte] => T, accept: Event[T] => Unit)(notify: String => Unit): Unit = {
-    eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[T](accept, Some(notify)))
+  def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
+    eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, Some(notify)))
   }
 
 }

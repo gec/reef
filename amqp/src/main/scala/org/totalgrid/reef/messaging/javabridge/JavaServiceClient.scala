@@ -21,9 +21,11 @@
 package org.totalgrid.reef.messaging.javabridge
 
 import org.totalgrid.reef.proto.Envelope
-
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv, TypeDescriptor }
+
+import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, RequestEnv, ITypeDescriptor, ISubscription }
+import org.totalgrid.reef.protoapi.java.client.{ ISession, IEventAcceptor }
+
 import org.totalgrid.reef.messaging.ProtoClient
 
 import scala.collection.JavaConversions._
@@ -31,38 +33,38 @@ import scala.collection.JavaConversions._
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists
  */
-class JavaProtoClientWrapper(client: ProtoClient) extends IServiceClient {
+class Session(client: ProtoClient) extends ISession {
 
-  def request[T <: GeneratedMessage](verb: Envelope.Verb, payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.requestThrow(verb, payload, env.env)
+  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.requestThrow(verb, payload, env.env)
 
-  def get[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.getOrThrow(payload, env.env)
-  def delete[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.deleteOrThrow(payload, env.env)
-  def post[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.postOrThrow(payload, env.env)
-  def put[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): java.util.List[T] = client.putOrThrow(payload, env.env)
+  def get[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.getOrThrow(payload, env.env)
+  def delete[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.deleteOrThrow(payload, env.env)
+  def post[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.postOrThrow(payload, env.env)
+  def put[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.putOrThrow(payload, env.env)
 
-  def getOne[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.getOneOrThrow(payload, env.env)
-  def deleteOne[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.deleteOneOrThrow(payload, env.env)
-  def putOne[T <: GeneratedMessage](payload: T, env: ServiceHandlerHeaders): T = client.putOneOrThrow(payload, env.env)
+  def getOne[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): A = client.getOneOrThrow(payload, env.env)
+  def deleteOne[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): A = client.deleteOneOrThrow(payload, env.env)
+  def putOne[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): A = client.putOneOrThrow(payload, env.env)
 
-  def get[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.getOrThrow(payload, getEnv(sub))
-  def delete[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.deleteOrThrow(payload, getEnv(sub))
-  def post[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.postOrThrow(payload, getEnv(sub))
-  def put[T <: GeneratedMessage](payload: T, sub: Subscription): java.util.List[T] = client.putOrThrow(payload, getEnv(sub))
+  def get[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.getOrThrow(payload, getEnv(sub))
+  def delete[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.deleteOrThrow(payload, getEnv(sub))
+  def post[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.postOrThrow(payload, getEnv(sub))
+  def put[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.putOrThrow(payload, getEnv(sub))
 
-  def getOne[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.getOneOrThrow(payload, getEnv(sub))
-  def deleteOne[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.deleteOneOrThrow(payload, getEnv(sub))
-  def putOne[T <: GeneratedMessage](payload: T, sub: Subscription): T = client.putOneOrThrow(payload, getEnv(sub))
+  def getOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.getOneOrThrow(payload, getEnv(sub))
+  def deleteOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.deleteOneOrThrow(payload, getEnv(sub))
+  def putOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.putOneOrThrow(payload, getEnv(sub))
 
-  def get[T <: GeneratedMessage](payload: T): java.util.List[T] = client.getOrThrow(payload)
-  def delete[T <: GeneratedMessage](payload: T): java.util.List[T] = client.deleteOrThrow(payload)
-  def post[T <: GeneratedMessage](payload: T): java.util.List[T] = client.postOrThrow(payload)
-  def put[T <: GeneratedMessage](payload: T): java.util.List[T] = client.putOrThrow(payload)
+  def get[A <: AnyRef](payload: A): java.util.List[A] = client.getOrThrow(payload)
+  def delete[A <: AnyRef](payload: A): java.util.List[A] = client.deleteOrThrow(payload)
+  def post[A <: AnyRef](payload: A): java.util.List[A] = client.postOrThrow(payload)
+  def put[A <: AnyRef](payload: A): java.util.List[A] = client.putOrThrow(payload)
 
-  def getOne[T <: GeneratedMessage](payload: T): T = client.getOneOrThrow(payload)
-  def deleteOne[T <: GeneratedMessage](payload: T): T = client.deleteOneOrThrow(payload)
-  def putOne[T <: GeneratedMessage](payload: T): T = client.putOneOrThrow(payload)
+  def getOne[A <: AnyRef](payload: A): A = client.getOneOrThrow(payload)
+  def deleteOne[A <: AnyRef](payload: A): A = client.deleteOneOrThrow(payload)
+  def putOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
 
-  def addSubscription[T <: GeneratedMessage](pd: TypeDescriptor[T], ea: EventAcceptor[T]): Subscription = {
+  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription = {
     client.addSubscription(pd.getKlass, ea.onEvent)
   }
 
@@ -76,7 +78,7 @@ class JavaProtoClientWrapper(client: ProtoClient) extends IServiceClient {
 
   def close() = client.close
 
-  private def getEnv(sub: Subscription): RequestEnv = {
+  private def getEnv(sub: ISubscription): RequestEnv = {
     val headers = new ServiceHandlerHeaders(new RequestEnv)
     sub.configure(headers)
     headers.env

@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models.{ CommandAccessModel => AccessModel }
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
@@ -50,9 +50,9 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
   override protected def preCreate(proto: AccessProto): AccessProto = {
     // Simple proto validity check
     if (proto.getCommandsList.length == 0)
-      throw new ProtoServiceException("Must specify at least one command", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Must specify at least one command", Envelope.Status.BAD_REQUEST)
     if (!proto.hasAccess)
-      throw new ProtoServiceException("Must specify access mode", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Must specify access mode", Envelope.Status.BAD_REQUEST)
 
     // Being a select (allowed) implies you have user and expiry
     if (proto.getAccess == AccessMode.ALLOWED) {

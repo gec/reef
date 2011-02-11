@@ -20,10 +20,10 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.protoapi.ProtoServiceTypes._
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.protoapi.{ ISubscription, ServiceTypes }
+import ServiceTypes._
 
-import javabridge.Subscription
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.util.OneArgFunc
@@ -136,7 +136,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
     add(sub)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): Subscription = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }

@@ -24,12 +24,11 @@ import org.junit.Test;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.messaging.Descriptors;
-import org.totalgrid.reef.messaging.javabridge.Subscription;
 import org.totalgrid.reef.proto.Commands;
 import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
-import org.totalgrid.reef.protoapi.ProtoServiceTypes;
+import org.totalgrid.reef.protoapi.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,18 +56,18 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 
 		MockEventAcceptor<Commands.UserCommandRequest> mock = new MockEventAcceptor<Commands.UserCommandRequest>();
 		Commands.UserCommandRequest request = SampleProtos.makeControlRequest(cmd, "user");
-		Subscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
+		ISubscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
 		client.putOne(request, sub);
 
 		// We get 2 events here. Since the subscription is bound before the request is made,
 		// we see the ADDED/EXECUTING and then the MODIFIED/SUCCESS
 		{
-			ProtoServiceTypes.Event<Commands.UserCommandRequest> rsp = mock.pop(5000);
+			ServiceTypes.Event<Commands.UserCommandRequest> rsp = mock.pop(5000);
 			assertEquals(Envelope.Event.ADDED, rsp.getEvent());
 			assertEquals(Commands.CommandStatus.EXECUTING, rsp.getResult().getStatus());
 		}
 		{
-			ProtoServiceTypes.Event<Commands.UserCommandRequest> rsp = mock.pop(5000);
+			ServiceTypes.Event<Commands.UserCommandRequest> rsp = mock.pop(5000);
 			assertEquals(Envelope.Event.MODIFIED, rsp.getEvent());
 			assertEquals(Commands.CommandStatus.SUCCESS, rsp.getResult().getStatus());
 		}
@@ -86,7 +85,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 		// mock object that will receive queue and measurement subscription
 		MockEventAcceptor<Measurements.Measurement> mock = new MockEventAcceptor<Measurements.Measurement>();
 
-		Subscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
+		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
 		// make the all points request, w/ subscribe queue set
 		Measurements.MeasurementSnapshot request = SampleProtos.makeMeasSnapshot(SampleRequests.getAllPoints(client));
@@ -95,7 +94,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 		assertEquals(request.getPointNamesCount(), response.getMeasurementsCount());
 
 		// check that at least one measurement has been updated in the queue
-		ProtoServiceTypes.Event<Measurements.Measurement> m = mock.pop(10000);
+		ServiceTypes.Event<Measurements.Measurement> m = mock.pop(10000);
 		assertEquals(m.getEvent(), Envelope.Event.MODIFIED);
 
 		// now cancel the subscription

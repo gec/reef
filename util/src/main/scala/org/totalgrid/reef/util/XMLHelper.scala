@@ -27,24 +27,24 @@ import java.io.{ FileWriter, FileReader, StringWriter }
 
 object XMLHelper {
 
-  def read[T](text: String, klass: Class[T]): T = read(text.getBytes("UTF-8"), klass)
+  def read[A](text: String, klass: Class[A]): A = read(text.getBytes("UTF-8"), klass)
 
-  def read[T](file: ByteString, klass: Class[T]): T = read(file.toByteArray, klass)
+  def read[A](file: ByteString, klass: Class[A]): A = read(file.toByteArray, klass)
 
-  def read[T](bytes: Array[Byte], klass: Class[T]): T = {
+  def read[A](bytes: Array[Byte], klass: Class[A]): A = {
     val ctx = JAXBContext.newInstance(klass)
     val um = ctx.createUnmarshaller
     val is = new ByteArrayInputStream(bytes)
-    um.unmarshal(is).asInstanceOf[T]
+    um.unmarshal(is).asInstanceOf[A]
   }
 
-  def read[T](reader: FileReader, klass: Class[T]): T = {
+  def read[A](reader: FileReader, klass: Class[A]): A = {
     val ctx = JAXBContext.newInstance(klass)
     val um = ctx.createUnmarshaller
-    um.unmarshal(reader).asInstanceOf[T]
+    um.unmarshal(reader).asInstanceOf[A]
   }
 
-  def writeToFile[T](value: T, klass: Class[T], filewriter: FileWriter): Unit = {
+  def writeToFile[A](value: A, klass: Class[A], filewriter: FileWriter): Unit = {
     val ctx = JAXBContext.newInstance(klass)
     val m = ctx.createMarshaller
     m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -52,7 +52,7 @@ object XMLHelper {
     m.marshal(value, filewriter)
   }
 
-  def writeToString[T](value: T, klass: Class[T]): String = {
+  def writeToString[A](value: A, klass: Class[A]): String = {
     val ctx = JAXBContext.newInstance(klass)
     val m = ctx.createMarshaller
     val sw = new StringWriter

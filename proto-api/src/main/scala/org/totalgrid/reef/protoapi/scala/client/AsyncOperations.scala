@@ -18,13 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.client
+package org.totalgrid.reef.protoapi.scala.client
 
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.protoapi.RequestEnv
-import org.totalgrid.reef.protoapi.ProtoServiceTypes._
+import org.totalgrid.reef.protoapi.ServiceTypes._
 
-import org.totalgrid.reef.protoapi.ProtoConversions._
+import ProtoConversions._
 
 trait AsyncOperations {
 

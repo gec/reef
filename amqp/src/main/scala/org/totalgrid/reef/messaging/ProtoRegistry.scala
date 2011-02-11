@@ -22,9 +22,9 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.client.ServiceClient
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.scala.client.ServiceClient
+import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
+import ServiceTypes.Event
 
 import org.totalgrid.reef.util.OneArgFunc
 

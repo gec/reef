@@ -27,17 +27,17 @@ import org.totalgrid.reef.messaging._
 
 /** Very simple round robin implementation for mocking purposes
  */
-trait RoundRobinList[T] {
+trait RoundRobinList[A] {
   var round = 0
 
-  var list = List.empty[T]
+  var list = List.empty[A]
 
-  def next(): T = {
+  def next(): A = {
     val ret = list(round % list.size)
     round += 1
     ret
   }
-  def add(entry: T) {
+  def add(entry: A) {
     list = entry :: list
   }
 }

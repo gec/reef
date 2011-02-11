@@ -116,7 +116,7 @@ object ProtoRoutingKeys {
       hasGet(proto.hasTriggerName, proto.getTriggerName) :: Nil
   }*/
 
-  def hasCountGet[T](has: => Boolean, count: => Int, get: Int => T): Option[T] = if (has && count > 0) Some(get(0)) else None
+  def hasCountGet[A](has: => Boolean, count: => Int, get: Int => A): Option[A] = if (has && count > 0) Some(get(0)) else None
 
   def routingKey(proto: EventList): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: EventList): List[Option[Any]] = {

@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 //import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-//import org.totalgrid.reef.protoapi.ProtoServiceTypes._
+//import org.totalgrid.reef.protoapi.ServiceTypes._
 
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
