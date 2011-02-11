@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
 import ServiceTypes.Response
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.proto.Envelope
 import org.squeryl.PrimitiveTypeMode._

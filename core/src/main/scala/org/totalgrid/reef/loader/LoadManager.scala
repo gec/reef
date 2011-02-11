@@ -37,6 +37,7 @@ import org.totalgrid.reef.protoapi.scala.client.SyncOperations
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.{ File, FileReader }
 import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.proto.ReefServicesList
 
 object LoadManager extends Logging {
 

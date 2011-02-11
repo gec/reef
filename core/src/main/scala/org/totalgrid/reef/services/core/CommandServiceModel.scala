@@ -26,11 +26,11 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
-import org.totalgrid.reef.messaging.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 

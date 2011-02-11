@@ -24,7 +24,6 @@ import org.totalgrid.reef.persistence.{ ObjectCache, KeyValue }
 import org.totalgrid.reef.util.{ HookableObject, MetricsHookContainer, Logging }
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.messaging.RoutingKeys
 import org.totalgrid.reef.app.{ ServiceHandler, ServiceHandlerProvider, SubscriptionProvider }
 import org.totalgrid.reef.proto.{ Measurements, Processing, FEP, Events, Model }
 import org.totalgrid.reef.util.MetricsHooks
@@ -35,7 +34,8 @@ import FEP._
 import Model._
 
 import scala.collection.immutable
-import org.totalgrid.reef.messaging.{ RoutingKeys, ProtoRegistry, AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.messaging.{ ProtoRegistry, AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.proto.RoutingKeys
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
 
 trait ProcessingNode {

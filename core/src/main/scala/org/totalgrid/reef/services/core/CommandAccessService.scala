@@ -28,7 +28,7 @@ import org.totalgrid.reef.protoapi.ServiceException
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 import BaseProtoService._
 

@@ -31,7 +31,7 @@ import java.util.List;
 
 import org.totalgrid.reef.protoapi.ServiceTypes.*;
 import org.totalgrid.reef.messaging.javabridge.*;
-import org.totalgrid.reef.messaging.Descriptors;
+import org.totalgrid.reef.proto.Descriptors;
 
 import org.totalgrid.reef.integration.helpers.*;
 

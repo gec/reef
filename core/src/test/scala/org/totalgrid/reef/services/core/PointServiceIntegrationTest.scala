@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.reactor.mock.InstantReactor
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry, ReefServicesList }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
@@ -32,6 +32,7 @@ import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
 import ServiceTypes.Event
+import org.totalgrid.reef.proto.ReefServicesList
 
 //implicits
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders

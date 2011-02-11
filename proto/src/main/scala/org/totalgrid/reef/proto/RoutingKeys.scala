@@ -18,11 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
-
-import org.totalgrid.reef.proto.{ FEP, Measurements, Commands, Events, Alarms, ProcessStatus, Processing, Application, Auth, Model }
-
-import scala.collection.immutable
+package org.totalgrid.reef.proto
 
 object RoutingKeys {
 

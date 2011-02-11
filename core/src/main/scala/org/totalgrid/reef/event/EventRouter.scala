@@ -27,8 +27,9 @@ import org.totalgrid.reef.util.Localizer
 import org.totalgrid.reef.app.{ ServiceHandler, ServiceContext }
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.messaging.{ RoutingKeys, ProtoRegistry, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.{ ProtoRegistry, AMQPProtoFactory }
 import org.totalgrid.reef.app.ServiceHandler
+import org.totalgrid.reef.proto.RoutingKeys
 
 /**
  *  Process and route raw events based on the EventConfiguration.

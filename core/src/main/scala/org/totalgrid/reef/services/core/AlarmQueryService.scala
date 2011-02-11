@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
 import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
-import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
+import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv }
 
 import org.totalgrid.reef.services.framework._
@@ -35,7 +35,7 @@ import org.totalgrid.reef.proto.Envelope
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
-import org.totalgrid.reef.messaging.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.util.Optional._

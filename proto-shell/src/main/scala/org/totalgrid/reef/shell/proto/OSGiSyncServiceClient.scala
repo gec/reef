@@ -26,7 +26,8 @@ import org.totalgrid.reef.protoapi.scala.client.{ SyncOperations, DefaultHeaders
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
 import ServiceTypes.{ Response, MultiResult, Failure }
 
-import org.totalgrid.reef.messaging.{ ServiceDescriptor, ReefServicesList }
+import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.protoapi.ITypeDescriptor
 
 import org.osgi.framework.BundleContext

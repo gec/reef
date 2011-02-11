@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.proto
 
 import org.totalgrid.reef.protoapi.ITypeDescriptor
 

@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
 import ServiceTypes.Response
 
-import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
+import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.totalgrid.reef.proto.Envelope

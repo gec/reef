@@ -34,8 +34,9 @@ import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => Eve
 import org.totalgrid.reef.models.{ Entity }
 
 import org.squeryl.PrimitiveTypeMode.transaction
-import org.totalgrid.reef.messaging.{ ReefServicesList, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
+import org.totalgrid.reef.proto.ReefServicesList
 
 @RunWith(classOf[JUnitRunner])
 class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {

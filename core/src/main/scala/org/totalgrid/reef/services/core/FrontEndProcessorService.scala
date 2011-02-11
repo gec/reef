@@ -25,12 +25,12 @@ import org.totalgrid.reef.models.{ ApplicationInstance, CommunicationProtocolApp
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.messaging.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
