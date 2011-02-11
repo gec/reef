@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.FEP.{ Port, FrontEndProcessor, CommunicationEndp
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.{ Response, Event }
+import org.totalgrid.reef.protoapi.ServiceTypes.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.{ MockProtoRegistry, MockEvent }
 import org.totalgrid.reef.protocol.api.MockProtocol
 import org.totalgrid.reef.reactor.ReactActor

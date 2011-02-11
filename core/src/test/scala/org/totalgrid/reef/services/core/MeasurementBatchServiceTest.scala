@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.proto.Processing._
 
 import org.scalatest.junit.JUnitRunner
@@ -51,7 +51,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
       coord.addDevice("dev1")
 
-      intercept[ProtoServiceException] {
+      intercept[ServiceException] {
         coord.batchService.put(makeBatch(makeInt("dev1.test_point", 10)))
       }
     }

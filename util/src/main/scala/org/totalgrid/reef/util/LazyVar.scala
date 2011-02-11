@@ -29,9 +29,9 @@ package org.totalgrid.reef.util
  * Lossley based on code from: 
  * http://scala-programming-language.1934581.n4.nabble.com/lazy-var-td1943810.html
  */
-class LazyVar[T](init: => T) {
-  private var thunk: (() => T) = { () => { thunk = { () => init }; thunk() } }
-  private var thunked: Option[T] = None
+class LazyVar[A](init: => A) {
+  private var thunk: (() => A) = { () => { thunk = { () => init }; thunk() } }
+  private var thunked: Option[A] = None
 
   /**
    * gets the stored value, calculating it if necessary
@@ -44,7 +44,7 @@ class LazyVar[T](init: => T) {
   /**
    * sets the calculation for the next call to value
    */
-  def value_=(newVal: () => T) = {
+  def value_=(newVal: () => A) = {
     thunk = { () => { thunk = { newVal }; thunk() } }
     thunked = None
   }
@@ -52,7 +52,7 @@ class LazyVar[T](init: => T) {
   /**
    * sets the value, doesn't require that value is called
    */
-  def value_=(newVal: T) = {
+  def value_=(newVal: A) = {
     thunked = Some(newVal)
   }
 
@@ -78,12 +78,12 @@ class LazyVar[T](init: => T) {
   /**
    * alternate syntax, lv := T -> lv.value = T 
    */
-  def :=(newVal: => T) = value_=(newVal)
+  def :=(newVal: => A) = value_=(newVal)
   /**
    * alternate syntax, lv.? -> lv.asOption
    */
   def ? = asOption
 }
 object LazyVar {
-  def apply[T](init: => T) = new LazyVar({ init })
+  def apply[A](init: => A) = new LazyVar({ init })
 }

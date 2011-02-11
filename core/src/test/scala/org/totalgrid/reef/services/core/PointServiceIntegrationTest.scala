@@ -30,8 +30,8 @@ import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.util.BlockingQueue
 
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ProtoServiceTypes }
-import ProtoServiceTypes.Event
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
+import ServiceTypes.Event
 
 //implicits
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders

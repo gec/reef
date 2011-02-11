@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
 import org.totalgrid.reef.loader.communications.Scale
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.protoapi.client.SyncOperations
+import org.totalgrid.reef.protoapi.scala.client.SyncOperations
 
 /**
  * Utility methods to crate protos

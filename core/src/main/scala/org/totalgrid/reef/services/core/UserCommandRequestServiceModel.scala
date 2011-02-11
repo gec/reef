@@ -29,7 +29,7 @@ import org.totalgrid.reef.models.{ UserCommandModel }
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.messaging.OptionalProtos._
@@ -81,7 +81,7 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
     // Search for the requested command and validate it exists
     val cmds = commandModel.table.where(t => t.name === command).toList
     if (cmds.length != 1)
-      throw new ProtoServiceException("Command does not exist: " + cmds.length, Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Command does not exist: " + cmds.length, Envelope.Status.BAD_REQUEST)
 
     cmds.head
   }
@@ -94,14 +94,14 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
       create(new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, serializedCmd))
 
     } else {
-      throw new ProtoServiceException("Command not selected", Envelope.Status.NOT_ALLOWED)
+      throw new ServiceException("Command not selected", Envelope.Status.NOT_ALLOWED)
     }
   }
 
   override def createFromProto(req: UserCommandRequest): UserCommandModel = {
     import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-    val user = env.userName getOrElse { throw new ProtoServiceException("User must be in header.") }
+    val user = env.userName getOrElse { throw new ServiceException("User must be in header.") }
 
     val (id, serialized) = if (req.commandRequest.correlationId.isEmpty) {
       val cid = System.currentTimeMillis + "-" + user
@@ -120,7 +120,7 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
 
   override def updateFromProto(req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
-      throw new ProtoServiceException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
+      throw new ServiceException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
 
     update(existing.copy(status = req.getStatus.getNumber), existing)
   }

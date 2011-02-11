@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import java.util.List;
 
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
+import org.totalgrid.reef.protoapi.ServiceTypes.*;
 import org.totalgrid.reef.messaging.javabridge.*;
 import org.totalgrid.reef.messaging.Descriptors;
 

@@ -22,18 +22,18 @@ package org.totalgrid.reef.util
 
 import scala.collection.mutable.Queue
 
-class BlockingQueue[T] {
+class BlockingQueue[A] {
 
-  private val queue = new Queue[T]
+  private val queue = new Queue[A]
 
-  def push(o: T): Unit = {
+  def push(o: A): Unit = {
     queue.synchronized {
       queue.enqueue(o)
       queue.notify()
     }
   }
 
-  def pop(timeout: Long): T = {
+  def pop(timeout: Long): A = {
     queue.synchronized {
       if (queue.size == 0) queue.wait(timeout)
       queue.dequeue()

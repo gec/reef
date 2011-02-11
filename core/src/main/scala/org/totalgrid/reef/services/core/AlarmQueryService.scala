@@ -23,10 +23,10 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
-import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv }
+import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv }
 
 import org.totalgrid.reef.services.framework._
 
@@ -75,10 +75,10 @@ class AlarmQueryService
     import ApplicationSchema._
     import AlarmQueryService._
 
-    env.subQueue.foreach(queueName => throw new ProtoServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
 
     if (!req.hasSelect)
-      throw new ProtoServiceException("Must include select")
+      throw new ServiceException("Must include select")
 
     transaction {
 

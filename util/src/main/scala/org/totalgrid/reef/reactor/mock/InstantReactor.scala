@@ -36,7 +36,7 @@ class StubHandler extends Timer {
 trait InstantReactor extends Reactable with Lifecycle {
   private var count = 0
 
-  private def checkDepth[T](fun: => T): T = {
+  private def checkDepth[A](fun: => A): A = {
     count += 1
     try {
       if (count < 100) fun
@@ -49,6 +49,6 @@ trait InstantReactor extends Reactable with Lifecycle {
   override def execute(fun: => Unit): Unit = checkDepth(fun)
   override def delay(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
   override def repeat(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
-  override def request[T](fun: => T): T = checkDepth(fun)
+  override def request[A](fun: => A): A = checkDepth(fun)
 
 }

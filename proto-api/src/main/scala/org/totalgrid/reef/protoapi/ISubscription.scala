@@ -18,27 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.client
+package org.totalgrid.reef.protoapi
 
-import org.totalgrid.reef.protoapi.RequestEnv
-
-trait DefaultHeaders {
-
-  /** The default request headers */
-  private var defaultEnv: Option[RequestEnv] = None
-
-  /** */
-  def getDefaultHeaders: RequestEnv = defaultEnv match {
-    case Some(x) => x
-    case None => new RequestEnv
-  }
-
-  /** Set the default request headers */
-  def setDefaultHeaders(env: RequestEnv) = defaultEnv = Some(env)
-
-  protected def mergeHeaders(env: RequestEnv): RequestEnv = defaultEnv match {
-    case Some(x) => env.merge(x)
-    case None => env
-  }
-
+/**
+ *  A subscription object that can be canceled
+ */
+trait ISubscription {
+  def configure(headers: ServiceHandlerHeaders)
+  def cancel()
 }

@@ -30,7 +30,7 @@ def add_deserializer(file, name, fullName)
   name = name.strip
   fullName = fullName.strip
   file.puts <<EOF
-  def #{camelCase(name)}() = new TypeDescriptor[#{fullName}] {
+  def #{camelCase(name)}() = new ITypeDescriptor[#{fullName}] {
     def serialize(typ : #{fullName}) : Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = #{fullName}.parseFrom(bytes)
     def getKlass = classOf[#{fullName}]
@@ -163,7 +163,7 @@ deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scal
 deseralizers.puts <<EOF
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.protoapi.TypeDescriptor
+import org.totalgrid.reef.protoapi.ITypeDescriptor
 
 #{scala_imports}
 

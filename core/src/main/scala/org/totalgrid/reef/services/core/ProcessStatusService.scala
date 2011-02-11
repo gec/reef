@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.messaging.Descriptors
 
@@ -136,7 +136,7 @@ trait ProcessStatusConversion
   }
 
   def createModelEntry(proto: StatusSnapshot): HeartbeatStatus = {
-    throw new ProtoServiceException("can't put heartbeat configuations")
+    throw new ServiceException("can't put heartbeat configuations")
   }
 
   def convertToProto(entry: HeartbeatStatus): StatusSnapshot = {
@@ -161,7 +161,7 @@ class ProcessStatusModel(subHandler: ServiceSubscriptionHandler)
   def deserialize(bytes: Array[Byte]) = StatusSnapshot.parseFrom(bytes)
 
   def toSql(proto: StatusSnapshot): HeartbeatStatus = {
-    throw new ProtoServiceException("can't put heartbeat configuations")
+    throw new ServiceException("can't put heartbeat configuations")
   }
 
   def toProto(sql: HeartbeatStatus): StatusSnapshot = {

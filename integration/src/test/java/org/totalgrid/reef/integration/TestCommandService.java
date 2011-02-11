@@ -28,8 +28,8 @@ import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;
 import java.util.List;
 
-import org.totalgrid.reef.protoapi.ProtoServiceTypes.*;
-import org.totalgrid.reef.protoapi.ProtoServiceException;
+import org.totalgrid.reef.protoapi.ServiceTypes.*;
+import org.totalgrid.reef.protoapi.ServiceException;
 
 
 import org.totalgrid.reef.integration.helpers.*;
@@ -53,7 +53,7 @@ public class TestCommandService extends JavaBridgeTestBase {
 		try {
 			SampleRequests.executeControl(client, "user", c);
 			fail("should throw exception");
-		} catch (ProtoServiceException pse) {
+		} catch (ServiceException pse) {
 			assertEquals(Envelope.Status.NOT_ALLOWED, pse.getStatus());
 		}
 	}

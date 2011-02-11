@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => Acce
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.messaging.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -55,13 +55,13 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
 
   override def preCreate(entry: AccessModel): AccessModel = {
     if (entry.expireTime != None && entry.expireTime.get <= System.currentTimeMillis)
-      throw new ProtoServiceException("Expiration time must be in the future", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Expiration time must be in the future", Envelope.Status.BAD_REQUEST)
     entry
   }
   override def createFromProto(req: AccessProto): AccessModel = {
     import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-    val user = env.userName getOrElse { throw new ProtoServiceException("User must be in header.") }
+    val user = env.userName getOrElse { throw new ServiceException("User must be in header.") }
 
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {
 
@@ -119,14 +119,14 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
       case ex: AcquireConditionNotMetException =>
         // Race condition, return failure
         // TODO: useful statistic
-        throw new ProtoServiceException("One or more commands unavailable", Envelope.Status.UNAUTHORIZED)
+        throw new ServiceException("One or more commands unavailable", Envelope.Status.UNAUTHORIZED)
     }
   }
 
   def blockCommands(user: String, commands: List[String]): AccessModel = {
     val cmds = commandModel.getCommands(commands)
     if (cmds.size != commands.size)
-      throw new ProtoServiceException("Commands not found", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Commands not found", Envelope.Status.BAD_REQUEST)
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.BLOCKED.getNumber, None, Some(user)))
     addEntryForAll(accEntry, cmds.toList)
@@ -137,11 +137,11 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     val cmds = commandModel.getCommands(commands)
 
     if (cmds.size != commands.size)
-      throw new ProtoServiceException("Commands not found", Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Commands not found", Envelope.Status.BAD_REQUEST)
 
     val cmdIds = from(cmds)(t => select(t.id))
     if (areAnyBlocked(cmdIds))
-      throw new ProtoServiceException("One or more commands unavailable", Envelope.Status.UNAUTHORIZED)
+      throw new ServiceException("One or more commands unavailable", Envelope.Status.UNAUTHORIZED)
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))
     addEntryForAll(accEntry, cmds.toList)

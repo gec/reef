@@ -21,9 +21,9 @@
 package org.totalgrid.reef.protoapi
 
 object ServiceInfo {
-  def get[A](exchange: String, descriptor: TypeDescriptor[A]) =
+  def get[A](exchange: String, descriptor: ITypeDescriptor[A]) =
     ServiceInfo[A, A](exchange, descriptor, false, descriptor, exchange + "_events")
 }
 
-case class ServiceInfo[A, B](exchange: String, descriptor: TypeDescriptor[A], subIsStreamType: Boolean, subType: TypeDescriptor[B], subExchange: String)
+case class ServiceInfo[A, B](exchange: String, descriptor: ITypeDescriptor[A], subIsStreamType: Boolean, subType: ITypeDescriptor[B], subExchange: String)
 

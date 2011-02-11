@@ -20,17 +20,15 @@
  */
 package org.totalgrid.reef.messaging
 
-import javabridge.Subscription
-
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.protoapi.client.ServiceClient
+import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv, ISubscription, ServiceList }
+import ServiceTypes.{ Event, MultiResult, Response }
+import org.totalgrid.reef.protoapi.scala.client.ServiceClient
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.protoapi.{ ServiceList, ProtoServiceTypes, RequestEnv }
-import ProtoServiceTypes.{ Event, MultiResult, Response }
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
@@ -66,28 +64,28 @@ class ProtoClient(
         case None => None
       }
 
-      import org.totalgrid.reef.protoapi.ProtoConversions._
+      import org.totalgrid.reef.protoapi.scala.client.ProtoConversions._
       callback(result)
     }
 
     correlator.send(request, info.exchange, key, handleResponse)
   }
 
-  def addSubscription[T <: GeneratedMessage](ea: (Envelope.Event, T) => Unit): Subscription = {
+  def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription = {
 
     val applyMethod = ea.getClass.getDeclaredMethods.find { x => x.getName.equals("apply") }.get
-    val klass = applyMethod.getParameterTypes.apply(1).asInstanceOf[Class[T]]
+    val klass = applyMethod.getParameterTypes.apply(1).asInstanceOf[Class[A]]
 
-    val proxy = { (evt: Event[T]) => ea(evt.event, evt.result) }
+    val proxy = { (evt: Event[A]) => ea(evt.event, evt.result) }
 
     addSubscription(klass, proxy)
   }
 
-  def addSubscription[T <: GeneratedMessage](klass: Class[_], ea: Event[T] => Unit): Subscription = {
+  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription = {
 
     // TODO: lookup by subscription klass instead of serviceKlass
     val info = lookup.getServiceInfo(klass)
-    val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => T]
+    val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => A]
     val subIsStreamType = info.subIsStreamType
 
     factory.prepareSubscription(deser, subIsStreamType, ea)

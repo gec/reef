@@ -24,42 +24,42 @@ import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 
 // New implementation of sync var uses standard synchronization and a mutable queue
-class SyncVar[T <: Any](initialValue: T) {
+class SyncVar[A <: Any](initialValue: A) {
 
   val defaultTimeout = 5000
 
-  private var queue = new Queue[T]
+  private var queue = new Queue[A]
   queue.enqueue(initialValue)
 
   def current = queue.synchronized { queue.last }
 
-  def update(value: T): Unit = queue.synchronized {
+  def update(value: A): Unit = queue.synchronized {
     queue.enqueue(value)
     queue.notifyAll
   }
 
-  def atomic(fun: T => T): Unit = queue.synchronized {
+  def atomic(fun: A => A): Unit = queue.synchronized {
     queue.enqueue(fun(queue.last))
     queue.notifyAll
   }
 
-  def lastValueAfter(msec: Long): T = {
+  def lastValueAfter(msec: Long): A = {
     waitFor(x => false, msec, false)
     current
   }
 
-  def waitUntil(value: T, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
+  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
     waitFor(current => current == value, msec, throwOnFailure)
   }
 
-  def waitWhile(value: T, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
+  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
     waitFor(current => current != value, msec, throwOnFailure)
   }
 
-  def waitFor(fun: T => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = queue.synchronized {
+  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = queue.synchronized {
 
     @tailrec
-    def waitUntilExpiration(fun: T => Boolean, expiration: Long): Boolean = {
+    def waitUntilExpiration(fun: A => Boolean, expiration: Long): Boolean = {
       if (evaluate(fun)) true
       else {
         val diff = expiration - System.currentTimeMillis
@@ -77,7 +77,7 @@ class SyncVar[T <: Any](initialValue: T) {
   }
 
   @tailrec
-  private def evaluate(fun: T => Boolean): Boolean = {
+  private def evaluate(fun: A => Boolean): Boolean = {
     val i = queue.dequeue()
     if (queue.size == 0) {
       queue.enqueue(i) //never let the queue be empty

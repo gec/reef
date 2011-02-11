@@ -45,7 +45,7 @@ abstract class ServiceEventPublisherMap(lookup: ServiceList) extends ServiceEven
       pubsub
     }
   }
-  def getEventSink[T <: GeneratedMessage](klass: Class[T]): ServiceSubscriptionHandler = {
+  def getEventSink[A <: GeneratedMessage](klass: Class[A]): ServiceSubscriptionHandler = {
     getSink(lookup.getServiceInfo(klass).subExchange)
   }
 }

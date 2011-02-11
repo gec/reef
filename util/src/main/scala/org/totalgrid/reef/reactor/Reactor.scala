@@ -30,7 +30,7 @@ object Reactor {
 
   case class Execute(fun: () => Any)
 
-  case class Request[T](fun: () => T)
+  case class Request[A](fun: () => A)
 
   case class Link(a: AbstractActor)
 
@@ -117,7 +117,7 @@ trait Reactor extends Reactable with Lifecycle {
     })
 
   /// execute a function synchronously and return the value
-  def request[T](fun: => T): T = (myactor !? Request(() => fun)).asInstanceOf[T]
+  def request[A](fun: => A): A = (myactor !? Request(() => fun)).asInstanceOf[A]
 
   def bind(a: AbstractActor) = myactor ! Link(a)
 

@@ -29,6 +29,8 @@ import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
 import java.util.List;
 
+import org.totalgrid.reef.protoapi.ISubscription;
+
 import org.totalgrid.reef.messaging.javabridge.*;
 import org.totalgrid.reef.messaging.Descriptors;
 import org.totalgrid.reef.integration.helpers.*;
@@ -44,7 +46,7 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         String pointName = "StaticSubstation.Line02.Current";
         Point p = Point.newBuilder().setName(pointName).build();
 		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>(true);
-		Subscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
+		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
 		{
 			MeasOverride ovr = SampleProtos.makeMeasOverride(p);

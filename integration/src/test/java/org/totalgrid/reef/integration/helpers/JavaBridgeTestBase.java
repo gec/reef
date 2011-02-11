@@ -22,10 +22,12 @@ package org.totalgrid.reef.integration.helpers;
 
 import org.junit.*;
 
-import org.totalgrid.reef.messaging.BrokerConnectionListener;
+import org.totalgrid.reef.protoapi.IConnectionListener;
+import org.totalgrid.reef.protoapi.java.client.*;
+import org.totalgrid.reef.messaging.javabridge.JavaBridge;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.messaging.ReefServicesList;
-import org.totalgrid.reef.messaging.javabridge.*;
+
 
 import org.totalgrid.reef.integration.SampleRequests;
 
@@ -36,7 +38,7 @@ public class JavaBridgeTestBase {
 
 	private boolean autoLogon;
 
-	public class MockConnectionListener implements BrokerConnectionListener {
+	public class MockConnectionListener implements IConnectionListener {
 		private BlockingQueue<Boolean> queue = new BlockingQueue<Boolean>();
 
 		public void opened() {
@@ -55,8 +57,8 @@ public class JavaBridgeTestBase {
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
-	protected IJavaBridge connection = new JavaBridge(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
-	protected IServiceClient client = null;
+	protected IConnection connection = new JavaBridge(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
+	protected ISession client = null;
 	protected MockConnectionListener listener = new MockConnectionListener();
 
 	/**
@@ -102,7 +104,7 @@ public class JavaBridgeTestBase {
 	public void startBridge() throws InterruptedException {
 		connection.start();
 		org.junit.Assert.assertTrue(listener.waitForStateChange(5000));
-		client = connection.newServiceClient();
+		client = connection.newSession();
 		if (autoLogon) {
 			// core user has full read/write permissions
 			SampleRequests.logonAs(client, "core", "core", true);

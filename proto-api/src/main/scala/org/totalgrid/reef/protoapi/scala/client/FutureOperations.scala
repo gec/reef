@@ -18,12 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.client
+package org.totalgrid.reef.protoapi.scala.client
 
 import org.totalgrid.reef.proto.Envelope.Verb
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
-import ProtoServiceTypes.MultiResult
+import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
+import ServiceTypes.MultiResult
 
 trait FutureOperations {
 

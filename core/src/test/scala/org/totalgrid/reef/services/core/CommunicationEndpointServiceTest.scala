@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -145,25 +145,25 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
   }
 
   test("Config file without needed fields blows up") {
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       configFileService.put(getConfigFile(Some("test1"), None, None).build)
     }
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       configFileService.put(getConfigFile(Some("test1"), Some("data"), None).build)
     }
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       configFileService.put(getConfigFile(Some("test1"), None, Some("data")).build)
     }
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       configFileService.put(getConfigFile(None, Some("data"), Some("data")).build)
     }
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       endpointService.put(getEndpoint().setPort(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
     }
   }
 
   test("Endpoint with no ownerships blows up") {
-    intercept[ProtoServiceException] {
+    intercept[ServiceException] {
       endpointService.put(getEndpoint().build)
     }
   }

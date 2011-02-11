@@ -32,7 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.core.util.MessageFormatter
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 
 import BaseProtoService._
 
@@ -84,7 +84,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
   override def createFromProto(req: Event): EventStore = {
     import org.totalgrid.reef.event.EventType
 
-    if (!req.hasEventType) { throw new ProtoServiceException("Unknown EventType: '" + req.getEventType + "'", Envelope.Status.BAD_REQUEST) }
+    if (!req.hasEventType) { throw new ServiceException("Unknown EventType: '" + req.getEventType + "'", Envelope.Status.BAD_REQUEST) }
 
     val (severity, designation, alarmState, resource) = eventConfig.getProperties(req.getEventType)
 
@@ -114,7 +114,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
         event
 
       case _ =>
-        throw new ProtoServiceException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + req.getEventType + "'", Envelope.Status.INTERNAL_ERROR)
+        throw new ServiceException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + req.getEventType + "'", Envelope.Status.INTERNAL_ERROR)
     }
   }
 

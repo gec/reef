@@ -36,11 +36,11 @@ object ExclusiveAccess {
   class AcquireConditionNotMetException extends Exception
   class AcquireConditionStillValidException extends Exception
 
-  def exclusiveAccess[T <: KeyedEntity[Long]](
-    table: Table[T],
+  def exclusiveAccess[A <: KeyedEntity[Long]](
+    table: Table[A],
     id: Long,
-    updateFun: T => Any,
-    acquireCondition: T => Boolean)(lockFun: T => T): T = {
+    updateFun: A => Any,
+    acquireCondition: A => Boolean)(lockFun: A => A): A = {
 
     // Wrap/unwrap in list
     val list = exclusiveAccess(table, List(id), updateFun, acquireCondition) { list =>
@@ -49,11 +49,11 @@ object ExclusiveAccess {
     list.head
   }
 
-  def exclusiveAccess[T <: KeyedEntity[Long]](
-    table: Table[T],
+  def exclusiveAccess[A <: KeyedEntity[Long]](
+    table: Table[A],
     ids: List[Long],
-    updateFun: T => Any,
-    acquireCondition: T => Boolean)(lockFun: List[T] => List[T]): List[T] = {
+    updateFun: A => Any,
+    acquireCondition: A => Boolean)(lockFun: List[A] => List[A]): List[A] = {
 
     transaction {
       // Select for update

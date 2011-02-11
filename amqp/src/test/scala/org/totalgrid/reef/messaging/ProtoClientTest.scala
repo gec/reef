@@ -22,8 +22,8 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv, TypeDescriptor }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
+import ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.mock._
 import com.google.protobuf.ByteString
@@ -32,16 +32,16 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.protoapi.{ UnknownServiceException, ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.protoapi.{ UnknownServiceException, ServiceInfo, ServiceListOnMap, ITypeDescriptor }
 
 object TestDescriptors {
-  def requestHeader() = new TypeDescriptor[org.totalgrid.reef.proto.Envelope.RequestHeader] {
+  def requestHeader() = new ITypeDescriptor[org.totalgrid.reef.proto.Envelope.RequestHeader] {
     def serialize(typ: org.totalgrid.reef.proto.Envelope.RequestHeader): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.RequestHeader.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Envelope.RequestHeader]
   }
 
-  def foo() = new TypeDescriptor[org.totalgrid.reef.proto.Example.Foo] {
+  def foo() = new ITypeDescriptor[org.totalgrid.reef.proto.Example.Foo] {
     def serialize(typ: org.totalgrid.reef.proto.Example.Foo): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Example.Foo.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Example.Foo]

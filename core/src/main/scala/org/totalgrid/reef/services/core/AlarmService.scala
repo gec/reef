@@ -32,7 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 
 import org.totalgrid.reef.messaging.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -53,13 +53,13 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
 
   // Alarms are created by events. No create via an Alarm proto.
   override def preCreate(req: Alarm) = {
-    throw new ProtoServiceException("Create on alarms not allowed via this service.", Envelope.Status.NOT_ALLOWED)
+    throw new ServiceException("Create on alarms not allowed via this service.", Envelope.Status.NOT_ALLOWED)
   }
 
   // If they don't have a state, what are they doing with an update?
   override def preUpdate(proto: ProtoType, existing: ModelType) = {
     if (!proto.hasState)
-      throw new ProtoServiceException("AlarmService update is for changing alarm state, but there is no state field in this proto.", Envelope.Status.NOT_ALLOWED)
+      throw new ServiceException("AlarmService update is for changing alarm state, but there is no state field in this proto.", Envelope.Status.NOT_ALLOWED)
 
     proto
   }
@@ -100,7 +100,7 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
       update(updateModelEntry(proto, existing), existing)
     else {
       // TODO: access the proto to print the state names in the exception.
-      throw new ProtoServiceException("Invalid state transistion from " + existing.state + " to " + proto.getState.getNumber, Envelope.Status.BAD_REQUEST)
+      throw new ServiceException("Invalid state transistion from " + existing.state + " to " + proto.getState.getNumber, Envelope.Status.BAD_REQUEST)
     }
   }
 

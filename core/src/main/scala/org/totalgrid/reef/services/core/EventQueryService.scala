@@ -23,8 +23,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
 import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
-import org.totalgrid.reef.protoapi.{ ProtoServiceException, RequestEnv, ProtoServiceTypes }
-import ProtoServiceTypes.Response
+import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
+import ServiceTypes.Response
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Envelope
@@ -105,10 +105,10 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
   override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 
-    env.subQueue.foreach(queueName => throw new ProtoServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
 
     if (!req.hasSelect)
-      throw new ProtoServiceException("Must include select")
+      throw new ServiceException("Must include select")
 
     modelTrans.transaction { (model: EventServiceModel) =>
 

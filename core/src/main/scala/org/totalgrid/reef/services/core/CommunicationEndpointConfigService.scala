@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ProtoServiceException
+import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfgProto, EndpointOwnership, Port }
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ConfigFile }
@@ -93,7 +93,7 @@ class CommEndCfgServiceModel(
 
   private def checkProto(proto: CommEndCfgProto) {
     if (proto.getOwnerships.getPointsCount == 0 && proto.getOwnerships.getCommandsCount == 0)
-      throw new ProtoServiceException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
+      throw new ServiceException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
   }
 
   override def preDelete(sql: CommunicationEndpoint) {
