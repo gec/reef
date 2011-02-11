@@ -27,20 +27,22 @@ import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes._
 import org.totalgrid.reef.protoapi.ProtoConversions._
 
-trait SyncScatterGatherOperations extends FutureOperations {
+trait SyncScatterGatherOperations {
 
-  def requestScatterGather[T <: GeneratedMessage](verb: Verb, payloads: List[T], env: RequestEnv): List[MultiResult[T]] =
+  self: FutureOperations with DefaultHeaders =>
+
+  def requestScatterGather[T <: GeneratedMessage](verb: Verb, payloads: List[T], env: RequestEnv = getDefaultHeaders): List[MultiResult[T]] =
     payloads.map { p => requestFuture(verb, p, env) }.map { future => future() }
 
-  def getScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.GET, payloads, env)
-  def deleteScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.DELETE, payloads, env)
-  def putScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.PUT, payloads, env)
-  def postScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[MultiResult[T]] = requestScatterGather(Verb.POST, payloads, env)
+  def getScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[MultiResult[T]] = requestScatterGather(Verb.GET, payloads, env)
+  def deleteScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[MultiResult[T]] = requestScatterGather(Verb.DELETE, payloads, env)
+  def putScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[MultiResult[T]] = requestScatterGather(Verb.PUT, payloads, env)
+  def postScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[MultiResult[T]] = requestScatterGather(Verb.POST, payloads, env)
 
-  def getOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[SingleResult[T]] = getScatterGather(payloads, env)
-  def deleteOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[SingleResult[T]] = deleteScatterGather(payloads, env)
-  def putOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[SingleResult[T]] = putScatterGather(payloads, env)
-  def postOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = new RequestEnv): List[SingleResult[T]] = postScatterGather(payloads, env)
+  def getOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[SingleResult[T]] = getScatterGather(payloads, env)
+  def deleteOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[SingleResult[T]] = deleteScatterGather(payloads, env)
+  def putOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[SingleResult[T]] = putScatterGather(payloads, env)
+  def postOneScatterGather[T <: GeneratedMessage](payloads: List[T], env: RequestEnv = getDefaultHeaders): List[SingleResult[T]] = postScatterGather(payloads, env)
 
 }
 

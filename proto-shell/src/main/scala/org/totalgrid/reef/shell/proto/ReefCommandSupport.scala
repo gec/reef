@@ -28,10 +28,10 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperat
 
   protected val requiresLogin = true
 
-  protected override def getRequestEnv: RequestEnv = {
+  override def getDefaultHeaders: RequestEnv = {
     val headers = new ServiceHandlerHeaders
     get("auth_token").foreach { x => headers.addAuthToken(x) }
-    headers.env
+    super.mergeHeaders(headers.env)
   }
 
   protected def getUser: Option[String] = this.get("user")

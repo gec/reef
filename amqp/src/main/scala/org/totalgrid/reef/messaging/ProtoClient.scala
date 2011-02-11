@@ -22,10 +22,10 @@ package org.totalgrid.reef.messaging
 
 import javabridge.Subscription
 
+import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
 import ProtoServiceTypes.{ Event, MultiResult, Response }
 import org.totalgrid.reef.protoapi.client.ServiceClient
-
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
@@ -38,7 +38,7 @@ import scala.collection.JavaConversions._
  */
 class ProtoClient(
     factory: ServiceClientFactory,
-    lookup: ServiceList, timeoutms: Long, key: String = "request") extends ServiceClient {
+    lookup: ServiceList, timeoutms: Long, key: String = "request") extends ServiceClient with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ServiceClient]
@@ -48,7 +48,7 @@ class ProtoClient(
     val info = lookup.getServiceInfo(payload.getClass.asInstanceOf[Class[A]])
     val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(payload))
 
-    val sendEnv = if (defaultEnv.isDefined) env.merge(defaultEnv.get) else env
+    val sendEnv = mergeHeaders(env)
     sendEnv.asKeyValueList.foreach(kv => request.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {

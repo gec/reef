@@ -60,7 +60,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
 
   def getServiceClient(key: String): ServiceClient = {
     val client = new ProtoClient(factory, lookup, timeoutms, key)
-    defaultEnv.foreach(client.setDefaultEnv(_))
+    defaultEnv.foreach(client.setDefaultHeaders)
     client
   }
 

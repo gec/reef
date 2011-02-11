@@ -38,7 +38,7 @@ import scala.collection.mutable.Queue
 class MockSyncOperations(
     doGet: (AnyRef) => MultiResult[AnyRef],
     putQueue: Queue[AnyRef] = Queue[AnyRef](),
-    delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends SyncOperations {
+    delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends SyncOperations with DefaultHeaders {
 
   /**
    * Reset all queues.
@@ -69,30 +69,17 @@ class MockSyncOperations(
   }
 
   /**
-   * This is not called.
+   * Override request to define all of the verb helpers
    */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = MultiSuccess(List[A]())
-
-  override def get[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = {
-    doGet(payload).asInstanceOf[MultiResult[A]]
-  }
-
-  override def delete[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = {
-
-    delQueue.enqueue(payload)
-    MultiSuccess(List[A](payload))
-  }
-
-  override def post[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = {
-
-    putQueue.enqueue(payload)
-    MultiSuccess(List[A](payload))
-  }
-
-  override def put[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = {
-
-    putQueue.enqueue(payload)
-    MultiSuccess(List[A](payload))
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = verb match {
+    case Envelope.Verb.GET => doGet(payload).asInstanceOf[MultiResult[A]]
+    case Envelope.Verb.DELETE =>
+      delQueue.enqueue(payload)
+      MultiSuccess(List[A](payload))
+    case Envelope.Verb.PUT =>
+      putQueue.enqueue(payload)
+      MultiSuccess(List[A](payload))
+    case Envelope.Verb.POST => throw new Exception("unimplemented")
   }
 
 }

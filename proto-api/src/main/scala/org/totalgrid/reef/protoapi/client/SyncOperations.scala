@@ -32,51 +32,50 @@ import org.totalgrid.reef.protoapi.ProtoConversions._ //implicits
 
 trait SyncOperations {
 
-  // overridable
-  protected def getRequestEnv: RequestEnv = new RequestEnv
+  self: DefaultHeaders =>
 
   /**
    * Implement this function to widen the interface
    */
-  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): MultiResult[A]
+  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A]
 
   // helpers
-  def requestOne[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = request(verb, payload, env)
+  def requestOne[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): SingleResult[A] = request(verb, payload, env)
 
-  def requestThrow[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): List[A] = request(verb, payload, env)
+  def requestThrow[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): List[A] = request(verb, payload, env)
 
-  def requestOneOrThrow[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getRequestEnv): A = requestOne(verb, payload, env)
+  def requestOneOrThrow[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): A = requestOne(verb, payload, env)
 
-  def get[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(GET, payload, env)
+  def get[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = request(GET, payload, env)
 
-  def delete[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(DELETE, payload, env)
+  def delete[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = request(DELETE, payload, env)
 
-  def post[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(POST, payload, env)
+  def post[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = request(POST, payload, env)
 
-  def put[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): MultiResult[A] = request(PUT, payload, env)
+  def put[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = request(PUT, payload, env)
 
-  def getOne[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = get(payload, env)
+  def getOne[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): SingleResult[A] = get(payload, env)
 
-  def deleteOne[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = delete(payload, env)
+  def deleteOne[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): SingleResult[A] = delete(payload, env)
 
-  def postOne[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = post(payload, env)
+  def postOne[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): SingleResult[A] = post(payload, env)
 
-  def putOne[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): SingleResult[A] = put(payload, env)
+  def putOne[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): SingleResult[A] = put(payload, env)
 
-  def getOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): List[A] = get(payload, env)
+  def getOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): List[A] = get(payload, env)
 
-  def deleteOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): List[A] = delete(payload, env)
+  def deleteOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): List[A] = delete(payload, env)
 
-  def postOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): List[A] = post(payload, env)
+  def postOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): List[A] = post(payload, env)
 
-  def putOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): List[A] = put(payload, env)
+  def putOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): List[A] = put(payload, env)
 
-  def getOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): A = getOne(payload, env)
+  def getOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): A = getOne(payload, env)
 
-  def deleteOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): A = deleteOne(payload, env)
+  def deleteOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): A = deleteOne(payload, env)
 
-  def postOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): A = postOne(payload, env)
+  def postOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): A = postOne(payload, env)
 
-  def putOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getRequestEnv): A = putOne(payload, env)
+  def putOneOrThrow[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders): A = putOne(payload, env)
 
 }

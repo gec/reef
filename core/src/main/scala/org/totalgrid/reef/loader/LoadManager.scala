@@ -107,7 +107,7 @@ object LoadManager extends Logging {
       val authToken = client.putOneOrThrow(ApplicationEnroller.buildLogin())
       val env = new RequestEnv
       env.addAuthToken(authToken.getToken)
-      client.setDefaultEnv(env)
+      client.setDefaultHeaders(env)
 
       loadFile(client, filename, benchmark)
     } finally {

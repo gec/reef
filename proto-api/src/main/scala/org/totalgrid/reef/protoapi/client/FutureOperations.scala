@@ -25,16 +25,18 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.protoapi.{ RequestEnv, ProtoServiceTypes }
 import ProtoServiceTypes.MultiResult
 
-trait FutureOperations extends AsyncOperations {
+trait FutureOperations {
 
-  def requestFuture[A <: AnyRef](verb: Verb, payload: A, env: RequestEnv): () => MultiResult[A] = makeCallbackIntoFuture {
+  self: AsyncOperations with DefaultHeaders =>
+
+  def requestFuture[A <: AnyRef](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders): () => MultiResult[A] = makeCallbackIntoFuture {
     asyncRequest(verb, payload, env)
   }
 
-  def getWithFuture[A <: AnyRef](payload: A, env: RequestEnv) = requestFuture(Verb.GET, payload, env)
-  def deleteWithFuture[A <: AnyRef](payload: A, env: RequestEnv) = requestFuture(Verb.DELETE, payload, env)
-  def putWithFuture[A <: AnyRef](payload: A, env: RequestEnv) = requestFuture(Verb.PUT, payload, env)
-  def postWithFuture[A <: AnyRef](payload: A, env: RequestEnv) = requestFuture(Verb.POST, payload, env)
+  def getWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.GET, payload, env)
+  def deleteWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.DELETE, payload, env)
+  def putWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.PUT, payload, env)
+  def postWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.POST, payload, env)
 
   protected def makeCallbackIntoFuture[A <: AnyRef](fun: (A => Unit) => Unit): () => A = {
     val mail = new scala.actors.Channel[A]
