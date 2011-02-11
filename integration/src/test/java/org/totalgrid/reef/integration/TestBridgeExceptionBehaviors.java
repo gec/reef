@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 import org.totalgrid.reef.messaging.javabridge.JavaBridge;
-import org.totalgrid.reef.protoapi.java.client.IConnection;
+import org.totalgrid.reef.protoapi.javaclient.IConnection;
 
 public class TestBridgeExceptionBehaviors {
 

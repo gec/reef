@@ -20,11 +20,10 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.RequestEnv
 import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
 
 /**
  * Interface for generic use of models by simple REST services

@@ -28,9 +28,8 @@ import org.totalgrid.reef.models.UserCommandModel
 import CommandAccess._
 import BaseProtoService._
 
-import org.totalgrid.reef.protoapi.ServiceException
-import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
 
 class UserCommandRequestService(
   protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel])

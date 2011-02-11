@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.proto.Envelope._
+import org.totalgrid.reef.protoapi.Envelope._
 
 /** trait used to present a simple interface to a request/reply interface as a 
  * simple async channel

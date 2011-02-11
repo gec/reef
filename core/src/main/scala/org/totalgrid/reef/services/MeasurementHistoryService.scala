@@ -20,11 +20,6 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.proto.Envelope.Status
-
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceException, ServiceTypes }
-import ServiceTypes.Response
-
 import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
@@ -32,6 +27,8 @@ import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 import org.totalgrid.reef.measurementstore.Historian
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv, ServiceException }
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[MeasurementHistory] {
   val HISTORY_LIMIT = 10000
@@ -67,7 +64,7 @@ class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[Measureme
     val b = MeasurementHistory.newBuilder(req)
     history.foreach { m => b.addMeasurements(m) }
 
-    new Response(Status.OK, b.build :: Nil)
+    new Response(Envelope.Status.OK, b.build :: Nil)
   }
 
   private def sampleExtremes(meases: Seq[Measurement]): Seq[Measurement] = {

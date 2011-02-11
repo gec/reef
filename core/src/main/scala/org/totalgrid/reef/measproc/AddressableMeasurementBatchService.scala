@@ -20,14 +20,12 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.proto.Envelope
-
 import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
-import ServiceTypes.Response
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv, ServiceTypes }
 
 class AddressableMeasurementBatchService(measProc: ProcessingNode) extends ServiceEndpoint[MeasurementBatch] {
 

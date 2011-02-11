@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.protoapi
 
-import org.totalgrid.reef.proto.Envelope
-
 object StatusCodes {
 
   def isSuccess(status: Envelope.Status): Boolean = {

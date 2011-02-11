@@ -20,12 +20,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Envelope
-
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceException, ServiceTypes }
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint }
 import org.totalgrid.reef.proto.{ ReefServicesList, Descriptors }
-import ServiceTypes.Response
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -33,6 +30,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv, ServiceException, ServiceTypes }
 
 class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[MeasurementBatch] {
 

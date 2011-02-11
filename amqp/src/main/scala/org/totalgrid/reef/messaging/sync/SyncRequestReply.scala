@@ -21,7 +21,8 @@
 package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.proto.Envelope
+
+import org.totalgrid.reef.protoapi.Envelope
 
 class ProtoSyncRequestReply(channel: BrokerChannel)
   extends SyncRequestReply[Envelope.ServiceRequest, Envelope.ServiceResponse](

@@ -23,11 +23,10 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ServiceEndpoint
-import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv }
 import org.totalgrid.reef.protoapi.ServiceTypes.Response
-import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException, RequestEnv }
 
 /**
  * Hooks/callbacks for service implementations to modify standard REST behavior

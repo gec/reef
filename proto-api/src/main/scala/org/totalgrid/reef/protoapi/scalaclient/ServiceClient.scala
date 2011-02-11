@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,35 +20,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.java.client
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
+import org.totalgrid.reef.protoapi.ServiceTypes._
 
-import org.totalgrid.reef.protoapi.IConnectionListener
-
-/**
- * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
- * of the connection and provides a factory to create service clients.
+/** Provides a thick interface full of helper functions via implement of a single abstract request function
  */
-trait IConnection {
+trait ServiceClient extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
 
   /**
-   * register a listener for open/close events
-   * 
-   * @param listener Interace to call back with open/close events
+   *    Implements a synchronous request in terms of a future
    */
-  def addConnectionListener(listener: IConnectionListener)
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = requestFuture(verb, payload, env)()
 
-  /**
-   *  Starts execution of the messaging connection
-   */
-  def start()
-
-  /**
-   *  Halts execution of the messaging connection
-   */
-  def stop()
-
-  /**
-   * creates a non thread-safe (use from single thread only) client
-   */
-  def newSession(): ISession
 }

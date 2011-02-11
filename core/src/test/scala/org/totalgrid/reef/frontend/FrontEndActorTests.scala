@@ -23,7 +23,7 @@ package org.totalgrid.reef.frontend
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.util.OneArgFunc
-import org.totalgrid.reef.proto.{ Envelope }
+import org.totalgrid.reef.protoapi.Envelope
 import org.totalgrid.reef.proto.FEP.{ Port, FrontEndProcessor, CommunicationEndpointRouting }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
@@ -42,6 +42,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import MockProtocol._
+import org.totalgrid.reef.protoapi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndActorTests extends FixtureSuite with ShouldMatchers {

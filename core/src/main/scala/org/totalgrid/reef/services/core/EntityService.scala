@@ -22,14 +22,15 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.messaging.ServiceEndpoint
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
-import ServiceTypes.Response
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
 
-import org.totalgrid.reef.proto.Envelope
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
+
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 class EntityService extends ServiceEndpoint[EntityProto] {
 

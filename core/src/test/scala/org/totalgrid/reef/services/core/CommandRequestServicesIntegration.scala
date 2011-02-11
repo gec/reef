@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.Envelope
+
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.services.framework._
@@ -37,11 +37,12 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel
 import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
-import Envelope._
-import org.totalgrid.reef.protoapi.RequestEnv
+
 import scala.collection.mutable
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
+import org.totalgrid.reef.protoapi.Envelope._
 
 class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) => Unit) extends ServiceSubscriptionHandler {
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = f(event, resp)

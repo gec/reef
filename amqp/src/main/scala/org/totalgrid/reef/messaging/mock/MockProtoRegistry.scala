@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.mock
 
 import org.totalgrid.reef.util.{ Timer, OneArgFunc }
-import org.totalgrid.reef.proto.Envelope
+
 import com.google.protobuf.GeneratedMessage
 
 import scala.concurrent.{ MailBox, TIMEOUT }
@@ -29,12 +29,13 @@ import scala.collection.immutable
 
 import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
-import org.totalgrid.reef.protoapi.scala.client.ServiceClient
-import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
-import ServiceTypes._
+import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
+
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
+import org.totalgrid.reef.protoapi.ServiceTypes._
 
 //implicits for massaging service return types
-import org.totalgrid.reef.protoapi.scala.client.ProtoConversions._
+import org.totalgrid.reef.protoapi.scalaclient.ProtoConversions._
 
 object MockProtoRegistry {
   val timeout = 5000

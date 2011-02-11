@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,14 +20,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.scala.client
-
-import org.totalgrid.reef.proto.Envelope.Verb
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
-import ServiceTypes._
 import ProtoConversions._
+import org.totalgrid.reef.protoapi.RequestEnv
+import org.totalgrid.reef.protoapi.ServiceTypes._
+import org.totalgrid.reef.protoapi.Envelope.Verb
 
 trait SyncScatterGatherOperations {
 

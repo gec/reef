@@ -23,14 +23,13 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models.{ CommandAccessModel => AccessModel }
-import org.totalgrid.reef.protoapi.ServiceException
-
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Envelope
+
 import org.totalgrid.reef.proto.Descriptors
 
 import BaseProtoService._
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
 
 class CommandAccessService(protected val modelTrans: ServiceTransactable[CommandAccessServiceModel])
     extends BaseProtoService[AccessProto, AccessModel, CommandAccessServiceModel]

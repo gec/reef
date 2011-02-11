@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,15 +20,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.scala.client
-
-import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
+import ProtoConversions._
+import org.totalgrid.reef.protoapi._
 import ServiceTypes._
-
-import org.totalgrid.reef.proto.Envelope
 import Envelope.Verb._
 
-import ProtoConversions._ //implicits
+//implicits
 
 trait SyncOperations {
 

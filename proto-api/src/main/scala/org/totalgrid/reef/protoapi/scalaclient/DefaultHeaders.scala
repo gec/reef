@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,13 +20,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.java.client
+import org.totalgrid.reef.protoapi.RequestEnv
 
-import org.totalgrid.reef.protoapi.ServiceTypes.Event
+trait DefaultHeaders {
 
-/**
- *  Adapts raw events functions to a Java interface
- */
-trait IEventAcceptor[A] {
-  def onEvent(event: Event[A]): Unit
+  /** The default request headers */
+  private var defaultEnv: Option[RequestEnv] = None
+
+  /** */
+  def getDefaultHeaders: RequestEnv = defaultEnv match {
+    case Some(x) => x
+    case None => new RequestEnv
+  }
+
+  /** Set the default request headers */
+  def setDefaultHeaders(env: RequestEnv) = defaultEnv = Some(env)
+
+  protected def mergeHeaders(env: RequestEnv): RequestEnv = defaultEnv match {
+    case Some(x) => env.merge(x)
+    case None => env
+  }
+
 }

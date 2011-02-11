@@ -21,12 +21,11 @@
 package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.{ ISubscription, ServiceTypes }
-import ServiceTypes._
 
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.util.OneArgFunc
+
+import org.totalgrid.reef.protoapi.ServiceTypes._
+import org.totalgrid.reef.protoapi.{ Envelope, ISubscription }
 
 /** Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
  *  

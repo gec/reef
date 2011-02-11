@@ -25,7 +25,7 @@ import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.protoapi.scala.client.SyncOperations
+import org.totalgrid.reef.protoapi.scalaclient.SyncOperations
 import org.totalgrid.reef.util.Logging
 import java.io.File
 import org.totalgrid.reef.proto._

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Model.{ Point, Relationship, Entity }
-import org.totalgrid.reef.protoapi.scala.client.SyncOperations
+import org.totalgrid.reef.protoapi.scalaclient.SyncOperations
 
 object PointRequest {
 

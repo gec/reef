@@ -20,11 +20,6 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.proto.{ Envelope }
-
-import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
-import ServiceTypes.Response
-
 import org.totalgrid.reef.messaging.mock._
 import com.google.protobuf.ByteString
 
@@ -32,7 +27,8 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.protoapi.{ UnknownServiceException, ServiceInfo, ServiceListOnMap, ITypeDescriptor }
+import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {

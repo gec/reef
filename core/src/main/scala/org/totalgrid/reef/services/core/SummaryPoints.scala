@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.protoapi.scala.client.ServiceClient
+import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
 
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying

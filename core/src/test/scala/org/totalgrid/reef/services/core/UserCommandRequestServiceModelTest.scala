@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.Envelope
+
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.totalgrid.reef.services.framework._
@@ -38,8 +38,8 @@ import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel, Command
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
-import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest

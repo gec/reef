@@ -20,13 +20,13 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.proto.Envelope
+import org.totalgrid.reef.protoapi._
+
 //import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceException, RequestEnv, ITypeDescriptor }
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
-import ServiceTypes.Response
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 object ServiceRequestHandler {
   /**

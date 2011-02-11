@@ -23,19 +23,20 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
 import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
-import ServiceTypes.Response
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Envelope
 
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.protoapi._
+
+// implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
-import scala.collection.JavaConversions._
+import _root_.scala.collection.JavaConversions._
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
