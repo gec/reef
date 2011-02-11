@@ -158,7 +158,7 @@ object OptionalProtos {
 
 EOF
 
-deseralizers = File.open(File.join(File.dirname(__FILE__),"./amqp/src/main/scala/org/totalgrid/reef/messaging/TypeDescriptors.scala"), 'wb')
+deseralizers = File.open(File.join(File.dirname(__FILE__),"./amqp/src/main/scala/org/totalgrid/reef/messaging/Descriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
 package org.totalgrid.reef.messaging
@@ -205,4 +205,4 @@ deseralizers.puts "}"
 f.close
 deseralizers.close
 
-puts "Generated OptionalProtos.scala and TypeDescriptors.scala"
+puts "Generated OptionalProtos.scala and Descriptors.scala"

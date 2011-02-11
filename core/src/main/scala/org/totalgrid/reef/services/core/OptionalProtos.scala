@@ -1,23 +1,3 @@
-/**
- * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. Green Energy Corp licenses this file
- * to you under the GNU Affero General Public License Version 3.0
- * (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
- *
- * http://www.gnu.org/licenses/agpl.html
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Application._
@@ -120,19 +100,6 @@ object OptionalProtos {
     val token = optionally(_.hasToken, _.getToken)
     val expirationTime = optionally(_.hasExpirationTime, _.getExpirationTime)
   }
-  implicit def proto2OptCommandsCommandRequest(a: org.totalgrid.reef.proto.Commands.CommandRequest): OptCommandsCommandRequest = new OptCommandsCommandRequest(Some(a))
-  class OptCommandsCommandRequest(real: Option[org.totalgrid.reef.proto.Commands.CommandRequest]) extends OptionalStruct(real) {
-    val name = optionally(_.hasName, _.getName)
-    val correlationId = optionally(_.hasCorrelationId, _.getCorrelationId)
-    val _type = optionally(_.hasType, _.getType)
-    val intVal = optionally(_.hasIntVal, _.getIntVal)
-    val doubleVal = optionally(_.hasDoubleVal, _.getDoubleVal)
-  }
-  implicit def proto2OptCommandsCommandResponse(a: org.totalgrid.reef.proto.Commands.CommandResponse): OptCommandsCommandResponse = new OptCommandsCommandResponse(Some(a))
-  class OptCommandsCommandResponse(real: Option[org.totalgrid.reef.proto.Commands.CommandResponse]) extends OptionalStruct(real) {
-    val correlationId = optionally(_.getCorrelationId)
-    val status = optionally(_.getStatus)
-  }
   implicit def proto2OptCommandsUserCommandRequest(a: org.totalgrid.reef.proto.Commands.UserCommandRequest): OptCommandsUserCommandRequest = new OptCommandsUserCommandRequest(Some(a))
   class OptCommandsUserCommandRequest(real: Option[org.totalgrid.reef.proto.Commands.UserCommandRequest]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
@@ -148,6 +115,19 @@ object OptionalProtos {
     val access = optionally(_.hasAccess, _.getAccess)
     val expireTime = optionally(_.hasExpireTime, _.getExpireTime)
     val user = optionally(_.hasUser, _.getUser)
+  }
+  implicit def proto2OptCommandsCommandRequest(a: org.totalgrid.reef.proto.Commands.CommandRequest): OptCommandsCommandRequest = new OptCommandsCommandRequest(Some(a))
+  class OptCommandsCommandRequest(real: Option[org.totalgrid.reef.proto.Commands.CommandRequest]) extends OptionalStruct(real) {
+    val name = optionally(_.hasName, _.getName)
+    val correlationId = optionally(_.hasCorrelationId, _.getCorrelationId)
+    val _type = optionally(_.hasType, _.getType)
+    val intVal = optionally(_.hasIntVal, _.getIntVal)
+    val doubleVal = optionally(_.hasDoubleVal, _.getDoubleVal)
+  }
+  implicit def proto2OptCommandsCommandResponse(a: org.totalgrid.reef.proto.Commands.CommandResponse): OptCommandsCommandResponse = new OptCommandsCommandResponse(Some(a))
+  class OptCommandsCommandResponse(real: Option[org.totalgrid.reef.proto.Commands.CommandResponse]) extends OptionalStruct(real) {
+    val correlationId = optionally(_.getCorrelationId)
+    val status = optionally(_.getStatus)
   }
   implicit def proto2OptEventsEvent(a: org.totalgrid.reef.proto.Events.Event): OptEventsEvent = new OptEventsEvent(Some(a))
   class OptEventsEvent(real: Option[org.totalgrid.reef.proto.Events.Event]) extends OptionalStruct(real) {
@@ -190,10 +170,6 @@ object OptionalProtos {
     val fileName = optionally(_.hasFileName, _.getFileName)
     val lineNumber = optionally(_.hasLineNumber, _.getLineNumber)
     val message = optionally(_.getMessage)
-  }
-  implicit def proto2OptExampleFoo(a: org.totalgrid.reef.proto.Example.Foo): OptExampleFoo = new OptExampleFoo(Some(a))
-  class OptExampleFoo(real: Option[org.totalgrid.reef.proto.Example.Foo]) extends OptionalStruct(real) {
-    val num = optionally(_.hasNum, _.getNum)
   }
   implicit def proto2OptFEPIpPort(a: org.totalgrid.reef.proto.FEP.IpPort): OptFEPIpPort = new OptFEPIpPort(Some(a))
   class OptFEPIpPort(real: Option[org.totalgrid.reef.proto.FEP.IpPort]) extends OptionalStruct(real) {
@@ -340,19 +316,19 @@ object OptionalProtos {
     val sampling = optionally(_.hasSampling, _.getSampling)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
-  implicit def proto2OptModelRelationship(a: org.totalgrid.reef.proto.Model.Relationship): OptModelRelationship = new OptModelRelationship(Some(a))
-  class OptModelRelationship(real: Option[org.totalgrid.reef.proto.Model.Relationship]) extends OptionalStruct(real) {
-    val relationship = optionally(_.hasRelationship, _.getRelationship)
-    val descendantOf = optionally(_.hasDescendantOf, _.getDescendantOf)
-    val entities = optionally(_.getEntitiesList.toList.map { i => new OptModelEntity(Some(i)) })
-    val distance = optionally(_.hasDistance, _.getDistance)
-  }
   implicit def proto2OptModelEntity(a: org.totalgrid.reef.proto.Model.Entity): OptModelEntity = new OptModelEntity(Some(a))
   class OptModelEntity(real: Option[org.totalgrid.reef.proto.Model.Entity]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
     val types = optionally(_.getTypesList.toList)
     val name = optionally(_.hasName, _.getName)
     val relations = optionally(_.getRelationsList.toList.map { i => new OptModelRelationship(Some(i)) })
+  }
+  implicit def proto2OptModelRelationship(a: org.totalgrid.reef.proto.Model.Relationship): OptModelRelationship = new OptModelRelationship(Some(a))
+  class OptModelRelationship(real: Option[org.totalgrid.reef.proto.Model.Relationship]) extends OptionalStruct(real) {
+    val relationship = optionally(_.hasRelationship, _.getRelationship)
+    val descendantOf = optionally(_.hasDescendantOf, _.getDescendantOf)
+    val entities = optionally(_.getEntitiesList.toList.map { i => new OptModelEntity(Some(i)) })
+    val distance = optionally(_.hasDistance, _.getDistance)
   }
   implicit def proto2OptModelEntityEdge(a: org.totalgrid.reef.proto.Model.EntityEdge): OptModelEntityEdge = new OptModelEntityEdge(Some(a))
   class OptModelEntityEdge(real: Option[org.totalgrid.reef.proto.Model.EntityEdge]) extends OptionalStruct(real) {
@@ -453,30 +429,8 @@ object OptionalProtos {
     val measProc = new OptApplicationApplicationConfig(optionally(_.hasMeasProc, _.getMeasProc))
     val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
     val routing = new OptMeasurementProcessingRouting(optionally(_.hasRouting, _.getRouting))
-  }
-  implicit def proto2OptEnvelopeRequestHeader(a: org.totalgrid.reef.proto.Envelope.RequestHeader): OptEnvelopeRequestHeader = new OptEnvelopeRequestHeader(Some(a))
-  class OptEnvelopeRequestHeader(real: Option[org.totalgrid.reef.proto.Envelope.RequestHeader]) extends OptionalStruct(real) {
-    val key = optionally(_.getKey)
-    val value = optionally(_.getValue)
-  }
-  implicit def proto2OptEnvelopeServiceRequest(a: org.totalgrid.reef.proto.Envelope.ServiceRequest): OptEnvelopeServiceRequest = new OptEnvelopeServiceRequest(Some(a))
-  class OptEnvelopeServiceRequest(real: Option[org.totalgrid.reef.proto.Envelope.ServiceRequest]) extends OptionalStruct(real) {
-    val id = optionally(_.getId)
-    val verb = optionally(_.getVerb)
-    val headers = optionally(_.getHeadersList.toList.map { i => new OptEnvelopeRequestHeader(Some(i)) })
-    val payload = optionally(_.getPayload)
-  }
-  implicit def proto2OptEnvelopeServiceResponse(a: org.totalgrid.reef.proto.Envelope.ServiceResponse): OptEnvelopeServiceResponse = new OptEnvelopeServiceResponse(Some(a))
-  class OptEnvelopeServiceResponse(real: Option[org.totalgrid.reef.proto.Envelope.ServiceResponse]) extends OptionalStruct(real) {
-    val id = optionally(_.getId)
-    val status = optionally(_.getStatus)
-    val errorMessage = optionally(_.hasErrorMessage, _.getErrorMessage)
-    val payload = optionally(_.getPayloadList.toList)
-  }
-  implicit def proto2OptEnvelopeServiceNotification(a: org.totalgrid.reef.proto.Envelope.ServiceNotification): OptEnvelopeServiceNotification = new OptEnvelopeServiceNotification(Some(a))
-  class OptEnvelopeServiceNotification(real: Option[org.totalgrid.reef.proto.Envelope.ServiceNotification]) extends OptionalStruct(real) {
-    val event = optionally(_.getEvent)
-    val payload = optionally(_.getPayload)
+    val assignedTime = optionally(_.hasAssignedTime, _.getAssignedTime)
+    val readyTime = optionally(_.hasReadyTime, _.getReadyTime)
   }
   implicit def proto2OptSimMappingMeasSim(a: org.totalgrid.reef.proto.SimMapping.MeasSim): OptSimMappingMeasSim = new OptSimMappingMeasSim(Some(a))
   class OptSimMappingMeasSim(real: Option[org.totalgrid.reef.proto.SimMapping.MeasSim]) extends OptionalStruct(real) {

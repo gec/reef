@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.proto.{ Envelope, Example }
 
-import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv }
+import org.totalgrid.reef.protoapi.{ ProtoServiceTypes, RequestEnv, TypeDescriptor }
 import ProtoServiceTypes.Response
 
 import org.totalgrid.reef.messaging.mock._
@@ -33,12 +33,26 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
+object TestDescriptors {
+  def requestHeader() = new TypeDescriptor[org.totalgrid.reef.proto.Envelope.RequestHeader] {
+    def serialize(typ: org.totalgrid.reef.proto.Envelope.RequestHeader): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.RequestHeader.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Envelope.RequestHeader]
+  }
+
+  def foo() = new TypeDescriptor[org.totalgrid.reef.proto.Example.Foo] {
+    def serialize(typ: org.totalgrid.reef.proto.Example.Foo): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Example.Foo.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Example.Foo]
+  }
+}
+
 @RunWith(classOf[JUnitRunner])
 class ProtoClientTest extends FunSuite with ShouldMatchers {
 
   class FooServiceX3 extends ServiceEndpoint[Example.Foo] {
 
-    val descriptor = Descriptors.foo
+    val descriptor = TestDescriptors.foo
 
     def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
     def put(req: Example.Foo, env: RequestEnv) = noVerb("put")
@@ -48,7 +62,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
 
   class HeadersX2 extends ServiceEndpoint[Envelope.RequestHeader] {
 
-    val descriptor = Descriptors.requestHeader
+    val descriptor = TestDescriptors.requestHeader
 
     def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
 
@@ -62,8 +76,8 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
   val exchangeB = "test.protoClient.B"
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Example.Foo] -> ServiceInfo.get(exchangeA, Descriptors.foo),
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, Descriptors.requestHeader)))
+    classOf[Example.Foo] -> ServiceInfo.get(exchangeA, TestDescriptors.foo),
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, TestDescriptors.requestHeader)))
 
   def setupTest(test: ProtoClient => Unit) {
     val connection = new MockBrokerInterface

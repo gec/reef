@@ -37,7 +37,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
   val exchange = "ProtoSubscriptionTest"
   val exchangeMap: ServiceList.ServiceMap = Map(
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, Descriptors.requestHeader))
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, TestDescriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {
@@ -72,7 +72,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       changes.foreach(msg => subHandler.publish(evt, msg, msg.getKey))
     }
 
-    val descriptor = Descriptors.requestHeader
+    val descriptor = TestDescriptors.requestHeader
 
     def get(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)

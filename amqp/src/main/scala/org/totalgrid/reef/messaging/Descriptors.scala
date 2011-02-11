@@ -1,23 +1,3 @@
-/**
- * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  Green Energy Corp licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.protoapi.TypeDescriptor
@@ -94,16 +74,6 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Auth.AuthToken.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Auth.AuthToken]
   }
-  def commandRequest() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandRequest] {
-    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandRequest): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandRequest.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandRequest]
-  }
-  def commandResponse() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandResponse] {
-    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandResponse): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandResponse.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandResponse]
-  }
   def userCommandRequest() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.UserCommandRequest] {
     def serialize(typ: org.totalgrid.reef.proto.Commands.UserCommandRequest): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.UserCommandRequest.parseFrom(bytes)
@@ -113,6 +83,16 @@ object Descriptors {
     def serialize(typ: org.totalgrid.reef.proto.Commands.CommandAccess): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandAccess.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandAccess]
+  }
+  def commandRequest() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandRequest] {
+    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandRequest): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandRequest.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandRequest]
+  }
+  def commandResponse() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandResponse] {
+    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandResponse): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandResponse.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandResponse]
   }
   def event() = new TypeDescriptor[org.totalgrid.reef.proto.Events.Event] {
     def serialize(typ: org.totalgrid.reef.proto.Events.Event): Array[Byte] = typ.toByteArray
@@ -133,11 +113,6 @@ object Descriptors {
     def serialize(typ: org.totalgrid.reef.proto.Events.Log): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Events.Log.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Events.Log]
-  }
-  def foo() = new TypeDescriptor[org.totalgrid.reef.proto.Example.Foo] {
-    def serialize(typ: org.totalgrid.reef.proto.Example.Foo): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Example.Foo.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Example.Foo]
   }
   def ipPort() = new TypeDescriptor[org.totalgrid.reef.proto.FEP.IpPort] {
     def serialize(typ: org.totalgrid.reef.proto.FEP.IpPort): Array[Byte] = typ.toByteArray
@@ -234,15 +209,15 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Measurements.MeasurementHistory.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Measurements.MeasurementHistory]
   }
-  def relationship() = new TypeDescriptor[org.totalgrid.reef.proto.Model.Relationship] {
-    def serialize(typ: org.totalgrid.reef.proto.Model.Relationship): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Relationship.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Model.Relationship]
-  }
   def entity() = new TypeDescriptor[org.totalgrid.reef.proto.Model.Entity] {
     def serialize(typ: org.totalgrid.reef.proto.Model.Entity): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Entity.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Model.Entity]
+  }
+  def relationship() = new TypeDescriptor[org.totalgrid.reef.proto.Model.Relationship] {
+    def serialize(typ: org.totalgrid.reef.proto.Model.Relationship): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Relationship.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Model.Relationship]
   }
   def entityEdge() = new TypeDescriptor[org.totalgrid.reef.proto.Model.EntityEdge] {
     def serialize(typ: org.totalgrid.reef.proto.Model.EntityEdge): Array[Byte] = typ.toByteArray
@@ -313,26 +288,6 @@ object Descriptors {
     def serialize(typ: MeasurementProcessingConnection): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = MeasurementProcessingConnection.parseFrom(bytes)
     def getKlass = classOf[MeasurementProcessingConnection]
-  }
-  def requestHeader() = new TypeDescriptor[org.totalgrid.reef.proto.Envelope.RequestHeader] {
-    def serialize(typ: org.totalgrid.reef.proto.Envelope.RequestHeader): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.RequestHeader.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Envelope.RequestHeader]
-  }
-  def serviceRequest() = new TypeDescriptor[org.totalgrid.reef.proto.Envelope.ServiceRequest] {
-    def serialize(typ: org.totalgrid.reef.proto.Envelope.ServiceRequest): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.ServiceRequest.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Envelope.ServiceRequest]
-  }
-  def serviceResponse() = new TypeDescriptor[org.totalgrid.reef.proto.Envelope.ServiceResponse] {
-    def serialize(typ: org.totalgrid.reef.proto.Envelope.ServiceResponse): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.ServiceResponse.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Envelope.ServiceResponse]
-  }
-  def serviceNotification() = new TypeDescriptor[org.totalgrid.reef.proto.Envelope.ServiceNotification] {
-    def serialize(typ: org.totalgrid.reef.proto.Envelope.ServiceNotification): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Envelope.ServiceNotification.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Envelope.ServiceNotification]
   }
   def measSim() = new TypeDescriptor[org.totalgrid.reef.proto.SimMapping.MeasSim] {
     def serialize(typ: org.totalgrid.reef.proto.SimMapping.MeasSim): Array[Byte] = typ.toByteArray

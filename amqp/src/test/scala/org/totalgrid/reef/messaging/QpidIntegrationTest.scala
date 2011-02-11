@@ -42,7 +42,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   val payload = Example.Foo.newBuilder.build
   val request = Envelope.ServiceRequest.newBuilder.setId("1").setVerb(Envelope.Verb.GET).setPayload(payload.toByteString).build
   val exchange = "integration.test"
-  val servicelist = new ServiceListOnMap(Map(classOf[Example.Foo] -> ServiceInfo.get(exchange, Descriptors.foo)))
+  val servicelist = new ServiceListOnMap(Map(classOf[Example.Foo] -> ServiceInfo.get(exchange, TestDescriptors.foo)))
 
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
@@ -65,7 +65,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   // same service except that it only responds to get, and only works with validated type Foo
   class FooServiceX3 extends ServiceEndpoint[Example.Foo] {
 
-    override val descriptor = Descriptors.foo
+    override val descriptor = TestDescriptors.foo
 
     def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
     def put(req: Example.Foo, env: RequestEnv) = noVerb("put")
@@ -74,7 +74,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Example.Foo] -> ServiceInfo.get(exchange, Descriptors.foo)))
+    classOf[Example.Foo] -> ServiceInfo.get(exchange, TestDescriptors.foo)))
 
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run { amqp =>

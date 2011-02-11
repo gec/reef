@@ -41,6 +41,23 @@
                     <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
+            <plugin>
+                <!-- https://github.com/jadamcrain/maven-protoc-plugin -->
+                <groupId>com.google.protobuf.tools</groupId>
+                <artifactId>maven-protoc-plugin</artifactId>
+                <version>0.1.9-GEC</version>
+                <configuration>
+                    <protoSourceRoot>src\main\proto</protoSourceRoot>
+                </configuration>
+               <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
