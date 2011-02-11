@@ -39,7 +39,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.messaging.ReefServicesList
+import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
 
 @RunWith(classOf[JUnitRunner])

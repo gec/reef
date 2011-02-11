@@ -31,7 +31,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
     extends BasicProtoService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel] {
@@ -100,7 +100,7 @@ class CommEndCfgServiceModel(
     measProcModel.onEndpointDeleted(sql)
     fepModel.onEndpointDeleted(sql)
   }
-  import org.totalgrid.reef.messaging.OptionalProtos._
+  import org.totalgrid.reef.proto.OptionalProtos._
   def setLinkedObjects(sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
     pointModel.createAndSetOwningNode(request.ownerships.points.getOrElse(Nil), ent)
 
@@ -128,7 +128,7 @@ class CommEndCfgServiceModel(
 trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto, CommunicationEndpoint] with UniqueAndSearchQueryable[CommEndCfgProto, CommunicationEndpoint] {
 
   import org.squeryl.PrimitiveTypeMode._
-  import org.totalgrid.reef.messaging.OptionalProtos._
+  import org.totalgrid.reef.proto.OptionalProtos._
   import SquerylModel._
 
   val table = ApplicationSchema.endpoints

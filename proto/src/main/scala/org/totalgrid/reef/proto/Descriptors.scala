@@ -1,11 +1,10 @@
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.proto
 
 import org.totalgrid.reef.protoapi.ITypeDescriptor
 
 import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.proto.Commands._
 import org.totalgrid.reef.proto.Envelope._
-import org.totalgrid.reef.proto.Example._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Mapping._
 import org.totalgrid.reef.proto.Measurements._

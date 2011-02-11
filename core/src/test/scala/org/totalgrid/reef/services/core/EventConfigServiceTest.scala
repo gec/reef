@@ -27,7 +27,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
 import org.squeryl.PrimitiveTypeMode._

@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.Timer
-import org.totalgrid.reef.proto.{ Envelope, Example }
+import org.totalgrid.reef.proto.{ Envelope }
 
 import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceHandlerHeaders, ServiceException }
 
@@ -39,32 +39,32 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
   test("SubscribeExceptionNoTimeout") {
     val reg = new MockProtoSubscriberRegistry {}
     intercept[NoSuchElementException] {
-      reg.getAcceptor(classOf[Example.Foo], 0)
+      reg.getAcceptor(classOf[Envelope.RequestHeader], 0)
     }
   }
 
   test("SubscribeExceptionWithTimeout") {
     val reg = new MockProtoSubscriberRegistry {}
     intercept[MatchError] {
-      reg.getAcceptor(classOf[Example.Foo], 1) //wait for a millisecond
+      reg.getAcceptor(classOf[Envelope.RequestHeader], 1) //wait for a millisecond
     }
   }
 
   test("Subscriber") {
     val reg = new MockProtoSubscriberRegistry {}
-    var list: List[Example.Foo] = Nil
-    reg.subscribe(Example.Foo.parseFrom, "#") { x => list = x :: list }
-    reg.getAcceptor(classOf[Example.Foo])(Example.Foo.newBuilder.build) //call the acceptor
+    var list: List[Envelope.RequestHeader] = Nil
+    reg.subscribe(Envelope.RequestHeader.parseFrom, "#") { x => list = x :: list }
+    reg.getAcceptor(classOf[Envelope.RequestHeader])(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build) //call the acceptor
     list.size should equal(1)
   }
 
   test("DelayedSubscribe") {
     val reg = new MockProtoSubscriberRegistry {}
-    var list: List[Example.Foo] = Nil
+    var list: List[Envelope.RequestHeader] = Nil
     Timer.delay(10) { // do this 10 ms from now on an unknown actor thread
-      reg.subscribe(Example.Foo.parseFrom, "#") { x => list = x :: list }
+      reg.subscribe(Envelope.RequestHeader.parseFrom, "#") { x => list = x :: list }
     }
-    reg.getAcceptor(classOf[Example.Foo])(Example.Foo.newBuilder.build) //call the acceptor
+    reg.getAcceptor(classOf[Envelope.RequestHeader])(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build) //call the acceptor
     list.size should equal(1)
 
   }
@@ -72,17 +72,17 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
   test("GetPublisherException") {
     val reg = new MockProtoPublisherRegistry {}
     intercept[NoSuchElementException] {
-      reg.getMailbox(classOf[Example.Foo])
+      reg.getMailbox(classOf[Envelope.RequestHeader])
     }
   }
 
   test("GetPublisher") {
     val reg = new MockProtoPublisherRegistry {}
-    val pub = reg.publish((_: Example.Foo) => "key")
-    val mail = reg.getMailbox(classOf[Example.Foo])
-    pub(Example.Foo.newBuilder.build)
+    val pub = reg.publish((_: Envelope.RequestHeader) => "key")
+    val mail = reg.getMailbox(classOf[Envelope.RequestHeader])
+    pub(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build)
     mail.receiveWithin(0) {
-      case x: Example.Foo =>
+      case x: Envelope.RequestHeader =>
       case _ => assert(false)
     }
 
@@ -91,14 +91,14 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
   test("GetEventException") {
     val reg = new MockProtoServiceRegistry {}
     intercept[MatchError] {
-      reg.getEvent(classOf[Example.Foo])
+      reg.getEvent(classOf[Envelope.RequestHeader])
     }
   }
 
   test("DefineEventQueue") {
     val reg = new MockProtoServiceRegistry {}
-    reg.defineEventQueue(Example.Foo.parseFrom, (x: Any) => x)
-    reg.getEvent(classOf[Example.Foo])
+    reg.defineEventQueue(Envelope.RequestHeader.parseFrom, (x: Any) => x)
+    reg.getEvent(classOf[Envelope.RequestHeader])
   }
 
   test("testMockProtoConsumerRespondTimeout") {
@@ -109,7 +109,7 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
   test("MockProtoConsumerRequestTimeout") {
     val reg = new MockServiceClient(1)
     val exc = intercept[ServiceException] {
-      reg.putOrThrow(Example.Foo.newBuilder.build)
+      reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build)
     }
     exc.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
@@ -120,13 +120,13 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
     //fire off a read on an actor
     Timer.now {
-      reg.putOrThrow(Example.Foo.newBuilder.setNum(4).build)
+      reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("4").build)
     }
 
-    reg.respond[Example.Foo] { request: Request[Example.Foo] =>
+    reg.respond[Envelope.RequestHeader] { request: Request[Envelope.RequestHeader] =>
       request.verb should equal(Envelope.Verb.PUT)
       request.env.subQueue should equal(None)
-      request.payload.getNum should equal(4)
+      request.payload.getValue should equal("4")
       Some(Response(Envelope.Status.OK, "", List(request.payload)))
     }
   }

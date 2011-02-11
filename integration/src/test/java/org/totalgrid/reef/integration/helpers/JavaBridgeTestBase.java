@@ -26,7 +26,7 @@ import org.totalgrid.reef.protoapi.IConnectionListener;
 import org.totalgrid.reef.protoapi.java.client.*;
 import org.totalgrid.reef.messaging.javabridge.JavaBridge;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
-import org.totalgrid.reef.messaging.ReefServicesList;
+import org.totalgrid.reef.proto.ReefServicesList;
 
 
 import org.totalgrid.reef.integration.SampleRequests;

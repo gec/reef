@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ReefServicesList, ServiceEndpoint }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint }
 
 import org.totalgrid.reef.util.SyncVar
 
@@ -48,12 +48,12 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
 import ServiceTypes.Event
-import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.util.{ Logging, SyncVar }
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.protoapi.ServiceList
+import org.totalgrid.reef.proto.{ ReefServicesList, Envelope }
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
   override def beforeAll() {

@@ -27,7 +27,8 @@ import org.totalgrid.reef.metrics.{ NonOpMetricPublisher, NonOperationalDataPubl
 
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.reactor.{ ReactActor, PeriodicReactor }
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry, ReefServicesList }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.proto.ReefServicesList
 
 import org.totalgrid.reef.protoapi.RequestEnv
 

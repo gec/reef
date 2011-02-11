@@ -23,12 +23,13 @@ package org.totalgrid.reef.entry
 import org.osgi.framework._
 
 import org.totalgrid.reef.services.{ Services, ServiceOptions }
-import org.totalgrid.reef.messaging.{ AMQPProperties, ServiceDescriptor, ReefServicesList }
+import org.totalgrid.reef.messaging.{ AMQPProperties, ServiceDescriptor }
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.reactor.Lifecycle
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.proto.ReefServicesList
 
 class ServiceActivator extends BundleActivator {
 

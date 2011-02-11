@@ -23,7 +23,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
-import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
+import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 import ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot

@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Envelope.Status
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceException, ServiceTypes }
 import ServiceTypes.Response
 
-import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
+import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 

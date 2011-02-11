@@ -30,7 +30,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.ReefServicesList
+import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 

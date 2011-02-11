@@ -29,7 +29,8 @@ import org.totalgrid.reef.proto.{ Measurements, Processing }
 import Measurements._
 import Processing._
 
-import org.totalgrid.reef.messaging.{ RoutingKeys, AMQPProtoFactory, AMQPProtoRegistry, ReefServicesList }
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.proto.{ RoutingKeys, ReefServicesList }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
 
 /**

@@ -27,12 +27,12 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.messaging.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 

@@ -29,11 +29,11 @@ import org.totalgrid.reef.proto.Envelope.Status
 import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.messaging.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 

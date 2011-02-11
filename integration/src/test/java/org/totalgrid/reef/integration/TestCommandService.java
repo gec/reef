@@ -34,7 +34,7 @@ import org.totalgrid.reef.protoapi.ServiceException;
 
 import org.totalgrid.reef.integration.helpers.*;
 import org.totalgrid.reef.messaging.javabridge.*;
-import org.totalgrid.reef.messaging.Descriptors;
+import org.totalgrid.reef.proto.Descriptors;
 
 @SuppressWarnings("unchecked")
 public class TestCommandService extends JavaBridgeTestBase {

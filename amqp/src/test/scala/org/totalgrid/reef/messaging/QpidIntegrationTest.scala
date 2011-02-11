@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.proto.{ Envelope, Example }
+import org.totalgrid.reef.proto.{ Envelope }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -40,10 +40,10 @@ import org.totalgrid.reef.protoapi.{ ServiceInfo, ServiceListOnMap }
 @RunWith(classOf[JUnitRunner])
 class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
-  val payload = Example.Foo.newBuilder.build
+  val payload = Envelope.RequestHeader.newBuilder.setKey("test").setValue("test").build
   val request = Envelope.ServiceRequest.newBuilder.setId("1").setVerb(Envelope.Verb.GET).setPayload(payload.toByteString).build
   val exchange = "integration.test"
-  val servicelist = new ServiceListOnMap(Map(classOf[Example.Foo] -> ServiceInfo.get(exchange, TestDescriptors.foo)))
+  val servicelist = new ServiceListOnMap(Map(classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, TestDescriptors.requestHeader)))
 
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
@@ -64,18 +64,9 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   // same service except that it only responds to get, and only works with validated type Foo
-  class FooServiceX3 extends ServiceEndpoint[Example.Foo] {
-
-    override val descriptor = TestDescriptors.foo
-
-    def get(foo: Example.Foo, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
-    def put(req: Example.Foo, env: RequestEnv) = noVerb("put")
-    def delete(req: Example.Foo, env: RequestEnv) = noVerb("delete")
-    def post(req: Example.Foo, env: RequestEnv) = noVerb("post")
-  }
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Example.Foo] -> ServiceInfo.get(exchange, TestDescriptors.foo)))
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, TestDescriptors.requestHeader)))
 
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run { amqp =>
@@ -92,8 +83,8 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("ConvertingServiceEchoSuccess") {
-    val request = Example.Foo.newBuilder.setNum(42).build
-    val service = new FooServiceX3
+    val request = Envelope.RequestHeader.newBuilder.setKey("test").setValue("test").build
+    val service = new HeadersX2
 
     AMQPFixture.run { amqp =>
 
@@ -103,8 +94,8 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
       // invoke the service future, and check that
       // response payload matches the request
       val payloads = client.getOrThrow(request)
-      payloads.size should equal(3)
-      payloads.foreach { _.getNum should equal(request.getNum) }
+      payloads.size should equal(2)
+      payloads.foreach { _.getKey should equal(request.getKey) }
     }
   }
 
@@ -136,7 +127,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)
-    rsp.addPayload(Example.Foo.newBuilder.setNum(serviceNum).build.toByteString)
+    rsp.addPayload(Envelope.RequestHeader.newBuilder.setKey("test").setValue(serviceNum.toString).build.toByteString)
     rsp.build
   }
 
@@ -158,7 +149,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
         val payloads = serviceSend.getOrThrow(payload)
         payloads.size should equal(1)
         // collect the server names for later analysis
-        counts(payloads.head.getNum) += 1
+        counts(payloads.head.getValue.toInt) += 1
       }
 
       // println(counts)

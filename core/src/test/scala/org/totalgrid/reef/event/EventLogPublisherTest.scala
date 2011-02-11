@@ -32,7 +32,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import EventType.eventTypeToString
-import org.totalgrid.reef.messaging.RoutingKeys
+import org.totalgrid.reef.proto.RoutingKeys
 
 @RunWith(classOf[JUnitRunner])
 class EventLogPublisherTest extends FixtureSuite with ShouldMatchers {

@@ -32,6 +32,7 @@ import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.proto.ReefServicesList
 
 object ApplicationEnroller extends Logging {
 

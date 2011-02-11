@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration;
 import org.junit.Test;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
-import org.totalgrid.reef.messaging.Descriptors;
+import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.proto.Commands;
 import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.proto.Measurements;

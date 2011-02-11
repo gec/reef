@@ -31,9 +31,9 @@ import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.messaging.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.messaging.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

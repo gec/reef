@@ -22,7 +22,8 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Envelope
 
-import org.totalgrid.reef.messaging.{ ServiceEndpoint, Descriptors }
+import org.totalgrid.reef.messaging.ServiceEndpoint
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
 import ServiceTypes.Response
 
