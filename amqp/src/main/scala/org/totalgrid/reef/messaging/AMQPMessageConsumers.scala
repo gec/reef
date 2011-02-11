@@ -22,10 +22,9 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ServiceTypes, RequestEnv }
 
-import ServiceTypes._
+import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.protoapi.ServiceTypes._
 
 object AMQPMessageConsumers extends Logging {
 
@@ -78,7 +77,7 @@ object AMQPMessageConsumers extends Logging {
               val rspKey = dest.key
               val request = Envelope.ServiceRequest.parseFrom(data)
 
-              import scala.collection.JavaConversions._
+              import _root_.scala.collection.JavaConversions._
               import ServiceHandlerHeaders._
 
               val env = new RequestEnv

@@ -26,11 +26,9 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.Timer
-import org.totalgrid.reef.proto.{ Envelope }
 
-import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceHandlerHeaders, ServiceException }
-
-import ServiceTypes.{ Response, Request }
+import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.protoapi.ServiceTypes.{ Response, Request }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])

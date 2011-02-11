@@ -20,12 +20,10 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ServiceException
-
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Envelope.Status
+import org.totalgrid.reef.protoapi.Envelope.Status
 import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
@@ -36,6 +34,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
 
 // Implicit squeryl list -> query conversion
 

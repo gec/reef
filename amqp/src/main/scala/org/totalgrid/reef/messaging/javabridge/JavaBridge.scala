@@ -29,7 +29,7 @@ import org.totalgrid.reef.protoapi.ServiceList
 import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.protoapi.IConnectionListener
-import org.totalgrid.reef.protoapi.java.client.{ IConnection, ISession }
+import org.totalgrid.reef.protoapi.javaclient.{ IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs

@@ -25,13 +25,14 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.proto.Envelope
+
 import org.totalgrid.reef.models._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.services.ProtoServiceCoordinator
+import org.totalgrid.reef.protoapi.Envelope
 
 class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceModel]) extends ProtoServiceCoordinator with Logging {
 

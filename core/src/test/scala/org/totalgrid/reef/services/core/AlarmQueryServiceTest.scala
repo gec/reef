@@ -23,7 +23,6 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.proto.Envelope
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
@@ -32,6 +31,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+import org.totalgrid.reef.protoapi.Envelope
 
 // proto list to scala list
 

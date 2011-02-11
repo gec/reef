@@ -25,7 +25,7 @@ import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.proto.Commands;
-import org.totalgrid.reef.proto.Envelope;
+import org.totalgrid.reef.protoapi.Envelope;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
 import org.totalgrid.reef.protoapi.*;

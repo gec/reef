@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.protoapi
 
-import org.totalgrid.reef.proto.Envelope
-
 /**Contains types/case classes used in the proto service interfaces
  */
 object ServiceTypes {

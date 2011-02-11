@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.proto.Model.Entity
-import org.totalgrid.reef.proto.Envelope.Status
+import org.totalgrid.reef.protoapi.Envelope.Status
 
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
@@ -36,6 +36,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+import org.totalgrid.reef.protoapi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {

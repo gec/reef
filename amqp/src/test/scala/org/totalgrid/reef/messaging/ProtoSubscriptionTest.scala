@@ -25,7 +25,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.Envelope
+
 import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor

@@ -28,7 +28,6 @@ import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Envelope
 
 import org.totalgrid.reef.app.SubscriptionProvider
 
@@ -36,6 +35,7 @@ import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.protoapi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class ProcessingNodeIntegration extends Suite with ShouldMatchers {

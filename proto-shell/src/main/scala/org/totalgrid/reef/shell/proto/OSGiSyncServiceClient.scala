@@ -22,23 +22,19 @@ package org.totalgrid.reef.shell.proto
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.scala.client.{ SyncOperations, DefaultHeaders }
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceTypes }
-import ServiceTypes.{ Response, MultiResult, Failure }
+import org.totalgrid.reef.protoapi.scalaclient.{ SyncOperations, DefaultHeaders }
+import org.totalgrid.reef.protoapi.ServiceTypes.{ Response, MultiResult, Failure }
+import org.totalgrid.reef.protoapi.Envelope.Verb
 
 import org.totalgrid.reef.messaging.ServiceDescriptor
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.protoapi.ITypeDescriptor
-
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.proto.Envelope.Verb
-
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.protoapi.scala.client.ProtoConversions._
+import _root_.scala.collection.JavaConversions._
+import org.totalgrid.reef.protoapi.scalaclient.ProtoConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.protoapi._
 
 class ServiceDispatcher[A <: AnyRef](rh: ServiceDescriptor[A]) {
 

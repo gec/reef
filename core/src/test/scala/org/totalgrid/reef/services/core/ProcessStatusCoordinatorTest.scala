@@ -36,11 +36,11 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
+import org.totalgrid.reef.protoapi.{ Envelope }
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {

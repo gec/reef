@@ -139,15 +139,15 @@ def processLines(opt_file, deserializers, lines)
   end
 end
 
-f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/messaging/OptionalProtos.scala"), 'wb')
+f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
 
-types = %w[Application Commands Envelope FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth Tags]
+types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth Tags]
 
 scala_imports = types.collect{|t| "import org.totalgrid.reef.proto.#{t}._"}.join("\n")
 java_imports = scala_imports.gsub("_","*")
 
 f.puts <<EOF
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.proto
 
 #{scala_imports}
 
@@ -158,10 +158,10 @@ object OptionalProtos {
 
 EOF
 
-deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/messaging/Descriptors.scala"), 'wb')
+deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/Descriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.proto
 
 import org.totalgrid.reef.protoapi.ITypeDescriptor
 

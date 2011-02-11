@@ -26,15 +26,14 @@ import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, Commun
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Envelope
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.protoapi.ServiceException
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

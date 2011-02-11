@@ -20,22 +20,21 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.proto.{ Envelope }
+import org.totalgrid.reef.protoapi.{ Envelope }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._
+import _root_.scala.collection.JavaConversions._
 
-import scala.concurrent.MailBox
+import _root_.scala.concurrent.MailBox
 
-import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
-import ServiceTypes.Response
 import org.totalgrid.reef.messaging.mock._
 
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
-import org.totalgrid.reef.protoapi.{ ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.protoapi.ServiceTypes.Response
 
 @RunWith(classOf[JUnitRunner])
 class QpidIntegrationTest extends FunSuite with ShouldMatchers {

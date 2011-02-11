@@ -30,10 +30,9 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => Acce
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.protoapi.ServiceException
-import org.totalgrid.reef.proto.Envelope
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
 
 class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])
     extends BasicModelFactory[AccessProto, CommandAccessServiceModel](pub, classOf[AccessProto]) {

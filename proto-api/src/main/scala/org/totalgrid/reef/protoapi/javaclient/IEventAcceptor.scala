@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.javaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,21 +20,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.scala.client
+import org.totalgrid.reef.protoapi.ServiceTypes.Event
 
-import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
-
-import ServiceTypes._
-
-import org.totalgrid.reef.proto.Envelope
-
-/** Provides a thick interface full of helper functions via implement of a single abstract request function
+/**
+ *  Adapts raw events functions to a Java interface
  */
-trait ServiceClient extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
-
-  /**
-   *    Implements a synchronous request in terms of a future
-   */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = requestFuture(verb, payload, env)()
-
+trait IEventAcceptor[A] {
+  def onEvent(event: Event[A]): Unit
 }

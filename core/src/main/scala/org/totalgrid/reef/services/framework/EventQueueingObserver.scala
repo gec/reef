@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.protoapi.Envelope
 
 /**
  * Component that observes model changes in order to queue service events

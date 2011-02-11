@@ -21,17 +21,12 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.*;
-import static org.junit.Assert.*;
+
 import static org.junit.Assert.assertEquals;
 
-import org.totalgrid.reef.proto.Envelope;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import java.util.List;
-
-import org.totalgrid.reef.protoapi.ServiceTypes.*;
-import org.totalgrid.reef.messaging.javabridge.*;
-import org.totalgrid.reef.proto.Descriptors;
 
 import org.totalgrid.reef.integration.helpers.*;
 

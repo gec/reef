@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,14 +20,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.scala.client
-
-import org.totalgrid.reef.protoapi.{ ServiceTypes, RequestEnv }
-import ServiceTypes._
-import org.totalgrid.reef.proto.Envelope
 import com.google.protobuf.GeneratedMessage
 import scala.collection.mutable.Queue
-
+import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
+import org.totalgrid.reef.protoapi.ServiceTypes._
 /**
  * Mock the SyncServiceClient to collect all puts, posts, and deletes. A 'get' function
  * is specified upon construction.

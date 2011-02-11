@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protoapi.javaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,14 +20,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.protoapi.java.client
-
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.proto.Envelope
-import org.totalgrid.reef.protoapi.{ ServiceTypes, ServiceHandlerHeaders, ITypeDescriptor, ISubscription }
-
-import ServiceTypes.Event
+import org.totalgrid.reef.protoapi.{ Envelope, ServiceHandlerHeaders, ISubscription, ITypeDescriptor }
+import org.totalgrid.reef.protoapi.ServiceTypes.Event
 
 /**
  *  The interface that a concrete service client must provide.

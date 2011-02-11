@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.scala.client.ServiceClient
+import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
 import org.totalgrid.reef.protoapi.{ ServiceList, ServiceTypes, RequestEnv }
 import ServiceTypes.Event
 
