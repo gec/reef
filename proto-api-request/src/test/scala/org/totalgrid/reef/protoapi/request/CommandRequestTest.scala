@@ -37,7 +37,7 @@ object CommandRequestTestDesc {
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestTest
-    extends ServiceClientSuite("usercommandrequest.xml", "UserCommandRequest", CommandRequestTestDesc.desc)
+    extends ServiceClientSuite("UserCommandRequest.xml", "UserCommandRequest", CommandRequestTestDesc.desc)
     with ShouldMatchers {
 
   test("Issue command") {

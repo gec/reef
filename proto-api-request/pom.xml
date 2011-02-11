@@ -18,6 +18,7 @@
         </license>
     </licenses>
 
+
     <profiles>
         <profile>
             <id>no_integration_testing</id>
@@ -64,13 +65,8 @@
                           <transformationSets>
                             <transformationSet>
                               <dir>target/docxml</dir>
-                              <stylesheet>servicedochtml.xsl</stylesheet>
-                              <outputDir>target/dochtml</outputDir>
-                                <fileMappers>
-                                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-                                      <targetExtension>.html</targetExtension>
-                                    </fileMapper>
-                                  </fileMappers>
+                              <stylesheet>serviceToXDoc.xsl</stylesheet>
+                                <outputDir>src/site/xdoc</outputDir>
                             </transformationSet>
                           </transformationSets>
                         </configuration>
