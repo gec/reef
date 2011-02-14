@@ -42,6 +42,14 @@
             <id>test</id>
             <build>
                 <plugins>
+                      <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <version>2.2</version>
+                        <configuration>
+                            <siteDirectory>target/site-dir</siteDirectory>
+                        </configuration>
+                      </plugin>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
@@ -66,10 +74,28 @@
                             <transformationSet>
                               <dir>target/docxml</dir>
                               <stylesheet>serviceToXDoc.xsl</stylesheet>
-                                <outputDir>src/site/xdoc</outputDir>
+                                <outputDir>target/site-dir/xdoc</outputDir>
                             </transformationSet>
                           </transformationSets>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="target/site-dir">
+                                            <fileset dir="src/site" includes="**"/>
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
