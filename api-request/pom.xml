@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>reef-proto-api-request</artifactId>
+    <artifactId>reef-api-request</artifactId>
     <packaging>bundle</packaging>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
@@ -111,7 +111,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Proto Api Request Library</Bundle-Name>
+                        <Bundle-Name>Reef API Request Library</Bundle-Name>
                         <Export-Package>org.totalgrid.reef.api.request.*</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
@@ -143,7 +143,7 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto-api</artifactId>
+            <artifactId>reef-api</artifactId>
             <version>0.1.2-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

@@ -58,7 +58,7 @@
 
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto-api</artifactId>
+            <artifactId>reef-api</artifactId>
             <version>0.1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
