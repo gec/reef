@@ -51,7 +51,7 @@ object LoadManager extends Logging {
       val file = new File(filename)
       val xml = XMLHelper.read(new FileReader(file), classOf[Configuration])
 
-      loadConfiguration(client, xml, benchmark)
+      loadConfiguration(client, xml, benchmark, file.getParentFile)
 
       info("Finished loading configuration '" + filename + "'")
 
@@ -82,18 +82,21 @@ object LoadManager extends Logging {
       actionSets.foreach(as => actionModel += (as.getName -> as))
     }
 
+    val loadCache = new LoadCache
+
     if (xml.isSetEquipmentModel) {
-      val equLoader = new EquipmentLoader(client)
+      val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu)
       val equModel = xml.getEquipmentModel
       equipmentPointUnits = equLoader.load(equModel, actionModel)
     }
 
     if (xml.isSetCommunicationsModel) {
-      val comLoader = new CommunicationsLoader(client)
+      val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom)
       val comModel = xml.getCommunicationsModel
       comLoader.load(comModel, path, equipmentPointUnits, benchmark)
     }
 
+    loadCache.validate
   }
 
   def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean): Unit = {
