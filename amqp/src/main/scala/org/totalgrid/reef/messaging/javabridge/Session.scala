@@ -36,32 +36,25 @@ class Session(client: ProtoClient) extends ISession {
 
   def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.requestThrow(verb, payload, env.env)
 
-  def get[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.getOrThrow(payload, env.env)
-  def delete[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.deleteOrThrow(payload, env.env)
-  def post[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.postOrThrow(payload, env.env)
-  def put[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.putOrThrow(payload, env.env)
-
-  def getOne[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): A = client.getOneOrThrow(payload, env.env)
-  def deleteOne[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): A = client.deleteOneOrThrow(payload, env.env)
-  def putOne[A <: AnyRef](payload: A, env: ServiceHandlerHeaders): A = client.putOneOrThrow(payload, env.env)
-
-  def get[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.getOrThrow(payload, getEnv(sub))
-  def delete[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.deleteOrThrow(payload, getEnv(sub))
-  def post[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.postOrThrow(payload, getEnv(sub))
-  def put[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.putOrThrow(payload, getEnv(sub))
-
-  def getOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.getOneOrThrow(payload, getEnv(sub))
-  def deleteOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.deleteOneOrThrow(payload, getEnv(sub))
-  def putOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.putOneOrThrow(payload, getEnv(sub))
-
   def get[A <: AnyRef](payload: A): java.util.List[A] = client.getOrThrow(payload)
   def delete[A <: AnyRef](payload: A): java.util.List[A] = client.deleteOrThrow(payload)
   def post[A <: AnyRef](payload: A): java.util.List[A] = client.postOrThrow(payload)
   def put[A <: AnyRef](payload: A): java.util.List[A] = client.putOrThrow(payload)
 
+  def get[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.getOrThrow(payload, getEnv(sub))
+  def delete[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.deleteOrThrow(payload, getEnv(sub))
+  def put[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.putOrThrow(payload, getEnv(sub))
+  def post[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A] = client.postOrThrow(payload, getEnv(sub))
+
   def getOne[A <: AnyRef](payload: A): A = client.getOneOrThrow(payload)
   def deleteOne[A <: AnyRef](payload: A): A = client.deleteOneOrThrow(payload)
   def putOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
+  def postOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
+
+  def getOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.getOneOrThrow(payload, getEnv(sub))
+  def deleteOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.deleteOneOrThrow(payload, getEnv(sub))
+  def putOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.putOneOrThrow(payload, getEnv(sub))
+  def postOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.postOneOrThrow(payload, getEnv(sub))
 
   def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription = {
     client.addSubscription(pd.getKlass, ea.onEvent)
