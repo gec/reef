@@ -24,8 +24,8 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging._
 
-import org.totalgrid.reef.protoapi.{ ServiceHandlerHeaders, ISubscription }
-import org.totalgrid.reef.protoapi.ServiceTypes.Event
+import org.totalgrid.reef.api.{ ServiceHandlerHeaders, ISubscription }
+import org.totalgrid.reef.api.ServiceTypes.Event
 
 /**
  * syncronous subscription object, allows canceling

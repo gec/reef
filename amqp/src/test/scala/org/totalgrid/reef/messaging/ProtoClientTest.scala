@@ -27,8 +27,8 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.protoapi._
-import org.totalgrid.reef.protoapi.ServiceTypes.Response
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.ServiceTypes.Response
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {

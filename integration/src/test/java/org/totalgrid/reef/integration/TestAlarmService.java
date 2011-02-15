@@ -23,8 +23,7 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.protoapi.ISubscription;
-import org.totalgrid.reef.proto.Descriptors;
+import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Alarms;
 import org.totalgrid.reef.proto.Events;

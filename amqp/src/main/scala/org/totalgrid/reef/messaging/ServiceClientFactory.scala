@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.{ ServiceList, ServiceTypes, ISubscription }
+import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, ISubscription }
 import ServiceTypes.Event
 
 /**

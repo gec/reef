@@ -112,7 +112,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Proto Api Request Library</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.protoapi.request.*</Export-Package>
+                        <Export-Package>org.totalgrid.reef.api.request.*</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>

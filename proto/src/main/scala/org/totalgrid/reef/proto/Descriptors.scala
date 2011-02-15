@@ -1,6 +1,6 @@
 package org.totalgrid.reef.proto
 
-import org.totalgrid.reef.protoapi.ITypeDescriptor
+import org.totalgrid.reef.api.ITypeDescriptor
 
 import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.proto.Commands._

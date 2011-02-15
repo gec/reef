@@ -23,7 +23,7 @@ package org.totalgrid.reef.app
 import org.totalgrid.reef.util.Observable
 
 import com.google.protobuf.{ GeneratedMessage => Protobuf }
-import org.totalgrid.reef.protoapi.Envelope
+import org.totalgrid.reef.api.Envelope
 
 /**
  * Implements a single resource service consumer. 

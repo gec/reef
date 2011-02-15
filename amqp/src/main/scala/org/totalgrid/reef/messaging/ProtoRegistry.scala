@@ -22,8 +22,8 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
-import org.totalgrid.reef.protoapi.{ ServiceList, ServiceTypes, RequestEnv }
+import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, RequestEnv }
 import ServiceTypes.Event
 
 /** functions for working with named queues and exchanges rather than 'well known' exchanges queues */

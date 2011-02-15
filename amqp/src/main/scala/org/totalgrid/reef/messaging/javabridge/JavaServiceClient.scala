@@ -22,12 +22,12 @@ package org.totalgrid.reef.messaging.javabridge
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.javaclient.{ ISession, IEventAcceptor }
+import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor }
 
 import org.totalgrid.reef.messaging.ProtoClient
 
 import _root_.scala.collection.JavaConversions._
-import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.api._
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists

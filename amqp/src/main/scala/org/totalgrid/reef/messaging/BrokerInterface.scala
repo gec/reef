@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.protoapi.IConnectionListener
+import org.totalgrid.reef.api.IConnectionListener
 
 /** helper to package up ReplyTo address 
  */

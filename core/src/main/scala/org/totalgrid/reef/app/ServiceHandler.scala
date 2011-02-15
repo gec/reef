@@ -24,13 +24,13 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.util.{ Timer, Logging }
 
-import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ServiceClient
 
 import org.totalgrid.reef.messaging.ProtoRegistry
 
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
-import org.totalgrid.reef.protoapi.ServiceTypes.{ Failure, MultiSuccess, Event }
-import org.totalgrid.reef.protoapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.ServiceTypes.{ Failure, MultiSuccess, Event }
+import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 //implicit
 

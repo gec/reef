@@ -21,14 +21,15 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
+import org.totalgrid.reef.api.ISubscription;
+import org.totalgrid.reef.api.ServiceTypes;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.proto.Commands;
-import org.totalgrid.reef.protoapi.Envelope;
+import org.totalgrid.reef.api.Envelope;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
-import org.totalgrid.reef.protoapi.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

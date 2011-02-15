@@ -52,7 +52,7 @@ import org.totalgrid.reef.util.{ Logging, SyncVar }
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.proto.{ ReefServicesList }
-import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.api._
 import ServiceTypes.Event
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {

@@ -32,7 +32,7 @@ import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.proto.{ ReefServicesList }
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ITypeDescriptor }
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {

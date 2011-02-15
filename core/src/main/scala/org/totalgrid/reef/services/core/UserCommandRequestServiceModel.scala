@@ -31,7 +31,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, ServiceException }
 
 class UserCommandRequestServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel], accessFac: ModelFactory[CommandAccessServiceModel])
     extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](pub, classOf[UserCommandRequest]) {

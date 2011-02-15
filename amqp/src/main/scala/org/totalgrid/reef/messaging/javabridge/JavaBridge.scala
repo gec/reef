@@ -24,12 +24,12 @@ import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.sync._
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 
-import org.totalgrid.reef.protoapi.ServiceList
+import org.totalgrid.reef.api.ServiceList
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.protoapi.IConnectionListener
-import org.totalgrid.reef.protoapi.javaclient.{ IConnection, ISession }
+import org.totalgrid.reef.api.IConnectionListener
+import org.totalgrid.reef.api.javaclient.{ IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs

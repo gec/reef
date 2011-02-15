@@ -41,8 +41,8 @@ import CommandAccess._
 import scala.collection.mutable
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
-import org.totalgrid.reef.protoapi.Envelope._
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.Envelope._
 
 class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) => Unit) extends ServiceSubscriptionHandler {
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = f(event, resp)

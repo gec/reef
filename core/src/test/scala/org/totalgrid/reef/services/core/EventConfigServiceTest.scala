@@ -37,7 +37,7 @@ import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.protoapi.{ ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.api.{ ServiceInfo, ServiceListOnMap }
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach // with RunTestsInsideTransaction

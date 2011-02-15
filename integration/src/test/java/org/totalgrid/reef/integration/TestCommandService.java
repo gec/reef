@@ -23,12 +23,12 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.protoapi.Envelope;
+import org.totalgrid.reef.api.Envelope;
 import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;
 import java.util.List;
 
-import org.totalgrid.reef.protoapi.ServiceException;
+import org.totalgrid.reef.api.ServiceException;
 
 
 import org.totalgrid.reef.integration.helpers.*;

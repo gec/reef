@@ -36,7 +36,7 @@ import BaseProtoService._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, ServiceException }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

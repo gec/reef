@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.protoapi.ServiceException
+import org.totalgrid.reef.api.ServiceException
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 

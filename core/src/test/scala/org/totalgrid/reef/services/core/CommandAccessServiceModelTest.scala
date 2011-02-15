@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.protoapi.ServiceException
+import org.totalgrid.reef.api.ServiceException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command, CommandAccessModel }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }

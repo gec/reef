@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
-import org.totalgrid.reef.protoapi.ServiceTypes.Response
+import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.framework._
@@ -32,7 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.protoapi.{ Envelope, ServiceException, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, ServiceException, RequestEnv }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

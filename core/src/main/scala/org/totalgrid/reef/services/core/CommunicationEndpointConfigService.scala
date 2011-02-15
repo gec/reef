@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ServiceException
+import org.totalgrid.reef.api.ServiceException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfgProto, EndpointOwnership, Port }
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ConfigFile }

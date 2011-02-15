@@ -21,7 +21,7 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders }
 import request.RequestFailure
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperations {

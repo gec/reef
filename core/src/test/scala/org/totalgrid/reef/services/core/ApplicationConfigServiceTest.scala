@@ -35,7 +35,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.protoapi.Envelope.Status
+import org.totalgrid.reef.api.Envelope.Status
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {

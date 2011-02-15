@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.serviceprovider
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.protoapi.ServiceList
+import org.totalgrid.reef.api.ServiceList
 
 /**
  * mixin that manages the lazy creation and storing of subscription handlers (publishers) 

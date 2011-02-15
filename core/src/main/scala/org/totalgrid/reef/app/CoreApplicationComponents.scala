@@ -30,7 +30,7 @@ import org.totalgrid.reef.reactor.{ ReactActor, PeriodicReactor }
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.ReefServicesList
 
-import org.totalgrid.reef.protoapi.RequestEnv
+import org.totalgrid.reef.api.RequestEnv
 
 /**
  * wraps up all of the common/core components used by bus enabled applications, most of these components get a key

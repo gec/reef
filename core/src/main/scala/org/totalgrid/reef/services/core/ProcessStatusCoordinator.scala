@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.services.ProtoServiceCoordinator
-import org.totalgrid.reef.protoapi.Envelope
+import org.totalgrid.reef.api.Envelope
 
 class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceModel]) extends ProtoServiceCoordinator with Logging {
 

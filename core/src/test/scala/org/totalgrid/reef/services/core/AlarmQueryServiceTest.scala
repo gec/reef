@@ -31,7 +31,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.protoapi.Envelope
+import org.totalgrid.reef.api.Envelope
 
 // proto list to scala list
 

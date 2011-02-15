@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.totalgrid.reef.protoapi.Envelope;
-import org.totalgrid.reef.protoapi.javaclient.IEventAcceptor;
-import org.totalgrid.reef.protoapi.ServiceTypes.*;
+import org.totalgrid.reef.api.Envelope;
+import org.totalgrid.reef.api.javaclient.IEventAcceptor;
+import org.totalgrid.reef.api.ServiceTypes.*;
 
 import java.util.LinkedList;
 import java.util.List;

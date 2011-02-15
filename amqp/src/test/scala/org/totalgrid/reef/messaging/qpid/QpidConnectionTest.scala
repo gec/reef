@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.protoapi.IConnectionListener
+import org.totalgrid.reef.api.IConnectionListener
 
 import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar

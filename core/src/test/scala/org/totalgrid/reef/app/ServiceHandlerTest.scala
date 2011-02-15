@@ -21,7 +21,7 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.messaging.ProtoRegistry
-import org.totalgrid.reef.protoapi.ServiceTypes.{ Response, Event }
+import org.totalgrid.reef.api.ServiceTypes.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.MockProtoRegistry
 import org.totalgrid.reef.proto.{ Processing }
 import org.totalgrid.reef.proto.Model.Point
@@ -31,8 +31,8 @@ import Processing._
 import org.totalgrid.reef.reactor.ReactActor
 import scala.concurrent.MailBox
 
-import org.totalgrid.reef.protoapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.protoapi.Envelope
+import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.totalgrid.reef.api.Envelope
 
 class ServiceHandlerMock(registry: ProtoRegistry, retryMS: Long) {
 

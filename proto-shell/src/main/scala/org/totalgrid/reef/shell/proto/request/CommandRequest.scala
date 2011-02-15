@@ -22,7 +22,7 @@ package org.totalgrid.reef.shell.proto.request
 
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest, CommandAccess, CommandRequest => ProtoCommandRequest }
 import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.protoapi.scalaclient.SyncOperations
+import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 object CommandRequest {
 

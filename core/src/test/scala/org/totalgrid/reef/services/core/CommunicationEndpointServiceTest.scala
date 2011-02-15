@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ServiceException
+import org.totalgrid.reef.api.ServiceException
 
 import org.squeryl.PrimitiveTypeMode._
 

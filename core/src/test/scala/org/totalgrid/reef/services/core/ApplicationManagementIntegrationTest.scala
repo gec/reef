@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.protoapi.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
 import ServiceTypes.Event
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry

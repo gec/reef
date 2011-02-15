@@ -22,7 +22,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.messaging.ServiceDescriptor
 import org.totalgrid.reef.util._
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
 /// the metrics collected on any single service request
 class ProtoServicableVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {

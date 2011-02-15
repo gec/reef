@@ -29,9 +29,8 @@ import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
 import java.util.List;
 
-import org.totalgrid.reef.protoapi.ISubscription;
+import org.totalgrid.reef.api.ISubscription;
 
-import org.totalgrid.reef.messaging.javabridge.*;
 import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.integration.helpers.*;
 

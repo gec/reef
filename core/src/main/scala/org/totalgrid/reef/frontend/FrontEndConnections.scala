@@ -23,14 +23,14 @@ package org.totalgrid.reef.frontend
 import org.totalgrid.reef.proto.{ Commands, Measurements }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
 import org.totalgrid.reef.messaging.ProtoRegistry
-import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ServiceClient
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.app.ServiceHandler
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
-import org.totalgrid.reef.protoapi.Envelope
+import org.totalgrid.reef.api.Envelope
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler: ServiceHandler) extends KeyedMap[ConnProto] {

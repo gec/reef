@@ -23,8 +23,8 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 
-import org.totalgrid.reef.protoapi._
-import org.totalgrid.reef.protoapi.ServiceTypes._
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.ServiceTypes._
 
 object AMQPMessageConsumers extends Logging {
 

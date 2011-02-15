@@ -22,14 +22,14 @@ package org.totalgrid.reef.services
 
 import org.scalatest.matchers.ShouldMatchers
 
-import org.totalgrid.reef.protoapi.Envelope.Status
+import org.totalgrid.reef.api.Envelope.Status
 
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.util.SyncVar
 
-import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.api._
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import ServiceTypes.{ Response, Event }
 

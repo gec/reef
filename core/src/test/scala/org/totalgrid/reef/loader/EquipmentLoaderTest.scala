@@ -32,8 +32,8 @@ import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.protoapi.scalaclient.MockSyncOperations
-import org.totalgrid.reef.protoapi.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.MockSyncOperations
+import org.totalgrid.reef.api.ServiceTypes._
 
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {

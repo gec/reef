@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
-import org.totalgrid.reef.protoapi.IConnectionListener
+import org.totalgrid.reef.api.IConnectionListener
 
 /** Keeps the connection to qpid up. Notifies linked AMQPSessionHandler 
  */

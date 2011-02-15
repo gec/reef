@@ -28,7 +28,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Proto Api</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.protoapi.*</Export-Package>
+                        <Export-Package>org.totalgrid.reef.api.*</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>

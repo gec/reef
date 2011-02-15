@@ -20,13 +20,13 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.protoapi.ServiceTypes.Response
+import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.totalgrid.reef.proto.Model.ConfigFile
-import org.totalgrid.reef.protoapi._
+import org.totalgrid.reef.api._
 
 class ConfigService(protected val entityService: EntityService, protected val entityEdgetService: EntityEdgeService)
     extends ServiceEndpoint[ConfigFile] {

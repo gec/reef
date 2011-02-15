@@ -26,7 +26,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment, Applic
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.protoapi.ServiceException
+import org.totalgrid.reef.api.ServiceException
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
 

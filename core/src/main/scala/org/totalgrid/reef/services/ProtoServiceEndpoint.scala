@@ -24,7 +24,7 @@ import org.totalgrid.reef.messaging.ServiceRequestHandler
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceHandlerHeaders }
 
 /**
  * Interface for "coordinator" functionality, allows classes to get given a reactor for delayed 

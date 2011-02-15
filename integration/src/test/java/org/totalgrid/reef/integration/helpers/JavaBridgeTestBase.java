@@ -22,15 +22,15 @@ package org.totalgrid.reef.integration.helpers;
 
 import org.junit.*;
 
-import org.totalgrid.reef.protoapi.IConnectionListener;
+import org.totalgrid.reef.api.IConnectionListener;
 import org.totalgrid.reef.messaging.javabridge.JavaBridge;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 
 import org.totalgrid.reef.integration.SampleRequests;
-import org.totalgrid.reef.protoapi.javaclient.IConnection;
-import org.totalgrid.reef.protoapi.javaclient.ISession;
+import org.totalgrid.reef.api.javaclient.IConnection;
+import org.totalgrid.reef.api.javaclient.ISession;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system

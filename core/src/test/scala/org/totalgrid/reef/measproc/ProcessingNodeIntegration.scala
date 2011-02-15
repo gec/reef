@@ -35,7 +35,7 @@ import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.protoapi.Envelope
+import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class ProcessingNodeIntegration extends Suite with ShouldMatchers {

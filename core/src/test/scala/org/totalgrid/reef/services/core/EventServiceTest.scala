@@ -32,7 +32,7 @@ import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.protoapi.{ ServiceException, RequestEnv, ServiceTypes }
+import org.totalgrid.reef.api.{ ServiceException, RequestEnv, ServiceTypes }
 import org.totalgrid.reef.messaging.ServiceRequestHandler
 
 import org.totalgrid.reef.models._

@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.protoapi.ServiceException
+import org.totalgrid.reef.api.ServiceException
 
 import SquerylModel._
 

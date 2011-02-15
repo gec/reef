@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.protoapi.Envelope._
+import org.totalgrid.reef.api.Envelope._
 import org.totalgrid.reef.messaging.ServiceDescriptor
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
@@ -41,7 +41,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.protoapi.{ Envelope, ServiceException, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.api.{ Envelope, ServiceException, RequestEnv, ITypeDescriptor }
 
 class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
 

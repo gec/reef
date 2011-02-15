@@ -27,8 +27,8 @@ import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 import org.totalgrid.reef.measurementstore.Historian
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv, ServiceException }
-import org.totalgrid.reef.protoapi.ServiceTypes.Response
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceException }
+import org.totalgrid.reef.api.ServiceTypes.Response
 
 class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[MeasurementHistory] {
   val HISTORY_LIMIT = 10000

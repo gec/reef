@@ -29,13 +29,13 @@ import scala.collection.immutable
 
 import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
-import org.totalgrid.reef.protoapi.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ServiceClient
 
-import org.totalgrid.reef.protoapi.{ Envelope, RequestEnv }
-import org.totalgrid.reef.protoapi.ServiceTypes._
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.ServiceTypes._
 
 //implicits for massaging service return types
-import org.totalgrid.reef.protoapi.scalaclient.ProtoConversions._
+import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 
 object MockProtoRegistry {
   val timeout = 5000

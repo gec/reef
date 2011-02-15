@@ -39,7 +39,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
-import org.totalgrid.reef.protoapi.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, ServiceException }
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest

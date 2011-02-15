@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.protoapi.{ Envelope }
+import org.totalgrid.reef.api.{ Envelope }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -33,8 +33,8 @@ import _root_.scala.concurrent.MailBox
 import org.totalgrid.reef.messaging.mock._
 
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
-import org.totalgrid.reef.protoapi._
-import org.totalgrid.reef.protoapi.ServiceTypes.Response
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.ServiceTypes.Response
 
 @RunWith(classOf[JUnitRunner])
 class QpidIntegrationTest extends FunSuite with ShouldMatchers {
