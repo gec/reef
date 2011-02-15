@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.*;
 
 import org.totalgrid.reef.api.IConnectionListener;
-import org.totalgrid.reef.messaging.javabridge.JavaBridge;
+import org.totalgrid.reef.messaging.javabridge.Connection;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
@@ -58,12 +58,12 @@ public class JavaBridgeTestBase {
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
-	protected IConnection connection = new JavaBridge(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
+	protected IConnection connection = new Connection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
 	protected ISession client = null;
 	protected MockConnectionListener listener = new MockConnectionListener();
 
 	/**
-	 * Baseclass for junit integration tests, provides a JavaBridge that is started and stopped with
+	 * Baseclass for junit integration tests, provides a Connection that is started and stopped with
 	 * every test case.
 	 * 
 	 * @param autoLogon

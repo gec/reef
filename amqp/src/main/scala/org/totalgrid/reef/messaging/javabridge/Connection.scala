@@ -35,7 +35,7 @@ import org.totalgrid.reef.api.javaclient.{ IConnection, ISession }
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
  *    
  */
-class JavaBridge(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends IConnection {
+class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends IConnection {
 
   /// Scala factory class we're wrapping to simplify access to java clients
   private val factory = new AMQPSyncFactory with ReactActor {
