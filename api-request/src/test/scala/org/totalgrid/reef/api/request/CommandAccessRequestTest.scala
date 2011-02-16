@@ -29,14 +29,27 @@ import org.totalgrid.reef.proto.Commands.{ CommandAccess, CommandRequest, UserCo
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest
     extends ServiceClientSuite("CommandAccess.xml", "CommandAccess",
-      "Represents the access table for the command system. Access entries have one or two" +
+      <div>
+        <p>
+          Represents the "access table" for the system. Access entries have one or two
+  modes, "allowed" and "blocked". Commands cannot be issued unless they have an
+  "allowed" entry. This "selects" the command for operation by a single user, for
+  as long as access is held. "Block" allows selects to be disallowed for commands;
+  meaning no users can access/issue the commands.
+        </p>
+        <p>
+          Multiple commands can be referenced (by name) in the same access entry. User is
+  determined by the request header.
+        </p>
+        <p>If not provided, expire_time will be a server-specified default.</p>
+      </div> /*"Represents the access table for the command system. Access entries have one or two" +
       "modes, \"allowed\" and \"blocked\". Commands cannot be issued unless they have an " +
       "\"allowed\" entry. This \"selects\" the command for operation by a single user, for " +
       "as long as access is held. \"Block\" allows selects to be disallowed for commands; " +
       "meaning no users can access/issue the commands." + "\n" +
       "Multiple commands can be referenced (by name) in the same access entry. User is " +
       "determined by the request header. " + "\n" +
-      "If not provided, expire_time will be a server-specified default.")
+      "If not provided, expire_time will be a server-specified default."*/ )
     with ShouldMatchers {
 
   test("Search") {

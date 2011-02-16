@@ -24,17 +24,27 @@ import com.google.protobuf.GeneratedMessage
 
 import scala.collection.JavaConversions._
 import com.google.protobuf.Descriptors.EnumValueDescriptor
-import xml.{ XML, NodeSeq }
 import java.io.File
+import xml.{ Node, XML, NodeSeq }
 
-class Documenter(file: String, title: String, desc: String) {
+class Documenter(file: String, title: String, desc: Node) {
+
+  def this(file: String, title: String, desc: String) = {
+    this(file, title, <div>{ desc }</div>)
+  }
 
   protected var usages = List.empty[NodeSeq]
 
-  def addCase[A <: GeneratedMessage](title: String, desc: String, request: A, response: A) = {
+  def addCase[A <: GeneratedMessage](title: String, desc: String, request: A, response: A): Unit = {
+    addCase(title, <div>{ desc }</div>, request, List(response))
+  }
+  def addCase[A <: GeneratedMessage](title: String, desc: String, request: A, responses: List[A]): Unit = {
+    addCase(title, <div>{ desc }</div>, request, responses)
+  }
+  def addCase[A <: GeneratedMessage](title: String, desc: Node, request: A, response: A): Unit = {
     usages ::= Documenter.document(title, desc, request, List(response))
   }
-  def addCase[A <: GeneratedMessage](title: String, desc: String, request: A, responses: List[A]) = {
+  def addCase[A <: GeneratedMessage](title: String, desc: Node, request: A, responses: List[A]): Unit = {
     usages ::= Documenter.document(title, desc, request, responses)
   }
 
@@ -56,7 +66,7 @@ class Documenter(file: String, title: String, desc: String) {
 
 object Documenter {
 
-  def document[A <: GeneratedMessage](title: String, desc: String, request: A, responses: List[A]) = {
+  def document[A <: GeneratedMessage](title: String, desc: Node, request: A, responses: List[A]) = {
     <case>
       <title>{ title }</title>
       <desc>{ desc }</desc>

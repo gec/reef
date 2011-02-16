@@ -29,8 +29,14 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.api.{ IConnectionListener, RequestEnv, ServiceHandlerHeaders }
 import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
 import org.totalgrid.reef.proto.ReefServicesList
+import xml.Node
 
-abstract class ServiceClientSuite(file: String, title: String, desc: String) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+abstract class ServiceClientSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+
+  def this(file: String, title: String, desc: String) = {
+    this(file, title, <div>{ desc }</div>)
+  }
+
   val doc = new Documenter(file, title, desc)
 
   override def beforeAll() {
