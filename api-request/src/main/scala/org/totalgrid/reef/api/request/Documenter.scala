@@ -32,7 +32,10 @@ class Documenter(file: String, title: String, desc: String) {
   protected var usages = List.empty[NodeSeq]
 
   def addCase[A <: GeneratedMessage](title: String, desc: String, request: A, response: A) = {
-    usages ::= Documenter.document(title, desc, request, response)
+    usages ::= Documenter.document(title, desc, request, List(response))
+  }
+  def addCase[A <: GeneratedMessage](title: String, desc: String, request: A, responses: List[A]) = {
+    usages ::= Documenter.document(title, desc, request, responses)
   }
 
   def save = {
@@ -53,7 +56,7 @@ class Documenter(file: String, title: String, desc: String) {
 
 object Documenter {
 
-  def document[A <: GeneratedMessage](title: String, desc: String, request: A, response: A) = {
+  def document[A <: GeneratedMessage](title: String, desc: String, request: A, responses: List[A]) = {
     <case>
       <title>{ title }</title>
       <desc>{ desc }</desc>
@@ -61,7 +64,7 @@ object Documenter {
         { messageToXml(request) }
       </request>
       <response>
-        { messageToXml(response) }
+        { responses.map(messageToXml(_)) }
       </response>
     </case>
   }

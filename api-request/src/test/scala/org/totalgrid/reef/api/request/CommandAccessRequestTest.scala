@@ -50,13 +50,20 @@ class CommandAccessRequestTest
     val thirdReq = CommandAccessRequestBuilders.blockCommands(cmdNames)
     val thirdResp = client.putOneOrThrow(thirdReq)
 
-    val getAllReq = CommandAccessRequestBuilders.allAccessEntries
-    val getAllResp = client.getOrThrow(getAllReq)
-
     val getReq = CommandAccessRequestBuilders.getForUid(firstResp.getUid)
     val getResp = client.getOneOrThrow(getReq)
 
     doc.addCase("Get by UID", "Search for an access entry by UID.", getReq, getResp)
+
+    val getAllReq = CommandAccessRequestBuilders.allAccessEntries
+    val getAllResp = client.getOrThrow(getAllReq)
+
+    doc.addCase("Get all", "Search for all access entries.", getAllReq, getAllResp)
+
+    val getUserReq = CommandAccessRequestBuilders.getForUser(firstResp.getUser)
+    val getUserResp = client.getOrThrow(getUserReq)
+
+    doc.addCase("Get for user", "Search for all access entries for the given user.", getUserReq, getUserResp)
 
     client.deleteOneOrThrow(firstResp)
     client.deleteOneOrThrow(secondResp)
