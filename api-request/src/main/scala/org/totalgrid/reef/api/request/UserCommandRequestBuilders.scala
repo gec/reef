@@ -22,10 +22,7 @@ package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
 
-trait CommandRequestBuilders {
-
-  def allowAccessForCommand(command: String) =
-    CommandAccess.newBuilder.addCommands(command).setAccess(CommandAccess.AccessMode.ALLOWED).build
+object UserCommandRequestBuilders {
 
   def executeCommand(command: String) =
     UserCommandRequest.newBuilder.setCommandRequest(CommandRequest.newBuilder.setName(command)).build
