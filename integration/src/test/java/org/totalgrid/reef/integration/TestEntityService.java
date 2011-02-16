@@ -22,6 +22,7 @@ package org.totalgrid.reef.integration;
 
 import org.junit.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.totalgrid.reef.proto.Model.*;
 
@@ -158,6 +159,64 @@ public class TestEntityService extends JavaBridgeTestBase {
 			assertTrue(r.getEntities(0).getTypesList().contains("Point"));
 		}
 	}
+
+
+    /**
+     * Find all the points under a substation and their associated commands in one step.
+     */
+    @Test
+    public void commandsToPointsMapping() {
+        // First get a substation we can use as an example root
+        Entity sub = client.getOne(Entity.newBuilder().setName("StaticSubstation").build());
+
+        // Tree request, asks for points under this substation and the commands associated with those points.
+        Entity request = Entity.newBuilder().setUid(sub.getUid()).addRelations(
+                Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(
+                                Entity.newBuilder().addTypes("Point").addRelations(
+                                        Relationship.newBuilder().setRelationship("feedback").setDescendantOf(true).addEntities(
+                                                Entity.newBuilder().addTypes("Command"))))).build();
+
+        // Request will return the substation as a root node, with the relationship tree below it
+        Entity tree = client.getOne(request);
+
+        // Only owns should be there
+        assertEquals(tree.getRelationsCount(), 1);
+
+        // One step down we have all the points
+        List<Entity> points = tree.getRelationsList().get(0).getEntitiesList();
+
+        // There are three points for thsi substation in the integration test configuration
+        assertEquals(points.size(), 3);
+
+        // Keep a tally of how many command linkages we found
+        int cmdCount = 0;
+
+        // Go through the point entities, looking for associated commands
+        for (Entity point : points) {
+
+            // Points without commands have no relationships populated
+            if (point.getRelationsCount() > 0) {
+
+                // Points with commands have only the "feedback" relationship
+                assertEquals(point.getRelationsCount(), 1);
+
+                Relationship feedback = point.getRelationsList().get(0);
+                assertEquals(feedback.getRelationship(), "feedback");
+
+                // Any feedback relationships should be populated
+                List<Entity> commands = feedback.getEntitiesList();
+                assertTrue(commands.size() > 0);
+
+                // We count the number of commands we have for testing purposes; we could create a map
+                for (Entity command : commands) {
+                    assertTrue(command.getTypesList().contains("Command"));
+                    cmdCount++;
+                }
+            }
+        }
+        assertEquals(cmdCount, 2);
+
+    }
 
 	/**
 	 * Select a random substation and look for presence of some well known equipment types.
