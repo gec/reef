@@ -60,7 +60,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     // For now, pass in a get function that always returns an empty list.
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(List[GeneratedMessage]()))
     val model = new CommunicationsModel
-    val loader = new CommunicationsLoader(client)
+    val loader = new CommunicationsLoader(client, new LoadCache().loadCacheCom)
 
     test(Fixture(client, loader, model))
   }
@@ -145,6 +145,76 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       .add(new Equipment("ChapelHill")
         .add(new Equipment("BigBkr")
           .add(new Control("trip", 1, controlProfile))
+          .add(new Analog("Mw", 3, linePowerProfile)))))
+    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    //val protos2 = client.getPutQueue
+    //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
+    protos should equal(client.getPutQueue)
+  }
+
+  def testCommunicationsEndpointProfiles(fixture: Fixture) = {
+    import fixture._
+
+    val path = new java.io.File("../karaf-common/samples/two_substations")
+    val equipmentPointUnits = HashMap[String, String]()
+    equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
+
+    // No profiles
+    //
+    model.add(
+      new Endpoint("Endpoint1")
+      .set(new Interface("i1", "192.168.100.30", 8003))
+      .add(new Equipment("ChapelHill")
+        .add(new Equipment("BigBkr")
+          .add(new Control("trip", 1)
+            .set(new OptionsDnp3("PULSE_CLOSE", 1000, 1000, 1)))
+          .add(new Analog("Mw", 3)
+            .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
+    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    val protos = client.getPutQueue.clone
+    //println( "no profiles protos.length = "+protos.length); protos.foreach( protoPrintln); println(" \n ");
+    protos.length should equal(3)
+
+    //  With EndpointProfile, PointProfile, and ControlProfile
+    //
+    reset
+    val linePowerProfile = new PointProfile("LinePower").set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))
+    val controlProfile = new ControlProfile("Breaker").set(new OptionsDnp3("PULSE_CLOSE", 1000, 1000, 1))
+    model.set(
+      new Profiles()
+      .add(linePowerProfile)
+      .add(controlProfile)
+      .add(new EndpointProfile("EndpointProfile1")
+        .set(new Interface("i1", "192.168.100.30", 8003))
+        .add(new Equipment("ChapelHill")
+          .add(new Equipment("BigBkr")
+            .add(new Control("trip", 1, controlProfile))
+            .add(new Analog("Mw", 3, linePowerProfile))))))
+    model.add(
+      new Endpoint("Endpoint1")
+      .add(new EndpointProfile("EndpointProfile1")))
+    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    //val protos2 = client.getPutQueue
+    //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
+    protos should equal(client.getPutQueue)
+
+    //  With control in EndpointProfile, analog not.
+    //
+    reset
+    model.set(
+      new Profiles()
+      .add(linePowerProfile)
+      .add(controlProfile)
+      .add(new EndpointProfile("EndpointProfile1")
+        .set(new Interface("i1", "192.168.100.30", 8003))
+        .add(new Equipment("ChapelHill")
+          .add(new Equipment("BigBkr")
+            .add(new Control("trip", 1, controlProfile))))))
+    model.add(
+      new Endpoint("Endpoint1")
+      .add(new EndpointProfile("EndpointProfile1"))
+      .add(new Equipment("ChapelHill")
+        .add(new Equipment("BigBkr")
           .add(new Analog("Mw", 3, linePowerProfile)))))
     loader.load(model, path, equipmentPointUnits, true) // T: benchmark
     //val protos2 = client.getPutQueue

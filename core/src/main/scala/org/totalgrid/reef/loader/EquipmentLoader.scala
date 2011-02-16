@@ -34,7 +34,7 @@ import org.totalgrid.reef.api.scalaclient.SyncOperations
  *
  * TODO: generic_type is not set
  */
-class EquipmentLoader(client: SyncOperations) extends Logging {
+class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends Logging {
 
   val equipmentProfiles = HashMap[String, EquipmentType]()
   val pointProfiles = HashMap[String, PointProfile]()
@@ -119,10 +119,11 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name: String, entity: Entity) = {
+  def processControl(name: String, equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
+    loadCache.addControl(name)
     val commandEntity = toEntityType(name, List("Command"))
     val command = toCommand(name, commandEntity)
     commandEntities += (name -> commandEntity)
@@ -130,7 +131,7 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
 
     client.putOrThrow(commandEntity)
     client.putOrThrow(command)
-    client.putOrThrow(toEntityEdge(entity, commandEntity, "feedback"))
+    client.putOrThrow(toEntityEdge(equipmentEntity, commandEntity, "feedback"))
 
     commandEntity
   }
@@ -141,7 +142,7 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
    *
    * TODO: Handle exceptions from invalid name references (ex: control)
    */
-  def processPointType(pointT: PointType, entity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
+  def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
     val name = childPrefix + pointT.getName
@@ -150,7 +151,7 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)
     client.putOrThrow(point)
-    client.putOrThrow(toEntityEdge(entity, pointEntity, "owns"))
+    client.putOrThrow(toEntityEdge(equipmentEntity, pointEntity, "owns"))
 
     val unit = getAttribute[String](name, pointT, _.isSetUnit, _.getUnit, "unit")
     equipmentPointUnits += (name -> unit)
@@ -158,6 +159,7 @@ class EquipmentLoader(client: SyncOperations) extends Logging {
     val controls = getElements[Control](name, pointT, _.getControl.toList)
     controls.map(c => client.putOrThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
 
+    loadCache.addPoint(name, unit)
     // Insert range triggers to the existing trigger set in the system. Overwrite any triggers with the same name.
     // Do not clear the current TriggerSet.
     //

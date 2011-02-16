@@ -45,7 +45,7 @@ object CommunicationsLoader {
  * TODO: Add serial interfaces
  *
  */
-class CommunicationsLoader(client: SyncOperations) extends Logging {
+class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) extends Logging {
 
   val controlProfiles = HashMap[String, ControlProfile]()
   val pointProfiles = HashMap[String, PointProfile]()
@@ -151,6 +151,8 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
     trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
     trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
     trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
+
+    for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex) // TODO fill in endpoint name
 
     // Validate that the indexes within each type are unique
     var errorMsg = "Endpoint '" + endpointName + "':"
@@ -383,6 +385,8 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
       else
         None
 
+      val index = point.getIndex
+
       if (scale.isDefined) {
         val s = scale.get
 
@@ -390,14 +394,21 @@ class CommunicationsLoader(client: SyncOperations) extends Logging {
           throw new Exception("Endpoint '" + endpointName + "': <scale> element used by point '" + name + "' does not have required attribute 'engUnit'")
 
         val unit = s.getEngUnit
+
+        loadCache.addPoint(endpointName, name, index, unit)
+
         equipmentPointUnits.get(name) match {
-          case Some(u) => if (unit != u) throw new Exception("Endpoint '" + endpointName + "': <scale ... engUnit=\"" + unit + "\"/> does not match point '" + name + "' unit=\"" + u + "\" in equipment model.")
+          case Some(u) =>
+            if (unit != u)
+              throw new Exception("Endpoint '" + endpointName + "': <scale ... engUnit=\"" + unit + "\"/> does not match point '" + name + "' unit=\"" + u + "\" in equipment model.")
           case _ => // OK: the equipment point doesn't have to be in this config file. TODO: could check the database.
         }
 
         val point = toPoint(name, toEntityType(name, List("Point")))
 
         addTriggers(client, point, toTrigger(name, s) :: Nil)
+      } else {
+        loadCache.addPoint(endpointName, name, index)
       }
     }
   }
