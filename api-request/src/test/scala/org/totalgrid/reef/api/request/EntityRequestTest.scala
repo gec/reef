@@ -51,7 +51,7 @@ class EntityRequestTest
     val req = EntityRequestBuilders.all
     val resp = client.getOrThrow(req)
 
-    doc.addCase("Get all entities", "Get", "Return all entities in the system. (Shows first three responses)", req, resp.take(3))
+    doc.addCase("Get all entities", "Get", "Return all entities in the system. Shows first three responses.", req, resp.take(3))
 
     val targetUid = resp.head.getUid
     val singleReq = EntityRequestBuilders.forId(targetUid)
@@ -103,7 +103,7 @@ class EntityRequestTest
 
     val req = Entity.newBuilder.setUid(subUid).addRelations(
       Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
-        Entity.newBuilder.addTypes("Breaker").addRelations(
+        Entity.newBuilder.addTypes("Equipment").addRelations(
           Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
             Entity.newBuilder.addTypes("Point"))))).build
 
