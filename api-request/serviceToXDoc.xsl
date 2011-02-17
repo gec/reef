@@ -45,7 +45,7 @@
             <xsl:attribute name="name">
                 <xsl:value-of select="title"/>
             </xsl:attribute>
-            <xsl:value-of select="desc"/>
+            <xsl:copy-of select="desc/div"/>
         </section>
         <xsl:apply-templates select="case"/>
     </xsl:template>
@@ -55,7 +55,7 @@
             <xsl:attribute name="name">
                 <xsl:value-of select="title"/>
             </xsl:attribute>
-            <xsl:value-of select="desc"/>
+            <xsl:copy-of select="desc/div"/>
             <xsl:apply-templates select="request"/>
             <xsl:apply-templates select="response"/>
         </section>
