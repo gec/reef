@@ -14,7 +14,7 @@ option java_outer_classname = "Model";
 
   Together, entities connected by a certain relationship type form an acyclic directed
   graph. The model must not include cycles (given a start entity, it must not be possible
-  to "circle back" to the same entity using the same relationship type and direction).
+  to get back to the same entity using the same relationship type and direction).
 
 */
 message Entity {
