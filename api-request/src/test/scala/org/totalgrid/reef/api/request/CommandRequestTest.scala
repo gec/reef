@@ -24,78 +24,69 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
+import org.totalgrid.reef.proto.Model.{ Command, Entity, Relationship }
 
 @RunWith(classOf[JUnitRunner])
-class PointRequestTest
-    extends ServiceClientSuite("Point.xml", "Point",
+class CommandRequestTest
+    extends ServiceClientSuite("Command.xml", "Command",
       <div>
         <p>
-          A Point represents a configured input point for data acquisition. Measurements associated with
-      this point all use the point name.
+          A Command represents a configured output point. CommandAccess and UserCommandRequest services use
+  this command name.
         </p>
         <p>
-          Every Point is associated with an Entity of type "Point". The point's location in the system
-      model is determined by this entity. Points are also associated with entities designated as
-      "logical nodes", which represent the communications interface/source.
+          Every Command is associated with an Entity of type "Command". The command's location in the
+  system model is determined by this entity. Commands are also associated with entities designated
+  as "logical nodes", which represent the communications interface/source.
         </p>
       </div>)
     with ShouldMatchers {
 
   test("Simple gets") {
 
-    val allReq = Point.newBuilder.setUid("*").build
+    val allReq = Command.newBuilder.setUid("*").build
     val allResp = client.getOrThrow(allReq)
 
-    doc.addCase("Get all", "Get", "Get all Points", allReq, allResp)
+    doc.addCase("Get all", "Get", "Get all Commands", allReq, allResp)
 
-    val uidReq = Point.newBuilder.setUid(allResp.head.getUid).build
-    val uidResp = client.getOneOrThrow(uidReq)
+    /*val uidReq = Command.newBuilder.setUid(allResp.head.getUid).build
+    val uidResp = client.getOrThrow(uidReq)
 
     doc.addCase("Get by UID", "Get", "Get point that matches a certain UID.", uidReq, uidResp)
-
-    val nameReq = Point.newBuilder.setName(allResp.head.getName).build
+    val nameReq = Command.newBuilder.setName(allResp.head.getName).build
     val nameResp = client.getOneOrThrow(nameReq)
 
     doc.addCase("Get by name", "Get", "Get point that matches a certain name.", nameReq, nameResp)
+                                                                                      */
   }
 
   test("Entity query") {
-    val pointEnt = client.getOneOrThrow(Entity.newBuilder.setName("StaticSubstation.Breaker02.Bkr").build)
+    val cmdEnt = client.getOneOrThrow(Entity.newBuilder.setName("StaticSubstation.Breaker02.Trip").build)
 
-    val req = Point.newBuilder.setEntity(Entity.newBuilder.setUid(pointEnt.getUid)).build
+    val req = Command.newBuilder.setEntity(Entity.newBuilder.setUid(cmdEnt.getUid)).build
     val resp = client.getOrThrow(req)
 
     val desc = <div>
-                 Given an Entity of type "Point", the service can return the corresponding Point object.
+                 Given an Entity of type "Command", the service can return the corresponding Command object.
                </div>
 
     doc.addCase("Get by entity", "Get", desc, req, resp)
-
   }
 
-  test("Entity tree query") {
+  /*test("Entity tree query") {
     val entDesc = Entity.newBuilder.setName("StaticSubstation.Breaker02").addRelations(
       Relationship.newBuilder.setRelationship("owns").setDescendantOf(true).addEntities(
-        Entity.newBuilder.addTypes("Point"))).build
+        Entity.newBuilder.addTypes("Command"))).build
 
-    val req = Point.newBuilder.setEntity(entDesc).build
+    val req = Command.newBuilder.setEntity(entDesc).build
     val resp = client.getOrThrow(req)
 
     val desc = <div>
-                 Search for points using an entity tree query. The entity field can be any entity query; any entities of
-      type "Point" that are found will have their corresponding Point objects added to the result set.
+                 Search for commands using an entity tree query. The entity field can be any entity query; any entities of
+      type "Command" that are found will have their corresponding Command objects added to the result set.
                </div>
 
     doc.addCase("Get by entity query", "Get", desc, req, resp)
-
-  }
-
-  /*test("Abnormal") {
-    val putReq = Point.newBuilder.setName("StaticSubstation.Breaker02.Bkr").setAbnormal(true).build
-    val putResp = client.putOneOrThrow(putReq)
-
-    doc.addCase("Set to abnormal", "Put", "Mark a point as being in an abnormal state.", putReq, putResp)
-
   }*/
+
 }

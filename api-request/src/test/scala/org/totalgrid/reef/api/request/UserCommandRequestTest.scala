@@ -31,7 +31,7 @@ class UserCommandRequestTest
     extends ServiceClientSuite("UserCommandRequest.xml", "UserCommandRequest",
       <div>
         <p>
-          Clients use put to issue a command. The CommandRequest object describes the command
+          Clients use UserCommandRequest to issue a command. The CommandRequest object describes the command
         to be executed, and timeout can be specified by the client code.
         </p>
         <p>Status and user are not specified in put. User is identified from the request header.</p>
