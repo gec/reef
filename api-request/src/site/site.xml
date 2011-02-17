@@ -28,7 +28,9 @@
   </bannerLeft>
   <body>
     <menu name="Services">
-        <item name="UserCommandRequest" href="UserCommandRequest.html"/>
+      <item name="Alarm Query" href="AlarmQuery.html"/>
+      <item name="Event Query" href="EventQuery.html"/>
+      <item name="UserCommandRequest" href="UserCommandRequest.html"/>
     </menu>
   </body>
 </project>
