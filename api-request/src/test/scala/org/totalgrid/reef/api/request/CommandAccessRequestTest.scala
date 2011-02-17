@@ -42,14 +42,7 @@ class CommandAccessRequestTest
   determined by the request header.
         </p>
         <p>If not provided, expire_time will be a server-specified default.</p>
-      </div> /*"Represents the access table for the command system. Access entries have one or two" +
-      "modes, \"allowed\" and \"blocked\". Commands cannot be issued unless they have an " +
-      "\"allowed\" entry. This \"selects\" the command for operation by a single user, for " +
-      "as long as access is held. \"Block\" allows selects to be disallowed for commands; " +
-      "meaning no users can access/issue the commands." + "\n" +
-      "Multiple commands can be referenced (by name) in the same access entry. User is " +
-      "determined by the request header. " + "\n" +
-      "If not provided, expire_time will be a server-specified default."*/ )
+      </div>)
     with ShouldMatchers {
 
   test("Search") {
@@ -66,17 +59,17 @@ class CommandAccessRequestTest
     val getReq = CommandAccessRequestBuilders.getForUid(firstResp.getUid)
     val getResp = client.getOneOrThrow(getReq)
 
-    doc.addCase("Get by UID", "Search for an access entry by UID.", getReq, getResp)
+    doc.addCase("Get by UID", "Get", "Search for an access entry by UID.", getReq, getResp)
 
     val getAllReq = CommandAccessRequestBuilders.allAccessEntries
     val getAllResp = client.getOrThrow(getAllReq)
 
-    doc.addCase("Get all", "Search for all access entries.", getAllReq, getAllResp)
+    doc.addCase("Get all", "Get", "Search for all access entries.", getAllReq, getAllResp)
 
     val getUserReq = CommandAccessRequestBuilders.getForUser(firstResp.getUser)
     val getUserResp = client.getOrThrow(getUserReq)
 
-    doc.addCase("Get for user", "Search for all access entries for the given user.", getUserReq, getUserResp)
+    doc.addCase("Get for user", "Get", "Search for all access entries for the given user.", getUserReq, getUserResp)
 
     client.deleteOneOrThrow(firstResp)
     client.deleteOneOrThrow(secondResp)
@@ -89,14 +82,14 @@ class CommandAccessRequestTest
     val create = CommandAccessRequestBuilders.allowAccessForCommand(cmdName)
     val createResp = client.putOneOrThrow(create)
 
-    doc.addCase("Create allow access", "Create ALLOWED access entry for a command.", create, createResp)
+    doc.addCase("Create allow access", "Put", "Create ALLOWED access entry for a command.", create, createResp)
 
     val deleteResp = client.deleteOneOrThrow(createResp)
 
     val delDesc = "The same proto object that was used to create an entry can be used to delete it. " +
       "The service identifies the object by uid, other fields are ignored."
 
-    doc.addCase("Delete access using original object", delDesc, createResp, deleteResp)
+    doc.addCase("Delete access using original object", "Delete", delDesc, createResp, deleteResp)
   }
 
   test("Block") {
@@ -105,12 +98,12 @@ class CommandAccessRequestTest
     val create = CommandAccessRequestBuilders.blockCommands(cmdNames)
     val createResp = client.putOneOrThrow(create)
 
-    doc.addCase("Block commands", "Create BLOCKED access for multiple commands.", create, createResp)
+    doc.addCase("Block commands", "Put", "Create BLOCKED access for multiple commands.", create, createResp)
 
     val deleteReq = CommandAccess.newBuilder.setUid(createResp.getUid).build
     val deleteResp = client.deleteOneOrThrow(deleteReq)
 
-    doc.addCase("Delete access using UID", "Delete a command access object by UID only.", deleteReq, deleteResp)
+    doc.addCase("Delete access using UID", "Delete", "Delete a command access object by UID only.", deleteReq, deleteResp)
   }
 
 }

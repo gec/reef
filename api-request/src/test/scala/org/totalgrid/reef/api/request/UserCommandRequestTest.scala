@@ -29,9 +29,13 @@ import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest }
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest
     extends ServiceClientSuite("UserCommandRequest.xml", "UserCommandRequest",
-      "Clients use put to issue a command. The CommandRequest object describes the command " +
-      "to be executed, and timeout can be specified by the client code. " +
-      "Status and user are not specified in put. User is identified from the request header.")
+      <div>
+        <p>
+          Clients use put to issue a command. The CommandRequest object describes the command
+        to be executed, and timeout can be specified by the client code.
+        </p>
+        <p>Status and user are not specified in put. User is identified from the request header.</p>
+      </div>)
     with ShouldMatchers {
 
   test("Issue command") {
@@ -44,7 +48,12 @@ class UserCommandRequestTest
     val req = UserCommandRequestBuilders.executeCommand(cmdName)
     val resp = client.putOneOrThrow(req)
 
-    doc.addCase("Issue command", desc, req, resp)
+    doc.addCase("Issue command", "Put", desc, req, resp)
+
+    val getReq = UserCommandRequestBuilders.getForUid(resp.getUid)
+    val getResp = client.getOneOrThrow(getReq)
+
+    doc.addCase("Current status of request", "Get", "Get the status of a already-issued command request.", getReq, getResp)
 
     client.deleteOneOrThrow(accResp)
   }

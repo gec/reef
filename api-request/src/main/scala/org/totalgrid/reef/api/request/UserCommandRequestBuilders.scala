@@ -24,6 +24,8 @@ import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, C
 
 object UserCommandRequestBuilders {
 
+  def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(uid).build
+
   def executeCommand(command: String) =
     UserCommandRequest.newBuilder.setCommandRequest(CommandRequest.newBuilder.setName(command)).build
 }

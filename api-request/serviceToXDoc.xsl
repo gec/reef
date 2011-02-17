@@ -62,7 +62,10 @@
     </xsl:template>
 
     <xsl:template match="request">
-        <subsection name="Request">
+        <subsection>
+            <xsl:attribute name="name">
+                Request (<xsl:value-of select="@verb"/>)
+            </xsl:attribute>
             <xsl:apply-templates select="message"/>
         </subsection>
     </xsl:template>
