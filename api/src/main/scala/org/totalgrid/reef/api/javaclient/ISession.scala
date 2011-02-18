@@ -32,6 +32,8 @@ trait ISession {
 
   def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: ServiceHandlerHeaders): java.util.List[A]
 
+  /* -------- Synchronous API ------------ */
+
   def get[A <: AnyRef](payload: A): java.util.List[A]
   def delete[A <: AnyRef](payload: A): java.util.List[A]
   def post[A <: AnyRef](payload: A): java.util.List[A]
@@ -49,6 +51,13 @@ trait ISession {
   def getOne[A <: AnyRef](payload: A, sub: ISubscription): A
   def deleteOne[A <: AnyRef](payload: A, sub: ISubscription): A
   def putOne[A <: AnyRef](payload: A, sub: ISubscription): A
+
+  /* -------- Future API ------------ */
+
+  def getFuture[A <: AnyRef](payload: A): IFuture[A]
+  def deleteFuture[A <: AnyRef](payload: A): IFuture[A]
+  def postFuture[A <: AnyRef](payload: A): IFuture[A]
+  def putFuture[A <: AnyRef](payload: A): IFuture[A]
 
   def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription
 

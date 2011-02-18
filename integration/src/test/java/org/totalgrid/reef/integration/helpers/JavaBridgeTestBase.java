@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.*;
 
 import org.totalgrid.reef.api.IConnectionListener;
-import org.totalgrid.reef.messaging.javabridge.Connection;
+import org.totalgrid.reef.messaging.javaclient.Connection;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 

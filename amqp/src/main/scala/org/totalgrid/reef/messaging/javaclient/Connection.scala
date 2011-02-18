@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javabridge
+package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.sync._

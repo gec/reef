@@ -18,11 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javabridge
+package org.totalgrid.reef.messaging.javaclient
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor }
+import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv, ITypeDescriptor, ISubscription, ServiceTypes }
+import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IFuture, IResult }
+
+import ServiceTypes._
 
 import org.totalgrid.reef.messaging.ProtoClient
 
@@ -55,6 +58,13 @@ class Session(client: ProtoClient) extends ISession {
   def deleteOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.deleteOneOrThrow(payload, getEnv(sub))
   def putOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.putOneOrThrow(payload, getEnv(sub))
   def postOne[A <: AnyRef](payload: A, sub: ISubscription): A = client.postOneOrThrow(payload, getEnv(sub))
+
+  implicit def convert[A](fun: () => MultiResult[A]): IFuture[A] = new Future(fun)
+
+  def getFuture[A <: AnyRef](payload: A): IFuture[A] = client.getWithFuture(payload)
+  def deleteFuture[A <: AnyRef](payload: A): IFuture[A] = client.deleteWithFuture(payload)
+  def postFuture[A <: AnyRef](payload: A): IFuture[A] = client.postWithFuture(payload)
+  def putFuture[A <: AnyRef](payload: A): IFuture[A] = client.putWithFuture(payload)
 
   def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription = {
     client.addSubscription(pd.getKlass, ea.onEvent)
