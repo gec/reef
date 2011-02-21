@@ -1,5 +1,5 @@
 /**
- *  Copyright 2011 Green Energy Corp.
+ * Copyright 2011 Green Energy Corp.
  *
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
  * or more contributor license agreements. See the NOTICE file
