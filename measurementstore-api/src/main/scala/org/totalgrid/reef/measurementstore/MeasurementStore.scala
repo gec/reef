@@ -1,5 +1,5 @@
 /**
- * Copyright 2011 Green Energy Corp.
+ *  Copyright 2011 Green Energy Corp.
  *
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
  * or more contributor license agreements. See the NOTICE file
@@ -32,7 +32,12 @@ trait MeasurementStore extends Historian with RTDatabase with MeasSink {
   val supportsMultipleMeasurementsPerMillisecond = true
 
   /**
-   * tell the measurement store that it can (if it chooses) move measurements before end
+   * supports the trim operation
+   */
+  val supportsTrim = false
+
+  /**
+   *  tell the measurement store that it can (if it chooses) move measurements before end
    * to a slower secondary storage
    * @return whether archiving is supported
    */
@@ -54,4 +59,9 @@ trait MeasurementStore extends Historian with RTDatabase with MeasSink {
    * for archiving and managing though shouldn't be relied on
    */
   def points(): List[String] = Nil
+
+  /**
+   * removes the least recent points so there is only numPoints of history left in the system
+   */
+  def trim(numPoints: Long): Long = { 0 }
 }

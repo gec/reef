@@ -58,11 +58,13 @@ object SqlMeasurementStoreSchema extends Schema {
 }
 
 import org.totalgrid.reef.persistence.ConnectionOperations
-class SqlMeasurementStore(connection: ConnectionOperations[Boolean]) extends MeasurementStore {
+class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividualGets: Boolean = false) extends MeasurementStore {
 
   def makeUpdate(m: Meas, pNameMap: Map[String, Long]): Measurement = {
     new Measurement(pNameMap.get(m.getName).get, m.getTime, m.toByteString.toByteArray)
   }
+
+  override val supportsTrim = true
 
   override def reset(): Boolean = {
     connection.doSync[Boolean] { r =>
@@ -71,6 +73,19 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean]) extends Mea
       }
       Some(true)
     }.getOrElse(throw new Exception("Couldn't reset database"))
+  }
+
+  override def trim(numPoints: Long): Long = {
+    connection.doSync[Long] { r =>
+      transaction {
+        val counts: Long = from(SqlMeasurementStoreSchema.updates)(u => compute(count(u.id)))
+        if (numPoints < counts) {
+          def ids = from(SqlMeasurementStoreSchema.updates)(u => where(true === true) select (u.id) orderBy (u.measTime.asc)).page(numPoints.toInt, Int.MaxValue)
+          SqlMeasurementStoreSchema.updates.deleteWhere(u => u.id in ids)
+        }
+        Some(counts - numPoints)
+      }
+    }.getOrElse(throw new Exception("Couldn't trim database"))
   }
 
   override def points(): List[String] = {
@@ -121,29 +136,32 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean]) extends Mea
         val pNames = SqlMeasurementStoreSchema.names.where(n => n.name in names).toList
         pNames.foreach { p => insertedMeas = insertedMeas - p.id + (p.id -> p.name) }
 
-        /*insertedMeas.foreach { case (pointId, name) =>
-          val proto = from(SqlMeasurementStoreSchema.updates)(u =>
-            where(u.pointId === pointId) select(u.proto)
-              orderBy (timeOrder(u.measTime, false), timeOrder(u.id, false))).page(0, 1).single
-          m = m + (name -> Meas.parseFrom(proto))
-        }*/
+        if (doIndividualGets) {
+          insertedMeas.foreach {
+            case (pointId, name) =>
+              val proto = from(SqlMeasurementStoreSchema.updates)(u =>
+                where(u.pointId === pointId) select (u.proto)
+                  orderBy (timeOrder(u.measTime, false), timeOrder(u.id, false))).page(0, 1).single
+              m = m + (name -> Meas.parseFrom(proto))
+          }
+        } else {
+          // http://groups.google.com/group/squeryl/browse_frm/thread/b58f3f8c23f76eb
 
-        // http://groups.google.com/group/squeryl/browse_frm/thread/b58f3f8c23f76eb
+          val ids = insertedMeas.keys.toList
 
-        val ids = insertedMeas.keys.toList
+          def maxMeasTime =
+            from(SqlMeasurementStoreSchema.updates)(m =>
+              where((m.pointId in ids))
+                groupBy (m.pointId)
+                compute (max(m.measTime)))
+          def byId = join(SqlMeasurementStoreSchema.updates, maxMeasTime)((m, mmt) =>
+            select(m.pointId, m.measTime, m.proto)
+              on ((m.pointId === mmt.key) and (m.measTime === mmt.measures)))
 
-        def maxMeasTime =
-          from(SqlMeasurementStoreSchema.updates)(m =>
-            where((m.pointId in ids))
-              groupBy (m.pointId)
-              compute (max(m.measTime)))
-        def byId = join(SqlMeasurementStoreSchema.updates, maxMeasTime)((m, mmt) =>
-          select(m.pointId, m.measTime, m.proto)
-            on ((m.pointId === mmt.key) and (m.measTime === mmt.measures)))
-
-        byId.foreach {
-          case (pid, time, proto) =>
-            m = m + (insertedMeas.get(pid).get -> Meas.parseFrom(proto))
+          byId.foreach {
+            case (pid, time, proto) =>
+              m = m + (insertedMeas.get(pid).get -> Meas.parseFrom(proto))
+          }
         }
       }
 

@@ -27,6 +27,7 @@ import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
+import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
 /**
  * list of all of the service providers in the system
@@ -77,6 +78,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),
+    new HistoryTrimmer(cm, 60 * 15 * 1000, 100000),
     //serviceContainer.addCoordinator(new PointAbnormalsThunker(modelFac.points, summaries))
     //serviceContainer.addCoordinator(new AlarmSummaryInitializer(modelFac.alarms, summaries))
     new EventStreamThunker(modelFac.events, List("raw_events")))

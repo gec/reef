@@ -250,4 +250,24 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
     result.size should equal(0)
   }
 
+  test("Trim Points") {
+
+    if (cm.supportsTrim) {
+
+      val basename = "TrimmedPoints"
+
+      val num = 20
+      val meas = for (i <- 1 to num) yield getMeas(basename, 100 + i)
+
+      cm.remove(meas.map { _.getName })
+      cm.set(meas)
+
+      cm.trim(5)
+
+      cm.getOldest(basename, num).size should equal(5)
+
+      cm.getNewest(basename).get.getTime should equal(105)
+    }
+  }
+
 }
