@@ -33,6 +33,8 @@
       <item name="CommandAccess" href="CommandAccess.html"/>
       <item name="Entity" href="Entity.html"/>
       <item name="Event Query" href="EventQuery.html"/>
+      <item name="MeasurementBatch" href="MeasurementBatch.html"/>
+      <item name="MeasurementSnapshot" href="MeasurementSnapshot.html"/>
       <item name="Point" href="Point.html"/>
       <item name="UserCommandRequest" href="UserCommandRequest.html"/>
     </menu>
