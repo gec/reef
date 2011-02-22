@@ -24,12 +24,12 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
-import org.totalgrid.reef.util.SyncVar
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.api.{ IConnectionListener, RequestEnv, ServiceHandlerHeaders }
 import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
 import org.totalgrid.reef.proto.ReefServicesList
 import xml.Node
+import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
 
 abstract class ServiceClientSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -53,7 +53,8 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
 
   import ServiceHandlerHeaders._
 
-  val config = new BrokerConnectionInfo("127.0.0.1", 5672, "guest", "guest", "test")
+  // gets default connection settings or overrides using system properties
+  val config = BrokerConnectionInfo.loadInfo(new SystemPropertyConfigReader())
   val factory = new AMQPSyncFactory with ReactActor {
     val broker = new QpidBrokerConnection(config)
   }
@@ -74,6 +75,7 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
 }
 
 object ServiceClientSuite {
+  // TODO: move BrokerConnectionState into amqp
   class BrokerConnectionState extends IConnectionListener {
     private val connected = new SyncVar(false)
 
