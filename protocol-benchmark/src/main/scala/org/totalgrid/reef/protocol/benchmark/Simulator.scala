@@ -39,7 +39,6 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
   private val delay = config.getDelay
-  private val batchSize = config.getBatchSize
 
   private val measurements = config.getMeasurementsList.map { x => MeasRecord(x.getName, x.getUnit, getValueHolder(x)) }.toList
   private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
@@ -49,20 +48,18 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
 
   override def afterStart() {
     reactor.execute { update(measurements, true) }
-    setUpdateParams(delay, batchSize)
+    setUpdateParams(delay)
   }
   override def beforeStop() {
     repeater.foreach { _.cancel }
   }
 
-  def setUpdateParams(newDelay: Int, newBatchSize: Int) = reactor.execute {
-    info { "Updating parameters for " + name + ": delay = " + delay + " batch_size = " + batchSize }
+  def setUpdateParams(newDelay: Int) = reactor.execute {
+    info { "Updating parameters for " + name + ": delay = " + delay }
     repeater.foreach(_.cancel)
     if (delay > 0) {
       repeater = Some(reactor.repeat(delay) {
-        // Pick batchSize random values to update from the map
-        val meases = for (i <- 1 to batchSize) yield measurements(rand.nextInt(measurements.size))
-        update(meases.toList)
+        update(measurements.toList)
       })
     }
   }
