@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.1.2-SNAPSHOT</version>
+        <version>0.2.0</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-protocol-benchmark</artifactId>
@@ -46,21 +46,21 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>compile</scope>
         </dependency>
         <!--
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-core</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>compile</scope>
         </dependency>
         -->
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
