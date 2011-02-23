@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.1.2-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -48,6 +48,10 @@
                         <version>2.2</version>
                         <configuration>
                             <siteDirectory>target/site-dir</siteDirectory>
+                            <!-- Future updates with collapsible sections.
+                            <templateDirectory>src/site</templateDirectory>
+                            <template>site.vm</template>
+                            -->
                         </configuration>
                       </plugin>
                     <plugin>
@@ -123,6 +127,10 @@
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
                     <header>../APACHE_FILE_HEADER</header>
+                    <excludes>
+                        <exclude>**/js/jquery*</exclude>
+                        <exclude>**/site/site.vm</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -132,25 +140,25 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-amqp</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-api</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.1.2-SNAPSHOT</version>
+            <version>0.2.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

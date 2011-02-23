@@ -449,7 +449,6 @@ object OptionalProtos {
   implicit def proto2OptSimMappingSimulatorMapping(a: org.totalgrid.reef.proto.SimMapping.SimulatorMapping): OptSimMappingSimulatorMapping = new OptSimMappingSimulatorMapping(Some(a))
   class OptSimMappingSimulatorMapping(real: Option[org.totalgrid.reef.proto.SimMapping.SimulatorMapping]) extends OptionalStruct(real) {
     val delay = optionally(_.getDelay)
-    val batchSize = optionally(_.getBatchSize)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptSimMappingMeasSim(Some(i)) })
     val commands = optionally(_.getCommandsList.toList.map { i => new OptSimMappingCommandSim(Some(i)) })
   }

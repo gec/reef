@@ -32,7 +32,6 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   def makeSimpleMapping() = {
     SimMapping.SimulatorMapping.newBuilder
       .setDelay(100)
-      .setBatchSize(10)
       .addMeasurements(makeAnalogSim())
       .addCommands(makeCommandSim("success", Commands.CommandStatus.SUCCESS))
       .addCommands(makeCommandSim("fail", Commands.CommandStatus.HARDWARE_ERROR))

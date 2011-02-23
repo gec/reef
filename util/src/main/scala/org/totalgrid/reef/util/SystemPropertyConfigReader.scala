@@ -18,17 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.util
 
-import org.totalgrid.reef.util.{ ConfigReader, BuildEnv }
+class SystemPropertyConfigReader extends ConfigReader {
 
-object BrokerConnectionInfo {
-
-  def loadInfo(cr: ConfigReader): BrokerConnectionInfo = AMQPProperties.get(cr)
-
-  def loadInfo(env: String): BrokerConnectionInfo = loadInfo(BuildEnv.cfgFileReader(env))
-
-  def loadInfo(): BrokerConnectionInfo = loadInfo(BuildEnv.environment)
+  def getProp(key: String): Option[String] = Option(System.getProperty(key))
 }
-
-class BrokerConnectionInfo(val host: String, val port: Int, val user: String, val password: String, val virtualHost: String)

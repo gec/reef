@@ -27,7 +27,6 @@ message CommandSim {
 
 message SimulatorMapping {
     required uint32      delay         = 1;
-    required uint32      batch_size    = 2;
     
     repeated MeasSim     measurements  = 3;
     repeated CommandSim  commands      = 4;

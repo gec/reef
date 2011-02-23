@@ -615,7 +615,6 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
 
     val simMap = SimMapping.SimulatorMapping.newBuilder
 
-    simMap.setBatchSize(10)
     simMap.setDelay(delay getOrElse 500)
 
     simMap.addAllMeasurements(pointProtos.toList)
@@ -689,7 +688,7 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(simMapping.toByteString)
     info(simMapping.toString)
-    println(simMapping.toString)
+
     proto
   }
 }
