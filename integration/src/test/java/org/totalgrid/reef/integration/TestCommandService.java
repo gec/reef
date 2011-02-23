@@ -51,7 +51,7 @@ public class TestCommandService extends JavaBridgeTestBase {
 			SampleRequests.executeControl(client, "user", c);
 			fail("should throw exception");
 		} catch (ServiceException pse) {
-			assertEquals(Envelope.Status.NOT_ALLOWED, pse.getStatus());
+			assertEquals(Envelope.Status.BAD_REQUEST, pse.getStatus());
 		}
 	}
 

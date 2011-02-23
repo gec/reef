@@ -26,7 +26,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment, Applic
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.ServiceException
+import org.totalgrid.reef.api.BadRequestException
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
@@ -107,7 +107,7 @@ class MeasurementProcessingConnectionServiceModel(
 
   override def updateFromProto(proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
 
-    if (!proto.hasReadyTime) throw new ServiceException("Measurement processor being updated without ready set!")
+    if (!proto.hasReadyTime) throw new BadRequestException("Measurement processor being updated without ready set!")
 
     if (existing.readyTime.isDefined) warn("Measurement processor already marked as ready!")
 

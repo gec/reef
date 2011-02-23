@@ -18,29 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.api.javaclient
 
-/**
- * Base class for all exceptions thrown directly by services
- */
-abstract class ServiceException(val msg: String) extends RuntimeException(msg) {
-
-  val status: Envelope.Status
-
-  def getStatus = status
-  def getMsg = msg
+trait IResultAcceptor[A] {
+  def onResult(result: IResult[A])
 }
 
-class ResponseTimeoutException extends ServiceException("Response timed out") {
-  val status = Envelope.Status.RESPONSE_TIMEOUT
-}
-
-abstract class ReplyException(msg: String) extends ServiceException(msg)
-
-class ExpectationException(msg: String) extends ReplyException(msg) {
-  val status = Envelope.Status.UNEXPECTED_RESPONSE
-}
-
-class BadRequestException(msg: String, val status: Envelope.Status = Envelope.Status.BAD_REQUEST) extends ReplyException(msg)
-
-class UnauthorizedException(msg: String) extends BadRequestException(msg, Envelope.Status.UNAUTHORIZED)

@@ -31,7 +31,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 class UserCommandRequestServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel], accessFac: ModelFactory[CommandAccessServiceModel])
     extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](pub, classOf[UserCommandRequest]) {
@@ -79,7 +79,7 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
     // Search for the requested command and validate it exists
     val cmds = commandModel.table.where(t => t.name === command).toList
     if (cmds.length != 1)
-      throw new ServiceException("Command does not exist: " + cmds.length, Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Command does not exist: " + cmds.length)
 
     cmds.head
   }
@@ -92,14 +92,14 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
       create(new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, serializedCmd))
 
     } else {
-      throw new ServiceException("Command not selected", Envelope.Status.NOT_ALLOWED)
+      throw new BadRequestException("Command not selected")
     }
   }
 
   override def createFromProto(req: UserCommandRequest): UserCommandModel = {
     import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-    val user = env.userName getOrElse { throw new ServiceException("User must be in header.") }
+    val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
 
     val (id, serialized) = if (req.commandRequest.correlationId.isEmpty) {
       val cid = System.currentTimeMillis + "-" + user
@@ -118,7 +118,7 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
 
   override def updateFromProto(req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
-      throw new ServiceException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
+      throw new BadRequestException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
 
     update(existing.copy(status = req.getStatus.getNumber), existing)
   }

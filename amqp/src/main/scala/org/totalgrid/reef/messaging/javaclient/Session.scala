@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging.javaclient
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv, ITypeDescriptor, ISubscription, ServiceTypes }
-import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IFuture, IResult }
+import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IFuture, IResult, IResultAcceptor }
 
 import ServiceTypes._
 
@@ -65,6 +65,16 @@ class Session(client: ProtoClient) extends ISession {
   def deleteFuture[A <: AnyRef](payload: A): IFuture[A] = client.deleteWithFuture(payload)
   def postFuture[A <: AnyRef](payload: A): IFuture[A] = client.postWithFuture(payload)
   def putFuture[A <: AnyRef](payload: A): IFuture[A] = client.putWithFuture(payload)
+
+  /* -------- Asynchronous API ------ */
+
+  implicit def convert[A](callback: IResultAcceptor[A]): MultiResult[A] => Unit =
+    (result: MultiResult[A]) => callback.onResult(new Result(result))
+
+  def getAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncGet(payload)(callback)
+  def deleteAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncDelete(payload)(callback)
+  def postAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPost(payload)(callback)
+  def putAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPut(payload)(callback)
 
   def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription = {
     client.addSubscription(pd.getKlass, ea.onEvent)

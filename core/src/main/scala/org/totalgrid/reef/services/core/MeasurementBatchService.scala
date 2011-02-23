@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceException, ServiceTypes }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, ServiceTypes }
 
 class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[MeasurementBatch] {
 
@@ -47,13 +47,13 @@ class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[Me
       // TODO: load all endpoints efficiently
 
       if (!points.forall(_.endpoint.value.isDefined)) {
-        throw new ServiceException("Not all points have endpoints set.")
+        throw new BadRequestException("Not all points have endpoints set.")
       }
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
 
       val destForBatchs = commEndpoints.size match {
-        case 0 => throw new ServiceException("No Logical Nodes on points: " + names)
+        case 0 => throw new BadRequestException("No Logical Nodes on points: " + names)
         case 1 => (commEndpoints.head._1, req) :: Nil
         case _ => rebuildBatches(req, commEndpoints)
       }
@@ -65,7 +65,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[Me
               client.putOrThrow(batch)
               client.close()
             case None =>
-              throw new ServiceException("Measurement Stream not ready.")
+              throw new BadRequestException("Measurement Stream not ready.")
           }
       }
       val sentBatches = destForBatchs.map { case (ce, batch) => batch }

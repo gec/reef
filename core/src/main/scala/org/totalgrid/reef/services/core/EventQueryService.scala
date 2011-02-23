@@ -106,10 +106,10 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
   override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 
-    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
 
     if (!req.hasSelect)
-      throw new ServiceException("Must include select")
+      throw new BadRequestException("Must include select")
 
     modelTrans.transaction { (model: EventServiceModel) =>
 

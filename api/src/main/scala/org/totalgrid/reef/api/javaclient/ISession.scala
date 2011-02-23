@@ -59,7 +59,11 @@ trait ISession {
   def postFuture[A <: AnyRef](payload: A): IFuture[A]
   def putFuture[A <: AnyRef](payload: A): IFuture[A]
 
-  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription
+  /* -------- Asynchronous API ------ */
+
+  def getAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A])
+
+  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription
 
   def getDefaultEnv(): ServiceHandlerHeaders
 

@@ -39,7 +39,7 @@ class ConfigService(protected val entityService: EntityService, protected val en
 
   override def put(req: ConfigFile, env: RequestEnv): Response[ConfigFile] = {
 
-    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
 
     //  TODO: load a file by name or, even better, use getFile to get the bytes of the file
     if (req.hasName) {

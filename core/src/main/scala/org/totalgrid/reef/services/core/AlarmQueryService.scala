@@ -32,7 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api.{ Envelope, ServiceException, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -74,10 +74,10 @@ class AlarmQueryService
     import ApplicationSchema._
     import AlarmQueryService._
 
-    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
 
     if (!req.hasSelect)
-      throw new ServiceException("Must include select")
+      throw new BadRequestException("Must include select")
 
     transaction {
 

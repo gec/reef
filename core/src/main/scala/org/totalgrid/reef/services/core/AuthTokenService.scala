@@ -34,7 +34,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 // Implicit squeryl list -> query conversion
 
@@ -179,7 +179,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
   def postLoginException(agentName: String, currentTime: Long, status: Status, reason: String): AgentModel = {
     postLoginEvent(agentName, currentTime, status, reason)
-    throw new ServiceException(reason, status)
+    throw new BadRequestException(reason, status)
   }
 
   override def updateFromProto(req: AuthToken, existing: AuthTokenModel): (AuthTokenModel, Boolean) = {

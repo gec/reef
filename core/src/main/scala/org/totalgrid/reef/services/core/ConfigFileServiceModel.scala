@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api.ServiceException
+import org.totalgrid.reef.api.BadRequestException
 
 import SquerylModel._
 
@@ -71,7 +71,7 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
 
   override def createFromProto(req: ConfigProto): ConfigFile = {
     if (!req.hasMimeType || !req.hasFile || !req.hasName) {
-      throw new ServiceException("Cannot add config file without mimeType, file text and name set")
+      throw new BadRequestException("Cannot add config file without mimeType, file text and name set")
     }
     create(createModelEntry(req))
   }
