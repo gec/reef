@@ -106,7 +106,7 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   test("MockProtoConsumerRequestTimeout") {
     val reg = new MockServiceClient(1)
-    val exc = intercept[ServiceException] {
+    val exc = intercept[ReefServiceException] {
       reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build)
     }
     exc.status should equal(Envelope.Status.RESPONSE_TIMEOUT)

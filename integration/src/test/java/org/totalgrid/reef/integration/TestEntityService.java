@@ -24,6 +24,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
+import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -71,7 +72,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * 
 	 * */
 	@Test
-	public void getAllEntities() {
+	public void getAllEntities() throws ReefServiceException {
 		Entity request = Entity.newBuilder().setUid("*").build();
 		List<Entity> list = client.get(request);
 		assertTrue(list.size() > 0); // the number here is arbitrary
@@ -83,7 +84,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 *
 	 * */
 	@Test
-	public void getSubstationEntities() {
+	public void getSubstationEntities() throws ReefServiceException {
 		Entity request = Entity.newBuilder().addTypes("Substation").build();
 		Map<String, Entity> map = getEntityMap(client.get(request));
 		assertEquals(2, map.size());
@@ -95,7 +96,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * Test that their is self-consistency between points and point entities
 	 */
 	@Test
-	public void pointToPointEntityConsistency() {
+	public void pointToPointEntityConsistency() throws ReefServiceException {
 		List<Point> points = SampleRequests.getAllPoints(client);
 
 		Entity request = Entity.newBuilder().addTypes("Point").build();
@@ -117,7 +118,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * Test that their is self-consistency between points, point entities, and equipment
 	 */
 	@Test
-	public void equipmentToPointConsistency() {
+	public void equipmentToPointConsistency() throws ReefServiceException {
 		List<Point> points = SampleRequests.getAllPoints(client);
 
 		Entity request = Entity.newBuilder().addTypes("Point").build();
@@ -139,7 +140,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * Test that all commands are owned by one and only one point
 	 */
 	@Test
-	public void allCommandsHaveOnePointForFeedback() {
+	public void allCommandsHaveOnePointForFeedback() throws ReefServiceException {
 
 		// get all commands in the system and fill out any relationships of type feedback with
 		// points
@@ -165,7 +166,7 @@ public class TestEntityService extends JavaBridgeTestBase {
      * Find all the points under a substation and their associated commands in one step.
      */
     @Test
-    public void commandsToPointsMapping() {
+    public void commandsToPointsMapping() throws ReefServiceException {
         // First get a substation we can use as an example root
         Entity sub = client.getOne(Entity.newBuilder().setName("StaticSubstation").build());
 
@@ -223,7 +224,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * 
 	 */
 	@Test
-	public void getEquipmentInASubstation() {
+	public void getEquipmentInASubstation() throws ReefServiceException {
 
         Entity substation = SampleRequests.getRandomSubstation(client);
 

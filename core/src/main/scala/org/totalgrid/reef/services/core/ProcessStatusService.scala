@@ -161,7 +161,7 @@ class ProcessStatusModel(subHandler: ServiceSubscriptionHandler)
   def deserialize(bytes: Array[Byte]) = StatusSnapshot.parseFrom(bytes)
 
   def toSql(proto: StatusSnapshot): HeartbeatStatus = {
-    throw new ServiceException("can't put heartbeat configuations")
+    throw new ReefReefServiceException("can't put heartbeat configuations")
   }
 
   def toProto(sql: HeartbeatStatus): StatusSnapshot = {

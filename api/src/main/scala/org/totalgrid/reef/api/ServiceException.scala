@@ -23,7 +23,7 @@ package org.totalgrid.reef.api
 /**
  * Base class for all exceptions thrown directly by services
  */
-abstract class ServiceException(val msg: String) extends RuntimeException(msg) {
+abstract class ReefServiceException(val msg: String) extends Exception(msg) {
 
   val status: Envelope.Status
 
@@ -31,11 +31,19 @@ abstract class ServiceException(val msg: String) extends RuntimeException(msg) {
   def getMsg = msg
 }
 
-class ResponseTimeoutException extends ServiceException("Response timed out") {
+class UnknownServiceException(msg: String) extends ReefServiceException(msg) {
+  val status = Envelope.Status.LOCAL_ERROR
+}
+
+class ServiceIOException(msg: String) extends ReefServiceException(msg) {
+  val status = Envelope.Status.LOCAL_ERROR
+}
+
+class ResponseTimeoutException extends ReefServiceException("Response timed out") {
   val status = Envelope.Status.RESPONSE_TIMEOUT
 }
 
-abstract class ReplyException(msg: String) extends ServiceException(msg)
+abstract class ReplyException(msg: String) extends ReefServiceException(msg)
 
 class ExpectationException(msg: String) extends ReplyException(msg) {
   val status = Envelope.Status.UNEXPECTED_RESPONSE

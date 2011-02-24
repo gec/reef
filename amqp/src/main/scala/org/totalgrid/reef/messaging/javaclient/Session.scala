@@ -58,7 +58,7 @@ class Session(client: ProtoClient) extends ISession {
   def getOne[A <: AnyRef](payload: A): A = client.getOneOrThrow(payload)
   def deleteOne[A <: AnyRef](payload: A): A = client.deleteOneOrThrow(payload)
   def putOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
-  def postOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
+  def postOne[A <: AnyRef](payload: A): A = client.postOneOrThrow(payload)
 
   def getOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.getOneOrThrow(payload, hdr)
   def deleteOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.deleteOneOrThrow(payload, hdr)
@@ -71,6 +71,11 @@ class Session(client: ProtoClient) extends ISession {
   def deleteFuture[A <: AnyRef](payload: A): IFuture[A] = client.deleteWithFuture(payload)
   def postFuture[A <: AnyRef](payload: A): IFuture[A] = client.postWithFuture(payload)
   def putFuture[A <: AnyRef](payload: A): IFuture[A] = client.putWithFuture(payload)
+
+  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.getWithFuture(payload, hdr)
+  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.deleteWithFuture(payload, hdr)
+  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.postWithFuture(payload, hdr)
+  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.putWithFuture(payload, hdr)
 
   /* -------- Asynchronous API ------ */
 

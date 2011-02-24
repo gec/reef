@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;
 import java.util.List;
 
-import org.totalgrid.reef.api.ServiceException;
+import org.totalgrid.reef.api.ReefServiceException;
 
 
 import org.totalgrid.reef.integration.helpers.*;
@@ -38,26 +38,26 @@ public class TestCommandService extends JavaBridgeTestBase {
 
 	/** Test that some command names are returned from the commands service */
 	@Test
-	public void someCommandsReturned() {
+	public void someCommandsReturned() throws ReefServiceException {
 		List<Command> commands = SampleRequests.getAllCommands(client);
 		assertTrue(commands.size() > 0);
 	}
 
 	/** Test that some command names are returned from the commands service */
 	@Test
-	public void testCommandFailsWithoutSelect() {
+	public void testCommandFailsWithoutSelect() throws ReefServiceException {
 		Command c = SampleRequests.getAllCommands(client).get(0);
 		try {
 			SampleRequests.executeControl(client, "user", c);
 			fail("should throw exception");
-		} catch (ServiceException pse) {
+		} catch (ReefServiceException pse) {
 			assertEquals(Envelope.Status.BAD_REQUEST, pse.getStatus());
 		}
 	}
 
 	/** Test that command access request can be get, put, and deleted */
 	@Test
-	public void testGetPutDeleteCommandAccess() {
+	public void testGetPutDeleteCommandAccess() throws ReefServiceException {
 		Command cmd = SampleRequests.getAllCommands(client).get(0);
 
 		// clear any existing command access entries on this command, this
@@ -71,7 +71,7 @@ public class TestCommandService extends JavaBridgeTestBase {
 
 	/** Test that some command names are returned from the commands service */
 	@Test
-	public void testCommandSelectAndExecute() {
+	public void testCommandSelectAndExecute() throws ReefServiceException {
 		Command cmd = SampleRequests.getAllCommands(client).get(0);
 		SampleRequests.clearCommandAccess(client, cmd.getName());
 		CommandAccess accessResponse = SampleRequests.putCommandAccess(client, "user", cmd, 5000, true);

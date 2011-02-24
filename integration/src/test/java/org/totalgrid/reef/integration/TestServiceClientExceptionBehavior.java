@@ -23,6 +23,7 @@ package org.totalgrid.reef.integration;
 import static org.junit.Assert.*;
 import org.junit.*;
 import org.totalgrid.reef.proto.Model.Entity;
+import org.totalgrid.reef.api.ReefServiceException;
 
 import org.totalgrid.reef.integration.helpers.*;
 
@@ -36,7 +37,7 @@ public class TestServiceClientExceptionBehavior extends JavaBridgeTestBase {
 		try {
 			client.get(Entity.newBuilder().setUid("*").build());
 			fail("Closed client should throw exception");
-		} catch (Exception ex) {
+		} catch (ReefServiceException ex) {
 		}
 	}
 
