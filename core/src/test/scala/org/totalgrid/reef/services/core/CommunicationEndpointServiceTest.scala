@@ -35,11 +35,14 @@ import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Model._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
   override def beforeAll() {
     DbConnector.connect(DbInfo.loadInfo("test"))
@@ -160,6 +163,19 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
     intercept[ServiceException] {
       endpointService.put(getEndpoint().setPort(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
     }
+  }
+
+  test("Shared Config file") {
+    val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
+    val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
+
+    val returned1 = one(endpointService.put(endpoint1.build))
+    val returned2 = one(endpointService.put(endpoint2.build))
+
+    returned1.getConfigFilesCount should equal(1)
+    returned2.getConfigFilesCount should equal(1)
+
+    returned1.getConfigFiles(0).getUid should equal(returned2.getConfigFiles(0).getUid)
   }
 
   test("Endpoint with no ownerships blows up") {

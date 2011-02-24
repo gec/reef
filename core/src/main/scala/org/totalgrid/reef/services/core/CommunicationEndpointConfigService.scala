@@ -106,7 +106,7 @@ class CommEndCfgServiceModel(
 
     commandModel.createAndSetOwningNode(request.ownerships.commands.getOrElse(Nil), ent)
 
-    configModel.setOwningEntity(request.getConfigFilesList.toList, ent)
+    configModel.addOwningEntity(request.getConfigFilesList.toList, ent)
   }
 
   def createModelEntry(proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {

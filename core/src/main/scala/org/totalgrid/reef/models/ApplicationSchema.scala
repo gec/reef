@@ -196,12 +196,21 @@ case class FrontEndPort(
 }
 
 case class ConfigFile(
-    val name: String,
+    val entityId: Long,
     val mimeType: String,
-    var file: Array[Byte],
-    var entityId: Option[Long]) extends ModelWithId {
+    var file: Array[Byte]) extends ModelWithId {
 
-  def this() = this("", "", Array.empty[Byte], Some(0))
+  def this(ent: Entity, mimeType: String, file: Array[Byte]) {
+    this(ent.id, mimeType, file)
+    entity.value = ent
+  }
+
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val owners = LazyVar(EQ.getParents(entity.value.id, "uses").toList)
+
+  /// this flag allows us to tell if we have modified
+  @Transient
+  var changedOwners = false
 }
 
 case class CommunicationEndpoint(
@@ -216,7 +225,7 @@ case class CommunicationEndpoint(
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
-  val configFiles = LazyVar(ApplicationSchema.configFiles.where(p => p.entityId === entityId))
+  val configFiles = LazyVar(Entity.asType(ApplicationSchema.configFiles, EQ.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList, Some("ConfigurationFile")))
 
   val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
   val name = LazyVar(entity.value.name)

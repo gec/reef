@@ -48,7 +48,7 @@ class ConfigFileServiceTest extends FunSuite with ShouldMatchers with BeforeAndA
   def makeConfigFile(name: String, mime: String, data: String, owner: Option[Entity] = None) = {
     import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
     val cfb = ConfigFile.newBuilder.setName(name).setMimeType(mime).setFile(data)
-    owner.foreach(cfb.setEntity(_))
+    owner.foreach(cfb.addEntities(_))
     cfb.build
   }
 
@@ -110,8 +110,33 @@ class ConfigFileServiceTest extends FunSuite with ShouldMatchers with BeforeAndA
     one(Status.CREATED, s.put(makeConfigFile("testFile3", "html", "blah", Some(node1))))
     one(Status.CREATED, s.put(makeConfigFile("testFile4", "html", "blah", Some(node2))))
 
-    many(3, s.get(ConfigFile.newBuilder.setEntity(node1).build))
-    many(1, s.get(ConfigFile.newBuilder.setEntity(node2).build))
+    many(3, s.get(ConfigFile.newBuilder.addEntities(node1).build))
+    many(1, s.get(ConfigFile.newBuilder.addEntities(node2).build))
+  }
+
+  test("Shared Entity Ownership") {
+    val publisher = new SilentEventPublishers
+
+    val es = new EntityService()
+
+    val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
+
+    val node1 = one(es.put(Entity.newBuilder.setName("node1").addTypes("magic").build))
+    val node2 = one(es.put(Entity.newBuilder.setName("node2").addTypes("magic").build))
+    val node3 = one(es.put(Entity.newBuilder.setName("node3").addTypes("magic").build))
+
+    one(Status.CREATED, s.put(makeConfigFile("sharedFile", "text", "blah", Some(node1))))
+    one(Status.UPDATED, s.put(makeConfigFile("sharedFile", "text", "blah", Some(node2))))
+    one(Status.CREATED, s.put(makeConfigFile("testFile1", "html", "blah", Some(node1))))
+    one(Status.CREATED, s.put(makeConfigFile("testFile2", "html", "blah", Some(node2))))
+
+    many(2, s.get(ConfigFile.newBuilder.addEntities(node1).build))
+    many(2, s.get(ConfigFile.newBuilder.addEntities(node2).build))
+
+    // if we ask for multiple entities we get the union of their config files
+    many(3, s.get(ConfigFile.newBuilder.addEntities(node1).addEntities(node2).build))
+
+    many(0, s.get(ConfigFile.newBuilder.addEntities(node3).build))
   }
 
 }
