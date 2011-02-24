@@ -24,6 +24,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.ISubscription;
+import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Alarms;
 import org.totalgrid.reef.proto.Events;
@@ -40,7 +41,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
      * insert an event config and post an event of that type to generate the alarm
      */
     @Test
-    public void prepareAlarms() {
+    public void prepareAlarms()  throws ReefServiceException {
         client.putOne(EventConfig.newBuilder()
                 .setEventType("Test.Alarm")
                 .setResource("Alarm")
@@ -58,7 +59,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 
 	/** Test that some alarms are returned from the AlarmQuery service */
 	@Test
-	public void simpleQueries() {
+	public void simpleQueries() throws ReefServiceException {
 
 		// Get all alarms that are not removed.
 		List<Alarm> alarms = SampleRequests.getUnRemovedAlarms(client, "Test.Alarm");
@@ -68,7 +69,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 
 	/** Test getting alarms for a whole substation or individual device */
 	@Test
-	public void entityQueries() {
+	public void entityQueries()  throws ReefServiceException {
 
 		// Get the first substation
 		Entity substation = SampleRequests.getRandomSubstation(client);
@@ -84,7 +85,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 
 	/** Test alarm state update. */
 	@Test
-	public void updateAlarms() {
+	public void updateAlarms()  throws ReefServiceException {
 
 		// Get unacknowledged alarms.
 		List<Alarm> alarms = SampleRequests.getUnRemovedAlarms(client, "Test.Alarm");

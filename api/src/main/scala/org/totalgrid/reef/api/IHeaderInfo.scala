@@ -21,8 +21,8 @@
 package org.totalgrid.reef.api
 
 /**
- *  A subscription object provides header info and can also be canceled
+ * A IHeaderInfo object is anything that can adust the outgoing service request header
  */
-trait ISubscription extends IHeaderInfo {
-  def cancel()
+trait IHeaderInfo {
+  def setHeaders(headers: ServiceHandlerHeaders)
 }

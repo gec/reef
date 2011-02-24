@@ -22,6 +22,7 @@ package org.totalgrid.reef.messaging.qpid
 
 import scala.{ Option => ScalaOption }
 
+import org.apache.qpid.AMQException
 import org.apache.qpid.transport.{ Session, SessionListener, SessionException }
 import org.apache.qpid.transport.{ DeliveryProperties, MessageProperties, Header, ReplyTo, MessageTransfer }
 import org.apache.qpid.transport.{ Option, MessageAcceptMode, MessageAcquireMode, MessageCreditUnit }
@@ -29,6 +30,7 @@ import org.apache.qpid.transport.{ Option, MessageAcceptMode, MessageAcquireMode
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.messaging.{ BrokerChannel, MessageConsumer, Destination }
+import org.totalgrid.reef.api.ServiceIOException
 
 class QpidBrokerInterface(session: Session) extends SessionListener with BrokerChannel with Logging {
   var messageConsumer: ScalaOption[MessageConsumer] = None
@@ -68,7 +70,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def declareQueue(queueNameTemplate: String = "*", autoDelete: Boolean = true, exclusive: Boolean = true): String = {
 
-    if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     val starIndex = queueNameTemplate.indexOf("*")
     val queue = if (starIndex != -1) queueNameTemplate.patch(starIndex, session.getName.toString, 1) else queueNameTemplate
@@ -82,7 +84,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def declareExchange(exchange: String, exchangeType: String = "topic"): Unit = {
 
-    if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     if (!exchange.startsWith("amq.")) {
       // Qpid quietly kills your session if you try to declare a built in queue, reevaluate if we switch to rabbit
@@ -93,7 +95,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean): Unit = {
 
-    if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     if (unbindFirst) {
       unbindQueue(queue, exchange, key)
@@ -104,7 +106,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def unbindQueue(queue: String, exchange: String, key: String): Unit = {
 
-    if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     session.exchangeUnbind(queue, exchange, key)
     debug("Removed Binding: " + queue + " to " + exchange + " key: " + key)
@@ -112,7 +114,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def listen(queue: String, mc: MessageConsumer) = {
 
-    if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     debug("Listening: " + queue + " to " + mc)
     messageConsumer = Some(mc)
@@ -123,7 +125,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[Destination]) = {
 
-    if (session.isClosing()) throw new IllegalStateException("Session unexpectedly closing/closed")
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     val dev_props = new DeliveryProperties
     val msg_props = new MessageProperties

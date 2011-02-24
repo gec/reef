@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.qpid
 
 import org.totalgrid.reef.api.{ Envelope }
 
@@ -26,11 +26,13 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import _root_.scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
 
-import _root_.scala.concurrent.MailBox
+import scala.concurrent.MailBox
 
 import org.totalgrid.reef.messaging.mock._
+
+import org.totalgrid.reef.messaging.{ TestDescriptors, BrokerConnectionInfo, HeadersX2 }
 
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
 import org.totalgrid.reef.api._
@@ -47,7 +49,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
       val client = amqp.getProtoServiceClient(servicelist, 1000)
-      intercept[ServiceException] {
+      intercept[ReefServiceException] {
         client.getOrThrow(payload)
       }
     }

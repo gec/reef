@@ -23,6 +23,7 @@ package org.totalgrid.reef.integration;
 import org.junit.Test;
 import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ServiceTypes;
+import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Descriptors;
@@ -46,7 +47,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 	 * from the field device / endpoint comes back via an asynchronous subscription
 	 */
 	@Test
-	public void testSimulatorHandlingCommands() throws InterruptedException {
+	public void testSimulatorHandlingCommands() throws InterruptedException, ReefServiceException {
 		Model.Command cmd = SampleRequests.getAllCommands(client).get(0);
 		SampleRequests.clearCommandAccess(client, cmd.getName());
 		Commands.CommandAccess accessResponse = SampleRequests.putCommandAccess(client, "user", cmd, 5000, true);
@@ -81,7 +82,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 	 * Tests subscribing to the measurement snapshot service via a get operation
 	 */
 	@Test
-	public void testSimulatorProducingMeasurements() throws java.lang.InterruptedException {
+	public void testSimulatorProducingMeasurements() throws java.lang.InterruptedException, ReefServiceException {
 
 		// mock object that will receive queue and measurement subscription
 		MockEventAcceptor<Measurements.Measurement> mock = new MockEventAcceptor<Measurements.Measurement>();

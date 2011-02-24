@@ -23,6 +23,7 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
+import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -34,14 +35,14 @@ public class TestPointService extends JavaBridgeTestBase {
 
 	/** Test that some points names are returns from the Point service */
 	@Test
-	public void somePointsReturned() {
+	public void somePointsReturned() throws ReefServiceException {
 		// System.out.println(SampleRequests.getAllPoints(clients));
 		assertTrue(SampleRequests.getAllPoints(client).size() > 0);
 	}
 
 	/** Test point searching by entity */
 	@Test
-	public void pointsInSubstation() {
+	public void pointsInSubstation() throws ReefServiceException {
 
 		// Specify all point entities that are under equipment
 		Entity eqRequest = Entity.newBuilder().addTypes("Substation").addRelations(
@@ -64,7 +65,7 @@ public class TestPointService extends JavaBridgeTestBase {
 
 	/** Given a command, find the feedback point using the point service's entity query. */
 	@Test
-	public void pointFeedback() {
+	public void pointFeedback() throws ReefServiceException {
 
 		// Get a command from the command service
 		List<Command> commands = SampleRequests.getAllCommands(client);

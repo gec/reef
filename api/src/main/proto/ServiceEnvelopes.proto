@@ -33,8 +33,9 @@ enum Status{
     UNEXPECTED_RESPONSE = 502;
     RESPONSE_TIMEOUT    = 503;
     BUS_UNAVAILABLE     = 504;
-    
 }
+
+
 
 // out-of-band information is encoded here and sent to the server
 message RequestHeader{
