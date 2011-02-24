@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.javaclient
  */
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ Envelope, ServiceHandlerHeaders, ISubscription, ITypeDescriptor }
+import org.totalgrid.reef.api.{ Envelope, ServiceHandlerHeaders, ISubscription, IHeaderInfo, ITypeDescriptor }
 import org.totalgrid.reef.api.ServiceTypes.Event
 
 /**
@@ -39,18 +39,20 @@ trait ISession {
   def post[A <: AnyRef](payload: A): java.util.List[A]
   def put[A <: AnyRef](payload: A): java.util.List[A]
 
-  def get[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A]
-  def delete[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A]
-  def post[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A]
-  def put[A <: AnyRef](payload: A, sub: ISubscription): java.util.List[A]
+  def get[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def delete[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def post[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def put[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
 
   def getOne[A <: AnyRef](payload: A): A
   def deleteOne[A <: AnyRef](payload: A): A
+  def postOne[A <: AnyRef](payload: A): A
   def putOne[A <: AnyRef](payload: A): A
 
-  def getOne[A <: AnyRef](payload: A, sub: ISubscription): A
-  def deleteOne[A <: AnyRef](payload: A, sub: ISubscription): A
-  def putOne[A <: AnyRef](payload: A, sub: ISubscription): A
+  def getOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def deleteOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def postOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def putOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
 
   /* -------- Future API ------------ */
 
@@ -62,6 +64,11 @@ trait ISession {
   /* -------- Asynchronous API ------ */
 
   def getAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A])
+  def deleteAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A])
+  def postAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A])
+  def putAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A])
+
+  /* --- Misc --- */
 
   def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription
 
