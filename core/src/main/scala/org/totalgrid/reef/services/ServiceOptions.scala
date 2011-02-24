@@ -31,11 +31,11 @@ object ServiceOptions {
   def loadInfo(): ServiceOptions = loadInfo(BuildEnv.environment)
 
   def get(cr: ConfigReader): ServiceOptions = {
-    val metrics = cr.getBoolean("reef.services.metrics", true)
-    val metricsSplitByVerb = cr.getBoolean("reef.services.metricsSplitByVerb", false)
-    val metricsSplitByService = cr.getBoolean("reef.services.metricsSplitByService", false)
-    val useAuth = cr.getBoolean("reef.services.useAuth", true)
-    val slowQueryThresholdMs = cr.getInt("reef.services.slowQueryThresholdMs", 500)
+    val metrics = cr.getBoolean("org.totalgrid.reef.services.metrics", true)
+    val metricsSplitByVerb = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", false)
+    val metricsSplitByService = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByService", false)
+    val useAuth = cr.getBoolean("org.totalgrid.reef.services.useAuth", true)
+    val slowQueryThresholdMs = cr.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", 500)
 
     ServiceOptions(metrics, metricsSplitByVerb, metricsSplitByService, useAuth, slowQueryThresholdMs)
   }

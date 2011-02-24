@@ -7,7 +7,7 @@
         <version>0.2.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
-    <artifactId>reef-persistence-api</artifactId>
+    <artifactId>reef-metrics</artifactId>
     <packaging>bundle</packaging>
 
     <licenses>
@@ -27,26 +27,14 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Persistence API</Bundle-Name>
+                        <Bundle-Name>Reef Metrics Provider</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <Export-Package>
-                            org.totalgrid.reef.persistence.*
+                            org.totalgrid.reef.metrics.*
                         </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
@@ -58,25 +46,12 @@
         </plugins>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>org.squeryl</groupId>
-            <artifactId>squeryl_2.8.0</artifactId>
-            <version>0.9.4-RC2</version>
-        </dependency>
+
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
             <version>0.2.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics</artifactId>
-            <version>0.2.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto</artifactId>
-            <version>0.2.1-SNAPSHOT</version>
-        </dependency>
+
     </dependencies>
 </project>

@@ -29,6 +29,12 @@
         <command name="reef/load">
             <action class="org.totalgrid.reef.shell.admin.LoadConfigCommand"/>
         </command>
+        <command name="metrics/dump">
+            <action class="org.totalgrid.reef.shell.admin.DumpMetricsToCSV"/>
+        </command>
+        <command name="metrics/reset">
+            <action class="org.totalgrid.reef.shell.admin.ResetMetrics"/>
+        </command>
     </command-bundle>
 
 </blueprint>

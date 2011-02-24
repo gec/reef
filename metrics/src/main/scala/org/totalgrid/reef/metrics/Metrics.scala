@@ -18,7 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.util
+package org.totalgrid.reef.metrics
+
+import org.totalgrid.reef.util.Timing
 
 class UnHookedException(msg: String) extends Exception(msg)
 

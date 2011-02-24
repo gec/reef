@@ -4,30 +4,40 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership. Green Energy Corp licenses this file
- * to you under the GNU Affero General Public License Version 3.0
- * (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * regarding copyright ownership.  Green Energy Corp licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
+ * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
  */
 package org.totalgrid.reef.metrics
 
-import org.totalgrid.reef.util.{ MetricsHookSource, MetricsHooks, Logging }
-
-import org.totalgrid.reef.proto.Measurements._
-
 import java.util.concurrent.atomic.AtomicInteger
+import org.totalgrid.reef.util.{ Logging }
+
+trait NonOperationalDataSink {
+
+  def nonOp(name: String, value: String): Unit
+  def nonOp(name: String, value: Int): Unit
+  def nonOp(name: String, value: Double): Unit
+
+  def nonOp(source: String, variable: String, value: String): Unit = nonOp(source + "." + variable, value)
+  def nonOp(source: String, variable: String, value: Int): Unit = nonOp(source + "." + variable, value)
+  def nonOp(source: String, variable: String, value: Double): Unit = nonOp(source + "." + variable, value)
+}
 
 trait MetricValueHolder {
   def update(i: Int)
+
+  def reset()
 
   def publish(name: String, pub: NonOperationalDataSink)
 }
@@ -38,6 +48,7 @@ abstract class IntMetricHolder extends MetricValueHolder with Logging {
 
   val value = new AtomicInteger(0)
   def getValue(): Int = { value.get }
+  def reset() = value.set(0)
 
   def publish(name: String, pub: NonOperationalDataSink) {
     val c = value.get
@@ -76,6 +87,14 @@ class AverageMetric(size: Int) extends MetricValueHolder with Logging {
     }
   }
 
+  def reset() = {
+    synchronized {
+      next = 0
+      sum = 0
+      Range(0, size).foreach(counts.update(_, 0))
+    }
+  }
+
   def publish(name: String, pub: NonOperationalDataSink) {
 
     var s = 0
@@ -105,45 +124,15 @@ class CurrentMetricsValueHolder(val baseName: String) extends MetricsHookSource 
     metrics += hookName -> metricHolder
     metricHolder.update
   }
-}
 
-/**
- * publish all of the current values in the CurrentMetricsValueHolders to
- * a bus channel in one MeasurementBatch
- */
-class NonOpMetricPublisher(publish: MeasurementBatch => Unit) {
-
-  private var stores: List[CurrentMetricsValueHolder] = Nil
-
-  /**
-   * Get a metric hook source with the right base name
-   * @param baseName
-   * @return hookSource
-   */
-  def getStore(baseName: String): MetricsHookSource = {
-    val s = new CurrentMetricsValueHolder(baseName)
-    stores ::= s
-    s
+  def publishAll(sink: NonOperationalDataSink) {
+    metrics.foreach {
+      case (name, holder) =>
+        holder.publish(baseName + "." + name, sink)
+    }
   }
 
-  /**
-   * publish all of the metrics in one batch
-   */
-  def publishAll(): Unit = {
-    val batch = MeasurementBatch.newBuilder
-    val pub = new NonOperationalDataSink {
-      def addMeasurement(meas: Measurement.Builder) {
-
-        batch.addMeas(meas)
-      }
-    }
-    stores.foreach { s =>
-      s.metrics.foreach { m =>
-        m._2.publish(s.baseName + "." + m._1, pub)
-      }
-    }
-    batch.setWallTime(System.currentTimeMillis)
-    publish(batch.build)
+  def resetAll() {
+    metrics.foreach { case (name, holder) => holder.reset }
   }
-
 }

@@ -22,7 +22,7 @@ package org.totalgrid.reef.measurementstore
 
 import MeasSink.Meas
 
-import org.totalgrid.reef.util.{ MetricsHookSource, StaticMetricsHooksBase }
+import org.totalgrid.reef.metrics.{ MetricsHookSource, StaticMetricsHooksBase }
 
 class MeasSinkMetrics(sink: MeasSink, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with MeasSink {
 

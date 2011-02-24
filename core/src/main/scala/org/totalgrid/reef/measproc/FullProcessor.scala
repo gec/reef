@@ -63,7 +63,7 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
  */
 class FullProcessor(components: CoreApplicationComponents, measStoreConfig: ConnInfo) extends Logging with Lifecycle {
 
-  var lifecycles = new LifecycleManager(List(components.heartbeatActor, components.nonopPublisher))
+  var lifecycles = new LifecycleManager(List(components.heartbeatActor))
 
   // caches used to store measurements and overrides
   val measStore = MeasurementStoreFinder.getInstance(measStoreConfig, lifecycles.add _)
