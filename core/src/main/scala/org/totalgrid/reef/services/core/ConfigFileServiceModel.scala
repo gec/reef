@@ -132,10 +132,14 @@ trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFil
   def createModelEntry(proto: ConfigProto): ConfigFile = throw new Exception("Not implemented")
 
   def createModelEntry(proto: ConfigProto, entity: Entity): ConfigFile = {
-    new ConfigFile(
-      entity,
+    val sql = new ConfigFile(
+      entity.id,
       proto.getMimeType(),
       proto.getFile.toByteArray)
+
+    sql.entity.value = entity
+
+    sql
   }
 
   import org.totalgrid.reef.messaging.ProtoSerializer.convertBytesToByteString

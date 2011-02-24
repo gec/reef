@@ -200,11 +200,6 @@ case class ConfigFile(
     val mimeType: String,
     var file: Array[Byte]) extends ModelWithId {
 
-  def this(ent: Entity, mimeType: String, file: Array[Byte]) {
-    this(ent.id, mimeType, file)
-    entity.value = ent
-  }
-
   val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
   val owners = LazyVar(EQ.getParents(entity.value.id, "uses").toList)
 
