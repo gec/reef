@@ -51,14 +51,17 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
     if (proto.getCommandsList.length == 0)
       throw new BadRequestException("Must specify at least one command")
     if (!proto.hasAccess)
-      throw new BadRequestException("Must specify access mode")
+      throw new BadRequestException("Must specify access mode, ALLOWED or BLOCKED")
 
     // Being a select (allowed) implies you have user and expiry
     if (proto.getAccess == AccessMode.ALLOWED) {
 
       // Set expire time to default or else use proto as-is
       if (!proto.hasExpireTime) AccessProto.newBuilder(proto).setExpireTime(defaultSelectTime).build
-      else proto
+      else {
+        if (proto.getExpireTime != -1 && proto.getExpireTime <= 0) throw new BadRequestException("Must specify positive timeout or -1 for no timeout.")
+        proto
+      }
     } else proto
   }
 

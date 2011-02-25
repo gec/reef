@@ -52,15 +52,11 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
 
   val table = ApplicationSchema.commandAccess
 
-  override def preCreate(entry: AccessModel): AccessModel = {
-    if (entry.expireTime != None && entry.expireTime.get <= System.currentTimeMillis)
-      throw new BadRequestException("Expiration time must be in the future")
-    entry
-  }
   override def createFromProto(req: AccessProto): AccessModel = {
     import org.totalgrid.reef.services.ServiceProviderHeaders._
 
     val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }
 
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {
 
@@ -118,7 +114,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
       case ex: AcquireConditionNotMetException =>
         // Race condition, return failure
         // TODO: useful statistic
-        throw new BadRequestException("One or more commands unavailable", Envelope.Status.UNAUTHORIZED)
+        throw new UnauthorizedException("Some or all commands selected")
     }
   }
 
@@ -140,7 +136,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
 
     val cmdIds = from(cmds)(t => select(t.id))
     if (areAnyBlocked(cmdIds))
-      throw new UnauthorizedException("One or more commands unavailable")
+      throw new UnauthorizedException("One or more commands are blocked")
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))
     addEntryForAll(accEntry, cmds.toList)
@@ -186,10 +182,18 @@ trait CommandAccessConversion
   }
 
   def searchQuery(proto: AccessProto, sql: AccessModel) = {
+    val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList) else None
     List(
       proto.access.asParam(ac => sql.access === ac.getNumber),
       proto.expireTime.asParam(sql.expireTime === _),
-      proto.user.asParam(sql.agent === Some(_)))
+      proto.user.asParam(sql.agent === Some(_)),
+      commandsListOption.map(names => sql.id in findAccessesByCommandNames(names)))
+  }
+
+  private def findAccessesByCommandNames(names: List[String]) = {
+    from(ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((selectJoin, cmd) =>
+      where(selectJoin.commandId === cmd.id and (cmd.name in names))
+        select (selectJoin.accessId)).distinct
   }
 
   def createModelEntry(proto: AccessProto): AccessModel = {
