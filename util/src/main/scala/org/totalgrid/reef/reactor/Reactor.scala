@@ -51,6 +51,12 @@ trait Reactor extends Reactable with Lifecycle {
 
   import Reactor._
 
+  /// The time being used for delay or repeat. Time is in ms.
+  protected var repeatDelay = 0l
+
+  /// Get the time being used for delay or repeat. Time is in ms.
+  override def getRepeatDelay = repeatDelay
+
   /// start execution and run fun just afterwards
   override def dispatchStart() = {
     this.doStart()
@@ -83,38 +89,44 @@ trait Reactor extends Reactable with Lifecycle {
   }
 
   /// sends a unit of work to do after a specficied time has elapsed.    
-  def delay(msec: Long)(fun: => Unit): Timer = new ActorDelayHandler(
-    actor {
-      link(myactor)
-      reactWithin(msec) {
-        case CANCEL =>
-          unlink(myactor)
-        case NOW =>
-          unlink(myactor)
-          this.execute(fun)
-        case TIMEOUT =>
-          unlink(myactor)
-          this.execute(fun)
-      }
-    })
-
-  /// send a unit of work to do immediatley and then repeat function until the actor is killed
-  def repeat(msec: Long)(fun: => Unit): Timer = new ActorDelayHandler(
-    actor {
-      link(myactor)
-      this.execute(fun)
-      loop {
+  def delay(msec: Long)(fun: => Unit): Timer = {
+    repeatDelay = msec
+    new ActorDelayHandler(
+      actor {
+        link(myactor)
         reactWithin(msec) {
           case CANCEL =>
             unlink(myactor)
-            exit()
           case NOW =>
+            unlink(myactor)
             this.execute(fun)
           case TIMEOUT =>
+            unlink(myactor)
             this.execute(fun)
         }
-      }
-    })
+      })
+  }
+
+  /// send a unit of work to do immediatley and then repeat function until the actor is killed
+  def repeat(msec: Long)(fun: => Unit): Timer = {
+    repeatDelay = msec
+    new ActorDelayHandler(
+      actor {
+        link(myactor)
+        this.execute(fun)
+        loop {
+          reactWithin(msec) {
+            case CANCEL =>
+              unlink(myactor)
+              exit()
+            case NOW =>
+              this.execute(fun)
+            case TIMEOUT =>
+              this.execute(fun)
+          }
+        }
+      })
+  }
 
   /// execute a function synchronously and return the value
   def request[A](fun: => A): A = (myactor !? Request(() => fun)).asInstanceOf[A]

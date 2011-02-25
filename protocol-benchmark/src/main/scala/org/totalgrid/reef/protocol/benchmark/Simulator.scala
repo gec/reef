@@ -38,7 +38,7 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
-  private val delay = config.getDelay
+  private var delay: Long = config.getDelay
 
   private val measurements = config.getMeasurementsList.map { x => MeasRecord(x.getName, x.getUnit, getValueHolder(x)) }.toList
   private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
@@ -54,10 +54,15 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     repeater.foreach { _.cancel }
   }
 
-  def setUpdateParams(newDelay: Int) = reactor.execute {
-    info { "Updating parameters for " + name + ": delay = " + delay }
-    repeater.foreach(_.cancel)
-    if (delay > 0) {
+  def getRepeatDelay = reactor.getRepeatDelay
+
+  def adjustUpdateParams(newDelay: Long) = setUpdateParams(delay + newDelay)
+
+  def setUpdateParams(newDelay: Long) = reactor.execute {
+    if (newDelay > 0) {
+      delay = newDelay
+      info { "Updating parameters for " + name + ": delay = " + delay }
+      repeater.foreach(_.cancel)
       repeater = Some(reactor.repeat(delay) {
         update(measurements.toList)
       })

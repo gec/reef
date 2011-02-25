@@ -50,5 +50,6 @@ trait InstantReactor extends Reactable with Lifecycle {
   override def delay(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
   override def repeat(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
   override def request[A](fun: => A): A = checkDepth(fun)
+  override def getRepeatDelay = 0l
 
 }

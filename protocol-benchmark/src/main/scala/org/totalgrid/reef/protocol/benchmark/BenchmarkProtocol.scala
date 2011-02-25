@@ -21,6 +21,7 @@
 package org.totalgrid.reef.protocol.benchmark
 
 import scala.collection.immutable
+import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
@@ -28,13 +29,71 @@ import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol, BaseProtocol }
 
-class BenchmarkProtocol extends BaseProtocol with Logging {
+import org.apache.karaf.shell.console.OsgiCommandSupport
+import org.apache.felix.gogo.commands
+
+trait SimulatorManagement {
+  def displayEndpoints(endpoints: List[String])
+  def configEndpoints(endpoints: List[String], delay: String)
+}
+
+class BenchmarkProtocol extends BaseProtocol with SimulatorManagement with Logging {
 
   val name: String = "benchmark"
   val requiresPort = false
 
   private var map = immutable.Map.empty[String, Simulator]
   private var reactor: Option[ReactActor] = None
+
+  override def displayEndpoints(endpoints: List[String]) = {
+
+    val displayMap = if (endpoints.isEmpty)
+      map
+    else
+      map.filterKeys(k => endpoints.contains(k))
+
+    println("Simulated Endpoints with time delay:")
+    for ((eName, simEndpoint) <- displayMap) {
+      println("    " + eName + ": " + simEndpoint.getRepeatDelay)
+    }
+  }
+
+  override def configEndpoints(endpoints: List[String], delay: String) = {
+
+    if (!map.isEmpty) {
+
+      //println("Simulated Endpoints:")
+      //println(map.keys.mkString("    ", "\n    ", "\n"))
+
+      val d: Long = delay.toLong
+      if (d == 0) {
+        println("ERROR: time cannot be 0.")
+      } else {
+        val updates = if (endpoints.isEmpty)
+          map
+        else
+          map.filterKeys(k => endpoints.contains(k))
+
+        println("Updated Endpoints:")
+        if (delay.startsWith("-") || delay.startsWith("+")) {
+
+          for ((eName, simEndpoint) <- updates) {
+            simEndpoint.adjustUpdateParams(d)
+            println("    " + eName + ": " + simEndpoint.getRepeatDelay)
+          }
+        } else {
+
+          for ((eName, simEndpoint) <- updates) {
+            simEndpoint.setUpdateParams(d)
+            println("    " + eName + ": " + simEndpoint.getRepeatDelay)
+          }
+        }
+      }
+    } else {
+      println("No simulated endpoints found.")
+    }
+
+  }
 
   // get or create and start the shared reactor
   private def getReactor: ReactActor = {
@@ -76,4 +135,56 @@ class BenchmarkProtocol extends BaseProtocol with Logging {
     }
   }
 
+}
+
+/**
+ *
+ */
+@commands.Command(scope = "sim", name = "list", description = "List simulated endpoints. List all with no arguments.")
+class SimulatorList(simulator: SimulatorManagement) extends OsgiCommandSupport {
+
+  @commands.Argument(index = 0, name = "endpoints", description = "Optional list of endpoints. Example: sim:list substation1", required = false, multiValued = true)
+  private var endpoints: java.util.List[String] = null
+
+  override protected def doExecute(): Object = {
+    println("")
+    val ep = if (endpoints == null)
+      List[String]()
+    else
+      endpoints.toList
+
+    simulator.displayEndpoints(ep)
+
+    null
+  }
+
+}
+
+/**
+ *
+ */
+@commands.Command(scope = "sim", name = "config", description = "Configure endpoint simulation properties. Example: sim:config time 5")
+class SimulatorConfig(simulator: SimulatorManagement) extends OsgiCommandSupport {
+
+  //commands.Option(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints will be configured. Syntax: delay [+-]<number>. Example: 'sim config time -5' will shrink the current time delay on each point by 5ms. '5' will set the time delay to 5ms.", required = false, multiValued = true)
+  @commands.Option(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints will be configured. Example: 'sim:config time 5' will set the current time delay for all endpoints to 5ms.", required = false, multiValued = true)
+  private var timeDelay: java.util.List[String] = null
+
+  @commands.Argument(index = 0, name = "endpoints", description = "Optional list of endpoints. Example: sim:config substation1 -time 200", required = false, multiValued = true)
+  private var endpoints: java.util.List[String] = null
+
+  override protected def doExecute(): Object = {
+    println("")
+    val ep = if (endpoints == null)
+      List[String]()
+    else
+      endpoints.toList
+
+    if (timeDelay == null || timeDelay.size != 1)
+      println("ERROR: sim:config requires a 'time' argument (just one).")
+    else
+      simulator.configEndpoints(ep, timeDelay.get(0))
+
+    null
+  }
 }

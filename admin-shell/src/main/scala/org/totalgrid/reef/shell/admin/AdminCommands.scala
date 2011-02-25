@@ -47,7 +47,7 @@ class LoadConfigCommand extends ReefCommandSupport {
   @Option(name = "-benchmark", aliases = Array[String](), description = "Override endpoint protocol to force all endpoints in configuration file to be simulated", required = false, multiValued = false)
   private var benchmark = false
 
-  @Argument(index = 0, name = "configFile", description = "Configuration file path", required = true, multiValued = false)
+  @Argument(index = 0, name = "configFile", description = "Configuration file name with path", required = true, multiValued = false)
   private var configFile: String = null
 
   override def doCommand(): Unit = {
