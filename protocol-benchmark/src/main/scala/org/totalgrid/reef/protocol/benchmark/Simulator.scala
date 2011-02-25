@@ -54,18 +54,20 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     repeater.foreach { _.cancel }
   }
 
-  def getRepeatDelay = reactor.getRepeatDelay
+  def getRepeatDelay = delay
 
   def adjustUpdateParams(newDelay: Long) = setUpdateParams(delay + newDelay)
 
-  def setUpdateParams(newDelay: Long) = reactor.execute {
+  def setUpdateParams(newDelay: Long) = {
     if (newDelay > 0) {
       delay = newDelay
-      info { "Updating parameters for " + name + ": delay = " + delay }
-      repeater.foreach(_.cancel)
-      repeater = Some(reactor.repeat(delay) {
-        update(measurements.toList)
-      })
+      reactor.execute {
+        info { "Updating parameters for " + name + ": delay = " + delay }
+        repeater.foreach(_.cancel)
+        repeater = Some(reactor.repeat(delay) {
+          update(measurements.toList)
+        })
+      }
     }
   }
 

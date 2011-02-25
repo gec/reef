@@ -65,30 +65,45 @@ class BenchmarkProtocol extends BaseProtocol with SimulatorManagement with Loggi
       //println("Simulated Endpoints:")
       //println(map.keys.mkString("    ", "\n    ", "\n"))
 
-      val d: Long = delay.toLong
-      if (d == 0) {
-        println("ERROR: time cannot be 0.")
-      } else {
-        val updates = if (endpoints.isEmpty)
-          map
-        else
-          map.filterKeys(k => endpoints.contains(k))
-
-        println("Updated Endpoints:")
-        if (delay.startsWith("-") || delay.startsWith("+")) {
-
-          for ((eName, simEndpoint) <- updates) {
-            simEndpoint.adjustUpdateParams(d)
-            println("    " + eName + ": " + simEndpoint.getRepeatDelay)
-          }
+      try {
+        if (delay.isEmpty) {
+          println("ERROR: The time argument is an empty string.")
         } else {
+          val d: Long = if (delay.charAt(0) == '+')
+            delay.substring(1).toLong
+          else
+            delay.toLong
 
-          for ((eName, simEndpoint) <- updates) {
-            simEndpoint.setUpdateParams(d)
-            println("    " + eName + ": " + simEndpoint.getRepeatDelay)
+          if (d == 0) {
+            println("ERROR: time argument cannot be 0.")
+          } else {
+            val updateEndpoints = if (endpoints.isEmpty)
+              map
+            else
+              map.filterKeys(k => endpoints.contains(k))
+
+            println("Updated Endpoints:")
+            if (delay.startsWith("-") || delay.startsWith("+")) {
+
+              for ((eName, simEndpoint) <- updateEndpoints) {
+                simEndpoint.adjustUpdateParams(d)
+                println("    " + eName + ": " + simEndpoint.getRepeatDelay)
+              }
+            } else {
+
+              for ((eName, simEndpoint) <- updateEndpoints) {
+                simEndpoint.setUpdateParams(d)
+                println("    " + eName + ": " + simEndpoint.getRepeatDelay)
+              }
+            }
           }
         }
+
+      } catch {
+        case ex: NumberFormatException => println("ERROR: -time " + delay + " is not a number.")
+        case ex2 => throw ex2
       }
+
     } else {
       println("No simulated endpoints found.")
     }
@@ -163,11 +178,11 @@ class SimulatorList(simulator: SimulatorManagement) extends OsgiCommandSupport {
 /**
  *
  */
-@commands.Command(scope = "sim", name = "config", description = "Configure endpoint simulation properties. Example: sim:config time 5")
+@commands.Command(scope = "sim", name = "config", description = "Configure endpoint simulation properties. Example: sim:config -time 5")
 class SimulatorConfig(simulator: SimulatorManagement) extends OsgiCommandSupport {
 
   //commands.Option(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints will be configured. Syntax: delay [+-]<number>. Example: 'sim config time -5' will shrink the current time delay on each point by 5ms. '5' will set the time delay to 5ms.", required = false, multiValued = true)
-  @commands.Option(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints will be configured. Example: 'sim:config time 5' will set the current time delay for all endpoints to 5ms.", required = false, multiValued = true)
+  @commands.Option(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints are configured. Prefixing the number with '+' or '-' will increase/decrease each endoint's current time delay by that amount.", required = false, multiValued = true)
   private var timeDelay: java.util.List[String] = null
 
   @commands.Argument(index = 0, name = "endpoints", description = "Optional list of endpoints. Example: sim:config substation1 -time 200", required = false, multiValued = true)
@@ -181,7 +196,7 @@ class SimulatorConfig(simulator: SimulatorManagement) extends OsgiCommandSupport
       endpoints.toList
 
     if (timeDelay == null || timeDelay.size != 1)
-      println("ERROR: sim:config requires a 'time' argument (just one).")
+      println("ERROR: sim:config requires one 'time' argument.")
     else
       simulator.configEndpoints(ep, timeDelay.get(0))
 
