@@ -129,8 +129,6 @@ trait UserCommandRequestConversion extends MessageModelConversion[UserCommandReq
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
-  override val returnAllOnBlank: Boolean = false
-
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
     req.uid ::
       req.user ::

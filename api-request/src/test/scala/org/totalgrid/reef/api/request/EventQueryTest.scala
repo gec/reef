@@ -55,13 +55,13 @@ class EventQueryTest
     with ShouldMatchers {
 
   test("Get all events (limit 2)") {
-    val desc = "Get all events by specifying an empty EventSelect (except a limit of 2 records returned)."
+    val desc = "Get all events by specifying a wildcard EventSelect (except a limit of 2 records returned)."
 
     val request =
       EventList.newBuilder
         .setSelect(
           EventSelect.newBuilder
-          .setLimit(2))
+          .setLimit(2).addEventType("*"))
         .build
 
     val response = client.getOneOrThrow(request)

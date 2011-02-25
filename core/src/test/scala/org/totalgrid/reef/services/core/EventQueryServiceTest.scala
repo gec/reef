@@ -65,7 +65,7 @@ class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
   val CRITICAL = 1
   val INFORM = 6
 
-  val USER_ANY = ""
+  val USER_ANY = "*"
   val USER1 = "user1"
   val USER2 = "user2"
   val USER3 = "user3"
