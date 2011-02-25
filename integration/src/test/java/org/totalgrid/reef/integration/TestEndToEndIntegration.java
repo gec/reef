@@ -49,15 +49,15 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 	@Test
 	public void testSimulatorHandlingCommands() throws InterruptedException, ReefServiceException {
 		Model.Command cmd = SampleRequests.getAllCommands(client).get(0);
-		SampleRequests.clearCommandAccess(client, cmd.getName());
-		Commands.CommandAccess accessResponse = SampleRequests.putCommandAccess(client, "user", cmd, 5000, true);
+        SampleRequests.clearCommandAccess(client, cmd.getName());
+		Commands.CommandAccess accessResponse = SampleRequests.putCommandAccess(client, cmd, 5000, true);
 		assertTrue(accessResponse.getExpireTime() > 0);
 
 		// create infrastructure to execute a control with subscription to
 		// result
 
-		MockEventAcceptor<Commands.UserCommandRequest> mock = new MockEventAcceptor<Commands.UserCommandRequest>();
-		Commands.UserCommandRequest request = SampleProtos.makeControlRequest(cmd, "user");
+        MockEventAcceptor<Commands.UserCommandRequest> mock = new MockEventAcceptor<Commands.UserCommandRequest>();
+		Commands.UserCommandRequest request = SampleProtos.makeControlRequest(cmd);
 		ISubscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
 		client.putOne(request, sub);
 

@@ -41,34 +41,52 @@ import java.util.Random;
 @SuppressWarnings("unchecked")
 public class SampleRequests {
 
-	public static UserCommandRequest executeControl(ISession client, String user, Command cmd) throws ReefServiceException {
-		UserCommandRequest request = SampleProtos.makeControlRequest(cmd, user);
+	public static UserCommandRequest executeControl(ISession client, Command cmd) throws ReefServiceException {
+		UserCommandRequest request = SampleProtos.makeControlRequest(cmd);
 		UserCommandRequest result = client.putOne(request);
 		return result;
 	}
 
-	public static CommandAccess putCommandAccess(ISession client, String user, Command cmd, long timeout, boolean allow) throws ReefServiceException {
-		CommandAccess accessRequest = SampleProtos.makeCommandAccess(cmd, user, timeout, allow);
+    public static List<CommandAccess> findCommandAccess(ISession client, String cmdName) throws ReefServiceException{
+		CommandAccess accessRequest = SampleProtos.makeCommandAccess(cmdName);
+		List<CommandAccess> result = client.get(accessRequest);
+		return result;
+	}
+
+	public static CommandAccess putCommandAccess(ISession client, Command cmd, long timeout, boolean allow) throws ReefServiceException{
+		CommandAccess accessRequest = SampleProtos.makeCommandAccess(cmd, timeout, allow);
 		CommandAccess result = client.putOne(accessRequest);
 		return result;
 	}
 
-	public static CommandAccess deleteCommandAccess(ISession client, String cmdName) throws ReefServiceException {
+    public static CommandAccess putCommandAccess(ISession client, List<Command> cmds, long timeout, boolean allow) throws ReefServiceException{
+		CommandAccess accessRequest = SampleProtos.makeCommandAccess(cmds, timeout, allow);
+		CommandAccess result = client.putOne(accessRequest);
+		return result;
+	}
+
+	public static CommandAccess deleteCommandAccess(ISession client, String cmdName) throws ReefServiceException{
 		CommandAccess request = CommandAccess.newBuilder().addCommands(cmdName).build();
 		CommandAccess result = client.deleteOne(request);
 		return result;
 	}
 
-	public static void clearCommandAccess(ISession client, String cmdName)  throws ReefServiceException {
-        try {
-		    deleteCommandAccess(client, cmdName);
-        }
-        catch(ReplyException ex) {
-
-        }
+    public static CommandAccess deleteCommandAccess(ISession client, CommandAccess accessToken) throws ReefServiceException{
+		CommandAccess result = client.deleteOne(accessToken);
+		return result;
 	}
 
-	public static CommandAccess getCommandAccess(ISession client, String user, Command cmd)  throws ReefServiceException  {
+
+    public static void clearAllCommandAccess(ISession client) throws ReefServiceException{
+	    client.delete(CommandAccess.newBuilder().setUid("*").build());
+	}
+
+    public static void clearCommandAccess(ISession client, String cmdName)  throws ReefServiceException {
+        CommandAccess request = CommandAccess.newBuilder().addCommands(cmdName).build();
+		client.delete(request);
+	}
+
+	public static CommandAccess getCommandAccess(ISession client, String user, Command cmd) throws ReefServiceException{
 		CommandAccess request = CommandAccess.newBuilder().addCommands(cmd.getName()).build();
 		CommandAccess result = client.getOne(request);
 		return result;

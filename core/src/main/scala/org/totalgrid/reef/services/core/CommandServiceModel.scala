@@ -88,7 +88,8 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
     List(
-      proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })))
+      proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
+      proto.name.asParam(name => sql.name === name))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil

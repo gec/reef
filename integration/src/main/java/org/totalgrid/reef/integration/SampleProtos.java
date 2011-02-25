@@ -27,21 +27,40 @@ import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Commands.CommandAccess.AccessMode;
 import org.totalgrid.reef.proto.Model.*;
 
+import java.util.LinkedList;
 import java.util.List;
 
 class SampleProtos {
 
-	public static UserCommandRequest makeControlRequest(Command cmd, String user) {
-		UserCommandRequest.Builder ucr = UserCommandRequest.newBuilder().setUser(user);
+	public static UserCommandRequest makeControlRequest(Command cmd) {
+		UserCommandRequest.Builder ucr = UserCommandRequest.newBuilder();
 		CommandRequest.Builder cr = CommandRequest.newBuilder();
 		cr.setName(cmd.getName()).setType(CommandRequest.ValType.NONE);
 		return ucr.setCommandRequest(cr).build();
 	}
 
-	public static CommandAccess makeCommandAccess(Command cmd, String user, long timeout, boolean allow) {
-		return CommandAccess.newBuilder().addCommands(cmd.getName()).setExpireTime(timeout).setUser(user).setAccess(
-				allow ? AccessMode.ALLOWED : AccessMode.BLOCKED).build();
+	public static CommandAccess makeCommandAccess(Command cmd, long timeout, boolean allow) {
+        List<String> list = new LinkedList<String>();
+        list.add(cmd.getName());
+		return makeCommandAccessByName(list, timeout, allow);
 	}
+
+    public static CommandAccess makeCommandAccess(List<Command> cmds, long timeout, boolean allow) {
+        List<String> list = new LinkedList<String>();
+        for(Command cmd : cmds) list.add(cmd.getName());
+		return makeCommandAccessByName(list, timeout, allow);
+	}
+
+    public static CommandAccess makeCommandAccessByName(List<String> cmds, long timeout, boolean allow) {
+        return CommandAccess.newBuilder()
+                .setExpireTime(timeout)
+                .setAccess(allow ? AccessMode.ALLOWED : AccessMode.BLOCKED)
+                .addAllCommands(cmds).build();
+	}
+
+    public static CommandAccess makeCommandAccess(String cmdName){
+       return CommandAccess.newBuilder().addCommands(cmdName).build();
+    }
 
 	/**
 	 * Creates a default integer type measurement proto
