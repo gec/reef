@@ -30,6 +30,7 @@ import java.util.{ Date, Calendar }
 import org.totalgrid.reef.loader.sx.communications._
 import java.io.File
 import collection.mutable.{ Queue, HashMap }
+import org.totalgrid.reef.util.BuildEnv
 
 // scala XML classes
 
@@ -69,7 +70,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     import fixture._
 
     println("default path = " + new java.io.File(".").getAbsolutePath)
-    val path = new java.io.File("../karaf-common/samples/two_substations")
+    val path = new java.io.File(BuildEnv.configPath + "karaf-common/samples/two_substations")
     val equipmentPointUnits = HashMap[String, String]()
 
     model.add(

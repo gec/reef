@@ -26,6 +26,7 @@ import scala.collection.JavaConversions._
 import com.google.protobuf.Descriptors.EnumValueDescriptor
 import java.io.File
 import xml.{ Node, XML, NodeSeq }
+import org.totalgrid.reef.util.BuildEnv
 
 class Documenter(file: String, title: String, desc: Node) {
 
@@ -56,7 +57,7 @@ class Documenter(file: String, title: String, desc: Node) {
         { usages.reverse }
       </servicedoc>
 
-    val path = "target/docxml"
+    val path = BuildEnv.configPath + "api-request/target/docxml"
     val dir = new File(path)
     dir.mkdirs
 
