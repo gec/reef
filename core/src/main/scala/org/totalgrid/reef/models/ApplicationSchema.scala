@@ -389,41 +389,6 @@ class EntityDerivedEdge(
   val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
 
-class Agent(
-    val name: String,
-    val password: String) extends ModelWithId {
-
-  val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
-}
-
-class AuthPermission(
-    val allow: Boolean,
-    val resource: String,
-    val verb: String) extends ModelWithId {
-
-}
-class PermissionSet(
-    val name: String,
-    val defaultExpirationTime: Long) extends ModelWithId {
-
-  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionId === id) select (&(p.permissionId)))))
-}
-
-class AuthToken(
-    val token: String,
-    val agentId: Long,
-    val loginLocation: String,
-    var expirationTime: Long) extends ModelWithId {
-
-  val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
-  val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.tokenSetJoins)(p => where(p.authTokenId === id) select (&(p.permissionSetId)))))
-
-}
-
-case class AgentPermissionSetJoin(val permissionSetId: Long, val agentId: Long)
-case class PermissionSetJoin(val permissionSetId: Long, val permissionId: Long)
-case class AuthTokenPermissionSetJoin(val permissionSetId: Long, val authTokenId: Long)
-
 object ApplicationSchema extends Schema {
   val entities = table[Entity]
   val edges = table[EntityEdge]

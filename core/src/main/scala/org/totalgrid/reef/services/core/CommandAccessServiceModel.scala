@@ -185,7 +185,6 @@ trait CommandAccessConversion
     val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList) else None
     List(
       proto.access.asParam(ac => sql.access === ac.getNumber),
-      proto.expireTime.asParam(sql.expireTime === _),
       proto.user.asParam(sql.agent === Some(_)),
       commandsListOption.map(names => sql.id in findAccessesByCommandNames(names)))
   }

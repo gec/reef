@@ -48,9 +48,10 @@ object AuthTokenService {
 
     transaction {
       if (ApplicationSchema.agents.Count.head == 0) {
-        val core = ApplicationSchema.agents.insert(new Agent("core", "core"))
-        val op = ApplicationSchema.agents.insert(new Agent("operator", "operator"))
-        val guest = ApplicationSchema.agents.insert(new Agent("guest", "guest"))
+
+        val core = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("core", "core"))
+        val op = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("operator", "operator"))
+        val guest = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("guest", "guest"))
 
         val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
         val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
@@ -73,7 +74,7 @@ object AuthTokenService {
 }
 
 /**
- * auth token specicic code for searching the sql table and converting from 
+ * auth token specicic code for searching the sql table and converting from
  */
 trait AuthTokenConversions
     extends MessageModelConversion[AuthToken, AuthTokenModel]
@@ -123,7 +124,9 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
     // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
     val agent: AgentModel = AgentConversions.findRecord(req.getAgent).getOrElse(postLoginException("", currentTime, Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
-    if (req.getAgent.getPassword != agent.password) postLoginException(agent.name, currentTime, Status.UNAUTHORIZED, "Invalid agent or password") // invalid password
+    if (!agent.checkPassword(req.getAgent.getPassword)) {
+      postLoginException(agent.name, currentTime, Status.UNAUTHORIZED, "Invalid agent or password")
+    }
 
     val availableSets = agent.permissionSets.value.toList // permissions we can have
     val permissionsRequested = req.getPermissionSetsList.toList // permissions we are asking for
