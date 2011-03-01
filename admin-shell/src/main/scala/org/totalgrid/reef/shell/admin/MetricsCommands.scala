@@ -22,8 +22,7 @@ package org.totalgrid.reef.shell.admin
 
 import org.apache.felix.gogo.commands.{ Command, Argument }
 import org.apache.karaf.shell.console.OsgiCommandSupport
-
-import org.totalgrid.reef.metrics.MetricsSink
+import org.totalgrid.reef.metrics.{ MetricsMapHelpers, CSVMetricPublisher, MetricsSink }
 
 @Command(scope = "metrics", name = "dump", description = "Output the metrics to a csv file (metrics.csv by default)")
 class DumpMetricsToCSV extends OsgiCommandSupport {
@@ -32,7 +31,35 @@ class DumpMetricsToCSV extends OsgiCommandSupport {
   private var fileName: String = "metrics.csv"
 
   override def doExecute(): Object = {
-    MetricsSink.dumpToFile(fileName)
+    val publisher = new CSVMetricPublisher(fileName)
+    publisher.publishValues(MetricsSink.values())
+    publisher.close
+    null
+  }
+}
+
+@Command(scope = "metrics", name = "rates", description = "Get metrics twice seperated by X millis and calcs rates")
+class CalcMetricsRates extends OsgiCommandSupport {
+
+  @Argument(index = 0, name = "collectionTime", description = "Time to wait for rate calculation (seconds)", required = false, multiValued = false)
+  private var time: Long = 10
+
+  override def doExecute(): Object = {
+
+    val startValues = MetricsSink.values(Nil)
+
+    println("Waiting " + time + " seconds for rates")
+
+    Thread.sleep(time * 1000)
+
+    val endValues = MetricsSink.values(Nil)
+
+    val pubValues = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
+
+    pubValues.foreach {
+      case (name, result) => println(name + " = " + result)
+    }
+
     null
   }
 }
@@ -41,7 +68,7 @@ class DumpMetricsToCSV extends OsgiCommandSupport {
 class ResetMetrics extends OsgiCommandSupport {
 
   override def doExecute(): Object = {
-    MetricsSink.resetAll()
+    MetricsSink.reset()
     null
   }
 }

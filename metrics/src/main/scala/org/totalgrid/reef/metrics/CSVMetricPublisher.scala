@@ -20,15 +20,16 @@
  */
 package org.totalgrid.reef.metrics
 
-class CSVMetricPublisher(fileName: String, append: Boolean = true, now: Long = System.currentTimeMillis) extends NonOperationalDataSink {
+class CSVMetricPublisher(fileName: String, append: Boolean = true) {
 
   val outputStream = new java.io.FileOutputStream(fileName, append)
   var printStream = new java.io.PrintStream(outputStream)
 
   def close() = printStream.close
 
-  def nonOp(name: String, value: Int): Unit = nonOp(name, value.toString)
-  def nonOp(name: String, value: Double): Unit = nonOp(name, value.toString)
-
-  def nonOp(name: String, value: String): Unit = printStream.println(now + "," + name + "," + value)
+  def publishValues(values: Map[String, Any], now: Long = System.currentTimeMillis) {
+    values.foreach {
+      case (name, value) => printStream.println(now + "," + name + "," + value.toString)
+    }
+  }
 }

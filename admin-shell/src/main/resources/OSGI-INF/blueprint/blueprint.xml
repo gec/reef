@@ -35,6 +35,9 @@
         <command name="metrics/reset">
             <action class="org.totalgrid.reef.shell.admin.ResetMetrics"/>
         </command>
+        <command name="metrics/rates">
+            <action class="org.totalgrid.reef.shell.admin.CalcMetricsRates"/>
+        </command>
     </command-bundle>
 
 </blueprint>

@@ -25,52 +25,16 @@ trait IMetricsSink {
 }
 
 /**
- *
+ * Non OSGi, singleton implementation of IMetricsSink
  */
-class SimpleMetricsSink extends IMetricsSink {
+class SimpleMetricsSink extends MappedMetricsHolder[CurrentMetricsValueHolder] with IMetricsSink {
 
-  var stores = Map.empty[String, CurrentMetricsValueHolder]
-
-  def getStore(name: String): MetricsHookSource = {
-    stores.get(name) match {
-      case Some(cv) => cv
-      case None =>
-        val cmvh = new CurrentMetricsValueHolder(name)
-        stores = stores + (name -> cmvh)
-        cmvh
-    }
-  }
-  def publishAll(pub: NonOperationalDataSink) {
-    stores.foreach { case (name, holder) => holder.publishAll(pub) }
-  }
-
-  def resetAll() {
-    stores.foreach { case (name, holder) => holder.resetAll() }
-  }
+  def newHolder(name: String) = new CurrentMetricsValueHolder(name)
 }
 
-object MetricsSink {
+object MetricsSink extends MappedMetricsHolder[SimpleMetricsSink] {
 
-  var sinks = Map.empty[String, SimpleMetricsSink]
+  def newHolder(name: String) = new SimpleMetricsSink
 
-  def getInstance(instanceName: String): IMetricsSink = {
-    sinks.get(instanceName) match {
-      case Some(cv) => cv
-      case None =>
-        val cmvh = new SimpleMetricsSink
-        sinks = sinks + (instanceName -> cmvh)
-        cmvh
-    }
-  }
-
-  def dumpToFile(fileName: String) {
-    val pub = new CSVMetricPublisher(fileName)
-    sinks.foreach { case (name, holder) => holder.publishAll(pub) }
-    pub.close
-  }
-
-  def resetAll() {
-    sinks.foreach { case (name, holder) => holder.resetAll() }
-  }
-
+  def getInstance(name: String) = getStore(name)
 }

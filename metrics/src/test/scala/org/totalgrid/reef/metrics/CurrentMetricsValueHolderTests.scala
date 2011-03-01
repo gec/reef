@@ -28,81 +28,98 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CurrentMetricsValueHolderTests extends FunSuite with ShouldMatchers {
 
-  class LastValueSink extends NonOperationalDataSink {
-
-    var lastValue: Option[Any] = None
-
-    def nonOp(name: String, value: String): Unit = lastValue = Some(value)
-    def nonOp(name: String, value: Int): Unit = lastValue = Some(value)
-    def nonOp(name: String, value: Double): Unit = lastValue = Some(value)
-
-  }
-
   test("Counters") {
-
-    val data = new LastValueSink
-
     val c = new CounterMetric
-
-    c.publish("test", data)
-
-    data.lastValue should equal(Some(0))
+    c.value should equal(0)
 
     c.update(5)
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(5))
+    c.value should equal(5)
 
     c.reset
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(0))
+    c.value should equal(0)
   }
 
   test("Value") {
-
-    val data = new LastValueSink
-
     val c = new ValueMetric
-
-    c.publish("test", data)
-
-    data.lastValue should equal(Some(0))
+    c.value should equal(0)
 
     c.update(5)
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(5))
+    c.value should equal(5)
 
     c.reset
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(0))
+    c.value should equal(0)
   }
 
   test("Average") {
-
-    val data = new LastValueSink
-
     val c = new AverageMetric(10)
-
-    c.publish("test", data)
-
-    data.lastValue should equal(Some(0.0))
+    c.value should equal(0.0)
 
     c.update(5)
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(5.0))
+    c.value should equal(5.0)
 
     c.update(15)
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(10.0))
+    c.value should equal(10.0)
 
     c.reset
-
-    c.publish("test", data)
-    data.lastValue should equal(Some(0.0))
+    c.value should equal(0.0)
   }
+
+  test("Name Filtering") {
+    val cv = new CurrentMetricsValueHolder("all")
+
+    val allNames = List("cmp1.hook1", "cmp1.hook2", "cmp1.hook3", "cmp2.hook1", "cmp2.hook2", "cmp3.hook1")
+
+    allNames.foreach(cv.getSinkFunction(_, MetricsHooks.Value))
+
+    val allNamesWithApp = allNames.map("all." + _)
+
+    cv.values(Nil).keys.toList.sorted should equal(allNamesWithApp)
+    cv.values(List("#")).keys.toList.sorted should equal(allNamesWithApp)
+    cv.values(List("all.#")).keys.toList.sorted should equal(allNamesWithApp)
+    cv.values(List("all.none.#")).keys.toList.sorted should equal(Nil)
+    cv.values(List("none.#")).keys.toList.sorted should equal(Nil)
+    cv.values(List("all.cmp1.*")).keys.toList.sorted should equal(List("all.cmp1.hook1", "all.cmp1.hook2", "all.cmp1.hook3"))
+    cv.values(List("all.*.hook2")).keys.toList.sorted should equal(List("all.cmp1.hook2", "all.cmp2.hook2"))
+    cv.values(List("all.cmp3.hook1")).keys.toList.sorted should equal(List("all.cmp3.hook1"))
+  }
+
+  test("Multi Level Name Filtering") {
+    val cv = new SimpleMetricsSink
+
+    val hookNames = List("cmp1.hook1", "cmp1.hook2", "cmp1.hook3", "cmp2.hook1", "cmp2.hook2", "cmp3.hook1")
+
+    hookNames.foreach(cv.getStore("app1").getSinkFunction(_, MetricsHooks.Value))
+    hookNames.foreach(cv.getStore("app2").getSinkFunction(_, MetricsHooks.Value))
+
+    val allNamesForApp1 = hookNames.map("app1." + _).toList
+    val allNamesForApp2 = hookNames.map("app2." + _).toList
+    val allNames = allNamesForApp1 ::: allNamesForApp2
+
+    cv.values(Nil).keys.toList.sorted should equal(allNames)
+    cv.values(List("#")).keys.toList.sorted should equal(allNames)
+    cv.values(List("app1.#")).keys.toList.sorted should equal(allNamesForApp1)
+    cv.values(List("app2.#")).keys.toList.sorted should equal(allNamesForApp2)
+
+    cv.values(List("app2.*")).keys.toList.sorted should equal(Nil)
+    cv.values(List("*.cmp3.*")).keys.toList.sorted should equal(List("app1.cmp3.hook1", "app2.cmp3.hook1"))
+  }
+
+  test("Calculated rates") {
+    val cv = new CurrentMetricsValueHolder("all")
+
+    val testFunc = cv.getSinkFunction("test", MetricsHooks.Value)
+
+    val start = cv.values()
+
+    testFunc(5)
+
+    val end = cv.values()
+
+    val results = MetricsMapHelpers.changePerSecond(start, end, 500)
+    results.get("all.test") should equal(Some(10.0))
+
+    val results2 = MetricsMapHelpers.changePerSecond(start, end, 5000)
+    results2.get("all.test") should equal(Some(1.0))
+  }
+
 }
