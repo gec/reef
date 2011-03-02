@@ -1,6 +1,6 @@
 set -ex
 
-reefdir=reef-karaf-0.2.1-SNAPSHOT-dist
+reefdir=reef-karaf-0.2.2-dist
 
 $reefdir/bin/stop > /dev/null 2>&1 || true
 
