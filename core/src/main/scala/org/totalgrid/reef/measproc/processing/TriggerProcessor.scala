@@ -30,7 +30,8 @@ import org.totalgrid.reef.proto.Model.{ Entity }
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.app.{ ServiceContext, SubscriptionProvider }
 import org.totalgrid.reef.measproc.MeasProcServiceContext
-import org.totalgrid.reef.util.MetricsHooks
+
+import org.totalgrid.reef.metrics.MetricsHooks
 
 class TriggerProcessor(protected val next: Measurement => Unit,
   protected val factory: TriggerFactory,
@@ -40,6 +41,8 @@ class TriggerProcessor(protected val next: Measurement => Unit,
     with Logging {
 
   protected var map = immutable.Map[String, List[Trigger]]()
+
+  private lazy val triggersActive = valueHook("triggersActive")
 
   def process(m: Measurement) = {
     val triggerList = map.get(m.getName)
@@ -60,11 +63,13 @@ class TriggerProcessor(protected val next: Measurement => Unit,
     val pointName = set.getPoint.getName
     val trigList = set.getTriggersList.toList.map(proto => factory.buildTrigger(proto, pointName))
     map += (pointName -> trigList)
+    updateMetrics
   }
 
   def remove(set: TriggerSet) {
     debug("TriggerSet removed: " + set)
     map -= set.getPoint.getName
+    updateMetrics
   }
 
   def subscribe(provider: SubscriptionProvider, subscribeProto: Point, ready: () => Unit) = {
@@ -77,5 +82,12 @@ class TriggerProcessor(protected val next: Measurement => Unit,
     register(ready)
   }
 
-  def clear() = { map = immutable.Map[String, List[Trigger]]() }
+  def clear() = {
+    map = immutable.Map[String, List[Trigger]]()
+    updateMetrics
+  }
+
+  private def updateMetrics {
+    triggersActive(map.size)
+  }
 }

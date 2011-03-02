@@ -26,6 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
+import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.RunTestsInsideTransaction
 import com.google.protobuf.GeneratedMessage
@@ -86,7 +87,26 @@ class CommandRequestServicesIntegration
     val userReqs = new UserCommandRequestService(userFac)
 
     val command = new CommandService(new CommandServiceModelFactory(new SilentEventPublishers()))
+
+    def addCommands(commands: List[String]) {
+      // Seed with command point
+      val device = transaction {
+        EQ.findOrCreateEntity("dev1", "LogicalNode")
+      }
+      commands.foreach { cmdName =>
+        val cmd = one(command.put(FepCommand.newBuilder.setName(cmdName).build))
+        println(cmd)
+        transaction {
+          val cmd_entity = EQ.findEntity(cmd.getEntity).get
+          EQ.addEdge(device, cmd_entity, "source")
+        }
+      }
+
+      many(commands.size, command.get(FepCommand.newBuilder.setName("*").build))
+    }
   }
+
+  def commandAccessSearch(names: String*) = CommandAccess.newBuilder.addAllCommands(names).build
   def commandAccess(
     name: String = "cmd01",
     mode: AccessMode = AccessMode.ALLOWED,
@@ -173,20 +193,40 @@ class CommandRequestServicesIntegration
   test("Full") {
     val r = new TestRig
 
-    // Seed with command point
-    val device = transaction {
-      EQ.findOrCreateEntity("dev1", "LogicalNode")
-    }
-    val cmd = one(r.command.put(FepCommand.newBuilder.setName("cmd01").build))
-    transaction {
-      val cmd_entity = EQ.findEntity(cmd.getEntity).get
-      EQ.addEdge(device, cmd_entity, "source")
-    }
+    r.addCommands(List("cmd01"))
 
     // Run multiple times, state should be reset
     workingRequest(r)
     workingRequest(r)
     workingRequest(r)
+  }
+
+  test("Searching by name") {
+    val r = new TestRig
+
+    r.addCommands(List("cmd01", "cmd02"))
+
+    val reqEnv = new RequestEnv(Map("USER" -> List("user01")))
+
+    // Send a select (access request)
+    many(0, r.access.get(commandAccessSearch("cmd01"), reqEnv))
+
+    one(r.access.put(commandAccess("cmd01"), reqEnv))
+
+    many(1, r.access.get(commandAccessSearch("cmd01"), reqEnv))
+    many(0, r.access.get(commandAccessSearch("cmd02"), reqEnv))
+
+    one(r.access.put(commandAccess("cmd02"), reqEnv))
+
+    many(1, r.access.get(commandAccessSearch("cmd01"), reqEnv))
+    many(1, r.access.get(commandAccessSearch("cmd02"), reqEnv))
+
+    many(2, r.access.get(commandAccessSearch("cmd01", "cmd02"), reqEnv))
+
+    one(r.access.delete(commandAccessSearch("cmd02"), reqEnv))
+
+    many(1, r.access.get(commandAccessSearch("cmd01"), reqEnv))
+    many(0, r.access.get(commandAccessSearch("cmd02"), reqEnv))
   }
 
 }

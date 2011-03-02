@@ -45,6 +45,7 @@
             <xsl:attribute name="name">
                 <xsl:value-of select="title"/>
             </xsl:attribute>
+            <xsl:attribute name="class">overview</xsl:attribute>
             <xsl:copy-of select="desc/div"/>
         </section>
         <xsl:apply-templates select="case"/>
@@ -55,6 +56,7 @@
             <xsl:attribute name="name">
                 <xsl:value-of select="title"/>
             </xsl:attribute>
+            <xsl:attribute name="class">usecase</xsl:attribute>
             <xsl:copy-of select="desc/div"/>
             <xsl:apply-templates select="request"/>
             <xsl:apply-templates select="response"/>
@@ -66,12 +68,14 @@
             <xsl:attribute name="name">
                 Request (<xsl:value-of select="@verb"/>)
             </xsl:attribute>
+            <xsl:attribute name="class">request</xsl:attribute>
             <xsl:apply-templates select="message"/>
         </subsection>
     </xsl:template>
 
     <xsl:template match="response">
         <subsection name="Response">
+            <xsl:attribute name="class">response</xsl:attribute>
             <xsl:apply-templates select="message"/>
         </subsection>
     </xsl:template>

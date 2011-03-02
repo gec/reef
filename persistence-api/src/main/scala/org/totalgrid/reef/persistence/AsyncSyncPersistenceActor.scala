@@ -20,10 +20,10 @@
  */
 package org.totalgrid.reef.persistence
 
-import org.totalgrid.reef.util.MetricsHooks
 import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.metrics.{ MetricsHooks }
 
-/** 
+/**
  * Defines synchronous and asynchronous operation interface
  * for a particular connection type
  * TODO: get ConnectionOperations to work with Unit

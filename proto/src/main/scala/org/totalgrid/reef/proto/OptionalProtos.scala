@@ -356,7 +356,7 @@ object OptionalProtos {
     val name = optionally(_.hasName, _.getName)
     val mimeType = optionally(_.hasMimeType, _.getMimeType)
     val file = optionally(_.hasFile, _.getFile)
-    val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
+    val entities = optionally(_.getEntitiesList.toList.map { i => new OptModelEntity(Some(i)) })
   }
   implicit def proto2OptStatusSnapshot(a: StatusSnapshot): OptStatusSnapshot = new OptStatusSnapshot(Some(a))
   class OptStatusSnapshot(real: Option[StatusSnapshot]) extends OptionalStruct(real) {

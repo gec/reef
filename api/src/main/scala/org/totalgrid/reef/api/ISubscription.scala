@@ -21,9 +21,8 @@
 package org.totalgrid.reef.api
 
 /**
- *  A subscription object that can be canceled
+ *  A subscription object provides header info and can also be canceled
  */
-trait ISubscription {
-  def configure(headers: ServiceHandlerHeaders)
+trait ISubscription extends IHeaderInfo {
   def cancel()
 }

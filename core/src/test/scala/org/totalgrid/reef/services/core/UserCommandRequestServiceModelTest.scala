@@ -39,7 +39,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
-import org.totalgrid.reef.api.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, ReefServiceException }
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest
@@ -129,7 +129,7 @@ class UserCommandRequestServiceModelTest
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
-    intercept[ServiceException] {
+    intercept[ReefServiceException] {
       transaction {
         r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
       }

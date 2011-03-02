@@ -41,7 +41,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ Envelope, ServiceException, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.api.{ Envelope, ReefServiceException, RequestEnv, ITypeDescriptor }
 
 class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
 
@@ -83,14 +83,14 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 
   test("Bad User") {
     val fix = new Fixture
-    intercept[ServiceException] {
+    intercept[ReefServiceException] {
       fix.login("baduser", "badpass")
     }
   }
 
   test("Wrong Password") {
     val fix = new Fixture
-    intercept[ServiceException] {
+    intercept[ReefServiceException] {
       fix.login("core", "badpass")
     }
   }
@@ -122,7 +122,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
   test("Try to get unallowed permsissions") {
     val fix = new Fixture
 
-    intercept[ServiceException] {
+    intercept[ReefServiceException] {
       // we only have access to the "read_only" permission
       fix.login("guest", "guest", Some("all"))
     }
@@ -151,7 +151,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 
     val time = System.currentTimeMillis - 5000
 
-    intercept[ServiceException] {
+    intercept[ReefServiceException] {
       fix.login("core", "core", None, Some(time))
     }
   }

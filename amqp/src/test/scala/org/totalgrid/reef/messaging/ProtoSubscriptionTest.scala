@@ -111,7 +111,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
   def getEnv(sub: ISubscription): RequestEnv = {
     val headers = new ServiceHandlerHeaders(new RequestEnv)
-    sub.configure(headers)
+    sub.setHeaders(headers)
     headers.env
   }
 

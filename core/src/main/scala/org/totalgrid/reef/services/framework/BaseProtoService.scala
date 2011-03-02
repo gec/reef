@@ -26,7 +26,8 @@ import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
-import org.totalgrid.reef.api.{ Envelope, ServiceException, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
+import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
 
 /**
  * Hooks/callbacks for service implementations to modify standard REST behavior
@@ -145,9 +146,16 @@ object BaseProtoService {
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
       modelTrans.transaction { (model: ServiceModelType) =>
         model.setEnv(env)
-        val (proto, status) = model.findRecord(req) match {
-          case None => create(model, req)
-          case Some(x) => update(model, req, x)
+        val (proto, status) = try {
+          model.findRecord(req) match {
+            case None => create(model, req)
+            case Some(x) => update(model, req, x)
+          }
+        } catch {
+          // some items can be created without having uniquely identifying fields
+          // so may have no search terms to look for
+          // TODO: evaluate replacing NoSearchTermsException with flags
+          case e: NoSearchTermsException => create(model, req)
         }
         env.subQueue.foreach(subscribe(model, proto, _))
         new Response(status, proto :: Nil)
@@ -209,7 +217,7 @@ object BaseProtoService {
    */
   trait GetDisabled { self: ProtoServiceShared =>
     def get(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ServiceException("Get not implemented")
+      throw new BadRequestException("Get not implemented")
   }
 
   /**
@@ -217,7 +225,7 @@ object BaseProtoService {
    */
   trait PostDisabled { self: ProtoServiceShared =>
     def post(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ServiceException("Post not allowed")
+      throw new BadRequestException("Post not allowed")
   }
 
   /**
@@ -226,7 +234,7 @@ object BaseProtoService {
   trait PutDisabled { self: ProtoServiceShared =>
     def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ServiceException("Put not allowed")
+      throw new BadRequestException("Put not allowed")
   }
 
   /**
@@ -234,7 +242,7 @@ object BaseProtoService {
    */
   trait DeleteDisabled { self: ProtoServiceShared =>
     def delete(req: ProtoType, env: RequestEnv): Response[ProtoType] =
-      throw new ServiceException("Delete not allowed")
+      throw new BadRequestException("Delete not allowed")
   }
 
   /**
@@ -242,7 +250,7 @@ object BaseProtoService {
    */
   trait SubscribeDisabled { self: ProtoServiceShared =>
     def subscribe(model: ServiceModelType, req: ProtoType, queue: String) {
-      throw new ServiceException("Subscribe not allowed")
+      throw new BadRequestException("Subscribe not allowed")
     }
   }
 }

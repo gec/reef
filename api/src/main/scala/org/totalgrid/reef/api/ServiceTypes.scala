@@ -54,7 +54,12 @@ object ServiceTypes {
   case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
     override def toString: String = super.toString + " " + status + " message: " + error
 
-    def toException: ServiceException = new ServiceException(error, status)
+    def toException: ReefServiceException = status match {
+      case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
+      case Envelope.Status.UNAUTHORIZED => new UnauthorizedException(error)
+      case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
+      case _ => new BadRequestException(error, status)
+    }
   }
 
 }

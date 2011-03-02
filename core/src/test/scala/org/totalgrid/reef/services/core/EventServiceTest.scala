@@ -32,7 +32,7 @@ import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.api.{ ServiceException, RequestEnv, ServiceTypes }
+import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv, ServiceTypes }
 import org.totalgrid.reef.messaging.ServiceRequestHandler
 
 import org.totalgrid.reef.models._
@@ -123,7 +123,7 @@ class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterA
       alarm.state should be(AlarmModel.UNACK_AUDIBLE)
 
       // Can't go to REMOVED
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.REMOVED), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.REMOVED), alarm) }
 
       // Update to UNACK_SILENT
       {
@@ -134,7 +134,7 @@ class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterA
       }
 
       // Can't go back to UNACK_AUDIBLE
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
 
       // Update to ACKNOWLEDGED
       {
@@ -152,8 +152,8 @@ class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterA
       }
 
       // Can't go back to UNACK_*
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
 
       // Update to REMOVED
       {
@@ -164,9 +164,9 @@ class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterA
       }
 
       // Can't go back to ACKNOWLEDGED or UNACK_*
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
-      intercept[ServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
+      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm) }
 
       // Check UNACK_AUDIBLE straight to ACKNOWLEDGED with a new event
       event = eventService.createFromProto(makeEvent(Scada.ControlExe))

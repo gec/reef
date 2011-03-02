@@ -29,7 +29,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Descriptors
 
 import BaseProtoService._
-import org.totalgrid.reef.api.{ Envelope, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 class CommandAccessService(protected val modelTrans: ServiceTransactable[CommandAccessServiceModel])
     extends BaseProtoService[AccessProto, AccessModel, CommandAccessServiceModel]
@@ -49,16 +49,19 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
   override protected def preCreate(proto: AccessProto): AccessProto = {
     // Simple proto validity check
     if (proto.getCommandsList.length == 0)
-      throw new ServiceException("Must specify at least one command", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Must specify at least one command")
     if (!proto.hasAccess)
-      throw new ServiceException("Must specify access mode", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Must specify access mode, ALLOWED or BLOCKED")
 
     // Being a select (allowed) implies you have user and expiry
     if (proto.getAccess == AccessMode.ALLOWED) {
 
       // Set expire time to default or else use proto as-is
       if (!proto.hasExpireTime) AccessProto.newBuilder(proto).setExpireTime(defaultSelectTime).build
-      else proto
+      else {
+        if (proto.getExpireTime != -1 && proto.getExpireTime <= 0) throw new BadRequestException("Must specify positive timeout or -1 for no timeout.")
+        proto
+      }
     } else proto
   }
 

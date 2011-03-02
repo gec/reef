@@ -20,14 +20,15 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.messaging.ServiceEndpoint
 
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 
 import org.totalgrid.reef.measurementstore.Historian
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceException }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[MeasurementHistory] {
@@ -41,7 +42,7 @@ class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[Measureme
 
   override def get(req: MeasurementHistory, env: RequestEnv): Response[MeasurementHistory] = {
 
-    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
 
     val pointName = req.getPointName()
     val ascending = req.getAscending()

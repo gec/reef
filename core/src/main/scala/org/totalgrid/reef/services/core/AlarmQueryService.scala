@@ -32,7 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api.{ Envelope, ServiceException, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -46,19 +46,10 @@ import org.squeryl.dsl.ast.LogicalBoolean
 
 object AlarmQueryService {
 
-  def buildQuery(row: AlarmModel, select: AlarmSelect): LogicalBoolean = {
-
-    var expressions: List[LogicalBoolean] = Nil
-
-    if (select.getStateCount > 0) expressions ::= (row.state in select.getStateList.toList.map(_.getNumber))
-
-    expressions
+  def buildQuery(row: AlarmModel, eventRow: EventStore, select: AlarmSelect): List[Option[LogicalBoolean]] = {
+    List(
+      select.getStateList.asParam(row.state in _.map(_.getNumber))) ::: select.eventSelect.map(EventQueryService.buildQuery(eventRow, _)).getOrElse(Nil)
   }
-
-  def optionalEventQuery(event: EventStore, select: Option[EventSelect]): LogicalBoolean = {
-    select.map(EventQueryService.buildQuery(event, _)) getOrElse (true === true)
-  }
-
 }
 
 class AlarmQueryService
@@ -74,25 +65,23 @@ class AlarmQueryService
     import ApplicationSchema._
     import AlarmQueryService._
 
-    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
 
     if (!req.hasSelect)
-      throw new ServiceException("Must include select")
+      throw new BadRequestException("Must include select")
 
     transaction {
 
       val select = req.getSelect
-      val eSelect = select.getEventSelect
 
       // default all queries to max of 1000 events.
-      val limit = eSelect.limit getOrElse 1000
+      val limit = select.eventSelect.limit getOrElse 1000
 
       val results = from(alarms, events)((alarm, event) =>
-        where(buildQuery(alarm, select) and
-          optionalEventQuery(event, Some(eSelect)) and
+        where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
           alarm.eventUid === event.id)
           select ((alarm, event))
-          orderBy timeOrder(event.time, eSelect)).page(0, limit).toList // page(page_offset, page_length)
+          orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList // page(page_offset, page_length)
 
       val alarmProtos = results.map(x => AlarmConversion.convertToProto(x._1, x._2)) // AlalarmModel, EventStore
       val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
@@ -101,8 +90,8 @@ class AlarmQueryService
     }
   }
 
-  def timeOrder(time: ExpressionNode, eSelect: EventSelect) = {
-    if (eSelect.ascending getOrElse false)
+  def timeOrder(time: ExpressionNode, ascending: Option[Boolean]) = {
+    if (ascending getOrElse false)
       new OrderByArg(time).asc
     else
       new OrderByArg(time).desc

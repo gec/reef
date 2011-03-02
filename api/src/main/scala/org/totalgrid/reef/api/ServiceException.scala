@@ -20,7 +20,35 @@
  */
 package org.totalgrid.reef.api
 
-class ServiceException(val msg: String, val status: Envelope.Status = Envelope.Status.BAD_REQUEST) extends RuntimeException(msg) {
+/**
+ * Base class for all exceptions thrown directly by services
+ */
+abstract class ReefServiceException(val msg: String) extends Exception(msg) {
+
+  val status: Envelope.Status
+
   def getStatus = status
   def getMsg = msg
 }
+
+class UnknownServiceException(msg: String) extends ReefServiceException(msg) {
+  val status = Envelope.Status.LOCAL_ERROR
+}
+
+class ServiceIOException(msg: String) extends ReefServiceException(msg) {
+  val status = Envelope.Status.LOCAL_ERROR
+}
+
+class ResponseTimeoutException extends ReefServiceException("Response timed out") {
+  val status = Envelope.Status.RESPONSE_TIMEOUT
+}
+
+abstract class ReplyException(msg: String) extends ReefServiceException(msg)
+
+class ExpectationException(msg: String) extends ReplyException(msg) {
+  val status = Envelope.Status.UNEXPECTED_RESPONSE
+}
+
+class BadRequestException(msg: String, val status: Envelope.Status = Envelope.Status.BAD_REQUEST) extends ReplyException(msg)
+
+class UnauthorizedException(msg: String) extends BadRequestException(msg, Envelope.Status.UNAUTHORIZED)

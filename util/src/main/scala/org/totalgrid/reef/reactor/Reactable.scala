@@ -38,6 +38,8 @@ trait Reactable {
   /// dispatches a unit of work synchronously with a specific evaluation type T
   def request[A](fun: => A): A
 
+  /// Get the time being used for delay or repeat. Time is in ms.
+  def getRepeatDelay: Long
 }
 
 object Reactable {

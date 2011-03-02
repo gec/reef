@@ -94,7 +94,7 @@ trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
     try {
       setRsp(handleRequest(req, env))
     } catch {
-      case px: ServiceException =>
+      case px: ReefServiceException =>
         error(px)
         rsp.setStatus(px.status).setErrorMessage(px.toString)
       case x: Exception =>

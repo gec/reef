@@ -30,6 +30,7 @@ import org.totalgrid.reef.proto.Processing.MeasOverride;
 import java.util.List;
 
 import org.totalgrid.reef.api.ISubscription;
+import org.totalgrid.reef.api.ReefServiceException;
 
 import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.integration.helpers.*;
@@ -39,7 +40,7 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 
 	/** Test that the measurement overrides work correctly */
 	@Test
-	public void deleteAndPutOverrides() throws InterruptedException {
+	public void deleteAndPutOverrides() throws InterruptedException, ReefServiceException {
 
         // use a point we know will be static
         String pointName = "StaticSubstation.Line02.Current";

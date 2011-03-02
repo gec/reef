@@ -27,7 +27,7 @@ import org.totalgrid.reef.api.Envelope;
 import org.totalgrid.reef.proto.Auth.*;
 
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
-import org.totalgrid.reef.api.ServiceException;
+import org.totalgrid.reef.api.ReefServiceException;
 
 public class TestAuthService extends JavaBridgeTestBase {
 	public TestAuthService() {
@@ -36,18 +36,18 @@ public class TestAuthService extends JavaBridgeTestBase {
 	}
 
 	@Test
-	public void successfulLogin() {
+	public void successfulLogin() throws ReefServiceException {
 		AuthToken t = SampleRequests.logonAs(client, "core", "core", false);
 		assertTrue(t.getToken().length() > 0);
 	}
 
 	@Test
-	public void demonstateAuthTokenNeeded() {
+	public void demonstateAuthTokenNeeded() throws ReefServiceException {
 		try {
 			// will fail because we don't havent logged in to get auth tokens
 			SampleRequests.getAllPoints(client);
 			assertTrue(false);
-		} catch (ServiceException pse) {
+		} catch (ReefServiceException pse) {
 			assertEquals(pse.getStatus(), Envelope.Status.BAD_REQUEST);
 		}
 		// logon as all permission user

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.util.{ MetricsHookContainer, Logging }
+import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
 import org.totalgrid.reef.proto.{ Measurements, Processing }
@@ -32,6 +32,7 @@ import Processing._
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.{ RoutingKeys, ReefServicesList }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
+import org.totalgrid.reef.metrics.MetricsHookContainer
 
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.

@@ -39,12 +39,6 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   val table: Table[T]
 
   /**
-   * this flag sets what the behavior should be on a totally empty proto, by default it returns all entrys,
-   * this should probably be turned off.
-   */
-  val returnAllOnBlank: Boolean = true
-
-  /**
    * client code need to return a list that has all of the fields necessary to determine
    * if 2 records are referring to the "same object", it may be one field or a combination 
    * of all the fields to define the "sameness". In most cases a uid field will be in this list
@@ -133,9 +127,9 @@ trait UniqueAndSearchQueryable[MessageType, T] {
     from(table)(sql => selectFun(sql, where(searchParams(req, sql))))
   }
   def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {
-    SquerylModel.combineExpressions(uniqueQuery(req, sql).flatten, returnAllOnBlank)
+    SquerylModel.combineExpressions(uniqueQuery(req, sql).flatten)
   }
   def searchParams(req: MessageType, sql: T): LogicalBoolean = {
-    SquerylModel.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten, returnAllOnBlank)
+    SquerylModel.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten)
   }
 }

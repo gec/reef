@@ -196,12 +196,16 @@ case class FrontEndPort(
 }
 
 case class ConfigFile(
-    val name: String,
+    val entityId: Long,
     val mimeType: String,
-    var file: Array[Byte],
-    var entityId: Option[Long]) extends ModelWithId {
+    var file: Array[Byte]) extends ModelWithId {
 
-  def this() = this("", "", Array.empty[Byte], Some(0))
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val owners = LazyVar(EQ.getParents(entity.value.id, "uses").toList)
+
+  /// this flag allows us to tell if we have modified
+  @Transient
+  var changedOwners = false
 }
 
 case class CommunicationEndpoint(
@@ -216,7 +220,7 @@ case class CommunicationEndpoint(
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
-  val configFiles = LazyVar(ApplicationSchema.configFiles.where(p => p.entityId === entityId))
+  val configFiles = LazyVar(Entity.asType(ApplicationSchema.configFiles, EQ.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList, Some("ConfigurationFile")))
 
   val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
   val name = LazyVar(entity.value.name)
@@ -384,41 +388,6 @@ class EntityDerivedEdge(
   val edge = LazyVar(hasOne(ApplicationSchema.edges, edgeId))
   val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
-
-class Agent(
-    val name: String,
-    val password: String) extends ModelWithId {
-
-  val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
-}
-
-class AuthPermission(
-    val allow: Boolean,
-    val resource: String,
-    val verb: String) extends ModelWithId {
-
-}
-class PermissionSet(
-    val name: String,
-    val defaultExpirationTime: Long) extends ModelWithId {
-
-  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionId === id) select (&(p.permissionId)))))
-}
-
-class AuthToken(
-    val token: String,
-    val agentId: Long,
-    val loginLocation: String,
-    var expirationTime: Long) extends ModelWithId {
-
-  val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
-  val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.tokenSetJoins)(p => where(p.authTokenId === id) select (&(p.permissionSetId)))))
-
-}
-
-case class AgentPermissionSetJoin(val permissionSetId: Long, val agentId: Long)
-case class PermissionSetJoin(val permissionSetId: Long, val permissionId: Long)
-case class AuthTokenPermissionSetJoin(val permissionSetId: Long, val authTokenId: Long)
 
 object ApplicationSchema extends Schema {
   val entities = table[Entity]

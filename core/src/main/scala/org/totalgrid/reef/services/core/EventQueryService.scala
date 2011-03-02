@@ -44,52 +44,21 @@ import org.squeryl.dsl.ast.LogicalBoolean
 
 object EventQueryService {
 
-  def buildQuery(row: EventStore, select: EventSelect): LogicalBoolean = {
-
-    var expressions: List[LogicalBoolean] = Nil
-
-    select.getEventTypeCount match {
-      case 0 =>
-      case 1 =>
-        select.getEventType(0) match {
-          case "*" => expressions ::= (true === true) // special case for all events
-          case id => expressions ::= (row.eventType === id)
-        }
-      case x => expressions ::= (row.eventType in select.getEventTypeList.toList)
-    }
+  def buildQuery(row: EventStore, select: EventSelect): List[Option[LogicalBoolean]] = {
 
     // Each can have 1 or more lists of values to match against.
-    //
     // TODO: Squeryl problem? if (select.getSeverityCount > 0) expressions ::= (row.severity in select.getSeverityList.toList)
-    if (select.getSubsystemCount > 0) expressions ::= (row.subsystem in select.getSubsystemList.toList)
-    if (select.getUserIdCount > 0) expressions ::= (row.userId in select.getUserIdList.toList)
-    //TODO: check if _.getUID is empty string.
+    // TODO: check if _.getUID is empty string.
     //if (select.getEntityCount > 0) expressions ::= (row.entityId in EQ.findEntities(select.getEntityList.toList).map(_.id))
-    if (select.getEntityCount > 0) expressions ::= (row.entityId in select.getEntityList.toList.map(EQ.idsFromProtoQuery(_)).flatten.distinct)
 
-    if (select.hasTimeFrom) {
-      // Combine timeFrom and timeTo in one expression. Hopefully, this explicit expression
-      //  will produce an optimized query on the time index.
-      if (select.hasTimeTo)
-        expressions ::= (row.time gte select.getTimeFrom) and (row.time lte select.getTimeTo)
-      else
-        expressions ::= (row.time gte select.getTimeFrom)
-    }
-
-    // UidAfter is used to get updates without getting duplicates from previous queries.
-    if (select.hasUidAfter)
-      expressions ::= (row.id gt select.getUidAfter.toLong)
-
-    //Console.printf( "expressions.size = %d\n", expressions.size)
-
-    // Gather the expressions into a tree of AND clauses.
-    // If we don't have any expressions, get all events.
-    //    if (expressions.size == 0)
-    //      (1 === 1)
-    //    else
-    //      expressions.reduceRight((a, b) => new BinaryOperatorNodeLogicalBoolean(a, b, "and"))
-
-    expressions
+    List(
+      select.getEventTypeList.asParam { row.eventType in _ },
+      select.getSubsystemList.asParam { row.subsystem in _ },
+      select.getUserIdList.asParam { row.userId in _ },
+      select.getEntityList.asParam { row.entityId in _.map(EQ.idsFromProtoQuery(_)).flatten.distinct },
+      select.timeFrom.asParam(row.time gte _),
+      select.timeTo.asParam(row.time lte _),
+      select.uidAfter.asParam(row.id gt _.toLong))
   }
 
 }
@@ -106,32 +75,29 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
   override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 
-    env.subQueue.foreach(queueName => throw new ServiceException("Subscribe not allowed: " + queueName))
+    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
 
     if (!req.hasSelect)
-      throw new ServiceException("Must include select")
+      throw new BadRequestException("Must include select")
 
     modelTrans.transaction { (model: EventServiceModel) =>
 
       val select = req.getSelect
-      var limit = 1000; // default all queries to max of 1000 events.
-
-      if (select.hasLimit)
-        limit = select.getLimit
+      val limit = select.limit.getOrElse(1000) // default all queries to max of 1000 events.
 
       val entries =
         from(model.table)(row =>
-          where(buildQuery(row, select))
+          where(SquerylModel.combineExpressions(buildQuery(row, select).flatten))
             select (row)
-            orderBy timeOrder(row.time, select)).page(0, limit) //.toList // page(page_offset, page_length)
+            orderBy timeOrder(row.time, select.ascending)).page(0, limit)
 
       val respList = EventList.newBuilder.addAllEvents(entries.toList.map(model.convertToProto(_))).build
       new Response(Envelope.Status.OK, respList)
     }
   }
 
-  def timeOrder(time: ExpressionNode, select: EventSelect) = {
-    if (select.ascending getOrElse false)
+  def timeOrder(time: ExpressionNode, ascending: Option[Boolean]) = {
+    if (ascending getOrElse false)
       new OrderByArg(time).asc
     else
       new OrderByArg(time).desc

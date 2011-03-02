@@ -38,7 +38,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   private val container = new AuthAndMetricsServiceWrapper(components, serviceConfiguration)
 
   // default lifecycles to add
-  this.add(List(amqp, components.heartbeatActor, components.nonopPublisher))
+  this.add(List(amqp, components.heartbeatActor))
 
   private val measStore = MeasurementStoreFinder.getInstance(measInfo, this.add)
 

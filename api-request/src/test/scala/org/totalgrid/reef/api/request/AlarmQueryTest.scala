@@ -58,13 +58,13 @@ class AlarmQueryTest
     with ShouldMatchers {
 
   test("Get all alarms (limit 2)") {
-    val desc = "Get all alarms by specifying an empty AlarmSelect (except a limit of 2 records returned)."
+    val desc = "Get all alarms by specifying a wildcard AlarmSelect (except a limit of 2 records returned)."
 
     val request =
       AlarmList.newBuilder
         .setSelect(
           AlarmSelect.newBuilder
-          .setEventSelect(EventSelect.newBuilder.setLimit(2)))
+          .setEventSelect(EventSelect.newBuilder.setLimit(2).addEventType("*")))
         .build
 
     val response = client.getOneOrThrow(request)

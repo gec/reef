@@ -23,14 +23,13 @@ package org.totalgrid.reef.app
 import org.totalgrid.reef.event.BusTiedEventLogPublisher
 
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.metrics.{ NonOpMetricPublisher, NonOperationalDataPublisher }
-
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.reactor.{ ReactActor, PeriodicReactor }
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.ReefServicesList
 
 import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.metrics.{ MetricsSink }
 
 /**
  * wraps up all of the common/core components used by bus enabled applications, most of these components get a key
@@ -52,16 +51,10 @@ class CoreApplicationComponents(
   /// it cleanly before the amqp service is killed, that allows a nice clean shutdown
   val heartbeatActor = new ProcessHeartbeatActor(amqp, appConfig.getHeartbeatCfg) with ReactActor
 
-  /// publisher used to write non-operational points into the system
-  val nonOpPub = new NonOperationalDataPublisher(amqp.publish(appConfig.getStreamCfg.getNonopDest, { x: Any => ("") }))
-
   /// log and event sink, should also be registered as slf4j backend
   val logger = new BusTiedEventLogPublisher(amqp, appConfig.getCapabilites(0), appConfig.getStreamCfg.getEventsDest, appConfig.getStreamCfg.getLogsDest)
 
   /// specialized publisher for publishing application metrics
-  val metricsPublisher = new NonOpMetricPublisher(amqp.publish(appConfig.getStreamCfg.getNonopDest, { x: Any => ("") }))
-
-  /// publishes the metrics values on a fixed schedule
-  val nonopPublisher = new PeriodicReactor(15000, metricsPublisher.publishAll _) with ReactActor
+  val metricsPublisher = MetricsSink.getInstance(appConfig.getInstanceName)
 
 }

@@ -24,6 +24,7 @@ import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 
+import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import java.util.List;
@@ -38,7 +39,7 @@ public class TestMeasSnapshotService extends JavaBridgeTestBase {
 	 * is the same.
 	 */
 	@Test
-	public void measSnapshotCountMatches() {
+	public void measSnapshotCountMatches() throws ReefServiceException {
 		List<Point> plist = SampleRequests.getAllPoints(client);
 		List<Measurement> mlist = SampleRequests.getCurrentValues(client, SampleProtos.makeMeasSnapshot(plist));
 		assertEquals(plist.size(), mlist.size());

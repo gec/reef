@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.api
 
-class UnknownServiceException(msg: String) extends Exception(msg)
-
 object ServiceList {
 
   type ServiceMap = Map[Class[_], ServiceInfo[_, _]]

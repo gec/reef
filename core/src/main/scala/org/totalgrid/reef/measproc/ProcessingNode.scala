@@ -21,12 +21,11 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.persistence.{ ObjectCache, KeyValue }
-import org.totalgrid.reef.util.{ HookableObject, MetricsHookContainer, Logging }
+import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.app.{ ServiceHandler, ServiceHandlerProvider, SubscriptionProvider }
 import org.totalgrid.reef.proto.{ Measurements, Processing, FEP, Events, Model }
-import org.totalgrid.reef.util.MetricsHooks
 
 import Measurements._
 import Processing._
@@ -37,6 +36,7 @@ import scala.collection.immutable
 import org.totalgrid.reef.messaging.{ ProtoRegistry, AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.RoutingKeys
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
+import org.totalgrid.reef.metrics.{ MetricsHooks, MetricsHookContainer }
 
 trait ProcessingNode {
   def process(m: MeasurementBatch)
@@ -55,15 +55,23 @@ class BasicProcessingNode(procFun: Measurement => Unit, flushCache: () => Unit)
   protected lazy val measProcessingTime = timingHook[Unit]("measProcessingTime")
   protected lazy val measProcessed = counterHook("measProcessed")
 
+  protected lazy val batchProcessingTime = timingHook[Unit]("batchesProcessingTime")
+  protected lazy val batchProcessed = counterHook("batchesProcessed")
+  protected lazy val batchSize = averageHook("batchSize")
+
   def process(b: MeasurementBatch) = {
-    ProcessingNode.debatch(b) { meas =>
-      measProcessingTime {
-        debug("Processing: " + meas)
-        procFun(meas)
+    batchProcessingTime {
+      ProcessingNode.debatch(b) { meas =>
+        measProcessingTime {
+          debug("Processing: " + meas)
+          procFun(meas)
+        }
       }
+      flushCache()
     }
-    flushCache()
     measProcessed(b.getMeasCount)
+    batchSize(b.getMeasCount)
+    batchProcessed(1)
   }
 }
 class MeasurementProcessor(

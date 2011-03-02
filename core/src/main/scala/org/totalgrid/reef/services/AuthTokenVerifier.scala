@@ -30,6 +30,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.metrics.MetricsHooks
 
 /// the metrics collected on any single service request
 class AuthTokenMetrics(baseName: String = "") extends MetricsHooks {

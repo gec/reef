@@ -26,6 +26,7 @@ import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
+import org.totalgrid.reef.api.BadRequestException
 
 /**
  * Supertype for Proto/Squeryl models
@@ -168,15 +169,16 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 object SquerylModel {
   import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
 
+  class NoSearchTermsException(msg: String) extends BadRequestException(msg)
+
   /**
    *  Common logic for dynamically combining multiple squeryl expressions (with and)
    * @param exps    List of squeryl expressions
    * @return        Expression that results from intersection of input expressions
    */
-  def combineExpressions(exps: List[LogicalBoolean], matchAll: Boolean = true) = {
+  def combineExpressions(exps: List[LogicalBoolean]) = {
     exps.length match {
-      // TODO: skip roundtrip to DB when matchAll == false
-      case 0 => true === matchAll
+      case 0 => throw new NoSearchTermsException("No search terms in query. If searching for all records use a wildcard (\"*\") on a searchable field")
       case _ =>
         exps.reduceLeft { (a, b) =>
           new BinaryOperatorNodeLogicalBoolean(a, b, "and")
@@ -186,11 +188,33 @@ object SquerylModel {
 
   implicit def expressionAnder(exps: List[LogicalBoolean]): LogicalBoolean = combineExpressions(exps)
 
+  /**
+   * we use this singleton to indicate a wildcard search so we can differentiate between a totally blank query and
+   * one where we asked for a wildcard search on some parameter
+   */
+  val WILDCARD: Option[LogicalBoolean] = Some(true === true)
+
   class FilterStars[A](o: Option[A]) {
-    def asParam[B](f: A => B): Option[B] = {
-      if (!o.isDefined || o.get == "*") None
-      else Some(f(o.get))
+    def asParam(f: A => LogicalBoolean): Option[LogicalBoolean] = {
+      o match {
+        case None => None
+        case Some("*") => WILDCARD
+        case _ => Some(f(o.get))
+      }
     }
   }
   implicit def makeAsParam[A](o: Option[A]): FilterStars[A] = new FilterStars(o)
+
+  class ListFilterStars[A](javaList: java.util.List[A]) {
+    import scala.collection.JavaConversions._
+    val list = javaList.toList
+    def asParam(f: List[A] => LogicalBoolean): Option[LogicalBoolean] = {
+      list match {
+        case List() => None
+        case List("*") => SquerylModel.WILDCARD
+        case _ => Some(f(list))
+      }
+    }
+  }
+  implicit def makeListAsParam[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList)
 }
