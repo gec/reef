@@ -122,4 +122,13 @@ class CurrentMetricsValueHolderTests extends FunSuite with ShouldMatchers {
     results2.get("all.test") should equal(Some(1.0))
   }
 
+  test("Sum and Count") {
+    val map = Map("node1.incs" -> 3, "node2.incs" -> 1, "node3.incs" -> 2)
+
+    val counts = MetricsMapHelpers.sumAndCount(map, "*.incs")
+    counts("*.incs.Sum") should equal(6.0)
+    counts("*.incs.Count") should equal(3)
+
+  }
+
 }

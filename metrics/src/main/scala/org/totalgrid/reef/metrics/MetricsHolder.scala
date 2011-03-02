@@ -60,16 +60,13 @@ trait MappedMetricsHolder[A <: MetricsHolder] extends MetricsHolder {
   }
 
   def values(keys: List[String]): Map[String, Any] = {
-    mergeMap(stores.map { case (name, holder) => holder.values(keys) })
+    MetricsMapHelpers.mergeMap(stores.map { case (name, holder) => holder.values(keys) })
   }
 
   def reset(keys: List[String]) {
     stores.foreach { case (name, holder) => holder.reset(keys) }
   }
 
-  private def mergeMap[A, B](maps: Iterable[Map[A, B]]): Map[A, B] = {
-    maps.map { m => m.map { e => e._1 -> e._2 } }.flatten.toMap
-  }
 }
 
 object MetricsMapHelpers {
@@ -90,6 +87,22 @@ object MetricsMapHelpers {
           case None => None
         }
     }.flatten.toMap
+  }
+
+  def sumAndCount(metrics: Map[String, Any], key: String): Map[String, Any] = {
+    val valsAsDoubles = matchingKeys(metrics, key).map(metrics.get(_).get match {
+      case i: Int => i.toDouble
+      case d: Double => d
+      case _ => throw new Exception("Can not do operations on non numeric metrics.")
+    })
+
+    Map(key + ".Sum" -> valsAsDoubles.sum, key + ".Count" -> valsAsDoubles.size)
+  }
+
+  def matchingKeys(metrics: Map[String, Any], key: String) = metrics.keys.filter(matches(_, key))
+
+  def mergeMap[A, B](maps: Iterable[Map[A, B]]): Map[A, B] = {
+    maps.map { m => m.map { e => e._1 -> e._2 } }.flatten.toMap
   }
 
   /**
