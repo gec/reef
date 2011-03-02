@@ -23,49 +23,34 @@ package org.totalgrid.reef.metrics
 import java.util.concurrent.atomic.AtomicInteger
 import org.totalgrid.reef.util.{ Logging }
 
-trait NonOperationalDataSink {
-
-  def nonOp(name: String, value: String): Unit
-  def nonOp(name: String, value: Int): Unit
-  def nonOp(name: String, value: Double): Unit
-
-  def nonOp(source: String, variable: String, value: String): Unit = nonOp(source + "." + variable, value)
-  def nonOp(source: String, variable: String, value: Int): Unit = nonOp(source + "." + variable, value)
-  def nonOp(source: String, variable: String, value: Double): Unit = nonOp(source + "." + variable, value)
-}
-
 trait MetricValueHolder {
   def update(i: Int)
 
   def reset()
 
-  def publish(name: String, pub: NonOperationalDataSink)
+  def value: AnyVal
 }
 
 abstract class IntMetricHolder extends MetricValueHolder with Logging {
 
+  protected val current = new AtomicInteger(0)
+
   def update(i: Int)
 
-  val value = new AtomicInteger(0)
-  def getValue(): Int = { value.get }
-  def reset() = value.set(0)
+  def value: Int = { current.get }
+  def reset = current.set(0)
 
-  def publish(name: String, pub: NonOperationalDataSink) {
-    val c = value.get
-    debug(name + " => " + c)
-    pub.nonOp(name, c)
-  }
 }
 
 class CounterMetric extends IntMetricHolder {
   def update(i: Int) = {
-    value.addAndGet(i)
+    current.addAndGet(i)
   }
 }
 
 class ValueMetric extends IntMetricHolder {
   def update(i: Int) = {
-    value.set(i)
+    current.set(i)
   }
 }
 
@@ -74,9 +59,9 @@ class ValueMetric extends IntMetricHolder {
  */
 class AverageMetric(size: Int) extends MetricValueHolder with Logging {
 
-  var next = 0
-  val counts = new Array[Int](size)
-  var sum = 0
+  private var next = 0
+  private val counts = new Array[Int](size)
+  private var sum = 0
 
   def update(i: Int) = {
     synchronized {
@@ -87,7 +72,7 @@ class AverageMetric(size: Int) extends MetricValueHolder with Logging {
     }
   }
 
-  def reset() = {
+  def reset = {
     synchronized {
       next = 0
       sum = 0
@@ -95,8 +80,7 @@ class AverageMetric(size: Int) extends MetricValueHolder with Logging {
     }
   }
 
-  def publish(name: String, pub: NonOperationalDataSink) {
-
+  def value: Double = {
     var s = 0
     synchronized {
       s = sum
@@ -105,15 +89,15 @@ class AverageMetric(size: Int) extends MetricValueHolder with Logging {
     // need this value to be accurate
     val num = if (next > size) size else next
     val d = if (num == 0) 0 else s.toDouble / num
-    debug(name + " => " + d)
-    pub.nonOp(name, d)
+    d
   }
 }
 
-class CurrentMetricsValueHolder(val baseName: String) extends MetricsHookSource {
+class CurrentMetricsValueHolder(val baseName: String) extends MetricsHookSource with MetricsHolder {
   var metrics = Map.empty[String, MetricValueHolder]
 
   def getSinkFunction(hookName: String, typ: MetricsHooks.HookType): (Int) => Unit = {
+    val name = baseName + "." + hookName
     val metricHolder = {
       typ match {
         case MetricsHooks.Counter => new CounterMetric
@@ -121,18 +105,20 @@ class CurrentMetricsValueHolder(val baseName: String) extends MetricsHookSource 
         case MetricsHooks.Average => new AverageMetric(30)
       }
     }
-    metrics += hookName -> metricHolder
+    metrics += name -> metricHolder
     metricHolder.update
   }
 
-  def publishAll(sink: NonOperationalDataSink) {
-    metrics.foreach {
-      case (name, holder) =>
-        holder.publish(baseName + "." + name, sink)
-    }
+  def values(keys: List[String]): Map[String, Any] = {
+
+    val matchingKeys = metrics.keys.filter(MetricsMapHelpers.matchesAny(_, keys))
+
+    matchingKeys.map { name => name -> metrics(name).value }.toMap
   }
 
-  def resetAll() {
-    metrics.foreach { case (name, holder) => holder.reset }
+  def reset(keys: List[String]) {
+    val matchingKeys = metrics.keys.filter(MetricsMapHelpers.matchesAny(_, keys))
+    matchingKeys.foreach { name => metrics(name).reset }
   }
 }
+

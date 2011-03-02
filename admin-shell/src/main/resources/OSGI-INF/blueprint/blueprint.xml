@@ -29,11 +29,23 @@
         <command name="reef/load">
             <action class="org.totalgrid.reef.shell.admin.LoadConfigCommand"/>
         </command>
-        <command name="metrics/dump">
-            <action class="org.totalgrid.reef.shell.admin.DumpMetricsToCSV"/>
+        <command name="metrics/metrics">
+            <action class="org.totalgrid.reef.shell.admin.MetricsShow"/>
         </command>
         <command name="metrics/reset">
-            <action class="org.totalgrid.reef.shell.admin.ResetMetrics"/>
+            <action class="org.totalgrid.reef.shell.admin.MetricsReset"/>
+        </command>
+        <command name="metrics/outputs">
+            <action class="org.totalgrid.reef.shell.admin.MetricsOutputs"/>
+        </command>
+        <command name="metrics/rates">
+            <action class="org.totalgrid.reef.shell.admin.MetricsRates"/>
+        </command>
+        <command name="metrics/filters">
+            <action class="org.totalgrid.reef.shell.admin.MetricsFilter"/>
+        </command>
+        <command name="metrics/calcs">
+            <action class="org.totalgrid.reef.shell.admin.MetricsCalcs"/>
         </command>
     </command-bundle>
 

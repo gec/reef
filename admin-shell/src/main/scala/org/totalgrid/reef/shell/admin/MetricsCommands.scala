@@ -20,28 +20,142 @@
  */
 package org.totalgrid.reef.shell.admin
 
-import org.apache.felix.gogo.commands.{ Command, Argument }
+import org.apache.felix.gogo.commands.{ Command, Argument, Option }
 import org.apache.karaf.shell.console.OsgiCommandSupport
+import org.totalgrid.reef.metrics.{ MetricsMapHelpers, CSVMetricPublisher, MetricsSink }
 
-import org.totalgrid.reef.metrics.MetricsSink
+/**
+ * base class, keeps the state filters, calculations and output settings
+ * for all of the metrics commands
+ */
+abstract class MetricsCommands extends OsgiCommandSupport {
 
-@Command(scope = "metrics", name = "dump", description = "Output the metrics to a csv file (metrics.csv by default)")
-class DumpMetricsToCSV extends OsgiCommandSupport {
+  // note we use an anonymous function for the session retriever (since its not ready at construction)
+  val filters = new SessionHeldList[String]("metrics.filters", { this.session })
+  val calculations = new SessionHeldList[String]("metrics.calcs", { this.session })
 
-  @Argument(index = 0, name = "fileName", description = "Output file path", required = false, multiValued = false)
-  private var fileName: String = "metrics.csv"
+  val outputToScreen = new SessionHeldObject[Boolean]("metrics.toScreen", { this.session }, true)
+  val outputToCSV = new SessionHeldObject[scala.Option[String]]("metrics.csv", { this.session }, None)
 
-  override def doExecute(): Object = {
-    MetricsSink.dumpToFile(fileName)
-    null
+  def output(pubValues: Map[String, Any]) = {
+    if (outputToScreen.get) pubValues.foreach { case (name, result) => println(name + " => " + result) }
+    outputToCSV.get.foreach { fileName =>
+      // TODO: move csv publisher to admin package?
+      val publisher = new CSVMetricPublisher(fileName)
+      publisher.publishValues(pubValues)
+      publisher.close
+    }
+  }
+
+  def getMetrics() = {
+    val rawMetrics = MetricsSink.values(filters.get)
+    val calcedValues = calculations.get.map { MetricsMapHelpers.sumAndCount(rawMetrics, _) }
+    MetricsMapHelpers.mergeMap(rawMetrics :: calcedValues)
   }
 }
 
 @Command(scope = "metrics", name = "reset", description = "Reset metrics counters")
-class ResetMetrics extends OsgiCommandSupport {
+class MetricsReset extends MetricsCommands {
 
   override def doExecute(): Object = {
-    MetricsSink.resetAll()
+    MetricsSink.reset(filters.get)
     null
   }
 }
+
+@Command(scope = "metrics", name = "metrics", description = "Output the current metrics the channels setup in metrics:outputs")
+class MetricsShow extends MetricsCommands {
+
+  override def doExecute(): Object = {
+    output(getMetrics)
+    null
+  }
+}
+
+@Command(scope = "metrics", name = "outputs", description = "Output the metrics to a csv file (metrics.csv by default)")
+class MetricsOutputs extends MetricsCommands {
+
+  @Argument(index = 0, name = "csvFile", description = "Path to CSV file to generate", required = false, multiValued = false)
+  private var csvFile: String = null
+
+  @Option(name = "-quiet", aliases = Array[String](), description = "Suppress screen output", required = false, multiValued = false)
+  private var quiet: Boolean = false
+
+  override def doExecute(): Object = {
+    outputToScreen.set(!quiet)
+    outputToCSV.set(scala.Option(csvFile))
+    null
+  }
+}
+
+@Command(scope = "metrics", name = "rates", description = "Get metrics twice seperated by X millis and calcs rates")
+class MetricsRates extends MetricsCommands {
+
+  @Argument(index = 0, name = "collectionTime", description = "Time to wait for rate calculation (seconds)", required = false, multiValued = false)
+  private var time: Long = 10
+
+  override def doExecute(): Object = {
+    val startValues = getMetrics
+
+    println("Waiting " + time + " seconds for rates")
+    Thread.sleep(time * 1000)
+
+    val endValues = getMetrics
+    val pubValues = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
+
+    output(pubValues)
+
+    null
+  }
+}
+
+@Command(scope = "metrics", name = "filters", description = "Add filters to what metrics are displayed")
+class MetricsFilter extends MetricsCommands {
+
+  @Argument(index = 0, name = "filterKey", description = "Key to add to filter list", required = false, multiValued = false)
+  private var filterKey: String = null
+
+  @Option(name = "-clear", aliases = Array[String](), description = "Clear the set filter list", required = false, multiValued = false)
+  private var clearAll = false
+
+  @Option(name = "-remove", aliases = Array[String](), description = "Remove a key from the list", required = false, multiValued = false)
+  private var removeFilters: Boolean = false
+
+  override def doExecute(): Object = {
+    if (clearAll) filters.clear
+    if (filterKey != null) {
+      if (removeFilters) filters.remove(filterKey)
+      else filters.add(filterKey)
+    }
+    null
+  }
+}
+
+@Command(scope = "metrics", name = "calcs", description = "Add calculations on metrics points")
+class MetricsCalcs extends MetricsCommands {
+
+  @Argument(index = 0, name = "key", description = "Key to do operation on (needs wildcard \"*\" to be useful)", required = false, multiValued = false)
+  private var key: String = null
+
+  // TODO: implement calculations other than sumCount
+  @Option(name = "-sumCount", aliases = Array[String](), description = "Sum up and count matching metrics generating \"key.Sum\" and \"key.Count\" points", required = false, multiValued = false)
+  private var sumAndCount: Boolean = true
+
+  @Option(name = "-dontSave", aliases = Array[String](), description = "Dont run the same calc on future metrics reads", required = false, multiValued = false)
+  private var dontSave: Boolean = false
+
+  override def doExecute(): Object = {
+
+    val preFilteredMetrics = MetricsSink.values(List(key))
+
+    val calcs = MetricsMapHelpers.sumAndCount(preFilteredMetrics, key)
+    val calcsPlusSourceData = MetricsMapHelpers.mergeMap(List(preFilteredMetrics, calcs))
+
+    output(calcsPlusSourceData)
+
+    if (!dontSave) calculations.add(key)
+
+    null
+  }
+}
+
