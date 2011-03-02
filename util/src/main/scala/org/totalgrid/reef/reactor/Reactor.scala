@@ -51,12 +51,6 @@ trait Reactor extends Reactable with Lifecycle {
 
   import Reactor._
 
-  /// The time being used for delay or repeat. Time is in ms.
-  protected var repeatDelay = 0l
-
-  /// Get the time being used for delay or repeat. Time is in ms.
-  override def getRepeatDelay = repeatDelay
-
   /// start execution and run fun just afterwards
   override def dispatchStart() = {
     this.doStart()
@@ -90,7 +84,6 @@ trait Reactor extends Reactable with Lifecycle {
 
   /// sends a unit of work to do after a specficied time has elapsed.    
   def delay(msec: Long)(fun: => Unit): Timer = {
-    repeatDelay = msec
     new ActorDelayHandler(
       actor {
         link(myactor)
@@ -109,7 +102,6 @@ trait Reactor extends Reactable with Lifecycle {
 
   /// send a unit of work to do immediatley and then repeat function until the actor is killed
   def repeat(msec: Long)(fun: => Unit): Timer = {
-    repeatDelay = msec
     new ActorDelayHandler(
       actor {
         link(myactor)
