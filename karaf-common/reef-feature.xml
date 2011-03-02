@@ -1,31 +1,31 @@
 <features>
-	<feature name="reef-core" version="0.2.0">
+	<feature name="reef-core" version="0.2.1-SNAPSHOT">
 		<bundle start-level='60'>mvn:com.weiglewilczek.scalamodules/scalamodules-core_2.8.0/2.0.2</bundle>
 		<bundle start-level='60'>mvn:com.weiglewilczek.slf4s/slf4s_2.8.0/1.0.3</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-core/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-amqp/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-proto/0.2.0</bundle>
-        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-api/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-xml/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-postgresql/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-api/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-squeryl/0.2.0</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-api/0.2.0</bundle>
-		<bundle start-level='70'>mvn:org.totalgrid.reef/reef-proto-shell/0.2.0</bundle>
-		<bundle start-level='80'>mvn:org.totalgrid.reef/reef-admin-shell/0.2.0</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-core/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-amqp/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-proto/0.2.1-SNAPSHOT</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-api/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-xml/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-postgresql/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-api/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-squeryl/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-api/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='70'>mvn:org.totalgrid.reef/reef-proto-shell/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='80'>mvn:org.totalgrid.reef/reef-admin-shell/0.2.1-SNAPSHOT</bundle>
 	</feature>    
-	<feature name="reef" version="0.2.0">
+	<feature name="reef" version="0.2.1-SNAPSHOT">
 		<feature>reef-core</feature>	
-		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-benchmark/0.2.0</bundle>
-		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/0.2.0</bundle>
-		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-fep/0.2.0</bundle>
-		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-processing/0.2.0</bundle>
+		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-benchmark/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-fep/0.2.1-SNAPSHOT</bundle>
+		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-processing/0.2.1-SNAPSHOT</bundle>
 	</feature>
-        <feature name="reef-dnp3" version="0.2.0">
+        <feature name="reef-dnp3" version="0.2.1-SNAPSHOT">
                 <feature>reef-core</feature>
-                <bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-dnp3/0.2.0</bundle>
+                <bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-dnp3/0.2.1-SNAPSHOT</bundle>
 	</feature>
 </features>
