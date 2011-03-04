@@ -38,6 +38,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import org.totalgrid.reef.messaging.BrokerObjectConsumer
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.BadRequestException
 
 /*
 @RunWith(classOf[JUnitRunner])
@@ -290,7 +291,7 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
 
   test("Proto query, root set nil") {
     val req = EntityProto.newBuilder
-      .addTypes("Nonexistent")
+      .setName("Nonexistent")
       .addRelations(
         Relationship.newBuilder
         .setRelationship("refs")
@@ -559,6 +560,28 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       "RegA-SubA-DeviceB-PointB")
 
     checkResults(spec, names)
+  }
+
+  test("Asking for unknown Type") {
+    val req = EntityProto.newBuilder.addTypes("ShouldHaveBeenSubstation")
+
+    intercept[BadRequestException] {
+      EQ.fullQuery(req.build)
+    }
+  }
+
+  test("Asking for unknown in sub proto") {
+    val req = EntityProto.newBuilder.setName("Nonexistent")
+      .addRelations(
+        Relationship.newBuilder
+        .setRelationship("refs")
+        .setDescendantOf(true)
+        .setDistance(1).addEntities(
+          EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
+
+    intercept[BadRequestException] {
+      EQ.fullQuery(req.build)
+    }
   }
 
 }
