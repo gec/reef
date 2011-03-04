@@ -80,8 +80,8 @@ object MetricsMapHelpers {
         endValues.get(name) match {
           case Some(endVal) =>
             endVal match {
-              case i: Int => Some(name -> ((i - startVal.asInstanceOf[Int]) * 1000) / time)
-              case d: Double => Some(name -> ((d - startVal.asInstanceOf[Double]) * 1000) / time)
+              case i: Int => Some(name + ".Rate" -> (((i - startVal.asInstanceOf[Int]) * 1000) / time).toInt)
+              case d: Double => Some(name + ".Rate" -> ((d - startVal.asInstanceOf[Double]) * 1000) / time)
               case _ => None
             }
           case None => None
@@ -90,13 +90,18 @@ object MetricsMapHelpers {
   }
 
   def sumAndCount(metrics: Map[String, Any], key: String): Map[String, Any] = {
-    val valsAsDoubles = matchingKeys(metrics, key).map(metrics.get(_).get match {
+    val sourceData = matchingKeys(metrics, key)
+    if (sourceData.isEmpty) return Map.empty[String, Any]
+
+    val valsAsDoubles = sourceData.map(metricName => metrics.get(metricName).get match {
       case i: Int => i.toDouble
       case d: Double => d
-      case _ => throw new Exception("Can not do operations on non numeric metrics.")
+      case x: Any => throw new Exception("Can not do operations on non numeric metrics : " + x.asInstanceOf[AnyRef].getClass + " , " + metricName)
     })
 
-    Map(key + ".Sum" -> valsAsDoubles.sum, key + ".Count" -> valsAsDoubles.size)
+    Map(
+      key + ".Sum" -> valsAsDoubles.sum,
+      key + ".Count" -> valsAsDoubles.size)
   }
 
   def matchingKeys(metrics: Map[String, Any], key: String) = metrics.keys.filter(matches(_, key))
