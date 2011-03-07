@@ -51,7 +51,9 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     setUpdateParams(delay)
   }
   override def beforeStop() {
-    repeater.foreach { _.cancel }
+    this.synchronized {
+      repeater.foreach { _.cancel }
+    }
   }
 
   def getRepeatDelay = delay
@@ -60,8 +62,8 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     // if the delay is 0 we shouldn't publish any random values after
     // the initial integrity poll
     delay = newDelay
-    reactor.execute {
-      info { "Updating parameters for " + name + ": delay = " + delay }
+    info { "Updating parameters for " + name + ": delay = " + delay }
+    this.synchronized {
       repeater.foreach(_.cancel)
       repeater = if (delay == 0) None else Some(reactor.repeat(delay) {
         update(measurements.toList)
