@@ -34,6 +34,8 @@ object CommunicationsLoader {
   val MAPPING_STATUS = Mapping.DataType.valueOf("BINARY")
   val MAPPING_ANALOG = Mapping.DataType.valueOf("ANALOG")
   val MAPPING_COUNTER = Mapping.DataType.valueOf("COUNTER")
+  val BENCHMARK = "benchmark"
+  val DNP3 = "dnp3"
 }
 
 /**
@@ -119,6 +121,8 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
    * Load this endpoint node and all children. Create edges to connect the children.
    */
   def loadEndpoint(endpoint: Endpoint, path: File, equipmentPointUnits: HashMap[String, String], benchmark: Boolean): Unit = {
+    import CommunicationsLoader._
+
     val endpointName = endpoint.getName
     val childPrefix = endpointName + "."
     trace("loadEndpoint: " + endpointName)
@@ -133,9 +137,10 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
     val protocol = findProtocol(profiles)
     var configFiles = processConfigFiles(protocol, path)
 
-    val protocolName = if (benchmark) "benchmark" else protocol.getName
+    val originalProtocolName = protocol.getName
+    val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
 
-    val port: Option[Port.Builder] = if (protocolName != "benchmark")
+    val port: Option[Port.Builder] = if (overriddenProtocolName != BENCHMARK)
       Some(processInterface(profiles))
     else
       None
@@ -156,10 +161,11 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
 
     // Validate that the indexes within each type are unique
     var errorMsg = "Endpoint '" + endpointName + "':"
-    validateIndexesAreUnique[Control](controls, errorMsg)
-    validateIndexesAreUnique[PointType](statuses, errorMsg)
-    validateIndexesAreUnique[PointType](analogs, errorMsg)
-    validateIndexesAreUnique[PointType](counters, errorMsg)
+    val isBenchmark = overriddenProtocolName == BENCHMARK
+    validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg)
+    validateIndexesAreUnique[PointType](statuses, isBenchmark, errorMsg)
+    validateIndexesAreUnique[PointType](analogs, isBenchmark, errorMsg)
+    validateIndexesAreUnique[PointType](counters, isBenchmark, errorMsg)
 
     // Collect all the point types into points while making sure each name is unique
     // across all point types.
@@ -170,32 +176,40 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
     trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
-    protocolName match {
-      case "dnp3" => configFiles ::= processIndexMapping(endpointName, controls, points)
-      case "benchmark" => {
+    overriddenProtocolName match {
+      case DNP3 => configFiles ::= processIndexMapping(endpointName, controls, points)
+      case BENCHMARK => {
         val delay = if (protocol.isSetSimOptions && protocol.getSimOptions.isSetDelay) Some(protocol.getSimOptions.getDelay) else None
 
         configFiles ::= createSimulatorMapping(endpointName, controls, points, delay)
       }
     }
 
-    processPointScaling(endpointName, points, equipmentPointUnits)
+    processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
 
     // Now we have a list of all the controls and points for this Endpoint
-    client.putOrThrow(toCommunicationEndpointConfig(endpointName, protocolName, configFiles, port, controls, points).build)
+    client.putOrThrow(toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, port, controls, points).build)
 
   }
 
   /**
    * The indexes for controls and points have to be unique for each type.
    */
-  def validateIndexesAreUnique[A <: IndexType](indexables: HashMap[String, A], error: String): Unit = {
+  def validateIndexesAreUnique[A <: IndexType](indexables: HashMap[String, A], isBenchmark: Boolean, error: String): Unit = {
     val map = HashMap[Int, String]()
     for ((name, indexable) <- indexables) {
-      val index = indexable.getIndex
-      map.contains(index) match {
-        case true => throw new Exception(error + " both '" + name + "' and '" + map(index) + "' cannot use the same index=\"" + index + "\"")
-        case false => map += (index -> name)
+      // if there are indexes, check them
+      // if the originalProtocol is benchmark, indexes are optional
+      // if the originalProtocol is
+      if (indexable.isSetIndex) {
+        val index = indexable.getIndex
+        map.contains(index) match {
+          case true => throw new Exception(error + " both '" + name + "' and '" + map(index) + "' cannot use the same index=\"" + index + "\"")
+          case false => map += (index -> name)
+        }
+      } else {
+        if (!isBenchmark)
+          throw new Exception(error + " '" + name + "' does not specify an index.")
       }
     }
   }
@@ -349,22 +363,22 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
   }
 
   def processIndexMapping(
-    name: String,
+    endpointName: String,
     controls: HashMap[String, Control],
     points: HashMap[String, PointType]): Model.ConfigFile.Builder = {
 
-    debug(name + " CONTROLS:")
+    debug(endpointName + " CONTROLS:")
     //val controlProtos = List[Mapping.CommandMap.Builder]()
-    val controlProtos = for ((key, value) <- controls) yield toCommandMap(key, value)
+    val controlProtos = for ((key, value) <- controls) yield toCommandMap(endpointName, key, value)
 
-    debug(name + " POINTS:")
+    debug(endpointName + " POINTS:")
     //val pointProtos = List[Mapping.MeasMap.Builder]()
     //for((key, value) <- points) pointProtos += toMeasMap( key, value)
-    val pointProtos = for ((key, value) <- points) yield toMeasMap(key, value)
+    val pointProtos = for ((key, value) <- points) yield toMeasMap(endpointName, key, value)
 
     val indexMap = toIndexMapping(controlProtos, pointProtos).build
 
-    val cf = toConfigFile(name, indexMap).build
+    val cf = toConfigFile(endpointName, indexMap).build
     client.putOrThrow(cf)
     cf.toBuilder
   }
@@ -373,7 +387,7 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
    * Process point scaling. Could be other stuff in the future.
    * TODO: Can't get some attributes from point/scale and some from pointProfile/scale.
    */
-  def processPointScaling(endpointName: String, points: HashMap[String, PointType], equipmentPointUnits: HashMap[String, String]): Unit = {
+  def processPointScaling(endpointName: String, points: HashMap[String, PointType], equipmentPointUnits: HashMap[String, String], isBenchmark: Boolean): Unit = {
     import ProtoUtils._
 
     for ((name, point) <- points) {
@@ -385,7 +399,10 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
       else
         None
 
-      val index = point.getIndex
+      val index = if (point.isSetIndex)
+        point.getIndex
+      else
+        -1
 
       if (scale.isDefined) {
         val s = scale.get
@@ -542,14 +559,18 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
     proto
   }
 
-  def toMeasMap(name: String, point: PointType): Mapping.MeasMap.Builder = {
+  def toMeasMap(endpointName: String, name: String, point: PointType): Mapping.MeasMap.Builder = {
     import CommunicationsLoader._
 
     debug("    POINT " + point.getIndex + " -> " + name)
     val proto = Mapping.MeasMap.newBuilder
       .setPointName(name)
-      .setIndex(point.getIndex)
       .setUnit(point.getUnit)
+
+    if (point.isSetIndex)
+      proto.setIndex(point.getIndex)
+    else
+      throw new IllegalArgumentException("ERROR in endpoint '" + endpointName + "' - Point '" + name + "' has no index specified.")
 
     val typ = point match {
       case status: Status => MAPPING_STATUS
@@ -561,7 +582,7 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
     proto
   }
 
-  def toCommandMap(name: String, control: Control): Mapping.CommandMap.Builder = {
+  def toCommandMap(endpointName: String, name: String, control: Control): Mapping.CommandMap.Builder = {
 
     // Profiles is a list of profiles plus this control
     // TODO: Handle exceptions when referenced profile doesn't exist.
