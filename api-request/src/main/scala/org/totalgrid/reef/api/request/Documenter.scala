@@ -20,38 +20,16 @@
  */
 package org.totalgrid.reef.api.request
 
-import com.google.protobuf.GeneratedMessage
-
 import scala.collection.JavaConversions._
+
+import com.google.protobuf.GeneratedMessage
 import com.google.protobuf.Descriptors.EnumValueDescriptor
+
 import java.io.File
 import xml.{ Node, XML, NodeSeq }
+
 import org.totalgrid.reef.util.BuildEnv
-import org.totalgrid.reef.api.{ ServiceTypes, RequestEnv, Envelope, ReefServiceException }
-
-class Documenter(file: String, title: String, desc: Node) {
-
-  def this(file: String, title: String, desc: String) = {
-    this(file, title, <div>{ desc }</div>)
-  }
-
-  protected var usages = List.empty[Node]
-
-  def addCase[A <: GeneratedMessage](title: String, verb: String, desc: String, request: A, response: A): Unit = {
-    addCase(title, verb, <div>{ desc }</div>, request, List(response))
-  }
-  def addCase[A <: GeneratedMessage](title: String, verb: String, desc: String, request: A, responses: List[A]): Unit = {
-    addCase(title, verb, <div>{ desc }</div>, request, responses)
-  }
-  def addCase[A <: GeneratedMessage](title: String, verb: String, desc: Node, request: A, response: A): Unit = {
-    usages ::= Documenter.document(title, verb, desc, request, List(response))
-  }
-  def addCase[A <: GeneratedMessage](title: String, verb: String, desc: Node, request: A, responses: List[A]): Unit = {
-    usages ::= Documenter.document(title, verb, desc, request, responses)
-  }
-
-  def save = Documenter.save(file, usages.reverse, title, desc)
-}
+import org.totalgrid.reef.api.{ ServiceTypes, Envelope }
 
 object Documenter {
 
@@ -136,7 +114,7 @@ object Documenter {
       <servicedoc>
         <title>{ title }</title>
         <desc>{ desc }</desc>
-        { nodes.reverse }
+        { nodes }
       </servicedoc>
 
     val dir = new File(path)

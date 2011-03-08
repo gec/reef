@@ -60,76 +60,23 @@ class AlarmQueryTest
   test("Get all alarms (limit 2)") {
     val desc = "Get all alarms by specifying a wildcard AlarmSelect (except a limit of 2 records returned)."
 
-    val request =
-      AlarmList.newBuilder
-        .setSelect(
-          AlarmSelect.newBuilder
-          .setEventSelect(EventSelect.newBuilder.setLimit(2).addEventType("*")))
-        .build
-
-    val response = client.getOneOrThrow(request)
-
-    doc.addCase[AlarmList]("Get all alarms", "Get", desc, request, response)
-
+    client.addExplanation("Get all alarms", desc)
+    client.getOneOrThrow(AlarmListRequestBuilders.getAll(2))
   }
 
   test("Get all unacknowledged alarms") {
     val desc = "Get unacknowledged alarms (limit 2). Need to specify the two unacknowledged states."
 
-    val request: AlarmList =
-      AlarmList.newBuilder
-        .setSelect(
-          AlarmSelect.newBuilder
-          .addState(Alarm.State.UNACK_AUDIBLE)
-          .addState(Alarm.State.UNACK_SILENT)
-          .setEventSelect(EventSelect.newBuilder.setLimit(2)))
-        .build
-
-    val response = client.getOneOrThrow(request)
-
-    doc.addCase("Get unacknowledged alarms", "Get", desc, request, response)
-
+    client.addExplanation("Get unacknowledged alarms", desc)
+    client.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(2))
   }
 
   test("Get alarms with multiple selects") {
 
     val desc = "Get unacknowledged alarms with type 'Scada.OutOfNominal' (limit 2)"
 
-    val NOW = now()
-    val yesterday = nowPlus(Calendar.DATE, -1)
-    val HOURS_AGO_2 = nowPlus(Calendar.HOUR, -2)
-
-    val request: AlarmList =
-      AlarmList.newBuilder
-        .setSelect(
-          AlarmSelect.newBuilder
-          .addState(Alarm.State.UNACK_AUDIBLE)
-          .addState(Alarm.State.UNACK_SILENT)
-          .setEventSelect(
-            EventSelect.newBuilder
-            .addEventType("Scada.OutOfNominal")
-            .setLimit(2)))
-        .build
-
-    val response = client.getOneOrThrow(request)
-
-    doc.addCase("Get alarms with multiple selects", "Get", desc, request, response)
-
-  }
-
-  // Get a time offset based on the well known NOW_MS
-  def now(): Long = {
-    val cal = Calendar.getInstance()
-    cal.set(Calendar.MILLISECOND, 0) // truncate milliseconds to 0.
-    cal.getTimeInMillis
-  }
-
-  // Get a time offset based on the well known NOW_MS
-  def nowPlus(field: Int, amount: Int): Long = {
-    val cal = Calendar.getInstance
-    cal.setTimeInMillis(now)
-    cal.add(field, amount)
-    cal.getTimeInMillis
+    client.addExplanation("Get alarms with multiple selects", desc)
+    client.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithType("Scada.OutOfNominal", 2))
   }
 
 }

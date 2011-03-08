@@ -25,6 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.proto.Commands
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest
@@ -39,23 +40,16 @@ class UserCommandRequestTest
     with ShouldMatchers {
 
   test("Issue command") {
-    val desc = "Issue a command request for the specified point."
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
     val acc = CommandAccessRequestBuilders.allowAccessForCommand(cmdName)
     val accResp = client.putOneOrThrow(acc)
 
-    client.addExplanation("Issue command", desc)
+    client.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
+    val executingCommand = client.putOneOrThrow(UserCommandRequestBuilders.executeCommand(cmdName))
 
-    val req = UserCommandRequestBuilders.executeCommand(cmdName)
-    val resp = client.putOneOrThrow(req)
-
-    doc.addCase("Issue command", "Put", desc, req, resp)
-
-    val getReq = UserCommandRequestBuilders.getForUid(resp.getUid)
-    val getResp = client.getOneOrThrow(getReq)
-
-    doc.addCase("Current status of request", "Get", "Get the status of a already-issued command request.", getReq, getResp)
+    client.addExplanation("Current status of request", "Get the status of a already-issued command request.")
+    client.getOneOrThrow(UserCommandRequestBuilders.getStatus(executingCommand))
 
     client.deleteOneOrThrow(accResp)
   }

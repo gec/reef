@@ -44,10 +44,8 @@ class CommandRequestTest
 
   test("Simple gets") {
 
-    val allReq = Command.newBuilder.setUid("*").build
-    val allResp = client.getOrThrow(allReq)
-
-    doc.addCase("Get all", "Get", "Get all Commands", allReq, allResp)
+    client.addExplanation("Get all", "Get all Commands")
+    client.getOrThrow(CommandRequestBuilders.getAll())
 
     /*val uidReq = Command.newBuilder.setUid(allResp.head.getUid).build
     val uidResp = client.getOrThrow(uidReq)
@@ -61,16 +59,13 @@ class CommandRequestTest
   }
 
   test("Entity query") {
-    val cmdEnt = client.getOneOrThrow(Entity.newBuilder.setName("StaticSubstation.Breaker02.Trip").build)
-
-    val req = Command.newBuilder.setEntity(Entity.newBuilder.setUid(cmdEnt.getUid)).build
-    val resp = client.getOrThrow(req)
 
     val desc = <div>
                  Given an Entity of type "Command", the service can return the corresponding Command object.
                </div>
 
-    doc.addCase("Get by entity", "Get", desc, req, resp)
+    client.addExplanation("Get by entity", desc)
+    client.getOrThrow(CommandRequestBuilders.getByEntityName("StaticSubstation.Breaker02.Trip"))
   }
 
   /*test("Entity tree query") {

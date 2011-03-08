@@ -42,12 +42,11 @@ class MeasurementSnapshotTest
 
     val points = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
 
-    val req = MeasurementSnapshot.newBuilder.addPointNames(points.head).build
-    val resp = client.getOneOrThrow(req)
-    doc.addCase("Get single measurement", "Get", "Get the current state of a single measurement.", req, resp)
+    client.addExplanation("Get single measurement", "Get the current state of a single measurement.")
+    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(points.head))
 
-    val reqMulti = MeasurementSnapshot.newBuilder.addAllPointNames(points).build
-    val respMulti = client.getOneOrThrow(reqMulti)
-    doc.addCase("Get multiple measurements", "Get", "Get the current state of a multiple measurements..", reqMulti, respMulti)
+    client.addExplanation("Get multiple measurements", "Get the current state of multiple measurements. Notice that they are all returned wrapped in a single parent object.")
+    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(points))
+
   }
 }

@@ -37,8 +37,6 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
     this(file, title, <div>{ desc }</div>)
   }
 
-  val doc = new Documenter(file, title, desc)
-
   override def beforeAll() {
     factory.start
     val waiter = new ServiceClientSuite.BrokerConnectionState
@@ -48,9 +46,8 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
   }
   override def afterAll() {
     factory.stop
-    doc.save
 
-    client.save("second-" + file, title, desc)
+    client.save(file, title, desc)
   }
 
   import ServiceHandlerHeaders._

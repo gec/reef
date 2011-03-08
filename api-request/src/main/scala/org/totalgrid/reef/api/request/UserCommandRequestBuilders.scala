@@ -28,4 +28,7 @@ object UserCommandRequestBuilders {
 
   def executeCommand(command: String) =
     UserCommandRequest.newBuilder.setCommandRequest(CommandRequest.newBuilder.setName(command)).build
+
+  def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
+
 }

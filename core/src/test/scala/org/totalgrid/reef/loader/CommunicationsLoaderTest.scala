@@ -234,7 +234,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
     model.add(
-      new Endpoint("Simulated")   // default protocol is benchmark
+      new Endpoint("Simulated") // default protocol is benchmark
       .add(new Equipment("ChapelHill")
         .add(new Equipment("BigBkr")
           .add(new Analog("Mw")))))
@@ -255,8 +255,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
     model.add(
-      new Endpoint("Simulated", Some( CommunicationsLoader.DNP3))
-      .set( new Interface("interface1", "127.0.0.1", 8001))
+      new Endpoint("Simulated", Some(CommunicationsLoader.DNP3))
+      .set(new Interface("interface1", "127.0.0.1", 8001))
       .add(new Equipment("ChapelHill")
         .add(new Equipment("BigBkr")
           .add(new Analog("Mw")))))

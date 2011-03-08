@@ -48,69 +48,49 @@ class EntityRequestTest
     with ShouldMatchers {
 
   test("Simple gets") {
-    val req = EntityRequestBuilders.all
-    val resp = client.getOrThrow(req)
 
-    doc.addCase("Get all entities", "Get", "Return all entities in the system. Shows first three responses.", req, resp.take(3))
+    val allEntities = client.getOrThrow(EntityRequestBuilders.getAll)
+    val targetUid = allEntities.head.getUid
 
-    val targetUid = resp.head.getUid
-    val singleReq = EntityRequestBuilders.forId(targetUid)
-    val singleResp = client.getOneOrThrow(singleReq)
+    client.addExplanation("Get by UID", "Finds a specific entity by UID.")
+    client.getOneOrThrow(EntityRequestBuilders.getByUid(targetUid))
 
-    doc.addCase("Get by UID", "Get", "Finds a specific entity by UID.", singleReq, singleResp)
-
-    val typReq = EntityRequestBuilders.forType("Breaker")
-    val typResp = client.getOrThrow(typReq)
-
-    doc.addCase("Get by type", "Get", "Find all entities that match a given type.", typReq, typResp)
-
+    client.addExplanation("Get by type", "Find all entities that match a given type.")
+    client.getOrThrow(EntityRequestBuilders.getByType("Breaker"))
   }
 
   test("Children") {
-    val subs = client.getOrThrow(EntityRequestBuilders.forType("Substation"))
+    val subs = client.getOrThrow(EntityRequestBuilders.getByType("Substation"))
     val subUid = subs.head.getUid
 
-    val req = EntityRequestBuilders.selectChildren(subUid, None, Nil, true)
-    val resp = client.getOrThrow(req)
+    client.addExplanation("Get descendants", "Finds all descendants of the root entity with the relationship \"owns\".")
+    client.getOrThrow(EntityRequestBuilders.getAllRelatedChildrenFromRootUid(subUid, "owns"))
 
-    doc.addCase("Get descendants", "Get", "Finds all descendants of the root entity with the relationship \"owns\".", req, resp)
+    client.addExplanation("Get direct descendants", "Finds all descendants of the root entity with the relationship \"owns\" and that are a distance 1 away.")
+    client.getOrThrow(EntityRequestBuilders.getDirectChildrenFromRootUid(subUid, "owns"))
 
-    val directReq = EntityRequestBuilders.selectChildren(subUid, None, Nil, false)
-    val directResp = client.getOrThrow(directReq)
+    client.addExplanation("Get descendants of a type", "Finds all descendants of the root entity with the relationship \"owns\" and that are of type \"Point\".")
+    client.getOrThrow(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(subUid, "Point"))
 
-    doc.addCase("Get direct descendants", "Get", "Finds all descendants of the root entity with the relationship \"owns\" and that are a distance 1 away.", directReq, directResp)
-
-    val descTypReq = EntityRequestBuilders.childrenOfType(subUid, "Point")
-    val descTypResp = client.getOrThrow(descTypReq)
-
-    doc.addCase("Get descendants of a type", "Get", "Finds all descendants of the root entity with the relationship \"owns\" and that are of type \"Point\".", descTypReq, descTypResp)
   }
 
   test("Abstract root") {
-    val req = Entity.newBuilder.addTypes("Point").addRelations(
-      Relationship.newBuilder.setDescendantOf(true).setRelationship("feedback").addEntities(
-        Entity.newBuilder.addTypes("Command"))).build
-    val resp = client.getOrThrow(req)
 
     val desc = <div>Instead of starting the query with a UID, this finds all the entities of type "Point" and any "feedback" relationships to entities of type "Command"</div>
 
-    doc.addCase("Abstract root set", "Get", desc, req, resp)
+    client.addExplanation("Abstract root set", desc)
+    client.getOrThrow(EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands())
+
   }
 
   test("Multilevel") {
-    val subs = client.getOrThrow(EntityRequestBuilders.forType("Substation"))
+    val subs = client.getOrThrow(EntityRequestBuilders.getByType("Substation"))
     val subUid = subs.head.getUid
-
-    val req = Entity.newBuilder.setUid(subUid).addRelations(
-      Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
-        Entity.newBuilder.addTypes("Equipment").addRelations(
-          Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
-            Entity.newBuilder.addTypes("Point"))))).build
-
-    val resp = client.getOrThrow(req)
 
     val desc = <div>Starting from a root node ("Substation"), the request asks for children of type "Breaker", and children of those of type "Point".</div>
 
-    doc.addCase("Multi-level tree query", "Get", desc, req, resp)
+    client.addExplanation("Multi-level tree query", desc)
+    val resp = client.getOrThrow(EntityRequestBuilders.getAllPointsSortedByOwningEquipment(subUid))
+
   }
 }

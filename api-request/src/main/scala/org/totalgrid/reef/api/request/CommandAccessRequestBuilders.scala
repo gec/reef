@@ -40,4 +40,7 @@ object CommandAccessRequestBuilders {
   def getForUid(uid: String) = CommandAccess.newBuilder.setUid(uid).build
 
   def getForUser(user: String) = CommandAccess.newBuilder.setUser(user).build
+
+  def deleteByUid(uid: String) = CommandAccess.newBuilder.setUid(uid).build
+  def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setUid(cmd.getUid).build
 }

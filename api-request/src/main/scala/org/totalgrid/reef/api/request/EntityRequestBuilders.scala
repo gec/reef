@@ -24,53 +24,60 @@ import org.totalgrid.reef.proto.Model.{ Entity, Relationship }
 
 object EntityRequestBuilders {
 
-  def all = Entity.newBuilder.setUid("*").build
+  def getAll = Entity.newBuilder.setUid("*").build
 
-  def forId(id: String) = {
-    builderForId(id).build
-  }
+  def getByUid(uid: String) = Entity.newBuilder.setUid(uid).build
+  def getByUid(entity: Entity): Entity = getByUid(entity.getUid)
 
-  def forType(typ: String) = forTypes(List(typ))
-  def forTypes(typs: List[String]) = {
+  def getByName(name: String) = Entity.newBuilder.setName(name).build
+
+  def getByType(typ: String) = getByTypes(List(typ))
+  def getByTypes(typs: List[String]) = {
     val req = Entity.newBuilder
     typs.foreach(typ => req.addTypes(typ))
     req.build
   }
 
-  def childrenOfType(parentId: String, typ: String) = {
-    val req = builderForId(parentId)
+  def getOwnedChildrenOfTypeFromRootName(rootNodeName: String, typ: String) = {
+    Entity.newBuilder.setName(rootNodeName).addRelations(childrenRelatedWithType("owns", typ)).build
+  }
 
-    val rel = Relationship.newBuilder
+  def getOwnedChildrenOfTypeFromRootUid(rootUid: String, typ: String): Entity = {
+    Entity.newBuilder.setUid(rootUid).addRelations(childrenRelatedWithType("owns", typ)).build
+  }
+  def getOwnedChildrenOfTypeFromRootUid(rootNode: Entity, typ: String): Entity = {
+    Entity.newBuilder.setUid(rootNode.getUid).addRelations(childrenRelatedWithType("owns", typ)).build
+  }
+
+  private def childrenRelatedWithType(relationship: String, typ: String) = {
+    Relationship.newBuilder
       .setDescendantOf(true)
       .setRelationship("owns")
       .addEntities(Entity.newBuilder.addTypes(typ))
-
-    req.addRelations(rel).build
   }
 
-  def selectChildren(parentId: String, relType: Option[String], subTypes: List[String], anyDepth: Boolean) = {
-    val req = builderForId(parentId)
-
-    val rel = Relationship.newBuilder
-      .setDescendantOf(true)
-      .setRelationship(relType getOrElse ("owns"))
-
-    if (!anyDepth) rel.setDistance(1)
-
-    subTypes.foreach(typ => rel.addEntities(Entity.newBuilder.addTypes(typ)))
-
-    req.addRelations(rel).build
+  def getAllRelatedChildrenFromRootUid(rootUid: String, relationship: String) = {
+    val rel = Relationship.newBuilder.setDescendantOf(true).setRelationship(relationship)
+    Entity.newBuilder.setUid(rootUid).addRelations(rel).build
   }
 
-  protected def builderForId(id: String) = {
-    val numOpt = try {
-      Some(Integer.parseInt(id.trim))
-    } catch {
-      case ex: NumberFormatException => None
-    }
-    numOpt match {
-      case Some(num) => Entity.newBuilder.setUid(num.toString)
-      case None => Entity.newBuilder.setName(id)
-    }
+  def getDirectChildrenFromRootUid(rootUid: String, relationship: String) = {
+    val rel = Relationship.newBuilder.setDescendantOf(true).setRelationship(relationship).setDistance(1)
+    Entity.newBuilder.setUid(rootUid).addRelations(rel).build
   }
+
+  def getAllPointsSortedByOwningEquipment(rootUid: String) = {
+    Entity.newBuilder.setUid(rootUid).addRelations(
+      Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
+        Entity.newBuilder.addTypes("Equipment").addRelations(
+          Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
+            Entity.newBuilder.addTypes("Point"))))).build
+  }
+
+  def getAllPointsAndRelatedFeedbackCommands() = {
+    Entity.newBuilder.addTypes("Point").addRelations(
+      Relationship.newBuilder.setDescendantOf(true).setRelationship("feedback").addEntities(
+        Entity.newBuilder.addTypes("Command"))).build
+  }
+
 }
