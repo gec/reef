@@ -26,7 +26,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, BaseProtocol }
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, BaseProtocol }
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
@@ -75,15 +75,15 @@ class BenchmarkProtocol extends BaseProtocol with SimulatorManagement with Loggi
   def _addPort(p: FEP.Port) = {}
   def _removePort(port: String) = {}
 
-  def _addEndpoint(endpoint: String, port: String, files: List[Model.ConfigFile], publish: IProtocol.Publish, respond: IProtocol.Respond): IProtocol.Issue = {
+  def _addEndpoint(endpoint: String, port: String, files: List[Model.ConfigFile], publisher: IPublisher): ICommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 
     val mapping = SimMapping.SimulatorMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile)
-    val sim = new Simulator(endpoint, publish, respond, mapping, getReactor)
+    val sim = new Simulator(endpoint, publisher, mapping, getReactor)
     sim.start
     map += endpoint -> sim
-    sim.issue
+    sim
   }
 
   def _removeEndpoint(endpoint: String) = {

@@ -33,9 +33,9 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
  */
 trait KeyedMap[A] extends Logging {
 
-  def hasChangedEnoughForReload(updated: A, existing: A): Boolean
+  protected def hasChangedEnoughForReload(updated: A, existing: A): Boolean
 
-  def getKey(value: A): String
+  protected def getKey(value: A): String
 
   /**
    * called when a new entry is added to the map
@@ -47,7 +47,7 @@ trait KeyedMap[A] extends Logging {
   def removeEntry(c: A)
 
   /* ----- Mutable state -----  */
-  private var active = Map.empty[String, A] //active connections
+  private var active = Map.empty[String, A]
 
   /**    Load a list of slave device connections
    */

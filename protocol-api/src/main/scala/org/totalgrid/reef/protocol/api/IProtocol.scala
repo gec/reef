@@ -21,31 +21,42 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
-import scala.collection.immutable
 
 object IProtocol {
-  type Issue = Commands.CommandRequest => Unit
-  type Respond = Commands.CommandResponse => Unit
-  type Publish = Measurements.MeasurementBatch => Unit
 
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
     files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
   }
 }
 
+trait IPublisher {
+  def publish(batch: Measurements.MeasurementBatch): Unit
+}
+
+trait IResponseHandler {
+  def onResponse(rsp: Commands.CommandResponse): Unit
+}
+
+trait ICommandHandler {
+  def issue(cmd: Commands.CommandRequest, rspHandler: IResponseHandler)
+}
+
 trait IProtocol {
 
-  val name: String /// unique name, i.e. dnp3
+  /**
+   * @return Unique name, i.e. 'dnp3'
+   */
+  def name: String
 
   /**
    * if true the protocol trait will verify that the each device is associated with a port, if false we dont care
    * if there is a port or not.
    */
-  val requiresPort: Boolean
+  def requiresPort: Boolean
 
   def addPort(p: FEP.Port): Unit
   def removePort(port: String): Unit
 
-  def addEndpoint(endpoint: String, portName: String, config: List[Model.ConfigFile], publish: IProtocol.Publish, command: IProtocol.Respond): IProtocol.Issue
+  def addEndpoint(endpoint: String, portName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
   def removeEndpoint(endpoint: String): Unit
 }
