@@ -49,6 +49,8 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
   override def afterAll() {
     factory.stop
     doc.save
+
+    client.save("second-" + file, title, desc)
   }
 
   import ServiceHandlerHeaders._
@@ -70,7 +72,7 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
 
     client.getDefaultHeaders.addAuthToken(response.getToken)
 
-    client
+    new InteractionRecorder(client)
   }
 }
 

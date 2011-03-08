@@ -28,6 +28,9 @@ object CommandAccessRequestBuilders {
   def allowAccessForCommand(command: String) =
     CommandAccess.newBuilder.addCommands(command).setAccess(CommandAccess.AccessMode.ALLOWED).build
 
+  def allowAccessForCommands(commands: List[String]) =
+    CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.ALLOWED).build
+
   def blockCommands(commands: List[String]) = {
     CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.BLOCKED).build
   }

@@ -25,6 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess, CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.api.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest
@@ -106,4 +107,22 @@ class CommandAccessRequestTest
     doc.addCase("Delete access using UID", "Delete", "Delete a command access object by UID only.", deleteReq, deleteResp)
   }
 
+  test("ReBlock") {
+
+    val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
+
+    client.addExplanation("Block commands", "Create ALLOWED access for multiple commands.")
+    val create = CommandAccessRequestBuilders.allowAccessForCommands(cmdNames)
+    val createResp = client.putOneOrThrow(create)
+
+    client.addExplanation("ReBlock commands", "Trying to reselect the command fails with a non success status code. (Note that this will normally mean a ReefServiceException will be thrown by client code)")
+    intercept[ReefServiceException] {
+      client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommands("StaticSubstation.Breaker02.Close" :: Nil))
+    }
+
+    val deleteReq = CommandAccess.newBuilder.setUid(createResp.getUid).build
+    val deleteResp = client.deleteOneOrThrow(deleteReq)
+
+    doc.addCase("Delete access using UID", "Delete", "Delete a command access object by UID only.", deleteReq, deleteResp)
+  }
 }

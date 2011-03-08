@@ -45,6 +45,8 @@ class UserCommandRequestTest
     val acc = CommandAccessRequestBuilders.allowAccessForCommand(cmdName)
     val accResp = client.putOneOrThrow(acc)
 
+    client.addExplanation("Issue command", desc)
+
     val req = UserCommandRequestBuilders.executeCommand(cmdName)
     val resp = client.putOneOrThrow(req)
 
