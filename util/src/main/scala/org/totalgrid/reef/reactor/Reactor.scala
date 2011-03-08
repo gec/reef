@@ -48,6 +48,7 @@ trait Reactor extends Reactable with Lifecycle {
 
   case object CANCEL
   case object NOW
+  case object OPERATION_COMPLETE
 
   import Reactor._
 
@@ -104,17 +105,29 @@ trait Reactor extends Reactable with Lifecycle {
   def repeat(msec: Long)(fun: => Unit): Timer = {
     new ActorDelayHandler(
       actor {
+        val timerActor = self // trying to get self in other contexts is problematic, just get reference here
+        var waitingForDoneMessage = false
         link(myactor)
         this.execute(fun)
         loop {
-          reactWithin(msec) {
-            case CANCEL =>
-              unlink(myactor)
-              exit()
-            case NOW =>
-              this.execute(fun)
-            case TIMEOUT =>
-              this.execute(fun)
+          if (waitingForDoneMessage)
+            react {
+              case CANCEL =>
+                unlink(myactor)
+                exit()
+              case OPERATION_COMPLETE =>
+                waitingForDoneMessage = false
+            }
+          else {
+            reactWithin(msec) {
+              case CANCEL =>
+                unlink(myactor)
+                exit()
+              case NOW | TIMEOUT =>
+                waitingForDoneMessage = true
+                this.execute(fun)
+                this.execute({ timerActor ! OPERATION_COMPLETE })
+            }
           }
         }
       })

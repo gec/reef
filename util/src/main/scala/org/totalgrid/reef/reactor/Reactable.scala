@@ -22,27 +22,40 @@ package org.totalgrid.reef.reactor
 
 import org.totalgrid.reef.util.Timer
 
-/**     Abstracts the execution of work on some thread-like implementation.
+/**
+ * Abstracts the execution of work on some thread-like implementation.
  */
 trait Reactable {
 
-  /// dispatches a unit of work immediately
+  /**
+   * dispatches a unit of work immediately
+   */
   def execute(fun: => Unit): Unit
 
-  /// dispatches a unit of work to do after a specficied time has elapsed.  
+  /**
+   * dispatches a unit of work to do after a specified time has elapsed.
+   */
   def delay(msec: Long)(fun: => Unit): Timer
 
-  /// dispatches a unit of work immediately and periodically
+  /**
+   * dispatches a unit of work immediately and then periodically keeping a constant _delay_
+   * between the end of previous unit of work and the beginning of the next invocation of the callback.
+   *
+   * This means calling repeat(500){Thread.sleep(1000)} will get executed at t = 0 and t = 1500 milliseconds,
+   * This means calling repeat(500){Thread.sleep(1000)} will get executed at t = 0 and t = 1500 milliseconds,
+   * not t = 0, t = 500, t = 1000.
+   */
   def repeat(msec: Long)(fun: => Unit): Timer
 
-  /// dispatches a unit of work synchronously with a specific evaluation type T
+  /**
+   * dispatches a unit of work synchronously with a specific evaluation type T
+   */
   def request[A](fun: => A): A
-
 }
 
 object Reactable {
   /**
-   * sets the scala runtime up with the standard thread pool setup (resizable for now)
+   *  sets the scala runtime up with the standard thread pool setup (resizable for now)
    */
   def setupThreadPools {
     // http://scala-programming-language.1934581.n4.nabble.com/Increase-actor-thread-pool-td1936329.html
