@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor
 import java.io.File
 import xml.{ Node, XML, NodeSeq }
 import org.totalgrid.reef.util.BuildEnv
+import org.totalgrid.reef.api.{ ServiceTypes, RequestEnv, Envelope, ReefServiceException }
 
 class Documenter(file: String, title: String, desc: Node) {
 
@@ -34,7 +35,7 @@ class Documenter(file: String, title: String, desc: Node) {
     this(file, title, <div>{ desc }</div>)
   }
 
-  protected var usages = List.empty[NodeSeq]
+  protected var usages = List.empty[Node]
 
   def addCase[A <: GeneratedMessage](title: String, verb: String, desc: String, request: A, response: A): Unit = {
     addCase(title, verb, <div>{ desc }</div>, request, List(response))
@@ -49,34 +50,58 @@ class Documenter(file: String, title: String, desc: Node) {
     usages ::= Documenter.document(title, verb, desc, request, responses)
   }
 
-  def save = {
-    val content =
-      <servicedoc>
-        <title>{ title }</title>
-        <desc>{ desc }</desc>
-        { usages.reverse }
-      </servicedoc>
-
-    val path = BuildEnv.configPath + "api-request/target/docxml"
-    val dir = new File(path)
-    dir.mkdirs
-
-    XML.save(path + "/" + file, content, "UTF-8", true)
-  }
+  def save = Documenter.save(file, usages.reverse, title, desc)
 }
 
 object Documenter {
 
-  def document[A <: GeneratedMessage](title: String, verb: String, desc: Node, request: A, responses: List[A]) = {
+  case class CaseExplanation(title: String, desc: Node)
+
+  case class RequestWithExplanation[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: ServiceTypes.MultiResult[A])
+
+  def document[A](title: String, verb: String, desc: Node, request: A, responses: List[A]) = {
     <case>
       <title>{ title }</title>
       <desc>{ desc }</desc>
       <request verb={ verb }>
-        { messageToXml(request) }
+        { messageToXml(request.asInstanceOf[GeneratedMessage]) }
       </request>
       <response>
-        { responses.map(messageToXml(_)) }
+        { responses.map(r => messageToXml(r.asInstanceOf[GeneratedMessage])) }
       </response>
+    </case>
+  }
+
+  def getErrorResponse(msg: String, code: Envelope.Status): Node = {
+    <response status={ code.toString } error={ msg }/>
+  }
+
+  def getResponse[A](status: Envelope.Status, responses: List[A]): Node = {
+    <response status={ status.toString }>
+      { responses.map(r => messageToXml(r.asInstanceOf[GeneratedMessage])) }
+    </response>
+  }
+
+  def getExplainedCase[A <: AnyRef](req: RequestWithExplanation[A]): Node = {
+    getExplainedCase(req.explanation, req.verb, req.request, req.results)
+  }
+
+  def getExplainedCase[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: ServiceTypes.MultiResult[A]): Node = {
+    <case>
+      <title>{ explanation.title }</title>
+      <desc>{ explanation.desc }</desc>
+      <request verb={ verb.toString }>
+        { messageToXml(request.asInstanceOf[GeneratedMessage]) }
+      </request>
+      {
+        results match {
+          case ServiceTypes.Failure(code, string) =>
+            getErrorResponse(string, code)
+          case ServiceTypes.MultiSuccess(responses) =>
+            // TODO: get response code into Multi/SingleSuccess
+            getResponse(Envelope.Status.OK, responses)
+        }
+      }
     </case>
   }
 
@@ -104,5 +129,19 @@ object Documenter {
     <message className={ msg.getDescriptorForType.getName }>
       { NodeSeq.fromSeq(fields) }
     </message>
+  }
+
+  def save(fileName: String, nodes: List[Node], title: String, desc: Node = <div/>, path: String = BuildEnv.configPath + "api-request/target/docxml") = {
+    val content =
+      <servicedoc>
+        <title>{ title }</title>
+        <desc>{ desc }</desc>
+        { nodes.reverse }
+      </servicedoc>
+
+    val dir = new File(path)
+    dir.mkdirs
+
+    XML.save(path + "/" + fileName, content, "UTF-8", true)
   }
 }
