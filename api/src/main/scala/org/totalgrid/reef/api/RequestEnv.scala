@@ -70,10 +70,12 @@ class RequestEnv(var headers: Map[String, List[String]]) {
     new RequestEnv(r2 ++ r1)
 
   }
+
+  def reset() : Unit = headers = Map.empty[String, List[String]]
 }
 
 /**
- * helper to get/set the subscription header.
+ * helper to get/set headers on a request
  */
 class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
   def subQueue = env.getString("SUB_QUEUE_NAME")
@@ -93,6 +95,11 @@ class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
     env.clearHeader("AUTH_TOKEN")
     ss.foreach(env.addHeader("AUTH_TOKEN", _))
   }
+
+  /**
+   * clear all headers
+   */
+  def reset() : Unit = env.reset
 }
 
 object ServiceHandlerHeaders {
