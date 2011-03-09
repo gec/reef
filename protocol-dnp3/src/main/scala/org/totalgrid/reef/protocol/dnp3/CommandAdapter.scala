@@ -26,47 +26,46 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
-/** Command adapter acts as a command response acceptor, forwarding translated responses to an actor
- * 
+import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHandler, IResponseHandler }
+
+/**Command adapter acts as a command response acceptor, forwarding translated responses to an actor
+ *
  * @param cfg Measurement mapping configuration
  * @param cmd Command acceptor interface to to forward Commands
  * @param accept Function that processes Command responses
  */
-class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor, accept: Commands.CommandResponse => Unit)
-    extends IResponseAcceptor with Logging {
+class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
+    extends IResponseAcceptor with IProtocolCommandHandler with Logging {
+
+  case class ResponseInfo(id: String, handler: IResponseHandler)
 
   private val map = MapGenerator.getCommandMap(cfg)
   private var sequence = 0
-  private val idMap = mutable.Map.empty[Int, String] /// maps sequence numbers to id's
+  private val idMap = mutable.Map.empty[Int, ResponseInfo]
+  /// maps sequence numbers to id's
 
-  override def AcceptResponse(rsp: CommandResponse, seq: Int) = {
-    idMap.get(seq) match {
-      case Some(id) => {
-        info { "Got command response: " + rsp.toString + " seq: " + seq }
-        idMap -= seq //remove from the map
-        accept(DNPTranslator.translate(rsp, id)) //send the response to the sender
-      }
-      case None => warn { "Unknown command response with sequence " + seq }
-    }
+  override def AcceptResponse(rsp: CommandResponse, seq: Int) = idMap.get(seq) match {
+    case Some(ResponseInfo(id, handler)) =>
+      info("Got command response: " + rsp.toString + " seq: " + seq)
+      idMap -= seq //remove from the map
+      handler.onResponse(DNPTranslator.translate(rsp, id)) //send the response to the sender
+    case None => warn("Unknown command response with sequence " + seq)
   }
 
-  def send(r: Commands.CommandRequest): Unit = {
+  def issue(cr: Commands.CommandRequest, rspHandler: IResponseHandler): Unit = map.get(cr.getName) match {
+    case Some(x) =>
+      info("Sending command request: " + x.toString)
+      if (x.getType == Mapping.CommandType.SETPOINT)
+        cmd.AcceptCommand(DNPTranslator.translateSetpoint(cr), x.getIndex, nextSeq(cr.getCorrelationId, rspHandler), this)
+      else
+        cmd.AcceptCommand(DNPTranslator.translateBinaryOutput(x), x.getIndex, nextSeq(cr.getCorrelationId, rspHandler), this)
 
-    map.get(r.getName) match {
-      case Some(x) => {
-        info { "Sending command request: " + x.toString }
-        if (x.getType == Mapping.CommandType.SETPOINT)
-          cmd.AcceptCommand(DNPTranslator.translateSetpoint(r), x.getIndex, nextSeq(r.getCorrelationId), this)
-        else
-          cmd.AcceptCommand(DNPTranslator.translateBinaryOutput(x), x.getIndex, nextSeq(r.getCorrelationId), this)
-      }
-      case None => //warn { "Unregisterd command request: " + r.toString } 
-    }
+    case None => warn("Unregisterd command request: " + cr.toString)
   }
 
-  private def nextSeq(id: String): Int = {
+  private def nextSeq(id: String, handler: IResponseHandler): Int = {
     sequence += 1
-    idMap.put(sequence, id)
+    idMap.put(sequence, ResponseInfo(id, handler))
     sequence
   }
 }

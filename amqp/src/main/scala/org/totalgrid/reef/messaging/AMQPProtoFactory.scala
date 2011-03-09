@@ -26,6 +26,7 @@ import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 
 import org.totalgrid.reef.api.ServiceTypes._
 import org.totalgrid.reef.api.{ Envelope, ISubscription }
+import org.totalgrid.reef.api.service.sync.ISyncService
 
 /** Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
  *  
@@ -145,7 +146,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
   /**
    * bind an AddressableService service handler to the named exchange with default routing key ("request") making it a "well known service"
    */
-  def bindService(exchange: String, handlerFun: ServiceRequestHandler.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  def bindService(exchange: String, handlerFun: ISyncService.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     bindAddressableService(exchange, "request", handlerFun, competing, reactor)
   }
 
@@ -157,7 +158,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message) 
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindAddressableService(exchange: String, key: String, handlerFun: ServiceRequestHandler.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  def bindAddressableService(exchange: String, key: String, handlerFun: ISyncService.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     val pub = broadcast[Envelope.ServiceResponse]()
     val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, handlerFun), reactor)
 

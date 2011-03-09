@@ -25,6 +25,7 @@ import org.totalgrid.reef.reactor.Reactable
 
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.service.sync.ISyncService
 
 object AMQPMessageConsumers extends Logging {
 
@@ -63,7 +64,7 @@ object AMQPMessageConsumers extends Logging {
    *  @param  publish publishes response to return exchange/request
    *  @param  service Service handler used to get responses
    */
-  def makeServiceBinding(publish: (Envelope.ServiceResponse, String, String) => Unit, service: ServiceRequestHandler.Respond): MessageConsumer = {
+  def makeServiceBinding(publish: (Envelope.ServiceResponse, String, String) => Unit, service: ISyncService.Respond): MessageConsumer = {
     import ProtoSerializer.convertProtoToBytes
     new MessageConsumer {
 

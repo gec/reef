@@ -44,7 +44,7 @@ trait BaseProtocol extends IProtocol with Logging {
     }
   }
 
-  def addEndpoint(endpoint: String, portName: String, config: List[Model.ConfigFile], publish: IProtocol.Publish, command: IProtocol.Respond): IProtocol.Issue = {
+  def addEndpoint(endpoint: String, portName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
@@ -52,11 +52,11 @@ trait BaseProtocol extends IProtocol with Logging {
         ports.get(portName) match {
           case Some(p) =>
             endpoints += endpoint -> Endpoint(endpoint, Some(p), config)
-            _addEndpoint(endpoint, portName, config, publish, command)
+            _addEndpoint(endpoint, portName, config, publish)
           case None =>
             if (requiresPort) throw new IllegalArgumentException("Port not registered " + portName)
             endpoints += endpoint -> Endpoint(endpoint, None, config)
-            _addEndpoint(endpoint, portName, config, publish, command)
+            _addEndpoint(endpoint, portName, config, publish)
         }
     }
   }
@@ -91,7 +91,7 @@ trait BaseProtocol extends IProtocol with Logging {
   /// These get implemented by the parent
   protected def _addPort(p: FEP.Port)
   protected def _removePort(port: String)
-  protected def _addEndpoint(endpoint: String, port: String, config: List[Model.ConfigFile], publish: IProtocol.Publish, command: IProtocol.Respond): IProtocol.Issue
+  protected def _addEndpoint(endpoint: String, port: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
   protected def _removeEndpoint(endpoint: String)
 
 }

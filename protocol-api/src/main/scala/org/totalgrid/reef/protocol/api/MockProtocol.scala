@@ -22,7 +22,6 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Model, Commands }
 import scala.concurrent.MailBox
-import scala.actors.TIMEOUT
 
 object MockProtocol {
   case class AddPort(p: FEP.Port)
@@ -59,9 +58,11 @@ class MockProtocol(val requiresPort: Boolean = true) extends BaseProtocol {
 
   override def _removePort(port: String) = mail send RemovePort(port)
 
-  override def _addEndpoint(endpoint: String, port: String, config: List[Model.ConfigFile], publish: IProtocol.Publish, command: IProtocol.Respond): IProtocol.Issue = {
+  override def _addEndpoint(endpoint: String, port: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler = {
     mail send AddEndpoint(endpoint, port, config)
-    (x: Commands.CommandRequest) => mail send x
+    new ICommandHandler {
+      def issue(request: Commands.CommandRequest, rspHandler: IResponseHandler) = mail send request
+    }
   }
 
   override def _removeEndpoint(endpoint: String) = mail send RemoveEndpoint(endpoint)

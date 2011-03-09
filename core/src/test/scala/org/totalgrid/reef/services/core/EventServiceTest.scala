@@ -20,20 +20,15 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Events.{ Event => EventProto }
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.services.core.util._
 
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv, ServiceTypes }
-import org.totalgrid.reef.messaging.ServiceRequestHandler
+import org.totalgrid.reef.api.ReefServiceException
 
 import org.totalgrid.reef.models._
 

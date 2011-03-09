@@ -24,9 +24,9 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.scalaclient.{ SyncOperations, DefaultHeaders }
 import org.totalgrid.reef.api.ServiceTypes.{ Response, MultiResult, Failure }
-import org.totalgrid.reef.api.Envelope.Verb
+import org.totalgrid.reef.api.service.sync.ISyncService
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
@@ -36,7 +36,7 @@ import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.api._
 
-class ServiceDispatcher[A <: AnyRef](rh: ServiceDescriptor[A]) {
+class ServiceDispatcher[A <: AnyRef](rh: ISyncService[A]) {
 
   def request(verb: Verb, payload: A, env: RequestEnv): Response[A] =
     getResponse(rh.respond(getRequest(verb, payload, env), env))
@@ -68,9 +68,9 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
       Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
   }
 
-  private def getService[A](exchange: String): ServiceDescriptor[A] = {
-    this.getBundleContext findServices withInterface[ServiceDescriptor[_]] withFilter "exchange" === exchange andApply { x =>
-      x.asInstanceOf[ServiceDescriptor[A]]
+  private def getService[A](exchange: String): ISyncService[A] = {
+    this.getBundleContext findServices withInterface[ISyncService[_]] withFilter "exchange" === exchange andApply { x =>
+      x.asInstanceOf[ISyncService[A]]
     } match {
       case Seq(p) => p
       case Seq(_, _) =>

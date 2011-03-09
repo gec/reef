@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.Envelope._
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ISyncService
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction
@@ -191,7 +191,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
       req.setPayload(ServiceResponse.newBuilder.setId("").setStatus(Status.BUS_UNAVAILABLE).build.toByteString)
       req.build
     }
-    class NonOpService extends ServiceDescriptor[Any] {
+    class NonOpService extends ISyncService[Any] {
       /// noOpService that returns OK
       def respond(request: ServiceRequest, env: RequestEnv): ServiceResponse = {
         ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build
