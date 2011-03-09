@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.messaging.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.ServiceEndpoint
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
 

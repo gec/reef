@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
-import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.service.sync.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.services.framework._

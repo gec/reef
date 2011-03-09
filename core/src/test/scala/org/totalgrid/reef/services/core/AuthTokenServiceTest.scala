@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.Envelope._
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction

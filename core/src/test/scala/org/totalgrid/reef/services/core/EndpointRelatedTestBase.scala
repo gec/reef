@@ -37,9 +37,8 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint }
 
-import org.totalgrid.reef.util.SyncVar
+import org.totalgrid.reef.api.service.sync.ServiceEndpoint
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import _root_.scala.collection.JavaConversions._

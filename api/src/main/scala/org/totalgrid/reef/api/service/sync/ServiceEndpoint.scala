@@ -18,15 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.api.service.sync
 
 import org.totalgrid.reef.api._
 
-//import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.messaging.ProtoSerializer._
-
 import org.totalgrid.reef.api.ServiceTypes.Response
+import com.google.protobuf.ByteString
+import org.totalgrid.reef.api.Envelope
 
 object ServiceRequestHandler {
   /**
@@ -34,6 +33,7 @@ object ServiceRequestHandler {
    */
   type Respond = (Envelope.ServiceRequest, RequestEnv) => Envelope.ServiceResponse
 }
+
 /**
  * classes that are going to be handling service requests should inherit this interface
  * to provide a consistent interface so we can easily implement a type of "middleware" 
@@ -51,26 +51,30 @@ trait ServiceDescriptor[A] extends ServiceRequestHandler {
 trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
 
   def get(req: A): Response[A] = get(req, new RequestEnv)
+
   def put(req: A): Response[A] = put(req, new RequestEnv)
+
   def delete(req: A): Response[A] = delete(req, new RequestEnv)
+
   def post(req: A): Response[A] = post(req, new RequestEnv)
 
   def get(req: A, env: RequestEnv): Response[A]
+
   def put(req: A, env: RequestEnv): Response[A]
+
   def delete(req: A, env: RequestEnv): Response[A]
+
   def post(req: A, env: RequestEnv): Response[A]
 
   /// by default, unimplemented verbs return this response
   protected def noVerb(verb: String) = Response[A](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb, Nil)
 
-  def handleRequest(verb: Envelope.Verb, value: A, env: RequestEnv): Response[A] = {
-    verb match {
-      case Envelope.Verb.GET => get(value, env)
-      case Envelope.Verb.PUT => put(value, env)
-      case Envelope.Verb.DELETE => delete(value, env)
-      case Envelope.Verb.POST => post(value, env)
-      case _ => noVerb(verb.toString)
-    }
+  def handleRequest(verb: Envelope.Verb, value: A, env: RequestEnv): Response[A] = verb match {
+    case Envelope.Verb.GET => get(value, env)
+    case Envelope.Verb.PUT => put(value, env)
+    case Envelope.Verb.DELETE => delete(value, env)
+    case Envelope.Verb.POST => post(value, env)
+    case _ => noVerb(verb.toString)
   }
 
   def handleRequest(req: Envelope.ServiceRequest, env: RequestEnv): Response[A] = {
@@ -79,7 +83,7 @@ trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
     handleRequest(req.getVerb, value, env)
   }
 
-  /** Generic service handler that we can use to bind the service up to
+  /**Generic service handler that we can use to bind the service up to
    * a real messaging system or test
    */
   def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
@@ -88,7 +92,7 @@ trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
 
     def setRsp(r: Response[A]) = {
       rsp.setStatus(r.status).setErrorMessage(r.error)
-      r.result.foreach { x: A => rsp.addPayload(descriptor.serialize(x)) }
+      r.result.foreach { x: A => rsp.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
     }
 
     try {

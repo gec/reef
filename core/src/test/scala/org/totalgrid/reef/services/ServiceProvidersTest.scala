@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.Lifecycle
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore

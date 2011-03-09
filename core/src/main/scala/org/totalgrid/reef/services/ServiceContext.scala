@@ -20,7 +20,9 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceDescriptor }
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
+
+import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
 import org.totalgrid.reef.util.{ Logging }

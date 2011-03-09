@@ -25,6 +25,7 @@ import org.totalgrid.reef.reactor.Reactable
 
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.service.sync.ServiceRequestHandler
 
 object AMQPMessageConsumers extends Logging {
 

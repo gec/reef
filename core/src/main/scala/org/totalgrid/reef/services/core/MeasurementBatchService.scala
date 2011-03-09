@@ -20,9 +20,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint }
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+
 import org.totalgrid.reef.proto.{ ReefServicesList, Descriptors }
 import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.service.sync.ServiceEndpoint
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 

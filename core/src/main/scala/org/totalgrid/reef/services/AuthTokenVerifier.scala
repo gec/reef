@@ -22,9 +22,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.models.ApplicationSchema
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
-
-import org.totalgrid.reef.util._
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
 
 import org.squeryl.PrimitiveTypeMode._
 

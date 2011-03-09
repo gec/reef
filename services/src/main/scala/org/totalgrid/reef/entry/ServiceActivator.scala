@@ -22,8 +22,10 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
+
 import org.totalgrid.reef.services.{ Services, ServiceOptions }
-import org.totalgrid.reef.messaging.{ AMQPProperties, ServiceDescriptor }
+import org.totalgrid.reef.messaging.AMQPProperties
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.reactor.Lifecycle
 import org.totalgrid.reef.osgi.OsgiConfigReader

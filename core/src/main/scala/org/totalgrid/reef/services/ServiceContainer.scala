@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
 
 /**
  * ServiceProviders use a container to add themselves to the collection of running service providers. 

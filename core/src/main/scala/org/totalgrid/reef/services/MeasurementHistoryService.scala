@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.ServiceEndpoint
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }

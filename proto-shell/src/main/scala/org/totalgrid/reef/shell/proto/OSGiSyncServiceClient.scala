@@ -24,9 +24,9 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.scalaclient.{ SyncOperations, DefaultHeaders }
 import org.totalgrid.reef.api.ServiceTypes.{ Response, MultiResult, Failure }
-import org.totalgrid.reef.api.Envelope.Verb
+import org.totalgrid.reef.api.service.sync.ServiceDescriptor
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
