@@ -20,17 +20,17 @@
  */
 package org.totalgrid.reef.api.request
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
-import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.proto.Measurements.Quality.Source
 
-object MeasurementSnapshotRequestBuilders {
-  def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build
-  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPointNames(point.getName).build
+object MeasurementRequestBuilders {
+  def makeIntMeasurement(name: String, value: Int, time: Long) = {
+    Measurement.newBuilder.setName(name).setIntVal(value).setType(Measurement.Type.INT)
+      .setTime(time).setQuality(Quality.newBuilder).build
+  }
 
-  def getByNames(names: List[String]): MeasurementSnapshot = getByNames(names: java.util.List[String])
-  def getByNames(names: java.util.List[String]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(names).build
-
-  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(points.map { _.getName }).build
-  def getByPoints(points: java.util.List[Point]): MeasurementSnapshot = getByPoints(points.toList)
+  def makeSubstituted(m: Measurement) = {
+    val q = m.getQuality.toBuilder.setSource(Source.SUBSTITUTED).setOperatorBlocked(true)
+    m.toBuilder.setQuality(q).build
+  }
 }

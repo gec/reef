@@ -56,10 +56,10 @@ class MeasurementBatchTest
   }
 
   test("Multi put") {
-    val points = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
-    val originals = client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(points)).getMeasurementsList.toList
+    val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
+    val originals = client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names)).getMeasurementsList.toList
 
-    val updateds = originals.map { m =>
+    val updated = originals.map { m =>
       if (m.getType == Measurement.Type.DOUBLE)
         m.toBuilder.setDoubleVal(m.getDoubleVal * 2).setTime(System.currentTimeMillis).build
       else if (m.getType == Measurement.Type.BOOL)
@@ -68,9 +68,9 @@ class MeasurementBatchTest
     }
 
     client.addExplanation("Put multiple measurements", "Put multiple new measurements in a single MeasurementBatch.")
-    putAll(updateds)
+    putAll(updated)
 
-    val reverteds = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }
-    putAll(reverteds)
+    val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }
+    putAll(reverted)
   }
 }

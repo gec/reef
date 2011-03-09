@@ -20,17 +20,19 @@
  */
 package org.totalgrid.reef.api.request
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
-import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Alarms.Alarm
+import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.Model.Entity
 
-object MeasurementSnapshotRequestBuilders {
-  def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build
-  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPointNames(point.getName).build
+object AlarmRequestBuilders {
+  // state != REMOVED by default
+  def getAllByType(eventType: String) = Alarm.newBuilder.setEvent(Event.newBuilder.setEventType(eventType)).build
 
-  def getByNames(names: List[String]): MeasurementSnapshot = getByNames(names: java.util.List[String])
-  def getByNames(names: java.util.List[String]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(names).build
+  def getByTypeForEntity(eventType: String, entity: Entity) = {
+    Alarm.newBuilder.setEvent(Event.newBuilder.setEventType(eventType).setEntity(entity)).build
+  }
 
-  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(points.map { _.getName }).build
-  def getByPoints(points: java.util.List[Point]): MeasurementSnapshot = getByPoints(points.toList)
+  def updateAlarmState(alarm: Alarm, state: Alarm.State) = {
+    Alarm.newBuilder.setUid(alarm.getUid).setState(state).build
+  }
 }

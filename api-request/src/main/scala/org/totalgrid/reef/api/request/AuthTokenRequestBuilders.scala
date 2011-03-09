@@ -20,17 +20,17 @@
  */
 package org.totalgrid.reef.api.request
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
-import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 
-object MeasurementSnapshotRequestBuilders {
-  def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build
-  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPointNames(point.getName).build
+import org.totalgrid.reef.api.scalaclient.SyncOperations
+import org.totalgrid.reef.api.javaclient.ISession
 
-  def getByNames(names: List[String]): MeasurementSnapshot = getByNames(names: java.util.List[String])
-  def getByNames(names: java.util.List[String]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(names).build
+object AuthTokenRequestBuilders {
+  def requestAuthToken(user: String, password: String) = {
+    AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(user).setPassword(password)).build
+  }
 
-  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(points.map { _.getName }).build
-  def getByPoints(points: java.util.List[Point]): MeasurementSnapshot = getByPoints(points.toList)
+  def deleteAuthToken(token: String) = {
+    AuthToken.newBuilder.setToken(token).build
+  }
 }

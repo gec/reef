@@ -25,6 +25,9 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.request.EntityRequestBuilders;
+import org.totalgrid.reef.api.request.EventConfigRequestBuilders;
+import org.totalgrid.reef.api.request.EventRequestBuilders;
 import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Alarms;
 import org.totalgrid.reef.proto.Events;
@@ -42,19 +45,10 @@ public class TestAlarmService extends JavaBridgeTestBase {
      */
     @Test
     public void prepareAlarms()  throws ReefServiceException {
-        client.putOne(EventConfig.newBuilder()
-                .setEventType("Test.Alarm")
-                .setResource("Alarm")
-                .setDesignation(EventConfig.Designation.ALARM)
-                .setAlarmState(Alarms.Alarm.State.UNACK_AUDIBLE)
-                .setSeverity(1).build()
-        );
+        client.putOne(EventConfigRequestBuilders.makeAudibleAlarm("Test.Alarm", "Alarm", 1));
 
         // add an alarm for a point we know is not changing
-        client.putOne(Events.Event.newBuilder()
-                .setEventType("Test.Alarm")
-                .setEntity(Entity.newBuilder().setName("StaticSubstation.Line02.Current")).build()
-        );
+        client.putOne(EventRequestBuilders.makeNewEventForEntityByName("Test.Alarm", "StaticSubstation.Line02.Current"));
     }
 
 	/** Test that some alarms are returned from the AlarmQuery service */
@@ -72,11 +66,10 @@ public class TestAlarmService extends JavaBridgeTestBase {
 	public void entityQueries()  throws ReefServiceException {
 
 		// Get the first substation
-		Entity substation = SampleRequests.getRandomSubstation(client);
+		Entity substation = client.getOne(EntityRequestBuilders.getByName("StaticSubstation"));
 
 		// Get all the points in the substation. Alarms are associated with individual points.
-		Entity eqRequest = Entity.newBuilder().setName("StaticSubstation").addRelations(
-				Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(Entity.newBuilder().addTypes("Point"))).build();
+		Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(substation, "Point");
 
 		// Get the alarms on both the substation and devices under the substation.
 		List<Alarm> alarms = SampleRequests.getAlarmsForEntity(client, eqRequest, "Test.Alarm");
@@ -94,7 +87,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 		// Grab the first unacknowledged alarm and acknowledge it.
 		for (Alarm alarm : alarms) {
 			if (alarm.getState() == Alarm.State.UNACK_AUDIBLE || alarm.getState() == Alarm.State.UNACK_SILENT) {
-				Alarm result = SampleRequests.updateAlarm(client, alarm.getUid(), Alarm.State.ACKNOWLEDGED);
+				Alarm result = SampleRequests.updateAlarm(client, alarm, Alarm.State.ACKNOWLEDGED);
 				assertTrue(result.getState() == Alarm.State.ACKNOWLEDGED);
 				break;
 			}

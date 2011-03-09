@@ -89,6 +89,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-api-request</artifactId>
+            <version>0.2.3-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.5</version>

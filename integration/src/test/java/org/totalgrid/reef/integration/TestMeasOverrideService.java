@@ -24,6 +24,10 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
+import org.totalgrid.reef.api.request.MeasurementBatchRequestBuilders;
+import org.totalgrid.reef.api.request.MeasurementOverrideRequestBuilders;
+import org.totalgrid.reef.api.request.MeasurementRequestBuilders;
+import org.totalgrid.reef.api.request.MeasurementSnapshotRequestBuilders;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
@@ -49,42 +53,42 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
 		{
-			MeasOverride ovr = SampleProtos.makeMeasOverride(p);
-			client.delete(ovr);
+			// delete override by point
+			client.delete(MeasurementOverrideRequestBuilders.getByPoint(p));
 		}
 
 		{
             // subscribe to updates for this point
-			MeasurementSnapshot ms = SampleProtos.makeMeasSnapshot(pointName);
+			MeasurementSnapshot ms = MeasurementSnapshotRequestBuilders.getByName(pointName);
 			MeasurementSnapshot rsp = client.getOne(ms, sub);
 			assertEquals(rsp.getMeasurementsCount(), 1);
 		}
 
         // create an override
-		Measurement m = SampleProtos.makeIntMeas(pointName, 12345, 11111);
-		MeasOverride ovrRequest = SampleProtos.makeMeasOverride(p, m);
+		Measurement m = MeasurementRequestBuilders.makeIntMeasurement(pointName, 11111, 12345);
+		MeasOverride ovrRequest = MeasurementOverrideRequestBuilders.makeOverride(p, m);
 		MeasOverride override = client.putOne(ovrRequest);
 
         // make sure we see it in the event stream
-        assertTrue(mock.waitFor(SampleProtos.makeSubstituted(m), 5000));
+        assertTrue(mock.waitFor(MeasurementRequestBuilders.makeSubstituted(m), 5000));
 
         // if we now try to put a measurement it should be suppressed (b/c we have overridden it)
-        Measurement suppressedValue = SampleProtos.makeIntMeas(pointName, 22222, 22222);
-        MeasurementBatch mb = SampleProtos.makeMeasBatch(suppressedValue);
+        Measurement suppressedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 22222, 22222);
+        MeasurementBatch mb = MeasurementBatchRequestBuilders.makeBatch(suppressedValue);
         client.putOne(mb);
 
         // we store the most recently reported value in a cache so if we publish a value
         // while it is overridden and then take off the override we should see the cached value published
-        Measurement cachedValue = SampleProtos.makeIntMeas(pointName, 33333, 33333);
-        MeasurementBatch mb2 = SampleProtos.makeMeasBatch(cachedValue);
+        Measurement cachedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 33333, 33333);
+        MeasurementBatch mb2 = MeasurementBatchRequestBuilders.makeBatch(cachedValue);
         client.putOne(mb2);
 
         // now we remove the override, we should get the second measurement we attempted to publish
 		client.deleteOne(override);
 
         // publish a final measurement we expect to see on the subscription channel
-        Measurement finalValue = SampleProtos.makeIntMeas(pointName, 44444, 44444);
-        MeasurementBatch mb3 = SampleProtos.makeMeasBatch(finalValue);
+        Measurement finalValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 44444, 44444);
+        MeasurementBatch mb3 = MeasurementBatchRequestBuilders.makeBatch(finalValue);
         client.putOne(mb3);
 
         // verify that we get that final value

@@ -23,10 +23,6 @@ package org.totalgrid.reef.api.request
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Events.EventSelect
-import org.totalgrid.reef.proto.Alarms._
-import java.util.{ Date, Calendar }
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryTest

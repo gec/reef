@@ -37,8 +37,7 @@ public class TestAuthService extends JavaBridgeTestBase {
 
 	@Test
 	public void successfulLogin() throws ReefServiceException {
-		AuthToken t = SampleRequests.logonAs(client, "core", "core", false);
-		assertTrue(t.getToken().length() > 0);
+		SampleRequests.logonAs(client, "core", "core", false);
 	}
 
 	@Test

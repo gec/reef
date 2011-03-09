@@ -26,6 +26,7 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementSnapshot }
+import org.totalgrid.reef.api.ExpectationException
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementSnapshotTest
@@ -40,13 +41,23 @@ class MeasurementSnapshotTest
 
   test("Simple gets") {
 
-    val points = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
+    val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
 
     client.addExplanation("Get single measurement", "Get the current state of a single measurement.")
-    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(points.head))
+    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(names.head))
 
     client.addExplanation("Get multiple measurements", "Get the current state of multiple measurements. Notice that they are all returned wrapped in a single parent object.")
-    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(points))
+    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names))
+  }
 
+  test("Non existant measurement get") {
+    // TODO: MeasurementShapshot should return failure when unknown point requested!
+    client.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
+    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName("UnknownPoint"))
+
+    intercept[ExpectationException] {
+      client.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")
+      client.getOneOrThrow(PointRequestBuilders.getByName("UnknownPoint"))
+    }
   }
 }

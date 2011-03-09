@@ -20,17 +20,20 @@
  */
 package org.totalgrid.reef.api.request
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
-import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
-object MeasurementSnapshotRequestBuilders {
-  def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build
-  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPointNames(point.getName).build
+object EventRequestBuilders {
+  def makeNewEventForEntityByName(eventType: String, entityName: String) = {
+    Event.newBuilder.setEventType(eventType).setEntity(EntityRequestBuilders.getByName(entityName)).build
+  }
 
-  def getByNames(names: List[String]): MeasurementSnapshot = getByNames(names: java.util.List[String])
-  def getByNames(names: java.util.List[String]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(names).build
-
-  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(points.map { _.getName }).build
-  def getByPoints(points: java.util.List[Point]): MeasurementSnapshot = getByPoints(points.toList)
+  def makeNewEventWithAttributes(eventType: String, tuples: Tuple2[String, String]*) = {
+    val attrs = AttributeList.newBuilder()
+    tuples.foreach {
+      case (name, value) =>
+        attrs.addAttribute(Attribute.newBuilder.setName(name).setValueString(value).setVtype(Attribute.Type.STRING))
+    }
+    Event.newBuilder.setEventType(eventType).setArgs(attrs).build
+  }
 }

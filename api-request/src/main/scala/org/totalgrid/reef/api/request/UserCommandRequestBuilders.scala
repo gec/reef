@@ -21,14 +21,30 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
+import org.totalgrid.reef.proto.Model.Command
 
 object UserCommandRequestBuilders {
 
   def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(uid).build
 
-  def executeCommand(command: String) =
-    UserCommandRequest.newBuilder.setCommandRequest(CommandRequest.newBuilder.setName(command)).build
-
   def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
+
+  def executeControl(command: Command): UserCommandRequest = executeControl(command.getName)
+  def executeControl(command: String): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setName(command).setType(CommandRequest.ValType.NONE)
+    UserCommandRequest.newBuilder.setCommandRequest(cr).build
+  }
+
+  def executeSetpoint(command: Command, value: Int): UserCommandRequest = executeSetpoint(command.getName, value)
+  def executeSetpoint(command: String, value: Int): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setName(command).setType(CommandRequest.ValType.INT).setIntVal(value)
+    UserCommandRequest.newBuilder.setCommandRequest(cr).build
+  }
+
+  def executeSetpoint(command: Command, value: Double): UserCommandRequest = executeSetpoint(command.getName, value)
+  def executeSetpoint(command: String, value: Double): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setName(command).setType(CommandRequest.ValType.DOUBLE).setDoubleVal(value)
+    UserCommandRequest.newBuilder.setCommandRequest(cr).build
+  }
 
 }

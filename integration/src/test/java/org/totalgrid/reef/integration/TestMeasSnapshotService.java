@@ -41,7 +41,7 @@ public class TestMeasSnapshotService extends JavaBridgeTestBase {
 	@Test
 	public void measSnapshotCountMatches() throws ReefServiceException {
 		List<Point> plist = SampleRequests.getAllPoints(client);
-		List<Measurement> mlist = SampleRequests.getCurrentValues(client, SampleProtos.makeMeasSnapshot(plist));
+		List<Measurement> mlist = SampleRequests.getCurrentValues(client, plist);
 		assertEquals(plist.size(), mlist.size());
 	}
 

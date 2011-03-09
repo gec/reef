@@ -26,9 +26,11 @@ import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement }
 object MeasurementBatchRequestBuilders {
 
   def makeBatch(m: Measurement): MeasurementBatch = makeBatchAt(m, System.currentTimeMillis)
-  def makeBatch(m: List[Measurement]): MeasurementBatch = makeBatchAt(m, System.currentTimeMillis)
+  def makeBatch(m: List[Measurement]): MeasurementBatch = makeBatchAt(m: java.util.List[Measurement], System.currentTimeMillis)
+  def makeBatch(m: java.util.List[Measurement]): MeasurementBatch = makeBatchAt(m, System.currentTimeMillis)
 
   def makeBatchAt(m: Measurement, defaultMeasurementTime: Long): MeasurementBatch = MeasurementBatch.newBuilder.addMeas(m).setWallTime(defaultMeasurementTime).build
-  def makeBatchAt(m: List[Measurement], defaultMeasurementTime: Long): MeasurementBatch = MeasurementBatch.newBuilder.addAllMeas(m).setWallTime(defaultMeasurementTime).build
+  def makeBatchAt(m: List[Measurement], defaultMeasurementTime: Long): MeasurementBatch = makeBatchAt(m: java.util.List[Measurement], defaultMeasurementTime)
+  def makeBatchAt(m: java.util.List[Measurement], defaultMeasurementTime: Long): MeasurementBatch = MeasurementBatch.newBuilder.addAllMeas(m).setWallTime(defaultMeasurementTime).build
 
 }

@@ -24,6 +24,8 @@ import org.junit.Test;
 import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ServiceTypes;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.request.MeasurementSnapshotRequestBuilders;
+import org.totalgrid.reef.api.request.UserCommandRequestBuilders;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Descriptors;
@@ -50,14 +52,14 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 	public void testSimulatorHandlingCommands() throws InterruptedException, ReefServiceException {
 		Model.Command cmd = SampleRequests.getAllCommands(client).get(0);
         SampleRequests.clearCommandAccess(client, cmd.getName());
-		Commands.CommandAccess accessResponse = SampleRequests.putCommandAccess(client, cmd, 5000, true);
+		Commands.CommandAccess accessResponse = SampleRequests.allowCommandAccess(client, cmd);
 		assertTrue(accessResponse.getExpireTime() > 0);
 
 		// create infrastructure to execute a control with subscription to
 		// result
 
         MockEventAcceptor<Commands.UserCommandRequest> mock = new MockEventAcceptor<Commands.UserCommandRequest>();
-		Commands.UserCommandRequest request = SampleProtos.makeControlRequest(cmd);
+		Commands.UserCommandRequest request = UserCommandRequestBuilders.executeControl(cmd);
 		ISubscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
 		client.putOne(request, sub);
 
@@ -90,7 +92,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
 		// make the all points request, w/ subscribe queue set
-		Measurements.MeasurementSnapshot request = SampleProtos.makeMeasSnapshot(SampleRequests.getAllPoints(client));
+		Measurements.MeasurementSnapshot request = MeasurementSnapshotRequestBuilders.getByPoints(SampleRequests.getAllPoints(client));
 		Measurements.MeasurementSnapshot response = client.getOne(request, sub);
 
 		assertEquals(request.getPointNamesCount(), response.getMeasurementsCount());

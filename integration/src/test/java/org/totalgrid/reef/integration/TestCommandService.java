@@ -80,7 +80,7 @@ public class TestCommandService extends JavaBridgeTestBase {
         Command cmd = SampleRequests.getAllCommands(client).get(0);
 
         // would allow user "user1" to exclusively execute commands for 5000 ms.
-        SampleRequests.putCommandAccess(client, cmd, 5000, true);
+        SampleRequests.allowCommandAccess(client, cmd);
         // removes the command access request by name
         SampleRequests.deleteCommandAccess(client, cmd.getName());
     }
@@ -92,7 +92,7 @@ public class TestCommandService extends JavaBridgeTestBase {
     public void testCommandSelectAndExecute() throws ReefServiceException {
         Command cmd = SampleRequests.getAllCommands(client).get(0);
 
-        CommandAccess accessResponse = SampleRequests.putCommandAccess(client, cmd, 5000, true);
+        CommandAccess accessResponse = SampleRequests.allowCommandAccess(client, cmd);
         assertTrue(accessResponse.getExpireTime() > 0);
         UserCommandRequest cmdResponse = SampleRequests.executeControl(client, cmd);
         assertEquals(cmdResponse.getStatus(), CommandStatus.EXECUTING);
@@ -109,11 +109,11 @@ public class TestCommandService extends JavaBridgeTestBase {
 
         List<Command> cmds = SampleRequests.getAllCommands(client);
 
-        CommandAccess accessResponse1 = SampleRequests.putCommandAccess(client, cmds.subList(0, 3), 5000, true);
+        CommandAccess accessResponse1 = SampleRequests.allowCommandAccess(client, cmds.subList(0, 3));
         assertTrue(accessResponse1.getExpireTime() > 0);
 
         try {
-            SampleRequests.putCommandAccess(client, cmds.subList(0, 2), 5000, true);
+            SampleRequests.allowCommandAccess(client, cmds.subList(0, 2));
             fail("should have failed because we already selected");
         } catch (ReefServiceException pse) {
             assertEquals(Envelope.Status.UNAUTHORIZED, pse.getStatus());
@@ -135,8 +135,8 @@ public class TestCommandService extends JavaBridgeTestBase {
         List<CommandAccess> noAccess = SampleRequests.findCommandAccess(client, cmd1.getName());
         assertEquals(noAccess.size(), 0);
 
-        SampleRequests.putCommandAccess(client, cmd1, 5000, true);
-        SampleRequests.putCommandAccess(client, cmd2, 5000, true);
+        SampleRequests.allowCommandAccess(client, cmd1);
+        SampleRequests.allowCommandAccess(client, cmd2);
 
         List<CommandAccess> foundAccesses = SampleRequests.findCommandAccess(client, cmd1.getName());
         assertEquals(foundAccesses.size(), 1);
@@ -165,7 +165,7 @@ public class TestCommandService extends JavaBridgeTestBase {
         Command cmd = SampleRequests.getAllCommands(client).get(0);
 
         // select
-        CommandAccess accessResponse = SampleRequests.putCommandAccess(client, cmd, 5000, true);
+        CommandAccess accessResponse = SampleRequests.allowCommandAccess(client, cmd);
         assertTrue(accessResponse.getExpireTime() > 0);
 
         // execute
