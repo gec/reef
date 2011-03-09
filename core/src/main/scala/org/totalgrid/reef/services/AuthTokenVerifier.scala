@@ -22,7 +22,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.models.ApplicationSchema
 
-import org.totalgrid.reef.api.service.sync.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ISyncService
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -44,7 +44,7 @@ class AuthTokenMetrics(baseName: String = "") extends MetricsHooks {
  * wraps the request to the service with a function that looks up the permissions for the agent
  * based on the auth_tokens in the envelope and allows/denies based on the permissions the agent has
  */
-class AuthTokenVerifier[A](real: ServiceDescriptor[A], exchange: String, metrics: AuthTokenMetrics) extends ServiceDescriptor[A] {
+class AuthTokenVerifier[A](real: ISyncService[A], exchange: String, metrics: AuthTokenMetrics) extends ISyncService[A] {
 
   override val descriptor = real.descriptor
 

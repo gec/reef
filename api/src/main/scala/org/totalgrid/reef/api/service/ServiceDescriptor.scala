@@ -18,14 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service.async
+package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.ITypeDescriptor
 
-/**
- * Defines how to complete a service call with a ServiceResponse
- */
-trait IServiceResponseCallback {
-  def onResponse(rsp: Envelope.ServiceResponse)
+trait ServiceDescriptor[A] {
+  val descriptor: ITypeDescriptor[A]
+  val useAuth = true
 }
-

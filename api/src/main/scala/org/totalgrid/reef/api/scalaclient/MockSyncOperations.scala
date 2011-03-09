@@ -25,7 +25,7 @@ import scala.collection.mutable.Queue
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 import org.totalgrid.reef.api.ServiceTypes._
 /**
- * Mock the SyncServiceClient to collect all puts, posts, and deletes. A 'get' function
+ * Mock the ISyncServiceClient to collect all puts, posts, and deletes. A 'get' function
  * is specified upon construction.
  *
  * @param doGet    Function that is called for client.get

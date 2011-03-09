@@ -18,14 +18,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service.async
+package org.totalgrid.reef.api.service.sync
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.service.ServiceDescriptor
+import org.totalgrid.reef.api.Envelope
+
+object ISyncService {
+  /**
+   * type of ServiceRequestHandler.respond
+   */
+  type Respond = (Envelope.ServiceRequest, RequestEnv) => Envelope.ServiceResponse
+}
 
 /**
- * Defines how to complete a service call with a ServiceResponse
+ * classes that are going to be handling service requests should inherit this interface
+ * to provide a consistent interface so we can easily implement a type of "middleware" 
+ * wrapper that layers functionality on a request 
  */
-trait IServiceResponseCallback {
-  def onResponse(rsp: Envelope.ServiceResponse)
+trait ISyncService[A] extends ServiceDescriptor[A] {
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse
 }
 

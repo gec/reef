@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.service.sync.SyncServiceBase; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -53,7 +53,7 @@ object AlarmQueryService {
 }
 
 class AlarmQueryService
-    extends ServiceEndpoint[AlarmList] {
+    extends SyncServiceBase[AlarmList] {
 
   override val descriptor = Descriptors.alarmList
 

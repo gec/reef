@@ -24,7 +24,7 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 
 import org.totalgrid.reef.proto.{ ReefServicesList, Descriptors }
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.SyncServiceBase
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -34,7 +34,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Poi
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, ServiceTypes }
 
-class MeasurementBatchService(amqp: AMQPProtoFactory) extends ServiceEndpoint[MeasurementBatch] {
+class MeasurementBatchService(amqp: AMQPProtoFactory) extends SyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 

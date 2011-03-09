@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.sync.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ISyncService
 import org.totalgrid.reef.app.CoreApplicationComponents
 
 /**
@@ -48,7 +48,7 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// takes an endpoint and either returns that endpoint unaltered or wraps it metrics
   /// collecting code
-  def getInstrumentedRespondFunction(endpoint: ServiceDescriptor[_], exch: String): ServiceDescriptor[_] = {
+  def getInstrumentedRespondFunction(endpoint: ISyncService[_], exch: String): ISyncService[_] = {
     if (serviceConfiguration.metrics) {
       val hooks = if (serviceConfiguration.metricsSplitByService) {
         generateHooks(exch) // make a new hook object for each service
@@ -63,7 +63,7 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
-  def instrumentCallback(exchange: String, endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+  def instrumentCallback(exchange: String, endpoint: ISyncService[_]): ISyncService[_] = {
 
     val responder = getInstrumentedRespondFunction(endpoint, exchange)
 

@@ -38,7 +38,7 @@ import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.SyncServiceBase
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import _root_.scala.collection.JavaConversions._
@@ -109,7 +109,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
-    def attachServices(endpoints: Seq[ServiceEndpoint[_]]): Unit = endpoints.foreach { ep =>
+    def attachServices(endpoints: Seq[SyncServiceBase[_]]): Unit = endpoints.foreach { ep =>
       val exch = ReefServicesList.getServiceInfo(ep.descriptor.getKlass).exchange
       amqp.bindService(exch, ep.respond, true)
     }

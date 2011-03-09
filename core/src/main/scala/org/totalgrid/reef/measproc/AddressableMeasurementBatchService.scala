@@ -22,12 +22,12 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.SyncServiceBase
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
-class AddressableMeasurementBatchService(measProc: ProcessingNode) extends ServiceEndpoint[MeasurementBatch] {
+class AddressableMeasurementBatchService(measProc: ProcessingNode) extends SyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 

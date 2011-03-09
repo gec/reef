@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.service.sync.SyncServiceBase; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.services.framework._
@@ -64,7 +64,7 @@ object EventQueryService {
 }
 
 class EventQueryService(protected val modelTrans: ServiceTransactable[EventServiceModel])
-    extends ServiceEndpoint[EventList] {
+    extends SyncServiceBase[EventList] {
   import EventQueryService._
 
   override val descriptor = Descriptors.eventList

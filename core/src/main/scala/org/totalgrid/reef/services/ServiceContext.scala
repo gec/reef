@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.sync.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ISyncService
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
@@ -57,7 +57,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     coord.addAMQPConsumers(components.amqp, reactor)
   }
 
-  def attachService(endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+  def attachService(endpoint: ISyncService[_]): ISyncService[_] = {
     val exchange = ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass).exchange
     val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint)
 

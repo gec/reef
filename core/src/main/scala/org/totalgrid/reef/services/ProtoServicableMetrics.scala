@@ -23,7 +23,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.util._
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
-import org.totalgrid.reef.api.service.sync.ServiceDescriptor
+import org.totalgrid.reef.api.service.sync.ISyncService
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 
@@ -46,8 +46,8 @@ trait ProtoServicableHooks {
 /**
  * instruments a service proto request entry point so metrics can be collected (by verb if configured) 
  */
-class ProtoServicableMetrics[A](real: ServiceDescriptor[A], hooks: ProtoServicableHooks, slowQueryThreshold: Long)
-    extends ServiceDescriptor[A]
+class ProtoServicableMetrics[A](real: ISyncService[A], hooks: ProtoServicableHooks, slowQueryThreshold: Long)
+    extends ISyncService[A]
     with Logging {
 
   override val descriptor = real.descriptor

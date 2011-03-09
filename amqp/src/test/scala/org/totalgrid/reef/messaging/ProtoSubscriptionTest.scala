@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.SyncServiceBase
 
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
@@ -59,7 +59,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends ServiceEndpoint[Envelope.RequestHeader] {
+  class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[Envelope.RequestHeader] {
 
     // list of entries
     private var entries = List.empty[Envelope.RequestHeader]

@@ -20,43 +20,18 @@
  */
 package org.totalgrid.reef.api.service.sync
 
-import org.totalgrid.reef.api._
-
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.ServiceTypes.Response
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.api.Envelope
 
-object ServiceRequestHandler {
-  /**
-   * type of ServiceRequestHandler.respond
-   */
-  type Respond = (Envelope.ServiceRequest, RequestEnv) => Envelope.ServiceResponse
-}
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, ReefServiceException }
 
 /**
- * classes that are going to be handling service requests should inherit this interface
- * to provide a consistent interface so we can easily implement a type of "middleware" 
- * wrapper that layers functionality on a request 
+ *   Implements the ISyncService,respond function in terms of abstract get, put, post, delete
  */
-trait ServiceRequestHandler {
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse
-  val useAuth = true
-}
+trait SyncServiceBase[A <: AnyRef] extends ISyncService[A] with Logging {
 
-trait ServiceDescriptor[A] extends ServiceRequestHandler {
-  val descriptor: ITypeDescriptor[A]
-}
-
-trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
-
-  def get(req: A): Response[A] = get(req, new RequestEnv)
-
-  def put(req: A): Response[A] = put(req, new RequestEnv)
-
-  def delete(req: A): Response[A] = delete(req, new RequestEnv)
-
-  def post(req: A): Response[A] = post(req, new RequestEnv)
+  /* --- Abstract methods --- */
 
   def get(req: A, env: RequestEnv): Response[A]
 
@@ -66,22 +41,15 @@ trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
 
   def post(req: A, env: RequestEnv): Response[A]
 
-  /// by default, unimplemented verbs return this response
-  protected def noVerb(verb: String) = Response[A](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb, Nil)
+  /* --- Overloaded helpers --- */
 
-  def handleRequest(verb: Envelope.Verb, value: A, env: RequestEnv): Response[A] = verb match {
-    case Envelope.Verb.GET => get(value, env)
-    case Envelope.Verb.PUT => put(value, env)
-    case Envelope.Verb.DELETE => delete(value, env)
-    case Envelope.Verb.POST => post(value, env)
-    case _ => noVerb(verb.toString)
-  }
+  def get(req: A): Response[A] = get(req, new RequestEnv)
 
-  def handleRequest(req: Envelope.ServiceRequest, env: RequestEnv): Response[A] = {
+  def put(req: A): Response[A] = put(req, new RequestEnv)
 
-    val value = descriptor.deserialize(req.getPayload.toByteArray)
-    handleRequest(req.getVerb, value, env)
-  }
+  def delete(req: A): Response[A] = delete(req, new RequestEnv)
+
+  def post(req: A): Response[A] = post(req, new RequestEnv)
 
   /**Generic service handler that we can use to bind the service up to
    * a real messaging system or test
@@ -112,5 +80,17 @@ trait ServiceEndpoint[A <: AnyRef] extends ServiceDescriptor[A] with Logging {
     rsp.build
   }
 
-}
+  /** by default, unimplemented verbs return this response */
+  protected def noVerb(verb: String) = Response[A](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb, Nil)
 
+  private def handleRequest(request: Envelope.ServiceRequest, env: RequestEnv): Response[A] = {
+    val value = descriptor.deserialize(request.getPayload.toByteArray)
+    request.getVerb match {
+      case Envelope.Verb.GET => get(value, env)
+      case Envelope.Verb.PUT => put(value, env)
+      case Envelope.Verb.DELETE => delete(value, env)
+      case Envelope.Verb.POST => post(value, env)
+    }
+  }
+
+}

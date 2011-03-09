@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.sync.ServiceEndpoint
+import org.totalgrid.reef.api.service.sync.SyncServiceBase
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
@@ -31,7 +31,7 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
-class MeasurementHistoryService(cm: Historian) extends ServiceEndpoint[MeasurementHistory] {
+class MeasurementHistoryService(cm: Historian) extends SyncServiceBase[MeasurementHistory] {
   val HISTORY_LIMIT = 10000
 
   override val descriptor = Descriptors.measurementHistory
