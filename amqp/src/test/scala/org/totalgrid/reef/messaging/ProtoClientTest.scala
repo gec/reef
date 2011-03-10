@@ -29,7 +29,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.sync.SyncServiceBase
+import org.totalgrid.reef.api.service.SyncServiceBase
+import service.SyncServiceBase
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {

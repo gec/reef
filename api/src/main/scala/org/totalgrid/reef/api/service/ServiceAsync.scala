@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.service
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,25 +20,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service.sync
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+//import org.totalgrid.reef.api.ServiceTypes.Response
 
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.service.ServiceDescriptor
-import org.totalgrid.reef.api.Envelope
+trait ServiceAsync[A <: AnyRef] extends IServiceAsync[A] {
 
-object ISyncService {
-  /**
-   * type of ServiceRequestHandler.respond
-   */
-  type Respond = (Envelope.ServiceRequest, RequestEnv) => Envelope.ServiceResponse
+  def get(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  def put(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  def delete(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  def post(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
+
+  }
+
 }
-
-/**
- * classes that are going to be handling service requests should inherit this interface
- * to provide a consistent interface so we can easily implement a type of "middleware" 
- * wrapper that layers functionality on a request 
- */
-trait ISyncService[A] extends ServiceDescriptor[A] {
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse
-}
-

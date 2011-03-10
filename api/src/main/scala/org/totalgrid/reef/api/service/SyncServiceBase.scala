@@ -18,18 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service.sync
+package org.totalgrid.reef.api.service
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.ServiceTypes.Response
-import com.google.protobuf.ByteString
 
 import org.totalgrid.reef.api.{ RequestEnv, Envelope, ReefServiceException }
 
 /**
  *   Implements the ISyncService,respond function in terms of abstract get, put, post, delete
  */
-trait SyncServiceBase[A <: AnyRef] extends ISyncService[A] with Logging {
+trait SyncServiceBase[A <: AnyRef] extends IServiceAsync[A] with ServiceHelpers[A] with Logging {
 
   /* --- Abstract methods --- */
 
@@ -54,30 +53,24 @@ trait SyncServiceBase[A <: AnyRef] extends ISyncService[A] with Logging {
   /**Generic service handler that we can use to bind the service up to
    * a real messaging system or test
    */
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback): Unit =
+    callback.onResponse(respondSynchronously(req, env))
 
-    val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)
-
-    def setRsp(r: Response[A]) = {
-      rsp.setStatus(r.status).setErrorMessage(r.error)
-      r.result.foreach { x: A => rsp.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
-    }
-
+  private def respondSynchronously(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
     try {
-      setRsp(handleRequest(req, env))
+      getResponse(req.getId, handleRequest(req, env))
     } catch {
       case px: ReefServiceException =>
         error(px)
-        rsp.setStatus(px.status).setErrorMessage(px.toString)
+        getFailure(req.getId, px.getStatus, px.getMsg)
       case x: Exception =>
         error(x)
         val result = new java.io.StringWriter()
         val printWriter = new java.io.PrintWriter(result)
         x.printStackTrace(printWriter)
         val msg = x.toString + "\n" + result.toString
-        rsp.setStatus(Envelope.Status.BAD_REQUEST).setErrorMessage(msg)
+        getFailure(req.getId, Envelope.Status.BAD_REQUEST, msg)
     }
-    rsp.build
   }
 
   /** by default, unimplemented verbs return this response */

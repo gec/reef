@@ -22,12 +22,13 @@ package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.service.sync.SyncServiceBase
+import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
 import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
+import org.totalgrid.reef.api.service.SyncServiceBase
 
 /**
  * Hooks/callbacks for service implementations to modify standard REST behavior

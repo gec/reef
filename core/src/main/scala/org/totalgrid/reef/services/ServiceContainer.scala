@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.sync.ISyncService
+import org.totalgrid.reef.api.service.IServiceAsync
 
 /**
  * ServiceProviders use a container to add themselves to the collection of running service providers. 
@@ -43,8 +43,8 @@ trait ServiceAttacher {
    * binds a proto serving endpoint to the broker and depending on configuration
    * will also instrument the call with hooks to track # and length of service requests
    */
-  def attachService(endpoint: ISyncService[_]): ISyncService[_]
+  def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_]
 
-  def attachServices(seq: Seq[ISyncService[_]]): Seq[ISyncService[_]] = seq.map(x => attachService(x))
+  def attachServices(seq: Seq[IServiceAsync[_]]): Seq[IServiceAsync[_]] = seq.map(x => attachService(x))
 
 }
