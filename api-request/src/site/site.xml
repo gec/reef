@@ -31,6 +31,7 @@
       <item name="Alarm Query" href="AlarmQuery.html"/>
       <item name="Command" href="Command.html"/>
       <item name="CommandAccess" href="CommandAccess.html"/>
+      <item name="Config File" href="ConfigFile.html"/>
       <item name="Entity" href="Entity.html"/>
       <item name="Event Config" href="EventConfig.html"/>
       <item name="Event Query" href="EventQuery.html"/>

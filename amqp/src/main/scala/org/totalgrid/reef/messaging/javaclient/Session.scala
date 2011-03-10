@@ -101,5 +101,6 @@ class Session(client: ProtoClient) extends ISession {
 
   def close() = client.close
 
+  def getUnderlyingClient() = client
 }
 

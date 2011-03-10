@@ -20,27 +20,12 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.proto.Model.Entity
 
-object AuthTokenRequestBuilders {
-  def requestAuthToken(user: String, password: String) = {
-    AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(user).setPassword(password)).build
-  }
+trait EntityHelpers {
+  def getEntityByUid(uid: String): Entity
 
-  def deleteAuthToken(token: String) = {
-    AuthToken.newBuilder.setToken(token).build
-  }
-}
+  def getEntityByName(name: String): Entity
 
-trait AuthTokenHelpersImpl extends ReefApiHelpers with AuthTokenHelpers {
-
-  def createNewAuthorizationToken(user: String, password: String): String = {
-    val resp = ops.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password))
-    resp.getToken
-  }
-
-  def deleteAuthorizationToken(token: String): Boolean = {
-    ops.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token))
-    false
-  }
+  def getAllEntitiesWithType(typ: String): java.util.List[Entity]
 }

@@ -21,6 +21,7 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Model.{ Entity, Relationship }
+import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 object EntityRequestBuilders {
 
@@ -80,4 +81,21 @@ object EntityRequestBuilders {
         Entity.newBuilder.addTypes("Command"))).build
   }
 
+}
+
+import scala.collection.JavaConversions._
+
+trait EntityHelpersImpl extends ReefApiHelpers with EntityHelpers {
+  protected val ops: SyncOperations
+
+  def getEntityByUid(uid: String): Entity = {
+    ops.getOneOrThrow(EntityRequestBuilders.getByUid(uid))
+  }
+
+  def getEntityByName(name: String): Entity = {
+    ops.getOneOrThrow(EntityRequestBuilders.getByName(name))
+  }
+  def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
+    ops.getOrThrow(EntityRequestBuilders.getByType(typ))
+  }
 }

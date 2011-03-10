@@ -30,7 +30,7 @@ import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 
-import org.totalgrid.reef.integration.SampleRequests;
+import org.totalgrid.reef.integration.AtollHelpers;
 import org.totalgrid.reef.api.javaclient.IConnection;
 import org.totalgrid.reef.api.javaclient.ISession;
 
@@ -63,6 +63,7 @@ public class JavaBridgeTestBase {
 	 */
 	protected IConnection connection = new Connection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
 	protected ISession client = null;
+    protected AtollHelpers helpers = null;
 	protected MockConnectionListener listener = new MockConnectionListener();
 
 	/**
@@ -109,9 +110,10 @@ public class JavaBridgeTestBase {
 		connection.start();
 		org.junit.Assert.assertTrue(listener.waitForStateChange(5000));
 		client = connection.newSession();
+        helpers = new AtollHelpers(client);
 		if (autoLogon) {
-			// core user has full read/write permissions
-			SampleRequests.logonAs(client, "core", "core", true);
+            // core user has full read/write permissions
+            client.getDefaultEnv().setAuthToken(helpers.createNewAuthorizationToken("core", "core"));
 		}
 	}
 
