@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.sync.SyncServiceBase; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.service.SyncServiceBase; import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
@@ -32,6 +32,7 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceTypes }
+import org.totalgrid.reef.api.service.SyncServiceBase
 
 class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementSnapshot] {
 

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.service
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,15 +20,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service.async
+import org.totalgrid.reef.api.Envelope
 
-import org.totalgrid.reef.api.RequestEnv
+/**
+ * Defines how to complete a service call with a ServiceResponse
+ */
+trait IServiceResponseCallback {
+  def onResponse(rsp: Envelope.ServiceResponse)
+}
 
-trait ServiceAsync[A <: AnyRef] extends IServiceAsync {
+class CallbackTimer(callback: IServiceResponseCallback, timerFun: (Long, Envelope.ServiceResponse) => Unit) extends IServiceResponseCallback {
 
-  def get(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-  def put(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-  def delete(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-  def post(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  val start = System.currentTimeMillis
+
+  def onResponse(rsp: Envelope.ServiceResponse) {
+    timerFun(System.currentTimeMillis - start, rsp)
+    callback.onResponse(rsp)
+  }
 
 }

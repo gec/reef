@@ -22,7 +22,7 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.api.service.sync.ISyncService
+import org.totalgrid.reef.api.service.IServiceAsync
 
 import org.totalgrid.reef.services.{ Services, ServiceOptions }
 import org.totalgrid.reef.messaging.AMQPProperties
@@ -51,7 +51,7 @@ class ServiceActivator extends BundleActivator {
     // publish all of the services using the exchange as the filter
     srvContext.services.foreach { x =>
       val exchange = ReefServicesList.getServiceInfo(x.descriptor.getKlass).exchange
-      context createService (x, "exchange" -> exchange, interface[ISyncService[_]])
+      context createService (x, "exchange" -> exchange, interface[IServiceAsync[_]])
     }
 
     services = Some(srvContext)

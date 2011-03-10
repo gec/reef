@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.service
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,15 +20,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service.async
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ITypeDescriptor }
+
+object IServiceAsync {
+  type ServiceFunction = (Envelope.ServiceRequest, RequestEnv, IServiceResponseCallback) => Unit
+}
 
 /**
  * Defines how to complete a service call with a ServiceResponse
  */
-
-trait IServiceAsync {
+trait IServiceAsync[A] extends ServiceDescriptor[A] {
   def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback): Unit
 }
 
+/**
+ * A concrete example service that always responds immediately with Success and the correct Id
+ */
+class NoOpService extends IServiceAsync[Any] {
+
+  import Envelope._
+
+  /// noOpService that returns OK
+  def respond(request: ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) =
+    callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
+
+  override val descriptor = new ITypeDescriptor[Any] {
+    def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
+    def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
+    def getKlass: Class[Any] = throw new Exception("unimplemented")
+  }
+}
