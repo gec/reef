@@ -22,6 +22,6 @@ package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.api.scalaclient.SyncOperations
 
-trait ReefApiHelpers {
+trait ReefServiceBaseClass {
   protected val ops: SyncOperations
 }

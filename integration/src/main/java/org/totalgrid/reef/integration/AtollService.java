@@ -22,11 +22,11 @@ package org.totalgrid.reef.integration;
 
 import org.totalgrid.reef.api.javaclient.ISession;
 
-import org.totalgrid.reef.api.request.ReefScadaHelpersImpl;
-import org.totalgrid.reef.api.request.AllScadaHelpers;
+import org.totalgrid.reef.api.request.AllScadaService;
+import org.totalgrid.reef.api.request.ReefScadaServiceImpl;
 
-public class AtollHelpers extends ReefScadaHelpersImpl implements AllScadaHelpers {
-    public AtollHelpers(ISession session) {
+public class AtollService extends ReefScadaServiceImpl implements AllScadaService {
+    public AtollService(ISession session) {
         super(session);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }

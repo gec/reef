@@ -32,7 +32,7 @@ object AuthTokenRequestBuilders {
   }
 }
 
-trait AuthTokenHelpersImpl extends ReefApiHelpers with AuthTokenHelpers {
+trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
 
   def createNewAuthorizationToken(user: String, password: String): String = {
     val resp = ops.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password))

@@ -20,7 +20,12 @@
  */
 package org.totalgrid.reef.api.request
 
-trait AuthTokenHelpers {
-  def createNewAuthorizationToken(user: String, password: String): String
-  def deleteAuthorizationToken(token: String): Boolean
+import org.totalgrid.reef.proto.Model.Entity
+
+trait EntityService {
+  def getEntityByUid(uid: ReefUUID): Entity
+
+  def getEntityByName(name: String): Entity
+
+  def getAllEntitiesWithType(typ: String): java.util.List[Entity]
 }

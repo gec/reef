@@ -85,7 +85,7 @@ object EntityRequestBuilders {
 
 import scala.collection.JavaConversions._
 
-trait EntityHelpersImpl extends ReefApiHelpers with EntityHelpers {
+trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   protected val ops: SyncOperations
 
   def getEntityByUid(uid: ReefUUID): Entity = {

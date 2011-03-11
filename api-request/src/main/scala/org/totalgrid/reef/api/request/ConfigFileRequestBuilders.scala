@@ -56,13 +56,13 @@ object ConfigFileRequestBuilders {
 }
 
 /**
- * implementation of the ConfigFileHelpers Interface. The calls are implemented including the verbs and whatever
+ * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever
  * processing of the results. This will allow us to hide the irregularities in the current service implementation
  * (EventList selectors for instance) and even replace the single request/response type with multiple types without
  * disturbing client code (much). We can also add additional assertions on client behavior here to fail faster and
  * let people fall into the 'pit of the success' more often
  */
-trait ConfigFileHelpersImpl extends ReefApiHelpers with ConfigFileHelpers {
+trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService {
 
   def getConfigFileByUid(uid: ReefUUID): ConfigFile = {
     ops.getOneOrThrow(ConfigFileRequestBuilders.getByUid(uid))

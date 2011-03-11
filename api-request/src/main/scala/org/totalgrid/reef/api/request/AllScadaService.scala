@@ -26,44 +26,44 @@ import org.totalgrid.reef.api.javaclient.ISession
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-trait AllScadaHelpers extends AuthTokenHelpers with EntityHelpers with ConfigFileHelpers
+trait AllScadaService extends AuthTokenService with EntityService with ConfigFileService
 
 /**
  * "Super" implementation of the the super interface that includes all of the implementations, again maybe not needed
  */
-trait AllScadaHelpersImpl extends AllScadaHelpers with AuthTokenHelpersImpl with EntityHelpersImpl with ConfigFileHelpersImpl
+trait AllScadaServiceImpl extends AllScadaService with AuthTokenServiceImpl with EntityServiceImpl with ConfigFileServiceImpl
 
 /**
  * base class that java clients create to use all of the api helper functionality. Designed to be overloaded so client
  * apps can add functionality that isn't provided in the core api functions.
  */
-class ReefScadaHelpersImpl(session: ISession) extends AllScadaHelpers with AllScadaHelpersImpl {
+class ReefScadaServiceImpl(session: ISession) extends AllScadaService with AllScadaServiceImpl {
   protected val ops = session.getUnderlyingClient
 }
 
 /**
- * An alternative to the ReefScadaHelpersImpl version that combines all of the functionality under one roof, shows
+ * An alternative to the ReefScadaServiceImpl version that combines all of the functionality under one roof, shows
  * implementation of functionality is flexible.
  */
-class AllScadaHelpersContainer(session: ISession) {
-  lazy val authToken = new AuthTokenHelpersWrapper(session)
-  lazy val entities = new EntityHelpersWrapper(session)
-  lazy val configFiles = new ConfigFileHelpersWrapper(session)
+class AllScadaServiceContainer(session: ISession) {
+  lazy val authToken = new AuthTokenServiceWrapper(session)
+  lazy val entities = new EntityServiceWrapper(session)
+  lazy val configFiles = new ConfigFileServiceWrapper(session)
 }
 
 /**
  * functionality can also be wrapped and used on an interface basis. This would allow us to keep the functionality
  * partioned by service type/ functionality if we wanted
  */
-class AuthTokenHelpersWrapper(session: ISession) extends AuthTokenHelpers with AuthTokenHelpersImpl {
+class AuthTokenServiceWrapper(session: ISession) extends AuthTokenService with AuthTokenServiceImpl {
   protected val ops = session.getUnderlyingClient
 }
 
-class EntityHelpersWrapper(session: ISession) extends EntityHelpers with EntityHelpersImpl {
+class EntityServiceWrapper(session: ISession) extends EntityService with EntityServiceImpl {
   protected val ops = session.getUnderlyingClient
 }
 
-class ConfigFileHelpersWrapper(session: ISession) extends ConfigFileHelpers with ConfigFileHelpersImpl {
+class ConfigFileServiceWrapper(session: ISession) extends ConfigFileService with ConfigFileServiceImpl {
   protected val ops = session.getUnderlyingClient
 }
 

@@ -69,7 +69,7 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
 
     client.getDefaultHeaders.addAuthToken(response.getToken)
 
-    new InteractionRecorder(client) with AllScadaHelpersImpl {
+    new InteractionRecorder(client) with AllScadaServiceImpl {
       val ops = this
     }
   }

@@ -26,7 +26,7 @@ import org.totalgrid.reef.api.ReefServiceException
 /**
  * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.
  * Additional functions are expected to be added by clients who extends this interface and add the needed
- * functionality using ConfigFileHelpersImpl as a examples of other valid queries. Note that this class is a
+ * functionality using ConfigFileServiceImpl as a examples of other valid queries. Note that this class is a
  * simple interface so it should be easily mockable in test code. Note also that when are using Lists etc. we
  * are using the java classes instead of scala versions b/c its easier to use java lists in scala than scala
  * lists in java.
@@ -36,7 +36,7 @@ import org.totalgrid.reef.api.ReefServiceException
  * related to. Names must be unique system-wide. Searches can all be filtered by mimeType, which can be
  * helpful is name is unknown.
  */
-trait ConfigFileHelpers {
+trait ConfigFileService {
   /**
    * retrieve a config file by its UID
    */
