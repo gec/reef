@@ -125,7 +125,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       val headerSub = client.addSubscription(headerSubFunc)
 
       val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, getEnv(headerSub)) match {
-        case ServiceTypes.MultiSuccess(Nil) =>
+        case ServiceTypes.MultiSuccess(status, Nil) =>
         case _ => false should equal(true)
       }
 

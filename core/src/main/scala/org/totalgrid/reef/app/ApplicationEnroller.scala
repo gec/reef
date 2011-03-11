@@ -106,7 +106,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
           case x: Failure =>
             error("Error getting auth token. " + x)
             delay(2000) { enroll() }
-          case SingleSuccess(authToken) =>
+          case SingleSuccess(status, authToken) =>
             val env = new RequestEnv
             env.addAuthToken(authToken.getToken)
             c.setDefaultHeaders(env)
@@ -115,7 +115,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
                 case x: Failure =>
                   error("Error registering application. " + x)
                   delay(2000) { enroll() }
-                case SingleSuccess(app) =>
+                case SingleSuccess(status, app) =>
                   val components = new CoreApplicationComponents(amqp, app, env)
                   container = Some(setupFun(components))
                   container.get.start

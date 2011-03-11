@@ -27,12 +27,12 @@ import scala.collection.JavaConversions._
 class Result[A](result: MultiResult[A]) extends IResult[A] {
 
   def isSuccess = result match {
-    case MultiSuccess(x) => true
+    case MultiSuccess(status, x) => true
     case _ => false
   }
 
   def getResult: java.util.List[A] = result match {
-    case MultiSuccess(x) => x
+    case MultiSuccess(status, x) => x
     case x: Failure => throw x.toException
   }
 

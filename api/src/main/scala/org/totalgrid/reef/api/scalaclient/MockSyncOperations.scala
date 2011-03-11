@@ -73,10 +73,10 @@ class MockSyncOperations(
     case Envelope.Verb.GET => doGet(payload).asInstanceOf[MultiResult[A]]
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload)
-      MultiSuccess(List[A](payload))
+      MultiSuccess(Envelope.Status.OK, List[A](payload))
     case Envelope.Verb.PUT =>
       putQueue.enqueue(payload)
-      MultiSuccess(List[A](payload))
+      MultiSuccess(Envelope.Status.OK, List[A](payload))
     case Envelope.Verb.POST => throw new Exception("unimplemented")
   }
 
