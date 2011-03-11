@@ -50,7 +50,7 @@ class EntityRequestTest
   test("Simple gets") {
 
     val allEntities = client.getOrThrow(EntityRequestBuilders.getAll)
-    val targetUid = allEntities.head.getUid
+    val targetUid = ReefUUID(allEntities.head.getUid)
 
     client.addExplanation("Get by UID", "Finds a specific entity by UID.")
     client.getOneOrThrow(EntityRequestBuilders.getByUid(targetUid))
@@ -61,7 +61,7 @@ class EntityRequestTest
 
   test("Children") {
     val subs = client.getOrThrow(EntityRequestBuilders.getByType("Substation"))
-    val subUid = subs.head.getUid
+    val subUid = ReefUUID(subs.head.getUid)
 
     client.addExplanation("Get descendants", "Finds all descendants of the root entity with the relationship \"owns\".")
     client.getOrThrow(EntityRequestBuilders.getAllRelatedChildrenFromRootUid(subUid, "owns"))
@@ -85,7 +85,7 @@ class EntityRequestTest
 
   test("Multilevel") {
     val subs = client.getOrThrow(EntityRequestBuilders.getByType("Substation"))
-    val subUid = subs.head.getUid
+    val subUid = ReefUUID(subs.head.getUid)
 
     val desc = <div>Starting from a root node ("Substation"), the request asks for children of type "Breaker", and children of those of type "Point".</div>
 

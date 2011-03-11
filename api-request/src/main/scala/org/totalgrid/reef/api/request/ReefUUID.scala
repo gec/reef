@@ -20,11 +20,9 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Model.Command
-
-object CommandRequestBuilders {
-  def getAll() = Command.newBuilder.setUid("*").build
-
-  def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setEntity(EntityRequestBuilders.getByUid(uid)).build
-  def getByEntityName(name: String) = Command.newBuilder.setEntity(EntityRequestBuilders.getByName(name)).build
-}
+/**
+ * All objects (future) will have a UUID field that is a specific type not just a string
+ *
+ * TODO: When UUIDs added across board in protos, ReefUUID becomes proto class
+ */
+case class ReefUUID(uuid: String)

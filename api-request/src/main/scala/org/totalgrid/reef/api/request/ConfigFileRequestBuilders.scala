@@ -31,7 +31,7 @@ import org.totalgrid.reef.api.ExpectationException
  * minimize duplication of Builder code.
  */
 object ConfigFileRequestBuilders {
-  def getByUid(uid: String) = ConfigFile.newBuilder().setUid(uid).build
+  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUid(uid.uuid).build
   def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
 
   def getByMimeType(mimeType: String) = ConfigFile.newBuilder().setMimeType(mimeType).build
@@ -64,7 +64,7 @@ object ConfigFileRequestBuilders {
  */
 trait ConfigFileHelpersImpl extends ReefApiHelpers with ConfigFileHelpers {
 
-  def getConfigFileByUid(uid: String): ConfigFile = {
+  def getConfigFileByUid(uid: ReefUUID): ConfigFile = {
     ops.getOneOrThrow(ConfigFileRequestBuilders.getByUid(uid))
   }
   def getConfigFileByName(name: String): ConfigFile = {
@@ -74,7 +74,7 @@ trait ConfigFileHelpersImpl extends ReefApiHelpers with ConfigFileHelpers {
   def getConfigFilesUsedByEntity(entity: Entity): java.util.List[ConfigFile] = {
     ops.getOrThrow(ConfigFileRequestBuilders.getByEntity(entity))
   }
-  def getConfigFilesUsedByEntityUid(entityUid: String): java.util.List[ConfigFile] = {
+  def getConfigFilesUsedByEntityUid(entityUid: ReefUUID): java.util.List[ConfigFile] = {
     getConfigFilesUsedByEntity(EntityRequestBuilders.getByUid(entityUid))
   }
   def getConfigFilesUsedByEntityName(entityName: String): java.util.List[ConfigFile] = {
@@ -84,7 +84,7 @@ trait ConfigFileHelpersImpl extends ReefApiHelpers with ConfigFileHelpers {
   def getConfigFilesUsedByEntity(entity: Entity, mimeType: String): java.util.List[ConfigFile] = {
     ops.getOrThrow(ConfigFileRequestBuilders.getByEntity(entity, mimeType))
   }
-  def getConfigFilesUsedByEntityUid(entityUid: String, mimeType: String): java.util.List[ConfigFile] = {
+  def getConfigFilesUsedByEntityUid(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = {
     getConfigFilesUsedByEntity(EntityRequestBuilders.getByUid(entityUid), mimeType)
   }
   def getConfigFilesUsedByEntityName(entityName: String, mimeType: String): java.util.List[ConfigFile] = {
@@ -97,22 +97,22 @@ trait ConfigFileHelpersImpl extends ReefApiHelpers with ConfigFileHelpers {
   def createConfigFile(name: String, mimeType: String, data: Array[Byte], entity: Entity): ConfigFile = {
     ops.putOneOrThrow(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entity))
   }
-  def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: String): ConfigFile = {
+  def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile = {
     ops.putOneOrThrow(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, EntityRequestBuilders.getByUid(entityUid)))
   }
 
   def updateConfigFile(configFile: ConfigFile, data: Array[Byte]): ConfigFile = {
-    if(!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot update a config file with only a name, need to know uid.")
+    if (!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot update a config file with only a name, need to know uid.")
     ops.putOneOrThrow(configFile.toBuilder.setFile(ByteString.copyFrom(data)).build)
   }
 
   def addConfigFileUserByEntity(configFile: ConfigFile, entity: Entity): ConfigFile = {
-    if(!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot add a config file user with only a name, need to know uid.")
+    if (!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot add a config file user with only a name, need to know uid.")
     ops.putOneOrThrow(configFile.toBuilder.addEntities(entity).build)
   }
 
   def deleteConfigFile(configFile: ConfigFile): ConfigFile = {
-    if(!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot delete a config file with only a name, need to know uid.")
+    if (!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot delete a config file with only a name, need to know uid.")
     ops.deleteOneOrThrow(ConfigFile.newBuilder.setUid(configFile.getUid).build)
   }
 }

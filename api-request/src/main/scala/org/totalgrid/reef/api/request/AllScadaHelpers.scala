@@ -45,7 +45,7 @@ class ReefScadaHelpersImpl(session: ISession) extends AllScadaHelpers with AllSc
  * An alternative to the ReefScadaHelpersImpl version that combines all of the functionality under one roof, shows
  * implementation of functionality is flexible.
  */
-class AllScadaHelpersContainer(session : ISession){
+class AllScadaHelpersContainer(session: ISession) {
   lazy val authToken = new AuthTokenHelpersWrapper(session)
   lazy val entities = new EntityHelpersWrapper(session)
   lazy val configFiles = new ConfigFileHelpersWrapper(session)

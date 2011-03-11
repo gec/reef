@@ -23,7 +23,7 @@ package org.totalgrid.reef.api.request
 import org.totalgrid.reef.proto.Model.Entity
 
 trait EntityHelpers {
-  def getEntityByUid(uid: String): Entity
+  def getEntityByUid(uid: ReefUUID): Entity
 
   def getEntityByName(name: String): Entity
 

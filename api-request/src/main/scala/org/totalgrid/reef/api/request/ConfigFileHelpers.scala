@@ -41,7 +41,7 @@ trait ConfigFileHelpers {
    * retrieve a config file by its UID
    */
   @throws(classOf[ReefServiceException])
-  def getConfigFileByUid(uid: String): ConfigFile
+  def getConfigFileByUid(uid: ReefUUID): ConfigFile
   /**
    * retrieve a config file by its name
    */
@@ -57,7 +57,7 @@ trait ConfigFileHelpers {
    * search for all config files "used" by an entity
    */
   @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntityUid(entityUid: String): java.util.List[ConfigFile]
+  def getConfigFilesUsedByEntityUid(entityUid: ReefUUID): java.util.List[ConfigFile]
   /**
    * search for all config files "used" by an entity
    */
@@ -74,7 +74,7 @@ trait ConfigFileHelpers {
    * search for all config files "used" by an entity, only returns files with matching mimeType
    */
   @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntityUid(entityUid: String, mimeType: String): java.util.List[ConfigFile]
+  def getConfigFilesUsedByEntityUid(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile]
   /**
    * search for all config files "used" by an entity, only returns files with matching mimeType
    */
@@ -96,7 +96,7 @@ trait ConfigFileHelpers {
    * create a ConfigFile that is "used" by an Entity, it is now queryable by name, mimeType and entity.
    */
   @throws(classOf[ReefServiceException])
-  def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: String): ConfigFile
+  def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile
 
   /**
    * update the text of the previously retrieved ConfigFile
