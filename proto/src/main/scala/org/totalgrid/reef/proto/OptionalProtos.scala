@@ -335,6 +335,11 @@ object OptionalProtos {
     val child = new OptModelEntity(optionally(_.hasChild, _.getChild))
     val relationship = optionally(_.hasRelationship, _.getRelationship)
   }
+  implicit def proto2OptModelEntityAttributes(a: org.totalgrid.reef.proto.Model.EntityAttributes): OptModelEntityAttributes = new OptModelEntityAttributes(Some(a))
+  class OptModelEntityAttributes(real: Option[org.totalgrid.reef.proto.Model.EntityAttributes]) extends OptionalStruct(real) {
+    val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
+    val attributes = optionally(_.getAttributesList.toList.map { i => new OptUtilsAttribute(Some(i)) })
+  }
   implicit def proto2OptModelPoint(a: org.totalgrid.reef.proto.Model.Point): OptModelPoint = new OptModelPoint(Some(a))
   class OptModelPoint(real: Option[org.totalgrid.reef.proto.Model.Point]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)

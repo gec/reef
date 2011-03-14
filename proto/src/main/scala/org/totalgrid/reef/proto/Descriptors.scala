@@ -222,6 +222,11 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.EntityEdge.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Model.EntityEdge]
   }
+  def entityAttributes() = new ITypeDescriptor[org.totalgrid.reef.proto.Model.EntityAttributes] {
+    def serialize(typ: org.totalgrid.reef.proto.Model.EntityAttributes): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.EntityAttributes.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Model.EntityAttributes]
+  }
   def point() = new ITypeDescriptor[org.totalgrid.reef.proto.Model.Point] {
     def serialize(typ: org.totalgrid.reef.proto.Model.Point): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Point.parseFrom(bytes)

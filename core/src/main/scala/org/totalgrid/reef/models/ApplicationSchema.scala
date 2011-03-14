@@ -389,11 +389,27 @@ class EntityDerivedEdge(
   val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
 
+class EntityAttributes(
+    val entityId: Long,
+    val attrName: String,
+    val stringVal: Option[String],
+    val boolVal: Option[Boolean],
+    val longVal: Option[Long],
+    val doubleVal: Option[Double],
+    val byteVal: Option[Array[Byte]]) extends ModelWithId {
+
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+
+  def this() = this(5, "", Some(""), Some(true), Some(50L), Some(84.33), Some(Array.empty[Byte]))
+}
+
 object ApplicationSchema extends Schema {
   val entities = table[Entity]
   val edges = table[EntityEdge]
   val derivedEdges = table[EntityDerivedEdge]
   val entityTypes = table[EntityToTypeJoins]
+
+  val entityAttributes = table[EntityAttributes]
 
   on(entities)(s => declare(
     //s.id is (indexed), // dont need index on primary keys
