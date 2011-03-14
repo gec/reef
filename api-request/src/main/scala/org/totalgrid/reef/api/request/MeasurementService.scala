@@ -1,3 +1,23 @@
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  Green Energy Corp licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Measurements.Measurement
@@ -51,18 +71,46 @@ trait MeasurementService {
   @throws(classOf[ReefServiceException])
   def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription): java.util.List[Measurement]
 
-  //  /**  TODO: Implement MeasurementHistory API
-  //   * get the history
-  //   */
-  //  @throws(classOf[ReefServiceException])
-  //  def getMeasurementHistory(point : Point) : java.util.List[Measurement]
-  //  @throws(classOf[ReefServiceException])
-  //  def getMeasurementHistory(name : String) : java.util.List[Measurement]
-  //
-  //  @throws(classOf[ReefServiceException])
-  //  def getMeasurementHistory(point : Point, subscription : ISubscription) : java.util.List[Measurement]
-  //  @throws(classOf[ReefServiceException])
-  //  def getMeasurementHistory(name : String, subscription : ISubscription) : java.util.List[Measurement]
+  /**
+   * get a subset of the recent measurements for a point
+   * @param limit - max number of measurements returned
+   */
+  @throws(classOf[ReefServiceException])
+  def getMeasurementHistory(point: Point, limit: Int): java.util.List[Measurement]
+
+  /**
+   * get a subset of the recent measurements for a point
+   * @param since - dont return measurements older than this, inclusive (millis)
+   * @param limit - max number of measurements returned
+   */
+  @throws(classOf[ReefServiceException])
+  def getMeasurementHistory(point: Point, since: Long, limit: Int): java.util.List[Measurement]
+
+  /**
+   * get a subset of the recent measurements for a point. Note that setting the endTime and subscribing is incompatible
+   * and will result in an exception since its dangerous to ask for a fixed time period and also be getting new
+   * measurements since this can lead to missed measurements.
+   * @param since - don't return measurements older than this, inclusive (millis)
+   * @param before - don't return measurements newer than this, inclusive (millis)
+   * @param limit - max number of measurements returned
+   */
+  @throws(classOf[ReefServiceException])
+  def getMeasurementHistory(point: Point, since: Long, before: Long, limit: Int): java.util.List[Measurement]
+
+  /**
+   * get the most recent measurements for a point and setup a subscription for new measurements
+   * @param limit - max number of measurements returned
+   */
+  @throws(classOf[ReefServiceException])
+  def getMeasurementHistory(point: Point, limit: Int, subscription: ISubscription): java.util.List[Measurement]
+
+  /**
+   * get the most recent measurements for a point and setup a subscription for new measurements
+   * @param since - don't return measurements older than this, inclusive (millis)
+   * @param limit - max number of measurements returned
+   */
+  @throws(classOf[ReefServiceException])
+  def getMeasurementHistory(point: Point, since: Long, limit: Int, subscription: ISubscription): java.util.List[Measurement]
 
   /**
    * publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -70,6 +118,7 @@ trait MeasurementService {
    * Preconditions for success:
    *   - the points listed in the measurements all need to exist
    *   - the points must be configured to use an appropriate protocol (benchmark or manual) to maintain message stream
+   *     TODO: implement protocol checking on publishMeasurements
    *   - measurement processors must be available to process the measurement (only question during startup)
    */
   @throws(classOf[ReefServiceException])

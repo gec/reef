@@ -30,15 +30,17 @@
     <menu name="Services">
       <item name="Alarm Query" href="AlarmQuery.html"/>
       <item name="Command" href="Command.html"/>
-      <item name="CommandAccess" href="CommandAccess.html"/>
+      <item name="Command Access" href="CommandAccess.html"/>
       <item name="Config File" href="ConfigFile.html"/>
       <item name="Entity" href="Entity.html"/>
       <item name="Event Config" href="EventConfig.html"/>
       <item name="Event Query" href="EventQuery.html"/>
-      <item name="MeasurementBatch" href="MeasurementBatch.html"/>
-      <item name="MeasurementSnapshot" href="MeasurementSnapshot.html"/>
+      <item name="Measurement Batch" href="MeasurementBatch.html"/>
+      <item name="Measurement Snapshot" href="MeasurementSnapshot.html"/>
+      <item name="Measurement History" href="MeasurementHistory.html"/>
+      <item name="Measurement Override" href="MeasurementOverride.html"/>
       <item name="Point" href="Point.html"/>
-      <item name="UserCommandRequest" href="UserCommandRequest.html"/>
+      <item name="User Command Request" href="UserCommandRequest.html"/>
     </menu>
   </body>
 </project>

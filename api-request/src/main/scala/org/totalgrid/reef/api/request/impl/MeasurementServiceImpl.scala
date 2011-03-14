@@ -24,9 +24,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.api.{ ExpectationException, ISubscription }
 import org.totalgrid.reef.api.ISubscription.convertISubToRequestEnv
-import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, Measurement }
+import org.totalgrid.reef.proto.Measurements.{ Measurement }
 import org.totalgrid.reef.api.request.MeasurementService
-import org.totalgrid.reef.api.request.builders.{ MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
+import org.totalgrid.reef.api.request.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 
@@ -55,18 +55,6 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     checkAndReturn(points, measSnapshot.getMeasurementsList)
   }
 
-  def getMeasurementHistory(point: Point): java.util.List[Measurement] = getMeasurementHistory(point.getName)
-  def getMeasurementHistory(name: String): java.util.List[Measurement] = {
-    val history = ops.getOneOrThrow(MeasurementHistory.newBuilder.setPointName(name))
-    history.getMeasurementsList
-  }
-
-  def getMeasurementHistory(point: Point, sub: ISubscription): java.util.List[Measurement] = getMeasurementHistory(point.getName, sub)
-  def getMeasurementHistory(name: String, sub: ISubscription): java.util.List[Measurement] = {
-    val history = ops.getOneOrThrow(MeasurementHistory.newBuilder.setPointName(name), sub)
-    history.getMeasurementsList
-  }
-
   def publishMeasurements(meases: java.util.List[Measurement]) {
     ops.postOne(MeasurementBatchRequestBuilders.makeBatch(meases))
   }
@@ -83,6 +71,32 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     }
 
     retrievedMeas
+  }
+
+  def getMeasurementHistory(point: Point, limit: Int): java.util.List[Measurement] = {
+    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit))
+    // TODO: default history query should give us the most recent measurements
+    history.getMeasurementsList.reverse
+  }
+
+  def getMeasurementHistory(point: Point, since: Long, limit: Int): java.util.List[Measurement] = {
+    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit))
+    history.getMeasurementsList.reverse
+  }
+
+  def getMeasurementHistory(point: Point, since: Long, before: Long, limit: Int): java.util.List[Measurement] = {
+    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, limit))
+    history.getMeasurementsList.reverse
+  }
+
+  def getMeasurementHistory(point: Point, limit: Int, sub: ISubscription): java.util.List[Measurement] = {
+    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub)
+    history.getMeasurementsList.reverse
+  }
+
+  def getMeasurementHistory(point: Point, since: Long, limit: Int, sub: ISubscription) = {
+    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub)
+    history.getMeasurementsList.reverse
   }
 }
 

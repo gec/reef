@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.builders
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,15 +18,18 @@ package org.totalgrid.reef.api.request.builders
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Measurements.Measurement
+package org.totalgrid.reef.api.request.builders
+
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Processing.MeasOverride
+import org.totalgrid.reef.proto.Measurements.MeasurementHistory
 
-object MeasurementOverrideRequestBuilders {
-  def makeOverride(point: Point, measurement: Measurement) = {
-    MeasOverride.newBuilder.setPoint(point).setMeas(measurement).build
-  }
-  def makeNotInService(point: Point) = MeasOverride.newBuilder.setPoint(point).build
+object MeasurementHistoryRequestBuilders {
+  def getByPoint(point: Point, limit: Int) =
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setAscending(false).build
 
-  def getByPoint(point: Point) = MeasOverride.newBuilder.setPoint(point).build
+  def getByPointSince(point: Point, since: Long, limit: Int) =
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setAscending(false).setStartTime(since).build
+
+  def getByPointBetween(point: Point, since: Long, before: Long, limit: Int) =
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).setEndTime(before).setAscending(false).build
 }
