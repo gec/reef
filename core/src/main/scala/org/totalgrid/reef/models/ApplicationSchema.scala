@@ -345,6 +345,8 @@ class Entity(
 
   val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
 
+  val attributes = LazyVar(from(ApplicationSchema.entityAttributes)(t => where(id === t.entityId) select (t)).toList)
+
   def asType[A <: { val entityId: Long }](table: Table[A], ofType: String) = {
     if (types.value.find(_ == ofType).isEmpty) {
       throw new Exception("entity: " + id + " didnt have type: " + ofType + " but had: " + types)
@@ -389,7 +391,7 @@ class EntityDerivedEdge(
   val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
 
-class EntityAttributes(
+class EntityAttribute(
     val entityId: Long,
     val attrName: String,
     val stringVal: Option[String],
@@ -409,7 +411,7 @@ object ApplicationSchema extends Schema {
   val derivedEdges = table[EntityDerivedEdge]
   val entityTypes = table[EntityToTypeJoins]
 
-  val entityAttributes = table[EntityAttributes]
+  val entityAttributes = table[EntityAttribute]
 
   on(entities)(s => declare(
     //s.id is (indexed), // dont need index on primary keys

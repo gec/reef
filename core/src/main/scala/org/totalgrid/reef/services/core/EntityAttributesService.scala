@@ -22,34 +22,177 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
 
-import org.totalgrid.reef.proto.Model.{ EntityAttributes => AttrProto }
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
+import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.models.{ ApplicationSchema, EntityAttributes => AttrModel }
 import org.totalgrid.reef.api.service.SyncServiceBase
-import org.totalgrid.reef.api.RequestEnv
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.{ BadRequestException, RequestEnv, Envelope }
+import com.google.protobuf.ByteString
+import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
+
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.squeryl.PrimitiveTypeMode._
 
 class EntityAttributesService extends SyncServiceBase[AttrProto] {
-  import org.squeryl.PrimitiveTypeMode._
+  import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes
 
   override def put(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
-    //transaction {
-    // }
-    null
+    if (!req.hasEntity)
+      throw new BadRequestException("Must specify Entity in request.")
+    if (req.getAttributesCount == 0)
+      throw new BadRequestException("Must specify at least one attribute.")
+
+    transaction {
+      val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+
+      val entries = req.getAttributesList.map { attr =>
+        createEntryFromProto(entEntry.id, attr)
+      }
+
+      new Response(Envelope.Status.CREATED, protoFromEntity(entEntry))
+    }
   }
   override def delete(req: AttrProto, env: RequestEnv): Response[AttrProto] = noVerb("delete")
   override def post(req: AttrProto, env: RequestEnv): Response[AttrProto] = noVerb("post")
 
   override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
-    //transaction {
-    //}
-    null
+    if (!req.hasEntity)
+      throw new BadRequestException("Must specify Entity in request.")
+
+    transaction {
+      new Response(Envelope.Status.OK, queryEntities(req.getEntity))
+    }
   }
 
+}
+
+object EntityAttributesService {
+
+  def queryEntities(proto: EntityProto): List[AttrProto] = {
+    val join = if (proto.hasUid && proto.getUid == "*") {
+      allJoin
+    } else if (proto.hasUid) {
+      uidJoin(proto.getUid)
+    } else if (proto.hasName) {
+      nameJoin(proto.getName)
+    } else {
+      throw new BadRequestException("Must search for entities by uid or name.")
+    }
+
+    if (join.isEmpty)
+      throw new BadRequestException("No entities with attributes match request.")
+
+    val pairs = join.groupBy { case (ent, attr) => ent }.toList
+
+    pairs.map {
+      case (ent, tupleList) =>
+        val attrList = tupleList.map(_._2)
+        protoFromEntity(ent, attrList.toList)
+    }
+  }
+
+  def uidJoin(uid: String): List[(Entity, AttrModel)] = {
+    from(ApplicationSchema.entities, ApplicationSchema.entityAttributes)((ent, attr) =>
+      where((ent.id === uid.toLong) and (ent.id === attr.entityId))
+        select ((ent, attr))).toList
+  }
+
+  def nameJoin(name: String): List[(Entity, AttrModel)] = {
+    from(ApplicationSchema.entities, ApplicationSchema.entityAttributes)((ent, attr) =>
+      where((ent.name === name) and (ent.id === attr.entityId))
+        select ((ent, attr))).toList
+  }
+
+  def allJoin: List[(Entity, AttrModel)] = {
+    from(ApplicationSchema.entities, ApplicationSchema.entityAttributes)((ent, attr) =>
+      where(ent.id === attr.entityId)
+        select ((ent, attr))).toList
+  }
+
+  def protoFromEntity(entry: Entity): AttrProto = {
+    AttrProto.newBuilder
+      .setEntity(EQ.entityToProto(entry))
+      .addAllAttributes(entry.attributes.value.map(convertToProto(_)))
+      .build
+  }
+
+  def protoFromEntity(entry: Entity, attrList: List[AttrModel]): AttrProto = {
+    AttrProto.newBuilder
+      .setEntity(EQ.entityToProto(entry))
+      .addAllAttributes(attrList.map(convertToProto(_)))
+      .build
+  }
+
+  def convertToProto(entry: AttrModel) = {
+    val proto = Attribute.newBuilder
+      .setName(entry.attrName)
+
+    entry.boolVal.foreach { v =>
+      proto.setVtype(Attribute.Type.BOOL)
+      proto.setValueBool(v)
+    }
+    entry.stringVal.foreach { v =>
+      proto.setVtype(Attribute.Type.STRING)
+      proto.setValueString(v)
+    }
+    entry.longVal.foreach { v =>
+      proto.setVtype(Attribute.Type.SINT64)
+      proto.setValueSint64(v)
+    }
+    entry.doubleVal.foreach { v =>
+      proto.setVtype(Attribute.Type.DOUBLE)
+      proto.setValueDouble(v)
+    }
+    entry.byteVal.foreach { v =>
+      proto.setVtype(Attribute.Type.BYTES)
+      proto.setValueBytes(ByteString.copyFrom(v))
+    }
+
+    proto.build
+  }
+
+  def createEntryFromProto(entityId: Long, attr: Attribute) = {
+    ApplicationSchema.entityAttributes.insert(convertProtoToEntry(entityId, attr))
+  }
+
+  def convertProtoToEntry(entityId: Long, attr: Attribute) = {
+    val attrName = attr.getName
+    val attrTyp = attr.getVtype
+
+    var stringVal: Option[String] = None
+    var boolVal: Option[Boolean] = None
+    var longVal: Option[Long] = None
+    var doubleVal: Option[Double] = None
+    var byteVal: Option[Array[Byte]] = None
+
+    def typExcept(typ: String) = new BadRequestException("Type " + typ + " specified but no " + typ + " value.")
+
+    attrTyp match {
+      case Attribute.Type.STRING =>
+        val v = attr.valueString getOrElse { throw typExcept("string") }
+        stringVal = Some(v)
+      case Attribute.Type.BOOL =>
+        val v = attr.valueBool getOrElse { throw typExcept("boolean") }
+        boolVal = Some(v)
+      case Attribute.Type.SINT64 =>
+        val v = attr.valueSint64 getOrElse { throw typExcept("long") }
+        longVal = Some(v)
+      case Attribute.Type.DOUBLE =>
+        val v = attr.valueDouble getOrElse { throw typExcept("double") }
+        doubleVal = Some(v)
+      case Attribute.Type.BYTES =>
+        val v = attr.valueBytes getOrElse { throw typExcept("byte array") }
+        byteVal = Some(v.toByteArray)
+    }
+
+    new AttrModel(entityId, attrName, stringVal, boolVal, longVal, doubleVal, byteVal)
+  }
 }
 
 /*
