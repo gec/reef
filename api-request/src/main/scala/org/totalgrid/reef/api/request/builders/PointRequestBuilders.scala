@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.builders
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,15 +20,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+import org.totalgrid.reef.proto.Model.{ Entity, Point }
 
-/**
- * "Super" interface that includes all of the helpers for the individual services. This could be broken down
- * into smaller functionality based sections or not created at all.
- */
-trait AllScadaService
-  extends AuthTokenService
-  with EntityService
-  with ConfigFileService
-  with MeasurementService
+object PointRequestBuilders {
+  def getAll = Point.newBuilder.setUid("*").build
 
+  def getByUid(uid: String): Point = Point.newBuilder.setUid(uid).build
+  def getByUid(point: Point): Point = getByUid(point.getUid)
+
+  def getByName(name: String) = Point.newBuilder.setName(name).build
+
+  def getByEntity(entity: Entity) = Point.newBuilder.setEntity(entity).build
+
+  def getOwnedByEntity(entity: Entity) = {
+    Point.newBuilder.setEntity(entity).build
+  }
+  def getOwnedByEntityWithName(name: String) = {
+    getOwnedByEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(name, "Point"))
+  }
+}

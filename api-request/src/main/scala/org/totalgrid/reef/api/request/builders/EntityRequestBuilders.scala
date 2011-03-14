@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.builders
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,10 +20,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
-
 import org.totalgrid.reef.proto.Model.{ Entity, Relationship }
-import org.totalgrid.reef.api.scalaclient.SyncOperations
+import org.totalgrid.reef.api.request.ReefUUID
 
 object EntityRequestBuilders {
 
@@ -84,18 +84,3 @@ object EntityRequestBuilders {
 }
 
 import scala.collection.JavaConversions._
-
-trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
-  protected val ops: SyncOperations
-
-  def getEntityByUid(uid: ReefUUID): Entity = {
-    ops.getOneOrThrow(EntityRequestBuilders.getByUid(uid))
-  }
-
-  def getEntityByName(name: String): Entity = {
-    ops.getOneOrThrow(EntityRequestBuilders.getByName(name))
-  }
-  def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
-    ops.getOrThrow(EntityRequestBuilders.getByType(typ))
-  }
-}

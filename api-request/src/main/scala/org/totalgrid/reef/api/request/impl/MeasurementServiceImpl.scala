@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,24 +20,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
-
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.api.{ ExpectationException, ISubscription }
 import org.totalgrid.reef.api.ISubscription.convertISubToRequestEnv
-import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, Measurement, MeasurementSnapshot }
-
-object MeasurementSnapshotRequestBuilders {
-  def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build
-  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPointNames(point.getName).build
-
-  def getByNames(names: List[String]): MeasurementSnapshot = getByNames(names: java.util.List[String])
-  def getByNames(names: java.util.List[String]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(names).build
-
-  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(points.map { _.getName }).build
-  def getByPoints(points: java.util.List[Point]): MeasurementSnapshot = getByPoints(points.toList)
-}
+import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, Measurement }
+import org.totalgrid.reef.api.request.MeasurementService
+import org.totalgrid.reef.api.request.builders.{ MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 
@@ -94,3 +85,4 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     retrievedMeas
   }
 }
+

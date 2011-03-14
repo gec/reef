@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.builders
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
-
 import org.totalgrid.reef.proto.Events.{ EventList, EventSelect }
 import org.totalgrid.reef.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
 

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,15 +20,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+import org.totalgrid.reef.api.scalaclient.SyncOperations
 
-/**
- * "Super" interface that includes all of the helpers for the individual services. This could be broken down
- * into smaller functionality based sections or not created at all.
- */
-trait AllScadaService
-  extends AuthTokenService
-  with EntityService
-  with ConfigFileService
-  with MeasurementService
-
+trait ReefServiceBaseClass {
+  protected val ops: SyncOperations
+}

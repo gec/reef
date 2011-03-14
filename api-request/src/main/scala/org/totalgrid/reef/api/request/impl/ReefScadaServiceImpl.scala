@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,13 +20,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+import org.totalgrid.reef.api.javaclient.ISession
+import org.totalgrid.reef.api.request.AllScadaService
 
-import org.totalgrid.reef.proto.Model.Command
-
-object CommandRequestBuilders {
-  def getAll() = Command.newBuilder.setUid("*").build
-
-  def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setEntity(EntityRequestBuilders.getByUid(uid)).build
-  def getByEntityName(name: String) = Command.newBuilder.setEntity(EntityRequestBuilders.getByName(name)).build
+/**
+ * "Super" interface that includes all of the helpers for the individual services. This could be broken down
+ * into smaller functionality based sections or not created at all.
+ */
+class ReefScadaServiceImpl(session: ISession) extends AllScadaService with AllScadaServiceImpl {
+  protected val ops = session.getUnderlyingClient
 }

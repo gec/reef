@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration;
 import org.totalgrid.reef.api.javaclient.ISession;
 
 import org.totalgrid.reef.api.request.AllScadaService;
-import org.totalgrid.reef.api.request.ReefScadaServiceImpl;
+import org.totalgrid.reef.api.request.impl.ReefScadaServiceImpl;
 
 public class AtollService extends ReefScadaServiceImpl implements AllScadaService {
     public AtollService(ISession session) {

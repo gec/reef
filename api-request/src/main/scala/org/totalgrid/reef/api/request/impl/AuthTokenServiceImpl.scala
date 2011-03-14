@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,22 +20,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.api.request.AuthTokenService
+import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
 
-object EventRequestBuilders {
-  def makeNewEventForEntityByName(eventType: String, entityName: String) = {
-    Event.newBuilder.setEventType(eventType).setEntity(EntityRequestBuilders.getByName(entityName)).build
+trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
+
+  def createNewAuthorizationToken(user: String, password: String): String = {
+    val resp = ops.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password))
+    resp.getToken
   }
 
-  def makeNewEventWithAttributes(eventType: String, tuples: Tuple2[String, String]*) = {
-    val attrs = AttributeList.newBuilder()
-    tuples.foreach {
-      case (name, value) =>
-        attrs.addAttribute(Attribute.newBuilder.setName(name).setValueString(value).setVtype(Attribute.Type.STRING))
-    }
-    Event.newBuilder.setEventType(eventType).setArgs(attrs).build
+  def deleteAuthorizationToken(token: String): Boolean = {
+    ops.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token))
+    false
   }
 }
+

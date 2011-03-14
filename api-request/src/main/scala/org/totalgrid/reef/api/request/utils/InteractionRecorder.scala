@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.utils
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
-
 import xml.Node
 import scala.collection.mutable.Queue
 

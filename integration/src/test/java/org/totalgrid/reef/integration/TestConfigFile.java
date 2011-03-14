@@ -22,8 +22,8 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.request.EventConfigRequestBuilders;
-import org.totalgrid.reef.api.request.EventRequestBuilders;
+import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
+import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.proto.Model;
 

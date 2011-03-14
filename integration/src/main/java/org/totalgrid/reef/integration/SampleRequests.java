@@ -25,6 +25,7 @@ import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.api.ReplyException;
 
 import org.totalgrid.reef.api.request.*;
+import org.totalgrid.reef.api.request.builders.*;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Auth.*;
 import org.totalgrid.reef.proto.Commands.*;

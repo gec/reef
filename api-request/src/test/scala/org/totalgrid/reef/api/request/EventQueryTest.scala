@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
+import builders.EventListRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

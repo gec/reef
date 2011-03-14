@@ -24,10 +24,10 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.request.MeasurementBatchRequestBuilders;
-import org.totalgrid.reef.api.request.MeasurementOverrideRequestBuilders;
-import org.totalgrid.reef.api.request.MeasurementRequestBuilders;
-import org.totalgrid.reef.api.request.MeasurementSnapshotRequestBuilders;
+import org.totalgrid.reef.api.request.builders.MeasurementBatchRequestBuilders;
+import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders;
+import org.totalgrid.reef.api.request.builders.MeasurementRequestBuilders;
+import org.totalgrid.reef.api.request.builders.MeasurementSnapshotRequestBuilders;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;

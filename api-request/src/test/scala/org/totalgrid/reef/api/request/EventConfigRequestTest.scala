@@ -21,6 +21,7 @@ package org.totalgrid.reef.api.request
  * under the License.
  */
 
+import builders.{ EventRequestBuilders, EventConfigRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

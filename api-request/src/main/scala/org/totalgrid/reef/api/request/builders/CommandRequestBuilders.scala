@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.builders
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,19 +20,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.api.request.ReefUUID
 
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.proto.Measurements.Quality.Source
+object CommandRequestBuilders {
+  def getAll() = Command.newBuilder.setUid("*").build
 
-object MeasurementRequestBuilders {
-  def makeIntMeasurement(name: String, value: Int, time: Long) = {
-    Measurement.newBuilder.setName(name).setIntVal(value).setType(Measurement.Type.INT)
-      .setTime(time).setQuality(Quality.newBuilder).build
-  }
-
-  def makeSubstituted(m: Measurement) = {
-    val q = m.getQuality.toBuilder.setSource(Source.SUBSTITUTED).setOperatorBlocked(true)
-    m.toBuilder.setQuality(q).build
-  }
+  def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setEntity(EntityRequestBuilders.getByUid(uid)).build
+  def getByEntityName(name: String) = Command.newBuilder.setEntity(EntityRequestBuilders.getByName(name)).build
 }

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.builders
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,24 +20,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.proto.Measurements.Quality.Source
 
-import org.totalgrid.reef.proto.Model.{ Entity, Point }
-
-object PointRequestBuilders {
-  def getAll = Point.newBuilder.setUid("*").build
-
-  def getByUid(uid: String): Point = Point.newBuilder.setUid(uid).build
-  def getByUid(point: Point): Point = getByUid(point.getUid)
-
-  def getByName(name: String) = Point.newBuilder.setName(name).build
-
-  def getByEntity(entity: Entity) = Point.newBuilder.setEntity(entity).build
-
-  def getOwnedByEntity(entity: Entity) = {
-    Point.newBuilder.setEntity(entity).build
+object MeasurementRequestBuilders {
+  def makeIntMeasurement(name: String, value: Int, time: Long) = {
+    Measurement.newBuilder.setName(name).setIntVal(value).setType(Measurement.Type.INT)
+      .setTime(time).setQuality(Quality.newBuilder).build
   }
-  def getOwnedByEntityWithName(name: String) = {
-    getOwnedByEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(name, "Point"))
+
+  def makeSubstituted(m: Measurement) = {
+    val q = m.getQuality.toBuilder.setSource(Source.SUBSTITUTED).setOperatorBlocked(true)
+    m.toBuilder.setQuality(q).build
   }
 }

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,49 +20,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
-
 import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.ExpectationException
+import org.totalgrid.reef.api.request.{ ReefUUID, ConfigFileService }
+import org.totalgrid.reef.api.request.builders.{ EntityRequestBuilders, ConfigFileRequestBuilders }
 
 /**
  * the RequestBuilders objects are used to encapsulate most of the direct proto manipulations and
  * minimize duplication of Builder code.
- */
-object ConfigFileRequestBuilders {
-  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUid(uid.uuid).build
-  def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
-
-  def getByMimeType(mimeType: String) = ConfigFile.newBuilder().setMimeType(mimeType).build
-
-  def getByEntity(entity: Entity) = ConfigFile.newBuilder().addEntities(entity).build
-
-  def getByEntity(entity: Entity, mimeType: String) = {
-    ConfigFile.newBuilder().setMimeType(mimeType).addEntities(entity).build
-  }
-
-  private def makeBasicConfigFile(name: String, mimeType: String, data: Array[Byte]) = {
-    ConfigFile.newBuilder().setName(name).setMimeType(mimeType).setFile(ByteString.copyFrom(data))
-  }
-
-  def makeConfigFile(name: String, mimeType: String, data: Array[Byte]) = {
-    makeBasicConfigFile(name, mimeType, data).build
-  }
-
-  def makeConfigFile(name: String, mimeType: String, data: Array[Byte], entity: Entity) = {
-    makeBasicConfigFile(name, mimeType, data).addEntities(entity).build
-  }
-}
-
-/**
- * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever
- * processing of the results. This will allow us to hide the irregularities in the current service implementation
- * (EventList selectors for instance) and even replace the single request/response type with multiple types without
- * disturbing client code (much). We can also add additional assertions on client behavior here to fail faster and
- * let people fall into the 'pit of the success' more often
  */
 trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService {
 
@@ -116,3 +86,11 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
     ops.deleteOneOrThrow(ConfigFile.newBuilder.setUid(configFile.getUid).build)
   }
 }
+
+/**
+ * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever
+ * processing of the results. This will allow us to hide the irregularities in the current service implementation
+ * (EventList selectors for instance) and even replace the single request/response type with multiple types without
+ * disturbing client code (much). We can also add additional assertions on client behavior here to fail faster and
+ * let people fall into the 'pit of the success' more often
+ */

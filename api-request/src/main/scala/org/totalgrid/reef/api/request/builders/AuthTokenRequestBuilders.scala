@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.request.builders
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,10 +20,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 
-import org.totalgrid.reef.api.scalaclient.SyncOperations
+object AuthTokenRequestBuilders {
+  def requestAuthToken(user: String, password: String) = {
+    AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(user).setPassword(password)).build
+  }
 
-trait ReefServiceBaseClass {
-  protected val ops: SyncOperations
+  def deleteAuthToken(token: String) = {
+    AuthToken.newBuilder.setToken(token).build
+  }
 }
