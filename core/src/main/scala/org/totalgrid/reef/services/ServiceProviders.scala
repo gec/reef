@@ -45,6 +45,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
     new EntityService,
     new EntityEdgeService,
+    new EntityAttributesService,
 
     // we do not lock out people without auth tokens from the authtoken service, otherwise we couldn't bootstrap
     new AuthTokenService(modelFac.authTokens),

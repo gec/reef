@@ -54,7 +54,8 @@ object ReefServiceMap {
     getEntry(Descriptors.command, "command"),
     getEntry(Descriptors.point, "point"),
     getEntry(Descriptors.entity, "entity"),
-    getEntry(Descriptors.entityEdge, "entity_edge"))
+    getEntry(Descriptors.entityEdge, "entity_edge"),
+    getEntry(Descriptors.entityAttributes, "entity_attributes"))
 
   private def getEntry[A, B](descriptor: ITypeDescriptor[A], exchange: String, subClass: Option[ITypeDescriptor[B]] = None, subExchange: Option[String] = None): ServiceList.ServiceTuple = {
     (descriptor.getKlass -> ServiceInfo(
