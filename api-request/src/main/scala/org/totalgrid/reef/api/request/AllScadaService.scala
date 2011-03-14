@@ -26,12 +26,12 @@ import org.totalgrid.reef.api.javaclient.ISession
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-trait AllScadaService extends AuthTokenService with EntityService with ConfigFileService
+trait AllScadaService extends AuthTokenService with EntityService with ConfigFileService with MeasurementService
 
 /**
  * "Super" implementation of the the super interface that includes all of the implementations, again maybe not needed
  */
-trait AllScadaServiceImpl extends AllScadaService with AuthTokenServiceImpl with EntityServiceImpl with ConfigFileServiceImpl
+trait AllScadaServiceImpl extends AllScadaService with AuthTokenServiceImpl with EntityServiceImpl with ConfigFileServiceImpl with MeasurementServiceImpl
 
 /**
  * base class that java clients create to use all of the api helper functionality. Designed to be overloaded so client

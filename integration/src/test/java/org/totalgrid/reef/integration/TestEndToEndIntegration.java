@@ -34,6 +34,8 @@ import org.totalgrid.reef.api.Envelope;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -91,11 +93,11 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 
 		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
-		// make the all points request, w/ subscribe queue set
-		Measurements.MeasurementSnapshot request = MeasurementSnapshotRequestBuilders.getByPoints(SampleRequests.getAllPoints(client));
-		Measurements.MeasurementSnapshot response = client.getOne(request, sub);
+        List<Model.Point> points = SampleRequests.getAllPoints(client);
 
-		assertEquals(request.getPointNamesCount(), response.getMeasurementsCount());
+        List<Measurements.Measurement> response = helpers.getMeasurementsByPoints(points, sub);
+
+        assertEquals(response.size(), points.size());
 
 		// check that at least one measurement has been updated in the queue
 		ServiceTypes.Event<Measurements.Measurement> m = mock.pop(10000);

@@ -44,16 +44,18 @@ class MeasurementSnapshotTest
     val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
 
     client.addExplanation("Get single measurement", "Get the current state of a single measurement.")
-    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(names.head))
+    client.getMeasurementsByNames(names.subList(0, 1))
 
     client.addExplanation("Get multiple measurements", "Get the current state of multiple measurements. Notice that they are all returned wrapped in a single parent object.")
-    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names))
+    client.getMeasurementsByNames(names)
   }
 
   test("Non existant measurement get") {
-    // TODO: MeasurementShapshot should return failure when unknown point requested!
-    client.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
-    client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName("UnknownPoint"))
+
+    intercept[ExpectationException] {
+      client.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
+      client.getMeasurementsByNames("UnknownPoint" :: Nil)
+    }
 
     intercept[ExpectationException] {
       client.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")

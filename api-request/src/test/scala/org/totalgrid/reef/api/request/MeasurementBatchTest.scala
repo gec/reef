@@ -38,13 +38,13 @@ class MeasurementBatchTest
       </div>)
     with ShouldMatchers {
 
-  def putMeas(m: Measurement) = client.putOneOrThrow(MeasurementBatchRequestBuilders.makeBatch(m))
-  def putAll(m: List[Measurement]) = client.putOneOrThrow(MeasurementBatchRequestBuilders.makeBatch(m))
+  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil)
+  def putAll(m: List[Measurement]) = client.publishMeasurements(m)
 
   test("Simple puts") {
     val pointName = "StaticSubstation.Line02.Current"
     // read the current value so we can edit it
-    val original = client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(pointName)).getMeasurementsList.head
+    val original = client.getMeasurementByName(pointName)
 
     client.addExplanation("Put measurement", "Put a single new measurement.")
 
@@ -57,7 +57,7 @@ class MeasurementBatchTest
 
   test("Multi put") {
     val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
-    val originals = client.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names)).getMeasurementsList.toList
+    val originals = client.getMeasurementsByNames(names)
 
     val updated = originals.map { m =>
       if (m.getType == Measurement.Type.DOUBLE)
@@ -65,12 +65,12 @@ class MeasurementBatchTest
       else if (m.getType == Measurement.Type.BOOL)
         m.toBuilder.setBoolVal(!m.getBoolVal).setTime(System.currentTimeMillis).build
       else m.toBuilder.setTime(System.currentTimeMillis).build
-    }
+    }.toList
 
     client.addExplanation("Put multiple measurements", "Put multiple new measurements in a single MeasurementBatch.")
     putAll(updated)
 
-    val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }
+    val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }.toList
     putAll(reverted)
   }
 }
