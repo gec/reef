@@ -47,7 +47,7 @@
                                 </goals>
                                 <configuration>
                                     <serverId>apache mirror</serverId>
-                                    <url>http://www.carfab.com/apachesoftware//karaf/${karafVers}/</url>
+                                    <url>http://apache.opensourceresources.org//karaf/${karafVers}/</url>
                                     <fromFile>apache-karaf-${karafVers}.tar.gz</fromFile>
                                     <toDir>target/temp/</toDir>
                                 </configuration>
@@ -78,7 +78,7 @@
     </profiles>
 
     <properties>
-        <karafVers>2.1.3</karafVers>
+        <karafVers>2.2.0</karafVers>
         <karafName>apache-karaf-${karafVers}</karafName>
         <distName>dist</distName>
         <outputName>${project.artifactId}-${project.version}-${distName}</outputName>

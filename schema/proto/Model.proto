@@ -3,6 +3,7 @@ package org.totalgrid.reef.proto.Model;
 option java_package = "org.totalgrid.reef.proto";
 option java_outer_classname = "Model";
 
+import "Utils.proto";
 
 /*
   Entity
@@ -57,6 +58,12 @@ message EntityEdge {
   optional Entity parent = 2;
   optional Entity child = 3;
   optional string relationship = 4;
+}
+
+
+message EntityAttributes {
+  optional Entity entity = 1;
+  repeated org.totalgrid.reef.proto.Utils.Attribute attributes = 2;
 }
 
 /*
