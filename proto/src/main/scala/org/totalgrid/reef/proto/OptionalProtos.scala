@@ -310,7 +310,7 @@ object OptionalProtos {
     val startTime = optionally(_.hasStartTime, _.getStartTime)
     val endTime = optionally(_.hasEndTime, _.getEndTime)
     val limit = optionally(_.hasLimit, _.getLimit)
-    val ascending = optionally(_.hasAscending, _.getAscending)
+    val keepNewest = optionally(_.hasKeepNewest, _.getKeepNewest)
     val sampling = optionally(_.hasSampling, _.getSampling)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }

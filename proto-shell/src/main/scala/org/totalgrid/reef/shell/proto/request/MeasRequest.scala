@@ -62,7 +62,7 @@ object MeasRequest {
   }
 
   def measHistory(name: String, limit: Int, client: SyncOperations) = {
-    val req = MeasurementHistory.newBuilder.setPointName(name).setLimit(limit).setAscending(false).build
+    val req = MeasurementHistory.newBuilder.setPointName(name).setLimit(limit).build
     val measList = interpretAs("Measurement not found.") {
       client.getOneOrThrow(req).getMeasurementsList.toList
     }

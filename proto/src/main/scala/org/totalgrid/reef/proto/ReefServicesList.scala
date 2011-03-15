@@ -32,7 +32,7 @@ object ReefServiceMap {
     getEntry(Descriptors.measurementProcessingConnection, "meas_proc_assignment"),
 
     getEntry(Descriptors.measurementBatch, "measurement_batch"),
-    getEntry(Descriptors.measurementHistory, "measurement_history"),
+    getEntry(Descriptors.measurementHistory, "measurement_history", Some(Descriptors.measurement), Some("measurement")),
     getEntry(Descriptors.measurementSnapshot, "measurement_snapshot", Some(Descriptors.measurement), Some("measurement")),
     getEntry(Descriptors.measOverride, "meas_override"),
     getEntry(Descriptors.triggerSet, "trigger_set"),

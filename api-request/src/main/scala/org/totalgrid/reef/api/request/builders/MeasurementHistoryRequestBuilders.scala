@@ -25,11 +25,11 @@ import org.totalgrid.reef.proto.Measurements.MeasurementHistory
 
 object MeasurementHistoryRequestBuilders {
   def getByPoint(point: Point, limit: Int) =
-    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setAscending(false).build
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).build
 
   def getByPointSince(point: Point, since: Long, limit: Int) =
-    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setAscending(false).setStartTime(since).build
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).build
 
   def getByPointBetween(point: Point, since: Long, before: Long, limit: Int) =
-    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).setEndTime(before).setAscending(false).build
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).setEndTime(before).build
 }

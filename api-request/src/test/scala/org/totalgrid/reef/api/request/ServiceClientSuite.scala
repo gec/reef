@@ -63,7 +63,9 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
   lazy val client = connect
 
   def connect = {
-    val client = new ProtoClient(factory, ReefServicesList, 5000)
+    val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder {
+      val ops = this
+    }
 
     val agent = Agent.newBuilder.setName("core").setPassword("core").build
     val request = AuthToken.newBuilder.setAgent(agent).build
@@ -71,9 +73,7 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
 
     client.getDefaultHeaders.addAuthToken(response.getToken)
 
-    new InteractionRecorder(client) with AllScadaServiceImpl {
-      val ops = this
-    }
+    client
   }
 }
 

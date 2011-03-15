@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.SyncServiceBase
-
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 
@@ -31,8 +29,12 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException }
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
-class MeasurementHistoryService(cm: Historian) extends SyncServiceBase[MeasurementHistory] {
+class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementHistory] {
+
+  def this(cm: Historian, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementHistory]))
+
   val HISTORY_LIMIT = 10000
 
   override val descriptor = Descriptors.measurementHistory
@@ -43,10 +45,9 @@ class MeasurementHistoryService(cm: Historian) extends SyncServiceBase[Measureme
 
   override def get(req: MeasurementHistory, env: RequestEnv): Response[MeasurementHistory] = {
 
-    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
-
     val pointName = req.getPointName()
-    val ascending = req.getAscending()
+
+    val keepNewest = req.getKeepNewest()
     val begin = req.getStartTime()
     val end = if (req.getEndTime() == 0) Long.MaxValue else req.getEndTime()
     val limit = if (req.getSampling() == MeasurementHistory.Sampling.NONE) {
@@ -55,13 +56,27 @@ class MeasurementHistoryService(cm: Historian) extends SyncServiceBase[Measureme
       HISTORY_LIMIT
     }
 
-    var history = cm.getInRange(pointName, begin, end, limit, ascending)
+    if (limit > HISTORY_LIMIT)
+      throw new BadRequestException("Maximum number of measurements available through this interface is " + HISTORY_LIMIT + ". Reduce limit parameter.")
+
+    env.subQueue.foreach { subQueue =>
+      if (req.hasEndTime) throw new BadRequestException("Cannot subscribe to measurement when endTime has been set.")
+      if (req.hasSampling && req.getSampling != MeasurementHistory.Sampling.NONE)
+        throw new BadRequestException("Cannot subscribe to \"sampled\" data stream, leave sampling field blank or NONE")
+      subHandler.bind(subQueue, pointName)
+    }
+
+    // read values out of the historian
+    var history = cm.getInRange(pointName, begin, end, limit, !keepNewest)
 
     req.getSampling() match {
       case MeasurementHistory.Sampling.NONE =>
       case MeasurementHistory.Sampling.EXTREMES =>
         history = sampleExtremes(history)
     }
+
+    // we need to flip the data, since we always return the data in ascending order
+    history = if (keepNewest) history.reverse else history
 
     val b = MeasurementHistory.newBuilder(req)
     history.foreach { m => b.addMeasurements(m) }
