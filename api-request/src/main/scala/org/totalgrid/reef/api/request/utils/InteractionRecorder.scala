@@ -33,7 +33,7 @@ import org.totalgrid.reef.api.scalaclient.{ DefaultHeaders, SyncOperations }
  * the lowest level operation in this class (request) we get to see the result before any exception throwing would
  * occur therefore the output is just as useful in the failure cases (expected and unexpected)
  */
-class InteractionRecorder(sync: SyncOperations) extends SyncOperations with DefaultHeaders {
+trait InteractionRecorder extends SyncOperations { self: DefaultHeaders =>
 
   // list of explanations for the upcoming requests
   private val explanations = new Queue[Documenter.CaseExplanation]
@@ -65,15 +65,15 @@ class InteractionRecorder(sync: SyncOperations) extends SyncOperations with Defa
    * implementation of SyncOperations base function that uses the passed in "real" client to create collect interactions
    * for later formatting to file
    */
-  def request[A <: AnyRef](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = {
+  abstract override def request[A <: AnyRef](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = {
 
     if (explanations.nonEmpty) {
-      val results = sync.request(verb, request, env)
+      val results = super.request(verb, request, env)
       explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, results)
       results
     } else {
       // if we're not going to document it just run the request natively
-      sync.request(verb, request, env)
+      super.request(verb, request, env)
     }
   }
 }
