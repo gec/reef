@@ -46,7 +46,7 @@ object OverrideProcessor {
   }
 }
 
-class OverrideProcessor(publish: Measurement => Unit, cache: ObjectCache[Measurement], current: String => Option[Measurement])
+class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCache[Measurement], current: String => Option[Measurement])
     extends MeasProcServiceContext[MeasOverride] with MetricsHooks with Logging {
 
   import OverrideProcessor._
@@ -62,7 +62,7 @@ class OverrideProcessor(publish: Measurement => Unit, cache: ObjectCache[Measure
     if (map.contains(m.getName)) {
       measSupressed(1)
       cache.put(m.getName, m)
-    } else publish(m)
+    } else publish(m, false)
   }
   /* --- Implement service context ---- */
   def add(over: MeasOverride) {
@@ -78,14 +78,14 @@ class OverrideProcessor(publish: Measurement => Unit, cache: ObjectCache[Measure
       case (false, None) => {
         val curr = cacheCurrent(name) getOrElse { throw new Exception("No current value associated with NIS point: " + over) }
         map += (name -> None)
-        publish(transformNIS(curr))
+        publish(transformNIS(curr), true)
       }
 
       // new NIS request, replace specified
       case (false, Some(repl)) => {
         cacheCurrent(name) /*getOrElse { throw new Exception("No current value associated with NIS point: " + over) }*/
         map += (name -> replaceMeas)
-        publish(transformSubstituted(repl))
+        publish(transformSubstituted(repl), true)
       }
 
       // point already NIS, no replace specified
@@ -94,7 +94,7 @@ class OverrideProcessor(publish: Measurement => Unit, cache: ObjectCache[Measure
       // point already NIS, replace specified, treat as simple replace
       case (true, Some(repl)) => {
         map += (name -> replaceMeas)
-        publish(transformSubstituted(repl))
+        publish(transformSubstituted(repl), true)
       }
     }
 
@@ -111,7 +111,7 @@ class OverrideProcessor(publish: Measurement => Unit, cache: ObjectCache[Measure
     cache.get(name) match {
       case None => overridenCacheMiss(1)
       case Some(cached) => {
-        publish(cached)
+        publish(cached, true)
         cache.delete(name)
       }
     }

@@ -89,18 +89,25 @@ class MeasurementProcessor(
   // function that builds the list and publishes to the bus
   def pubMeas(m: Measurement) = {
     list = m :: list
-    publish(m)
   }
 
   // flushes the list to the measurement cache
   def flushCache() = {
-    val publist = list.reverse.map { m => KeyValue(m.getName, m) }
+    val revlist = list.reverse
+    val publist = revlist.map { m => KeyValue(m.getName, m) }
     list = Nil
     measCache.put(publist)
+    revlist.foreach(publish(_))
+  }
+
+  def overrideFlush(m: Measurement, flushNow: Boolean) {
+    // if we get an override add/remove we need to flush the messages after we do any trigger processing
+    triggerProc.process(m)
+    if (flushNow) flushCache()
   }
 
   val triggerProc = new processing.TriggerProcessor(pubMeas, triggerFactory, stateCache)
-  val overProc = new processing.OverrideProcessor(triggerProc.process, overCache, measCache.get)
+  val overProc = new processing.OverrideProcessor(overrideFlush, overCache, measCache.get)
 
   val processor = new BasicProcessingNode(overProc.process, flushCache)
   addHookedObject(processor :: overProc :: triggerProc :: Nil)

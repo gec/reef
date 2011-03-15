@@ -49,6 +49,9 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         // use a point we know will be static
         String pointName = "StaticSubstation.Line02.Current";
         Point p = Point.newBuilder().setName(pointName).build();
+
+        Measurement originalValue = helpers.getMeasurementByPoint(p);
+
 		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>(true);
 		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 
@@ -64,22 +67,28 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 			assertEquals(rsp.getMeasurementsCount(), 1);
 		}
 
+        long now = System.currentTimeMillis();
+
         // create an override
-		Measurement m = MeasurementRequestBuilders.makeIntMeasurement(pointName, 11111, 12345);
+		Measurement m = MeasurementRequestBuilders.makeIntMeasurement(pointName, 11111, now);
 		MeasOverride ovrRequest = MeasurementOverrideRequestBuilders.makeOverride(p, m);
 		MeasOverride override = client.putOne(ovrRequest);
 
         // make sure we see it in the event stream
         assertTrue(mock.waitFor(MeasurementRequestBuilders.makeSubstituted(m), 5000));
 
+        // verify that substitued value got to measurement database
+        Measurement stored = helpers.getMeasurementByPoint(p);
+        assertEquals(MeasurementRequestBuilders.makeSubstituted(m), stored);
+
         // if we now try to put a measurement it should be suppressed (b/c we have overridden it)
-        Measurement suppressedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 22222, 22222);
+        Measurement suppressedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 22222, now + 1);
         MeasurementBatch mb = MeasurementBatchRequestBuilders.makeBatch(suppressedValue);
         client.putOne(mb);
 
         // we store the most recently reported value in a cache so if we publish a value
         // while it is overridden and then take off the override we should see the cached value published
-        Measurement cachedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 33333, 33333);
+        Measurement cachedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 33333, now + 2);
         MeasurementBatch mb2 = MeasurementBatchRequestBuilders.makeBatch(cachedValue);
         client.putOne(mb2);
 
@@ -87,9 +96,13 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 		client.deleteOne(override);
 
         // publish a final measurement we expect to see on the subscription channel
-        Measurement finalValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 44444, 44444);
+        Measurement finalValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 44444, now + 3);
         MeasurementBatch mb3 = MeasurementBatchRequestBuilders.makeBatch(finalValue);
         client.putOne(mb3);
+
+        // verify that last value got to measurement database
+        Measurement lastValue = helpers.getMeasurementByPoint(p);
+        assertEquals(finalValue, lastValue);
 
         // verify that we get that final value
         assertTrue(mock.waitFor(finalValue, 5000));
@@ -98,5 +111,8 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         List<Measurement> measurements = mock.getPayloads();
         assertTrue(measurements.contains(cachedValue));
         assertFalse(measurements.contains(suppressedValue));
+
+        // put the original value back in
+        client.putOne(MeasurementBatchRequestBuilders.makeBatch(originalValue));
 	}
 }
