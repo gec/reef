@@ -205,8 +205,8 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividua
         from(SqlMeasurementStoreSchema.updates, SqlMeasurementStoreSchema.names)(
           (u, n) => where((u.pointId === n.id) and (n.name === meas_name) and (u.measTime gte begin.?) and (u.measTime lte end.?))
             select (u)
-            orderBy (timeOrder(u.measTime, ascending), timeOrder(u.id, ascending)) // we sort by id to keep insertion order
-).page(0, max).toList //
+            // we sort by id to keep insertion order
+            orderBy (timeOrder(u.measTime, ascending), timeOrder(u.id, ascending))).page(0, max).toList
       }
       val list = meases.map(m => Meas.parseFrom(m.proto))
       Some(list)
