@@ -37,6 +37,8 @@ import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.models.{ EntityAttribute, ApplicationSchema, RunTestsInsideTransaction }
 import com.google.protobuf.ByteString
 
+import scala.collection.JavaConversions._
+
 @RunWith(classOf[JUnitRunner])
 class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
 
@@ -59,7 +61,7 @@ class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with Befo
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
-    val result = one(Status.CREATED, service.put(entAttr))
+    val result = one(Status.OK, service.put(entAttr))
     result.getAttributesCount should equal(1)
   }
 
@@ -69,11 +71,11 @@ class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with Befo
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.addAttributes(attribute).build))
   }
 
-  test("Bad put - no attributes") {
+  /*test("Bad put - no attributes") {
     val entity = Entity.newBuilder.setUid("fake").build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).build))
-  }
+  }*/
 
   test("Bad put - entity doesn't exist") {
     val entity = Entity.newBuilder.setUid("0").build
@@ -102,6 +104,52 @@ class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with Befo
       ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
       id.toString
     }
+  }
+
+  def attrReq(entityUid: String, attributes: List[Attribute]) = {
+    val entity = Entity.newBuilder.setUid(entityUid).build
+    EntityAttributes.newBuilder.setEntity(entity).addAllAttributes(attributes.toList).build
+  }
+
+  test("Second put modifies") {
+    val entUid = transaction {
+      seedEntity("ent01", "entType")
+    }
+
+    val entity = Entity.newBuilder.setUid(entUid).build
+    val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
+    val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
+
+    val result = one(Status.OK, service.put(entAttr))
+    result.getAttributesCount should equal(1)
+    val attr = result.getAttributesList.get(0)
+    attr.getValueSint64 should equal(56)
+
+    val result2 = one(Status.OK, service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute.toBuilder.setValueSint64(23)).build))
+
+    result2.getAttributesCount should equal(1)
+    result2.getAttributesList.get(0).getValueSint64 should equal(23)
+  }
+
+  test("Put fully replaces") {
+    val entUid = transaction {
+      seedEntity("ent01", "entType")
+    }
+
+    val initial = Attribute.newBuilder.setName("testAttr01").setVtype(Attribute.Type.SINT64).setValueSint64(56).build ::
+      Attribute.newBuilder.setName("testAttr02").setVtype(Attribute.Type.SINT64).setValueSint64(23).build ::
+      Nil
+
+    val entAttr = attrReq(entUid, initial)
+
+    val result = one(Status.OK, service.put(entAttr))
+    result.getAttributesCount should equal(2)
+
+    val req2 = attrReq(entUid, List(Attribute.newBuilder.setName("testAttr03").setVtype(Attribute.Type.SINT64).setValueSint64(400).build))
+    val result2 = one(Status.OK, service.put(req2))
+
+    result2.getAttributesCount should equal(1)
+    result2.getAttributesList.get(0).getName should equal("testAttr03")
   }
 
   def checkSimpleGetScenario(request: EntityAttributes) = {
@@ -172,7 +220,7 @@ class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with Befo
     setup(attribute, v)
 
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
-    one(Status.CREATED, service.put(entAttr))
+    one(Status.OK, service.put(entAttr))
 
     val result = one(Status.OK, service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(entUid)).build))
 
@@ -200,6 +248,39 @@ class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with Befo
       Attribute.Type.BYTES,
       (b, v) => b.setValueBytes(ByteString.copyFrom(v)),
       b => b.getValueBytes.toByteArray)
+  }
+
+  test("Delete") {
+    val entId = deleteScenario
+
+    val resp = one(Status.OK, service.delete(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(entId.toString)).build))
+    resp.getAttributesCount should equal(0)
+
+    noneForEntity(entId)
+  }
+
+  test("Put no attributes is delete") {
+    val entId = deleteScenario
+
+    val resp = one(Status.OK, service.put(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(entId.toString)).build))
+    resp.getAttributesCount should equal(0)
+
+    noneForEntity(entId)
+  }
+
+  def deleteScenario = {
+    transaction {
+      val entId1 = EQ.addEntity("ent01", "entType1").id
+      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
+      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
+      entId1
+    }
+  }
+
+  def noneForEntity(entId: Long) = {
+    transaction {
+      ApplicationSchema.entityAttributes.where(t => t.entityId === entId).toList should equal(Nil)
+    }
   }
 
 }

@@ -45,20 +45,34 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
   override def put(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
-    if (req.getAttributesCount == 0)
-      throw new BadRequestException("Must specify at least one attribute.")
+    /*if (req.getAttributesCount == 0)
+      throw new BadRequestException("Must specify at least one attribute.")*/
 
     transaction {
       val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+
+      deleteAllFromEntity(entEntry.id)
 
       val entries = req.getAttributesList.map { attr =>
         createEntryFromProto(entEntry.id, attr)
       }
 
-      new Response(Envelope.Status.CREATED, protoFromEntity(entEntry))
+      new Response(Envelope.Status.OK, protoFromEntity(entEntry))
     }
   }
-  override def delete(req: AttrProto, env: RequestEnv): Response[AttrProto] = noVerb("delete")
+
+  override def delete(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+    if (!req.hasEntity)
+      throw new BadRequestException("Must specify Entity in request.")
+
+    transaction {
+      val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+      deleteAllFromEntity(entEntry.id)
+
+      new Response(Envelope.Status.OK, protoFromEntity(entEntry, Nil))
+    }
+  }
+
   override def post(req: AttrProto, env: RequestEnv): Response[AttrProto] = noVerb("post")
 
   override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
@@ -73,6 +87,10 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
 }
 
 object EntityAttributesService {
+
+  def deleteAllFromEntity(entId: Long) = {
+    ApplicationSchema.entityAttributes.deleteWhere(t => t.entityId === entId)
+  }
 
   def queryEntities(proto: EntityProto): List[AttrProto] = {
     val join = if (proto.hasUid && proto.getUid == "*") {
@@ -195,53 +213,3 @@ object EntityAttributesService {
   }
 }
 
-/*
-class EntityAttributesServiceModel(protected val subHandler: ServiceSubscriptionHandler)
-    extends SquerylServiceModel[AttrProto, AttrModel]
-    with EventedServiceModel[AttrProto, AttrModel]
-    with EntityAttributesConversion {
-
-  val table = ApplicationSchema.entityAttributes
-
-}
-
-
-trait EntityAttributesConversion
-    extends MessageModelConversion[AttrProto, AttrModel]
-    with UniqueAndSearchQueryable[AttrProto, AttrModel] {
-
-  import org.squeryl.PrimitiveTypeMode._
-  import org.totalgrid.reef.proto.OptionalProtos._
-  import SquerylModel._ // Implicit squeryl list -> query conversion
-
-  def getRoutingKey(req: AttrProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.entity.uid :: Nil
-  }
-
-  def uniqueQuery(proto: AttrProto, sql: AttrModel) = {
-    null
-  }
-
-  def searchQuery(proto: AttrProto, sql: AttrModel) = {
-    null
-
-  }
-
-  private def findAccessesByCommandNames(names: List[String]) = {
-    null
-
-  }
-
-  def createModelEntry(proto: AttrProto): AttrModel = {
-    null
-
-  }
-
-  def isModified(entry: AttrModel, existing: AttrModel): Boolean = {
-    false
-  }
-
-  def convertToProto(entry: AttrModel): AttrProto = {
-    null
-  }
-}*/ 
