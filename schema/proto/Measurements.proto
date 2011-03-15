@@ -99,12 +99,15 @@ message MeasurementHistory{
     optional uint64      start_time   = 2 [default = 0];
     optional uint64      end_time     = 3 [default = 0];
     optional uint32      limit        = 4 [default = 0];
-    optional bool        ascending    = 5 [default = true];
+    // if the limit stops us from getting all measurements we will keep
+    // the newest measurements instead of the oldest ones.
+    optional bool        keep_newest  = 5 [default = true]; 
     enum Sampling{
       NONE = 0;
       EXTREMES = 1;
     }
     optional Sampling    sampling     = 6 [default = NONE];
     
+    // measurements are always returned in ascending time order (oldest first)
     repeated Measurement measurements = 7;
 }
