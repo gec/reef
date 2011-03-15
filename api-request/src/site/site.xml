@@ -33,6 +33,7 @@
       <item name="Command Access" href="CommandAccess.html"/>
       <item name="Config File" href="ConfigFile.html"/>
       <item name="Entity" href="Entity.html"/>
+      <item name="Entity Attributes" href="EntityAttributes.html"/>
       <item name="Event Config" href="EventConfig.html"/>
       <item name="Event Query" href="EventQuery.html"/>
       <item name="Measurement Batch" href="MeasurementBatch.html"/>

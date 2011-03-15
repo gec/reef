@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+package org.totalgrid.reef.api.request.builders
 
 import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 import org.totalgrid.reef.proto.Utils.Attribute
@@ -40,4 +40,5 @@ object EntityAttributesBuilders {
   def putAttributesToEntityName(name: String, attributes: java.util.List[Attribute]) = {
     EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setName(name)).addAllAttributes(attributes).build
   }
+
 }
