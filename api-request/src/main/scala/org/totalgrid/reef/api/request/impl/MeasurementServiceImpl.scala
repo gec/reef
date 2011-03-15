@@ -75,28 +75,27 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
 
   def getMeasurementHistory(point: Point, limit: Int): java.util.List[Measurement] = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit))
-    // TODO: default history query should give us the most recent measurements
-    history.getMeasurementsList.reverse
+    history.getMeasurementsList
   }
 
   def getMeasurementHistory(point: Point, since: Long, limit: Int): java.util.List[Measurement] = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit))
-    history.getMeasurementsList.reverse
+    history.getMeasurementsList
   }
 
   def getMeasurementHistory(point: Point, since: Long, before: Long, limit: Int): java.util.List[Measurement] = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, limit))
-    history.getMeasurementsList.reverse
+    history.getMeasurementsList
   }
 
   def getMeasurementHistory(point: Point, limit: Int, sub: ISubscription): java.util.List[Measurement] = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub)
-    history.getMeasurementsList.reverse
+    history.getMeasurementsList
   }
 
   def getMeasurementHistory(point: Point, since: Long, limit: Int, sub: ISubscription) = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub)
-    history.getMeasurementsList.reverse
+    history.getMeasurementsList
   }
 }
 
