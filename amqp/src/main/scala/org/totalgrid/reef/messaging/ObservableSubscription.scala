@@ -28,13 +28,15 @@ trait ObservableConnection {
 
   var queue: Option[String]
 
-  def observeConnection(o: ConnObserver) = {
+  def observeConnection(o: ConnObserver) = this.synchronized {
     o(queue.isDefined)
-    observers = o :: observers
+    connObservers = o :: connObservers
   }
 
-  private var observers: List[ConnObserver] = Nil
-  protected def onConnectEvent(online: Boolean) = observers.foreach(f => f(online))
+  private var connObservers: List[ConnObserver] = Nil
+  protected def onConnectEvent(online: Boolean) = this.synchronized {
+    connObservers.foreach(f => f(online))
+  }
 
 }
 
@@ -46,19 +48,20 @@ trait ObservableSubscription {
 
   var queue: Option[String]
 
-  def observe(o: Observer) = {
+  def observe(o: Observer) = this.synchronized {
     o(queue.isDefined, queue.getOrElse(""))
     observers = o :: observers
   }
 
   //variation of observe that only cares about the online state
-  def resubscribe(resubscribe: String => Unit) = {
-    if (queue.isDefined) resubscribe(queue.get)
-    observe((online, queue) => if (online) resubscribe(queue))
+  def resubscribe(resubFunction: String => Unit) = {
+    observe((online, queue) => if (online) resubFunction(queue))
   }
 
   private var observers: List[Observer] = Nil
-  protected def onChange(online: Boolean, queue: String) = observers.foreach(f => f(online, queue))
+  protected def onChange(online: Boolean, queue: String) = this.synchronized {
+    observers.foreach(f => f(online, queue))
+  }
 
 }
 
