@@ -18,27 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
+package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.javaclient.IResult
-import org.totalgrid.reef.api.ServiceTypes._
-import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.ServiceTypes.Response
+import com.google.protobuf.ByteString
 
-class Result[A](result: MultiResult[A]) extends IResult[A] {
+trait ServiceHelpers[A] {
+  self: ServiceDescriptor[A] =>
 
-  def isSuccess = result match {
-    case MultiSuccess(status, x) => true
-    case _ => false
+  def getResponse(id: String, rsp: Response[A]): Envelope.ServiceResponse = {
+    val ret = Envelope.ServiceResponse.newBuilder.setId(id)
+    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
+    rsp.result.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
+    ret.build()
   }
 
-  def getResult: java.util.List[A] = result match {
-    case MultiSuccess(status, x) => x
-    case x: Failure => throw x.toException
-  }
-
-  def getFailure: Failure = result match {
-    case x: Failure => x
-    case _ => throw new Exception("Success cannot be interpreted as failure")
-  }
+  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, Response(status, errorMsg, Nil))
 
 }

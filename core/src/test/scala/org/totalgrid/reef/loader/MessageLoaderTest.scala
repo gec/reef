@@ -35,6 +35,7 @@ import org.totalgrid.reef.proto.Alarms._
 
 import org.totalgrid.reef.api.scalaclient.MockSyncOperations
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
@@ -48,7 +49,7 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
    */
   def withFixture(test: OneArgTest) = {
 
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(List[GeneratedMessage]()))
+    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
     val config = new sx.Configuration("1.0")
 
     test(Fixture(client, config))

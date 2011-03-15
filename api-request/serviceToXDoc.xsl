@@ -74,7 +74,10 @@
     </xsl:template>
 
     <xsl:template match="response">
-        <subsection name="Response">
+        <subsection>
+            <xsl:attribute name="name">
+                Response (<xsl:value-of select="@status"/>)  <xsl:value-of select="@error"/>
+            </xsl:attribute>
             <xsl:attribute name="class">response</xsl:attribute>
             <xsl:apply-templates select="message"/>
         </subsection>

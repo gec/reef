@@ -20,23 +20,21 @@
  */
 package org.totalgrid.reef.messaging.qpid
 
-import org.totalgrid.reef.api.{ Envelope }
+import scala.collection.JavaConversions._
+
+import org.totalgrid.reef.messaging.mock._
+import org.totalgrid.reef.messaging.{ TestDescriptors, BrokerConnectionInfo, HeadersX2 }
+import org.totalgrid.reef.util.Conversion.convertIntToTimes
+
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.service.IServiceResponseCallback
+
+import scala.concurrent.MailBox
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._
-
-import scala.concurrent.MailBox
-
-import org.totalgrid.reef.messaging.mock._
-
-import org.totalgrid.reef.messaging.{ TestDescriptors, BrokerConnectionInfo, HeadersX2 }
-
-import org.totalgrid.reef.util.Conversion.convertIntToTimes
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.ServiceTypes.Response
 
 @RunWith(classOf[JUnitRunner])
 class QpidIntegrationTest extends FunSuite with ShouldMatchers {
@@ -56,12 +54,12 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   // This is a functionally defined service that just echos the payload back 3x with an OK status
-  def x3Service(request: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
+  def x3Service(request: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)
     3.times { rsp.addPayload(request.getPayload) }
-    rsp.build
+    callback.onResponse(rsp.build)
   }
 
   // same service except that it only responds to get, and only works with validated type Foo
@@ -72,7 +70,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run { amqp =>
 
-      amqp.bindService(exchange, x3Service _) // listen for service requests with the echo service
+      amqp.bindService(exchange, x3Service) // listen for service requests with the echo service
 
       val serviceSend = amqp.getProtoServiceClient(servicelist, 1000)
 
@@ -124,12 +122,12 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def respondWithServiceName(serviceNum: Long, request: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
+  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)
     rsp.addPayload(Envelope.RequestHeader.newBuilder.setKey("test").setValue(serviceNum.toString).build.toByteString)
-    rsp.build
+    callback.onResponse(rsp.build)
   }
 
   test("Competing Consumers") {
@@ -140,7 +138,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
       var counts = scala.collection.mutable.Map.empty[Long, Int]
 
       for (i <- 1 to services) yield {
-        amqp.bindService(exchange, respondWithServiceName(i, _, _), true)
+        amqp.bindService(exchange, respondWithServiceName(i), true)
         counts(i) = 0
       }
 

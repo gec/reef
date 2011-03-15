@@ -20,19 +20,19 @@
  */
 package org.totalgrid.reef.services
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-
 import org.totalgrid.reef.reactor.Lifecycle
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.api.service.{ NoOpService, IServiceAsync }
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.proto.{ ReefServicesList }
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ITypeDescriptor }
+
+import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
@@ -45,18 +45,9 @@ class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAf
 
     def addLifecycleObject(obj: Lifecycle) {}
 
-    def attachService(endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+    def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
       ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass) //call just so an exception will be thrown if it doesn't exist
-      new ServiceDescriptor[Any] {
-        def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse =
-          Envelope.ServiceResponse.getDefaultInstance
-
-        override val descriptor = new ITypeDescriptor[Any] {
-          def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
-          def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
-          def getKlass: Class[Any] = throw new Exception("unimplemented")
-        }
-      }
+      new NoOpService
     }
   }
 

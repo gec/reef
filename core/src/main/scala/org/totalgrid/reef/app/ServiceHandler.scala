@@ -59,7 +59,7 @@ trait ServiceHandler extends Logging {
           Timer.delay(retryMS) {
             subscribe(client, queue, searchObj, retryMS, subHandler) //defined recursively
           }
-        case MultiSuccess(list) =>
+        case MultiSuccess(status, list) =>
           execute(subHandler(list))
       }
     }

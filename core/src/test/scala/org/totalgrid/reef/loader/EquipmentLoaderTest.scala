@@ -34,6 +34,7 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.scalaclient.MockSyncOperations
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
@@ -48,7 +49,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(List[GeneratedMessage]()))
+    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
     val model = new EquipmentModel
     val loader = new EquipmentLoader(client, new LoadCache().loadCacheEqu)
 

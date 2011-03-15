@@ -47,9 +47,9 @@ object ServiceTypes {
 
   trait SingleResult[+A]
 
-  case class SingleSuccess[A](result: A) extends SingleResult[A]
+  case class SingleSuccess[A](status: Envelope.Status, result: A) extends SingleResult[A]
 
-  case class MultiSuccess[A](result: List[A]) extends MultiResult[A]
+  case class MultiSuccess[A](status: Envelope.Status, result: List[A]) extends MultiResult[A]
 
   case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
     override def toString: String = super.toString + " " + status + " message: " + error

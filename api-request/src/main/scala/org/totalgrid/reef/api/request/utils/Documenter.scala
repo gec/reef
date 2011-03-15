@@ -75,9 +75,8 @@ object Documenter {
         results match {
           case ServiceTypes.Failure(code, string) =>
             getErrorResponse(string, code)
-          case ServiceTypes.MultiSuccess(responses) =>
-            // TODO: get response code into Multi/SingleSuccess
-            getResponse(Envelope.Status.OK, responses)
+          case ServiceTypes.MultiSuccess(status, responses) =>
+            getResponse(status, responses)
         }
       }
     </case>

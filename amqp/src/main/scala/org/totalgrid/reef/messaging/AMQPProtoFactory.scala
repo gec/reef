@@ -26,6 +26,7 @@ import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 
 import org.totalgrid.reef.api.ServiceTypes._
 import org.totalgrid.reef.api.{ Envelope, ISubscription }
+import org.totalgrid.reef.api.service.IServiceAsync
 
 /** Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
  *  
@@ -145,8 +146,8 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
   /**
    * bind an AddressableService service handler to the named exchange with default routing key ("request") making it a "well known service"
    */
-  def bindService(exchange: String, handlerFun: ServiceRequestHandler.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
-    bindAddressableService(exchange, "request", handlerFun, competing, reactor)
+  def bindService(exchange: String, service: IServiceAsync.ServiceFunction, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+    bindAddressableService(exchange, "request", service, competing, reactor)
   }
 
   /**
@@ -157,9 +158,9 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message) 
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindAddressableService(exchange: String, key: String, handlerFun: ServiceRequestHandler.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  def bindAddressableService(exchange: String, key: String, service: IServiceAsync.ServiceFunction, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     val pub = broadcast[Envelope.ServiceResponse]()
-    val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, handlerFun), reactor)
+    val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
 
     if (competing) add(new AMQPCompetingConsumer(exchange, exchange + "_server", key, binding))
     else add(new AMQPExclusiveConsumer(exchange, key, binding))

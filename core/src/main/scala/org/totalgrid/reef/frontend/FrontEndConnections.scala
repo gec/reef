@@ -21,7 +21,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.{ Commands, Measurements }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto }
 import org.totalgrid.reef.messaging.ProtoRegistry
 import org.totalgrid.reef.api.scalaclient.ServiceClient
 
@@ -29,11 +29,11 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.app.ServiceHandler
 
-import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler }
 import org.totalgrid.reef.api.Envelope
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler: ServiceHandler) extends KeyedMap[ConnProto] {
+class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handler: ServiceHandler) extends KeyedMap[ConnProto] {
 
   def getKey(c: ConnProto) = c.getUid
 
@@ -41,7 +41,7 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
 
   val maxAttemptsToRetryMeasurements = 1
 
-  private def getProtocol(name: String): Protocol = protocols.get(name) match {
+  private def getProtocol(name: String): IProtocol = protocols.get(name) match {
     case Some(p) => p
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
@@ -57,21 +57,18 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getPort
 
-    // addressable client for the measurement stream
-    val measClient = registry.getServiceClient(c.getRouting.getServiceRoutingKey)
-
-    // extra client to break circular client -> handler -> issuer -> client chain
-    val cmdClient = registry.getServiceClient()
+    val publisher = getPublisher(registry.getServiceClient(c.getRouting.getServiceRoutingKey))
+    val rspHandler = getResponseHandler(registry.getServiceClient())
 
     // add the device, get the command issuer callback
     if (protocol.requiresPort) protocol.addPort(port)
-    val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measClient, 0), responsePublish(cmdClient))
+    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher)
 
     info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
 
     // TODO: subscribe to command requests by entity
     val subProto = Commands.UserCommandRequest.newBuilder.setStatus(Commands.CommandStatus.EXECUTING).build
-    handler.addService(registry, 5000, Commands.UserCommandRequest.parseFrom, subProto, initialCommands(issuer), newCommands(issuer))
+    handler.addService(registry, 5000, Commands.UserCommandRequest.parseFrom, subProto, initialCommands(cmdHandler, rspHandler), newCommands(cmdHandler, rspHandler))
   }
 
   def removeEntry(c: ConnProto) {
@@ -97,6 +94,14 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
     }
   }
 
+  private def getPublisher(client: ServiceClient) = new IPublisher {
+    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(client, 0)(batch)
+  }
+
+  private def getResponseHandler(client: ServiceClient) = new IResponseHandler {
+    override def onResponse(rsp: Commands.CommandResponse) = responsePublish(client)(rsp)
+  }
+
   /**
    * send command responses back to the server
    */
@@ -114,17 +119,14 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
    * handle the "integrity poll" of commands that are still to be worked on
    * TODO: ignore old commands? only return non-expired commands?
    */
-  private def initialCommands(issuer: Protocol.Issue)(crs: List[Commands.UserCommandRequest]) {
-    crs.foreach { x =>
-      issuer(x.getCommandRequest)
-    }
-  }
+  private def initialCommands(cmdHandler: ICommandHandler, rspHandler: IResponseHandler)(crs: List[Commands.UserCommandRequest]) =
+    crs.foreach { x => cmdHandler.issue(x.getCommandRequest, rspHandler) }
 
   /**
    * handle new added command commands, issuer will only respond to correct commands
    */
-  private def newCommands(issuer: Protocol.Issue)(evt: Envelope.Event, cr: Commands.UserCommandRequest) {
-    if (evt == Envelope.Event.ADDED) issuer(cr.getCommandRequest)
-  }
+  private def newCommands(cmdHandler: ICommandHandler, rspHandler: IResponseHandler)(evt: Envelope.Event, cr: Commands.UserCommandRequest) =
+    if (evt == Envelope.Event.ADDED) cmdHandler.issue(cr.getCommandRequest, rspHandler)
+
 }
 

@@ -18,27 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
+package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.javaclient.IResult
-import org.totalgrid.reef.api.ServiceTypes._
-import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.ITypeDescriptor
 
-class Result[A](result: MultiResult[A]) extends IResult[A] {
-
-  def isSuccess = result match {
-    case MultiSuccess(status, x) => true
-    case _ => false
-  }
-
-  def getResult: java.util.List[A] = result match {
-    case MultiSuccess(status, x) => x
-    case x: Failure => throw x.toException
-  }
-
-  def getFailure: Failure = result match {
-    case x: Failure => x
-    case _ => throw new Exception("Success cannot be interpreted as failure")
-  }
-
+trait ServiceDescriptor[A] {
+  val descriptor: ITypeDescriptor[A]
+  val useAuth = true
 }

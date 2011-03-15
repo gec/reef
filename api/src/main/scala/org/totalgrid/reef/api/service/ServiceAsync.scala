@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.service
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,27 +20,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+//import org.totalgrid.reef.api.ServiceTypes.Response
 
-import org.totalgrid.reef.api.javaclient.IResult
-import org.totalgrid.reef.api.ServiceTypes._
-import scala.collection.JavaConversions._
+trait ServiceAsync[A <: AnyRef] extends IServiceAsync[A] {
 
-class Result[A](result: MultiResult[A]) extends IResult[A] {
+  def get(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  def put(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  def delete(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
+  def post(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
 
-  def isSuccess = result match {
-    case MultiSuccess(status, x) => true
-    case _ => false
-  }
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
 
-  def getResult: java.util.List[A] = result match {
-    case MultiSuccess(status, x) => x
-    case x: Failure => throw x.toException
-  }
-
-  def getFailure: Failure = result match {
-    case x: Failure => x
-    case _ => throw new Exception("Success cannot be interpreted as failure")
   }
 
 }

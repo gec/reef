@@ -99,7 +99,7 @@ class Session(client: ProtoClient) extends ISession {
 
   override def getDefaultEnv = defaultEnv
 
-  def close() = client.close
+  def close() = client.close()
 
   def getUnderlyingClient() = client
 }

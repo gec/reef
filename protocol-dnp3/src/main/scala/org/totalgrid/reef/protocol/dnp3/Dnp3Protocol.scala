@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, BaseProtocol }
+import org.totalgrid.reef.protocol.api.{ BaseProtocol, IProtocol, IPublisher, ICommandHandler => IProtocolCmdHandler, IResponseHandler }
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer }
 import org.totalgrid.reef.util.{ Logging, XMLHelper }
@@ -71,19 +71,17 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     dnp3.RemovePort(port)
   }
 
-  def _addEndpoint(endpoint: String, portName: String, files: List[Model.ConfigFile], measurement_publish: IProtocol.Publish, response_publish: IProtocol.Respond): IProtocol.Issue = {
+  def _addEndpoint(endpoint: String, portName: String, files: List[Model.ConfigFile], publisher: IPublisher): IProtocolCmdHandler = {
 
     info { "Adding device with uid: " + endpoint + " onto port " + portName }
 
     val master = getMasterConfig(IProtocol.find(files, "text/xml")) //there is should be only one XML file
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
-    val meas_adapter = new MeasAdapter(mapping, measurement_publish)
+    val meas_adapter = new MeasAdapter(mapping, publisher.publish)
     map += endpoint -> meas_adapter
     val cmd = dnp3.AddMaster(portName, portName, FilterLevel.LEV_WARNING, meas_adapter, master)
-    val cmd_adapter = new CommandAdapter(mapping, cmd, response_publish)
-
-    cmd_adapter.send
+    new CommandAdapter(mapping, cmd)
   }
 
   def _removeEndpoint(endpoint: String) = {

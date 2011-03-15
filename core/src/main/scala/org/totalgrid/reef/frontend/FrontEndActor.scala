@@ -113,7 +113,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
     session.asyncPutOne(msg) {
       _ match {
-        case SingleSuccess(fem) =>
+        case SingleSuccess(status, fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
           info {
             "Got uid: " + fem.getUid

@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.Envelope._
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.service.NoOpService
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models.RunTestsInsideTransaction
@@ -36,12 +36,14 @@ import org.totalgrid.reef.services.{ AuthTokenVerifier, AuthTokenMetrics }
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv }
+import org.totalgrid.reef.api.service.IServiceResponseCallback
+
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ Envelope, ReefServiceException, RequestEnv, ITypeDescriptor }
 
 class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
 
@@ -181,7 +183,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 @RunWith(classOf[JUnitRunner])
 class AuthTokenVerifierTest extends AuthSystemTestBase {
   class AuthFixture extends Fixture {
-    val wrappedService = new AuthTokenVerifier(new NonOpService, "test", new AuthTokenMetrics)
+    val wrappedService = new AuthTokenVerifier(new NoOpService, "test", new AuthTokenMetrics)
 
     /// make a request with the set verb and auth_tokens
     def makeRequest(verb: Verb, authTokens: List[String]) = {
@@ -191,24 +193,16 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
       req.setPayload(ServiceResponse.newBuilder.setId("").setStatus(Status.BUS_UNAVAILABLE).build.toByteString)
       req.build
     }
-    class NonOpService extends ServiceDescriptor[Any] {
-      /// noOpService that returns OK
-      def respond(request: ServiceRequest, env: RequestEnv): ServiceResponse = {
-        ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build
-      }
-
-      override val descriptor = new ITypeDescriptor[Any] {
-        def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
-        def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
-        def getKlass: Class[Any] = throw new Exception("unimplemented")
-      }
-    }
 
     def testRequest(status: Status, verb: Verb, authTokens: List[String]) = {
       val env = new RequestEnv
       env.setAuthTokens(authTokens)
-      val result = wrappedService.respond(makeRequest(verb, authTokens), env)
-      result.getStatus should equal(status)
+      val callback = new IServiceResponseCallback {
+        var response: Option[ServiceResponse] = None
+        def onResponse(rsp: ServiceResponse) = response = Some(rsp)
+      }
+      wrappedService.respond(makeRequest(verb, authTokens), env, callback)
+      callback.response.get.getStatus should equal(status)
     }
   }
 

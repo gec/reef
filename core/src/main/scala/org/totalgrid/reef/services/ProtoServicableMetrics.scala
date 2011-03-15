@@ -20,13 +20,15 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
 import org.totalgrid.reef.util._
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, StatusCodes }
+import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback, CallbackTimer }
+
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 
 /// the metrics collected on any single service request
-class ProtoServicableVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {
+class ServiceVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {
   /// how many requests handled
   val countHook = counterHook(baseName + "Count")
   /// errors counted
@@ -36,66 +38,63 @@ class ProtoServicableVerbHooks(source: MetricsHookSource, baseName: String) exte
 }
 
 /// trait to encapsulate the hooks used, sorted by verb
-trait ProtoServicableHooks {
+trait ServiceMetricHooks {
 
-  val map: Map[Envelope.Verb, ProtoServicableVerbHooks]
+  protected val map: Map[Envelope.Verb, ServiceVerbHooks]
+
+  def apply(verb: Envelope.Verb): Option[ServiceVerbHooks] = map.get(verb)
 }
 
 /**
  * instruments a service proto request entry point so metrics can be collected (by verb if configured) 
  */
-class ProtoServicableMetrics[A](real: ServiceDescriptor[A], hooks: ProtoServicableHooks, slowQueryThreshold: Long)
-    extends ServiceDescriptor[A]
+class ServiceMetrics[A](service: IServiceAsync[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long)
+    extends IServiceAsync[A]
     with Logging {
 
-  override val descriptor = real.descriptor
+  override val descriptor = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv): Envelope.ServiceResponse = {
-    hooks.map.get(req.getVerb) match {
-      case Some(metrics) =>
-        // collect the metrics
-        metrics.countHook(1)
-        var timeElapsed: Long = 0
-        val response = Timing.time({ timeElapsed = _ }) {
-          real.respond(req, env)
-        }
-        metrics.timerHook(timeElapsed.toInt)
-        if (timeElapsed > slowQueryThreshold) {
-          info { "Slow Request: " + timeElapsed + "ms to handle request: " + req + " response " + response }
-        }
-        // hasErrorMessage always returns true for some reason, so we check empty
-        if (response.getErrorMessage() != "") metrics.errorHook(1)
-        response
-      case _ =>
-        // no hooks, just pass through the request
-        real.respond(req, env)
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
+
+    def recordMetrics(metrics: ServiceVerbHooks)(time: Long, rsp: Envelope.ServiceResponse) {
+      metrics.countHook(1)
+      metrics.timerHook(time.toInt)
+      if (time > slowQueryThreshold)
+        info("Slow Request: " + time + "ms to handle request: " + req + " response " + rsp)
+      if (!StatusCodes.isSuccess(rsp.getStatus)) metrics.errorHook(1)
     }
+
+    val proxyCallback = hooks(req.getVerb) match {
+      case Some(metrics) => new CallbackTimer(callback, recordMetrics(metrics))
+      case None => callback // no hooks, just pass through the request
+    }
+
+    service.respond(req, env, proxyCallback)
   }
+
 }
 
 object ProtoServicableMetrics {
-  def generateMetricsHooks(source: MetricsHookSource, seperateVerbs: Boolean): ProtoServicableHooks = {
 
-    var hookMap = Map.empty[Envelope.Verb, ProtoServicableVerbHooks]
+  def generateMetricsHooks(source: MetricsHookSource, seperateVerbs: Boolean): ServiceMetricHooks = new ServiceMetricHooks {
 
-    if (seperateVerbs) {
+    override val map = if (seperateVerbs) {
       // new bucket for hook counters for every verb
-      hookMap += Envelope.Verb.GET -> new ProtoServicableVerbHooks(source, "get")
-      hookMap += Envelope.Verb.PUT -> new ProtoServicableVerbHooks(source, "put")
-      hookMap += Envelope.Verb.DELETE -> new ProtoServicableVerbHooks(source, "delete")
-      hookMap += Envelope.Verb.POST -> new ProtoServicableVerbHooks(source, "post")
+      Map(
+        Envelope.Verb.GET -> new ServiceVerbHooks(source, "get"),
+        Envelope.Verb.PUT -> new ServiceVerbHooks(source, "put"),
+        Envelope.Verb.DELETE -> new ServiceVerbHooks(source, "delete"),
+        Envelope.Verb.POST -> new ServiceVerbHooks(source, "post"))
     } else {
       // give all verbs same hooks
-      val allVerbs = new ProtoServicableVerbHooks(source, "")
-      hookMap += Envelope.Verb.GET -> allVerbs
-      hookMap += Envelope.Verb.PUT -> allVerbs
-      hookMap += Envelope.Verb.DELETE -> allVerbs
-      hookMap += Envelope.Verb.POST -> allVerbs
+      val allVerbs = new ServiceVerbHooks(source, "")
+      Map(
+        Envelope.Verb.GET -> allVerbs,
+        Envelope.Verb.PUT -> allVerbs,
+        Envelope.Verb.DELETE -> allVerbs,
+        Envelope.Verb.POST -> allVerbs)
     }
 
-    new ProtoServicableHooks {
-      val map = hookMap
-    }
   }
 
 }
