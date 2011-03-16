@@ -37,7 +37,7 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
 class OverrideConfigService(protected val modelTrans: ServiceTransactable[OverrideConfigServiceModel])
-    extends BasicProtoService[MeasOverride, OverrideConfig, OverrideConfigServiceModel] {
+    extends BasicSyncModeledService[MeasOverride, OverrideConfig, OverrideConfigServiceModel] {
 
   override val descriptor = Descriptors.measOverride
 }

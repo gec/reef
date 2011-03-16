@@ -65,7 +65,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
 
   class Callbacks extends IPublisher with IResponseHandler {
 
-    val cmdResponses = new SyncVar(None: Option[Commands.CommandResponse])
+    val cmdResponses = new SyncVar[Option[Commands.CommandResponse]](None: Option[Commands.CommandResponse])
     val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
 
     def publish(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)

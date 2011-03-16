@@ -24,6 +24,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.api.Envelope.Status
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
@@ -213,12 +214,15 @@ class AuthTokenServiceModelFactory(pub: ServiceEventPublishers, eventSink: Event
   def model = new AuthTokenServiceModel(subHandler, eventSink)
 }
 
+import ServiceBehaviors._
+
 class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenServiceModel])
-    extends BaseProtoService[AuthToken, AuthTokenModel, AuthTokenServiceModel]
-    with BaseProtoService.GetEnabled
-    with BaseProtoService.PostLikeEnabled // every PUT should create a new entry
-    with BaseProtoService.DeleteEnabled
-    with BaseProtoService.SubscribeDisabled {
+    extends ModeledServiceBase[AuthToken, AuthTokenModel, AuthTokenServiceModel]
+    with AsyncToSyncServiceAdapter[AuthToken]
+    with GetEnabled
+    with PostLikeEnabled // every PUT should create a new entry
+    with DeleteEnabled
+    with SubscribeDisabled {
   override val useAuth = false
   override val descriptor = Descriptors.authToken
 }

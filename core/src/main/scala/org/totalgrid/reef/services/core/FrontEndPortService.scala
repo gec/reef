@@ -37,7 +37,7 @@ import org.totalgrid.reef.util.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
-    extends BasicProtoService[PortProto, FrontEndPort, FrontEndPortServiceModel] {
+    extends BasicSyncModeledService[PortProto, FrontEndPort, FrontEndPortServiceModel] {
 
   override val descriptor = Descriptors.port
 }

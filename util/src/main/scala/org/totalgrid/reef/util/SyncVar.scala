@@ -23,13 +23,24 @@ package org.totalgrid.reef.util
 import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 
+class EmptySyncVar[A <: Any] extends SyncVar[A] {
+  @tailrec
+  final override def evaluate(fun: A => Boolean): Boolean = {
+    if (queue.size == 0) false
+    else if (fun(queue.dequeue())) true
+    else evaluate(fun)
+  }
+}
+
 // New implementation of sync var uses standard synchronization and a mutable queue
-class SyncVar[A <: Any](initialValue: A) {
+class SyncVar[A <: Any](initialValue: Option[A] = None) {
+
+  def this(initialValue: A) = this(Some(initialValue))
 
   val defaultTimeout = 5000
 
-  private var queue = new Queue[A]
-  queue.enqueue(initialValue)
+  protected val queue = new Queue[A]
+  initialValue.foreach { x => queue.enqueue(x) }
 
   def current = queue.synchronized { queue.last }
 
@@ -77,16 +88,18 @@ class SyncVar[A <: Any](initialValue: A) {
   }
 
   @tailrec
-  private def evaluate(fun: A => Boolean): Boolean = {
+  private def privateEvaluate(fun: A => Boolean): Boolean = {
     val i = queue.dequeue()
     if (queue.size == 0) {
       queue.enqueue(i) //never let the queue be empty
       fun(i)
     } else {
       if (fun(i)) true
-      else evaluate(fun)
+      else privateEvaluate(fun)
     }
   }
+
+  protected def evaluate(fun: A => Boolean): Boolean = privateEvaluate(fun)
 
 }
 

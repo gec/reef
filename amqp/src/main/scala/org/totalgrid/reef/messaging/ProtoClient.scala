@@ -28,7 +28,7 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import _root_.scala.collection.JavaConversions._
-import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.{ ServiceList, IDestination, Envelope, RequestEnv, ISubscription }
 import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
 
 /**
@@ -37,12 +37,12 @@ import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
  */
 class ProtoClient(
     factory: ServiceClientFactory,
-    lookup: ServiceList, timeoutms: Long, key: String = "request") extends ServiceClient with Logging {
+    lookup: ServiceList, timeoutms: Long) extends ServiceClient with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ServiceClient]
 
-  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) {
+  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
 
     val info = lookup.getServiceInfo(payload.getClass.asInstanceOf[Class[A]])
     val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(payload))
@@ -69,7 +69,7 @@ class ProtoClient(
       callback(result)
     }
 
-    correlator.send(request, info.exchange, key, handleResponse)
+    correlator.send(request, info.exchange, dest.routingKey, handleResponse)
   }
 
   def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription = {

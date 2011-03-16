@@ -26,12 +26,14 @@ object ServiceTypes {
 
   /* ---- Case classes that make the service api easier to use ---- */
 
-  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv)
+  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
 
   case class Response[A](status: Envelope.Status, error: String, result: List[A]) {
     def this(status: Envelope.Status, result: List[A]) = this(status, "", result)
 
     def this(status: Envelope.Status, result: A) = this(status, "", List(result))
+
+    def this() = this(Envelope.Status.INTERNAL_ERROR, "", Nil)
   }
 
   case class Event[A](event: Envelope.Event, result: A) {

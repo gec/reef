@@ -20,8 +20,8 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.RequestEnv
+
+import org.totalgrid.reef.api.{ RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.Envelope.Verb
 import org.totalgrid.reef.api.ServiceTypes.MultiResult
 
@@ -29,14 +29,14 @@ trait FutureOperations {
 
   self: AsyncOperations with DefaultHeaders =>
 
-  def requestFuture[A <: AnyRef](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders): () => MultiResult[A] = makeCallbackIntoFuture {
-    asyncRequest(verb, payload, env)
+  def requestFuture[A <: AnyRef](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode): () => MultiResult[A] = makeCallbackIntoFuture {
+    asyncRequest(verb, payload, env, dest)
   }
 
-  def getWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.GET, payload, env)
-  def deleteWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.DELETE, payload, env)
-  def putWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.PUT, payload, env)
-  def postWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders) = requestFuture(Verb.POST, payload, env)
+  def getWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode) = requestFuture(Verb.GET, payload, env, dest)
+  def deleteWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode) = requestFuture(Verb.DELETE, payload, env, dest)
+  def putWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode) = requestFuture(Verb.PUT, payload, env, dest)
+  def postWithFuture[A <: AnyRef](payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode) = requestFuture(Verb.POST, payload, env, dest)
 
   protected def makeCallbackIntoFuture[A <: AnyRef](fun: (A => Unit) => Unit): () => A = {
     val mail = new scala.actors.Channel[A]

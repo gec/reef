@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.app.ServiceHandler
 
 import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler }
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.{ Envelope, IDestination, AddressableService }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handler: ServiceHandler) extends KeyedMap[ConnProto] {
@@ -57,7 +57,7 @@ class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handle
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getPort
 
-    val publisher = getPublisher(registry.getServiceClient(c.getRouting.getServiceRoutingKey))
+    val publisher = getPublisher(registry.getServiceClient(), c.getRouting.getServiceRoutingKey)
     val rspHandler = getResponseHandler(registry.getServiceClient())
 
     // add the device, get the command issuer callback
@@ -81,21 +81,21 @@ class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handle
   /**
    * push measurement batchs to the addressable service
    */
-  private def batchPublish(client: ServiceClient, attempts: Int)(x: Measurements.MeasurementBatch): Unit = {
+  private def batchPublish(client: ServiceClient, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
     try {
-      client.putOrThrow(x)
+      client.putOrThrow(x, destination = dest)
     } catch {
       case e: Exception =>
         if (attempts >= maxAttemptsToRetryMeasurements) error(e)
         else {
           info("Retrying publishing measurements : " + x.getMeasCount)
-          batchPublish(client, attempts + 1)(x)
+          batchPublish(client, attempts + 1, dest)(x)
         }
     }
   }
 
-  private def getPublisher(client: ServiceClient) = new IPublisher {
-    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(client, 0)(batch)
+  private def getPublisher(client: ServiceClient, routingKey: String) = new IPublisher {
+    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(client, 0, AddressableService(routingKey))(batch)
   }
 
   private def getResponseHandler(client: ServiceClient) = new IResponseHandler {

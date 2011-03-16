@@ -40,7 +40,7 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
 class PointService(protected val modelTrans: ServiceTransactable[PointServiceModel])
-    extends BasicProtoService[PointProto, Point, PointServiceModel] {
+    extends BasicSyncModeledService[PointProto, Point, PointServiceModel] {
 
   override val descriptor = Descriptors.point
 }

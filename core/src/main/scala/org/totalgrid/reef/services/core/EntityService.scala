@@ -21,7 +21,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
 
@@ -31,9 +30,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
-class EntityService extends SyncServiceBase[EntityProto] {
+class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
 
   override val descriptor = Descriptors.entity
 
@@ -61,9 +60,8 @@ class EntityService extends SyncServiceBase[EntityProto] {
 import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
-class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
+class EntityEdgeService extends AsyncToSyncServiceAdapter[EntityEdgeProto] {
 
-  def deserialize(bytes: Array[Byte]) = EntityEdgeProto.parseFrom(bytes)
   override val descriptor = Descriptors.entityEdge
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {

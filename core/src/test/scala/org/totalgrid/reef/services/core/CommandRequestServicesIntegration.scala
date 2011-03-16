@@ -170,7 +170,7 @@ class CommandRequestServicesIntegration
     cmdToFep.getName should equal("cmd01")
     cmdToFep.hasCorrelationId should equal(true)
 
-    r.userReqs.put(UserCommandRequest.newBuilder.setCommandRequest(cmdToFep).setStatus(CommandStatus.SUCCESS).build)
+    r.userReqs.putAsync(UserCommandRequest.newBuilder.setCommandRequest(cmdToFep).setStatus(CommandStatus.SUCCESS).build()) { _ => }
 
     // Command request should be a success
     r.events.dequeue match {

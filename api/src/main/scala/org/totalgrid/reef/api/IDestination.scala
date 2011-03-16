@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.service
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,18 +18,14 @@ package org.totalgrid.reef.api.service
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
-//import org.totalgrid.reef.api.ServiceTypes.Response
+package org.totalgrid.reef.api
 
-trait ServiceAsync[A <: AnyRef] extends IServiceAsync[A] {
-
-  def get(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-  def put(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-  def delete(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-  def post(req: A, env: RequestEnv, callback: IServiceResponseCallback): Unit
-
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
-
-  }
-
+trait IDestination {
+  val routingKey: String
 }
+
+case object AnyNode extends IDestination {
+  val routingKey = "request"
+}
+
+case class AddressableService(routingKey: String) extends IDestination

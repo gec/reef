@@ -26,10 +26,11 @@ import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes 
 import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.api.service.SyncServiceBase
+
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ BadRequestException, RequestEnv, Envelope }
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 
@@ -37,7 +38,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
 
-class EntityAttributesService extends SyncServiceBase[AttrProto] {
+class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
   import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes

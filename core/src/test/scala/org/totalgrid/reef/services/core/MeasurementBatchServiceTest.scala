@@ -23,7 +23,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.api.ReefServiceException
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.util.EmptySyncVar
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -52,7 +53,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.addDevice("dev1")
 
       intercept[ReefServiceException] {
-        coord.batchService.put(makeBatch(makeInt("dev1.test_point", 10)))
+        coord.batchService.putAsync(makeBatch(makeInt("dev1.test_point", 10))) { _ => }
       }
     }
   }
@@ -69,7 +70,11 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
       var mb = coord.listenForMeasurements("meas")
 
-      one(coord.batchService.put(makeBatch(makeInt("dev1.test_point", 10))))
+      val result = new EmptySyncVar[Response[MeasurementBatch]]
+
+      coord.batchService.putAsync(makeBatch(makeInt("dev1.test_point", 10))) { x => result.update(x) }
+
+      result.waitFor { rsp => one(rsp); true }
 
       mb.waitFor({ _.size == 1 }, 1000)
 
@@ -98,7 +103,11 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
       var mb = coord.listenForMeasurements("meas")
 
-      many(2, coord.batchService.put(makeBatch(makeInt("dev1.test_point", 10) :: makeInt("dev2.test_point", 10) :: Nil)))
+      val batch = makeBatch(makeInt("dev1.test_point", 10) :: makeInt("dev2.test_point", 10) :: Nil)
+
+      val result = new EmptySyncVar[Response[MeasurementBatch]]
+      coord.batchService.putAsync(batch) { x => result.update(x) }
+      result.waitFor { rsp => one(rsp); true }
 
       mb.waitFor({ _.size == 2 }, 1000)
 

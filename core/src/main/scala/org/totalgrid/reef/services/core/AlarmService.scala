@@ -22,18 +22,18 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Events.{ Event => EventProto }
-import org.totalgrid.reef.models.{ ApplicationSchema, AlarmModel, EventStore, Entity }
+import org.totalgrid.reef.models.{ ApplicationSchema, AlarmModel, EventStore }
 
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
-import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+
 import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 // implicit proto properties
@@ -41,11 +41,7 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
 class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceModel])
-    extends BaseProtoService[Alarm, AlarmModel, AlarmServiceModel]
-    with BaseProtoService.GetEnabled
-    with BaseProtoService.SubscribeEnabled
-    with BaseProtoService.PutPostEnabled
-    with BaseProtoService.DeleteEnabled {
+    extends BasicSyncModeledService[Alarm, AlarmModel, AlarmServiceModel] {
 
   override val descriptor = Descriptors.alarm
 

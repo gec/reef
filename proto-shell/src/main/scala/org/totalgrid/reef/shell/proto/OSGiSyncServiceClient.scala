@@ -88,7 +88,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
-  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
       val rsp = new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env)
       Some(rsp)

@@ -28,11 +28,11 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.Descriptors
 
-import BaseProtoService._
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import ServiceBehaviors._
+import org.totalgrid.reef.api.BadRequestException
 
 class CommandAccessService(protected val modelTrans: ServiceTransactable[CommandAccessServiceModel])
-    extends BaseProtoService[AccessProto, AccessModel, CommandAccessServiceModel]
+    extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]
     with GetEnabled
     with SubscribeEnabled
     with PostLikeEnabled
