@@ -90,7 +90,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
     List(
       proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
       proto.name.asParam(name => sql.name === name),
-      proto.uid.asParam(sql.id === _.toLong))
+      proto.uid.asParam(sql.entityId === _.toLong))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
@@ -110,7 +110,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def convertToProto(sql: Command): CommandProto = {
     // TODO: fill out connected and selected parts of proto
     val b = CommandProto.newBuilder
-      .setUid(sql.name)
+      .setUid(sql.entityId.toString)
       .setName(sql.name)
       .setDisplayName(sql.displayName)
 

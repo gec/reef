@@ -20,10 +20,18 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
+import org.totalgrid.reef.proto.Model.Command
 import org.totalgrid.reef.proto.Commands.{ CommandAccess, UserCommandRequest }
 import scala.collection.JavaConversions._
 
 object CommandView {
+
+  def commandList(list: List[Command]) = {
+    val rows = list.map { cmd =>
+      ("[" + cmd.getUid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
+    }
+    Table.justifyColumns(rows).foreach { line => println(line mkString " ") }
+  }
 
   //def selectResponse(resp: CommandAccess)
   def commandResponse(resp: UserCommandRequest) = {
