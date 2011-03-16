@@ -62,6 +62,6 @@ class MeasHistCommand extends ReefCommandSupport {
   var count: Int = 10
 
   def doCommand(): Unit = {
-    MeasView.printTable(MeasRequest.measHistory(name, count, this).reverse)
+    MeasView.printTable(MeasRequest.measHistory(name, count, this))
   }
 }
