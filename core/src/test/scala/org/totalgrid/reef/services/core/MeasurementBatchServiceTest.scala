@@ -113,7 +113,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
       val meases = mb.current
 
-      meases.map { _._1 } should equal(List("dev1", "dev2"))
+      meases.map { _._1 }.sorted should equal(List("dev1", "dev2"))
       meases.map { _._2.getMeasCount } should equal(List(1, 1))
 
       coord.pointsInDatabase should equal(2)

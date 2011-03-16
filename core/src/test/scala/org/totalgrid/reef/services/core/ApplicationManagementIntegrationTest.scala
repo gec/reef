@@ -46,7 +46,7 @@ import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.proto.ReefServicesList
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagementTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
+class ApplicationManagementIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
   override def beforeAll() {
     DbConnector.connect(DbInfo.loadInfo("test"))
   }
