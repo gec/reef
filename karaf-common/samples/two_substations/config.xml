@@ -70,12 +70,12 @@
   <eq:profiles>
 
     <eq:pointProfile name="Analog120">
-      <eq:range actionSet="RLC" low="108" high="130" deadband="3"/>
+      <eq:range actionSet="RLC" low="108" high="130" deadband="3" unit="raw"/>
       <eq:range actionSet="Nominal" low="114" high="126" deadband="1"/>
     </eq:pointProfile>
 
     <eq:pointProfile name="LineCurrent">
-      <eq:range actionSet="RLC" low="10" high="14"/>
+      <eq:range actionSet="RLC" low="10" high="14" unit="raw"/>
     </eq:pointProfile>
 
 

@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.loader
 
-import equipment.{ ValueMap, Unexpected, Range }
+import equipment._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.proto.Processing._
@@ -100,6 +100,23 @@ object ProtoUtils {
   }
 
   /**
+   * we need to decide on the order of operations for the triggers. In most circumstances you would not have
+   * more than one trigger type of each class but we give each a different priority so if they do try the
+   * result will be deterministic. Lowest priorities are done first. Most of the triggers provide a way to
+   * override the default priority if the user has to.
+   */
+  object DefaultPriorities {
+    /* pre-conversion triggers should be between 0-100 */
+    val RLC_RANGE = 50 /// RLC range is defined as a range check but with unit == raw
+    /* transformation triggers should be between 100-200 */
+    val SCALING = 150
+    val ENUM_TRANSFORM = 151
+    /* transformation triggers should be between 400-500 */
+    val UNEXPECTED = 450
+    val REGULAR_RANGE = 451
+  }
+
+  /**
    * Low, High, Deadband
    * Low, Deadband
    * High, Deadband
@@ -107,12 +124,10 @@ object ProtoUtils {
    */
   def toTrigger(pointName: String, range: Range, unit: String, actionModel: HashMap[String, ActionSet]): Trigger.Builder = {
     val name = pointName + "." + range.getActionSet
-    val proto = Trigger.newBuilder
-      .setTriggerName(name)
-      .setUnit(unit)
+    val proto = Trigger.newBuilder.setTriggerName(name)
 
-    if (range.getActionSet == "RLC") // TODO: This should be in the communications model and setup correctly.
-      proto.setUnit("raw")
+    val fromUnit = if (range.isSetUnit) range.getUnit else unit
+    proto.setUnit(fromUnit)
 
     val al = AnalogLimit.newBuilder()
     if (range.isSetLow)
@@ -123,38 +138,38 @@ object ProtoUtils {
 
     proto.setAnalogLimit(al)
 
+    val defaultPriority = if (fromUnit == "raw") DefaultPriorities.RLC_RANGE else DefaultPriorities.REGULAR_RANGE
+
     val actionSet = getActionSet(actionModel, name, range)
-    addActions(name, proto, actionSet)
+    addActions(name, proto, actionSet, defaultPriority)
 
     proto
   }
 
-  def toTrigger(pointName: String, conversions: List[ValueMap], unit: String): Trigger.Builder = {
+  def toTrigger(pointName: String, enumTransform: Transform, unit: String): Trigger.Builder = {
     val name = pointName + ".convert"
-    val proto = Trigger.newBuilder
-      .setTriggerName(name) // trigger if name is correct
-      .setUnit("raw") // TODO: get unit for conversion better
+    val proto = Trigger.newBuilder.setTriggerName(name)
 
-    proto.setPriority(0)
+    val fromUnit = if (enumTransform.isSetFromUnit) enumTransform.getFromUnit else "raw"
+    proto.setUnit(fromUnit)
+
+    val priority = if (enumTransform.isSetPriority) enumTransform.getPriority else DefaultPriorities.ENUM_TRANSFORM
+    proto.setPriority(priority)
+
+    if (enumTransform.isSetToUnit && enumTransform.getToUnit != enumTransform.getFromUnit) {
+      proto.addActions(toActionSetUnit(name, ActivationType.HIGH, enumTransform.getToUnit))
+    }
 
     val actionBuilder = Action.newBuilder.setActionName(name).setType(ActivationType.HIGH)
 
-    try {
-      // TODO: verify if this implict checking of boolean-ness on ValueMap will be acceptable
-      conversions.foreach(vm => vm.getFromValue.toBoolean)
-      val convertMap = conversions.map { vm => vm.getFromValue.toBoolean -> vm.getToValue }.toMap
-      actionBuilder.setBoolTransform(BoolEnumTransform.newBuilder.setFalseString(convertMap(false)).setTrueString(convertMap(true)))
-    } catch {
-      case _: NumberFormatException =>
-        try {
-          conversions.foreach(vm => vm.getFromValue.toInt)
-          val intTransform = IntEnumTransform.newBuilder()
-          conversions.foreach(vm => intTransform.addMappings(IntToString.newBuilder.setValue(vm.getFromValue.toInt).setString(vm.getToValue)))
-          actionBuilder.setIntTransform(intTransform)
-        } catch {
-          case _: NumberFormatException =>
-            throw new Exception("Not all valueMap from values for point: '" + pointName + "' are convertible to booleans or integers.")
-        }
+    val conversions = enumTransform.getValueMap.toList
+
+    if (!enumTransform.isSetTransformationType) {
+      throw new Exception("Transformation for point: '" + pointName + "' doesn't have legal type setting, should be \"status\" or \"counter\".")
+    }
+    enumTransform.getTransformationType match {
+      case TransformType.STATUS => createBooleanMapping(conversions, actionBuilder, pointName)
+      case TransformType.COUNTER => createIntegerMapping(conversions, actionBuilder, pointName)
     }
 
     proto.addActions(actionBuilder)
@@ -162,11 +177,35 @@ object ProtoUtils {
     proto
   }
 
+  private def createBooleanMapping(conversions: List[ValueMap], actionBuilder: Action.Builder, pointName: String) {
+    try {
+      conversions.foreach(vm => vm.getFromValue.toBoolean)
+      val convertMap = conversions.map { vm => vm.getFromValue.toBoolean -> vm.getToValue }.toMap
+      if (convertMap.size != 2) {
+        throw new Exception("Transformation for status point: '" + pointName + "' doesn't define output values for both true and false.")
+      }
+      actionBuilder.setBoolTransform(BoolEnumTransform.newBuilder.setFalseString(convertMap(false)).setTrueString(convertMap(true)))
+    } catch {
+      case _: NumberFormatException =>
+        throw new Exception("Not all \"fromValues\" for transformation on point: '" + pointName + "' are convertible to booleans. Use \"true\" or \"false\".")
+    }
+  }
+
+  private def createIntegerMapping(conversions: List[ValueMap], actionBuilder: Action.Builder, pointName: String) {
+    try {
+      conversions.foreach(vm => vm.getFromValue.toInt)
+      val intTransform = IntEnumTransform.newBuilder()
+      conversions.foreach(vm => intTransform.addMappings(IntToString.newBuilder.setValue(vm.getFromValue.toInt).setString(vm.getToValue)))
+      actionBuilder.setIntTransform(intTransform)
+    } catch {
+      case _: NumberFormatException =>
+        throw new Exception("Not all \"fromValues\" for transformation on point: '" + pointName + "' are convertible to integers. Use only whole numbers.")
+    }
+  }
+
   def toTrigger(pointName: String, unexpected: Unexpected, unit: String, actionModel: HashMap[String, ActionSet]): Trigger.Builder = {
     val name = pointName + "." + unexpected.getActionSet
-    val proto = Trigger.newBuilder
-      .setTriggerName(name)
-    //  .setUnit(unit)
+    val proto = Trigger.newBuilder.setTriggerName(name)
 
     if (unexpected.isSetBooleanValue)
       proto.setBoolValue(unexpected.isBooleanValue)
@@ -176,7 +215,7 @@ object ProtoUtils {
       proto.setIntValue(unexpected.getIntValue)
 
     val actionSet = getActionSet(actionModel, name, unexpected)
-    addActions(name, proto, actionSet)
+    addActions(name, proto, actionSet, DefaultPriorities.UNEXPECTED)
 
     proto
   }
@@ -225,8 +264,11 @@ object ProtoUtils {
       throw new Exception("unexpected actionSet=\"" + asName + "\"  referenced from '" + elementName + "' was not found in configuration.")
   }
 
-  def addActions(name: String, proto: Trigger.Builder, actionSet: ActionSet) {
-    proto.setPriority(actionSet.getPriority)
+  def addActions(name: String, proto: Trigger.Builder, actionSet: ActionSet, defaultPriority: Int) {
+
+    val priority = if (actionSet.isSetPriority) actionSet.getPriority else defaultPriority
+
+    proto.setPriority(priority)
 
     if (actionSet.isSetRising)
       processTriggerType(proto, name, actionSet.getRising, ActivationType.RISING)
@@ -247,7 +289,7 @@ object ProtoUtils {
   def toTrigger(name: String, scale: Scale): Trigger.Builder = {
     val proto = Trigger.newBuilder
       .setTriggerName(name + ".scale")
-      .setPriority(250) // TODO: get from config!
+      .setPriority(DefaultPriorities.SCALING)
       .setUnit(scale.getRawUnit)
 
     proto.addActions(toActionLinearTransform(name, scale))
@@ -282,13 +324,13 @@ object ProtoUtils {
   }
 
   def toActionSetUnit(name: String, aType: ActivationType, setUnit: SetUnit): Action.Builder = {
-    toActionSetUnit(name, aType, setUnit.getUnit)
+    toActionSetUnit(name, aType, setUnit.getUnit) // TODO: check if attribute is there.
   }
   def toActionSetUnit(name: String, aType: ActivationType, unit: String): Action.Builder = {
     Action.newBuilder
       .setActionName(name + ".SetUnit")
       .setType(aType)
-      .setSetUnit(unit) // TODO: check if attribute is there.
+      .setSetUnit(unit)
   }
 
   def toActionSetAbnormal(name: String, aType: ActivationType): Action.Builder = {
