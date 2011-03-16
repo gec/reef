@@ -21,15 +21,14 @@
 package org.totalgrid.reef.procstatus
 
 import org.totalgrid.reef.proto.{ ProcessStatus }
-import org.totalgrid.reef.measproc._
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.mock._
+import org.totalgrid.reef.api.AllMessages
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.concurrent.MailBox
 
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.reactor.ReactActor
@@ -53,7 +52,7 @@ class ProcessHeartbeatActorTest extends Suite with ShouldMatchers {
 
   def subscribe(amqp: AMQPProtoFactory): SyncVar[StatusSnapshot] = {
     val box = new SyncVar(StatusSnapshot.getDefaultInstance)
-    amqp.subscribe(EXCHANGE, "#", StatusSnapshot.parseFrom, { s: StatusSnapshot => box.update(s) })
+    amqp.subscribe(EXCHANGE, AllMessages, StatusSnapshot.parseFrom, { s: StatusSnapshot => box.update(s) })
     box
   }
 

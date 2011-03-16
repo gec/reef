@@ -67,7 +67,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     this.add(serviceReactor)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    components.amqp.bindService(exchange, instrumentedEndpoint.respond, true, Some(serviceReactor))
+    components.amqp.bindService(exchange, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
     instrumentedEndpoint
   }
 

@@ -112,7 +112,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
 
     def attachServices(endpoints: Seq[IServiceAsync[_]]): Unit = endpoints.foreach { ep =>
       val exch = ReefServicesList.getServiceInfo(ep.descriptor.getKlass).exchange
-      amqp.bindService(exch, ep.respond, true)
+      amqp.bindService(exch, ep.respond, competing = true)
     }
 
     val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus)

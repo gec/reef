@@ -138,7 +138,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
       var counts = scala.collection.mutable.Map.empty[Long, Int]
 
       for (i <- 1 to services) yield {
-        amqp.bindService(exchange, respondWithServiceName(i), true)
+        amqp.bindService(exchange, respondWithServiceName(i), competing = true)
         counts(i) = 0
       }
 

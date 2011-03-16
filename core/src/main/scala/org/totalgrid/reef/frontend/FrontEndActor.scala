@@ -93,7 +93,9 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
   /* ---- Done implementing ServiceContext[Endpoint] ---- */
 
-  override def afterStart() = annouce
+  override def afterStart() = {
+    annouce
+  }
 
   override def beforeStop() = {
     info {

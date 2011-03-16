@@ -35,6 +35,8 @@ import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
+import org.totalgrid.reef.api.AllMessages
+
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
@@ -203,7 +205,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
       val startedAbnormal = pointMap.values.foldLeft(0) { case (sum, p) => if (p.abnormal) sum + 1 else sum }
       summary.setSummary("summary.abnormals", startedAbnormal)
     }
-    amqp.subscribe("measurement", "#", Measurement.parseFrom(_), { msg: Measurement => reactor.execute { handleMeasurement(msg) } })
+    amqp.subscribe("measurement", AllMessages, Measurement.parseFrom(_), { msg: Measurement => reactor.execute { handleMeasurement(msg) } })
   }
 
   def handleMeasurement(m: Measurement): Unit = {

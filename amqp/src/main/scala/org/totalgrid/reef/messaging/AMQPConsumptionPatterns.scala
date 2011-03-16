@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.messaging
 
+import org.totalgrid.reef.api.IRoutingKey
+
 /**
  * base class for AMQP subscripton modes, provides online/offline notifiers
  */
@@ -98,9 +100,9 @@ object QueuePatterns {
 /** Listen to a shared queue so many consumers can service the same requests.  Queues are declared without
  * exclusive and autodelete options.
  */
-class AMQPCompetingConsumer(exchange: String, queueName: String, routingKey: String, mc: MessageConsumer) extends AMQPConsumptionPattern {
+class AMQPCompetingConsumer(exchange: String, queueName: String, routingKey: IRoutingKey, mc: MessageConsumer) extends AMQPConsumptionPattern {
   override def getQueue(broker: BrokerChannel): String =
-    QueuePatterns.getCompetingConsumer(broker, exchange, queueName, routingKey, mc)
+    QueuePatterns.getCompetingConsumer(broker, exchange, queueName, routingKey.key, mc)
 }
 
 /** Listen to a preprepared queue, no checking is done to make sure it exists
@@ -126,7 +128,7 @@ class AMQPPrivateResponseQueueListener(exchange: String, mc: MessageConsumer) ex
 
 /** Listen to a private queue bound to the exchange, allows duplication of messages, not to be used for big S services.
  */
-class AMQPExclusiveConsumer(exchange: String, routingKey: String, mc: MessageConsumer) extends AMQPConsumptionPattern {
+class AMQPExclusiveConsumer(exchange: String, routingKey: IRoutingKey, mc: MessageConsumer) extends AMQPConsumptionPattern {
   override def getQueue(broker: BrokerChannel): String =
-    QueuePatterns.getExclusiveQueue(broker, exchange, routingKey, mc)
+    QueuePatterns.getExclusiveQueue(broker, exchange, routingKey.key, mc)
 }
