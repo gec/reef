@@ -23,8 +23,9 @@ package org.totalgrid.reef.shell.proto
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders }
 import request.RequestFailure
+import org.totalgrid.reef.util.Logging
 
-abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperations {
+abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperations with Logging {
 
   protected val requiresLogin = true
 
@@ -67,7 +68,9 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperat
       } else doCommand()
     } catch {
       case RequestFailure(why) => println(why)
-      case ex: Exception => println("Error running command: " + ex)
+      case ex: Exception =>
+        println("Error running command: " + ex)
+        error(ex.getStackTraceString)
     }
     println("")
     null
