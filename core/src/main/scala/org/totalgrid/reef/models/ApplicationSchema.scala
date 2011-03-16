@@ -140,13 +140,16 @@ case class Point(
 
 case class Command(
     val name: String,
+    val displayName: String,
     val entityId: Long,
     var connected: Boolean,
     var lastSelectId: Option[Long],
     var triggerId: Option[Long]) extends ModelWithId {
 
-  def this() = this("", 0, false, Some(0), Some(0))
-  def this(name: String, entityId: Long) = this(name, entityId, false, None, None)
+  def this() = this("", "", 0, false, Some(0), Some(0))
+  def this(name: String, displayName: String, entityId: Long) = this(name, displayName, entityId, false, None, None)
+  //def this(name: String, entityId: Long, connected: Boolean, lastSelectId: Option[Long], triggerId: Option[Long]) = this(name, name, entityId, false, None, None)
+  def this(name: String, entityId: Long) = this(name, name, entityId, false, None, None)
 
   val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
 

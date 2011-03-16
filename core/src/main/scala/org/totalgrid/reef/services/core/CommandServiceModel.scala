@@ -98,7 +98,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def createModelEntry(proto: CommandProto): Command = {
     val ent = EQ.findOrCreateEntity(proto.getName, "Command")
 
-    val cmd = new Command(proto.getName, ent.id)
+    val cmd = new Command(proto.getName, proto.getDisplayName, ent.id)
     cmd.entity.value = ent
     cmd
   }
@@ -110,7 +110,10 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def convertToProto(sql: Command): CommandProto = {
     // TODO: fill out connected and selected parts of proto
     val b = CommandProto.newBuilder
-    b.setName(sql.name).setUid(sql.name)
+      .setUid(sql.name)
+      .setName(sql.name)
+      .setDisplayName(sql.displayName)
+
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
       case Some(e) => b.setEntity(EQ.entityToProto(e))

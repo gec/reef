@@ -100,6 +100,7 @@ message Point {
 message Command {
   optional string  uid = 1;
   optional string  name = 2;
+  optional string display_name = 3;
   optional Entity logicalNode = 5;
   optional Entity entity   = 6;
 }
