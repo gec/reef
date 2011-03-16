@@ -84,8 +84,8 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
 
     AMQPFixture.run(connection, true) { amqp =>
 
-      amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, true)
-      amqp.bindService(exchangeB, (new HeadersX2).respond, true)
+      amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, competing = true)
+      amqp.bindService(exchangeB, (new HeadersX2).respond, competing = true)
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
         val client = new ProtoClient(syncAmqp, serviceList, 10000)

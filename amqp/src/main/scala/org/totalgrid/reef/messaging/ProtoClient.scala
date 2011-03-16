@@ -69,7 +69,7 @@ class ProtoClient(
       callback(result)
     }
 
-    correlator.send(request, info.exchange, dest.routingKey, handleResponse)
+    correlator.send(request, info.exchange, dest.key, handleResponse)
   }
 
   def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription = {

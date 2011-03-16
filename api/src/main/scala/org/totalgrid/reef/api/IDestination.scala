@@ -20,12 +20,18 @@
  */
 package org.totalgrid.reef.api
 
-trait IDestination {
-  val routingKey: String
+trait IRoutingKey {
+  val key: String
 }
+
+trait IDestination extends IRoutingKey
 
 case object AnyNode extends IDestination {
-  val routingKey = "request"
+  val key = "request"
 }
 
-case class AddressableService(routingKey: String) extends IDestination
+case object AllMessages extends IRoutingKey {
+  val key = "#"
+}
+
+case class AddressableService(key: String) extends IDestination

@@ -50,7 +50,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
       val pub = new PublishingSubscriptionActor(exchange + "_events", new InstantReactor {})
       amqp.add(pub)
-      amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, true)
+      amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, competing = true)
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
         val client = new ProtoClient(syncAmqp, servicelist, 10000)
