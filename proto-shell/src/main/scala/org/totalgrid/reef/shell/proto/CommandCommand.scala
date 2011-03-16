@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 class CommandListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    EntityView.printList(EntityRequest.getAllOfType("Command", this))
+    CommandView.commandList(CommandRequest.getAllCommands(this).toList)
   }
 }
 

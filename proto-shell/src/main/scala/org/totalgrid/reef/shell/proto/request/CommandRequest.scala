@@ -26,6 +26,10 @@ import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 object CommandRequest {
 
+  def getAllCommands(client: SyncOperations) = {
+    client.getOrThrow(Command.newBuilder.setUid("*").build)
+  }
+
   def blockCommands(ids: List[String], user: String, client: SyncOperations) = {
     val names = ids.map(getNameFromId(_, client))
     val block = CommandAccess.newBuilder

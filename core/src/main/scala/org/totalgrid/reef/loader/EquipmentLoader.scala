@@ -105,7 +105,10 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
 
     // Commands are controls and setpoints. TODO: setpoints
     trace("load equipment: " + name + " commands")
-    val commands = profiles.flatMap(_.getControl.toList).map(c => processControl(childPrefix + c.getName, entity))
+    val commands = profiles.flatMap(_.getControl.toList).map { c =>
+      val displayName = Option(c.getDisplayName) getOrElse c.getName
+      processControl(childPrefix + c.getName, displayName, entity)
+    }
 
     // Points
     trace("load equipment: " + name + " points")
@@ -119,13 +122,13 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name: String, equipmentEntity: Entity) = {
+  def processControl(name: String, displayName: String, equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
     loadCache.addControl(name)
     val commandEntity = toEntityType(name, List("Command"))
-    val command = toCommand(name, commandEntity)
+    val command = toCommand(name, displayName, commandEntity)
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
 
@@ -249,9 +252,10 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
   /**
    * Commands are controls and setpoints. TODO: setpoints
    */
-  def toCommand(name: String, entity: Entity): Command = {
+  def toCommand(name: String, displayName: String, entity: Entity): Command = {
     val proto = Command.newBuilder
       .setName(name)
+      .setDisplayName(displayName)
       .setEntity(entity)
 
     proto.build
