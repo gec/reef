@@ -386,6 +386,8 @@ object OptionalProtos {
     val setBool = optionally(_.hasSetBool, _.getSetBool)
     val setUnit = optionally(_.hasSetUnit, _.getSetUnit)
     val event = new OptEventGeneration(optionally(_.hasEvent, _.getEvent))
+    val boolTransform = new OptBoolEnumTransform(optionally(_.hasBoolTransform, _.getBoolTransform))
+    val intTransform = new OptIntEnumTransform(optionally(_.hasIntTransform, _.getIntTransform))
   }
   implicit def proto2OptLinearTransform(a: LinearTransform): OptLinearTransform = new OptLinearTransform(Some(a))
   class OptLinearTransform(real: Option[LinearTransform]) extends OptionalStruct(real) {
@@ -408,6 +410,8 @@ object OptionalProtos {
     val unit = optionally(_.hasUnit, _.getUnit)
     val valueType = optionally(_.hasValueType, _.getValueType)
     val boolValue = optionally(_.hasBoolValue, _.getBoolValue)
+    val stringValue = optionally(_.hasStringValue, _.getStringValue)
+    val intValue = optionally(_.hasIntValue, _.getIntValue)
   }
   implicit def proto2OptTriggerSet(a: TriggerSet): OptTriggerSet = new OptTriggerSet(Some(a))
   class OptTriggerSet(real: Option[TriggerSet]) extends OptionalStruct(real) {
@@ -419,6 +423,20 @@ object OptionalProtos {
     val upperLimit = optionally(_.hasUpperLimit, _.getUpperLimit)
     val lowerLimit = optionally(_.hasLowerLimit, _.getLowerLimit)
     val deadband = optionally(_.hasDeadband, _.getDeadband)
+  }
+  implicit def proto2OptBoolEnumTransform(a: BoolEnumTransform): OptBoolEnumTransform = new OptBoolEnumTransform(Some(a))
+  class OptBoolEnumTransform(real: Option[BoolEnumTransform]) extends OptionalStruct(real) {
+    val trueString = optionally(_.getTrueString)
+    val falseString = optionally(_.getFalseString)
+  }
+  implicit def proto2OptIntEnumTransform(a: IntEnumTransform): OptIntEnumTransform = new OptIntEnumTransform(Some(a))
+  class OptIntEnumTransform(real: Option[IntEnumTransform]) extends OptionalStruct(real) {
+    val mappings = optionally(_.getMappingsList.toList.map { i => new OptIntToString(Some(i)) })
+  }
+  implicit def proto2OptIntToString(a: IntToString): OptIntToString = new OptIntToString(Some(a))
+  class OptIntToString(real: Option[IntToString]) extends OptionalStruct(real) {
+    val value = optionally(_.getValue)
+    val string = optionally(_.getString)
   }
   implicit def proto2OptMeasurementProcessingRouting(a: MeasurementProcessingRouting): OptMeasurementProcessingRouting = new OptMeasurementProcessingRouting(Some(a))
   class OptMeasurementProcessingRouting(real: Option[MeasurementProcessingRouting]) extends OptionalStruct(real) {

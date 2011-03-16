@@ -29,6 +29,8 @@ message Action {
   optional bool                                     set_bool = 13;
   optional string                                   set_unit = 14;  // "to" unit
   optional EventGeneration                          event = 15;
+  optional BoolEnumTransform                        bool_transform   =  16;
+  optional IntEnumTransform                         int_transform    =  17;
 }
 
 message LinearTransform {
@@ -67,6 +69,8 @@ message Trigger {
   optional string                                         unit = 13;       // "from" unit
   optional org.totalgrid.reef.proto.Measurements.Measurement.Type   value_type = 14;
   optional bool                                           bool_value = 15;
+  optional string                                         string_value = 16;
+  optional sint64                                         int_value    = 17;
 }
 
 // A set of triggers for a point.
@@ -83,6 +87,21 @@ message AnalogLimit {
   optional double lower_limit = 2;
   optional double deadband    = 3;
 }
+
+message BoolEnumTransform {
+  required string true_string  = 1;
+  required string false_string = 2;
+}
+
+message IntEnumTransform {
+  repeated IntToString mappings = 1;
+}
+
+message IntToString {
+  required sint64 value       = 1;
+  required string string      = 2;
+}
+
 
 message MeasurementProcessingRouting{
   optional string service_routing_key   = 1;

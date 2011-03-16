@@ -282,6 +282,21 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = AnalogLimit.parseFrom(bytes)
     def getKlass = classOf[AnalogLimit]
   }
+  def boolEnumTransform() = new ITypeDescriptor[BoolEnumTransform] {
+    def serialize(typ: BoolEnumTransform): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = BoolEnumTransform.parseFrom(bytes)
+    def getKlass = classOf[BoolEnumTransform]
+  }
+  def intEnumTransform() = new ITypeDescriptor[IntEnumTransform] {
+    def serialize(typ: IntEnumTransform): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = IntEnumTransform.parseFrom(bytes)
+    def getKlass = classOf[IntEnumTransform]
+  }
+  def intToString() = new ITypeDescriptor[IntToString] {
+    def serialize(typ: IntToString): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = IntToString.parseFrom(bytes)
+    def getKlass = classOf[IntToString]
+  }
   def measurementProcessingRouting() = new ITypeDescriptor[MeasurementProcessingRouting] {
     def serialize(typ: MeasurementProcessingRouting): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = MeasurementProcessingRouting.parseFrom(bytes)

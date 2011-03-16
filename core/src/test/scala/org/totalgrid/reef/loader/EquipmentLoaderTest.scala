@@ -132,8 +132,11 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
         breaker.add(profile)
       case None =>
         val status = new Status("Bkr", "status")
-        if (isTrigger)
+        if (isTrigger) {
           status.add(new Unexpected(false, "Nominal"))
+          status.add(new ValueMap("false", "CLOSED"))
+          status.add(new ValueMap("true", "OPEN"))
+        }
         breaker
           .add(new Type("Breaker"))
           .add(new Type("Equipment"))
@@ -161,6 +164,8 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def makePointProfile(profileName: String, value: Boolean, actionSet: String): PointProfile = {
     new PointProfile(profileName)
       .add(new Unexpected(value, actionSet))
+      .add(new ValueMap("false", "CLOSED"))
+      .add(new ValueMap("true", "OPEN"))
   }
 
   def makeActionSetNominal(): sx.ActionSet = {

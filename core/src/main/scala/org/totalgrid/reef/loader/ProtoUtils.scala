@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.loader
 
-import equipment.{ Unexpected, Range }
+import equipment.{ ValueMap, Unexpected, Range }
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.proto.Processing._
@@ -129,15 +129,51 @@ object ProtoUtils {
     proto
   }
 
+  def toTrigger(pointName: String, conversions: List[ValueMap], unit: String): Trigger.Builder = {
+    val name = pointName + ".convert"
+    val proto = Trigger.newBuilder
+      .setTriggerName(name) // trigger if name is correct
+      .setUnit("raw") // TODO: get unit for conversion better
+
+    proto.setPriority(0)
+
+    val actionBuilder = Action.newBuilder.setActionName(name).setType(ActivationType.HIGH)
+
+    try {
+      // TODO: verify if this implict checking of boolean-ness on ValueMap will be acceptable
+      conversions.foreach(vm => vm.getFromValue.toBoolean)
+      val convertMap = conversions.map { vm => vm.getFromValue.toBoolean -> vm.getToValue }.toMap
+      actionBuilder.setBoolTransform(BoolEnumTransform.newBuilder.setFalseString(convertMap(false)).setTrueString(convertMap(true)))
+    } catch {
+      case _: NumberFormatException =>
+        try {
+          conversions.foreach(vm => vm.getFromValue.toInt)
+          val intTransform = IntEnumTransform.newBuilder()
+          conversions.foreach(vm => intTransform.addMappings(IntToString.newBuilder.setValue(vm.getFromValue.toInt).setString(vm.getToValue)))
+          actionBuilder.setIntTransform(intTransform)
+        } catch {
+          case _: NumberFormatException =>
+            throw new Exception("Not all valueMap from values for point: '" + pointName + "' are convertible to booleans or integers.")
+        }
+    }
+
+    proto.addActions(actionBuilder)
+
+    proto
+  }
+
   def toTrigger(pointName: String, unexpected: Unexpected, unit: String, actionModel: HashMap[String, ActionSet]): Trigger.Builder = {
     val name = pointName + "." + unexpected.getActionSet
     val proto = Trigger.newBuilder
       .setTriggerName(name)
     //  .setUnit(unit)
 
-    // TODO: implement unexpected strings and ints
     if (unexpected.isSetBooleanValue)
       proto.setBoolValue(unexpected.isBooleanValue)
+    if (unexpected.isSetStringValue)
+      proto.setStringValue(unexpected.getStringValue)
+    if (unexpected.isSetIntValue)
+      proto.setIntValue(unexpected.getIntValue)
 
     val actionSet = getActionSet(actionModel, name, unexpected)
     addActions(name, proto, actionSet)

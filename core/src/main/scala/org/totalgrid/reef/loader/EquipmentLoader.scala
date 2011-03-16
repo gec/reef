@@ -175,6 +175,9 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
     val unexpectedValues = getElements[Unexpected](name, pointT, _.getUnexpected.toList)
     triggers = triggers ::: unexpectedValues.map { unexpected => toTrigger(name, unexpected, unit, actionModel) }
 
+    val convertValues = getElements[ValueMap](name, pointT, _.getValueMap.toList)
+    if (!convertValues.isEmpty) triggers = triggers ::: List(toTrigger(name, convertValues, unit))
+
     if (!triggers.isEmpty) addTriggers(client, point, triggers)
 
     // TODO: process valueMap

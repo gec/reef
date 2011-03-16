@@ -29,11 +29,15 @@
 
         <eq:profiles>
 
-            <eq:pointProfile name="NormallyFalseAlarmed">
-                <eq:unexpected booleanValue="true" actionSet="Nominal"/>
+            <eq:pointProfile name="TrippedStatus">
+                <eq:unexpected stringValue="TRIPPED" actionSet="Nominal"/>
+                <eq:valueMap fromValue="true" toValue="TRIPPED"/>
+                <eq:valueMap fromValue="false" toValue="CLOSED"/>
             </eq:pointProfile>
-            <eq:pointProfile name="NormallyTrueAlarmed">
-                <eq:unexpected booleanValue="false" actionSet="Nominal"/>
+            <eq:pointProfile name="BreakerStatus">
+                <eq:unexpected stringValue="CLOSED" actionSet="Nominal"/>
+                <eq:valueMap fromValue="true" toValue="CLOSED"/>
+                <eq:valueMap fromValue="false" toValue="TRIPPED"/>
             </eq:pointProfile>
 
 
@@ -49,12 +53,12 @@
                 <eq:control name="Trip"/>
                 <eq:control name="Close"/>
 
-                <eq:status name="Bkr" unit="status" pointProfile="NormallyTrueAlarmed">
+                <eq:status name="Bkr" unit="status" pointProfile="BreakerStatus">
                     <eq:control name="Trip"/>
                     <eq:control name="Close"/>
                 </eq:status>
 
-                <eq:status name="Tripped" unit="status" pointProfile="NormallyFalseAlarmed"/>
+                <eq:status name="Tripped" unit="status" pointProfile="TrippedStatus"/>
             </eq:equipmentProfile>
 
              <eq:equipmentProfile name="MockLine">
