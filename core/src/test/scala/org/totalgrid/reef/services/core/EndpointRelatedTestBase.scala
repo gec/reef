@@ -38,8 +38,6 @@ import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.api.service.SyncServiceBase
-
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import _root_.scala.collection.JavaConversions._
 
@@ -51,8 +49,10 @@ import org.totalgrid.reef.util.{ Logging, SyncVar }
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.proto.{ ReefServicesList }
+
 import org.totalgrid.reef.api._
-import service.SyncServiceBase
+import org.totalgrid.reef.api.service.IServiceAsync
+
 import ServiceTypes.Event
 
 abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
@@ -110,7 +110,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
-    def attachServices(endpoints: Seq[SyncServiceBase[_]]): Unit = endpoints.foreach { ep =>
+    def attachServices(endpoints: Seq[IServiceAsync[_]]): Unit = endpoints.foreach { ep =>
       val exch = ReefServicesList.getServiceInfo(ep.descriptor.getKlass).exchange
       amqp.bindService(exch, ep.respond, true)
     }

@@ -20,11 +20,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoClient }
 
-import org.totalgrid.reef.proto.{ ReefServicesList, Descriptors }
-import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -32,65 +30,99 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, ServiceTypes }
-import org.totalgrid.reef.api.service.SyncServiceBase
 
-class MeasurementBatchService(amqp: AMQPProtoFactory) extends SyncServiceBase[MeasurementBatch] {
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
+import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure, MultiResult }
+import org.totalgrid.reef.api.service.AsyncServiceBase
+
+import org.totalgrid.reef.services.framework.ServiceBehaviors._
+
+class MeasurementBatchService(amqp: AMQPProtoFactory)
+    extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def delete(req: MeasurementBatch, env: RequestEnv) = noVerb("delete")
-  override def get(req: MeasurementBatch, env: RequestEnv) = noVerb("get")
+  override def deleteAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noVerb("delete")
+  override def getAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noVerb("get")
+  override def postAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noVerb("post")
 
-  override def post(req: MeasurementBatch, env: RequestEnv) = put(req, env)
-  override def put(req: MeasurementBatch, env: RequestEnv) = {
-    transaction {
+  override def putAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = {
+
+    val requests: List[Request[MeasurementBatch]] = transaction {
+      // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName)
       val points = ApplicationSchema.points.where(p => p.name in names).toList
-      // TODO: load all endpoints efficiently
 
-      if (!points.forall(_.endpoint.value.isDefined)) {
+      if (!points.forall(_.endpoint.value.isDefined))
         throw new BadRequestException("Not all points have endpoints set.")
-      }
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
 
-      val destForBatchs = commEndpoints.size match {
-        case 0 => throw new BadRequestException("No Logical Nodes on points: " + names)
-        case 1 => (commEndpoints.head._1, req) :: Nil
-        case _ => rebuildBatches(req, commEndpoints)
+      commEndpoints.size match {
+        //fails with exception if any batch can't be routed
+        case 0 => throw new BadRequestException("No Logical Nodes on points: ")
+        case 1 => Request(Envelope.Verb.PUT, req, destination = convertEndpointToDestination(commEndpoints.head._1)) :: Nil
+        case _ => getRequests(req, commEndpoints)
       }
-      destForBatchs.foreach {
-        case (ce, batch) =>
-          ce.frontEndAssignment.value.serviceRoutingKey match {
-            case Some(routingKey) =>
-              val client = amqp.getProtoServiceClient(ReefServicesList, 1000, routingKey)
-              client.putOrThrow(batch)
-              client.close()
-            case None =>
-              throw new BadRequestException("Measurement Stream not ready.")
+
+    }
+
+    borrow { client =>
+      client.requestAsyncScatterGather(requests) { results =>
+        val failures = results.flatMap {
+          _ match {
+            case x: Failure => Some(x)
+            case _ => None
           }
+        }
+
+        if (failures.size == 0) callback(Response(Envelope.Status.OK, "", List(MeasurementBatch.newBuilder(req).clearMeas.build())))
+        else {
+          val msg = failures.mkString(",")
+          callback(Response(Envelope.Status.INTERNAL_ERROR, msg, Nil))
+        }
       }
-      val sentBatches = destForBatchs.map { case (ce, batch) => batch }
-      new Response(Envelope.Status.OK, sentBatches)
+    }
+
+  }
+
+  private def borrow[A](fun: ProtoClient => A): A = {
+
+    var client: Option[ProtoClient] = None
+
+    try {
+      val client = Some(amqp.getProtoServiceClient(ReefServicesList, 5000))
+      fun(client.get)
+    } finally {
+      try {
+        client.foreach {
+          _.close()
+        }
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
     }
   }
 
-  private def rebuildBatches(req: MeasurementBatch, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[(CommunicationEndpoint, MeasurementBatch)] = {
-    var measList = req.getMeasList().toList
+  private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {
+    case Some(key) => AddressableService(key)
+    case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.name.value)
+  }
 
-    var retList: List[(CommunicationEndpoint, MeasurementBatch)] = Nil
+  private def getRequests(req: MeasurementBatch, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
+    val measList = req.getMeasList().toList
 
     // TODO: more efficient creation of measurement batches
-    commEndpoints.foreach {
-      case (ce, points) =>
+    commEndpoints.foldLeft(Nil: List[Request[MeasurementBatch]]) {
+      case (sum, (ce, points)) =>
+
         val batch = MeasurementBatch.newBuilder
         batch.setWallTime(req.getWallTime)
         points.foreach { p =>
           batch.addMeas(measList.find(_.getName == p.name).get)
         }
-        retList = (ce, batch.build) :: retList
+        Request(Envelope.Verb.PUT, batch.build, destination = convertEndpointToDestination(ce)) :: sum
     }
-    retList
+
   }
 }

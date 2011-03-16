@@ -73,7 +73,7 @@ class ApplicationManagementTest extends FunSuite with ShouldMatchers with Before
     val client = amqp.getProtoServiceClient(ReefServicesList, 5000)
 
     /// current state of the StatusSnapshot
-    var lastSnapShot = new SyncVar(None: Option[StatusSnapshot])
+    var lastSnapShot = new SyncVar[Option[StatusSnapshot]](None: Option[StatusSnapshot])
 
     /// register the application with the services handler
     val appConfig = registerInstance()

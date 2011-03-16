@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
 
 import org.totalgrid.reef.api.scalaclient.ServiceClient
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 import org.totalgrid.reef.api.ServiceTypes._
 
 //implicits for massaging service return types
@@ -60,7 +60,7 @@ class MockServiceClient(timeout: Long = MockProtoRegistry.timeout) extends Servi
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) = {
+  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) = {
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
@@ -165,7 +165,7 @@ trait MockProtoServiceRegistry extends ProtoServiceRegistry {
 
   def getMockClient: MockServiceClient = mockclient.get
 
-  def getServiceClient(key: String): ServiceClient = mockclient match {
+  def getServiceClient(): ServiceClient = mockclient match {
     case Some(x) => x
     case None =>
       val ret = new MockServiceClient

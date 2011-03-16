@@ -23,7 +23,7 @@ package org.totalgrid.reef.api.request.utils
 import xml.Node
 import scala.collection.mutable.Queue
 
-import org.totalgrid.reef.api.{ RequestEnv, Envelope, ReefServiceException }
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, IDestination, AnyNode }
 import org.totalgrid.reef.api.ServiceTypes.MultiResult
 import org.totalgrid.reef.api.scalaclient.{ DefaultHeaders, SyncOperations }
 
@@ -65,15 +65,14 @@ trait InteractionRecorder extends SyncOperations { self: DefaultHeaders =>
    * implementation of SyncOperations base function that uses the passed in "real" client to create collect interactions
    * for later formatting to file
    */
-  abstract override def request[A <: AnyRef](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = {
+  abstract override def request[A <: AnyRef](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode): MultiResult[A] = {
+
+    val results = super.request(verb, request, env, destination)
 
     if (explanations.nonEmpty) {
-      val results = super.request(verb, request, env)
       explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, results)
-      results
-    } else {
-      // if we're not going to document it just run the request natively
-      super.request(verb, request, env)
     }
+
+    results
   }
 }

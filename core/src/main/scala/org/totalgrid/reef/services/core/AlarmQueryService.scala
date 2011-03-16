@@ -20,12 +20,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
-import org.totalgrid.reef.api.service.SyncServiceBase; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -33,7 +32,7 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -53,8 +52,7 @@ object AlarmQueryService {
   }
 }
 
-class AlarmQueryService
-    extends SyncServiceBase[AlarmList] {
+class AlarmQueryService extends AsyncToSyncServiceAdapter[AlarmList] {
 
   override val descriptor = Descriptors.alarmList
 

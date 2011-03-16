@@ -35,7 +35,7 @@ trait ServiceClientFactory {
    */
   def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
 
-  def getProtoServiceClient(lookup: ServiceList, timeoutms: Long, key: String = "request") = new ProtoClient(this, lookup, timeoutms, key)
+  def getProtoServiceClient(lookup: ServiceList, timeoutms: Long) = new ProtoClient(this, lookup, timeoutms)
 
   /**
    * the factory must create subscription objects of the appropriate type even if its a "stream type"

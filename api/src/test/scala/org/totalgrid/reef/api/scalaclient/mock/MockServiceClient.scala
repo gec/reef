@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.scalaclient.mock
 
 import org.totalgrid.reef.api.scalaclient.ServiceClient
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 import org.totalgrid.reef.api.ServiceTypes.MultiResult
 
 import scala.collection.mutable.Queue
@@ -32,7 +32,7 @@ class MockServiceClient extends ServiceClient {
 
   private val queue = new Queue[RequestRecord[_]]
 
-  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) {
+  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
     queue += RequestRecord(verb, payload, env, callback)
   }
 

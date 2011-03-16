@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.scalaclient
  */
 import com.google.protobuf.GeneratedMessage
 import scala.collection.mutable.Queue
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.ServiceTypes._
 /**
  * Mock the ISyncServiceClient to collect all puts, posts, and deletes. A 'get' function
@@ -69,7 +69,7 @@ class MockSyncOperations(
   /**
    * Override request to define all of the verb helpers
    */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = verb match {
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode): MultiResult[A] = verb match {
     case Envelope.Verb.GET => doGet(payload).asInstanceOf[MultiResult[A]]
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload)

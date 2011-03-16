@@ -35,7 +35,7 @@ import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
-    extends BasicProtoService[CommandProto, Command, CommandServiceModel] {
+    extends BasicSyncModeledService[CommandProto, Command, CommandServiceModel] {
 
   override val descriptor = Descriptors.command
 }

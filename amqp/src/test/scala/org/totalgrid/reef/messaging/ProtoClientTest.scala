@@ -29,8 +29,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.SyncServiceBase
-import service.SyncServiceBase
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
@@ -46,7 +45,7 @@ object TestDescriptors {
   }
 }
 
-class ServiceNotificationServiceX3 extends SyncServiceBase[Envelope.ServiceNotification] {
+class ServiceNotificationServiceX3 extends AsyncToSyncServiceAdapter[Envelope.ServiceNotification] {
 
   val descriptor = TestDescriptors.serviceNotification
 
@@ -56,7 +55,7 @@ class ServiceNotificationServiceX3 extends SyncServiceBase[Envelope.ServiceNotif
   def post(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("post")
 }
 
-class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
+class HeadersX2 extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
 
   val descriptor = TestDescriptors.requestHeader
 

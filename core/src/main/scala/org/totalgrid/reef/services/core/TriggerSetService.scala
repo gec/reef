@@ -34,7 +34,7 @@ import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 
 class TriggerSetService(protected val modelTrans: ServiceTransactable[TriggerSetServiceModel])
-    extends BasicProtoService[TriggerProto, TriggerSet, TriggerSetServiceModel] /*(modelTrans)*/ {
+    extends BasicSyncModeledService[TriggerProto, TriggerSet, TriggerSetServiceModel] /*(modelTrans)*/ {
 
   override val descriptor = Descriptors.triggerSet
 }
