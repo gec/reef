@@ -41,7 +41,7 @@ trait ServiceTransactable[+ModelType] {
 }
 
 /**
- *  Generic component that maintains a ServiceSubscriptionHandler resource and provides an implementation of 
+ *  Generic component that maintains a ServiceSubscriptionHandler resource and provides an implementation of
  *  transactional/buffered behavior. Inherited classes provide the factory method for instantiating model objects
  *  given the ServiceSubscriptionHandler.
  */

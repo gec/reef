@@ -82,11 +82,11 @@ object ApplicationEnroller extends Logging {
 import ApplicationEnroller._
 
 /**
- * handles the creation of the ApplicationConfig registration proto and then constructing the major components that 
- * depend on the result of the registration (for output channels etc.). 
- * 
- * This object also handles the lifecycle of the 
- * 
+ * handles the creation of the ApplicationConfig registration proto and then constructing the major components that
+ * depend on the result of the registration (for output channels etc.).
+ *
+ * This object also handles the lifecycle of the
+ *
  * @param amqp bus interface
  * @param processType should be either FEP or Processing
  * @param setupFun the construction function for the class using the components, must be StartStoppable

@@ -48,10 +48,11 @@ class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) e
   /// mutable state
   private val map = mutable.Map.empty[String, Tuple2[Timer, ResponseCallback]]
 
-  /**	Sends a request with an asynchronous callback
-   *	 
-   *	@param request ServiceRequest proto to send
-   *	@param callback function to callback with an Option[ServiceResponse] 
+  /**
+   * 	Sends a request with an asynchronous callback
+   *
+   * @param request ServiceRequest proto to send
+   * @param callback function to callback with an Option[ServiceResponse]
    */
   def send(requestRaw: ServiceRequest.Builder, exchange: String, key: String, callback: ResponseCallback) {
 

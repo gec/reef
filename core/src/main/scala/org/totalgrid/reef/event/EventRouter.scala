@@ -40,7 +40,7 @@ import org.totalgrid.reef.proto.RoutingKeys
  *  @param processedEventExchange   Destination for events
  *  @param processedLogExchange   Destination for logs
  *  @param rawEventExchange   Source of raw events
- *  @param registry                                    
+ *  @param registry
  *
  *  See EventRouterContext for details.
  *  // TODO: delete EventRouter

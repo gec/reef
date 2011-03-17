@@ -116,25 +116,25 @@ class ProcessingNodeIntegration extends Suite with ShouldMatchers {
       .setAnalogLimit(AnalogLimit.newBuilder.setLowerLimit(0).setDeadband(5))
       .addActions(
         Action.newBuilder
-        .setActionName("strip")
-        .setType(ActivationType.HIGH)
-        .setStripValue(true))
-      .addActions(
-        Action.newBuilder
-        .setActionName("qual")
-        .setType(ActivationType.HIGH)
-        .setQualityAnnotation(Quality.newBuilder.setValidity(Quality.Validity.QUESTIONABLE)))
-      .addActions(
-        Action.newBuilder
-        .setActionName("eventrise")
-        .setType(ActivationType.RISING)
-        .setEvent(EventGeneration.newBuilder.setEventType("event01")))
-      .addActions(
-        Action.newBuilder
-        .setActionName("eventfall")
-        .setType(ActivationType.FALLING)
-        .setEvent(EventGeneration.newBuilder.setEventType("event02")))
-      .build
+          .setActionName("strip")
+          .setType(ActivationType.HIGH)
+          .setStripValue(true))
+        .addActions(
+          Action.newBuilder
+            .setActionName("qual")
+            .setType(ActivationType.HIGH)
+            .setQualityAnnotation(Quality.newBuilder.setValidity(Quality.Validity.QUESTIONABLE)))
+          .addActions(
+            Action.newBuilder
+              .setActionName("eventrise")
+              .setType(ActivationType.RISING)
+              .setEvent(EventGeneration.newBuilder.setEventType("event01")))
+            .addActions(
+              Action.newBuilder
+                .setActionName("eventfall")
+                .setType(ActivationType.FALLING)
+                .setEvent(EventGeneration.newBuilder.setEventType("event02")))
+              .build
   }
   def trans(measName: String) = {
     Trigger.newBuilder
@@ -142,15 +142,15 @@ class ProcessingNodeIntegration extends Suite with ShouldMatchers {
       .setUnit("raw")
       .addActions(
         Action.newBuilder
-        .setActionName("linear")
-        .setType(ActivationType.HIGH)
-        .setLinearTransform(LinearTransform.newBuilder.setScale(10).setOffset(50000)))
-      .addActions(
-        Action.newBuilder
-        .setActionName("unit")
-        .setType(ActivationType.HIGH)
-        .setSetUnit("V"))
-      .build
+          .setActionName("linear")
+          .setType(ActivationType.HIGH)
+          .setLinearTransform(LinearTransform.newBuilder.setScale(10).setOffset(50000)))
+        .addActions(
+          Action.newBuilder
+            .setActionName("unit")
+            .setType(ActivationType.HIGH)
+            .setSetUnit("V"))
+          .build
   }
 
   def checkGood(m: Measurement, value: Double = 5.3) {

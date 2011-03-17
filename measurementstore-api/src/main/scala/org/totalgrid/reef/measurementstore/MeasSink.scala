@@ -30,7 +30,8 @@ import MeasSink._
 /// A wide interface for reading/writing historical data
 trait MeasSink {
 
-  /**   Performs a batch addition.
+  /**
+   *   Performs a batch addition.
    *     @param meas Sequence of measurements to be added
    */
   def set(meas: Seq[Meas]): Unit

@@ -23,7 +23,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.api.service.IServiceAsync
 
 /**
- * ServiceProviders use a container to add themselves to the collection of running service providers. 
+ * ServiceProviders use a container to add themselves to the collection of running service providers.
  */
 trait ServiceContainer extends ServiceAttacher {
 

@@ -22,7 +22,8 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.api.Envelope._
 
-/** trait used to present a simple interface to a request/reply interface as a 
+/**
+ * trait used to present a simple interface to a request/reply interface as a
  * simple async channel
  */
 trait RequestReplyChannel[R, S] {
@@ -44,7 +45,8 @@ abstract class AMQPServiceRequestReply(responseExchange: String)
 
 trait ProtoServiceChannel extends RequestReplyChannel[ServiceRequest, ServiceResponse]
 
-/** combines a response queue and a publisher into one class that provides implements the
+/**
+ * combines a response queue and a publisher into one class that provides implements the
  * RequestReplyChannel interface primarily used by service clients
  */
 abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => Array[Byte], deseralize: Array[Byte] => R)
@@ -68,7 +70,8 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
     dest = Some(x)
   }
 
-  /** Overrides the online function to setup the subscriber BEFORE the publisher.
+  /**
+   * Overrides the online function to setup the subscriber BEFORE the publisher.
    */
   override def online(b: BrokerChannel) {
     // This ordering is very important for avoiding race conditions!!

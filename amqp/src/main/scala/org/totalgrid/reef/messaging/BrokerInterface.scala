@@ -22,11 +22,13 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.api.IConnectionListener
 
-/** helper to package up ReplyTo address 
+/**
+ * helper to package up ReplyTo address
  */
 case class Destination(exchange: String, key: String)
 
-/** Anyone wanting to recieve messages from the bus need to implement this interface
+/**
+ * Anyone wanting to recieve messages from the bus need to implement this interface
  * TODO: factor MessageConsumer into a free function
  */
 trait MessageConsumer {
@@ -40,7 +42,7 @@ trait ChannelObserver {
 
 /**
  * Primary class for interfacing with a broker, a new binding to a bus needs to implement all of the functions.
- * In AMQP, channels are parallel entities on a connection, any one channel needs to be manipulated only from a 
+ * In AMQP, channels are parallel entities on a connection, any one channel needs to be manipulated only from a
  * single thread.
  */
 trait BrokerChannel {

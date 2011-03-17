@@ -24,14 +24,15 @@ import org.totalgrid.reef.proto.Measurements
 
 trait MeasEncoder {
 
-  /** 
+  /**
    * Turns a sequence of measurements into a MeasArchive, applying an encoding strategy
    * @param meas Sequence of measurements in ascending time order
    * @return MeasArchive object representing the sequence
    */
   def encode(meas: Seq[Measurements.Measurement]): Array[Byte]
 
-  /** Turns an archive into a sequence of measurements, reversing the encoding strategy      @param meas Sequence of measurements in ascending time order      @return ascending time ordered sequence of measurements
+  /**
+   * Turns an archive into a sequence of measurements, reversing the encoding strategy      @param meas Sequence of measurements in ascending time order      @return ascending time ordered sequence of measurements
    */
   def decode(serialized: Array[Byte]): Seq[Measurements.Measurement]
 

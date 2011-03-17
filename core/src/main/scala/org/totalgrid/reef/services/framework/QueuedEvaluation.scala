@@ -40,7 +40,7 @@ trait QueuedEvaluation {
   def queuePostTransaction(fun: => Unit): Unit
 }
 
-/** 
+/**
  * Simple List-based implementation of function-queuing for later evaluation. Queued
  * functions are evaluated in the order they were received.
  *

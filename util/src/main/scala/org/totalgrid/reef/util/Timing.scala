@@ -22,11 +22,11 @@ package org.totalgrid.reef.util
 
 /**
  *  Function for timing operations
- * 
+ *
  */
 object Timing {
 
-  /** 
+  /**
    * Runs a block of code and returns how long it took in milliseconds (not the return value of the block)
    */
   def benchmark[A](fun: => A): Long = {
@@ -35,14 +35,14 @@ object Timing {
     System.currentTimeMillis - start
   }
 
-  /** 
-   * Runs a block of code and prints (to stdout) how long the operation took 
+  /**
+   * Runs a block of code and prints (to stdout) how long the operation took
    */
   def time[A](name: String)(fun: => A): A = {
     time({ elapsed: Long => println(name + " took " + elapsed + "ms") })(fun)
   }
 
-  /** 
+  /**
    * Runs a block of code and passes the length of time it took to another function
    */
   def time[A](timingFun: Long => Unit)(fun: => A): A = {

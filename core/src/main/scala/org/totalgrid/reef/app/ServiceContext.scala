@@ -26,12 +26,12 @@ import com.google.protobuf.{ GeneratedMessage => Protobuf }
 import org.totalgrid.reef.api.Envelope
 
 /**
- * Implements a single resource service consumer. 
+ * Implements a single resource service consumer.
  * Treats subscription and addition as the same (push).
  * Notifies registered observers when a new subscription
  * event occurs. Provides event handlers suitable for use
  * with ServiceHandler
- * 
+ *
  */
 trait ServiceContext[A <: AnyRef] extends Observable {
 

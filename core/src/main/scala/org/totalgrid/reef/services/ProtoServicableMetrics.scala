@@ -46,7 +46,7 @@ trait ServiceMetricHooks {
 }
 
 /**
- * instruments a service proto request entry point so metrics can be collected (by verb if configured) 
+ * instruments a service proto request entry point so metrics can be collected (by verb if configured)
  */
 class ServiceMetrics[A](service: IServiceAsync[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long)
     extends IServiceAsync[A]

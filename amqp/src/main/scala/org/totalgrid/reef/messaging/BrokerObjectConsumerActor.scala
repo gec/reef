@@ -33,8 +33,8 @@ trait BrokerObjectConsumer {
 }
 
 /**
- * This actor simplifies objects that need to handle the broker coming up and down and 
- * queuing operations until the broker is online. 
+ * This actor simplifies objects that need to handle the broker coming up and down and
+ * queuing operations until the broker is online.
  */
 class BrokerObjectConsumerActor(reactor: Reactable) extends BrokerObjectConsumer with ChannelObserver {
 

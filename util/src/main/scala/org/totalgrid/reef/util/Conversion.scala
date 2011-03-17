@@ -47,7 +47,7 @@ class Mapified[A](i: Iterable[A]) {
 class TakeRand[A](l: List[A]) {
 
   /**
-   * @return an Option with either a random element from the list or None if list is empty 
+   * @return an Option with either a random element from the list or None if list is empty
    */
   def takeRand: Option[A] = {
     if (l.size == 0) None

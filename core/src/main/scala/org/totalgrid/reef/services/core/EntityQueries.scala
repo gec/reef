@@ -121,7 +121,7 @@ trait EntityTreeQueries { self: EntityQueries =>
         proto.name.map(ent.name === _) ::
         ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
           and (typ.entityId === ent.id))) ::
-        Nil
+          Nil
     }
 
     // If query specifies type, do a join, otherwise simpler query on uid/name
@@ -188,7 +188,7 @@ trait EntityTreeQueries { self: EntityQueries =>
   case class Relate(rel: String, descendantOf: Boolean, dist: Int)
 
   /**
-   * Tree node of entity query results, wraps an Entity (this node) with its 
+   * Tree node of entity query results, wraps an Entity (this node) with its
    * relationships to subnodes.
    */
   case class ResultNode(val ent: Entity, val subNodes: Map[Relate, List[ResultNode]]) {

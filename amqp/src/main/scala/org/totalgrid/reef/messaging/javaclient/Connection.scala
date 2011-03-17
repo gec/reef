@@ -33,7 +33,7 @@ import org.totalgrid.reef.api.javaclient.{ IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
- *    
+ *
  */
 class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends IConnection {
 

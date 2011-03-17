@@ -67,17 +67,17 @@ class ModelBasedTests extends FunSuite with ShouldMatchers with BeforeAndAfterAl
         .addTypes("Substation")
         .addRelations(
           Relationship.newBuilder
-          .setRelationship("owns")
-          .setDescendantOf(true)
-          .addEntities(
-            EntityProto.newBuilder
-            .addTypes("Bus")
-            .addRelations(Relationship.newBuilder
-              .setRelationship("owns")
-              .setDescendantOf(true)
-              .addEntities(
-                EntityProto.newBuilder
-                .addTypes("Point"))))).build
+            .setRelationship("owns")
+            .setDescendantOf(true)
+            .addEntities(
+              EntityProto.newBuilder
+                .addTypes("Bus")
+                .addRelations(Relationship.newBuilder
+                  .setRelationship("owns")
+                  .setDescendantOf(true)
+                  .addEntities(
+                    EntityProto.newBuilder
+                      .addTypes("Point"))))).build
 
     val req = PointProto.newBuilder.setEntity(entReq).build
     val specIds = ApplicationSchema.points.where(t => t.name === "Pittsboro.B12.Kv" or t.name === "Pittsboro.B24.Kv").map(_.id).toList

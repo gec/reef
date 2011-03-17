@@ -26,7 +26,7 @@ import scala.actors.Actor._
 /**
  *  Implements Reactor as a concete Actor using receive style
  *  message handling (dedicated thread)
- *  
+ *
  */
 trait ReceiveActor extends Reactor {
 

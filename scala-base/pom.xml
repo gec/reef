@@ -41,7 +41,7 @@
             <plugin>
                 <groupId>org.scalariform</groupId>
                 <artifactId>scalariform-maven-plugin</artifactId>
-                <version>0.0.8</version>
+                <version>0.0.9</version>
                 <executions>
                     <execution>
                         <goals>

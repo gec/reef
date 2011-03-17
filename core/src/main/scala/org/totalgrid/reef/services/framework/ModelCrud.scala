@@ -20,14 +20,14 @@
  */
 package org.totalgrid.reef.services.framework
 
-/** 
+/**
  * Interface for CRUD model operations
  */
 trait ModelCrud[A] {
 
   /**
    * Create a model entry
-   * 
+   *
    * @param entry   Object to be created
    * @return        Result of store creation/insertion
    */
@@ -35,7 +35,7 @@ trait ModelCrud[A] {
 
   /**
    * Update an existing model entry
-   * 
+   *
    * @param entry       Object to replace existing entry
    * @param existing    Existing entry to be replaced
    * @return            Result stored in data base and whether it was modified
@@ -51,14 +51,14 @@ trait ModelCrud[A] {
   def delete(entry: A): A
 }
 
-/** 
+/**
  * Hooks/callbacks for modifying behavior without
  *  reimplementing generic CRUD operations
  */
 trait ModelHooks[A] {
 
   /**
-   * Called before create 
+   * Called before create
    * @param entry   Object to be created
    * @return        Verified/modified object
    */

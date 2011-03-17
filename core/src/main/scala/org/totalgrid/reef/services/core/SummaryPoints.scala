@@ -32,7 +32,7 @@ import org.totalgrid.reef.api.{ IDestination, AddressableService }
  * to update the same summary values it is easiest conceptually to split apart the inital value calcualtion
  * and the incrementing of the value. We plan on moving the summary point aggragation to a dedicated tool
  * like redis which has built in increment operations and using this interface should make that transition
- * easy. 
+ * easy.
  */
 trait SummaryPoints {
 
@@ -49,7 +49,7 @@ trait SummaryPoints {
 }
 
 /**
- * stores the current value of the summary points for inspect via testing. If using multi-threaded tests 
+ * stores the current value of the summary points for inspect via testing. If using multi-threaded tests
  * an onPublish callback can be provided to be notified of updates.
  */
 class SilentSummaryPoints(onPublish: (String, Int) => Any = (x, y) => {}) extends SummaryPointHolder {
@@ -69,7 +69,7 @@ class SilentSummaryPoints(onPublish: (String, Int) => Any = (x, y) => {}) extend
 }
 
 /**
- * base trait for summary point publishes that holds the initial value and # of increments for each point  
+ * base trait for summary point publishes that holds the initial value and # of increments for each point
  */
 trait SummaryPointHolder extends SummaryPoints with Logging {
   protected case class ValueHolder(var increments: Int, var initialValue: Int, var initialSet: Boolean) {
@@ -129,7 +129,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
   private var clients = Map.empty[String, Channel]
 
   /**
-   * attempt to publish the current value iff the point is enabled and a meas_proc is online 
+   * attempt to publish the current value iff the point is enabled and a meas_proc is online
    * @param name
    * @param current
    */

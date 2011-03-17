@@ -40,7 +40,8 @@ trait ObservableConnection {
 
 }
 
-/**	Describes an object that notify a set of observers when a queue changes state
+/**
+ * 	Describes an object that notify a set of observers when a queue changes state
  */
 trait ObservableSubscription {
 

@@ -133,7 +133,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
   }
 
   /**
-   * when setting up asynchronous callbacks it is doubly important to catch exceptions 
+   * when setting up asynchronous callbacks it is doubly important to catch exceptions
    * near where they are thrown or else they will bubble all the way up into the calling code
    */
   private def tryWrap[A](msg: String)(fun: => A) {

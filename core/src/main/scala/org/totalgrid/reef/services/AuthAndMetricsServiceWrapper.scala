@@ -26,7 +26,7 @@ import org.totalgrid.reef.app.CoreApplicationComponents
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
  *  - auth wrapper that does high level access granting based on resource and verb
- *  - metrics collectors that monitor how many and how long the requests are taking 
+ *  - metrics collectors that monitor how many and how long the requests are taking
  */
 class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, serviceConfiguration: ServiceOptions) {
 

@@ -25,8 +25,9 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Mapping
 import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
 
-/** Transforms dnp3 values as they come in from the stack and forwards them.
- *	@param cfg Measurement mapping configuration
+/**
+ * Transforms dnp3 values as they come in from the stack and forwards them.
+ * @param cfg Measurement mapping configuration
  * 	@param accept Function that accepts the converted measurement types
  */
 class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends IDataObserver with Logging {

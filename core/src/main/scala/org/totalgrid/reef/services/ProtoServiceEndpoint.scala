@@ -25,7 +25,7 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders }
 
 /**
- * Interface for "coordinator" functionality, allows classes to get given a reactor for delayed 
+ * Interface for "coordinator" functionality, allows classes to get given a reactor for delayed
  * actions and a "raw" AMQP factory to hook themselves to custom data channels
  */
 trait ProtoServiceCoordinator {

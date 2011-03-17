@@ -25,8 +25,8 @@ import scala.actors.Actor._
 
 /**
  *  Implements Reactor as a concete Actor using react style
- *  message handling (thread pool)   
- *  
+ *  message handling (thread pool)
+ *
  */
 trait ReactActor extends Reactor with Lifecycle {
 

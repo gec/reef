@@ -30,11 +30,11 @@ import org.totalgrid.reef.proto.{ RoutingKeys, Events }
  *
  * <h3>Localization Resource Bundle Files</h3>
  * EventType's are in org.psi.event._ in the utils directory. They reference
- * localization resources in resource files. Resource files are at 
+ * localization resources in resource files. Resource files are at
  * core/resources/\<subsystem\>\<locale\>.properties
  * For example, the FEP module's resource file is at
  * core/resources/FEP_en_US.properties
- * 
+ *
  * We will have to provide more capabilities in the future to
  * search for resource files in other locations as we have more modules.
  *
@@ -127,16 +127,17 @@ trait EventLogPublisher {
   def log(_log: Events.Log): Unit = publishLog(_log)
 }
 
-/** Publish events and logs to the bus. Events are localized on the
+/**
+ * Publish events and logs to the bus. Events are localized on the
  * receiver side when they are written to the log file. Logs are not
  * localized.
- * 
+ *
  * <h3>Use Case</h3><pre>
  * val eventLog = new EventLogPublisher(amqp, "FEP", "raw_events", "raw_logs")     // publishers for events and logs
  *
  * ...
  * eventLog.event( EventType.System.SubsystemStarted)
- * </pre>  
+ * </pre>
  */
 class BusTiedEventLogPublisher(amqp: AMQPProtoFactory,
   subSystem: String,
@@ -148,7 +149,8 @@ class BusTiedEventLogPublisher(amqp: AMQPProtoFactory,
   val publishLog = amqp.publish(logExchange, RoutingKeys.log) // Events.Log => Unit
 }
 
-/** Blackhole event/log handler for testing and mocking purposes
+/**
+ * Blackhole event/log handler for testing and mocking purposes
  */
 object SilentEventLogPublisher extends EventLogPublisher {
   val subsystem = ""

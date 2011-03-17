@@ -28,12 +28,14 @@ import org.totalgrid.reef.api.ServiceTypes._
 import org.totalgrid.reef.api.{ Envelope, ISubscription, IRoutingKey, IDestination, AnyNode, AllMessages }
 import org.totalgrid.reef.api.service.IServiceAsync
 
-/** Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
- *  
+/**
+ * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
+ *
  */
 trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
 
-  /** Configures a publisher that targets a specific exchange
+  /**
+   * Configures a publisher that targets a specific exchange
    */
   private def publish(exchange: String): (Array[Byte], String) => Unit = {
     val pub = new AMQPPublisher(exchange :: Nil) with ReactActor
@@ -148,7 +150,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
    * @param exchange   exchange to bind to
    * @param service handler for the ServiceRequest, must return ServiceReponse
    * @param destination Optionally overrides the default destination of AnyNode
-   * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message) 
+   * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
   def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {

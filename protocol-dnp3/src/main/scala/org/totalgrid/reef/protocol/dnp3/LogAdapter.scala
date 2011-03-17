@@ -23,7 +23,8 @@ package org.totalgrid.reef.protocol.dnp3
 import org.totalgrid.reef.util.Logging
 import scala.collection.Map
 
-/** Shim layer to push log messages and non-operational logvars to the bus from the c++ dnp3 world
+/**
+ * Shim layer to push log messages and non-operational logvars to the bus from the c++ dnp3 world
  * @param nonOpPub c++ LogVars are translated to non-operational data.
  * @param enumToString Map that defines which log variable names are string enums and what that mapping is
  */

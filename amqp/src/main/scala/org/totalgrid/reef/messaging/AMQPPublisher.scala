@@ -28,8 +28,9 @@ object AMQPPublisher {
 
 }
 
-/**	A basic AMQP publisher that can buffer messages if the connection is down.
- * 	
+/**
+ * 	A basic AMQP publisher that can buffer messages if the connection is down.
+ *
  * 	@param	exchangeList	AMQP exchanges to declare when connecting to the bus
  * 	@param	bufferSize	Maximum size of the buffer in bytes
  */

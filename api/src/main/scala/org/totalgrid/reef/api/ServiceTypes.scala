@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.api
 
-/**Contains types/case classes used in the proto service interfaces
+/**
+ * Contains types/case classes used in the proto service interfaces
  */
 object ServiceTypes {
 

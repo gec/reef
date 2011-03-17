@@ -35,7 +35,7 @@ trait ModeledService extends ServiceTypes with ServiceHooks {
 
 /**
  * Base class for services which handle protobuf messages and act on service models.
- * 
+ *
  * Implements SyncServiceBase/ProtoSyncServiceBase interfaces to the messaging system
  * and provides shared types/resource definitions for mixed-in service behavior.
  */

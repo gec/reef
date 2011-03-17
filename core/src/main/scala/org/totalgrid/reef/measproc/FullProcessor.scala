@@ -59,7 +59,8 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
   }
 }
 
-/**  Non-entry point meas processor setup
+/**
+ *  Non-entry point meas processor setup
  */
 class FullProcessor(components: CoreApplicationComponents, measStoreConfig: ConnInfo) extends Logging with Lifecycle {
 

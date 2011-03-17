@@ -25,7 +25,8 @@ import scala.util.Random
 
 import org.totalgrid.reef.messaging._
 
-/** Very simple round robin implementation for mocking purposes
+/**
+ * Very simple round robin implementation for mocking purposes
  */
 trait RoundRobinList[A] {
   var round = 0

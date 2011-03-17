@@ -40,7 +40,7 @@ class SyncSubscription(channel: BrokerChannel, consumer: MessageConsumer) extend
 trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
 
   /**
-   * creates a correlator channel that can multiplex ServiceRequests to different exchanges and collect the inputs 
+   * creates a correlator channel that can multiplex ServiceRequests to different exchanges and collect the inputs
    * and demultiplexes them back to the right clients.
    */
   def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator = {

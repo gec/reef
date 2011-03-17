@@ -39,7 +39,7 @@ object Reactor {
 }
 
 /**
- *  Generic actor that can be used to execute 
+ *  Generic actor that can be used to execute
  *  arbitrary blocks of code. Useful for synchronizing
  *  lots of other threads.
  *

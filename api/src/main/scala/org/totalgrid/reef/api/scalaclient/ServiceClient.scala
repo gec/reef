@@ -23,7 +23,8 @@ package org.totalgrid.reef.api.scalaclient
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 import org.totalgrid.reef.api.ServiceTypes._
 
-/** Provides a thick interface full of helper functions via implement of a single abstract request function
+/**
+ * Provides a thick interface full of helper functions via implement of a single abstract request function
  */
 trait ServiceClient extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
 

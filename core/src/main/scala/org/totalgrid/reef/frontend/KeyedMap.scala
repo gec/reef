@@ -25,10 +25,10 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 /**
- * mixin that handles the add/remove/modify/subscribed behavior by keeping protos in a map and freeing up the 
+ * mixin that handles the add/remove/modify/subscribed behavior by keeping protos in a map and freeing up the
  * user code to handle only the "payload" add/remove behavior. User code can therefore skip any checks to make
  * sure that the object isn't allready created/removed.
- * 
+ *
  * This class can be mixed in to implement the abstract functions of ServiceContext[A]
  */
 trait KeyedMap[A] extends Logging {
@@ -49,7 +49,8 @@ trait KeyedMap[A] extends Logging {
   /* ----- Mutable state -----  */
   private var active = Map.empty[String, A]
 
-  /**    Load a list of slave device connections
+  /**
+   *    Load a list of slave device connections
    */
   def subscribed(list: List[A]): Unit = {
     val map = list.mapify { x => getKey(x) }

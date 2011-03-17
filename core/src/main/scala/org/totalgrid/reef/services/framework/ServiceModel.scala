@@ -96,8 +96,8 @@ trait EnvHolder extends QueuedEvaluation {
   }
 }
 
-/** 
- * Composed trait for the implementation of the service bridge of 
+/**
+ * Composed trait for the implementation of the service bridge of
  * models (event buffering/publishing, subscribe requests)
  */
 trait EventedServiceModel[MessageType <: GeneratedMessage, ModelType]

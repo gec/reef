@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 object TriggerFactory {
   import Triggers._
 
-  /** 
+  /**
    * Converts proto activation type to scala activation type
    * @param proto   Proto activation type
    * @return        Scala activation type

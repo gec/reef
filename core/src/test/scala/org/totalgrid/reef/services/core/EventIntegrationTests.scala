@@ -350,8 +350,8 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
     val ent = EntityProto.newBuilder.setName(name)
     ent.addRelations(
       RelationshipProto.newBuilder
-      .setRelationship("owns")
-      .setDescendantOf(true))
+        .setRelationship("owns")
+        .setDescendantOf(true))
     EventProto.newBuilder.setEntity(ent).build
   }
 
@@ -359,8 +359,8 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
     val ent = EntityProto.newBuilder.addTypes(name)
     ent.addRelations(
       RelationshipProto.newBuilder
-      .setRelationship("owns")
-      .setDescendantOf(true))
+        .setRelationship("owns")
+        .setDescendantOf(true))
     EventProto.newBuilder.setEntity(ent).build
   }
   def makeAllEvent() = {

@@ -25,7 +25,8 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
 import org.totalgrid.reef.api.IConnectionListener
 
-/** Keeps the connection to qpid up. Notifies linked AMQPSessionHandler 
+/**
+ * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
  */
 trait AMQPConnectionReactor extends Reactor with Lifecycle
     with IConnectionListener with Logging {
@@ -33,10 +34,11 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /// must be defined in concrete class
   protected val broker: BrokerConnection
 
-  /** Add a session handler to the connection. If the actor is already connected, 
+  /**
+   * Add a session handler to the connection. If the actor is already connected,
    * 	the session handler will be notified immediately.
-   *   
-   *	@param handler class that will receive new session notifications 	
+   *
+   * @param handler class that will receive new session notifications
    */
   def add[A <: ChannelObserver](handler: A): A = {
     execute { addChannelObserver(handler) }

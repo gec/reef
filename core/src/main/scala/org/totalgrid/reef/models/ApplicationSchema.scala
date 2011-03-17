@@ -130,7 +130,7 @@ case class Point(
   /**
    * updated when the abnormal state is changed so we can "tunnel" this update through
    * to the service event.
-   * The \@Transient attribute tells squeryl not to put this field in the database 
+   * The \@Transient attribute tells squeryl not to put this field in the database
    */
   @Transient
   var abnormalUpdated = false

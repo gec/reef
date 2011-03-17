@@ -30,7 +30,8 @@ class ProtoSyncRequestReply(channel: BrokerChannel)
     ProtoSerializer.convertProtoToBytes,
     Envelope.ServiceResponse.parseFrom) with ProtoServiceChannel
 
-/** combines a response queue and a publisher into one class that provides implements the
+/**
+ * combines a response queue and a publisher into one class that provides implements the
  *  RequestReplyChannel interface primarily used by service clients
  */
 class SyncRequestReply[S, R](

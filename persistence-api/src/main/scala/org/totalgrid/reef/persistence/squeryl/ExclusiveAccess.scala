@@ -23,12 +23,13 @@ package org.totalgrid.reef.persistence.squeryl
 import org.squeryl.{ Query, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-/** grants exclusive access to a squeryl object to a single thread or process. It is 
- * hinged on there being some property of the sql object that indicates whether the 
+/**
+ * grants exclusive access to a squeryl object to a single thread or process. It is
+ * hinged on there being some property of the sql object that indicates whether the
  * action we want to take needs to occur. We try to get exclusive access to the object,
- * check the precondition, run the user block, then check that we have updated the 
+ * check the precondition, run the user block, then check that we have updated the
  * object to no longer match the precondition (or else other threads would think
- * they were the first to get access to the object) 
+ * they were the first to get access to the object)
  */
 object ExclusiveAccess {
 

@@ -60,7 +60,7 @@ trait Action {
   /**
    * Conditional action evaluation. Actions define what combination of previous state and current state
    * cause activation.
-   * 
+   *
    * @param m         Measurement to be acted upon
    * @param state     Current state of the trigger condition this action is associated with
    * @param prev      Previous state of the trigger condition this action is associated with

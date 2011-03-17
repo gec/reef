@@ -50,9 +50,9 @@ object Severities {
 
 /**
  * Receive raw events and publish them as processed events.
- * 
+ *
  * For those events tagged as Logs, publish them to the raw log channel.
- * 
+ *
  * @author flint
  *
  */
@@ -64,7 +64,7 @@ class EventRouterContext(publishEvent: Event => Unit,
 
   /**
    *  Map of EventType to EventConfig
-   *  
+   *
    *  When we're looking for an EventConfig and it's not listed,
    *  use the default severity of CRITICAL. This should not happen when the system
    *  is configured properly.
@@ -104,7 +104,7 @@ class EventRouterContext(publishEvent: Event => Unit,
   /**
    *  Process a raw Event.
    *  If it's really an event, set the severity, store in DB, and publish it as a processed event
-   * 
+   *
    * @param event       Raw event proto
    */
   def process(event: Event): Unit = {

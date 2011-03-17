@@ -25,8 +25,9 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.messaging._
 
-/**	Simple publisher that fails when the session fails
- * 	
+/**
+ * 	Simple publisher that fails when the session fails
+ *
  * 	@param	bufferSize	Maximum size of the buffer in bytes
  */
 class MsgPublisher(channel: BrokerChannel) extends Logging {

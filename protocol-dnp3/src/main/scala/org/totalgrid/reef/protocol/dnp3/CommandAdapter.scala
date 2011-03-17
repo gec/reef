@@ -28,7 +28,8 @@ import org.totalgrid.reef.proto.{ Mapping, Commands }
 
 import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHandler, IResponseHandler }
 
-/**Command adapter acts as a command response acceptor, forwarding translated responses to an actor
+/**
+ * Command adapter acts as a command response acceptor, forwarding translated responses to an actor
  *
  * @param cfg Measurement mapping configuration
  * @param cmd Command acceptor interface to to forward Commands

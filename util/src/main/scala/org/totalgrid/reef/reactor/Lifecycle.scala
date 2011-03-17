@@ -26,7 +26,8 @@ import scala.collection.immutable
 
 object Lifecycle extends ShutdownHook {
 
-  /**      Runs the specified components and blocks for a shutdown signal
+  /**
+   *      Runs the specified components and blocks for a shutdown signal
    */
   def run(lc: Lifecycle)(beforeShutdownFun: => Unit): Unit = {
     lc.start()
@@ -42,7 +43,8 @@ object Lifecycle extends ShutdownHook {
 
 }
 
-/** start components up and shut them down in reverse order
+/**
+ * start components up and shut them down in reverse order
  */
 class LifecycleWrapper(components: Seq[Lifecycle]) extends Lifecycle {
   override def doStart() = components.foreach { _.start }
@@ -51,7 +53,7 @@ class LifecycleWrapper(components: Seq[Lifecycle]) extends Lifecycle {
 
 /**
  * handles the start/stopping of a set of lifecycle objects including starting
- * objects that are added after we started the manager. 
+ * objects that are added after we started the manager.
  */
 class LifecycleManager(components: List[Lifecycle] = Nil) extends Lifecycle {
 
@@ -79,7 +81,8 @@ class LifecycleManager(components: List[Lifecycle] = Nil) extends Lifecycle {
   }
 }
 
-/**     Abstracts the lifecycle of thread-like entities    
+/**
+ *     Abstracts the lifecycle of thread-like entities
  */
 trait Lifecycle extends Logging {
 

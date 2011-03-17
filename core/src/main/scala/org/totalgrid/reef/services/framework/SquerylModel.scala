@@ -56,7 +56,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Create a model entry
-   * 
+   *
    * @param entry   Object to be created
    * @return        Result of store creation/insertion
    */
@@ -70,7 +70,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Update an existing model entry
-   * 
+   *
    * @param entry       Object to replace existing entry
    * @param existing    Existing entry to be replaced
    * @return            Result stored in data base and whether it was modified
@@ -105,7 +105,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Lock and update a set of entries.
-   * 
+   *
    * @param existing            List of entries to be updated
    * @param acquireCondition    Condition that must be true for all entries at time of acquisition and false at release
    * @param fun                 Update logic to be performed during lock, transforms acquired entries to list of updated entries
@@ -151,7 +151,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Lock and update a model entry.
-   * 
+   *
    * @param existing            Entry to be updated
    * @param acquireCondition    Condition that must be true at acquisition and false at release.
    * @param fun                 Update logic to be performed during lock, transforms acquired entry to updated entry

@@ -29,7 +29,8 @@ trait AsyncOperations {
 
   self: DefaultHeaders =>
 
-  /** All other async functions can be reduced to this
+  /**
+   * All other async functions can be reduced to this
    */
   def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode)(callback: MultiResult[A] => Unit)
 

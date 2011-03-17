@@ -27,7 +27,8 @@ trait RTDatabase {
 
   /* -----  abstract functions ------- */
 
-  /**  Retrieves a list of measurements by name
+  /**
+   *  Retrieves a list of measurements by name
    *    @param names Sequence of measurement names
    *    @return corresponding list of Measurements
    */

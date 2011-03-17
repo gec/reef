@@ -30,7 +30,7 @@ trait IConnection {
 
   /**
    * register a listener for open/close events
-   * 
+   *
    * @param listener Interace to call back with open/close events
    */
   def addConnectionListener(listener: IConnectionListener)

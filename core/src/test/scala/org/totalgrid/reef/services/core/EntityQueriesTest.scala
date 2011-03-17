@@ -157,9 +157,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(1)
@@ -174,19 +174,19 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .setDistance(1)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Point")
-          .addRelations(Relationship.newBuilder
-            .setRelationship("owns")
-            .setDescendantOf(true)
-            .setDistance(1)
-            .addEntities(
-              EntityProto.newBuilder
-              .addTypes("Command")))))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Point")
+              .addRelations(Relationship.newBuilder
+                .setRelationship("owns")
+                .setDescendantOf(true)
+                .setDistance(1)
+                .addEntities(
+                  EntityProto.newBuilder
+                    .addTypes("Command")))))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(1)
@@ -202,16 +202,16 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .setDistance(1)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Point"))
-        .addEntities(
-          EntityProto.newBuilder
-          .setName("Junk01")
-          .addTypes("Junk")))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Point"))
+            .addEntities(
+              EntityProto.newBuilder
+                .setName("Junk01")
+                .addTypes("Junk")))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(2)
@@ -230,19 +230,19 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Point")))
-      .addRelations(
-        Relationship.newBuilder
-        .setRelationship("refs")
-        .setDistance(4)
-        .addEntities(
-          EntityProto.newBuilder
-          .setName("Thing1")
-          .addTypes("Thing")))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Point")))
+        .addRelations(
+          Relationship.newBuilder
+            .setRelationship("refs")
+            .setDistance(4)
+            .addEntities(
+              EntityProto.newBuilder
+                .setName("Thing1")
+                .addTypes("Thing")))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(2)
@@ -261,9 +261,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .addTypes("Breaker")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     val results = protoTreeQuery(req.build)
     results.size should equal(2)
@@ -280,9 +280,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
     val req = EntityProto.newBuilder
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     intercept[Exception] {
       val results = protoTreeQuery(req.build)
@@ -294,9 +294,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setName("Nonexistent")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     protoTreeQuery(req.build) should equal(Nil)
   }
@@ -531,11 +531,11 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .addTypes("EquipmentGroup")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Equipment"))).build
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Equipment"))).build
 
     val results = EQ.fullQuery(req)
     results.length should equal(1)
@@ -574,10 +574,10 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
     val req = EntityProto.newBuilder.setName("Nonexistent")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1).addEntities(
-          EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1).addEntities(
+            EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
 
     intercept[BadRequestException] {
       EQ.fullQuery(req.build)

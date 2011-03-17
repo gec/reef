@@ -60,7 +60,8 @@ object AMQPMessageConsumers extends Logging {
     }
   }
 
-  /**Provides a receive function that binds a service to a publisher
+  /**
+   * Provides a receive function that binds a service to a publisher
    *
    * @param publish publishes response to return exchange/request
    * @param service Service handler used to get responses
