@@ -77,6 +77,18 @@
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
         </command>
+        <command name="attr/attr">
+            <action class="org.totalgrid.reef.shell.proto.AttributeCommand"/>
+        </command>
+        <command name="attr/set">
+            <action class="org.totalgrid.reef.shell.proto.AttributeSetCommand"/>
+        </command>
+        <command name="attr/remove">
+            <action class="org.totalgrid.reef.shell.proto.AttributeRemoveCommand"/>
+        </command>
+        <command name="attr/clear">
+            <action class="org.totalgrid.reef.shell.proto.AttributeClearCommand"/>
+        </command>
     </command-bundle>
 
 </blueprint>

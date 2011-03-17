@@ -162,19 +162,32 @@ class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with Befo
     result.getAttributesList.get(0).getValueString should equal("hello")
   }
 
-  test("Get by uid") {
-    val entUid = simpleGetScenario
-
-    val entity = Entity.newBuilder.setUid(entUid).build
-    val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
-
-    checkSimpleGetScenario(entAttr)
-  }
-
   test("Get all") {
     simpleGetScenario
 
     val entity = Entity.newBuilder.setUid("*").build
+    val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
+
+    val results = many(2, service.get(entAttr))
+    println(results)
+
+    results.foreach { result =>
+      if (result.getEntity.getName == "ent01") {
+        result.getAttributesCount should equal(1)
+        result.getAttributesList.get(0).getName should equal("attr01")
+        result.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
+        result.getAttributesList.get(0).hasValueString should equal(true)
+        result.getAttributesList.get(0).getValueString should equal("hello")
+      } else {
+        result.getAttributesCount should equal(0)
+      }
+    }
+  }
+
+  test("Get by uid") {
+    val entUid = simpleGetScenario
+
+    val entity = Entity.newBuilder.setUid(entUid).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     checkSimpleGetScenario(entAttr)

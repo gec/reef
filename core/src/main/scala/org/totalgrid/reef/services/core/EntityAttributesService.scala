@@ -105,33 +105,35 @@ object EntityAttributesService {
     }
 
     if (join.isEmpty)
-      throw new BadRequestException("No entities with attributes match request.")
+      throw new BadRequestException("No entities match request.")
 
     val pairs = join.groupBy { case (ent, attr) => ent }.toList
 
     pairs.map {
       case (ent, tupleList) =>
         val attrList = tupleList.map(_._2)
-        protoFromEntity(ent, attrList.toList)
+        protoFromEntity(ent, attrList.toList.flatten)
     }
   }
 
-  def uidJoin(uid: String): List[(Entity, AttrModel)] = {
-    from(ApplicationSchema.entities, ApplicationSchema.entityAttributes)((ent, attr) =>
-      where((ent.id === uid.toLong) and (ent.id === attr.entityId))
-        select ((ent, attr))).toList
+  def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
+    join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
+      where(ent.id === uid.toLong)
+        select (ent, attr)
+        on (ent.id === attr.map(_.entityId))).toList
   }
 
-  def nameJoin(name: String): List[(Entity, AttrModel)] = {
-    from(ApplicationSchema.entities, ApplicationSchema.entityAttributes)((ent, attr) =>
-      where((ent.name === name) and (ent.id === attr.entityId))
-        select ((ent, attr))).toList
+  def nameJoin(name: String): List[(Entity, Option[AttrModel])] = {
+    join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
+      where(ent.name === name)
+        select (ent, attr)
+        on (ent.id === attr.map(_.entityId))).toList
   }
 
-  def allJoin: List[(Entity, AttrModel)] = {
-    from(ApplicationSchema.entities, ApplicationSchema.entityAttributes)((ent, attr) =>
-      where(ent.id === attr.entityId)
-        select ((ent, attr))).toList
+  def allJoin: List[(Entity, Option[AttrModel])] = {
+    join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
+      select(ent, attr)
+        on (ent.id === attr.map(_.entityId))).toList
   }
 
   def protoFromEntity(entry: Entity): AttrProto = {
