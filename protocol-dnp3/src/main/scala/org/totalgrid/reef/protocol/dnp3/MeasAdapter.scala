@@ -44,24 +44,24 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
   }
 
   override def _Update(v: Binary, index: Long): Unit =
-    add(index, Mapping.DataType.BINARY) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.BINARY) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: Analog, index: Long) =
-    add(index, Mapping.DataType.ANALOG) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.ANALOG) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: Counter, index: Long) =
-    add(index, Mapping.DataType.COUNTER) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.COUNTER) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: SetpointStatus, index: Long) =
-    add(index, Mapping.DataType.SETPOINT_STATUS) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.SETPOINT_STATUS) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: ControlStatus, index: Long) =
-    add(index, Mapping.DataType.CONTROL_STATUS) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.CONTROL_STATUS) { DNPTranslator.translate(v, _, _) }
 
   /// if the measurement exits, transform using the specified function and send to the actor
-  private def add(index: Long, t: Mapping.DataType)(f: String => Meas) = {
+  private def add(index: Long, t: Mapping.DataType)(f: (String, String) => Meas) = {
     map.get((index, t.getNumber)) match {
-      case Some(name) => batch.addMeas(f(name))
+      case Some(pointInfo) => batch.addMeas(f(pointInfo.getPointName, pointInfo.getUnit))
       case None => debug { "Unknown type/index: " + t.toString + "/" + index }
     }
   }

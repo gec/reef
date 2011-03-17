@@ -32,11 +32,11 @@ class DNPTranslatorTests extends Suite with ShouldMatchers {
 
   def testAnything[A, B](obj: DataPoint, value: B, protoType: Measurements.Measurement.Type,
     setVal: (B) => Unit,
-    trans: (A, String) => Measurements.Measurement,
+    trans: (A, String, String) => Measurements.Measurement,
     protoVal: (Measurements.Measurement) => B) {
     setVal(value)
     obj.SetTime(35)
-    val proto = trans(obj.asInstanceOf[A], "obj1")
+    val proto = trans(obj.asInstanceOf[A], "obj1", "raw")
     proto.getType() should equal(protoType)
     protoVal(proto) should equal(value)
     proto.getTime() should equal(35)

@@ -29,9 +29,9 @@ object MapGenerator {
 
   /// Turns a proto type into a map that can be used to lookup names
   def getMeasMap(mapping: Mapping.IndexMapping) = {
-    val map = immutable.Map.empty[Tuple2[Long, Int], String]
+    val map = immutable.Map.empty[Tuple2[Long, Int], Mapping.MeasMap]
     mapping.getMeasmapList().foldLeft(map) { (x, y) =>
-      x + (((y.getIndex().toLong, y.getType().getNumber())) -> y.getPointName())
+      x + (((y.getIndex().toLong, y.getType().getNumber())) -> y)
     }
   }
 

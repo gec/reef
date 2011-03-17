@@ -39,11 +39,13 @@ class MapGeneratorTests extends Suite with ShouldMatchers {
 
   def testSimpleEntries() {
     val map = Mapping.IndexMapping.newBuilder.setDeviceUid("test")
-    val assoc = Mapping.MeasMap.newBuilder.setIndex(0).setPointName("meas1").setType(Mapping.DataType.BINARY)
+    val assoc = Mapping.MeasMap.newBuilder.setIndex(0).setPointName("meas1").setUnit("raw").setType(Mapping.DataType.BINARY)
     map.addMeasmap(assoc)
     val x = MapGenerator.getMeasMap(map.build)
     x.size should equal(1)
-    x((0, Mapping.DataType.BINARY.getNumber)) should equal("meas1")
+    val entry = x((0, Mapping.DataType.BINARY.getNumber))
+    entry.getUnit should equal("raw")
+    entry.getPointName should equal("meas1")
   }
 
 }
