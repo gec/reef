@@ -22,16 +22,60 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 
-import org.totalgrid.reef.shell.proto.presentation.{ EventView }
-import org.totalgrid.reef.shell.proto.request.EventRequest
-
+import presentation.AttributeView
+import request.AttributeRequest
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 
-@Command(scope = "attr", name = "attr", description = "Prints events.")
+@Command(scope = "attr", name = "attr", description = "Prints the attributes for an entity.")
 class AttributeCommand extends ReefCommandSupport {
 
+  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
+  private var id: String = null
 
   def doCommand() = {
+    AttributeView.printAttributes(AttributeRequest.getByEntityUid(id, this))
+  }
+}
 
+@Command(scope = "attr", name = "set", description = "Prints events.")
+class AttributeSetCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
+  private var id: String = null
+
+  @Argument(index = 1, name = "name", description = "Attribute name", required = true, multiValued = false)
+  private var name: String = null
+
+  @Argument(index = 2, name = "value", description = "Attribute value", required = true, multiValued = false)
+  private var value: String = null
+
+  def doCommand() = {
+    AttributeView.printAttributes(AttributeRequest.setEntityAttribute(id, name, value, this))
+  }
+}
+
+@Command(scope = "attr", name = "remove", description = "Prints events.")
+class AttributeRemoveCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
+  private var id: String = null
+
+  @Argument(index = 1, name = "name", description = "Attribute name", required = true, multiValued = false)
+  private var name: String = null
+
+  def doCommand() = {
+    AttributeView.printAttributes(AttributeRequest.removeEntityAttribute(id, name, this))
+  }
+}
+
+@Command(scope = "attr", name = "clear", description = "Prints events.")
+class AttributeClearCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
+  private var id: String = null
+
+  def doCommand() = {
+    AttributeView.printAttributes(AttributeRequest.clearEntityAttributes(id, this))
   }
 }
