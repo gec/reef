@@ -42,7 +42,7 @@ trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with Measureme
   }
 
   def clearMeasurementOverridesOnPoint(point: Point) = {
-    ops.deleteOrThrow(MeasurementOverrideRequestBuilders.getByPoint(Point.newBuilder.setName("*").build)) match {
+    ops.deleteOrThrow(MeasurementOverrideRequestBuilders.getByPoint(point)) match {
       case list: List[_] => true
       case _ => false
     }

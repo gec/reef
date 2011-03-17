@@ -56,7 +56,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
   }
 
   def publishMeasurements(meases: java.util.List[Measurement]) {
-    ops.postOne(MeasurementBatchRequestBuilders.makeBatch(meases))
+    ops.putOneOrThrow(MeasurementBatchRequestBuilders.makeBatch(meases))
   }
 
   private def checkAndReturn(points: java.util.List[Point], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
