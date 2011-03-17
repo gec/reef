@@ -41,29 +41,12 @@ public class JavaBridgeTestBase {
 
 	private boolean autoLogon;
 
-	public class MockConnectionListener implements IConnectionListener {
-		private BlockingQueue<Boolean> queue = new BlockingQueue<Boolean>();
-
-		public void opened() {
-			queue.push(true);
-		}
-
-		public void closed() {
-			queue.push(false);
-		}
-
-		boolean waitForStateChange(int timeout) throws InterruptedException {
-			return queue.pop(timeout);
-		}
-	}
-
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
 	protected IConnection connection = new Connection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
 	protected ISession client = null;
     protected AtollService helpers = null;
-	protected MockConnectionListener listener = new MockConnectionListener();
 
 	/**
 	 * Baseclass for junit integration tests, provides a Connection that is started and stopped with
@@ -75,7 +58,6 @@ public class JavaBridgeTestBase {
 	 */
 	public JavaBridgeTestBase(boolean autoLogon) {
 		this.autoLogon = autoLogon;
-		connection.addConnectionListener(listener);
 	}
 
 	/**
@@ -106,8 +88,7 @@ public class JavaBridgeTestBase {
 
 	@Before
 	public void startBridge() throws InterruptedException, ReefServiceException {
-		connection.start();
-		org.junit.Assert.assertTrue(listener.waitForStateChange(5000));
+		connection.start(5000);
 		client = connection.newSession();
         helpers = new AtollService(client);
 		if (autoLogon) {
@@ -117,9 +98,8 @@ public class JavaBridgeTestBase {
 	}
 
 	@After
-	public void stopBridge() throws InterruptedException {
+	public void stopBridge() throws InterruptedException, ReefServiceException {
 		client.close();
-		connection.stop();
-		org.junit.Assert.assertFalse(listener.waitForStateChange(5000));
+		connection.stop(5000);
 	}
 }

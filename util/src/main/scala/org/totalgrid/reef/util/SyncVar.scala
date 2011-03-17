@@ -59,15 +59,15 @@ class SyncVar[A <: Any](initialValue: Option[A] = None) {
     current
   }
 
-  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
-    waitFor(current => current == value, msec, throwOnFailure)
+  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = {
+    waitFor(current => current == value, msec, throwOnFailure, customException)
   }
 
-  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
-    waitFor(current => current != value, msec, throwOnFailure)
+  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = {
+    waitFor(current => current != value, msec, throwOnFailure, customException)
   }
 
-  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = queue.synchronized {
+  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = queue.synchronized {
 
     @tailrec
     def waitUntilExpiration(fun: A => Boolean, expiration: Long): Boolean = {
@@ -78,8 +78,9 @@ class SyncVar[A <: Any](initialValue: Option[A] = None) {
           queue.wait(diff)
           waitUntilExpiration(fun, expiration)
         } else {
-          if (throwOnFailure) throw new Exception("Condition not met, final value was: " + queue.last)
-          else false
+          if (throwOnFailure) {
+            throw customException.getOrElse(new Exception("Condition not met, final value was: " + queue.last))
+          } else false
         }
       }
     }

@@ -45,8 +45,13 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     handler
   }
 
-  def addConnectionListener(listener: IConnectionListener): Unit =
+  def addConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
     listeners = listeners.enqueue(listener)
+  }
+
+  def removeConnectionListener(listener: IConnectionListener) = this.synchronized {
+    listeners = listeners.filterNot(_ == listener)
+  }
 
   def getChannel(): BrokerChannel = broker.newBrokerChannel()
 
@@ -54,6 +59,32 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   private var listeners = Queue.empty[IConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
   private var reconnectOnClose = true
+  private var connectedState = new BrokerConnectionState
+  addConnectionListener(connectedState)
+
+  /**
+   * Starts execution of the messaging connection
+   * @param timeoutMs how long to wait for connection before throwing ServiceIOException.
+   *    If less than or equal to 0 it returns instantly
+   */
+  def start(timeoutMs: Long) {
+    super.start()
+    if (timeoutMs > 0) {
+      connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
+    }
+  }
+
+  /**
+   * Halts execution of the messaging connection
+   * @param timeoutMs how long to wait for stop before throwing ServiceIOException.
+   *    If less than or equal to 0 it returns instantly
+   */
+  def stop(timeoutMs: Long) {
+    super.stop()
+    if (timeoutMs > 0) {
+      connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
+    }
+  }
 
   override def afterStart() = {
     broker.setConnectionListener(Some(this))
@@ -106,12 +137,12 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     info(" Connection closed")
     if (reconnectOnClose) this.delay(1000) { reconnect() }
     queue.foreach { a => a.offline() }
-    listeners.foreach { _.closed() }
+    this.synchronized { listeners.foreach { _.closed() } }
   }
 
   override def opened() = {
     info("Connection opened")
-    listeners.foreach { _.opened() }
+    this.synchronized { listeners.foreach { _.opened() } }
   }
 
 }

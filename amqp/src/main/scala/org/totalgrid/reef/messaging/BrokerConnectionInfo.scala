@@ -31,4 +31,6 @@ object BrokerConnectionInfo {
   def loadInfo(): BrokerConnectionInfo = loadInfo(BuildEnv.environment)
 }
 
-class BrokerConnectionInfo(val host: String, val port: Int, val user: String, val password: String, val virtualHost: String)
+class BrokerConnectionInfo(val host: String, val port: Int, val user: String, val password: String, val virtualHost: String) {
+  override def toString() = "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost
+}

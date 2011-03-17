@@ -101,7 +101,7 @@ object LoadManager extends Logging {
 
   def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean): Unit = {
 
-    amqp.start
+    amqp.start(5000)
 
     try {
       // client that lets us talk to all the services through 1 interface
@@ -115,7 +115,7 @@ object LoadManager extends Logging {
 
       loadFile(client, filename, benchmark)
     } finally {
-      amqp.stop
+      amqp.stop(5000)
     }
   }
 

@@ -27,11 +27,10 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.api.IConnectionListener
-
 import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {
@@ -53,12 +52,23 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     amqp.addConnectionListener(listener)
 
     10.times {
-      amqp.start
+      amqp.start(0)
       listener.connected.waitUntil(true)
-      amqp.stop
+      amqp.stop(0)
       listener.connected.waitUntil(false)
     }
 
+  }
+
+  test("Connection Timeout") {
+    val default = new BrokerConnectionInfo("127.0.0.1", 10000, "", "", "")
+    val amqp = new AMQPConnectionReactor with ReactActor {
+      val broker = new QpidBrokerConnection(default)
+    }
+
+    intercept[ServiceIOException] {
+      amqp.start(100)
+    }
   }
 
   test("Qpid bind/unbind") {
@@ -67,10 +77,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
       val broker = new QpidBrokerConnection(default)
     }
 
-    val listener = new MockConnectionListener
-    amqp.addConnectionListener(listener)
-    amqp.start
-    listener.connected.waitUntil(true)
+    amqp.start(1000)
 
     val channel = amqp.getChannel
 

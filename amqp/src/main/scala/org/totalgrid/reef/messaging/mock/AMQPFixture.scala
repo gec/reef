@@ -35,24 +35,6 @@ object AMQPFixture {
 
   val default = BrokerConnectionInfo.loadInfo("test")
 
-  //define a mock for the session handler inline
-  class MockHandler extends ChannelObserver {
-    val b = new MailBox
-
-    override def online(bi: BrokerChannel) {
-      b send "connected"
-    }
-
-    override def offline() {}
-
-    def waitForConnect(waitms: Long): Boolean = {
-      b.receiveWithin(waitms) {
-        case "connected" => true
-        case _ => false
-      }
-    }
-  }
-
   def run(test: AMQPProtoFactory => Unit): Unit = {
     run(default, false) { test }
   }
@@ -75,17 +57,12 @@ object AMQPFixture {
       val broker = connection
     }
 
-    amqp.start
-
     try {
-      if (requireConnection) {
-        val mock = new MockHandler
-        amqp.add(mock)
-        assert(mock.waitForConnect(10000))
-      }
+      val timeout = if (requireConnection) 10000 else 0
+      amqp.start(timeout)
       test(amqp)
     } finally {
-      amqp.stop
+      amqp.stop()
     }
   }
 
@@ -106,17 +83,12 @@ object AMQPFixture {
       val broker = connection
     }
 
-    amqp.start
-
     try {
-      if (requireConnection) {
-        val mock = new MockHandler
-        amqp.add(mock)
-        assert(mock.waitForConnect(10000))
-      }
+      val timeout = if (requireConnection) 10000 else 0
+      amqp.start(timeout)
       test(amqp)
     } finally {
-      amqp.stop
+      amqp.stop()
     }
   }
 

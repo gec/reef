@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,7 +18,9 @@ package org.totalgrid.reef.api.javaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.IConnectionListener
+package org.totalgrid.reef.api.javaclient
+
+import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 
 /**
  * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
@@ -36,17 +36,33 @@ trait IConnection {
   def addConnectionListener(listener: IConnectionListener)
 
   /**
-   *  Starts execution of the messaging connection
+   * remove a listener for open/close events
+   *
+   * @param listener Interace to call back with open/close events
    */
-  def start()
+  def removeConnectionListener(listener: IConnectionListener)
 
   /**
-   *  Halts execution of the messaging connection
+   * Starts execution of the messaging connection. Once the service has been started the connection to
+   * the broker may be lost so it is important to use an IConnectionListener to be informed of those
+   * non-client disconnection events.
+   * @param timeoutMs how long to wait for the first good connection before throwing ServiceIOException.
+   *    If less than or equal to 0 it returns instantly
    */
-  def stop()
+  @throws(classOf[ServiceIOException])
+  def start(timeoutMs: Long)
+
+  /**
+   * Halts execution of the messaging connection
+   * @param timeoutMs how long to wait for stop before throwing ServiceIOException.
+   *    If less than or equal to 0 it returns instantly
+   */
+  @throws(classOf[ServiceIOException])
+  def stop(timeoutMs: Long)
 
   /**
    * creates a non thread-safe (use from single thread only) client
    */
+  @throws(classOf[ServiceIOException])
   def newSession(): ISession
 }

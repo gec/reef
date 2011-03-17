@@ -26,12 +26,12 @@ import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.api.{ IConnectionListener, RequestEnv, ServiceHandlerHeaders }
-import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
+import org.totalgrid.reef.api.ServiceHandlerHeaders
 import org.totalgrid.reef.proto.ReefServicesList
 import utils.InteractionRecorder
 import xml.Node
-import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
+import org.totalgrid.reef.util.SystemPropertyConfigReader
+import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
 
 abstract class ServiceClientSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -40,14 +40,10 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
   }
 
   override def beforeAll() {
-    factory.start
-    val waiter = new ServiceClientSuite.BrokerConnectionState
-    factory.addConnectionListener(waiter)
-    waiter.waitUntilStarted()
-
+    factory.start(5000)
   }
   override def afterAll() {
-    factory.stop
+    factory.stop(5000)
 
     client.save(file, title, desc)
   }
@@ -74,19 +70,6 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
     client.getDefaultHeaders.addAuthToken(response.getToken)
 
     client
-  }
-}
-
-object ServiceClientSuite {
-  // TODO: move BrokerConnectionState into amqp
-  class BrokerConnectionState extends IConnectionListener {
-    private val connected = new SyncVar(false)
-
-    override def opened() = connected.update(true)
-    override def closed() = connected.update(false)
-
-    def waitUntilStarted(timeout: Long = 5000) = connected.waitUntil(true, timeout)
-    def waitUntilStopped(timeout: Long = 5000) = connected.waitUntil(false, timeout)
   }
 }
 

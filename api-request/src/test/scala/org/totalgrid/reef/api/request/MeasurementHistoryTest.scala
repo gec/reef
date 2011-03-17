@@ -43,6 +43,9 @@ class MeasurementHistoryTest
   test("Get History") {
     val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
 
+    // make sure a left over override doesn't stop our published values
+    client.clearMeasurementOverridesOnPoint(point)
+
     val original = client.getMeasurementByPoint(point)
 
     val now = System.currentTimeMillis

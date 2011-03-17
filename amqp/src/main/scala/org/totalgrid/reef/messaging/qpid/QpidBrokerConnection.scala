@@ -35,13 +35,15 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
 
   def isConnected: Boolean = connection.isDefined
 
+  override def toString() = config.toString
+
   def connect() {
     connection match {
       case Some(c) =>
       case None =>
         val conn = new Connection
         conn.addConnectionListener(this)
-        info { "Connecting to qpid:/" + config.user + "@" + config.host + ":" + config.port + "/" + config.virtualHost }
+        info { "Connecting to " + config.toString }
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
     }
   }

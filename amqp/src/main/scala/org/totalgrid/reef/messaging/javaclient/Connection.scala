@@ -33,7 +33,6 @@ import org.totalgrid.reef.api.javaclient.{ IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
- *
  */
 class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends IConnection {
 
@@ -45,15 +44,18 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
   override def addConnectionListener(listener: IConnectionListener) =
     factory.addConnectionListener(listener)
 
+  override def removeConnectionListener(listener: IConnectionListener) =
+    factory.removeConnectionListener(listener)
+
   /**
    *  Starts execution of the messaging connection
    */
-  override def start() = factory.start
+  override def start(timeoutMs: Long) = factory.start(timeoutMs)
 
   /**
    *  Halts execution of the messaging connection
    */
-  override def stop() = factory.stop
+  override def stop(timeoutMs: Long) = factory.stop(timeoutMs)
 
   def newSession(): ISession = {
     new Session(new ProtoClient(factory, servicesList, timeoutms))
