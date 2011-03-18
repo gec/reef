@@ -119,9 +119,9 @@
                 <executions>
                     <execution>
                         <id>check-headers</id>
-                        <phase>verify</phase>
+                        <phase>process-resources</phase>
                         <goals>
-                            <goal>check</goal>
+                            <goal>format</goal>
                         </goals>
                     </execution>
                 </executions>
