@@ -25,6 +25,7 @@ import org.totalgrid.reef.util.LazyVar
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
+ * http://www.jasypt.org/howtoencryptuserpasswords.html
  */
 object SaltedPasswordHelper {
   import org.apache.commons.codec.binary.Base64
@@ -44,12 +45,15 @@ object SaltedPasswordHelper {
   def makeDigestAndSalt(password: String): (String, String) = {
     val b = new Array[Byte](20)
     new SecureRandom().nextBytes(b)
-    val salt = new String(b, "UTF-8")
+    val salt = dec64(enc64(new String(b, "UTF-8")))
     (calcDigest(salt, password), salt)
   }
 
   def calcDigest(salt: String, pass: String) = {
-    new String(MessageDigest.getInstance("SHA-256").digest((salt + ":" + pass).getBytes("UTF-8")), "UTF-8")
+    val combinedSaltPassword = (salt + pass).getBytes("UTF-8")
+    val digestBytes = MessageDigest.getInstance("SHA-256").digest(combinedSaltPassword)
+    // TODO: figure out how to roundtrip bytes through UTF-8
+    dec64(enc64(new String(digestBytes, "UTF-8")))
   }
 }
 
