@@ -33,9 +33,10 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class ServiceProvidersTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
+class ServiceProvidersTest extends DatabaseUsingTestBase {
   override def beforeAll() {
     DbConnector.connect(DbInfo.loadInfo("test"))
   }

@@ -20,12 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.measproc.MeasurementStreamProcessingNode
@@ -41,9 +35,6 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import _root_.scala.collection.JavaConversions._
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
-
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.util.{ Logging, SyncVar }
 import org.totalgrid.reef.messaging.AMQPProtoFactory
@@ -54,14 +45,9 @@ import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.service.IServiceAsync
 
 import ServiceTypes.Event
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction }
 
-abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 
   class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
 

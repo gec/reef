@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
@@ -29,11 +27,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.api.ReefServiceException
 
-import org.totalgrid.reef.models.{ ApplicationSchema, Command, CommandAccessModel }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.models._
 
 trait CommandTestRig {
   val commandModel = new CommandServiceModel(new SilentServiceSubscriptionHandler)
@@ -55,19 +50,7 @@ trait AccessTestRig extends CommandTestRig {
 }
 
 @RunWith(classOf[JUnitRunner])
-class CommandAccessServiceModelTest
-    extends FunSuite
-    with ShouldMatchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with RunTestsInsideTransaction {
-
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
   import AccessProto._
 

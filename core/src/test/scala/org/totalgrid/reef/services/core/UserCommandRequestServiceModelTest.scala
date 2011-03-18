@@ -20,41 +20,23 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.totalgrid.reef.proto.Commands.{ CommandResponse, CommandAccess }
-import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
-import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel, CommandBlockJoin }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.api.{ Envelope, ReefServiceException }
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Command => FepCommandModel, UserCommandModel, CommandAccessModel, CommandBlockJoin }
 
 @RunWith(classOf[JUnitRunner])
-class UserCommandRequestServiceModelTest
-    extends FunSuite
-    with ShouldMatchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with RunTestsInsideTransaction {
-
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
   trait UserCommandTestRig extends CommandTestRig with AccessTestRig {
     val userCommands = new UserCommandRequestServiceModel(new SilentServiceSubscriptionHandler, commandModel, accessModel)

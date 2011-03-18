@@ -1,3 +1,5 @@
+package org.totalgrid.reef.services.core
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,42 +20,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.services
-
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
-//import org.totalgrid.reef.messaging.mock.AMQPFixture
-
-//import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
-
-//import org.totalgrid.reef.api.ServiceTypes._
-
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model.{ Point, Entity }
 
-import org.totalgrid.reef.services.core.EQ
+import org.totalgrid.reef.services.ServiceResponseTestingHelpers
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementProcessorResourcesTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
+class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import ServiceResponseTestingHelpers._
 
-  override def beforeAll() = DbConnector.connect(DbInfo.loadInfo("test"))
-
-  override def beforeEach() = transaction { ApplicationSchema.reset }
-
   private def addPoint(pointName: String, devName: String): Entity = {
-    val modelFac = new core.ModelFactories(new SilentEventPublishers, new core.SilentSummaryPoints)
-    val service = new core.PointService(modelFac.points)
+    val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
     val device = transaction {
@@ -110,8 +96,8 @@ class MeasurementProcessorResourcesTest extends FunSuite with ShouldMatchers wit
 
     val node = addPoint("meas01", "dev1")
     addPoint("meas02", "dev2")
-    val fac = new core.OverrideConfigModelFactory(publisher)
-    val s = new core.OverrideConfigService(fac)
+    val fac = new OverrideConfigModelFactory(publisher)
+    val s = new OverrideConfigService(fac)
     val put1 = one(s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build))
     val put2 = one(s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build))
     one(s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build))

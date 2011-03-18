@@ -23,9 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.Envelope._
 import org.totalgrid.reef.api.service.NoOpService
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models.RunTestsInsideTransaction
+
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -40,18 +38,11 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv }
 import org.totalgrid.reef.api.service.IServiceResponseCallback
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-
-  override def beforeAll() = DbConnector.connect(DbInfo.loadInfo("test"))
-  override def beforeEach() = {
-    transaction { ApplicationSchema.reset }
-    transaction { AuthTokenService.seed() }
-  }
+class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   class Fixture {
     val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)

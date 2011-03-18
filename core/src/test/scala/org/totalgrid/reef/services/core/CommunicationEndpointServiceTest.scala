@@ -22,10 +22,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.ReefServiceException
 
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 
@@ -37,19 +33,12 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   val pubs = new SilentEventPublishers
   val rtDb = new InMemoryMeasurementStore()

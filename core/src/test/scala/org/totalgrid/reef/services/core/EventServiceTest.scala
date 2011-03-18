@@ -36,22 +36,18 @@ import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 @RunWith(classOf[JUnitRunner])
-class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
+class EventServiceTest extends DatabaseUsingTestBase {
   val ALARM = EventConfig.Designation.ALARM.getNumber
   val EVENT = EventConfig.Designation.EVENT.getNumber
   val LOG = EventConfig.Designation.LOG.getNumber
 
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(DbInfo.loadInfo("test"))
-    transaction { ApplicationSchema.reset }
+  override def beforeEach() {
+    super.beforeEach()
     seedEventConfigTable
   }
 
@@ -72,6 +68,7 @@ class EventServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterA
       EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}"))
 
     transaction {
+      ApplicationSchema.eventConfigs.deleteWhere(e => true === true)
       ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
     }
   }

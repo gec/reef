@@ -20,23 +20,17 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.squeryl.{ Schema, Table, KeyedEntity }
+
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.totalgrid.reef.proto.Commands.{ CommandResponse, CommandAccess }
-import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
-import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
 import scala.collection.mutable
@@ -44,6 +38,7 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 import org.totalgrid.reef.api.Envelope._
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) => Unit) extends ServiceSubscriptionHandler {
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = f(event, resp)
@@ -56,21 +51,9 @@ class SingleEventPublisher(subHandler: ServiceSubscriptionHandler) extends Servi
 }
 
 @RunWith(classOf[JUnitRunner])
-class CommandRequestServicesIntegration
-    extends FunSuite
-    with ShouldMatchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with RunTestsInsideTransaction {
+class CommandRequestServicesIntegration extends DatabaseUsingTestBase {
 
   import ServiceResponseTestingHelpers._
-
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
 
   class TestRig {
     val events = mutable.Queue[(Envelope.Event, GeneratedMessage)]()

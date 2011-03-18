@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
@@ -30,21 +28,16 @@ import org.totalgrid.reef.proto.Utils.Attribute
 
 import org.totalgrid.reef.api.Envelope.Status
 
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.api.BadRequestException
-import org.totalgrid.reef.models.{ EntityAttribute, ApplicationSchema, RunTestsInsideTransaction }
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, ApplicationSchema, EntityAttribute }
 
 @RunWith(classOf[JUnitRunner])
-class EntityAttributesServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-
-  override def beforeAll() = DbConnector.connect(DbInfo.loadInfo("test"))
-
-  override def beforeEach() = transaction { ApplicationSchema.reset }
+class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def seedEntity(name: String, typ: String) = {
     EQ.addEntity(name, typ).id.toString

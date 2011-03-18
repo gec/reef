@@ -22,17 +22,12 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
@@ -40,14 +35,7 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.{ ServiceInfo, ServiceListOnMap }
 
 @RunWith(classOf[JUnitRunner])
-class EventConfigServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach // with RunTestsInsideTransaction
-{
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Get and Put") {
     import EventType._

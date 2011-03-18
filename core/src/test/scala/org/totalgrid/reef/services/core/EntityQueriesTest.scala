@@ -20,17 +20,12 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
-import org.totalgrid.reef.models.{ ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.services.coordinators._
 
@@ -39,47 +34,15 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.BrokerObjectConsumer
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.BadRequestException
-
-/*
-@RunWith(classOf[JUnitRunner])
-class ModelSeedTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"), List(ApplicationSchema.reset))
-    transaction {
-      ModelSeed.seed()
-    }
-  }
-
-  test("Basic") {
-    val entRoot = ApplicationSchema.entities.where(t => t.name === "Pittsboro").head
-    val req = EntityProto.newBuilder
-      .setUid(entRoot.id.toString)
-      .addRelations(
-        Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Breaker"))).build
-
-    println(req)
-    val results = EQ.fullQuery(req)
-
-    results.length should equal(1)
-    val root = results.head
-    //println(root)
-    //checkResults(parseTree(root), tree)
-  }
-}*/
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
 
 @RunWith(classOf[JUnitRunner])
-class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {
+class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
   import EQ._
 
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+  override def beforeEach() {
+    super.beforeEach()
     transaction {
-      ApplicationSchema.reset
       seed
     }
   }

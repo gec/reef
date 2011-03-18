@@ -20,11 +20,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -37,13 +34,10 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 @RunWith(classOf[JUnitRunner])
-class ModelBasedTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(DbInfo.loadInfo("test"))
-    transaction {
-      ApplicationSchema.reset
-    }
+class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+
+  override def beforeEach() {
+    super.beforeEach()
     transaction {
       ModelSeed.seed()
       seedPoints

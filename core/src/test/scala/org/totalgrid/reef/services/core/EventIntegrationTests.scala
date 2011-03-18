@@ -20,35 +20,22 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
-import org.totalgrid.reef.models.{ Entity }
-
 import org.squeryl.PrimitiveTypeMode.transaction
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
 @RunWith(classOf[JUnitRunner])
-class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    import org.totalgrid.reef.models.ApplicationSchema
-    transaction { ApplicationSchema.reset }
-  }
+class EventIntegrationTests extends DatabaseUsingTestBase {
 
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
