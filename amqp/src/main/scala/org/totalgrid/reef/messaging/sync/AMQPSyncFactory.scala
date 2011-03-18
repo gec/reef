@@ -30,7 +30,7 @@ import org.totalgrid.reef.api.ServiceTypes.Event
 /**
  * syncronous subscription object, allows canceling
  */
-class SyncSubscription(channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription {
+class SyncSubscription[A](channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription[A] {
   private val queue = QueuePatterns.getPrivateUnboundQueue(channel, consumer)
   override def setHeaders(headers: ServiceHandlerHeaders) =
     headers.setSubscribeQueue(queue)
@@ -49,7 +49,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
     new ServiceResponseCorrelator(timeoutms, reqReply)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A] = {
     val channel = getChannel()
 
     val consumer = if (subIsStreamType)
@@ -57,6 +57,6 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
     else
       AMQPMessageConsumers.makeEventConsumer(deserialize, callback)
 
-    new SyncSubscription(channel, consumer)
+    new SyncSubscription[A](channel, consumer)
   }
 }

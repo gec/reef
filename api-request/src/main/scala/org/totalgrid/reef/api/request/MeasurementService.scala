@@ -63,13 +63,13 @@ trait MeasurementService {
    * measurement change
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementsByPoints(points: java.util.List[Point], subscription: ISubscription): java.util.List[Measurement]
+  def getMeasurementsByPoints(points: java.util.List[Point], subscription: ISubscription[Measurement]): java.util.List[Measurement]
   /**
    * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
    * measurement change
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription): java.util.List[Measurement]
+  def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription[Measurement]): java.util.List[Measurement]
 
   /**
    * get a subset of the recent measurements for a point
@@ -102,7 +102,7 @@ trait MeasurementService {
    * @param limit - max number of measurements returned
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementHistory(point: Point, limit: Int, subscription: ISubscription): java.util.List[Measurement]
+  def getMeasurementHistory(point: Point, limit: Int, subscription: ISubscription[Measurement]): java.util.List[Measurement]
 
   /**
    * get the most recent measurements for a point and setup a subscription for new measurements
@@ -110,7 +110,7 @@ trait MeasurementService {
    * @param limit - max number of measurements returned
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementHistory(point: Point, since: Long, limit: Int, subscription: ISubscription): java.util.List[Measurement]
+  def getMeasurementHistory(point: Point, since: Long, limit: Int, subscription: ISubscription[Measurement]): java.util.List[Measurement]
 
   /**
    * publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients

@@ -72,7 +72,7 @@ class ProtoClient(
     correlator.send(request, info.exchange, dest.key, handleResponse)
   }
 
-  def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription = {
+  def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription[A] = {
 
     val applyMethod = ea.getClass.getDeclaredMethods.find { x => x.getName.equals("apply") }.get
     val klass = applyMethod.getParameterTypes.apply(1).asInstanceOf[Class[A]]
@@ -82,7 +82,7 @@ class ProtoClient(
     addSubscription(klass, proxy)
   }
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription = {
+  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription[A] = {
 
     // TODO: lookup by subscription klass instead of serviceKlass
     val info = lookup.getServiceInfo(klass)

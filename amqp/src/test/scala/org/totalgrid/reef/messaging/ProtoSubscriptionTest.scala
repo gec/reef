@@ -111,12 +111,6 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def getEnv(sub: ISubscription): RequestEnv = {
-    val headers = new ServiceHandlerHeaders(new RequestEnv)
-    sub.setHeaders(headers)
-    headers.env
-  }
-
   test("ProtoClient ISubscriptions") {
     setupTest { client =>
 
@@ -124,7 +118,8 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       val headerSubFunc = (evt: Envelope.Event, header: Envelope.RequestHeader) => updates.atomic(l => l ::: List((evt, header)))
       val headerSub = client.addSubscription(headerSubFunc)
 
-      val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, getEnv(headerSub)) match {
+      import ISubscription.convertISubToRequestEnv
+      val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, headerSub) match {
         case ServiceTypes.MultiSuccess(status, Nil) =>
         case _ => false should equal(true)
       }

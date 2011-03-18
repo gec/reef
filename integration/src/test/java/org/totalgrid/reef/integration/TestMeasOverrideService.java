@@ -28,9 +28,12 @@ import org.totalgrid.reef.api.request.builders.MeasurementBatchRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementSnapshotRequestBuilders;
+import org.totalgrid.reef.proto.Events;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
+
+import java.util.LinkedList;
 import java.util.List;
 
 import org.totalgrid.reef.api.ISubscription;
@@ -49,12 +52,13 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         // use a point we know will be static
         String pointName = "StaticSubstation.Line02.Current";
         Point p = Point.newBuilder().setName(pointName).build();
+        List<Point> ps = new LinkedList<Point>();
+        ps.add(p);
 
         Measurement originalValue = helpers.getMeasurementByPoint(p);
 
 		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>(true);
-		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
-
+		ISubscription<Measurement> sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
 		{
 			// delete override by point
 			client.delete(MeasurementOverrideRequestBuilders.getByPoint(p));
@@ -62,9 +66,8 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 
 		{
             // subscribe to updates for this point
-			MeasurementSnapshot ms = MeasurementSnapshotRequestBuilders.getByName(pointName);
-			MeasurementSnapshot rsp = client.getOne(ms, sub);
-			assertEquals(rsp.getMeasurementsCount(), 1);
+            List<Measurement> rsp = helpers.getMeasurementsByPoints(ps, sub);
+            assertEquals(rsp.size(), 1);
 		}
 
         long now = System.currentTimeMillis();

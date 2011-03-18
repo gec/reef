@@ -46,11 +46,11 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     checkAndReturn(points, measSnapshot.getMeasurementsList)
   }
 
-  def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription): java.util.List[Measurement] = {
+  def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription[Measurement]): java.util.List[Measurement] = {
     val measSnapshot = ops.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names), subscription)
     checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
   }
-  def getMeasurementsByPoints(points: java.util.List[Point], subscription: ISubscription): java.util.List[Measurement] = {
+  def getMeasurementsByPoints(points: java.util.List[Point], subscription: ISubscription[Measurement]): java.util.List[Measurement] = {
     val measSnapshot = ops.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByPoints(points), subscription)
     checkAndReturn(points, measSnapshot.getMeasurementsList)
   }
@@ -88,12 +88,12 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     history.getMeasurementsList
   }
 
-  def getMeasurementHistory(point: Point, limit: Int, sub: ISubscription): java.util.List[Measurement] = {
+  def getMeasurementHistory(point: Point, limit: Int, sub: ISubscription[Measurement]): java.util.List[Measurement] = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub)
     history.getMeasurementsList
   }
 
-  def getMeasurementHistory(point: Point, since: Long, limit: Int, sub: ISubscription) = {
+  def getMeasurementHistory(point: Point, since: Long, limit: Int, sub: ISubscription[Measurement]) = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub)
     history.getMeasurementsList
   }

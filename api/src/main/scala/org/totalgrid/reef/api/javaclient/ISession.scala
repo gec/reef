@@ -103,7 +103,7 @@ trait ISession {
 
   /* --- Misc --- */
   @throws(classOf[ServiceIOException])
-  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription
+  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription[A]
 
   def getDefaultEnv(): ServiceHandlerHeaders
 
