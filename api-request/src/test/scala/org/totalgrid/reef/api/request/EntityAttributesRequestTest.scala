@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
+import impl.EntityServiceWrapper
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -89,5 +90,86 @@ class EntityAttributesRequestTest
       resp.getAttributesCount should equal(0)
     }
   }
+
+  test ("API") {
+    val ent = client.getEntityByName("StaticSubstation")
+
+    val uid = ReefUUID(ent.getUid)
+
+    {
+      val attr = client.getEntityAttributes(uid)
+      attr.getAttributesCount should equal(0)
+    }
+
+    {
+      val attr = client.setEntityAttribute(uid, "test01", "testString")
+      attr.getAttributesCount should equal(1)
+      attr.getAttributesList.get(0).getName should equal("test01")
+      attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
+      attr.getAttributesList.get(0).getValueString should equal("testString")
+    }
+
+    {
+      val attr = client.setEntityAttribute(uid, "test02", true)
+      attr.getAttributesCount should equal(2)
+    }
+
+    {
+      val attr = client.removeEntityAttribute(uid, "test01")
+      attr.getAttributesCount should equal(1)
+      attr.getAttributesList.get(0).getName should equal("test02")
+      attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.BOOL)
+      attr.getAttributesList.get(0).getValueBool should equal(true)
+    }
+
+    val attr = client.clearEntityAttributes(uid)
+    attr.getAttributesCount should equal(0)
+
+  }
+
+  test("Set types") {
+    val ent = client.getEntityByName("StaticSubstation")
+    val uid = ReefUUID(ent.getUid)
+
+    {
+      val attr = client.setEntityAttribute(uid, "test01", true)
+      attr.getAttributesCount should equal(1)
+      attr.getAttributesList.get(0)
+      attr.getAttributesList.get(0).getName should equal("test01")
+      attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.BOOL)
+      attr.getAttributesList.get(0).getValueBool should equal(true)
+      client.removeEntityAttribute(uid, "test01")
+    }
+    {
+      val attr = client.setEntityAttribute(uid, "test01", 23432)
+      attr.getAttributesCount should equal(1)
+      attr.getAttributesList.get(0)
+      attr.getAttributesList.get(0).getName should equal("test01")
+      attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.SINT64)
+      attr.getAttributesList.get(0).getValueSint64 should equal(23432)
+      client.removeEntityAttribute(uid, "test01")
+    }
+    {
+      val attr = client.setEntityAttribute(uid, "test01", 5.437)
+      attr.getAttributesCount should equal(1)
+      attr.getAttributesList.get(0)
+      attr.getAttributesList.get(0).getName should equal("test01")
+      attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.DOUBLE)
+      attr.getAttributesList.get(0).getValueDouble should equal(5.437)
+      client.removeEntityAttribute(uid, "test01")
+    }
+    {
+      val attr = client.setEntityAttribute(uid, "test01", "test")
+      attr.getAttributesCount should equal(1)
+      attr.getAttributesList.get(0)
+      attr.getAttributesList.get(0).getName should equal("test01")
+      attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
+      attr.getAttributesList.get(0).getValueString should equal("test")
+      client.removeEntityAttribute(uid, "test01")
+    }
+  }
+
+
+
 
 }
