@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Model.Entity
+import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 
 trait EntityService {
   def getEntityByUid(uid: ReefUUID): Entity
@@ -28,4 +28,20 @@ trait EntityService {
   def getEntityByName(name: String): Entity
 
   def getAllEntitiesWithType(typ: String): java.util.List[Entity]
+
+  def getEntityAttributes(uid: ReefUUID): EntityAttributes
+
+  def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes
+
+  def clearEntityAttributes(uid: ReefUUID): EntityAttributes
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Long): EntityAttributes
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Double): EntityAttributes
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: String): EntityAttributes
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Array[Byte]): EntityAttributes
 }
