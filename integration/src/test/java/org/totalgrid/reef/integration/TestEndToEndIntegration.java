@@ -24,8 +24,10 @@ import org.junit.Test;
 import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ServiceTypes;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.request.CommandService;
 import org.totalgrid.reef.api.request.builders.MeasurementSnapshotRequestBuilders;
 import org.totalgrid.reef.api.request.builders.UserCommandRequestBuilders;
+import org.totalgrid.reef.api.request.impl.CommandServiceWrapper;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Descriptors;
@@ -52,9 +54,13 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 	 */
 	@Test
 	public void testSimulatorHandlingCommands() throws InterruptedException, ReefServiceException {
-		Model.Command cmd = SampleRequests.getAllCommands(client).get(0);
-        SampleRequests.clearCommandAccess(client, cmd.getName());
-		Commands.CommandAccess accessResponse = SampleRequests.allowCommandAccess(client, cmd);
+
+        CommandService cs = new CommandServiceWrapper(client);
+
+		Model.Command cmd = cs.getCommands().get(0);
+        cs.clearCommandLocks();
+
+		Commands.CommandAccess accessResponse = cs.createCommandExecutionLock(cmd);
 		assertTrue(accessResponse.getExpireTime() > 0);
 
 		// create infrastructure to execute a control with subscription to

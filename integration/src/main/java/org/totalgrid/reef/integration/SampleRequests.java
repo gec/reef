@@ -26,6 +26,7 @@ import org.totalgrid.reef.api.ReplyException;
 
 import org.totalgrid.reef.api.request.*;
 import org.totalgrid.reef.api.request.builders.*;
+import org.totalgrid.reef.api.request.impl.CommandServiceWrapper;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Auth.*;
 import org.totalgrid.reef.proto.Commands.*;
@@ -43,50 +44,6 @@ import java.util.Random;
 @SuppressWarnings("unchecked")
 public class SampleRequests {
 
-	public static UserCommandRequest executeControl(ISession client, Command cmd) throws ReefServiceException {
-		UserCommandRequest result = client.putOne(UserCommandRequestBuilders.executeControl(cmd.getName()));
-		return result;
-	}
-
-    public static List<CommandAccess> findCommandAccess(ISession client, String cmdName) throws ReefServiceException{
-		List<CommandAccess> result = client.get(CommandAccessRequestBuilders.getByCommandName(cmdName));
-		return result;
-	}
-
-	public static CommandAccess allowCommandAccess(ISession client, Command cmd) throws ReefServiceException{
-		CommandAccess result = client.putOne(CommandAccessRequestBuilders.allowAccessForCommand(cmd));
-		return result;
-	}
-
-    public static CommandAccess allowCommandAccess(ISession client, List<Command> cmds) throws ReefServiceException{
-		CommandAccess result = client.putOne(CommandAccessRequestBuilders.allowAccessForCommands(cmds));
-		return result;
-	}
-
-	public static CommandAccess deleteCommandAccess(ISession client, String cmdName) throws ReefServiceException{
-		CommandAccess result = client.deleteOne(CommandAccessRequestBuilders.getByCommandName(cmdName));
-		return result;
-	}
-
-    public static CommandAccess deleteCommandAccess(ISession client, CommandAccess accessToken) throws ReefServiceException{
-		CommandAccess result = client.deleteOne(accessToken);
-		return result;
-	}
-
-
-    public static void clearAllCommandAccess(ISession client) throws ReefServiceException{
-	    client.delete(CommandAccessRequestBuilders.getAll());
-	}
-
-    public static void clearCommandAccess(ISession client, String cmdName)  throws ReefServiceException {
-		client.delete(CommandAccessRequestBuilders.getByCommandName(cmdName));
-	}
-
-//	public static CommandAccess getCommandAccess(ISession client, String user, Command cmd) throws ReefServiceException{
-//		CommandAccess result = client.getOne(CommandAccessRequestBuilders.getByCommandName(cmd.getName()));
-//		return result;
-//	}
-
 	/**
 	 * Asks for all points regardless of who owns them.
 	 */
@@ -101,15 +58,6 @@ public class SampleRequests {
 	public static List<Measurement> getCurrentValues(ISession client, List<Point> points) throws ReefServiceException  {
 		MeasurementSnapshot ms = client.getOne(MeasurementSnapshotRequestBuilders.getByPoints(points));
 		return ms.getMeasurementsList();
-	}
-
-	/**
-	 * @param bridge
-	 *            connection object to use
-	 * @return List of all command objects
-	 */
-	public static List<Command> getAllCommands(ISession client) throws ReefServiceException  {
-		return client.get(CommandRequestBuilders.getAll());
 	}
 
 	/**

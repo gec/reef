@@ -60,7 +60,9 @@ object CommandAccessRequestBuilders {
 
   def getAll() = CommandAccess.newBuilder.setUid("*").build
   def getByCommand(command: Command) = CommandAccess.newBuilder.addCommands(command.getName).build
+  def getByCommands(commands: java.util.List[Command]) = CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).build
   def getByCommandName(command: String) = CommandAccess.newBuilder.addCommands(command).build
+  def getByCommandNames(commands: java.util.List[String]) = CommandAccess.newBuilder.addAllCommands(commands).build
 
   def getForUid(uid: String) = CommandAccess.newBuilder.setUid(uid).build
 

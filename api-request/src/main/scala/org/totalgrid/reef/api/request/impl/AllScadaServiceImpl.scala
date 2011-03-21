@@ -33,4 +33,5 @@ trait AllScadaServiceImpl
   with MeasurementServiceImpl
   with MeasurementOverrideServiceImpl
   with EventServiceImpl
+  with CommandServiceImpl
 

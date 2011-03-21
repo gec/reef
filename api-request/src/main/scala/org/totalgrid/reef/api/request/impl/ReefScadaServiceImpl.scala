@@ -39,3 +39,4 @@ class ConfigFileServiceWrapper(session: ISession) extends SessionWrapper(session
 class MeasurementServiceWrapper(session: ISession) extends SessionWrapper(session) with MeasurementService with MeasurementServiceImpl
 class MeasurementOverrideServiceWrapper(session: ISession) extends SessionWrapper(session) with MeasurementOverrideService with MeasurementOverrideServiceImpl
 class EventServiceWrapper(session: ISession) extends SessionWrapper(session) with EventService with EventServiceImpl
+class CommandServiceWrapper(session: ISession) extends SessionWrapper(session) with CommandService with CommandServiceImpl

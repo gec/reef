@@ -66,7 +66,7 @@ trait MeasurementOverrideService {
 
   /**
    * makes sure that any measurement overrides are cleared if existent
-   * @returns whether an override was cleared.
+   * @return whether an override was cleared.
    */
   @throws(classOf[ReefServiceException])
   def clearMeasurementOverridesOnPoint(point: Point): Boolean
