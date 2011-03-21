@@ -91,7 +91,7 @@ class EntityAttributesRequestTest
     }
   }
 
-  test ("API") {
+  test("API") {
     val ent = client.getEntityByName("StaticSubstation")
 
     val uid = ReefUUID(ent.getUid)
@@ -168,8 +168,5 @@ class EntityAttributesRequestTest
       client.removeEntityAttribute(uid, "test01")
     }
   }
-
-
-
 
 }

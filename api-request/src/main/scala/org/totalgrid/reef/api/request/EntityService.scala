@@ -25,7 +25,6 @@ import org.totalgrid.reef.api.ReefServiceException
 
 trait EntityService {
 
-
   /**
    * Get an entity using its unique identification.
    * @param uid   The entity id.
@@ -58,7 +57,6 @@ trait EntityService {
   @throws(classOf[ReefServiceException])
   def getEntityAttributes(uid: ReefUUID): EntityAttributes
 
-
   /**
    * Remove a specific attribute by name for a particular Entity.
    * @param uid   The entity id.
@@ -68,7 +66,6 @@ trait EntityService {
   @throws(classOf[ReefServiceException])
   def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes
 
-
   /**
    * Clear all attributes for a specified Entity.
    * @param uid   The entity id.
@@ -76,7 +73,6 @@ trait EntityService {
    */
   @throws(classOf[ReefServiceException])
   def clearEntityAttributes(uid: ReefUUID): EntityAttributes
-
 
   /**
    * Set a boolean attribute by name for a specified Entity.
