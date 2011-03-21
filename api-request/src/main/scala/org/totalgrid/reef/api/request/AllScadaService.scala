@@ -30,4 +30,5 @@ trait AllScadaService
   with ConfigFileService
   with MeasurementService
   with MeasurementOverrideService
+  with EventService
 

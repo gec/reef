@@ -39,6 +39,11 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   val table: Table[T]
 
   /**
+   * limit results to stop denial of service, TODO: make this per query overridable
+   */
+  def getResultLimit: Int = 100
+
+  /**
    * client code need to return a list that has all of the fields necessary to determine
    * if 2 records are referring to the "same object", it may be one field or a combination
    * of all the fields to define the "sameness". In most cases a uid field will be in this list
@@ -121,10 +126,10 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   /// internal (for now) functions that minimize code duplication but aren't needed externally yet
   /// though as the system grows that may change
   private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState) => QueryYield[R]): Query[R] = {
-    from(table)(sql => selectFun(sql, where(uniqueParams(req, sql))))
+    from(table)(sql => selectFun(sql, where(uniqueParams(req, sql)))).page(0, getResultLimit)
   }
   private def searchQuery[R](req: MessageType, selectFun: (T, WhereState) => QueryYield[R]): Query[R] = {
-    from(table)(sql => selectFun(sql, where(searchParams(req, sql))))
+    from(table)(sql => selectFun(sql, where(searchParams(req, sql)))).page(0, getResultLimit)
   }
   def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {
     SquerylModel.combineExpressions(uniqueQuery(req, sql).flatten)

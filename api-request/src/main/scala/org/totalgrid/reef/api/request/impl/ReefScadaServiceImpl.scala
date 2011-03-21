@@ -21,12 +21,21 @@ package org.totalgrid.reef.api.request.impl
  * under the License.
  */
 import org.totalgrid.reef.api.javaclient.ISession
-import org.totalgrid.reef.api.request.AllScadaService
+import org.totalgrid.reef.api.request._
+
+abstract class SessionWrapper(session: ISession) {
+  protected val ops = session.getUnderlyingClient
+}
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class ReefScadaServiceImpl(session: ISession) extends AllScadaService with AllScadaServiceImpl {
-  protected val ops = session.getUnderlyingClient
-}
+class ReefScadaServiceImpl(session: ISession) extends SessionWrapper(session) with AllScadaService with AllScadaServiceImpl
+
+class AuthTokenServiceWrapper(session: ISession) extends SessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl
+class EntityServiceWrapper(session: ISession) extends SessionWrapper(session) with EntityService with EntityServiceImpl
+class ConfigFileServiceWrapper(session: ISession) extends SessionWrapper(session) with ConfigFileService with ConfigFileServiceImpl
+class MeasurementServiceWrapper(session: ISession) extends SessionWrapper(session) with MeasurementService with MeasurementServiceImpl
+class MeasurementOverrideServiceWrapper(session: ISession) extends SessionWrapper(session) with MeasurementOverrideService with MeasurementOverrideServiceImpl
+class EventServiceWrapper(session: ISession) extends SessionWrapper(session) with EventService with EventServiceImpl
