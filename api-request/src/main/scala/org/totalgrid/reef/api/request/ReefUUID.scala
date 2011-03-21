@@ -25,4 +25,6 @@ package org.totalgrid.reef.api.request
  *
  * TODO: When UUIDs added across board in protos, ReefUUID becomes proto class
  */
-case class ReefUUID(uuid: String)
+case class ReefUUID(protected val uuid: String) {
+  def getUuid = uuid
+}

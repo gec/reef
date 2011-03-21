@@ -20,12 +20,11 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Model.{ Entity }
-
 import org.totalgrid.reef.api.request.{ ReefUUID, EntityService }
-import org.totalgrid.reef.api.request.builders.EntityRequestBuilders
-
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity }
+import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, EntityRequestBuilders }
 
 trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
@@ -38,6 +37,52 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   }
   def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
     ops.getOrThrow(EntityRequestBuilders.getByType(typ))
+  }
+
+  def getEntityAttributes(uid: ReefUUID): EntityAttributes = {
+    ops.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid.getUuid))
+  }
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
+    addSingleAttribute(uid, EntityAttributesBuilders.boolAttribute(name, value))
+  }
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Long): EntityAttributes = {
+    addSingleAttribute(uid, EntityAttributesBuilders.longAttribute(name, value))
+  }
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Double): EntityAttributes = {
+    addSingleAttribute(uid, EntityAttributesBuilders.doubleAttribute(name, value))
+  }
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: String): EntityAttributes = {
+    addSingleAttribute(uid, EntityAttributesBuilders.stringAttribute(name, value))
+  }
+
+  def setEntityAttribute(uid: ReefUUID, name: String, value: Array[Byte]): EntityAttributes = {
+    addSingleAttribute(uid, EntityAttributesBuilders.byteArrayAttribute(name, value))
+  }
+
+  def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = {
+    val prev = getEntityAttributes(uid)
+    val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
+
+    ops.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid.getUuid, set))
+  }
+
+  def clearEntityAttributes(uid: ReefUUID): EntityAttributes = {
+    ops.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid.getUuid))
+  }
+
+  protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = {
+    val prev = getEntityAttributes(uid)
+    val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
+
+    val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(uid.getUuid))
+    prevSet.foreach(req.addAttributes(_))
+    req.addAttributes(attr)
+
+    ops.putOneOrThrow(req.build)
   }
 }
 

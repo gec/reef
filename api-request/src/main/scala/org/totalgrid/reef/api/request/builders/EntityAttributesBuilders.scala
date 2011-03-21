@@ -22,6 +22,7 @@ package org.totalgrid.reef.api.request.builders
 
 import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 import org.totalgrid.reef.proto.Utils.Attribute
+import com.google.protobuf.ByteString
 
 object EntityAttributesBuilders {
 
@@ -39,6 +40,26 @@ object EntityAttributesBuilders {
 
   def putAttributesToEntityName(name: String, attributes: java.util.List[Attribute]) = {
     EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setName(name)).addAllAttributes(attributes).build
+  }
+
+  def boolAttribute(name: String, value: Boolean): Attribute = {
+    Attribute.newBuilder.setName(name).setVtype(Attribute.Type.BOOL).setValueBool(value).build
+  }
+
+  def longAttribute(name: String, value: Long): Attribute = {
+    Attribute.newBuilder.setName(name).setVtype(Attribute.Type.SINT64).setValueSint64(value).build
+  }
+
+  def stringAttribute(name: String, value: String): Attribute = {
+    Attribute.newBuilder.setName(name).setVtype(Attribute.Type.STRING).setValueString(value).build
+  }
+
+  def doubleAttribute(name: String, value: Double): Attribute = {
+    Attribute.newBuilder.setName(name).setVtype(Attribute.Type.DOUBLE).setValueDouble(value).build
+  }
+
+  def byteArrayAttribute(name: String, value: Array[Byte]): Attribute = {
+    Attribute.newBuilder.setName(name).setVtype(Attribute.Type.BYTES).setValueBytes(ByteString.copyFrom(value)).build
   }
 
 }

@@ -31,7 +31,7 @@ import org.totalgrid.reef.api.request.ReefUUID
  * minimize duplication of Builder code.
  */
 object ConfigFileRequestBuilders {
-  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUid(uid.uuid).build
+  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUid(uid.getUuid).build
   def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
 
   def getByMimeType(mimeType: String) = ConfigFile.newBuilder().setMimeType(mimeType).build
