@@ -119,7 +119,7 @@
                 <executions>
                     <execution>
                         <id>check-headers</id>
-                        <phase>process-resources</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>format</goal>
                         </goals>

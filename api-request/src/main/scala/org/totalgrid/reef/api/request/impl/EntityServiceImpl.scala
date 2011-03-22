@@ -36,7 +36,22 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     ops.getOneOrThrow(EntityRequestBuilders.getByName(name))
   }
   def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
-    ops.getOrThrow(EntityRequestBuilders.getByType(typ))
+    if (typ == "*") ops.getOrThrow(EntityRequestBuilders.getAll)
+    else ops.getOrThrow(EntityRequestBuilders.getByType(typ))
+  }
+
+  def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = {
+    val result = ops.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ))
+
+    val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
+    allEntitiesList
+  }
+  def getEntityTree(entityTree: Entity): Entity = {
+    ops.getOneOrThrow(entityTree)
+  }
+
+  def getEntities(entityTree: Entity): java.util.List[Entity] = {
+    ops.getOrThrow(entityTree)
   }
 
   def getEntityAttributes(uid: ReefUUID): EntityAttributes = {
@@ -85,6 +100,4 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     ops.putOneOrThrow(req.build)
   }
 }
-
-import scala.collection.JavaConversions._
 

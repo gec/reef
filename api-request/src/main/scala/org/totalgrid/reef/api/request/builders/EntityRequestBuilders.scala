@@ -50,6 +50,10 @@ object EntityRequestBuilders {
     Entity.newBuilder.setUid(rootNode.getUid).addRelations(childrenRelatedWithType("owns", typ)).build
   }
 
+  def getRelatedChildrenOfTypeFromRootUid(rootNode: ReefUUID, relationship: String, typ: String): Entity = {
+    Entity.newBuilder.setUid(rootNode.getUuid).addRelations(childrenRelatedWithType(relationship, typ)).build
+  }
+
   private def childrenRelatedWithType(relationship: String, typ: String) = {
     Relationship.newBuilder
       .setDescendantOf(true)

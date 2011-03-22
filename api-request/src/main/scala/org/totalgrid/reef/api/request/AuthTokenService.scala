@@ -20,7 +20,34 @@
  */
 package org.totalgrid.reef.api.request
 
+import org.totalgrid.reef.api.ReefServiceException
+
+/**
+ * All requests (except for authorization token requests) require that the agent has acquired an
+ * "Auth Token" and is sending it with every request. This auth token contains the user name and
+ * all of the permissions available to that user. The token itself is a cryptographically secure string
+ * that is an unguessable, unforgeable and must be kept secret by the client. Anyone with access to
+ * that token will have the full capabilities of that user until it expires or is revoked. When a user
+ * is finished using an auth token it should be deleted to minimize this danger.
+ *
+ * Every request to the services needs to have an auth token in the headers. They can be sent with each
+ * client request, the ISession interface has overloads to attach headers to each request. It is easiest
+ * to attach the auth token to the underlying session using the setAuthToken function.
+ *
+ * TODO: add setAuthToken function on ISession
+ */
 trait AuthTokenService {
+  /**
+   * create an authorization token for the user with all available permissions "checked out". If the password
+   * or username is wrong this method will throw an exception without indicating which was wrong.
+   * @return authToken string
+   */
+  @throws(classOf[ReefServiceException])
   def createNewAuthorizationToken(user: String, password: String): String
-  def deleteAuthorizationToken(token: String): Boolean
+
+  /**
+   * revoke the authToken string. This means all future requests using this auth token will fail.
+   */
+  @throws(classOf[ReefServiceException])
+  def deleteAuthorizationToken(token: String)
 }

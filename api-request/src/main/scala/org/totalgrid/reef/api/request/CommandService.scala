@@ -25,8 +25,18 @@ import org.totalgrid.reef.proto.Model.Command
 import org.totalgrid.reef.api.ReefServiceException
 
 /**
- * To interface with field devices operators use
- * // TODO: Change command names to UUIDs
+ * To affect changes in the field devices SCADA systems use commands. Commands are usually executed in the field
+ * by the same equipment that are generating measurements. Each command usually represents one action that can
+ * be taken in the field like tripping a breaker or raising the setpoint voltage. To execute a control the agent
+ * must first acquire an exclusive lock on the command. Acquiring these locks is usually known as "Selecting a
+ * Command", the two terms are used interchangably. These locks can be at any granularity: command, related-
+ * commands, equipment, or equipment group.
+ *
+ * These locks are tied to the user who acquired them and do not need to be passed with the command request.
+ * One thing to note is that if an operator had 2 open windows, locked the command in one window, he would
+ * be allowed to execute the command in the other.
+ *
+ * TODO: Change command names to UUIDs
  */
 trait CommandService {
 

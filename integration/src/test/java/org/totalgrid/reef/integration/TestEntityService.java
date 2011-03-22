@@ -23,8 +23,11 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.request.EntityService;
+import org.totalgrid.reef.api.request.impl.EntityServiceWrapper;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -73,8 +76,8 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * */
 	@Test
 	public void getAllEntities() throws ReefServiceException {
-		Entity request = Entity.newBuilder().setUid("*").build();
-		List<Entity> list = client.get(request);
+        EntityService es = new EntityServiceWrapper(client);
+		List<Entity> list = es.getAllEntitiesWithType("*");
 		assertTrue(list.size() > 0); // the number here is arbitrary
 
 	}
@@ -85,11 +88,12 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * */
 	@Test
 	public void getSubstationEntities() throws ReefServiceException {
-		Entity request = Entity.newBuilder().addTypes("Substation").build();
-		Map<String, Entity> map = getEntityMap(client.get(request));
-		assertEquals(2, map.size());
-		assertTrue(map.containsKey("SimulatedSubstation"));
-		assertTrue(map.containsKey("StaticSubstation"));
+        EntityService es = new EntityServiceWrapper(client);
+        List<Entity> list = es.getAllEntitiesWithType("Substation");
+        assertEquals(2, list.size());
+        for(Entity e : list){
+            assertTrue(e.getTypesList().contains("Substation"));
+        }
 	}
 
 	/**
@@ -98,9 +102,9 @@ public class TestEntityService extends JavaBridgeTestBase {
 	@Test
 	public void pointToPointEntityConsistency() throws ReefServiceException {
 		List<Point> points = SampleRequests.getAllPoints(client);
+        EntityService es = new EntityServiceWrapper(client);
 
-		Entity request = Entity.newBuilder().addTypes("Point").build();
-		List<Entity> point_entities = client.get(request);
+		List<Entity> point_entities = es.getAllEntitiesWithType("Point");
 
 		assertEquals(points.size(), point_entities.size()); // check that they have the same size
 		Map<String, Point> pMap = getPointMap(points);
@@ -119,10 +123,11 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 */
 	@Test
 	public void equipmentToPointConsistency() throws ReefServiceException {
-		List<Point> points = SampleRequests.getAllPoints(client);
+        EntityService es = new EntityServiceWrapper(client);
 
-		Entity request = Entity.newBuilder().addTypes("Point").build();
-		List<Entity> point_entities = client.get(request);
+        List<Point> points = SampleRequests.getAllPoints(client);
+
+		List<Entity> point_entities = es.getAllEntitiesWithType("Point");
 
 		assertEquals(points.size(), point_entities.size()); // check that they have the same size
 		Map<String, Point> pMap = getPointMap(points);
@@ -148,7 +153,9 @@ public class TestEntityService extends JavaBridgeTestBase {
 				Relationship.newBuilder().setRelationship("feedback").setDescendantOf(false).addEntities(Entity.newBuilder().addTypes("Point")))
 				.build();
 
-		List<Entity> result = client.get(request);
+        EntityService es = new EntityServiceWrapper(client);
+
+		List<Entity> result = es.getEntities(request);
 
 		for (Entity e : result) {
 			assertTrue(e.getTypesList().contains("Command"));

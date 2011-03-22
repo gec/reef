@@ -31,9 +31,8 @@ trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
     resp.getToken
   }
 
-  def deleteAuthorizationToken(token: String): Boolean = {
+  def deleteAuthorizationToken(token: String) = {
     ops.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token))
-    false
   }
 }
 
