@@ -71,25 +71,28 @@ class RequestEnv(var headers: Map[String, List[String]]) {
 
   }
 
-  def reset() : Unit = headers = Map.empty[String, List[String]]
+  def reset(): Unit = headers = Map.empty[String, List[String]]
 }
 
 /**
  * helper to get/set headers on a request
  */
 class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
+
+  import org.totalgrid.reef.util.JavaInterop.notNull
+
   def subQueue = env.getString("SUB_QUEUE_NAME")
   def authTokens: List[String] = env.getList("AUTH_TOKEN")
 
-  def setSubscribeQueue(s: String) {
-    env.addHeader("SUB_QUEUE_NAME", s)
+  def setSubscribeQueue(queueName: String) {
+    env.addHeader("SUB_QUEUE_NAME", notNull(queueName, "queueName"))
   }
-  def addAuthToken(s: String) {
-    env.addHeader("AUTH_TOKEN", s)
+  def addAuthToken(token: String) {
+    env.addHeader("AUTH_TOKEN", notNull(token, "token"))
   }
-  def setAuthToken(s: String) {
+  def setAuthToken(token: String) {
     env.clearHeader("AUTH_TOKEN")
-    env.addHeader("AUTH_TOKEN", s)
+    env.addHeader("AUTH_TOKEN", notNull(token, "token"))
   }
   def setAuthTokens(ss: List[String]) {
     env.clearHeader("AUTH_TOKEN")
@@ -99,7 +102,7 @@ class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
   /**
    * clear all headers
    */
-  def reset() : Unit = env.reset
+  def reset(): Unit = env.reset
 }
 
 object ServiceHandlerHeaders {
