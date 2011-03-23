@@ -100,7 +100,7 @@ class DNPTranslatorTests extends Suite with ShouldMatchers {
       Mapping.CommandType.LATCH_OFF -> ControlCode.CC_LATCH_OFF,
       Mapping.CommandType.PULSE -> ControlCode.CC_PULSE,
       Mapping.CommandType.PULSE_CLOSE -> ControlCode.CC_PULSE_CLOSE,
-      Mapping.CommandType.PUSLE_TRIP -> ControlCode.CC_PULSE_TRIP)
+      Mapping.CommandType.PULSE_TRIP -> ControlCode.CC_PULSE_TRIP)
 
     // Test translation for each Command code
     map.foreach(kvp => {

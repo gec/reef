@@ -111,7 +111,7 @@ object DNPTranslator {
       case Mapping.CommandType.LATCH_OFF => ControlCode.CC_LATCH_OFF
       case Mapping.CommandType.PULSE => ControlCode.CC_PULSE
       case Mapping.CommandType.PULSE_CLOSE => ControlCode.CC_PULSE_CLOSE
-      case Mapping.CommandType.PUSLE_TRIP => ControlCode.CC_PULSE_TRIP
+      case Mapping.CommandType.PULSE_TRIP => ControlCode.CC_PULSE_TRIP
       case _ => throw new Exception("Invalid Command code")
     }
   }
