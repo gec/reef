@@ -52,9 +52,9 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     amqp.addConnectionListener(listener)
 
     10.times {
-      amqp.start(0)
+      amqp.start()
       listener.connected.waitUntil(true)
-      amqp.stop(0)
+      amqp.stop()
       listener.connected.waitUntil(false)
     }
 
@@ -67,7 +67,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     }
 
     intercept[ServiceIOException] {
-      amqp.start(100)
+      amqp.connect(100)
     }
   }
 
@@ -77,7 +77,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
       val broker = new QpidBrokerConnection(default)
     }
 
-    amqp.start(1000)
+    amqp.connect(1000)
 
     val channel = amqp.getChannel
 

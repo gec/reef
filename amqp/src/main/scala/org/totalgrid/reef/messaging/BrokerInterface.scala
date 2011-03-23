@@ -76,9 +76,9 @@ trait BrokerConnection {
   def newBrokerChannel(): BrokerChannel
 
   /// sets the connection listener
-  def setConnectionListener(l: Option[IConnectionListener]) = { listener = l }
+  def addConnectionListener(l: IConnectionListener) = { listeners = l :: listeners }
 
   /// option to hold the connection listener
-  protected var listener: Option[IConnectionListener] = None
+  protected var listeners: List[IConnectionListener] = Nil
 
 }

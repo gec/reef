@@ -45,24 +45,36 @@ trait IConnection {
   /**
    * Starts execution of the messaging connection. Once the service has been started the connection to
    * the broker may be lost so it is important to use an IConnectionListener to be informed of those
-   * non-client disconnection events.
-   * @param timeoutMs how long to wait for the first good connection before throwing ServiceIOException.
-   *    If less than or equal to 0 it returns instantly
+   * non-client initiated disconnection events.
+   * @param timeoutMs how long to wait (milliseconds) for the first good connection before throwing ServiceIOException.
+   *    values of 0 or less will throw illegal argument exception
    */
   @throws(classOf[ServiceIOException])
-  def start(timeoutMs: Long)
+  def connect(timeoutMs: Long)
 
   /**
-   * Halts execution of the messaging connection
-   * @param timeoutMs how long to wait for stop before throwing ServiceIOException.
-   *    If less than or equal to 0 it returns instantly
+   * Starts execution of the messaging connection. Once the service has been started the connection to
+   * the broker may be lost so it is important to use an IConnectionListener to be informed of those
+   * non-client initiated disconnection events.
+   */
+  def start()
+
+  /**
+   * Halts the messaging connection and waits for a closed callback
+   * @param timeoutMs how long to wait (milliseconds) for stop before throwing ServiceIOException.
+   *    values of 0 or less will throw illegal argument exception
    */
   @throws(classOf[ServiceIOException])
-  def stop(timeoutMs: Long)
+  def disconnect(timeoutMs: Long)
+
+  /**
+   * Begins halting execution of the messaging connection
+   */
+  def stop()
 
   /**
    * creates a non thread-safe (use from single thread only) client
+   * TODO: have newSession throw exception if not open
    */
-  @throws(classOf[ServiceIOException])
   def newSession(): ISession
 }

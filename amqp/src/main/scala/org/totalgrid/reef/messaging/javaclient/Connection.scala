@@ -47,15 +47,13 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
   override def removeConnectionListener(listener: IConnectionListener) =
     factory.removeConnectionListener(listener)
 
-  /**
-   *  Starts execution of the messaging connection
-   */
-  override def start(timeoutMs: Long) = factory.start(timeoutMs)
+  override def connect(timeoutMs: Long) = factory.connect(timeoutMs)
 
-  /**
-   *  Halts execution of the messaging connection
-   */
-  override def stop(timeoutMs: Long) = factory.stop(timeoutMs)
+  override def start() = factory.start()
+
+  override def disconnect(timeoutMs: Long) = factory.disconnect(timeoutMs)
+
+  override def stop() = factory.stop()
 
   def newSession(): ISession = {
     new Session(new ProtoClient(factory, servicesList, timeoutms))

@@ -73,14 +73,14 @@ class MockBrokerInterface(connectCorrectly: Boolean = true) extends BrokerChanne
   def connect() = {
     if (!connectCorrectly) throw new Exception("Fake bad connect")
     connected = true
-    listener.foreach(_.opened())
+    listeners.foreach(_.opened())
   }
 
   /// nothing special is needed to shut down the mock broker, there are no circular
   /// dependencies or listeners to unravel
   def close {
     connected = false
-    listener.foreach(_.closed())
+    listeners.foreach(_.closed())
   }
 
   case class ExchangeBinding(key: String, queue: String)

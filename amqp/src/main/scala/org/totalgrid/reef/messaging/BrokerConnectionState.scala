@@ -26,21 +26,31 @@ import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 class BrokerConnectionState extends IConnectionListener {
   private val connected = new SyncVar(false)
 
-  override def opened() = connected.update(true)
-  override def closed() = connected.update(false)
+  override def opened() = {
+    println(connected + "Connected: true")
+    connected.update(true)
+  }
+  override def closed() = {
+    println(connected + "Connected: false")
+    connected.update(false)
+  }
 
   /**
    * @param timeout how long to wait in milliseconds before failing
    * @param exceptionMessage Text to put into exception on failure
    */
-  def waitUntilStarted(timeout: Long, exceptionMessage: => String) =
+  def waitUntilStarted(timeout: Long, exceptionMessage: => String) = {
+    println(connected + "waitStart")
     connected.waitUntil(true, timeout, true, Some(new ServiceIOException(exceptionMessage)))
+  }
 
   /**
    * @param timeout how long to wait in milliseconds before failing
    * @param exceptionMessage Text to put into exception on failure
    */
-  def waitUntilStopped(timeout: Long, exceptionMessage: => String) =
+  def waitUntilStopped(timeout: Long, exceptionMessage: => String) = {
+    println(connected + "waitStop")
     connected.waitUntil(false, timeout, true, Some(new ServiceIOException(exceptionMessage)))
+  }
 }
 

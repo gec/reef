@@ -40,10 +40,10 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
   }
 
   override def beforeAll() {
-    factory.start(5000)
+    factory.connect(5000)
   }
   override def afterAll() {
-    factory.stop(5000)
+    factory.disconnect(5000)
 
     client.save(file, title, desc)
   }

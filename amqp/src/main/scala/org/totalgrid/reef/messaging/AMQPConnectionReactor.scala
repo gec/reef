@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
-import org.totalgrid.reef.api.IConnectionListener
+import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 
 /**
  * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
@@ -62,32 +62,28 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   private var connectedState = new BrokerConnectionState
   addConnectionListener(connectedState)
 
-  /**
-   * Starts execution of the messaging connection
-   * @param timeoutMs how long to wait for connection before throwing ServiceIOException.
-   *    If less than or equal to 0 it returns instantly
-   */
-  def start(timeoutMs: Long) {
+  def connect(timeoutMs: Long) {
+    if (timeoutMs <= 0) throw new IllegalArgumentException("Start timeout must be greater than 0.")
     super.start()
-    if (timeoutMs > 0) {
+
+    try {
       connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
+    } catch {
+      case se: ServiceIOException =>
+        info("Syncronous start failed, stopping actor")
+        super.stop()
+        throw se
     }
   }
 
-  /**
-   * Halts execution of the messaging connection
-   * @param timeoutMs how long to wait for stop before throwing ServiceIOException.
-   *    If less than or equal to 0 it returns instantly
-   */
-  def stop(timeoutMs: Long) {
+  def disconnect(timeoutMs: Long) {
+    if (timeoutMs <= 0) throw new IllegalArgumentException("Stop timeout must be greater than 0.")
     super.stop()
-    if (timeoutMs > 0) {
-      connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
-    }
+    connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
   }
 
   override def afterStart() = {
-    broker.setConnectionListener(Some(this))
+    broker.addConnectionListener(this)
     reconnectOnClose = true
     this.reconnect()
   }
@@ -104,11 +100,11 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   }
 
   // helper for starting a new connection chain
-  private def reconnect() = execute { connect(1000) }
+  private def reconnect() = execute { attemptConnection(1000) }
 
   /// Makes a connection attempt. Retries if with exponential backoff
   /// if the attempt fails
-  private def connect(retryms: Long): Unit = {
+  private def attemptConnection(retryms: Long): Unit = {
     try {
       broker.connect()
       queue.foreach { createChannel(_) }
@@ -117,7 +113,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
       case t: Throwable =>
         error(t)
         // if we fail, retry, use exponential backoff
-        delay(retryms) { connect(2 * retryms) }
+        delay(retryms) { attemptConnection(2 * retryms) }
     }
   }
 
@@ -134,7 +130,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /* --- Implement Broker Connection Listener --- */
 
   override def closed() {
-    info(" Connection closed")
+    info(" Connection closed. reconnecting:" + reconnectOnClose)
     if (reconnectOnClose) this.delay(1000) { reconnect() }
     queue.foreach { a => a.offline() }
     this.synchronized { listeners.foreach { _.closed() } }

@@ -88,7 +88,7 @@ public class JavaBridgeTestBase {
 
 	@Before
 	public void startBridge() throws InterruptedException, ReefServiceException {
-		connection.start(5000);
+		connection.connect(5000);
 		client = connection.newSession();
         helpers = new AtollService(client);
 		if (autoLogon) {
@@ -100,6 +100,6 @@ public class JavaBridgeTestBase {
 	@After
 	public void stopBridge() throws InterruptedException, ReefServiceException {
 		client.close();
-		connection.stop(5000);
+		connection.disconnect(5000);
 	}
 }

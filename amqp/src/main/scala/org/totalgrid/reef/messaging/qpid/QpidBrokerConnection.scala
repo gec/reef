@@ -69,13 +69,13 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
     info("Qpid Connection closed")
     connection = None
     unlinkChannels()
-    listener.foreach(_.closed())
+    listeners.foreach(_.closed())
   }
 
   def opened(conn: Connection) {
     info("Qpid Connection opened")
     connection = Some(conn)
-    listener.foreach(_.opened())
+    listeners.foreach(_.opened())
   }
 
   def exception(conn: Connection, ex: ConnectionException) {

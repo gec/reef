@@ -58,11 +58,10 @@ object AMQPFixture {
     }
 
     try {
-      val timeout = if (requireConnection) 10000 else 0
-      amqp.start(timeout)
+      if (requireConnection) amqp.connect(10000) else amqp.start()
       test(amqp)
     } finally {
-      amqp.stop()
+      amqp.disconnect(10000)
     }
   }
 
@@ -84,11 +83,10 @@ object AMQPFixture {
     }
 
     try {
-      val timeout = if (requireConnection) 10000 else 0
-      amqp.start(timeout)
+      if (requireConnection) amqp.connect(10000) else amqp.start()
       test(amqp)
     } finally {
-      amqp.stop()
+      amqp.disconnect(10000)
     }
   }
 
