@@ -38,6 +38,7 @@
                     <jvmArgs>
                         <jvmArg>-Xmx1024m</jvmArg>
                     </jvmArgs>
+                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                 </configuration>
             </plugin>
             <plugin>

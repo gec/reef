@@ -20,7 +20,21 @@
  */
 package org.totalgrid.reef.api
 
+/**
+ * It is important to use an IConnectionListener to be informed of disconnections from the message broker (expected
+ * or otherwise). Callbacks come in from the messaging thread so it is important not to block the callbacks.
+ */
 trait IConnectionListener {
+  /**
+   * called when we lose connection to the broker. This means all subscriptions spawned from the IConnection during
+   * this time are invalid and need to be thrown away.
+   */
   def closed()
+  /**
+   * called when we have established a connection to the message broker, we can now provide ISessions
+   */
   def opened()
+
+  // TODO: write tests to figure out what can and can't be done inside IConnectionListener callbacks
+  // TODO: add exception callback for ISubscription and possibly ISession
 }

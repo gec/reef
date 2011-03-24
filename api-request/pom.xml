@@ -133,9 +133,21 @@
                     </excludes>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/builders/*.scala</exclude>
+                        <exclude>**/impl/*.scala</exclude>
+                        <exclude>**/utils/*.scala</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
