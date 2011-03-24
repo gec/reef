@@ -1,0 +1,103 @@
+<chapter id="services">
+    <title>Service lifecycle (create, update, delete)</title>
+<para>
+So far we've only dealt with requests that ask for the current state of the system. We'll now create and manipulate objects using the ISession.
+</para>
+    <para>
+To demonstrate create/update/delete service functionality, we will use one of the simplest objects the ConfigFile object. ConfigFile objects contain generic (byte array) data provided by a configuration process and used by an application (i.e. a protocol implementation) that understands how to interpret it.
+          </para>
+    <para>
+First, we'll create a ConfigFile named "config01" that contains a plain-text string:
+<example><title>Creating a ConfigFile</title><programlisting>
+// wrap the ISession
+ConfigFileService configService = new ConfigFileServiceWrapper(session);
+
+ConfigFile cf = configService.createConfigFile("config01", "text/plain", ByteString.copyFromUtf8("Example config file"));
+                           </programlisting>
+    </example>
+
+    </para>
+    <para>
+We use the PUT verb in our request. If a matching object does not exist, put will create it:
+
+
+        The response object, created, should be exactly like our request object, with one crucial difference: it has the "uid" field filled out, with uniquely identifies the created object in the system:
+
+
+To modify this object, say to change the contents of the "file" field, we build a request by modifying created (the toBuilder() method copies all fields):
+
+        <example><title>Creating a ConfigFile</title>
+            <programlisting>
+ConfigFile cf = configService.updateConfigFile(cf, ByteString.copyFromUtf8("Modified content"));
+            </programlisting>
+    </example>
+
+We send the modified object to the put service again. Since the "uid" field is present, the put service will interpret this as an update instead of a create:
+
+ConfigFile modified = client.putOne(modify);
+
+System.out.println("Content: " + created.getFile().toStringUtf8());
+
+The "file" field will now have been updated with our new content.
+
+Finally, we delete our object:
+
+ConfigFile deleted = client.deleteOne(modified);
+
+System.out.println("Deleted: " + deleted.getUid());
+
+
+Service subscriptions
+
+Reef allows clients to subscribe to service events, receiving notifications asynchronously when objects are added, modified, or removed. Subscriptions are requested by adding header information to normal service requests. The ISession interface handles the details of adding request headers and setting up message queues; clients just need to provide a callback object that implements the IEventAcceptor interface:
+
+interface IEventAcceptor {
+    public void onEvent(ServiceTypes.Event event);
+}
+
+For example:
+
+IEventAcceptor acceptor = new IEventAcceptor() {
+    public void onEvent(ServiceTypes.Event event) {
+        System.out.println("Got event: " + event.getEvent());
+    }
+};
+
+Once we have an event acceptor ready, we set-up the callback by getting an ISubscription interface from our session. To do this, we need one additional piece of information: the description of the message type we're subscribing to. The Descriptors class keeps a list of these. We can then set-up the subscription like so:
+
+ISubscription subscription = client.addSubscription(
+    Descriptors.measurementSnapshot(),
+    acceptor);
+
+Now our ISession is configured to use our event acceptor, and we just need to make the request for the objects we'd like to subscribe to. This looks like a normal request, except that we include our subscription:
+
+MeasurementSnapshot request = MeasurementSnapshot.newBuilder()
+    .addPointNames("StaticSubstation.Line02.Current").build();
+
+MeasurementSnapshot response = client.getOne(request, subscription);
+
+The AMQP connection will route incoming service events to our IEventAcceptor. The calls arrive on a separate thread, so we will need synchronization code to keep everything thread-safe.
+
+Events themselves are wrapped in the ServiceTypes.Event class. It has two main methods:
+        </para>
+<example>
+        <title>ServiceTypes.Event</title>
+        <programlisting>
+public Envelope.Event getEvent();
+
+public T getResult();
+            </programlisting>
+    </example>
+    <para>
+
+Envelope.Event is an enumeration for what the event type is: ADDED, MODIFIED, or REMOVED. The getResult() method returns the actual message object.
+          </para>
+Finally, to clean up our subscription we must cancel it:
+      <example>
+        <title>Canceling a subscription</title>
+        <programlisting>
+subscription.cancel();
+        </programlisting>
+    </example>
+
+</chapter>

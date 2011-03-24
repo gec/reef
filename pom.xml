@@ -41,6 +41,7 @@
         <module>proto-shell</module>
         <module>admin-shell</module>
         <module>branding</module>
+        <module>docs</module>
     </modules>
 
     <repositories>

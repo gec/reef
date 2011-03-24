@@ -1,0 +1,68 @@
+<chapter id="chapter1">
+    <title>Overview</title>
+    <para>Reef uses AMQP (<ulink url="http://www.amqp.org"/>) for transport and Google Protocol Buffers (<ulink
+            url="http://code.google.com/p/protobuf/"/>) to serialize messages. The combination of these two technologies
+        comprise the interface to the Reef service layer. Bindings can be created for any platform/language with a
+        compatible AMQP client and a Protobuf compiler. Reef is factored to a RESTful service oriented architecture (SOA).
+    </para>
+
+    <figure id="AMQP_Broker">
+        <title>Client, broker, services interaction</title>
+        <mediaobject>
+            <imageobject>
+                <imagedata align="center" fileref="images/protos.png"/>
+            </imageobject>
+        </mediaobject>
+    </figure>
+
+    <para>Since Reef runs on the JVM, the reference implementation for the client binding is written for Java. The
+        client API handles details of maintaining a connection to an AMQP broker, routing service requests to their
+        named AMQP exchanges, providing the asynchronous delivery of service message events, and building the proper
+        request headers.
+    </para>
+    <para>
+        <itemizedlist>
+            <listitem>
+                <para><emphasis>Connection</emphasis>: Maintains a connection to the AMQP broker, handles the threading
+                    of asynchronous communication, acts as a Session factory. The underlying implementation extends the
+                    <literal>IConnection</literal>
+                    interface.
+                </para>
+            </listitem>
+            <listitem>
+                <para><emphasis>Session</emphasis>: Used by a single thread at a time, provides methods for making
+                    service requests. Users interact with the
+                    <literal>ISession</literal>
+                    interface.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+    <para>
+        Implementations of
+        <literal>IConnection</literal>
+        must be thread-safe, but
+        <literal>ISession</literal>
+        must be used by only one thread at a time. The AMQP protocol itself fully allows for multiple concurrent
+        sessions.
+    </para>
+
+    <figure id="Session_threading">
+        <title>Threading of IConnection and ISession</title>
+        <mediaobject>
+            <imageobject>
+                <imagedata align="center" fileref="images/thread2.png"/>
+            </imageobject>
+        </mediaobject>
+    </figure>
+    <para>
+        <literal>ISession</literal>
+        interfaces represent long-lived objects that are associated one-to-one with underlying AMQP sessions. Creating a
+        new session per request is not recommended since there is a small cost associated with acquiring new sessions
+        and deleting them, but client developers should feel free to create as many sessions as needed to service their
+        threading requirements. Recommended practice for multi-threaded applications is to create an
+        <literal>ISession</literal>
+        per unit of concurrency instead of going to a pool for every call to reef. Additionally, sessions can be pooled so
+        long as care is taken to ensure the correct authorization is attached before any given request.
+    </para>
+</chapter>
