@@ -30,8 +30,9 @@ import scala.collection.JavaConversions._
 
 class Dnp3Protocol extends BaseProtocol with Logging {
 
-  val name = "dnp3"
-  val requiresPort = true
+  override def name = "dnp3"
+
+  override def requiresChannel = true
 
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
@@ -48,7 +49,7 @@ class Dnp3Protocol extends BaseProtocol with Logging {
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  def _addPort(p: FEP.Port) = {
+  override def _addChannel(p: FEP.Port) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -61,36 +62,36 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     } else if (p.hasSerial) {
       dnp3.AddSerial(p.getName, settings, configure(p.getSerial))
     } else {
-      throw new Exception("Invalid port info, no type set")
+      throw new Exception("Invalid channel info, no type set")
     }
-    info { "added port with name: " + p.getName }
+    info { "added channel with name: " + p.getName }
   }
 
-  def _removePort(port: String) = {
-    info { "removed port with name: " + port }
-    dnp3.RemovePort(port)
+  override def _removeChannel(channel: String) = {
+    info { "removed channel with name: " + channel }
+    dnp3.RemovePort(channel)
   }
 
-  def _addEndpoint(endpoint: String, portName: String, files: List[Model.ConfigFile], publisher: IPublisher): IProtocolCmdHandler = {
+  override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher): IProtocolCmdHandler = {
 
-    info { "Adding device with uid: " + endpoint + " onto port " + portName }
+    info { "Adding device with uid: " + endpoint + " onto channel " + channelName }
 
     val master = getMasterConfig(IProtocol.find(files, "text/xml")) //there is should be only one XML file
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
     val meas_adapter = new MeasAdapter(mapping, publisher.publish)
     map += endpoint -> meas_adapter
-    val cmd = dnp3.AddMaster(portName, portName, FilterLevel.LEV_WARNING, meas_adapter, master)
+    val cmd = dnp3.AddMaster(channelName, channelName, FilterLevel.LEV_WARNING, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
 
-  def _removeEndpoint(endpoint: String) = {
+  override def _removeEndpoint(endpoint: String) = {
 
     dnp3.RemoveStack(endpoint)
     map -= endpoint
   }
 
-  def getMasterConfig(file: Model.ConfigFile): MasterStackConfig = {
+  private def getMasterConfig(file: Model.ConfigFile): MasterStackConfig = {
     val xml = XMLHelper.read(file.getFile.toByteArray, classOf[Master])
     val config = new MasterStackConfig
     config.setMaster(configure(xml, xml.getStack.getAppLayer.getMaxFragSize))
@@ -99,7 +100,7 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     config
   }
 
-  def configure(xml: LinkLayer): LinkConfig = {
+  private def configure(xml: LinkLayer): LinkConfig = {
     val cfg = new LinkConfig(xml.isIsMaster, xml.isUseConfirmations)
     cfg.setNumRetry(xml.getNumRetries)
     cfg.setRemoteAddr(xml.getRemoteAddress)
@@ -108,14 +109,14 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     cfg
   }
 
-  def configure(xml: AppLayer): AppConfig = {
+  private def configure(xml: AppLayer): AppConfig = {
     val cfg = new AppConfig
     cfg.setFragSize(xml.getMaxFragSize)
     cfg.setRspTimeout(xml.getTimeoutMS)
     cfg
   }
 
-  def configure(xml: Master, fragSize: Int): MasterConfig = {
+  private def configure(xml: Master, fragSize: Int): MasterConfig = {
     val cfg = new MasterConfig
     cfg.setAllowTimeSync(xml.getMasterSettings.isAllowTimeSync)
     cfg.setTaskRetryRate(xml.getMasterSettings.getTaskRetryMS)
@@ -143,22 +144,22 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     cfg
   }
 
-  def configure(port: FEP.SerialPort): SerialSettings = {
+  private def configure(channel: FEP.SerialPort): SerialSettings = {
     val ss = new SerialSettings
-    ss.setMBaud(port.getBaudRate)
-    ss.setMDataBits(port.getDataBits)
-    ss.setMDevice(port.getPortName)
-    ss.setMFlowType(port.getFlow match {
+    ss.setMBaud(channel.getBaudRate)
+    ss.setMDataBits(channel.getDataBits)
+    ss.setMDevice(channel.getPortName)
+    ss.setMFlowType(channel.getFlow match {
       case FEP.SerialPort.Flow.FLOW_NONE => FlowType.FLOW_NONE
       case FEP.SerialPort.Flow.FLOW_HARDWARE => FlowType.FLOW_HARDWARE
       case FEP.SerialPort.Flow.FLOW_XONXOFF => FlowType.FLOW_XONXOFF
     })
-    ss.setMParity(port.getParity match {
+    ss.setMParity(channel.getParity match {
       case FEP.SerialPort.Parity.PAR_NONE => ParityType.PAR_NONE
       case FEP.SerialPort.Parity.PAR_EVEN => ParityType.PAR_EVEN
       case FEP.SerialPort.Parity.PAR_ODD => ParityType.PAR_ODD
     })
-    ss.setMStopBits(port.getStopBits)
+    ss.setMStopBits(channel.getStopBits)
     ss
   }
 }

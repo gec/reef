@@ -60,7 +60,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     val publisher = getPublisher(conn.getClientSession(), c.getRouting.getServiceRoutingKey)
 
     // add the device, get the command issuer callback
-    if (protocol.requiresPort) protocol.addPort(port)
+    if (protocol.requiresChannel) protocol.addChannel(port)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher)
     val service = new SingleEndpointCommandService(cmdHandler)
     conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
@@ -71,7 +71,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   def removeEntry(c: ConnProto) {
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
-    if (protocol.requiresPort) protocol.removePort(c.getEndpoint.getPort.getName)
+    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getPort.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
