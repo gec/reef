@@ -2,12 +2,12 @@
     <title>Create, Update and Delete</title>
     <para>
         So far we've only dealt with requests that ask for the current state of the system. We'll now create and
-        manipulate objects using the ISession.
+        manipulate objects using <literal>ISession</literal>.
     </para>
     <para>
-        To demonstrate create/update/delete service functionality, we will use one of the simplest objects the
-        ConfigFile object. ConfigFile objects contain generic (byte array) data provided by a configuration process and
-        used by an application (i.e. a protocol implementation) that understands how to interpret it.
+        To demonstrate create/update/delete service functionality, we will use <literal>ConfigFile</literal>, one of the simplest objects in Reef.
+        <literal>ConfigFile</literal> objects contain generic data that can be
+        provided by configuration processes to be used by applications (i.e. protocol implementations) which understand how to interpret it.
     </para>
     <para>
         First, we'll create a ConfigFile named "config01" that contains a plain-text string and send it to the server
@@ -16,28 +16,37 @@
         field "uid" filled out with a unique identifier.
         <example>
             <title>Creating a ConfigFile</title>
-            <programlisting><![CDATA[
+            <programlisting language="java"><![CDATA[
+// Create a ConfigFile with some example text
 ConfigFile createRequest = ConfigFile.newBuilder()
         .setName("config01")
         .setMimeType("text/plain")
         .setFile(ByteString.copyFromUtf8("Example config file"))
         .build();
-ConfigFile created = session.putOne(create);
+
+// Put the ConfigFile to the server, receive the created object
+ConfigFile created = session.putOne(createRequest);
+
+// The ConfigFile now has a system identifier and is available for further requests
 System.out.println("UID: " + created.getUid());
     ]]></programlisting>
         </example>
     </para>
     <para>
-        To modify this object, say to change the contents of the "file" field, we build a request first by copying all
-        of
-        fields (including "uid") and changing the file text. A PUT to the server will now update the config file.
+        To modify this object we build a request by first copying all fields (including "uid") and then making any changes.
+        A PUT to the server will now update the config file.
         <example>
             <title>Updating a ConfigFile</title>
-            <programlisting><![CDATA[
-ConfigFile updateRequest = created.toBuilder() // copies all fields and makes a mutable object
+            <programlisting language="java"><![CDATA[
+// Use toBuilder() to copy all fields and then modify the file
+ConfigFile updateRequest = created.toBuilder()
         .setFile(ByteString.copyFromUtf8("Modified content"))
         .build();
+
+// Put the modified object to the server
 ConfigFile modified = session.putOne(updateRequest);
+
+// Verify that the object contains the new data
 System.out.println("Content: " + created.getFile().toStringUtf8());
     ]]></programlisting>
         </example>
@@ -47,7 +56,8 @@ System.out.println("Content: " + created.getFile().toStringUtf8());
         Finally, we delete our object:
         <example>
             <title>Deleting a ConfigFile</title>
-            <programlisting><![CDATA[
+            <programlisting language="java"><![CDATA[
+// Delete the ConfigFile, returns the ConfigFile's state right before it was deleted
 ConfigFile deleted = session.deleteOne(modified);
     ]]></programlisting>
         </example>

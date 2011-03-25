@@ -5,30 +5,33 @@
     </para>
     <section>
         <title>Connecting to AMQP Broker</title>
-        <para>
-            The first step to opening a connection is provide the necessary configuration information.
+        <para> The first step to opening a connection is provide the necessary configuration information.
             <literal>BrokerConnectionInfo</literal>
-            contains all the necessary fields:
+            contains all the necessary fields:</para>
+        <para>
             <itemizedlist>
-                <listitem>IP Address</listitem>
-                <listitem>Port</listitem>
-                <listitem>User name</listitem>
-                <listitem>Password</listitem>
-                <listitem>Virtual Host</listitem>
+                <listitem><para>IP Address</para></listitem>
+                <listitem><para>Port</para></listitem>
+                <listitem><para>User name</para></listitem>
+                <listitem><para>Password</para></listitem>
+                <listitem><para>Virtual Host</para></listitem>
             </itemizedlist>
         </para>
         <para>
-            Next, we create the connection manager. This involves the connection info, a default client timeout, and a
-            <literal>ReefServicesList</literal>
-            instance, which provides the bindings between service types and AMQP
-            exchanges. The connect call will either connect successfully with the broker or a
-            <literal>ServiceIOException</literal>
-            will be thrown when the timeout expires.
+            Next, we create the connection manager. This involves the <literal>BrokerConnectionInfo</literal>, a default client timeout, and an
+            instance of <literal>ReefServicesList</literal>, which provides the bindings between service types and AMQP
+            exchanges. The call to <literal>connect</literal> will either connect successfully with the broker or throw
+            <literal>ServiceIOException</literal> when the timeout expires.
             <example>
                 <title>Using IConnection</title>
                 <programlisting language="java"><![CDATA[
+// Create the configuration object
 BrokerConnectionInfo info = new BrokerConnectionInfo("127.0.0.1", 5672, "user", "password", "test");
+
+// Build the connection manager
 IConnection connection = new Connection(info, ReefServicesList.getInstance(), 5000);
+
+// Connect synchronously with a timeout of five seconds
 connection.connect(5000);
                 ]]></programlisting>
             </example>
@@ -37,19 +40,15 @@ connection.connect(5000);
     <section>
         <title>Connection Listener</title>
         <para>
-            During operation it is possible that the connection to the AMQP broker may be lost and its important for
-            client applications to handle this case. Clients should implement the
-            <literal>IConnectionListener</literal>
-            interface
-            and notify the application when an unexpected
-            <literal>closed()</literal>
-            callback occurs. The connection
-            manager will issue the callbacks on a separate thread; clients need to provide the necessary synchronization
-            to maintain thread safety and not block the thread.
+            In order to be notified of a successful connection, as well as to handle any unexpected disconnections, clients must
+            subscribe to connection events. To do so, an implementation of the <literal>IConnectionListener</literal> interface is registered with <literal>IConnection</literal> by
+            using the <literal>addConnectionListener</literal> method. <literal>IConnectionListener</literal> has two methods, <literal>opened</literal> and <literal>closed</literal>,
+            that the connection manager will call back when the state of the broker connection changes.
         </para>
         <example>
             <title>Trivial IConnectionListener example</title>
             <programlisting language="java"><![CDATA[
+// Implements a connection listener in order to print open/close events to the console
 IConnectionListener myListener = new IConnectionListener() {
     public void opened() {
         System.out.println("Connection opened!");
@@ -58,32 +57,42 @@ IConnectionListener myListener = new IConnectionListener() {
         System.out.println("Connection closed!");
     }
 };
+
+// Register the connection listener with the connection manager
 connection.addConnectionListener(myListener);
+
+// Connect to the broker
 connection.connect(5000);
 // console -> "Connection opened!"
+
+// Disconnect from the broker
 connection.disconnect(5000);
 // console -> "Connection closed!"
                 ]]></programlisting>
         </example>
 
+         <caution>
+            <para> The connection
+            manager will issue the callbacks on a separate thread; clients need to provide the necessary synchronization
+            to maintain thread safety and not block the thread.</para>
+        </caution>
     </section>
     <section>
         <title>Getting an ISession</title>
         <para>
-            Once we have a working connection we can create<literal>ISession</literal>s to query the reef services.
-            Unlike<literal>IConnection</literal>,
-            <literal>ISession</literal>
-            is not designed to be thread safe and
-            must be used on a single thread. When we are done with the
-            <literal>ISession</literal>
-            we need to call
-            <literal>close()</literal>.
+            Once we have a working connection we can acquire instances of <literal>ISession</literal> to query the reef services.
+            Unlike <literal>IConnection</literal>, <literal>ISession</literal> is not designed to be thread safe and
+            must be used on a single thread. When we are done with the <literal>ISession</literal> we call <literal>close</literal> to release it.
         </para>
         <example>
             <title>ISession Example</title>
             <programlisting language="java"><![CDATA[
+// Acquire a session from the connection manager
 ISession session = connection.newSession();
-// do work with session
+
+// Do work with the session...
+
+// Close the session
 session.close().
                 ]]></programlisting>
         </example>
@@ -92,33 +101,32 @@ session.close().
     <section>
         <title>Client Authorization</title>
         <para>
-            Most service requests require user authorization. Clients identify their credentials by including
+            Reef services require user authorization. Clients identify their credentials by including
             an
             <literal>AuthToken</literal>
-            in the header of service requests. As with most request
-            header-related details, the
+            in the header of service requests.
             <literal>ISession</literal>
-            will handle attaching this token to service calls. However, the user must first use the
+            will handle the details of attaching this token to service calls.</para>
+        <para>In order to obtain a token, clients must first send a request to the
             <literal>AuthToken</literal>
-            service to register itself and obtain its credentials. This
-            username and password combination will probably be different than the ones used to connect to the
-            broker.
+            service with a username and password. The user credentials are registered in the Reef user database, and may be different than those used to
+            connect to the broker.
         </para>
         <para>
-            The first step to opening a connection is provide the necessary configuration information.
-            <literal>BrokerConnectionInfo</literal>
-            contains all the necessary fields:
+            The following steps are involved in setting up user authorization:
+        </para>
+        <para>
             <itemizedlist>
-                <listitem>Build an
+                <listitem><para>Build an
                     <literal>AuthToken</literal>
-                    request, providing a username and password for the Reef system.
+                    request, providing a username and password for the Reef system.</para>
                 </listitem>
-                <listitem>Put the
+                <listitem><para>Put the
                     <literal>AuthToken</literal>
-                    to the service and extract token from the response.
+                    to the service and extract the actual token string from the response.</para>
                 </listitem>
-                <listitem>Attach the token to the<literal>ISession</literal>. It will be included in subsequent
-                    requests.
+                <listitem><para>Attach the token string to an <literal>ISession</literal>. It will be included in subsequent
+                    requests.</para>
                 </listitem>
             </itemizedlist>
         </para>
@@ -129,18 +137,24 @@ import org.totalgrid.reef.proto.Auth.*;
 
 (...)
 
+// The Agent represents our username/password
 Agent agent = Agent.newBuilder()
         .setName("user")
         .setPassword("pass")
         .build();
 
+// Create a login request using our Agent
 AuthToken login = AuthToken.newBuilder()
         .setAgent(agent)
         .build();
 
+// PUT the request to the AuthToken service, receive a filled-out AuthToken
 AuthToken response = session.putOne(login);
+
+// Initialize our session with the auth token string
 session.getDefaultEnv().setAuthToken(response.getToken());
-// all future calls with this session will carry this auth token
+
+// All future calls with this session will include this token
                 ]]></programlisting>
         </example>
     </section>
