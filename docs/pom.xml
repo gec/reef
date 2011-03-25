@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>reef-docs</artifactId>
-    <packaging>jdocbook</packaging>
+    <packaging>pom</packaging>
 
     <parent>
         <groupId>org.totalgrid.reef</groupId>
@@ -20,74 +20,67 @@
         </license>
     </licenses>
 
+    <properties>
+        <docbook.source>${basedir}/src/docbkx</docbook.source>
+        <docbook.target>${project.build.directory}/docbkx</docbook.target>
+    </properties>
+
     <build>
         <plugins>
-
             <plugin>
-                <!-- http://anonsvn.jboss.org/repos/documentation -->
-                <groupId>org.jboss.maven.plugins</groupId>
-                <artifactId>maven-jdocbook-plugin</artifactId>
-                <version>2.3.4</version>
-                <extensions>true</extensions>
-                <!--<dependencies>-->
-                <!--<dependency>-->
-                <!--<groupId>org.jboss</groupId>-->
-                <!--<artifactId>jbossorg-docbook-xslt</artifactId>-->
-                <!--<version>1.1.0</version>-->
-                <!--</dependency>-->
-                <!--<dependency>-->
-                <!--<groupId>org.jboss</groupId>-->
-                <!--<artifactId>jbossorg-jdocbook-style</artifactId>-->
-                <!--<version>1.1.0</version>-->
-                <!--<type>jdocbook-style</type>-->
-                <!--</dependency>-->
-                <!--</dependencies>-->
+                <groupId>com.agilejava.docbkx</groupId>
+                <artifactId>docbkx-maven-plugin</artifactId>
+				<version>2.0.7</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-html</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+							<chunkedOutput>false</chunkedOutput>
+							<htmlStylesheet>css/html.css</htmlStylesheet>
+							<htmlCustomization>${docbook.source}/resources/xsl/html.xsl</htmlCustomization>
+							<targetDirectory>${docbook.target}/html-single</targetDirectory>
+							<postProcess>
+								<copy todir="${docbook.target}/html-single">
+									<fileset dir="${docbook.source}/resources">
+										<include name="**/*.css" />
+										<include name="**/*.png" />
+										<include name="**/*.gif" />
+										<include name="**/*.jpg" />
+									</fileset>
+								</copy>
+								<copy todir="${docbook.target}/html-single/images">
+									<fileset dir="${docbook.source}/resources/images">
+										<include name="**/*.*" />
+									</fileset>
+								</copy>
+							</postProcess>
+						</configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.docbook</groupId>
+                        <artifactId>docbook-xml</artifactId>
+                        <version>4.4</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <sourceDocumentName>master.xml</sourceDocumentName>
-                    <sourceDirectory>.</sourceDirectory>
-                    <imageResource>
-                        <directory>docs/en-US</directory>
-                        <includes>
-                            <include>images/*</include>
-                        </includes>
-                    </imageResource>
-                    <formats>
-                        <format>
-                            <!--<stylesheetResource>file:./docs/resources/xhtml-single.xsl</stylesheetResource>-->
-                            <formatName>xhtml</formatName>
-                        </format>
-                        <format>
-                            <!--<stylesheetResource>file:./docs/resources/pdf.xsl</stylesheetResource>-->
-                            <formatName>pdf</formatName>
-                        </format>
-                    </formats>
+					<xincludeSupported>true</xincludeSupported>
+					<sourceDirectory>${docbook.source}</sourceDirectory>
+
+					<!--<useExtensions>1</useExtensions>-->
+					<highlightSource>1</highlightSource>
+					<highlightDefaultLanguage></highlightDefaultLanguage>
+
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <!--<repositories>-->
-    <!--<repository>-->
-    <!--<id>repository.jboss.org</id>-->
-    <!--<name>JBoss Repository</name>-->
-    <!--<layout>default</layout>-->
-    <!--<url>https://repository.jboss.org/nexus/</url>-->
-    <!--<snapshots>-->
-    <!--<enabled>false</enabled>-->
-    <!--</snapshots>-->
-    <!--</repository>-->
-    <!--</repositories>-->
-    <!--<pluginRepositories>-->
-    <!--<pluginRepository>-->
-    <!--<id>repository.jboss.org</id>-->
-    <!--<name>JBoss Repository</name>-->
-    <!--<layout>default</layout>-->
-    <!--<url>https://repository.jboss.org/nexus</url>-->
-    <!--<snapshots>-->
-    <!--<enabled>false</enabled>-->
-    <!--</snapshots>-->
-    <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
 
 
 </project>
