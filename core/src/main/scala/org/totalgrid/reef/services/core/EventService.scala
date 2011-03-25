@@ -26,6 +26,10 @@ import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Ev
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.proto.Utils.AttributeList
+import org.squeryl.dsl.QueryYield
+import org.squeryl.dsl.ast.OrderByArg
+import org.squeryl.dsl.fsm.{ SelectState }
+
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
@@ -138,6 +142,8 @@ trait EventConversion
     with UniqueAndSearchQueryable[Event, EventStore] {
 
   val table = ApplicationSchema.events
+
+  override def getOrdering[R](select: SelectState[R], sql: EventStore): QueryYield[R] = select.orderBy(new OrderByArg(sql.time).asc)
 
   // Derive a AMQP routing key from a proto. Used by post?
   def getRoutingKey(req: Event) = ProtoRoutingKeys.generateRoutingKey {

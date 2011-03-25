@@ -21,9 +21,9 @@
 package org.totalgrid.reef.services.framework
 
 import org.squeryl._
+import dsl.ast.LogicalBoolean
+import dsl.fsm.{ SelectState, WhereState }
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.dsl.ast.LogicalBoolean
-import org.squeryl.dsl.fsm.WhereState
 import org.squeryl.dsl.QueryYield
 
 /**
@@ -44,7 +44,14 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   def getResultLimit: Int = 100
 
   /**
-   * client code need to return a list that has all of the fields necessary to determine
+   * to enforce an order on the returned rows override this function with something like:
+   *  select.orderBy(new OrderByArg(sql.time).asc)
+   * By default we apply no ordering (usually is primary key which is close to insertion order)
+   */
+  def getOrdering[R](select: SelectState[R], sql: T): QueryYield[R] = select
+
+  /**
+   *  client code need to return a list that has all of the fields necessary to determine
    * if 2 records are referring to the "same object", it may be one field or a combination
    * of all the fields to define the "sameness". In most cases a uid field will be in this list
    * and by definition if that field is filled in we will get that record and no others. If
@@ -125,11 +132,11 @@ trait UniqueAndSearchQueryable[MessageType, T] {
 
   /// internal (for now) functions that minimize code duplication but aren't needed externally yet
   /// though as the system grows that may change
-  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState) => QueryYield[R]): Query[R] = {
+  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState) => SelectState[R]): Query[R] = {
     from(table)(sql => selectFun(sql, where(uniqueParams(req, sql)))).page(0, getResultLimit)
   }
-  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState) => QueryYield[R]): Query[R] = {
-    from(table)(sql => selectFun(sql, where(searchParams(req, sql)))).page(0, getResultLimit)
+  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState) => SelectState[R]): Query[R] = {
+    from(table)(sql => getOrdering(selectFun(sql, where(searchParams(req, sql))), sql)).page(0, getResultLimit)
   }
   def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {
     SquerylModel.combineExpressions(uniqueQuery(req, sql).flatten)
