@@ -5,12 +5,12 @@
         <para>
             In their most basic form, service requests consist of:
             <itemizedlist>
-                <listitem>Creating a request object of a specific type.</listitem>
-                <listitem>Making a request with the object, plus one of the RESTful verbs -- GET, PUT, POST, DELETE.
+                <listitem><para>Creating a request object of a specific type.</para></listitem>
+                <listitem><para>Making a request with the object, plus one of the RESTful verbs - GET, PUT, POST, DELETE.</para>
                 </listitem>
-                <listitem>Receiving a list of results, all of the same object type as the request.</listitem>
+                <listitem><para>Receiving a list of results, all of the same object type as the request.</para></listitem>
             </itemizedlist>
-            The ISession interface translates request method calls into service messages:
+            The <literal>ISession</literal> interface translates request method calls into service messages:
         </para>
         <figure id="service_request_image">
             <title>Service Request Overview</title>
@@ -24,39 +24,44 @@
     <section>
         <title>Queries</title>
         <para>
-            When using the GET verb we are using a method often called "query by example". We fill in the parts of the
-            object that we know and then ask that the server return us everything that has the same "shape" as our
-            example query object. This allows us to be as specific or general we need to be. In general, properties that
-            are set
-            will be matched against, while properties that are unset will be ignored. Multiple properties specify
-            objects that match all the given characteristics (logical "and").
-            <example>
-                <title>Query for a point with a known name</title>
+            GET requests use a method referred to as <emphasis>query by example</emphasis>. Clients
+            fill in the fields of the request object they would like to match against and the server then returns the set of
+            objects which match those fields. This system is very similar to SQL queries in relational databases. It allows
+            requests to be as general or as specific as necessary.</para>
+
+            <para>In general, properties that are set will be matched against, while properties that are not set will be ignored. Multiple properties specify
+            objects that match all the given characteristics (logical "and").</para>
+        <example>
+                <title>Query for all points</title>
                 <programlisting language="java"><![CDATA[
-Point request = Point.newBuilder().setName("Pt01").build();
+// Notice "*" is a wildcard matcher
+Point request = Point.newBuilder().setName("*").build();
                 ]]></programlisting>
             </example>
             <example>
-                <title>Query for all points</title>
+                <title>Query for a point with a known name</title>
                 <programlisting language="java"><![CDATA[
-// notice "*" is a wildcard matcher
-Point request = Point.newBuilder().setName("*").build();
+// Match the given point name exactly
+Point request = Point.newBuilder().setName("Pt01").build();
                 ]]></programlisting>
             </example>
             <example>
                 <title>Query for all points with characteristic "abnormal"</title>
                 <programlisting language="java"><![CDATA[
+// Request any Points that are abnormal
 Point request = Point.newBuilder().setAbnormal(true).build();
                 ]]></programlisting>
             </example>
-        </para>
         <para>
             To complete the request, we invoke the client with the GET verb. By default all requests to the reef service
             take one request object and return a list:
             <example>
                 <title>Getting List of Points</title>
                 <programlisting language="java"><![CDATA[
+// Use the GET verb, receive a list of objects
 List<Point> points = session.get(request);
+
+// Results can be iterated upon, inspected, used, etc...
 for (Point point : points) {
     System.out.println("Point uid: " + point.getUid());
     System.out.println("Point name: " + point.getName());
@@ -66,9 +71,8 @@ for (Point point : points) {
             </example>
         </para>
         <para>
-            The same query objects could be used to perform GET or DELETE operations. The protobuf query is really a
-            selector that
-            specifies one or more nouns which we want to apply the verb on.
+            Note that the same query objects could be used to perform GET or DELETE operations. The request message is simply a "selector" that
+            specifies a set of objects to apply the verb to.
         </para>
 
     </section>
@@ -76,37 +80,50 @@ for (Point point : points) {
         <title>Request Helpers</title>
         <para>
             Sometimes, we can qualify our service requests by making assertions about the form of the response we
-            expect. For instance, in the example above in which we searched for a Point by name, we were expecting
-            one and only one response object; anything else represents a failure.
-            <literal>ISession</literal>
-            has a helper function called
-            <literal>getOne()</literal>
-            that checks that the returned list has exactly one item and returns that item. There are similar helpers
-            for the other 3 verbs.
+            expect. For instance, in the example above where we searched for a Point by name, we were expecting
+            one and only one response object. Anything else--no objects, or many--represents a failure. </para>
+            <para><literal>ISession</literal>
+            has a helper method called
+            <literal>getOne</literal>
+            which checks that the result list contains exactly one item and then returns that item. There are similar helpers
+            for the other three verbs.
+        </para>
             <example>
-                <title>Using ISession xxxOne() helpers</title>
+                <title>Manually handling result lists</title>
                 <programlisting language="java"><![CDATA[
+// Request for a Point named "Pt01"
 Point request = Point.newBuilder().setName("Pt01").build();
 
-// handling the list manually
+// Get a list of results
 List<Point> points = session.get(request);
-if(points.size != 1) throw new ExpectationException("Response wrong size");
-Point point = points.get(0);
 
-// equivalent to 3 lines above
+// Provide error handling when there are zero or many results
+if(points.size != 1)
+    throw new ExpectationException("Response wrong size");
+
+// Extract the actual Point object
+Point point = points.get(0);
+                ]]></programlisting>
+            </example>
+            <example>
+                <title>Using ISession helper methods</title>
+                <programlisting language="java"><![CDATA[
+// Request for a Point named "Pt01"
+Point request = Point.newBuilder().setName("Pt01").build();
+
+// Use getOne for the common case of a single result
 Point point = session.getOne(request);
                 ]]></programlisting>
             </example>
-        </para>
     </section>
     <section>
         <title>Error Handling</title>
         <para>
-            Service requests may experiance errors. This can be for local reasons (i.e.<emphasis>
-            RESPONSE_TIMEOUT</emphasis>) or can
-            represent an error raised by the service and tunneled back through the response (i.e.<emphasis>
-            BAD_REQUEST</emphasis>,
-            <emphasis>NOT_ALLOWED</emphasis>). All service errors are sub-classed from
+            Service requests may experience errors. This can be for local reasons (i.e.<literal>
+            RESPONSE_TIMEOUT</literal>) or can
+            represent an error raised by the service and tunneled back through the response (i.e.<literal>
+            BAD_REQUEST</literal>,
+            <literal>NOT_ALLOWED</literal>). All service errors are sub-classed from
             <literal>ReefServiceException</literal>
             but more specific types of exceptions are thrown to make exception handling easier.
         </para>
@@ -114,14 +131,24 @@ Point point = session.getOne(request);
             <title>Exception Handling</title>
             <programlisting language="java"><![CDATA[
 try {
+
+    // Request may throw an exception...
     Point point = client.getOne(request);
+
 } catch (BadRequestException badRequest) {
+
+    // Server indicates the request is invalid
     System.out.println("Badly formed request: " + badRequest.getMsg());
+
 } catch (ReefServiceException ex) {
+
+    // General service exception, we can inspect the status for more information
     Envelope.Status status = ex.getStatus();
+
     String message = ex.getMsg();
 
     System.out.println("Request failed with status: " + status.toString());
+
     System.out.println("Message: " + message);
 }
            ]]></programlisting>

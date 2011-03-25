@@ -1,34 +1,41 @@
 <section id="mid_level">
-    <title>Mid-Level API</title>
+    <title>Service Request Library</title>
     <para>
-        The reef system is fundamentally constructed using a REST approach. This means the system is modeled using nouns
-        and a common set of 4 verbs GET, PUT, POST, DELETE. This is a very powerful approach and allows us to create
-        simple and robust services and have a relatively simple protocol to make interoperability across a wide range of
-        languages possible. While this model is powerful it can also be confusing to an application developer to
-        determine exactly how to map from a concrete goal ("Get list of Substations") to the noun+verb combination
-        necessary to implement that request (GET Entity{type: "Substation"}). In order to reduce the cognitive load on
-        application developers we have provided a suite of interfaces that include requests for most of the common use
-        cases. These interfaces are not exhaustive, and do not attempt to expose all of the functionality available to
-        clients of a service, instead they serve as a starting point and suite of examples to pull from to make more
-        complex requests when necessary.
+        The basic RESTful service methods provide a powerful and granular way of accessing the Reef service API. However,
+        many common requests can be simplified, both conceptually and in terms of code, by being factored into method calls. The
+        Reef service request library provides adapters for <literal>ISession</literal> that expose idiomatic Java
+        interfaces for Reef services.
     </para>
     <para>
-        The Mid-Level APIs are pure interfaces suitable for use in most application code. Interfaces are defined by
-        function (
-        <literal>MeasurementService</literal>
-        ,
-        <literal>EventService</literal>
-        ,
-        <literal>EntityService</literal>
-        , ..) but we also provide a single "super interface"
-        that provides all functions in all of the service interfaces<literal>AllScadaService</literal>.
+        The adapters are pure interfaces suitable for use in most application code. Interfaces are defined by
+        function (<literal>MeasurementService</literal>,
+        <literal>EventService</literal>,
+        <literal>EntityService</literal>, ...) but there is also a single "super interface"
+        that provides all functions in all of the service interfaces: <literal>AllScadaService</literal>.
     </para>
     <example>
-        <title>Using Mid-Level APIs</title>
-        <programlisting><![CDATA[
+        <title>Using the Service Request Library</title>
+        <programlisting language="java"><![CDATA[
+// Start with a session, as usual
+ISession session = ...
+
+// Wrap the session in a service request adapter
 ConfigFileService service = new ConfigFileServiceWrapper(session);
-ConfigFile created = session.createConfigFile("config01","text/plain","Data".getBytes());
-System.out.println("UID: " + created.getUid());
+
+// Create a ConfigFile using the adapter
+ConfigFile created = service.createConfigFile("config01", "text/plain", "Data".getBytes());
+
+// Get our ConfigFile by name
+ConfigFile queried = service.getConfigFileByName("config01");
+
+// Update the data in the ConfigFile
+ConfigFile updated = service.updateConfigFile(queried, "New data".getBytes());
+
+// Delete the ConfigFile
+ConfigFile deleted = service.deleteConfigFile(updated);
     ]]></programlisting>
     </example>
+    <para>
+        Users should refer to the Service Request Library documentation for a full listing of interfaces and methods.
+    </para>
 </section>

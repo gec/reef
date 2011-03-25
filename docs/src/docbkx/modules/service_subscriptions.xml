@@ -1,77 +1,96 @@
 <section id="service_subscriptions">
-    <title>Service subscriptions</title>
+    <title>Service Subscriptions</title>
     <para>
-        Reef allows clients to subscribe to service events, receiving notifications asynchronously when objects are
+        Reef allows clients to subscribe to <emphasis>service events</emphasis>, which are notifications that objects have been
         added, modified, or removed. Subscriptions are requested by adding header information to normal service
-        requests (typically GETs). The
+        requests (typically using GET). </para>
+        <para>The
         <literal>ISession</literal>
         interface handles the details of adding request
-        headers and setting up message queues; clients just need to provide a callback object that implements the
+        headers and setting up message queues; clients just need to provide a callback object which implements the
         <literal>IEventAcceptor</literal>
-        interface. The AMQP connection will route incoming service events to our<literal>IEventAcceptor</literal>. The
-        calls arrive on a separate thread, so we will need synchronization code to keep everything thread-safe.
+        interface. The connection manager will route incoming service events to the registered callbacks.
         <example>
             <title>IEventAcceptor with example</title>
-            <programlisting><![CDATA[
+            <programlisting language="java"><![CDATA[
+// The IEventAcceptor interface, parameterized on service type
 interface IEventAcceptor<T> {
+
+    // The callback clients need to implement
     public void onEvent(ServiceTypes.Event<T> event);
 }
 
+(...)
+
+// A simple implementation that prints service events to the console
 IEventAcceptor<ConfigFile> acceptor = new IEventAcceptor<ConfigFile>() {
+
     public void onEvent(ServiceTypes.Event<ConfigFile> event) {
+
+        // Event type: ADDED, MODIFIED, REMOVED
         System.out.println("Got event: " + event.getEvent());
+
+        // The service object itself, in this case a ConfigFile
         System.out.println("Payload  : " + event.getResult());
+
     }
 };
     ]]></programlisting>
         </example>
     </para>
-    <para>
-        Once we have an event acceptor ready, we set-up the callback by getting an
-        <literal>ISubscription</literal>
-        interface from our session. To do this, we need one additional piece of information: the description of the
-        message type we're subscribing to. The
-        <literal>Descriptors</literal>
-        class keeps a list of these. We setup a subscription using the helper function
-        <literal>addSession</literal>
-        on
-        <literal>ISession</literal>. The subscription that is created is not tied to the lifecycle of the creating
-        <literal>ISession</literal>, it is only a factory of subscriptions. Subscriptions are tied to the lifecycle of
-        underlying<literal>IConnection</literal>. If the connection
-        is closed all subscriptions are invalidated and need to be re-setup. When a subscription is no longer needed
-        it should be cleaned-up by calling cancel();
+    <caution>
+            <para>Service event callbacks arrive on a separate thread, so clients will need synchronization code to ensure thread-safety.</para>
+        </caution>
 
+    <para>
+         Once we have an event acceptor ready, we set up the callback by acquiring an
+        <literal>ISubscription</literal>
+        interface using the <literal>addSubscription</literal> method on <literal>ISession</literal>. In addition to the event acceptor,
+        <literal>addSubscription</literal> takes a <emphasis>message description</emphasis>, which is available from the <literal>Descriptors</literal>
+        class. The message description is used by the connection manager to handle the internal details of AMQP.
+    </para>
+        <para>
+            Although sessions are used to acquire subscriptions, the subscription itself is tied to the lifecycle of the connection manager,
+            not the session. If the connection is closed all subscriptions will be invalidated. When a subscription is no longer needed, it can
+            be released using the <literal>cancel</literal> method.
+        </para>
         <example>
             <title>Subscription Example</title>
-            <programlisting><![CDATA[
+            <programlisting language="java"><![CDATA[
+// Add a subscription for the ConfigFile object by providing an instance of IEventAcceptor<ConfigFile>.
+// The return object, ISubscription<ConfigFile>, will be used to register and manage subscription.
 ISubscription<ConfigFile> subscription = session.addSubscription(
     Descriptors.configFile(),
     acceptor);
 
-// we'll request all configFiles that have an html mimeType
+// Build a request for all ConfigFiles that have an html mimeType
 ConfigFile request = ConfigFile.newBuilder()
   .setMimeType("text/html")
   .build();
 
-// we pass the subscription with the GET request to indicate we want to subscribe to
+// Pass the subscription with the GET request to indicate we want to set up a subscription.
+// The request will also return all current objects that match our request (mime-type "text/html")
 List<ConfigFile> configFiles = session.get(request, subscription);
-// configFiles will have all objects with mime-type "text/html"
 
+// Delete the first ConfigFile object, causing a REMOVED event
 ConfigFile deleted = session.deleteOne(configFiles.get(0));
 // console -> "Got event: REMOVED"
 // console -> "Payload  : {...}"
 
+// Build a new ConfigFile object with the html mime-type
 ConfigFile newConfigFile = ConfigFile.newBuilder()
   .setName("NewFile")
   .setMimeType("text/html")
   .setFile(ByteString.copyFromUtf8("Example config file"))
   .build();
+
+// Create the object, causing an ADDED event
 session.putOne(newConfigFile);
 // console -> "Got event: ADDED"
 // console -> "Payload  : {...}"
 
+// Cancel the subscription
 subscription.cancel();
     ]]></programlisting>
         </example>
-    </para>
 </section>
