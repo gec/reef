@@ -79,6 +79,10 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
+        <pluginRepository>
+            <id>scala-tools-releases</id>
+            <url>http://scala-tools.org/repo-releases</url>
+        </pluginRepository>
     </pluginRepositories>
 
     <reporting>
