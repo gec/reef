@@ -21,21 +21,20 @@
 package org.totalgrid.reef.api
 
 /**
- * The REEF system is fundamentally constructed using a REST approach. This means the system is modeled using nouns and
+ * The reef system is fundamentally constructed using a REST approach. This means the system is modeled using nouns and
  * a common set of 4 verbs GET, PUT, POST, DELETE. This is a very powerful approach and allows us to create simple and
  * robust services and have a relatively simple protocol to make interoperability across a wide range of languages
  * possible. While this model is powerful it can also be confusing to an application developer to determine exactly how
  * to map from a concrete goal ("Get list of Substations") to the noun+verb combination necessary to implement that
- * request (GET Entity{type: "Substation"}).
+ * request (GET Entity{type: "Substation"}). In order to reduce the cognitive load on application developers we have
+ * provided a suite of interfaces that include requests for most of the common use cases. These interfaces are not
+ * exhaustive, and do not attempt to expose all of the functionality available to clients of a service, instead they
+ * serve as a starting point and suite of examples to pull from to make more complex requests when necessary.
  *
- * In order to reduce the cognitive load on application developers we have provided a suite of interfaces that include
- * requests for most of the common use cases. These interfaces are not exhaustive, and do not attempt to expose all of
- * the functionality available to clients of a service. It is recommended  to use these interfaces as a starting point
- * for working with the REEF system but we fully expect some applications to have to write custom requests to support
- * some use cases. Many very "chatty" sets of requests can be implemented with a single more complex request. We
- * envision application developers extending the interfaces with their own custom functions for their application.
- *
- * To add those custom functions it is best to understand the requests we have "baked in". This can be done in a few ways:
+ * Some applications to have to write custom requests to support some use cases. Many very "chatty" sets of requests can
+ * be implemented with a single more complex request. We envision application developers extending the interfaces with
+ * their own custom functions for their application. To add those custom functions it is best to understand the requests
+ * we have provided reference implementations of. This can be done in a few ways:
  * <ul>
  * <li> read the code in XxxxxRequestBuilders and XxxxxServiceImpl classes </li>
  * <li> read the "generated proto request/reply" documents, they show live versions of the proto messages that are sent over the wires </li>

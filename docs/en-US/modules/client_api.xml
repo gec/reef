@@ -1,9 +1,10 @@
-<chapter id="chapter1">
+<section id="chapter1">
     <title>Overview</title>
     <para>Reef uses AMQP (<ulink url="http://www.amqp.org"/>) for transport and Google Protocol Buffers (<ulink
             url="http://code.google.com/p/protobuf/"/>) to serialize messages. The combination of these two technologies
         comprise the interface to the Reef service layer. Bindings can be created for any platform/language with a
-        compatible AMQP client and a Protobuf compiler. Reef is factored to a RESTful service oriented architecture (SOA).
+        compatible AMQP client and a Protobuf compiler. Reef is factored to a RESTful service oriented architecture
+        (SOA).
     </para>
 
     <figure id="AMQP_Broker">
@@ -62,7 +63,8 @@
         and deleting them, but client developers should feel free to create as many sessions as needed to service their
         threading requirements. Recommended practice for multi-threaded applications is to create an
         <literal>ISession</literal>
-        per unit of concurrency instead of going to a pool for every call to reef. Additionally, sessions can be pooled so
+        per unit of concurrency instead of going to a pool for every call to reef. Additionally, sessions can be pooled
+        so
         long as care is taken to ensure the correct authorization is attached before any given request.
     </para>
-</chapter>
+</section>

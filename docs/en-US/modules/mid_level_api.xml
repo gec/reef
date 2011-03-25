@@ -1,0 +1,34 @@
+<section id="mid_level">
+    <title>Mid-Level API</title>
+    <para>
+        The reef system is fundamentally constructed using a REST approach. This means the system is modeled using nouns
+        and a common set of 4 verbs GET, PUT, POST, DELETE. This is a very powerful approach and allows us to create
+        simple and robust services and have a relatively simple protocol to make interoperability across a wide range of
+        languages possible. While this model is powerful it can also be confusing to an application developer to
+        determine exactly how to map from a concrete goal ("Get list of Substations") to the noun+verb combination
+        necessary to implement that request (GET Entity{type: "Substation"}). In order to reduce the cognitive load on
+        application developers we have provided a suite of interfaces that include requests for most of the common use
+        cases. These interfaces are not exhaustive, and do not attempt to expose all of the functionality available to
+        clients of a service, instead they serve as a starting point and suite of examples to pull from to make more
+        complex requests when necessary.
+    </para>
+    <para>
+        The Mid-Level APIs are pure interfaces suitable for use in most application code. Interfaces are defined by
+        function (
+        <literal>MeasurementService</literal>
+        ,
+        <literal>EventService</literal>
+        ,
+        <literal>EntityService</literal>
+        , ..) but we also provide a single "super interface"
+        that provides all functions in all of the service interfaces<literal>AllScadaService</literal>.
+    </para>
+    <example>
+        <title>Using Mid-Level APIs</title>
+        <programlisting><![CDATA[
+ConfigFileService service = new ConfigFileServiceWrapper(session);
+ConfigFile created = session.createConfigFile("config01","text/plain","Data".getBytes());
+System.out.println("UID: " + created.getUid());
+    ]]></programlisting>
+    </example>
+</section>
