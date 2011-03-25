@@ -22,72 +22,116 @@ package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.proto.Commands.{ CommandResponse, CommandAccess }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandAccess }
+import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
+import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.messaging.mock.MockConnection
+import org.totalgrid.reef.messaging.SessionPool
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig, CommunicationEndpointConnection, EndpointOwnership }
+
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.util.EmptySyncVar
+
+//import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
-import scala.collection.mutable
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
-import org.totalgrid.reef.api.Envelope._
-import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.messaging.SessionPool
+import org.totalgrid.reef.api.{ RequestEnv, ServiceTypes, Envelope, AddressableService }
 
-class CallbackServiceSubscriptionHandler(f: (Envelope.Event, GeneratedMessage) => Unit) extends ServiceSubscriptionHandler {
-  def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = f(event, resp)
+import ServiceTypes.Response
 
-  def bind(subQueue: String, key: String) = {}
-}
-
-class SingleEventPublisher(subHandler: ServiceSubscriptionHandler) extends ServiceEventPublishers {
-  def getEventSink[A <: GeneratedMessage](klass: Class[A]): ServiceSubscriptionHandler = subHandler
-}
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 @RunWith(classOf[JUnitRunner])
-class CommandRequestServicesIntegration extends DatabaseUsingTestBase {
+class CommandRequestServicesIntegration
+    extends EndpointRelatedTestBase {
 
   import ServiceResponseTestingHelpers._
 
+  class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
+
+    val command = new CommandService(modelFac.cmds)
+    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection))
+    val endpointService = new CommunicationEndpointService(modelFac.endpoints)
+    val access = new CommandAccessService(modelFac.accesses)
+
+    def addFepAndMeasProc() {
+      addFep("fep", List("benchmark"))
+      addMeasProc("meas")
+    }
+
+    def addCommands(commands: List[String]) {
+
+      val owns = EndpointOwnership.newBuilder
+      commands.foreach { c => owns.addCommands(c) }
+
+      val send = CommunicationEndpointConfig.newBuilder()
+        .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
+      one(endpointService.put(send))
+    }
+
+  }
+
+  /*
   class TestRig {
     val events = mutable.Queue[(Envelope.Event, GeneratedMessage)]()
     val rawRequests = mutable.Queue[CommandRequest]()
 
     val subHandler = new CallbackServiceSubscriptionHandler((event, msg) => events.enqueue((event, msg)))
     val pub = new SingleEventPublisher(subHandler)
+    val modelFac = new core.ModelFactories(pub)
 
-    val commandFac = new CommandServiceModelFactory(pub)
-    val accessFac = new CommandAccessServiceModelFactory(pub, commandFac)
-    val userFac = new UserCommandRequestServiceModelFactory(pub, commandFac, accessFac)
+    val endpointService = new CommunicationEndpointService(modelFac.endpoints)
 
-    val access = new CommandAccessService(accessFac)
-    val userReqs = new UserCommandRequestService(userFac)
+    val access = new CommandAccessService(modelFac.accesses)
 
-    val command = new CommandService(new CommandServiceModelFactory(new SilentEventPublishers()))
+    val mock = new MockConnection {}
+    val pool = new SessionPool(mock)
+
+    val userReqs = new UserCommandRequestService(modelFac.userRequests, pool)
+
+    val command = new CommandService(modelFac.cmds)
 
     def addCommands(commands: List[String]) {
+
+      val owns = EndpointOwnership.newBuilder
+      commands.foreach { c => owns.addCommands(c) }
+
+      val send = CommunicationEndpointConfig.newBuilder()
+        .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
+      one(endpointService.put(send))
+
+      /*
       // Seed with command point
       val device = transaction {
         EQ.findOrCreateEntity("dev1", "LogicalNode")
       }
       commands.foreach { cmdName =>
         val cmd = one(command.put(FepCommand.newBuilder.setName(cmdName).build))
-        println(cmd)
+        //println(cmd)
         transaction {
           val cmd_entity = EQ.findEntity(cmd.getEntity).get
           EQ.addEdge(device, cmd_entity, "source")
         }
       }
+      */
 
       many(commands.size, command.get(FepCommand.newBuilder.setName("*").build))
+      events.clear()
     }
   }
+  */
 
   def commandAccessSearch(names: String*) = CommandAccess.newBuilder.addAllCommands(names).build
   def commandAccess(
@@ -117,99 +161,64 @@ class CommandRequestServicesIntegration extends DatabaseUsingTestBase {
     b.build
   }
 
-  def workingRequest(r: TestRig) = {
+  def testCommandSequence(fixture: CommandFixture) = {
     val reqEnv = new RequestEnv(Map("USER" -> List("user01")))
 
     // Send a select (access request)
     val select = commandAccess()
-    val selectResult = r.access.put(select, reqEnv)
-    selectResult.status should equal(Envelope.Status.CREATED)
+    val selectResult = one(fixture.access.put(select, reqEnv))
+    val selectId = selectResult.getUid
 
-    val selectId = selectResult.result.head.getUid
+    // the 'remote' service that will handle the call
+    val service = new AsyncToSyncServiceAdapter[UserCommandRequest] {
 
-    // We should receive a new select event and a modify on the command
-    r.events.dequeue match {
-      case (Event.ADDED, msg: CommandAccess) => msg.getUid should equal(selectId)
-      case _ => assert(false)
+      val descriptor = Descriptors.userCommandRequest
+
+      def get(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] = noGet
+      def delete(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] = noDelete
+      def post(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] = noPost
+
+      def put(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] =
+        Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
-    r.events.dequeue match {
-      case (Event.MODIFIED, msg: FepCommand) => // TODO: modified but not reflected in proto
-      case _ => assert(false)
-    }
 
-    // Send the user command request, we should get a new executing command event
+    val conn = one(fixture.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setUid("*").build))
+
+    println(conn.getRouting.getServiceRoutingKey)
+
+    //bind the 'proxied' service that will handle the call
+    fixture.connection.bindService(service, AddressableService(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantReactor {}))
+
+    // Send the user command request
     val cmdReq = userRequest()
-    r.userReqs.put(cmdReq, reqEnv).status should equal(Envelope.Status.CREATED)
-    r.events.dequeue match {
-      case (Event.ADDED, msg: UserCommandRequest) =>
-        msg.getStatus should equal(CommandStatus.EXECUTING)
-        r.rawRequests.enqueue(msg.getCommandRequest)
-      case x => println(x); assert(false)
+    val result = new EmptySyncVar[Response[UserCommandRequest]]
+    fixture.commandRequest.putAsync(cmdReq, reqEnv) { x => result.update(x) }
+
+    val correctResponse = Response(
+      Envelope.Status.OK,
+      UserCommandRequest.newBuilder(cmdReq).setStatus(CommandStatus.SUCCESS).build :: Nil)
+
+    result.waitFor { rsp =>
+      rsp.status == Envelope.Status.OK &&
+        rsp.result.size == 1 &&
+        rsp.result.head.getStatus == CommandStatus.SUCCESS
     }
 
-    // Request should have been sent to the "FEP"
-    r.rawRequests.length should equal(1)
-    val cmdToFep = r.rawRequests.dequeue
-    cmdToFep.getName should equal("cmd01")
-    cmdToFep.hasCorrelationId should equal(true)
-
-    r.userReqs.putAsync(UserCommandRequest.newBuilder.setCommandRequest(cmdToFep).setStatus(CommandStatus.SUCCESS).build()) { _ => }
-
-    // Command request should be a success
-    r.events.dequeue match {
-      case (Event.MODIFIED, msg: UserCommandRequest) => msg.getStatus should equal(CommandStatus.SUCCESS)
-      case x => println(x); assert(false)
-    }
-
-    r.access.delete(CommandAccess.newBuilder.setUid(selectId).build).status should equal(Envelope.Status.DELETED)
-
-    r.events.dequeue match {
-      case (Event.REMOVED, msg: CommandAccess) => msg.getUid should equal(selectId)
-      case _ => assert(false)
-    }
-    r.events.dequeue match {
-      case (Event.MODIFIED, msg: FepCommand) => // TODO: modified but not reflected in proto
-      case _ => assert(false)
-    }
+    one(fixture.access.delete(selectResult))
   }
 
   test("Full") {
-    val r = new TestRig
+    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+      val fixture = new CommandFixture(amqp)
 
-    r.addCommands(List("cmd01"))
+      fixture.addCommands(List("cmd01"))
+      fixture.addFepAndMeasProc()
 
-    // Run multiple times, state should be reset
-    workingRequest(r)
-    workingRequest(r)
-    workingRequest(r)
-  }
-
-  test("Searching by name") {
-    val r = new TestRig
-
-    r.addCommands(List("cmd01", "cmd02"))
-
-    val reqEnv = new RequestEnv(Map("USER" -> List("user01")))
-
-    // Send a select (access request)
-    many(0, r.access.get(commandAccessSearch("cmd01"), reqEnv))
-
-    one(r.access.put(commandAccess("cmd01"), reqEnv))
-
-    many(1, r.access.get(commandAccessSearch("cmd01"), reqEnv))
-    many(0, r.access.get(commandAccessSearch("cmd02"), reqEnv))
-
-    one(r.access.put(commandAccess("cmd02"), reqEnv))
-
-    many(1, r.access.get(commandAccessSearch("cmd01"), reqEnv))
-    many(1, r.access.get(commandAccessSearch("cmd02"), reqEnv))
-
-    many(2, r.access.get(commandAccessSearch("cmd01", "cmd02"), reqEnv))
-
-    one(r.access.delete(commandAccessSearch("cmd02"), reqEnv))
-
-    many(1, r.access.get(commandAccessSearch("cmd01"), reqEnv))
-    many(0, r.access.get(commandAccessSearch("cmd02"), reqEnv))
+      // Run multiple times, state should be reset
+      testCommandSequence(fixture)
+      testCommandSequence(fixture)
+      testCommandSequence(fixture)
+    }
   }
 
 }

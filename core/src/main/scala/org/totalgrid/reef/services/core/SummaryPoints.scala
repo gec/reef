@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.api.{ IDestination, AddressableService }
 
 /**
@@ -191,7 +191,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
                   clients.get(routingKey) match {
                     case Some(callback) => ret = Some(callback)
                     case None =>
-                      val client = amqp.getProtoServiceClient(ReefServicesList, 1000)
+                      val client = amqp.getProtoClientSession(ReefServicesList, 1000)
                       val func = publishMeasurement(client, LastAttempt(0, true), AddressableService(routingKey)) _
                       clients += (routingKey -> func)
                       ret = Some(func)
@@ -213,7 +213,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
    */
   case class LastAttempt(var nextTime: Long, var success: Boolean)
 
-  private def publishMeasurement(client: ServiceClient, lastAttempt: LastAttempt, dest: IDestination)(mb: Measurements.MeasurementBatch) {
+  private def publishMeasurement(client: ClientSession, lastAttempt: LastAttempt, dest: IDestination)(mb: Measurements.MeasurementBatch) {
     val now = System.currentTimeMillis
     if (!lastAttempt.success && now < lastAttempt.nextTime) {
       info { "failed last time, skipping publishing summary until: " + lastAttempt.nextTime }

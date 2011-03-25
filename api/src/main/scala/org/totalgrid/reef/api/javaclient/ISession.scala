@@ -23,8 +23,7 @@ package org.totalgrid.reef.api.javaclient
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.{ Envelope, ServiceHandlerHeaders, ReefServiceException, ServiceIOException, ISubscription, IHeaderInfo, ITypeDescriptor }
-import org.totalgrid.reef.api.ServiceTypes.Event
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**
  *  The interface that a concrete service client must provide.
@@ -109,5 +108,5 @@ trait ISession {
 
   def close()
 
-  def getUnderlyingClient(): ServiceClient
+  def getUnderlyingClient(): ClientSession
 }

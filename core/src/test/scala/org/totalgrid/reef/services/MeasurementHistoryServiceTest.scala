@@ -78,7 +78,7 @@ class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with Be
 
       amqp.bindService(info.exchange, service.respond)
 
-      val client = amqp.getProtoServiceClient(ReefServicesList, 500000)
+      val client = amqp.getProtoClientSession(ReefServicesList, 500000)
 
       val getMeas1 = client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").build)
       getMeas1.getMeasurementsCount() should equal(2)

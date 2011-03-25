@@ -40,9 +40,9 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
 
   override val descriptor = Descriptors.measurementSnapshot
 
-  override def put(req: MeasurementSnapshot, env: RequestEnv) = noVerb("put")
-  override def delete(req: MeasurementSnapshot, env: RequestEnv) = noVerb("delete")
-  override def post(req: MeasurementSnapshot, env: RequestEnv) = noVerb("post")
+  override def put(req: MeasurementSnapshot, env: RequestEnv) = noPut
+  override def delete(req: MeasurementSnapshot, env: RequestEnv) = noDelete
+  override def post(req: MeasurementSnapshot, env: RequestEnv) = noPost
 
   override def get(req: MeasurementSnapshot, env: RequestEnv): Response[MeasurementSnapshot] = {
 
@@ -63,7 +63,7 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
       b.addAllMeasurements(measurements.values())
       b.addAllPointNames(measurements.values().map(_.getName).toList)
     }
-    new Response(Envelope.Status.OK, b.build :: Nil)
+    Response(Envelope.Status.OK, b.build :: Nil)
   }
 
 }

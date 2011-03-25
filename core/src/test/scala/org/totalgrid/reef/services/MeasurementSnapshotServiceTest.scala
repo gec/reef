@@ -61,7 +61,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
 
       amqp.bindService(info.exchange, service.respond)
 
-      val client = amqp.getProtoServiceClient(ReefServicesList, 500000)
+      val client = amqp.getProtoClientSession(ReefServicesList, 500000)
 
       val getMeas1 = client.getOneOrThrow(MeasurementSnapshot.newBuilder().addPointNames("meas1").build)
       getMeas1.getMeasurementsCount() should equal(1)

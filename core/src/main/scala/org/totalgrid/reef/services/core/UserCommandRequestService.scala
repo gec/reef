@@ -20,24 +20,59 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.UserCommandRequest
+import org.totalgrid.reef.api.scalaclient.ISessionPool
+
+import org.totalgrid.reef.proto.Commands
+import Commands.UserCommandRequest
+
 import org.totalgrid.reef.models.UserCommandModel
 
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
+
+import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
+
+import org.totalgrid.reef.models.{ ApplicationSchema, Command }
+
+import org.totalgrid.reef.services.framework._
+import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
 
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
-
-class UserCommandRequestServiceBackup(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel])
-    extends SyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
-    with GetEnabled
-    with SubscribeEnabled
-    with PutPostEnabled
-    with DeleteDisabled {
+class UserCommandRequestService(
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
+    extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
+    with AsyncGetEnabled
+    with AsyncPutPostEnabled
+    with AsyncDeleteDisabled
+    with SubscribeEnabled {
 
   override val descriptor = Descriptors.userCommandRequest
+
+  override def doAsyncPutPost(rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
+
+    val request = rsp.result.head
+
+    val command = ApplicationSchema.commands.where(cmd => cmd.name === request.getCommandRequest.getName).single
+
+    val address = command.endpoint.value match {
+      case Some(ep) =>
+        ep.frontEndAssignment.value.serviceRoutingKey match {
+          case Some(key) => AddressableService(key)
+          case None => throw new BadRequestException("No routing info for endpoint: " + ep.name.value)
+        }
+      case None => throw new BadRequestException("Command has no endpoint set " + request)
+    }
+
+    pool.borrow { session =>
+      session.asyncPutOne(request, dest = address) { result =>
+        val response: Response[UserCommandRequest] = result match {
+          case SingleSuccess(status, cmd) => Response(status, UserCommandRequest.newBuilder(request).setStatus(cmd.getStatus).build :: Nil)
+          case Failure(status, msg) => Response(status, error = msg)
+        }
+        callback(response)
+      }
+    }
+  }
 
   private def doCommonValidation(proto: UserCommandRequest) = {
 
@@ -68,6 +103,6 @@ class UserCommandRequestServiceBackup(
 
 }
 
-object UserCommandRequestServiceBackup {
+object UserCommandRequestService {
   val defaultTimeout = 30000
 }

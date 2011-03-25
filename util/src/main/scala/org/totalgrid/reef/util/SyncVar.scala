@@ -24,11 +24,10 @@ import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 
 class EmptySyncVar[A <: Any] extends SyncVar[A] {
-  @tailrec
-  final override def evaluate(fun: A => Boolean): Boolean = {
+
+  override def evaluate(fun: A => Boolean): Boolean = {
     if (queue.size == 0) false
-    else if (fun(queue.dequeue())) true
-    else evaluate(fun)
+    else evaluateQueue(fun)
   }
 }
 
@@ -89,18 +88,18 @@ class SyncVar[A <: Any](initialValue: Option[A] = None) {
   }
 
   @tailrec
-  private def privateEvaluate(fun: A => Boolean): Boolean = {
+  final protected def evaluateQueue(fun: A => Boolean): Boolean = {
     val i = queue.dequeue()
     if (queue.size == 0) {
       queue.enqueue(i) //never let the queue be empty
       fun(i)
     } else {
       if (fun(i)) true
-      else privateEvaluate(fun)
+      else evaluateQueue(fun)
     }
   }
 
-  protected def evaluate(fun: A => Boolean): Boolean = privateEvaluate(fun)
+  protected def evaluate(fun: A => Boolean): Boolean = evaluateQueue(fun)
 
 }
 

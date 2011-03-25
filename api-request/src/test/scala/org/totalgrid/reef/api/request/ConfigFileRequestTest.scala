@@ -30,7 +30,7 @@ import org.junit.runner.RunWith
  */
 @RunWith(classOf[JUnitRunner])
 class ConfigFileRequestTest
-    extends ServiceClientSuite("ConfigFile.xml", "Config Files",
+    extends ClientSessionSuite("ConfigFile.xml", "Config Files",
       <div>
         <p>
           Config files are for larger hunks of opaque data for use by external applications. Config files can be

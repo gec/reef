@@ -32,7 +32,7 @@ import org.totalgrid.reef.api.ServiceTypes.Event
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryTest
-    extends ServiceClientSuite("MeasurementHistory.xml", "MeasurementHistory",
+    extends ClientSessionSuite("MeasurementHistory.xml", "MeasurementHistory",
       <div>
         <p>
           The MeasurementHistory service provides the historical state of measurements.

@@ -157,6 +157,8 @@ case class Command(
 
   val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
+  val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
+
 }
 
 case class FrontEndAssignment(

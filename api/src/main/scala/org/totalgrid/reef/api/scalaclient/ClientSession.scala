@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,22 +20,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
+import org.totalgrid.reef.api.ServiceTypes._
 
-import org.totalgrid.reef.api.Envelope
-import org.totalgrid.reef.api.ServiceTypes.Response
-import com.google.protobuf.ByteString
+/**
+ * Provides a thick interface full of helper functions via implement of a single abstract request function
+ */
+trait ClientSession extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
 
-trait ServiceHelpers[A] {
-  self: ServiceDescriptor[A] =>
-
-  def getResponse(id: String, rsp: Response[A]): Envelope.ServiceResponse = {
-    val ret = Envelope.ServiceResponse.newBuilder.setId(id)
-    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
-    rsp.result.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
-    ret.build()
-  }
-
-  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, Response(status, error = errorMsg))
+  /**
+   *    Implements a synchronous request in terms of a future
+   */
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): MultiResult[A] = requestFuture(verb, payload, env, dest)()
 
 }

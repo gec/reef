@@ -20,20 +20,18 @@
  */
 package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.Envelope
-import org.totalgrid.reef.api.ServiceTypes.Response
-import com.google.protobuf.ByteString
+import org.totalgrid.reef.api.{ IDestination, AnyNode }
+import org.totalgrid.reef.reactor.Reactable
 
-trait ServiceHelpers[A] {
-  self: ServiceDescriptor[A] =>
+trait ServerSession {
 
-  def getResponse(id: String, rsp: Response[A]): Envelope.ServiceResponse = {
-    val ret = Envelope.ServiceResponse.newBuilder.setId(id)
-    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
-    rsp.result.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
-    ret.build()
-  }
-
-  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, Response(status, error = errorMsg))
-
+  /**
+   * bind a service handler to the bus for a given exchange
+   * @param exchange   exchange to bind to
+   * @param service handler for the ServiceRequest, must return ServiceReponse
+   * @param destination Optionally overrides the default destination of AnyNode
+   * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
+   * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
+   */
+  def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit
 }

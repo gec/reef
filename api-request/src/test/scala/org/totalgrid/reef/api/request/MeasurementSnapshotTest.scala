@@ -31,7 +31,7 @@ import org.totalgrid.reef.api.ExpectationException
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementSnapshotTest
-    extends ServiceClientSuite("MeasurementSnapshot.xml", "MeasurementSnapshot",
+    extends ClientSessionSuite("MeasurementSnapshot.xml", "MeasurementSnapshot",
       <div>
         <p>
           The MeasurementSnapshot service provides the current state of measurements. The request contains the

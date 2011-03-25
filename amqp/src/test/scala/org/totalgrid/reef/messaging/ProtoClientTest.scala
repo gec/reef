@@ -49,10 +49,10 @@ class ServiceNotificationServiceX3 extends AsyncToSyncServiceAdapter[Envelope.Se
 
   val descriptor = TestDescriptors.serviceNotification
 
-  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
-  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("put")
-  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("delete")
-  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("post")
+  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
+  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noPut
+  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noDelete
+  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noPost
 }
 
 class HeadersX2 extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
@@ -61,10 +61,10 @@ class HeadersX2 extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
 
   def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
 
-  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo))
-  def put(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("put")
-  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("delete")
-  def post(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("post")
+  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
+  def put(req: Envelope.RequestHeader, env: RequestEnv) = noPut
+  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noDelete
+  def post(req: Envelope.RequestHeader, env: RequestEnv) = noPost
 }
 
 @RunWith(classOf[JUnitRunner])

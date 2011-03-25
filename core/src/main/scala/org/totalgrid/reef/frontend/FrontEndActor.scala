@@ -26,7 +26,7 @@ import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.api.ServiceTypes.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
@@ -43,12 +43,12 @@ object FrontEndActor {
   val retryms = 5000
 }
 
-abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
+abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
     extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
 
   //helper objects that sets up all of the services/publishers from abstract registries
-  val session = registry.getServiceClient()
-  val connections = new FrontEndConnections(protocols, registry, this)
+  val session = conn.getClientSession()
+  val connections = new FrontEndConnections(protocols, conn)
 
   /* ---- Implement ServiceContext[Endpoint] ---- */
 
@@ -74,7 +74,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
     connections.remove(ep)
   }
 
-  def loadOrThrow(client: ServiceClient, conn: ConnProto): ConnProto = {
+  def loadOrThrow(client: ClientSession, conn: ConnProto): ConnProto = {
 
     val cp = ConnProto.newBuilder(conn)
 
@@ -122,7 +122,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
           }
           val query = ConnProto.newBuilder.setFrontEnd(fem).build
           // this is where we actually bind up the service calls
-          this.addServiceContext(registry, retryms, ConnProto.parseFrom, query, this)
+          this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
         case x: Failure =>
           warn(x)
           delay(retryms) {

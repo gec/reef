@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
 
 @RunWith(classOf[JUnitRunner])
 class PointRequestTest
-    extends ServiceClientSuite("Point.xml", "Point",
+    extends ClientSessionSuite("Point.xml", "Point",
       <div>
         <p>
           A Point represents a configured input point for data acquisition. Measurements associated with

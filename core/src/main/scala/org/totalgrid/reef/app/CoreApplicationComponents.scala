@@ -24,7 +24,7 @@ import org.totalgrid.reef.event.BusTiedEventLogPublisher
 
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.reactor.{ ReactActor, PeriodicReactor }
+import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.ReefServicesList
 
@@ -36,6 +36,7 @@ import org.totalgrid.reef.metrics.{ MetricsSink }
  * part of their setup details from the app config service.
  */
 class CoreApplicationComponents(
+
     /// the interface to the bus
     val amqp: AMQPProtoFactory,
     /// the current appConfig, contains the instanceName and userName

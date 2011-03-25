@@ -58,7 +58,7 @@ class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
         createEntryFromProto(entEntry.id, attr)
       }
 
-      new Response(Envelope.Status.OK, protoFromEntity(entEntry))
+      Response(Envelope.Status.OK, protoFromEntity(entEntry) :: Nil)
     }
   }
 
@@ -70,18 +70,18 @@ class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
       val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
       deleteAllFromEntity(entEntry.id)
 
-      new Response(Envelope.Status.OK, protoFromEntity(entEntry, Nil))
+      Response(Envelope.Status.OK, protoFromEntity(entEntry, Nil) :: Nil)
     }
   }
 
-  override def post(req: AttrProto, env: RequestEnv): Response[AttrProto] = noVerb("post")
+  override def post(req: AttrProto, env: RequestEnv): Response[AttrProto] = noPost
 
   override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
     transaction {
-      new Response(Envelope.Status.OK, queryEntities(req.getEntity))
+      Response(Envelope.Status.OK, queryEntities(req.getEntity))
     }
   }
 

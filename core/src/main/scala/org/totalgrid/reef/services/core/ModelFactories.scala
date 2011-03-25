@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublishers
 
-class ModelFactories(pubs: ServiceEventPublishers, summaries: SummaryPoints, cm: MeasurementStore = new InMemoryMeasurementStore) {
+class ModelFactories(pubs: ServiceEventPublishers, summaries: SummaryPoints = new SilentSummaryPoints, cm: MeasurementStore = new InMemoryMeasurementStore) {
   val cmds = new CommandServiceModelFactory(pubs)
 
   val triggerSets = new TriggerSetServiceModelFactory(pubs)

@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch, Me
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest
-    extends ServiceClientSuite("MeasurementBatch.xml", "MeasurementBatch",
+    extends ClientSessionSuite("MeasurementBatch.xml", "MeasurementBatch",
       <div>
         <p>
           The MeasurementSnapshot service provides the current state of measurements. The request contains the

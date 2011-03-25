@@ -70,7 +70,8 @@ class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
   }
 
   private def getResponse(rsp: Envelope.ServiceResponse): Response[A] = {
-    Response(rsp.getStatus, rsp.getErrorMessage, rsp.getPayloadList.map(x => rh.descriptor.deserialize(x.toByteArray)).toList)
+    val result = rsp.getPayloadList.map(x => rh.descriptor.deserialize(x.toByteArray)).toList
+    Response(rsp.getStatus, result, rsp.getErrorMessage)
   }
 
   private def getRequest(verb: Envelope.Verb, payload: A, env: RequestEnv): Envelope.ServiceRequest = {

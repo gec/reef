@@ -46,7 +46,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
-      val client = amqp.getProtoServiceClient(servicelist, 1000)
+      val client = amqp.getProtoClientSession(servicelist, 1000)
       intercept[ReefServiceException] {
         client.getOrThrow(payload)
       }
@@ -72,7 +72,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
       amqp.bindService(exchange, x3Service) // listen for service requests with the echo service
 
-      val serviceSend = amqp.getProtoServiceClient(servicelist, 1000)
+      val serviceSend = amqp.getProtoClientSession(servicelist, 1000)
 
       // invoke the service future, and check that
       // response payload matches the request
@@ -88,7 +88,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     AMQPFixture.run { amqp =>
 
       amqp.bindService(exchange, service.respond _) // this service just multplies the payload by 3	    	    	    
-      val client = amqp.getProtoServiceClient(servicelist, 10000)
+      val client = amqp.getProtoClientSession(servicelist, 10000)
 
       // invoke the service future, and check that
       // response payload matches the request
@@ -142,7 +142,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
         counts(i) = 0
       }
 
-      val serviceSend = amqp.getProtoServiceClient(servicelist, 10000)
+      val serviceSend = amqp.getProtoClientSession(servicelist, 10000)
 
       for (i <- 1 to runs) yield {
         val payloads = serviceSend.getOrThrow(payload)
@@ -166,7 +166,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
       val exchangeName = java.util.UUID.randomUUID.toString
 
-      val serviceSend = amqp.getProtoServiceClient(exchangeName, 100, Example.Foo.parseFrom)
+      val serviceSend = amqp.getProtoClientSession(exchangeName, 100, Example.Foo.parseFrom)
       intercept[Exception] {
         serviceSend.getOne(request)
       }

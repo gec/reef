@@ -29,16 +29,16 @@ import org.totalgrid.reef.api.ServiceTypes._
 object ProtoConversions {
 
   implicit def convertResponseToResult[A](response: Option[Response[A]]): MultiResult[A] = response match {
-    case Some(Response(status, msg, list)) =>
+    case Some(Response(status, list, msg)) =>
       if (StatusCodes.isSuccess(status)) MultiSuccess(status, list)
       else Failure(status, msg)
-    case None => Failure(Envelope.Status.RESPONSE_TIMEOUT, "Service response timeout")
+    case None => Failure(Envelope.Status.RESPONSE_TIMEOUT, error = "Service response timeout")
   }
 
   implicit def convertMultiResultToSingle[A](response: MultiResult[A]): SingleResult[A] = response match {
     case MultiSuccess(status, List(x)) => SingleSuccess(status, x)
     case MultiSuccess(status, list) =>
-      Failure(Envelope.Status.UNEXPECTED_RESPONSE, "Expected one result, but got: " + list.size)
+      Failure(Envelope.Status.UNEXPECTED_RESPONSE, error = "Expected one result, but got: " + list.size)
     case x: Failure => x
   }
 

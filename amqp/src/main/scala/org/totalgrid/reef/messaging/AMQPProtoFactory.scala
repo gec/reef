@@ -32,7 +32,7 @@ import org.totalgrid.reef.api.service.IServiceAsync
  * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
  *
  */
-trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
+trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
   /**
    * Configures a publisher that targets a specific exchange

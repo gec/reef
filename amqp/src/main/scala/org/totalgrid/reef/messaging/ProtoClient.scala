@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 import com.google.protobuf.GeneratedMessage
 
@@ -36,11 +36,11 @@ import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
  * doesn't have to manage the clients manually. NOT THREAD SAFE, needs to be used from a single thread at a time.
  */
 class ProtoClient(
-    factory: ServiceClientFactory,
-    lookup: ServiceList, timeoutms: Long) extends ServiceClient with Logging {
+    factory: ClientSessionFactory,
+    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
-  private var clients = Map.empty[Class[_], ServiceClient]
+  private var clients = Map.empty[Class[_], ClientSession]
 
   def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
 
@@ -56,7 +56,7 @@ class ProtoClient(
           try {
             val list = x.getPayloadList.map { x => info.descriptor.deserialize(x.toByteArray) }.toList
             val error = if (x.hasErrorMessage) x.getErrorMessage else ""
-            Some(Response(x.getStatus, error, list))
+            Some(Response(x.getStatus, list, error))
           } catch {
             case ex: Exception =>
               warn("Error deserializing proto: ", ex)

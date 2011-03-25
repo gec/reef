@@ -30,7 +30,7 @@ import java.util.{ Date, Calendar }
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryTest
-    extends ServiceClientSuite("EventQuery.xml", "Event Query",
+    extends ClientSessionSuite("EventQuery.xml", "Event Query",
       <div>
         <p>
           Use
