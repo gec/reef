@@ -30,4 +30,10 @@ trait EndpointAlwaysOnline extends IProtocol {
     ret
   }
 
+  abstract override def removeEndpoint(endpoint: String): IEndpointListener = {
+    val ret = super.removeEndpoint(endpoint)
+    ret.onStateChange(Communications.EndpointState.State.COMMS_DOWN)
+    ret
+  }
+
 }

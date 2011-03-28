@@ -77,8 +77,8 @@ trait IProtocol {
   def requiresChannel: Boolean
 
   def addChannel(channel: FEP.Port, listener: IChannelListener): Unit
-  def removeChannel(channel: String): Unit
+  def removeChannel(channel: String): IChannelListener
 
   def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
-  def removeEndpoint(endpoint: String): Unit
+  def removeEndpoint(endpoint: String): IEndpointListener
 }

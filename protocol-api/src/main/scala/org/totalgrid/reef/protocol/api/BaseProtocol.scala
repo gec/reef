@@ -62,9 +62,9 @@ trait BaseProtocol extends IProtocol with Logging {
     }
   }
 
-  override def removeChannel(channel: String): Unit = {
+  override def removeChannel(channel: String): IChannelListener = {
     channels.get(channel) match {
-      case Some(p) =>
+      case Some(Channel(_, listener)) =>
         endpoints.values.filter { e => // if a channel is removed, remove all devices on that channel first
           e.channel match {
             case Some(x) => x.getName == channel
@@ -73,17 +73,19 @@ trait BaseProtocol extends IProtocol with Logging {
         }.foreach { e => removeEndpoint(e.name) }
         channels -= channel
         _removeChannel(channel)
+        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown channel " + channel)
     }
   }
 
   /// remove the device from the map and its channel's device list
-  override def removeEndpoint(endpoint: String): Unit = {
+  override def removeEndpoint(endpoint: String): IEndpointListener = {
     endpoints.get(endpoint) match {
-      case Some(Endpoint(name, _, _, _)) =>
-        endpoints -= name
-        _removeEndpoint(name)
+      case Some(Endpoint(_, _, _, listener)) =>
+        endpoints -= endpoint
+        _removeEndpoint(endpoint)
+        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown endpoint " + endpoint)
     }

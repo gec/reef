@@ -30,4 +30,10 @@ trait ChannelAlwaysOnline extends IProtocol {
     listener.onStateChange(Communications.ChannelState.State.OPEN)
   }
 
+  abstract override def removeChannel(name: String): IChannelListener = {
+    val ret = super.removeChannel(name)
+    ret.onStateChange(Communications.ChannelState.State.CLOSED)
+    ret
+  }
+
 }

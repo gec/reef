@@ -19,7 +19,7 @@ message EndpointState {
 message ChannelState {
 
     enum State {
-        CLOSING = 1;
+        CLOSED = 1;
         OPENING = 2;
         OPEN = 3;
         ERROR = 4;
