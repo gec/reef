@@ -20,7 +20,10 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.protocol.api.{ BaseProtocol, IProtocol, IPublisher, ICommandHandler => IProtocolCmdHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api._
+
+import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandler }
+
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer }
 import org.totalgrid.reef.util.{ Logging, XMLHelper }
@@ -28,7 +31,7 @@ import org.totalgrid.reef.util.{ Logging, XMLHelper }
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 
-class Dnp3Protocol extends BaseProtocol with Logging {
+class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
 
   override def name = "dnp3"
 
@@ -49,7 +52,7 @@ class Dnp3Protocol extends BaseProtocol with Logging {
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.Port) = {
+  override def _addChannel(p: FEP.Port, listener: IChannelListener) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -72,7 +75,7 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     dnp3.RemovePort(channel)
   }
 
-  override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher): IProtocolCmdHandler = {
+  override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher, listener: IEndpointListener): ProtocolCommandHandler = {
 
     info { "Adding device with uid: " + endpoint + " onto channel " + channelName }
 

@@ -38,7 +38,7 @@ trait BaseProtocol extends IProtocol with Logging {
     channels.get(p.getName) match {
       case None =>
         channels = channels + (p.getName -> Channel(p, listener))
-        _addChannel(p)
+        _addChannel(p, listener)
       case Some(x) =>
         if (x == p) info("Ignoring duplicate channel " + p)
         else throw new IllegalArgumentException("Port with that name already exists: " + p)
@@ -53,11 +53,11 @@ trait BaseProtocol extends IProtocol with Logging {
         channels.get(channelName) match {
           case Some(p) =>
             endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, listener)
-            _addEndpoint(endpoint, channelName, config, publish)
+            _addEndpoint(endpoint, channelName, config, publish, listener)
           case None =>
             if (requiresChannel) throw new IllegalArgumentException("Port not registered " + channelName)
             endpoints += endpoint -> Endpoint(endpoint, None, config, listener)
-            _addEndpoint(endpoint, channelName, config, publish)
+            _addEndpoint(endpoint, channelName, config, publish, listener)
         }
     }
   }
@@ -90,9 +90,9 @@ trait BaseProtocol extends IProtocol with Logging {
   }
 
   /// These get implemented by the parent
-  protected def _addChannel(p: FEP.Port)
+  protected def _addChannel(p: FEP.Port, listener: IChannelListener)
   protected def _removeChannel(channel: String)
-  protected def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
+  protected def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
   protected def _removeEndpoint(endpoint: String)
 
 }

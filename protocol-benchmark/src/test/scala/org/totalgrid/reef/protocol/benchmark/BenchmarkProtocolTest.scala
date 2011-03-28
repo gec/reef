@@ -111,9 +111,9 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
     // need to call the NVII functions or else we are only testing the BaseProtocol code
-    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb)
+    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
     intercept[IllegalArgumentException] {
-      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb)
+      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
     }
   }
 
