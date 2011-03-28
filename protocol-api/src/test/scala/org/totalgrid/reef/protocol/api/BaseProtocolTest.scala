@@ -31,10 +31,6 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 @RunWith(classOf[JUnitRunner])
 class BaseProtocolTest extends FunSuite with ShouldMatchers {
 
-  val nullPublisher = new IPublisher {
-    def publish(batch: MeasurementBatch): Unit = {}
-  }
-
   import MockProtocol._
 
   val port = FEP.Port.newBuilder().setName("port1").build()
@@ -48,22 +44,22 @@ class BaseProtocolTest extends FunSuite with ShouldMatchers {
   test("AddEndpointWithoutPort") {
     val m = new MockProtocol
 
-    intercept[IllegalArgumentException] { m.addEndpoint("ep", "unknown", Nil, nullPublisher) }
+    intercept[IllegalArgumentException] { m.addEndpoint("ep", "unknown", Nil, NullPublisher, NullEndpointListener) }
   }
 
   test("EndpointAlreadyExists") {
     val m = new MockProtocol
-    m.addChannel(port)
-    m.addEndpoint("ep", "port1", Nil, nullPublisher)
-    intercept[IllegalArgumentException] { m.addEndpoint("ep", "port1", Nil, nullPublisher) }
+    m.addChannel(port, NullChannelListener)
+    m.addEndpoint("ep", "port1", Nil, NullPublisher, NullEndpointListener)
+    intercept[IllegalArgumentException] { m.addEndpoint("ep", "port1", Nil, NullPublisher, NullEndpointListener) }
   }
 
   def addPortAndTwoEndpoints(m: MockProtocol) {
-    m.addChannel(port)
+    m.addChannel(port, NullChannelListener)
     m.checkFor { case AddPort(p) => p should equal(port) }
-    m.addEndpoint("ep1", "port1", Nil, nullPublisher)
+    m.addEndpoint("ep1", "port1", Nil, NullPublisher, NullEndpointListener)
     m.checkFor { case AddEndpoint("ep1", "port1", Nil) => }
-    m.addEndpoint("ep2", "port1", Nil, nullPublisher)
+    m.addEndpoint("ep2", "port1", Nil, NullPublisher, NullEndpointListener)
     m.checkFor { case AddEndpoint("ep2", "port1", Nil) => }
     m.checkForNothing
   }

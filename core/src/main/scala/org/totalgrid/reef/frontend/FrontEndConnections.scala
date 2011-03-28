@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.{ Commands, Measurements, ReefServicesList }
+import org.totalgrid.reef.proto.{ Commands, Measurements }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto }
 import org.totalgrid.reef.messaging.Connection
 import org.totalgrid.reef.api.scalaclient.ClientSession
@@ -29,7 +29,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.app.ServiceHandler
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, NullChannelListener, NullEndpointListener }
 import org.totalgrid.reef.api.{ Envelope, IDestination, AddressableService }
 
 // Data structure for handling the life cycle of connections
@@ -60,8 +60,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     val publisher = getPublisher(conn.getClientSession(), c.getRouting.getServiceRoutingKey)
 
     // add the device, get the command issuer callback
-    if (protocol.requiresChannel) protocol.addChannel(port)
-    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher)
+    if (protocol.requiresChannel) protocol.addChannel(port, NullChannelListener)
+    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, NullEndpointListener)
     val service = new SingleEndpointCommandService(cmdHandler)
     conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
 

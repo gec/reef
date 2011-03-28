@@ -27,16 +27,17 @@ import org.totalgrid.reef.util.Logging
 
 trait BaseProtocol extends IProtocol with Logging {
 
-  case class Endpoint(name: String, channel: Option[FEP.Port], config: List[Model.ConfigFile]) /// The issue function and the channel
+  case class Endpoint(name: String, channel: Option[FEP.Port], config: List[Model.ConfigFile], listener: IEndpointListener) /// The issue function and the channel
+  case class Channel(config: FEP.Port, listener: IChannelListener)
 
   // only mutable state is current assignment of these variables
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
-  private var channels = immutable.Map.empty[String, FEP.Port] /// maps uids to a Port
+  private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  override def addChannel(p: FEP.Port): Unit = {
+  override def addChannel(p: FEP.Port, listener: IChannelListener): Unit = {
     channels.get(p.getName) match {
       case None =>
-        channels = channels + (p.getName -> p)
+        channels = channels + (p.getName -> Channel(p, listener))
         _addChannel(p)
       case Some(x) =>
         if (x == p) info("Ignoring duplicate channel " + p)
@@ -44,18 +45,18 @@ trait BaseProtocol extends IProtocol with Logging {
     }
   }
 
-  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler = {
+  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
       case None =>
         channels.get(channelName) match {
           case Some(p) =>
-            endpoints += endpoint -> Endpoint(endpoint, Some(p), config)
+            endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, listener)
             _addEndpoint(endpoint, channelName, config, publish)
           case None =>
             if (requiresChannel) throw new IllegalArgumentException("Port not registered " + channelName)
-            endpoints += endpoint -> Endpoint(endpoint, None, config)
+            endpoints += endpoint -> Endpoint(endpoint, None, config, listener)
             _addEndpoint(endpoint, channelName, config, publish)
         }
     }
@@ -80,7 +81,7 @@ trait BaseProtocol extends IProtocol with Logging {
   /// remove the device from the map and its channel's device list
   override def removeEndpoint(endpoint: String): Unit = {
     endpoints.get(endpoint) match {
-      case Some(Endpoint(name, _, _)) =>
+      case Some(Endpoint(name, _, _, _)) =>
         endpoints -= name
         _removeEndpoint(name)
       case None =>
