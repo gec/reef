@@ -3,10 +3,10 @@
     <section>
         <title>Overview</title>
         <para>
-            In their most basic form, service requests consist of:
+            In their most basic form, Reef service requests consist of:
             <itemizedlist>
                 <listitem><para>Creating a request object of a specific type.</para></listitem>
-                <listitem><para>Making a request with the object, plus one of the RESTful verbs - GET, PUT, POST, DELETE.</para>
+                <listitem><para>Making a request by using of the RESTful verbs - GET, PUT, POST, DELETE.</para>
                 </listitem>
                 <listitem><para>Receiving a list of results, all of the same object type as the request.</para></listitem>
             </itemizedlist>
@@ -25,9 +25,8 @@
         <title>Queries</title>
         <para>
             GET requests use a method referred to as <emphasis>query by example</emphasis>. Clients
-            fill in the fields of the request object they would like to match against and the server then returns the set of
-            objects which match those fields. This system is very similar to SQL queries in relational databases. It allows
-            requests to be as general or as specific as necessary.</para>
+            fill in the fields of the request object they would like to match against, and the server returns the set of
+            objects which match those fields. This system is very similar to SQL queries in relational databases.</para>
 
             <para>In general, properties that are set will be matched against, while properties that are not set will be ignored. Multiple properties specify
             objects that match all the given characteristics (logical "and").</para>
@@ -53,8 +52,8 @@ Point request = Point.newBuilder().setAbnormal(true).build();
                 ]]></programlisting>
             </example>
         <para>
-            To complete the request, we invoke the client with the GET verb. By default all requests to the reef service
-            take one request object and return a list:
+            To complete the request, we invoke the client with the GET verb. By default all requests to Reef services
+            take a single request object and return a list:
             <example>
                 <title>Getting List of Points</title>
                 <programlisting language="java"><![CDATA[

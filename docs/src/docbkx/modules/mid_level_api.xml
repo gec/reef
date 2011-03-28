@@ -7,11 +7,11 @@
         interfaces for Reef services.
     </para>
     <para>
-        The adapters are pure interfaces suitable for use in most application code. Interfaces are defined by
+        Interfaces are defined by
         function (<literal>MeasurementService</literal>,
         <literal>EventService</literal>,
-        <literal>EntityService</literal>, ...) but there is also a single "super interface"
-        that provides all functions in all of the service interfaces: <literal>AllScadaService</literal>.
+        <literal>EntityService</literal>, ...) but there is also an aggregate interface
+        which provides all functions in all of the service interfaces: <literal>AllScadaService</literal>.
     </para>
     <example>
         <title>Using the Service Request Library</title>

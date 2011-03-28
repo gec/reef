@@ -1,11 +1,10 @@
 <section id="client_setup">
     <title>Client Setup</title>
-    <para>Setting-up the client involves establishing a connection and acquiring a session. All services require user
-        authorization except for the authorization service itself.
+    <para>Setting up the client involves establishing a connection, acquiring a session, and obtaining user authorization.
     </para>
     <section>
         <title>Connecting to AMQP Broker</title>
-        <para> The first step to opening a connection is provide the necessary configuration information.
+        <para>The first step to opening a connection is provide the necessary configuration information.
             <literal>BrokerConnectionInfo</literal>
             contains all the necessary fields:</para>
         <para>
@@ -41,9 +40,11 @@ connection.connect(5000);
         <title>Connection Listener</title>
         <para>
             In order to be notified of a successful connection, as well as to handle any unexpected disconnections, clients must
-            subscribe to connection events. To do so, an implementation of the <literal>IConnectionListener</literal> interface is registered with <literal>IConnection</literal> by
-            using the <literal>addConnectionListener</literal> method. <literal>IConnectionListener</literal> has two methods, <literal>opened</literal> and <literal>closed</literal>,
-            that the connection manager will call back when the state of the broker connection changes.
+            subscribe to connection events. To do so, an implementation of the <literal>IConnectionListener</literal> interface is
+          registered with <literal>IConnection</literal> by calling
+           <literal>addConnectionListener</literal>. <literal>IConnectionListener</literal> has two methods,
+          <literal>opened</literal> and <literal>closed</literal>,
+            which the connection manager will call back when the state of the connection to the broker changes.
         </para>
         <example>
             <title>Trivial IConnectionListener example</title>
@@ -73,16 +74,16 @@ connection.disconnect(5000);
 
          <caution>
             <para> The connection
-            manager will issue the callbacks on a separate thread; clients need to provide the necessary synchronization
-            to maintain thread safety and not block the thread.</para>
+            manager will issue the callbacks on a separate thread. Clients need to provide the necessary synchronization
+            to maintain thread safety and to not block the thread.</para>
         </caution>
     </section>
     <section>
         <title>Getting an ISession</title>
         <para>
             Once we have a working connection we can acquire instances of <literal>ISession</literal> to query the reef services.
-            Unlike <literal>IConnection</literal>, <literal>ISession</literal> is not designed to be thread safe and
-            must be used on a single thread. When we are done with the <literal>ISession</literal> we call <literal>close</literal> to release it.
+            Unlike <literal>IConnection</literal>, <literal>ISession</literal> is not designed to be thread-safe and
+            must be used on a single thread at a time. When we are done with the <literal>ISession</literal> we call <literal>close</literal> to release it.
         </para>
         <example>
             <title>ISession Example</title>
@@ -93,23 +94,20 @@ ISession session = connection.newSession();
 // Do work with the session...
 
 // Close the session
-session.close().
+session.close();
                 ]]></programlisting>
         </example>
     </section>
 
     <section>
-        <title>Client Authorization</title>
+        <title>User Authorization</title>
         <para>
-            Reef services require user authorization. Clients identify their credentials by including
-            an
-            <literal>AuthToken</literal>
-            in the header of service requests.
-            <literal>ISession</literal>
+            All Reef services (except for the authorization service itself) require user authorization. When accessing services, clients identify
+          their credentials by including an <literal>AuthToken</literal> in the header of service requests. In the Reef client API, <literal>ISession</literal>
             will handle the details of attaching this token to service calls.</para>
         <para>In order to obtain a token, clients must first send a request to the
             <literal>AuthToken</literal>
-            service with a username and password. The user credentials are registered in the Reef user database, and may be different than those used to
+            service with a username and password. The user credentials are registered in the Reef user database, and may be different from those used to
             connect to the broker.
         </para>
         <para>

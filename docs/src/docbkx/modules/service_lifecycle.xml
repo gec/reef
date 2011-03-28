@@ -6,14 +6,13 @@
     </para>
     <para>
         To demonstrate create/update/delete service functionality, we will use <literal>ConfigFile</literal>, one of the simplest objects in Reef.
-        <literal>ConfigFile</literal> objects contain generic data that can be
-        provided by configuration processes to be used by applications (i.e. protocol implementations) which understand how to interpret it.
+        <literal>ConfigFile</literal> objects contain generic data that is
+        provided by configuration processes and used by applications which understand how to interpret it.
     </para>
     <para>
         First, we'll create a ConfigFile named "config01" that contains a plain-text string and send it to the server
-        with the PUT verb. If there is already a ConfigFile object with the same name it will be updated. The ConfigFile
-        object returned from the request will be exactly like the one we PUT except that it will the server assigned
-        field "uid" filled out with a unique identifier.
+        with the PUT verb. The ConfigFile object returned from the request will be exactly like the one we PUT except
+      that it will contain the server-assigned "uid" field filled out with a unique identifier.
         <example>
             <title>Creating a ConfigFile</title>
             <programlisting language="java"><![CDATA[
@@ -34,7 +33,8 @@ System.out.println("UID: " + created.getUid());
     </para>
     <para>
         To modify this object we build a request by first copying all fields (including "uid") and then making any changes.
-        A PUT to the server will now update the config file.
+        We use the PUT verb again -- when PUT is used on an already-existing object, the service will update that object rather than
+      creating a new one.
         <example>
             <title>Updating a ConfigFile</title>
             <programlisting language="java"><![CDATA[

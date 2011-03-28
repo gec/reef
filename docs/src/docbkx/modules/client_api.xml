@@ -1,6 +1,6 @@
 <section id="chapter1">
     <title>Overview</title>
-    <para>Reef uses AMQP (<ulink url="http://www.amqp.org"/>) for transport and Google Protocol Buffers (<ulink
+    <para>Reef uses the AMQP (<ulink url="http://www.amqp.org"/>) for transport and Google Protocol Buffers (<ulink
             url="http://code.google.com/p/protobuf/"/>) to serialize messages. The combination of these two technologies
         comprise the interface to the Reef service layer. Bindings can be created for any platform/language with a
         compatible AMQP client and a Protobuf compiler. Reef is factored as a RESTful service oriented architecture
@@ -22,7 +22,7 @@
         request headers.
     </para>
     <para>
-        The client API involves the management of two central objects: <emphasis>Connection</emphasis> and
+        For the user, the client API involves the management of two central objects: <emphasis>Connection</emphasis> and
         <emphasis>Session</emphasis>.
     </para>
     <para>
@@ -62,12 +62,12 @@
     </figure>
     <para>
         <literal>ISession</literal>
-        interfaces represent long-lived objects that are associated one-to-one with underlying AMQP sessions. Creating a
-        new session per request is not recommended since there is a small cost associated with acquiring new sessions
-        and deleting them, but client developers should feel free to create as many sessions as needed to service their
-        threading requirements. Recommended practice for multi-threaded applications is to create an
-        <literal>ISession</literal>
-        per unit of concurrency instead of synchronizing on a single session. Additionally, sessions can be pooled
-        so long as care is taken to ensure the correct authorization is attached before any given request.
-    </para>
+        interfaces represent long-lived objects that are associated one-to-one with underlying AMQP sessions.
+
+      Because there is a small cost associated with acquiring a new session, it is not recommended to use a new session per request.
+      However, users should feel free to create as many sessions as needed to service their threading requirements. Recommended practice
+      for multi-threaded applications is therefore to create an <literal>ISession</literal> per <emphasis>unit of concurrency</emphasis>,
+      rather than synchronizing on a single session instance.</para>
+      <para>Some users, especially those writing server applications, may want to pool <literal>ISession</literal> instances in order to
+      increase performance. In these cases, care must be taken to ensure the correct authorization is attached before any given request.</para>
 </section>

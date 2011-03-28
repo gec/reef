@@ -47,7 +47,7 @@ IEventAcceptor<ConfigFile> acceptor = new IEventAcceptor<ConfigFile>() {
         <literal>ISubscription</literal>
         interface using the <literal>addSubscription</literal> method on <literal>ISession</literal>. In addition to the event acceptor,
         <literal>addSubscription</literal> takes a <emphasis>message description</emphasis>, which is available from the <literal>Descriptors</literal>
-        class. The message description is used by the connection manager to handle the internal details of AMQP.
+        class. The message description is used by the connection manager to manage the internal details of AMQP.
     </para>
         <para>
             Although sessions are used to acquire subscriptions, the subscription itself is tied to the lifecycle of the connection manager,
@@ -58,7 +58,7 @@ IEventAcceptor<ConfigFile> acceptor = new IEventAcceptor<ConfigFile>() {
             <title>Subscription Example</title>
             <programlisting language="java"><![CDATA[
 // Add a subscription for the ConfigFile object by providing an instance of IEventAcceptor<ConfigFile>.
-// The return object, ISubscription<ConfigFile>, will be used to register and manage subscription.
+// The return object, ISubscription<ConfigFile>, will be used to register and manage the subscription.
 ISubscription<ConfigFile> subscription = session.addSubscription(
     Descriptors.configFile(),
     acceptor);
