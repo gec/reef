@@ -60,6 +60,47 @@
 							</postProcess>
 						</configuration>
                     </execution>
+                    <execution>
+                        <id>multiple</id>
+                        <goals>
+                            <goal>generate-html</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+							<chunkedOutput>true</chunkedOutput>
+							<htmlStylesheet>css/html.css</htmlStylesheet>
+							<htmlCustomization>${docbook.source}/resources/xsl/html-chunk.xsl</htmlCustomization>
+							<targetDirectory>${docbook.target}/html</targetDirectory>
+							<postProcess>
+								<copy todir="${docbook.target}/html">
+									<fileset dir="${docbook.source}/resources">
+										<include name="**/*.css" />
+										<include name="**/*.png" />
+										<include name="**/*.gif" />
+										<include name="**/*.jpg" />
+									</fileset>
+								</copy>
+								<copy todir="${docbook.target}/html/images">
+									<fileset dir="${docbook.source}/resources/images">
+										<include name="**/*.*" />
+									</fileset>
+								</copy>
+							</postProcess>
+						</configuration>
+                    </execution>
+                    <!--<execution>
+						<id>produce pdf</id>
+						<goals>
+							<goal>generate-pdf</goal>
+						</goals>
+						<configuration>
+							<foCustomization>${docbook.source}/resources/xsl/fopdf.xsl</foCustomization>
+							<imgSrcPath>${docbook.source}/</imgSrcPath>
+							<targetDirectory>${docbook.target}/pdf</targetDirectory>
+						</configuration>
+						<phase>generate-resources</phase>
+					</execution>-->
                 </executions>
                 <dependencies>
                     <dependency>

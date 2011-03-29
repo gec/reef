@@ -1,9 +1,22 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <book>
-    <title>Reef Client API</title>
-    <titleabbrev>Reef Client API</titleabbrev>
+    <title>Reef Reference Documentation</title>
+    <titleabbrev>Reef Reference Docs</titleabbrev>
+
+
+    <chapter id="introduction">
+        <title>Introduction</title>
+    </chapter>
+    <chapter id="concepts">
+        <title>System Concepts</title>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/concepts_objects.xml"/>
+    </chapter>
+    <chapter id="subsystems">
+        <title>Subsystems</title>
+    </chapter>
+
     <chapter id="setup">
-        <title>Client Overview</title>
+        <title>Client API</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/client_api.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/client_setup.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/service_requests.xml"/>
