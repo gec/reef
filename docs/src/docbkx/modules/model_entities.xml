@@ -1,0 +1,185 @@
+<section id="model_entities">
+    <title>Modeling in Reef</title>
+    <para>
+        The SCADA portion of Reef is primarily concerned with providing operators and applications a view at the
+        current state of the real world system and allow issuing of commands to affect that system. To understand the
+        how and why of the parts of the Reef system it is first important to understand how a very simple real world
+        system would be modeled. We are using a simplified power distribution model for these examples but the modeling
+        is flexible enough to handle all common SCADA applications.
+    </para>
+    <para>
+        Below is a simplified representation of an electrical circuit breaker with an attached power
+        line. In this simplified system we are pretending that the circuit breaker has two status points indicating if
+        it is currently Closed or Tripped (open) and two commands Trip and Close that will cause it to change state. We
+        are
+        modeling the power line to have two analog points, Voltage and Current, that indicate how much power is flowing
+        through the line.
+    </para>
+    <figure id="model_example">
+        <title>Simple "Real World" System</title>
+        <mediaobject>
+            <imageobject>
+                <imagedata align="center" fileref="images/model_example.PNG"/>
+            </imageobject>
+        </mediaobject>
+    </figure>
+    <section id="logical_model">
+        <title>Logical Model</title>
+        <para>
+            It makes sense to arrange these points based on which piece of equipment they are most closely associated
+            with.
+            In the Reef system we call this the "logical model." In power systems it is common to consider points and
+            commands to be "owned" by pieces of equipment which may be themselves owned by "equipment groups".
+        </para>
+        <figure id="equipment_hierachy">
+            <title>Logical Model</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/equipment_hierachy.PNG"/>
+                </imageobject>
+            </mediaobject>
+            <remark>Annotate substation w/ equipment group, Line and Breaker with eqipument</remark>
+        </figure>
+        <para>
+            In Reef we model this logical tree by assigning every object an "Entity" node that describes the name and
+            type (ex: Point, Command, Equipment, etc) of the object. So for the proceding example we create entities for
+            four points, two commands, two pieces of equipment and one equipment group. We then create an edge with type
+            "owned" from the equipment group to both pieces of equipment. From each piece of equipment we create an edge
+            to the points and commands they own. Notice these edges are directed, we would say "Line1 owns voltage" or
+            "voltage is owned by Line1"; "voltage owns Line1" would imply the opposite relationship.
+        </para>
+        <figure id="equipment_tree_1">
+            <title>Logical Model as Entities</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/equipment_tree.PNG"/>
+                </imageobject>
+            </mediaobject>
+            <remark>Remove point "power"</remark>
+        </figure>
+    </section>
+
+    <section id="communication_model">
+        <title>Communication Model</title>
+        <para>
+            The "logical model" describes the system in "domain specific" terms.
+            In most domains the logical units we model are not themselves "intelligent electronic
+            devices" (IEDs) we can collect data from. For example the logical entity "power line" is not actually a box
+            we can plug an ethernet cable into and have it report the voltage and current passing through it, it is
+            simply a copper wire.
+            In the real world we generally only have a limited set of telemetery on a system often collecting
+            measurements for many logical pieces of equipment using a single piece of equipment (IED).
+
+            In the case of a power line we may have attached transducers for current and voltage that are being sampled
+            by a relay.
+            Below is one possible layout for how we would measure the points in our simple substation example.
+        </para>
+        <figure id="comms_model_example">
+            <title>Instrumentation of Real World</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/comms_model_example.PNG"/>
+                </imageobject>
+            </mediaobject>
+            <remark>indicate transducers and command points, possibly with indexes</remark>
+        </figure>
+        <para>
+            We model an IED as a "communication endpoint" which is responsible for points and commands. A "sourcefor"
+            edge is added from the endpoint to each of points and commands.
+
+            We use this relationship to update the online flag on points and commands and provide visualizations for
+            engineers to help them diagnose communication failures.
+        </para>
+        <figure id="communication_tree">
+            <title>Communication Tree</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/communication_tree.PNG"/>
+                </imageobject>
+            </mediaobject>
+            <remark>Remove port and config file.</remark>
+        </figure>
+        <para>
+            Communication Endpoints  are the equipment in the real world that Reef will be communicating with using
+            field protocols like DNP3, Modbus or ICCP.
+
+            Many of these field protocols require complex configuration parameters to specify the specifics of how to
+            configure the protocol and the exact format of the returned data and how to map that data to the
+            measurements we are creating, we put this sort of data in ConfigFiles that the protocol adapter
+            can pull out of the services.
+
+            We also need to know the address of the equipment, whether that is an TCP/IP address or a serial
+            port name and location.
+
+            Each of these pieces of information is also assigned an Entity and an edge of "uses" is
+            added from the communication endpoint to each of those entities.
+        </para>
+
+        <figure id="communication_tree">
+            <title>Communication Tree</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/communication_tree.PNG"/>
+                </imageobject>
+            </mediaobject>
+        </figure>
+        <para>
+            While it is true that some pieces of field equipment are "smart" and would be modeled as both a piece of
+            equipment and as a communication endpoint; modeling them seperately leads to a much easier to understand
+            system for all users.
+
+            An operator or application needs to only concern itself with the "logical model" without having to know how
+            the data is actually being collected.
+
+            If an operator is troubleshooting a communication issue they can look soley
+            at the communication model and ignore the logical model.
+        </para>
+    </section>
+
+    <section id="aggregate_model">
+        <title>Aggregate Model</title>
+        <para>
+            All of the points and commands are used in both the communication and logical models and this explains why
+            we gave each of the models a relationship type ("owns" and "sourcefor").
+
+            Each point or command will have an edge pointing to logical owner and its communication endpoint.
+
+            When we merge the two trees we end up with a single pool of entities that may be related to one or many
+            other entities.
+
+            In computer science this is called a "directed graph with colored edges" and forms the basis of the entity system.
+        </para>
+        <figure id="combined_tree">
+            <title>Merged Tree</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/combined_tree.PNG"/>
+                </imageobject>
+            </mediaobject>
+        </figure>
+
+        <para>
+            Applications and HMIs will use these relationships to determine the "shape" of the system, the entities
+            themseleves do not contain any "type specific" information specific to each type of entity.
+
+            Some examples of "type specific" information are "is this command blocked", "is this communication endpoint
+            considered online" or "is this point currently marked abnormal".
+
+            This data is represented in Reef with the type specific messages (sometimes refered to as concrete types)
+            like Point or Command.
+
+            Applications will generally want to use the "concrete types" because they contain the interesting data,
+            they will use the entity system to determine the UUIDs for the concrete objects they are using.
+        </para>
+        <figure id="entities_plus_abstract">
+            <title>Entities vs. Concrete Types</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/entities_plus_abstract.PNG"/>
+                </imageobject>
+            </mediaobject>
+        </figure>
+    </section>
+
+
+</section>
