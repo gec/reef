@@ -21,7 +21,7 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.FEP
-import org.totalgrid.reef.proto.Communications.ChannelState
+import org.totalgrid.reef.proto.Communications.{ChannelState, EndpointState}
 
 import scala.collection.immutable.Queue
 
@@ -38,8 +38,13 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
       def onStateChange(state: ChannelState.State) = queue += state
   }
 
+  def getMockEndpointListener = new IEndpointListener {
+      var queue = Queue.empty[EndpointState.State]
+      def onStateChange(state: EndpointState.State) = queue += state
+  }
+
   test("Channel callbacks") {
-    val mp = new MockProtocol with ChannelAlwaysOnline with EndpointAlwaysOnline
+    val mp = new MockProtocol with ChannelAlwaysOnline
     val listener = getMockChannelListener
 
     mp.addChannel(FEP.Port.newBuilder.setName("channel1").build, listener)
@@ -48,6 +53,16 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     listener.queue should equal(Queue(ChannelState.State.OPENING, ChannelState.State.OPEN, ChannelState.State.CLOSED))
   }
 
+  test("Endpoint callbacks") {
+    val mp = new MockProtocol(false) with EndpointAlwaysOnline
+    val listener = getMockEndpointListener
+
+    mp.addEndpoint("endpoint1","", Nil, NullPublisher, listener)
+    listener.queue should equal(Queue(EndpointState.State.COMMS_UP))
+
+    mp.removeEndpoint("endpoint1")
+    listener.queue should equal(Queue(EndpointState.State.COMMS_UP, EndpointState.State.COMMS_DOWN))
+  }
 
 }
 
