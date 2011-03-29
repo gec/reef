@@ -1,11 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <book>
-    <title>Reef Overview</title>
+    <title>Reef Reference Documentation</title>
+    <titleabbrev>Reef Reference Docs</titleabbrev>
 
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/architecture.xml"/>
-
+    <!--<chapter id="introduction">
+        <title>Introduction</title>
+    </chapter>-->
+    <chapter id="concepts">
+        <title>System Concepts</title>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/concepts_objects.xml"/>
+    </chapter>
     <chapter id="setup">
-        <title>Major Subsystems</title>
+        <title>Subsystems</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/model_entities.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/measurement_stream.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/command_stream.xml"/>
@@ -13,7 +20,7 @@
     </chapter>
 
     <chapter id="setup">
-        <title>Reef Client</title>
+        <title>Client API</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/client_api.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/client_setup.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/service_requests.xml"/>
