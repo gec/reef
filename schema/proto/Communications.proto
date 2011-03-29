@@ -12,7 +12,7 @@ message EndpointState {
         ERROR = 4;
     }
 
-	required State state = 1;
+	required State enum = 1;
 }
 
 
@@ -26,6 +26,17 @@ message ChannelState {
         UNKNOWN = 5;
     }
 
-    required State state = 1;
+    required State enum = 1;
 
+}
+
+
+message EndpointStatus {
+   optional string uid = 1;
+   optional EndpointState state = 2;
+}
+
+message ChannelStatus {
+   optional string uid = 1;
+   optional ChannelState state = 2;
 }
