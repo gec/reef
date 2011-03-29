@@ -2,13 +2,18 @@
 <book>
     <title>Reef Overview</title>
 
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/architecture.xml"/>
+
     <chapter id="setup">
-        <title>Subsystems</title>
+        <title>Major Subsystems</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/model_entities.xml"/>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/measurement_stream.xml"/>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/command_stream.xml"/>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/events_and_alarms.xml"/>
     </chapter>
 
     <chapter id="setup">
-        <title>Client Overview</title>
+        <title>Reef Client</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/client_api.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/client_setup.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/service_requests.xml"/>
