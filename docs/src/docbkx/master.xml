@@ -10,6 +10,7 @@
     <chapter id="concepts">
         <title>System Concepts</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/concepts_objects.xml"/>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/concepts_model.xml"/>
     </chapter>
     <chapter id="setup">
         <title>Subsystems</title>
