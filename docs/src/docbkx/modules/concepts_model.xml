@@ -1,0 +1,18 @@
+<section id="system_model">
+    <title>Model</title>
+    <para>Blah blah blah intro</para>
+
+    <figure id="devices_to_model">
+            <title>Relationship between model and "real world".</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata align="center" fileref="images/devicestomodel.png"/>
+                </imageobject>
+            </mediaobject>
+        </figure>
+
+    <section id="obj_meas">
+        <title>Points and </title>
+    </section>
+
+</section>
