@@ -61,7 +61,8 @@
                     <imagedata align="center" fileref="images/measurement_stream.png"/>
                 </imageobject>
             </mediaobject>
-            <remark>Show field device in cloud, protocol adapter, measurement processor, db, broker, subscriptions</remark>
+            <remark>Show field device in cloud, protocol adapter, measurement processor, db, broker, subscriptions
+            </remark>
         </figure>
     </section>
 
@@ -73,24 +74,33 @@
             following steps:
             <itemizedlist>
                 <listitem>
-                    <emphasis>Overrides:</emphasis>
-                    Field data can be blocked from making it to the engineer channel.
+                    <para>
+                        <emphasis>Overrides:</emphasis>
+                        Field data can be blocked from making it to the engineer channel.
 
-                    Each measurement is checked against the list of blocked points and either sent on for furthur
-                    processing or sent to a local cache.
+                        Each measurement is checked against the list of blocked points and either sent on for furthur
+                        processing or sent to a local cache.
+                    </para>
+
                 </listitem>
                 <listitem>
-                    <emphasis>Processing:</emphasis>
-                    Raw measurements from the field often need manipulations to transform them to engineering values or
-                    annotate the quality of the measurements.
+                    <para>
+                        <emphasis>Processing:</emphasis>
+                        Raw measurements from the field often need manipulations to transform them to engineering values
+                        or annotate the quality of the measurements.
 
-                    The measurement processor is also responsible for generating Events when measurements meet certain
-                    conditions.
+                        The measurement processor is also responsible for generating Events when measurements meet
+                        certain conditions.
+                    </para>
+
                 </listitem>
                 <listitem>
-                    <emphasis>Publishing:</emphasis>
-                    Once the measurements are processed they are published first to the MeasurementStore then to the
-                    engineering channel.
+                    <para>
+                        <emphasis>Publishing:</emphasis>
+                        Once the measurements are processed they are published first to the MeasurementStore then to the
+                        engineering channel.
+                    </para>
+
                 </listitem>
             </itemizedlist>
         </para>
@@ -111,16 +121,23 @@
                 This is usually done for one of two reasons:
                 <itemizedlist>
                     <listitem>
-                        <emphasis>Bad Values:</emphasis>
-                        A field device is reporting a bad value (wildly oscillating or pinned to 0) and is generating
-                        spurious alarms or confusing "advanced apps" that are performing calculations on that value.
+                        <para>
+                            <emphasis>Bad Values:</emphasis>
+                            A field device is reporting a bad value (wildly oscillating or pinned to 0) and is
+                            generating spurious alarms or confusing "advanced apps" that are performing
+                            calculations on that value.
 
-                        In this case an operator will override that data to a nominal value.
+                            In this case an operator will override that data to a nominal value.
+                        </para>
+
                     </listitem>
                     <listitem>
-                        <emphasis>Training or Testing:</emphasis>
-                        when an operator or integrator is testing alarms/UI/apps its often valuable to just
-                        be able to quickly override a value and see that the correct behaviors occur.
+                        <para>
+                            <emphasis>Training or Testing:</emphasis>
+                            when an operator or integrator is testing alarms/UI/apps its often valuable to just
+                            be able to quickly override a value and see that the correct behaviors occur.
+                        </para>
+
                     </listitem>
                 </itemizedlist>
             </para>
@@ -143,12 +160,18 @@
                 The difference between NIS and Overrides is the final value that is published:
                 <itemizedlist>
                     <listitem>
-                        <emphasis>Not in Service (NIS):</emphasis>
-                        Re-publishes the last field measurement with adjusted quality.
+                        <para>
+                            <emphasis>Not in Service (NIS):</emphasis>
+                            Re-publishes the last field measurement with adjusted quality.
+                        </para>
+
                     </listitem>
                     <listitem>
-                        <emphasis>Override:</emphasis>
-                        Takes an operator supplied measurement to set a specific value.
+                        <para>
+                            <emphasis>Override:</emphasis>
+                            Takes an operator supplied measurement to set a specific value.
+                        </para>
+
                     </listitem>
                 </itemizedlist>
                 <caution>
@@ -188,35 +211,45 @@
                     Common triggers are:
                     <itemizedlist>
                         <listitem>
-                            <emphasis>Unit:</emphasis>
-                            Checks that the measurement has correct unit.
+                            <para>
+                                <emphasis>Unit:</emphasis>
+                                Checks that the measurement has correct unit.
 
-                            Measurements from Reef ProtocolAdapters will attach the unit "raw" to all measurements
-                            with a unit specified.
+                                Measurements from Reef ProtocolAdapters will attach the unit "raw" to all measurements
+                                with a unit specified.
 
-                            Most transformation steps will require that the unit matches "raw" to apply the
-                            transformation.
+                                Most transformation steps will require that the unit matches "raw" to apply the
+                                transformation.
 
-                            If the only condition is unit, make sure that action updates the unit.
+                                If the only condition is unit, make sure that action updates the unit.
 
-                            Nearly every step should indicate the expected unit.
+                                Nearly every step should indicate the expected unit.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>Exact Value:</emphasis>
-                            Some steps (usually Event generation) only activate if a Measurement has a specific value.
+                            <para>
+                                <emphasis>Exact Value:</emphasis>
+                                Some steps (usually Event generation) only activate if a Measurement has a specific
+                                value.
 
-                            We can check for exact boolean, string and integer values.
+                                We can check for exact boolean, string and integer values.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>Ranges:</emphasis>
-                            A common pattern is to check that a Measurement is inside of a certain range of values.
+                            <para>
+                                <emphasis>Ranges:</emphasis>
+                                A common pattern is to check that a Measurement is inside of a certain range of values.
 
-                            Multiple overlapping ranges are often specified for a single point to provide different
-                            events when a measurement exceeds the nominal range into the warning range and when it
-                            strays into a dangerous range.
+                                Multiple overlapping ranges are often specified for a single point to provide different
+                                events when a measurement exceeds the nominal range into the warning range and when it
+                                strays into a dangerous range.
 
-                            Ranges can also have a deadband to stop a value oscillating near a range boundary from
-                            generating too many events.
+                                Ranges can also have a deadband to stop a value oscillating near a range boundary from
+                                generating too many events.
+                            </para>
+
                         </listitem>
                     </itemizedlist>
                 </para>
@@ -240,27 +273,42 @@
                     Actions therefore have a ActivationType that indicates when the action can be performed.
                     <itemizedlist>
                         <listitem>
-                            <emphasis>HIGH:</emphasis>
-                            Do action whenever trigger is active, most transformations and annotations use HIGH.
+                            <para>
+                                <emphasis>HIGH:</emphasis>
+                                Do action whenever trigger is active, most transformations and annotations use HIGH.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>LOW:</emphasis>
-                            Do action whenever trigger is in-active, not commonly used.
+                            <para>
+                                <emphasis>LOW:</emphasis>
+                                Do action whenever trigger is in-active, not commonly used.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>RISING:</emphasis>
-                            Do action when trigger is first activated, often used to generate "Measurement
-                            went out of Nominal" events.
+                            <para>
+                                <emphasis>RISING:</emphasis>
+                                Do action when trigger is first activated, often used to generate "Measurement
+                                went out of Nominal" events.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>FALLING:</emphasis>
-                            Do action when trigger was active and is now in-active, can be used to generate
-                            "Measurement returned to Nominal" events.
+                            <para>
+                                <emphasis>FALLING:</emphasis>
+                                Do action when trigger was active and is now in-active, can be used to generate
+                                "Measurement returned to Nominal" events.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>TRANSITION:</emphasis>
-                            Do action when trigger active state changes, often used to generate
-                            "Measurement nominal status changed" events.
+                            <para>
+                                <emphasis>TRANSITION:</emphasis>
+                                Do action when trigger active state changes, often used to generate
+                                "Measurement nominal status changed" events.
+                            </para>
+
                         </listitem>
                     </itemizedlist>
                 </para>
@@ -279,46 +327,58 @@
                     The measurement processor is capable of performing the following actions on each measurement:
                     <itemizedlist>
                         <listitem>
-                            <emphasis>Scale:</emphasis>
-                            It is common that data from the field is sent with the wrong scale or unit.
+                            <para>
+                                <emphasis>Scale:</emphasis>
+                                It is common that data from the field is sent with the wrong scale or unit.
 
-                            For example many legacy protocols do not have support for "floating point" values so devices
-                            are configured to send 100 or 1000 times the value.
+                                For example many legacy protocols do not have support for "floating point" values so
+                                devices are configured to send 100 or 1000 times the value.
 
-                            Reef provides a linear transformation with slope and offset.
+                                Reef provides a linear transformation with slope and offset.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>Enum Transformation:</emphasis>
-                            Many measurements (in particular statuses) need to be converted to Enums for use in
-                            applications.
+                            <para>
+                                <emphasis>Enum Transformation:</emphasis>
+                                Many measurements (in particular statuses) need to be converted to Enums for use in
+                                applications.
 
-                            A boolean value of true may indicate "CLOSED" for a breaker but indicate "NOMINAL" for a
-                            door alarm point.
+                                A boolean value of true may indicate "CLOSED" for a breaker but indicate "NOMINAL" for a
+                                door alarm point.
 
-                            The measurement processor will do this transformation so applications and operators don't
-                            need remember the mappings between boolean values and real world state.
+                                The measurement processor will do this transformation so applications and operators
+                                don't need remember the mappings between boolean values and real world state.
 
-                            The measurement type is changed to string but the underlying boolean value is still
-                            available if needed.
+                                The measurement type is changed to string but the underlying boolean value is still
+                                available if needed.
 
-                            Less common but also supported is turning integer values into enums.
+                                Less common but also supported is turning integer values into enums.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>Quality Annotation:</emphasis>
-                            We often want to update the quality of a measurement but not affect the value.
+                            <para>
+                                <emphasis>Quality Annotation:</emphasis>
+                                We often want to update the quality of a measurement but not affect the value.
 
-                            The most common case is to set the quality bit "abnormal" when the measurement is outside
-                            expected or nominal values.
+                                The most common case is to set the quality bit "abnormal" when the measurement is
+                                outside expected or nominal values.
+                            </para>
+
                         </listitem>
                         <listitem>
-                            <emphasis>Generate Event:</emphasis>
-                            When a measurement matches some condition (usually an undesired value) we want to alert
-                            the operator quickly by generating an Event.
+                            <para>
+                                <emphasis>Generate Event:</emphasis>
+                                When a measurement matches some condition (usually an undesired value) we want to alert
+                                the operator quickly by generating an Event.
 
-                            The action configuration determines what event code we are going to publish.
+                                The action configuration determines what event code we are going to publish.
 
-                            The Point name, current value and quality are all sent as attributes to event service to create
-                            helpful event messages.
+                                The Point name, current value and quality are all sent as attributes to event service to
+                                create helpful event messages.
+                            </para>
+
                         </listitem>
                     </itemizedlist>
                 </para>
