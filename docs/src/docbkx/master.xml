@@ -11,7 +11,7 @@
         <title>System Concepts</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/concepts_objects.xml"/>
     </chapter>
-    <chapter id="setup">
+    <chapter id="subsystems">
         <title>Subsystems</title>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/model_entities.xml"/>
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/measurement_stream.xml"/>

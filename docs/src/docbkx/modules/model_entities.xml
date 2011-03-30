@@ -19,7 +19,7 @@
         <title>Simple "Real World" System</title>
         <mediaobject>
             <imageobject>
-                <imagedata align="center" fileref="images/model_example.PNG"/>
+                <imagedata align="center" fileref="images/model_example.png"/>
             </imageobject>
         </mediaobject>
     </figure>
@@ -35,7 +35,7 @@
             <title>Logical Model</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/equipment_hierachy.PNG"/>
+                    <imagedata align="center" fileref="images/equipment_hierachy.png"/>
                 </imageobject>
             </mediaobject>
             <remark>Annotate substation w/ equipment group, Line and Breaker with eqipument</remark>
@@ -52,7 +52,7 @@
             <title>Logical Model as Entities</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/equipment_tree.PNG"/>
+                    <imagedata align="center" fileref="images/equipment_tree.png"/>
                 </imageobject>
             </mediaobject>
             <remark>Remove point "power"</remark>
@@ -78,7 +78,7 @@
             <title>Instrumentation of Real World</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/comms_model_example.PNG"/>
+                    <imagedata align="center" fileref="images/comms_model_example.png"/>
                 </imageobject>
             </mediaobject>
             <remark>indicate transducers and command points, possibly with indexes</remark>
@@ -90,11 +90,11 @@
             We use this relationship to update the online flag on points and commands and provide visualizations for
             engineers to help them diagnose communication failures.
         </para>
-        <figure id="communication_tree">
+        <figure id="partial_communication_tree">
             <title>Communication Tree</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/communication_tree.PNG"/>
+                    <imagedata align="center" fileref="images/communication_tree.png"/>
                 </imageobject>
             </mediaobject>
             <remark>Remove port and config file.</remark>
@@ -115,11 +115,11 @@
             added from the communication endpoint to each of those entities.
         </para>
 
-        <figure id="communication_tree">
+        <figure id="full_communication_tree">
             <title>Communication Tree</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/communication_tree.PNG"/>
+                    <imagedata align="center" fileref="images/communication_tree.png"/>
                 </imageobject>
             </mediaobject>
         </figure>
@@ -153,7 +153,7 @@
             <title>Merged Tree</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/combined_tree.PNG"/>
+                    <imagedata align="center" fileref="images/combined_tree.png"/>
                 </imageobject>
             </mediaobject>
         </figure>
@@ -175,7 +175,7 @@
             <title>Entities vs. Concrete Types</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/entities_plus_abstract.PNG"/>
+                    <imagedata align="center" fileref="images/entities_plus_abstract.png"/>
                 </imageobject>
             </mediaobject>
         </figure>
