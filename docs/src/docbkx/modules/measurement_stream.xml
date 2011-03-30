@@ -8,7 +8,7 @@
         worthless so much of the advanced engineering in Reef is to support the measurement stream.
     </para>
 
-    <section id="measurement_model">
+    <section id="points_and_measurements">
         <title>Points and Measurements</title>
         <para>
             In Reef, all Measurements are associated with a Point.
@@ -23,7 +23,7 @@
         </para>
     </section>
 
-    <section id="measurement_model">
+    <section id="consuming_measurements">
         <title>Consuming Measurements</title>
         <para>
             When an application wants to consume measurements it has two choices.
@@ -58,7 +58,7 @@
             <title>Measurement Stream</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/placeholder.png"/>
+                    <imagedata align="center" fileref="images/measurement_stream.png"/>
                 </imageobject>
             </mediaobject>
             <remark>Show field device in cloud, protocol adapter, measurement processor, db, broker, subscriptions</remark>
@@ -98,7 +98,7 @@
             <title>Measurement Processor Steps</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata align="center" fileref="images/placeholder.png"/>
+                    <imagedata align="center" fileref="images/measurement_processing.png"/>
                 </imageobject>
             </mediaobject>
             <remark>Adapt daniels slide with 4 vertical bars, add state cache</remark>
@@ -220,14 +220,13 @@
                         </listitem>
                     </itemizedlist>
                 </para>
-                <figure id="measurement_processor_steps">
+                <figure id="multiple_ranges">
                     <title>Multiple Ranges</title>
                     <mediaobject>
                         <imageobject>
-                            <imagedata align="center" fileref="images/placeholder.png"/>
+                            <imagedata align="center" fileref="images/ranges.png"/>
                         </imageobject>
                     </mediaobject>
-                    <remark>Show multiple ranges: nominal, warning, dangerous. RLC?</remark>
                 </figure>
                 <para>
                     When we determine that a measurement matches all of the trigger conditions we say the "trigger is
@@ -269,10 +268,9 @@
                     <title>Action Triggering Conditions</title>
                     <mediaobject>
                         <imageobject>
-                            <imagedata align="center" fileref="images/placeholder.png"/>
+                            <imagedata align="center" fileref="images/triggering.png"/>
                         </imageobject>
                     </mediaobject>
-                    <remark>Show on/off edge triggering.</remark>
                 </figure>
             </section>
             <section>
@@ -330,7 +328,7 @@
     <section id="measurement_publishing">
         <title>Measurement Publishing</title>
         <para>
-            Once a measurement is full processed it is published to two places.
+            Once a measurement is fully processed it is published to two places.
 
             First it is published to the MeasurementStore, which is responsible for storing the current and historical
             values for each Point.
