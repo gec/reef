@@ -29,13 +29,7 @@ object ServiceTypes {
 
   case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
 
-  case class Response[A](status: Envelope.Status, error: String, result: List[A]) {
-    def this(status: Envelope.Status, result: List[A]) = this(status, "", result)
-
-    def this(status: Envelope.Status, result: A) = this(status, "", List(result))
-
-    def this() = this(Envelope.Status.INTERNAL_ERROR, "", Nil)
-  }
+  case class Response[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, result: List[A] = Nil, error: String = "")
 
   case class Event[A](event: Envelope.Event, result: A) {
     // accessors for java client

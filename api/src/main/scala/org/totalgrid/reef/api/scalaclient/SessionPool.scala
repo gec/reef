@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.scalaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,17 +18,11 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
-import org.totalgrid.reef.api.ServiceTypes._
+package org.totalgrid.reef.api.scalaclient
 
-/**
- * Provides a thick interface full of helper functions via implement of a single abstract request function
- */
-trait ServiceClient extends SyncOperations with AsyncOperations with FutureOperations with AsyncScatterGatherOperations with SyncScatterGatherOperations with DefaultHeaders {
+/** A class that implements a borrow function */
+trait ISessionPool {
 
-  /**
-   *    Implements a synchronous request in terms of a future
-   */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): MultiResult[A] = requestFuture(verb, payload, env, dest)()
+  def borrow[A](fun: ClientSession => A): A
 
 }

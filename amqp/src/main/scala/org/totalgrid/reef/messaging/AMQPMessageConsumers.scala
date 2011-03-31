@@ -71,12 +71,11 @@ object AMQPMessageConsumers extends Logging {
     new MessageConsumer {
       def receive(data: Array[Byte], replyTo: Option[Destination]): Unit = safeExecute {
 
-        val request = Envelope.ServiceRequest.parseFrom(data)
-
         replyTo match {
           case None => error("Service request without replyTo field")
           case Some(dest) =>
 
+            val request = Envelope.ServiceRequest.parseFrom(data)
             val rspExchange = dest.exchange
             val rspKey = dest.key
 

@@ -33,7 +33,7 @@ import org.junit.runner.RunWith
 class FuturesTest extends FunSuite with ShouldMatchers {
 
   def fixture(verb: Envelope.Verb)(func: FutureOperations => (Object) => () => MultiResult[Object]) {
-    val mock = new MockServiceClient
+    val mock = new MockClientSession
     val obj = new Object
     val future = func(mock)(obj)
     mock.callback(MultiSuccess(Envelope.Status.OK, Nil))

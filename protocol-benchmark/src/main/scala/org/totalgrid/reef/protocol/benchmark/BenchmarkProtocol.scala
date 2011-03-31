@@ -26,7 +26,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, BaseProtocol }
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, ProtocolWithoutChannel }
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
@@ -41,6 +41,7 @@ trait SimulatorManagement {
  */
 trait ControllableSimulator {
   def getRepeatDelay: Long
+
   def setUpdateParams(newDelay: Long)
 }
 
@@ -48,34 +49,27 @@ trait ControllableSimulator {
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class BenchmarkProtocol extends BaseProtocol with SimulatorManagement with Logging {
+class BenchmarkProtocol extends ProtocolWithoutChannel with SimulatorManagement with Logging {
 
-  val name: String = "benchmark"
-  val requiresPort = false
+  override def name: String = "benchmark"
 
   private var map = immutable.Map.empty[String, Simulator]
   private var reactor: Option[ReactActor] = None
 
-  def getSimulators(names: List[String]): Map[String, ControllableSimulator] = {
+  def getSimulators(names: List[String]): Map[String, ControllableSimulator] =
     if (names.isEmpty) map else map.filterKeys(k => names.contains(k))
-  }
 
   // get or create and start the shared reactor
-  private def getReactor: ReactActor = {
-    reactor match {
-      case Some(r) => r
-      case None =>
-        val r = new ReactActor {}
-        r.start
-        reactor = Some(r)
-        r
-    }
+  private def getReactor: ReactActor = reactor match {
+    case Some(r) => r
+    case None =>
+      val r = new ReactActor {}
+      r.start
+      reactor = Some(r)
+      r
   }
 
-  def _addPort(p: FEP.Port) = {}
-  def _removePort(port: String) = {}
-
-  def _addEndpoint(endpoint: String, port: String, files: List[Model.ConfigFile], publisher: IPublisher): ICommandHandler = {
+  def _addEndpoint(endpoint: String, channel: String, files: List[Model.ConfigFile], publisher: IPublisher): ICommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 
@@ -95,7 +89,9 @@ class BenchmarkProtocol extends BaseProtocol with SimulatorManagement with Loggi
         throw new IllegalArgumentException("Trying to remove endpoint" + endpoint)
     }
     if (map.size == 0) {
-      reactor.foreach { _.stop }
+      reactor.foreach {
+        _.stop
+      }
       reactor = None
     }
   }

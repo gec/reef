@@ -31,12 +31,12 @@ class AddressableMeasurementBatchService(measProc: ProcessingNode) extends Async
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def delete(req: MeasurementBatch, env: RequestEnv) = noVerb("delete")
-  override def get(req: MeasurementBatch, env: RequestEnv) = noVerb("get")
+  override def delete(req: MeasurementBatch, env: RequestEnv) = noDelete
+  override def get(req: MeasurementBatch, env: RequestEnv) = noGet
 
   override def post(req: MeasurementBatch, env: RequestEnv) = put(req, env)
   override def put(req: MeasurementBatch, env: RequestEnv) = {
     measProc.process(req)
-    new Response(Envelope.Status.OK, req)
+    Response(Envelope.Status.OK, req :: Nil)
   }
 }

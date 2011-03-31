@@ -24,10 +24,9 @@ import org.totalgrid.reef.reactor.Reactable
 
 import org.totalgrid.reef.util.Localizer
 
-import org.totalgrid.reef.app.{ ServiceHandler, ServiceContext }
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.messaging.{ ProtoRegistry, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.{ Connection, AMQPProtoFactory }
 import org.totalgrid.reef.app.ServiceHandler
 import org.totalgrid.reef.proto.RoutingKeys
 
@@ -50,7 +49,7 @@ abstract class EventRouter(
   processedEventExchange: String,
   processedLogExchange: String,
   rawEventExchanges: List[String],
-  registry: ProtoRegistry,
+  conn: Connection,
   logger: EventLogPublisher)
     extends Reactable with ServiceHandler with Localizer {
 
@@ -68,7 +67,7 @@ abstract class EventRouter(
 
   val subscribeMessage = EventConfig.newBuilder.setEventType("*").build
   // handle all of the service calls in the actor thread
-  this.addServiceContext[EventConfig](registry, 5000, EventConfig.parseFrom, subscribeMessage, context)
+  this.addServiceContext[EventConfig](conn, 5000, EventConfig.parseFrom, subscribeMessage, context)
 
   /**
    *  Store event in persistent store.

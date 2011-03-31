@@ -18,22 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service
+package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.api.Envelope
-import org.totalgrid.reef.api.ServiceTypes.Response
-import com.google.protobuf.ByteString
+import org.totalgrid.reef.proto.FEP
 
-trait ServiceHelpers[A] {
-  self: ServiceDescriptor[A] =>
-
-  def getResponse(id: String, rsp: Response[A]): Envelope.ServiceResponse = {
-    val ret = Envelope.ServiceResponse.newBuilder.setId(id)
-    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
-    rsp.result.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
-    ret.build()
-  }
-
-  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, Response(status, error = errorMsg))
-
+trait ProtocolWithoutChannel extends BaseProtocol {
+  final def requiresChannel = false
+  final def _addChannel(channel: FEP.Port) = {}
+  final def _removeChannel(channel: String) = {}
 }

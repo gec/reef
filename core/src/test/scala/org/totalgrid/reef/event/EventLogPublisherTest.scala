@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.event
 
-import org.totalgrid.reef.messaging.mock.{ MockProtoRegistry, MockProtoPublisherRegistry }
-import scala.concurrent.{ MailBox, TIMEOUT }
+import org.totalgrid.reef.messaging.mock.MockProtoPublisherRegistry
+import scala.concurrent.MailBox
 import org.totalgrid.reef.proto.{ Events }
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.services.core.util._
@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.RoutingKeys
 @RunWith(classOf[JUnitRunner])
 class EventLogPublisherTest extends FixtureSuite with ShouldMatchers {
 
-  case class Fixture(registry: MockProtoRegistry,
+  case class Fixture(conn: MockProtoPublisherRegistry,
     mailEvent: MailBox,
     mailLog: MailBox,
     publishEvent: Events.Event => Unit,
@@ -46,7 +46,7 @@ class EventLogPublisherTest extends FixtureSuite with ShouldMatchers {
 
   def withFixture(test: OneArgTest) = {
 
-    val registry = new MockProtoRegistry()
+    val registry = new MockProtoPublisherRegistry {}
 
     val publishEvent = registry.publish(RoutingKeys.event, "raw")
     val publishLog = registry.publish(RoutingKeys.log, "raw")

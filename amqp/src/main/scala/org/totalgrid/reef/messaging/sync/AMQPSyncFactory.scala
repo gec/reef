@@ -37,7 +37,7 @@ class SyncSubscription[A](channel: BrokerChannel, consumer: MessageConsumer) ext
   override def cancel() = channel.close()
 }
 
-trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
+trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
   /**
    * creates a correlator channel that can multiplex ServiceRequests to different exchanges and collect the inputs

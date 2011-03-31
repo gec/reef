@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Measurements.Quality
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementOverrideTest
-    extends ServiceClientSuite("MeasurementOverride.xml", "MeasurementOverride",
+    extends ClientSessionSuite("MeasurementOverride.xml", "MeasurementOverride",
       <div>
         <p>
           The MeasurementOverride service.

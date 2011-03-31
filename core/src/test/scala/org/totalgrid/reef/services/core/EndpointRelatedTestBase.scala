@@ -37,7 +37,7 @@ import _root_.scala.collection.JavaConversions._
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.util.{ Logging, SyncVar }
-import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.proto.{ ReefServicesList }
 
@@ -92,6 +92,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
+    val connection = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
     val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)

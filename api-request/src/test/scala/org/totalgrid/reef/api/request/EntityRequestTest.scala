@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Model.{ Entity, Relationship }
 
 @RunWith(classOf[JUnitRunner])
 class EntityRequestTest
-    extends ServiceClientSuite("Entity.xml", "Entity",
+    extends ClientSessionSuite("Entity.xml", "Entity",
       <div>
         <p>
           An Entity represents a generic component of a system model. Entities are modeled by a name

@@ -71,9 +71,9 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
   override val descriptor = Descriptors.eventList
 
-  override def put(req: EventList, env: RequestEnv): Response[EventList] = noVerb("put")
-  override def delete(req: EventList, env: RequestEnv): Response[EventList] = noVerb("delete")
-  override def post(req: EventList, env: RequestEnv): Response[EventList] = noVerb("post")
+  override def put(req: EventList, env: RequestEnv): Response[EventList] = noPut
+  override def delete(req: EventList, env: RequestEnv): Response[EventList] = noDelete
+  override def post(req: EventList, env: RequestEnv): Response[EventList] = noPost
 
   override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 
@@ -94,7 +94,7 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
             orderBy timeOrder(row.time, select.ascending)).page(0, limit)
 
       val respList = EventList.newBuilder.addAllEvents(entries.toList.map(model.convertToProto(_))).build
-      new Response(Envelope.Status.OK, respList)
+      Response(Envelope.Status.OK, respList :: Nil)
     }
   }
 

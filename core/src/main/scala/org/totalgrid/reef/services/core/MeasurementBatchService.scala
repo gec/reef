@@ -42,9 +42,9 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def deleteAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noVerb("delete")
-  override def getAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noVerb("get")
-  override def postAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noVerb("post")
+  override def deleteAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noDelete
+  override def getAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noGet
+  override def postAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noPost
 
   override def putAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = {
 
@@ -76,10 +76,10 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
           }
         }
 
-        if (failures.size == 0) callback(Response(Envelope.Status.OK, "", List(MeasurementBatch.newBuilder(req).clearMeas.build())))
+        if (failures.size == 0) callback(Response(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build())))
         else {
           val msg = failures.mkString(",")
-          callback(Response(Envelope.Status.INTERNAL_ERROR, msg, Nil))
+          callback(Response(Envelope.Status.INTERNAL_ERROR, error = msg))
         }
       }
     }
@@ -91,7 +91,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
     var client: Option[ProtoClient] = None
 
     try {
-      val client = Some(amqp.getProtoServiceClient(ReefServicesList, 5000))
+      val client = Some(amqp.getProtoClientSession(ReefServicesList, 5000))
       fun(client.get)
     } finally {
       try {

@@ -66,7 +66,12 @@ trait AsyncServiceBase[A] extends IServiceAsync[A] with ServiceHelpers[A] with L
   }
 
   /** by default, unimplemented verbs return this response */
-  protected def noVerb(verb: String) = Response[A](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb, Nil)
+  protected def noVerb(verb: Envelope.Verb) = Response[A](Envelope.Status.NOT_ALLOWED, error = "Unimplemented verb: " + verb)
+
+  protected def noPut = noVerb(Envelope.Verb.PUT)
+  protected def noGet = noVerb(Envelope.Verb.GET)
+  protected def noPost = noVerb(Envelope.Verb.POST)
+  protected def noDelete = noVerb(Envelope.Verb.DELETE)
 
   private def handleRequest(request: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
 

@@ -48,7 +48,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
       amqp.bindService(exchange, service.respond) // listen for service requests with the echo service
       val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(exchange, Descriptors.eventConfig)))
 
-      val client = amqp.getProtoServiceClient(servicelist, 5000)
+      val client = amqp.getProtoClientSession(servicelist, 5000)
 
       val sent = makeEC(Scada.ControlExe, 1, Designation.ALARM)
       val created = client.putOneOrThrow(sent)

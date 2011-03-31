@@ -24,13 +24,15 @@ import org.totalgrid.reef.util.{ Timer, OneArgFunc }
 
 import com.google.protobuf.GeneratedMessage
 
-import scala.concurrent.{ MailBox, TIMEOUT }
+import scala.concurrent.MailBox
 import scala.collection.immutable
 
-import org.totalgrid.reef.messaging.{ ProtoServiceRegistry, ProtoRegistry }
+import org.totalgrid.reef.messaging.Connection
 
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.service.IServiceAsync
 
+import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 import org.totalgrid.reef.api.ServiceTypes._
 
@@ -41,9 +43,9 @@ object MockProtoRegistry {
   val timeout = 5000
 }
 
-class MockProtoRegistry extends MockProtoServiceRegistry with MockProtoPublisherRegistry with MockProtoSubscriberRegistry with ProtoRegistry
+class MockRegistry extends MockProtoPublisherRegistry with MockProtoSubscriberRegistry with MockConnection
 
-class MockServiceClient(timeout: Long = MockProtoRegistry.timeout) extends ServiceClient {
+class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends ClientSession {
 
   private case class Req[A](callback: MultiResult[A] => Unit, req: Request[A])
 
@@ -153,25 +155,19 @@ trait MockProtoSubscriberRegistry {
 
 case class MockEvent[A](accept: Event[A] => Unit, observer: Option[String => Unit])
 
-trait MockProtoServiceRegistry extends ProtoServiceRegistry {
+trait MockConnection extends Connection {
 
   val eventmail = new MailBox
+  val servicemail = new MailBox
 
   case class EventSub(val klass: Class[_], val mock: MockEvent[_])
+  case class ServiceBinding(service: IServiceAsync[_], destination: IDestination, competing: Boolean, reactor: Option[Reactable])
 
   // map classes to protoserviceconsumers
-  var mockclient: Option[MockServiceClient] = None
+  var mockclient: Option[MockClientSession] = None
   var eventqueues = immutable.Map.empty[Class[_], Any]
 
-  def getMockClient: MockServiceClient = mockclient.get
-
-  def getServiceClient(): ServiceClient = mockclient match {
-    case Some(x) => x
-    case None =>
-      val ret = new MockServiceClient
-      mockclient = Some(ret)
-      ret
-  }
+  def getMockClient: MockClientSession = mockclient.get
 
   def getEvent[A](klass: Class[A]): MockEvent[A] = {
     eventqueues.get(klass) match {
@@ -185,12 +181,24 @@ trait MockProtoServiceRegistry extends ProtoServiceRegistry {
     }
   }
 
-  def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
+  override def getClientSession(): ClientSession = mockclient match {
+    case Some(x) => x
+    case None =>
+      val ret = new MockClientSession
+      mockclient = Some(ret)
+      ret
+  }
+
+  override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, None))
   }
 
-  def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
+  override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, Some(notify)))
+  }
+
+  override def bindService(service: IServiceAsync[_], destination: IDestination, competing: Boolean, reactor: Option[Reactable]): Unit = {
+    servicemail send ServiceBinding(service, destination, competing, reactor)
   }
 
 }

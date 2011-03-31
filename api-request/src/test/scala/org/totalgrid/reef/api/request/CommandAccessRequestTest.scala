@@ -30,7 +30,7 @@ import org.totalgrid.reef.api.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest
-    extends ServiceClientSuite("CommandAccess.xml", "CommandAccess",
+    extends ClientSessionSuite("CommandAccess.xml", "CommandAccess",
       <div>
         <p>
           Represents the "access table" for the system. Access entries have one or two

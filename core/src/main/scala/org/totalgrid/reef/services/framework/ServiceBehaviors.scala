@@ -38,7 +38,7 @@ object ServiceBehaviors {
         model.setEnv(env)
         env.subQueue.foreach(subscribe(model, req, _))
         val proto = model.findRecords(req).map(model.convertToProto(_))
-        new Response(Envelope.Status.OK, proto)
+        Response(Envelope.Status.OK, proto)
       }
     }
   }
@@ -63,7 +63,7 @@ object ServiceBehaviors {
         model.setEnv(env)
         val proto = create(model, req)
         env.subQueue.foreach(subscribe(model, proto, _))
-        new Response(Envelope.Status.CREATED, proto)
+        Response(Envelope.Status.CREATED, proto :: Nil)
       }
     }
 
@@ -83,24 +83,25 @@ object ServiceBehaviors {
 
     def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
 
-    def put(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
-      modelTrans.transaction { (model: ServiceModelType) =>
-        model.setEnv(env)
-        val (proto, status) = try {
-          model.findRecord(req) match {
-            case None => create(model, req)
-            case Some(x) => update(model, req, x)
-          }
-        } catch {
-          // some items can be created without having uniquely identifying fields
-          // so may have no search terms to look for
-          // TODO: evaluate replacing NoSearchTermsException with flags
-          case e: NoSearchTermsException => create(model, req)
+    protected def doPut(req: ProtoType, env: RequestEnv, model: ServiceModelType): Response[ProtoType] = {
+      model.setEnv(env)
+      val (proto, status) = try {
+        model.findRecord(req) match {
+          case None => create(model, req)
+          case Some(x) => update(model, req, x)
         }
-        env.subQueue.foreach(subscribe(model, proto, _))
-        new Response(status, proto :: Nil)
+      } catch {
+        // some items can be created without having uniquely identifying fields
+        // so may have no search terms to look for
+        // TODO: evaluate replacing NoSearchTermsException with flags
+        case e: NoSearchTermsException => create(model, req)
       }
+      env.subQueue.foreach(subscribe(model, proto, _))
+      Response(status, proto :: Nil)
     }
+
+    def put(req: ProtoType, env: RequestEnv): Response[ProtoType] =
+      modelTrans.transaction { doPut(req, env, _) }
 
     // Create and update implementations
     protected def create(model: ServiceModelType, req: ProtoType): Tuple2[ProtoType, Envelope.Status] = {
@@ -124,7 +125,8 @@ object ServiceBehaviors {
 
     def postAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = putAsync(req, env)(callback)
 
-    def putAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = doAsyncPutPost(put(req, env), callback)
+    def putAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit =
+      modelTrans.transaction { model => doAsyncPutPost(doPut(req, env, model), callback) }
 
     protected def doAsyncPutPost(rsp: Response[ProtoType], callback: Response[ProtoType] => Unit) = callback(rsp)
   }
@@ -141,7 +143,7 @@ object ServiceBehaviors {
         preDelete(req)
         val deleted = doDelete(model, req)
         postDelete(deleted)
-        new Response(Envelope.Status.DELETED, deleted)
+        Response(Envelope.Status.DELETED, deleted)
       }
     }
 

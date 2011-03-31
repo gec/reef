@@ -26,6 +26,8 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.messaging.SessionPool
+
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
@@ -41,6 +43,8 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
   val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
   val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
 
+  val sessionPool = new SessionPool(components.registry)
+
   val services = List(
 
     new EntityService,
@@ -52,7 +56,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
     new CommandAccessService(modelFac.accesses),
 
-    new UserCommandRequestService(modelFac.userRequests),
+    new UserCommandRequestService(modelFac.userRequests, sessionPool),
 
     new CommandService(modelFac.cmds),
     new CommunicationEndpointService(modelFac.endpoints),

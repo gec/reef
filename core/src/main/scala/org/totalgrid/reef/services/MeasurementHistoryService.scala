@@ -39,9 +39,9 @@ class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHa
 
   override val descriptor = Descriptors.measurementHistory
 
-  override def put(req: MeasurementHistory, env: RequestEnv) = noVerb("put")
-  override def delete(req: MeasurementHistory, env: RequestEnv) = noVerb("delete")
-  override def post(req: MeasurementHistory, env: RequestEnv) = noVerb("post")
+  override def put(req: MeasurementHistory, env: RequestEnv) = noPut
+  override def delete(req: MeasurementHistory, env: RequestEnv) = noDelete
+  override def post(req: MeasurementHistory, env: RequestEnv) = noPost
 
   override def get(req: MeasurementHistory, env: RequestEnv): Response[MeasurementHistory] = {
 
@@ -81,7 +81,7 @@ class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHa
     val b = MeasurementHistory.newBuilder(req)
     history.foreach { m => b.addMeasurements(m) }
 
-    new Response(Envelope.Status.OK, b.build :: Nil)
+    Response(Envelope.Status.OK, b.build :: Nil)
   }
 
   private def sampleExtremes(meases: Seq[Measurement]): Seq[Measurement] = {

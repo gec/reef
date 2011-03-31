@@ -112,7 +112,7 @@ public class TestCommandService extends JavaBridgeTestBase {
         CommandAccess accessResponse = cs.createCommandExecutionLock(cmd);
         assertTrue(accessResponse.getExpireTime() > 0);
         CommandStatus cmdResponse = cs.executeCommandAsControl(cmd);
-        assertEquals(cmdResponse, CommandStatus.EXECUTING);
+        assertEquals(cmdResponse, CommandStatus.SUCCESS);
 
         // delete select by reference (UID)
         cs.deleteCommandLock(accessResponse);
@@ -192,7 +192,7 @@ public class TestCommandService extends JavaBridgeTestBase {
 
         // execute
         CommandStatus cmdResponse = cs.executeCommandAsControl(cmd);
-        assertEquals(cmdResponse, CommandStatus.EXECUTING);
+        assertEquals(CommandStatus.SUCCESS, cmdResponse);
 
         // delete
         cs.deleteCommandLock(accessResponse);

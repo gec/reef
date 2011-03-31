@@ -56,9 +56,9 @@ class AlarmQueryService extends AsyncToSyncServiceAdapter[AlarmList] {
 
   override val descriptor = Descriptors.alarmList
 
-  override def put(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("put")
-  override def delete(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("delete")
-  override def post(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("post")
+  override def put(req: AlarmList, env: RequestEnv): Response[AlarmList] = noPut
+  override def delete(req: AlarmList, env: RequestEnv): Response[AlarmList] = noDelete
+  override def post(req: AlarmList, env: RequestEnv): Response[AlarmList] = noPost
 
   override def get(req: AlarmList, env: RequestEnv): Response[AlarmList] = {
     import ApplicationSchema._
@@ -85,7 +85,7 @@ class AlarmQueryService extends AsyncToSyncServiceAdapter[AlarmList] {
       val alarmProtos = results.map(x => AlarmConversion.convertToProto(x._1, x._2)) // AlalarmModel, EventStore
       val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
 
-      new Response(Envelope.Status.OK, alarmList)
+      Response(Envelope.Status.OK, alarmList :: Nil)
     }
   }
 

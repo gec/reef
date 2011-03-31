@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.Commands
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest
-    extends ServiceClientSuite("UserCommandRequest.xml", "UserCommandRequest",
+    extends ClientSessionSuite("UserCommandRequest.xml", "UserCommandRequest",
       <div>
         <p>
           Clients use UserCommandRequest to issue a command. The CommandRequest object describes the command

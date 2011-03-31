@@ -20,10 +20,10 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.{ Commands, Measurements }
+import org.totalgrid.reef.proto.{ Commands, Measurements, ReefServicesList }
 import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto }
-import org.totalgrid.reef.messaging.ProtoRegistry
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.messaging.Connection
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
@@ -33,7 +33,7 @@ import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler,
 import org.totalgrid.reef.api.{ Envelope, IDestination, AddressableService }
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handler: ServiceHandler) extends KeyedMap[ConnProto] {
+class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
 
   def getKey(c: ConnProto) = c.getUid
 
@@ -57,31 +57,28 @@ class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handle
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getPort
 
-    val publisher = getPublisher(registry.getServiceClient(), c.getRouting.getServiceRoutingKey)
-    val rspHandler = getResponseHandler(registry.getServiceClient())
+    val publisher = getPublisher(conn.getClientSession(), c.getRouting.getServiceRoutingKey)
 
     // add the device, get the command issuer callback
-    if (protocol.requiresPort) protocol.addPort(port)
+    if (protocol.requiresChannel) protocol.addChannel(port)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher)
+    val service = new SingleEndpointCommandService(cmdHandler)
+    conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
 
     info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
-
-    // TODO: subscribe to command requests by entity
-    val subProto = Commands.UserCommandRequest.newBuilder.setStatus(Commands.CommandStatus.EXECUTING).build
-    handler.addService(registry, 5000, Commands.UserCommandRequest.parseFrom, subProto, initialCommands(cmdHandler, rspHandler), newCommands(cmdHandler, rspHandler))
   }
 
   def removeEntry(c: ConnProto) {
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
-    if (protocol.requiresPort) protocol.removePort(c.getEndpoint.getPort.getName)
+    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getPort.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
   /**
    * push measurement batchs to the addressable service
    */
-  private def batchPublish(client: ServiceClient, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
+  private def batchPublish(client: ClientSession, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
     try {
       client.putOrThrow(x, destination = dest)
     } catch {
@@ -94,18 +91,18 @@ class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handle
     }
   }
 
-  private def getPublisher(client: ServiceClient, routingKey: String) = new IPublisher {
+  private def getPublisher(client: ClientSession, routingKey: String) = new IPublisher {
     override def publish(batch: Measurements.MeasurementBatch) = batchPublish(client, 0, AddressableService(routingKey))(batch)
   }
 
-  private def getResponseHandler(client: ServiceClient) = new IResponseHandler {
+  private def getResponseHandler(client: ClientSession) = new IResponseHandler {
     override def onResponse(rsp: Commands.CommandResponse) = responsePublish(client)(rsp)
   }
 
   /**
    * send command responses back to the server
    */
-  private def responsePublish(client: ServiceClient)(x: Commands.CommandResponse): Unit = {
+  private def responsePublish(client: ClientSession)(x: Commands.CommandResponse): Unit = {
     try {
       val cr = Commands.CommandRequest.newBuilder.setCorrelationId(x.getCorrelationId)
       val msg = Commands.UserCommandRequest.newBuilder.setCommandRequest(cr).setStatus(x.getStatus).build
@@ -123,7 +120,7 @@ class FrontEndConnections(comms: Seq[IProtocol], registry: ProtoRegistry, handle
     crs.foreach { x => cmdHandler.issue(x.getCommandRequest, rspHandler) }
 
   /**
-   * handle new added command commands, issuer will only respond to correct commands
+   * handle new added commands, issuer will only respond to correct commands
    */
   private def newCommands(cmdHandler: ICommandHandler, rspHandler: IResponseHandler)(evt: Envelope.Event, cr: Commands.UserCommandRequest) =
     if (evt == Envelope.Event.ADDED) cmdHandler.issue(cr.getCommandRequest, rspHandler)

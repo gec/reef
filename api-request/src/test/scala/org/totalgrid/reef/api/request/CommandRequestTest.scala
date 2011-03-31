@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Model.{ Command, Entity, Relationship }
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestTest
-    extends ServiceClientSuite("Command.xml", "Command",
+    extends ClientSessionSuite("Command.xml", "Command",
       <div>
         <p>
           A Command represents a configured output point. CommandAccess and UserCommandRequest services use

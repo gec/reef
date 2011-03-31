@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.messaging.ProtoRegistry
+import org.totalgrid.reef.messaging.Connection
 import org.totalgrid.reef.api.ServiceTypes.{ Response, Event }
-import org.totalgrid.reef.messaging.mock.MockProtoRegistry
+import org.totalgrid.reef.messaging.mock.MockConnection
 import org.totalgrid.reef.proto.{ Processing }
 import org.totalgrid.reef.proto.Model.Point
 
@@ -34,14 +34,14 @@ import scala.concurrent.MailBox
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.api.Envelope
 
-class ServiceHandlerMock(registry: ProtoRegistry, retryMS: Long) {
+class ServiceHandlerMock(conn: Connection, retryMS: Long) {
 
   val act = new ReactActor with ServiceHandler
 
   def start() = act.start
 
   val query = MeasOverride.newBuilder.setPoint(Point.newBuilder.setName("*")).build
-  val tranClient = act.addService(registry, retryMS, MeasOverride.parseFrom, query, this.onResponse, this.onEvent)
+  val tranClient = act.addService(conn, retryMS, MeasOverride.parseFrom, query, this.onResponse, this.onEvent)
 
   val box = new MailBox
 
@@ -57,10 +57,10 @@ import org.junit.runner.RunWith
 class ServiceHandlerTest extends Suite with ShouldMatchers {
 
   def testServiceRetry {
-    val reg = new MockProtoRegistry
-    val tester = new ServiceHandlerMock(reg, 50)
+    val conn = new MockConnection {}
+    val tester = new ServiceHandlerMock(conn, 50)
 
-    val queueEvent = reg.getEvent(classOf[MeasOverride])
+    val queueEvent = conn.getEvent(classOf[MeasOverride])
     val notify: String => Unit = queueEvent.observer match {
       case None => assert(false); null
       case Some(note) => note
@@ -70,7 +70,7 @@ class ServiceHandlerTest extends Suite with ShouldMatchers {
     tester.start()
 
     notify("queue01")
-    val cons = reg.getMockClient
+    val cons = conn.getMockClient
     cons.respond[MeasOverride] { request =>
       request.verb should equal(Envelope.Verb.GET)
       request.env.subQueue should equal(Some("queue01"))
@@ -81,7 +81,7 @@ class ServiceHandlerTest extends Suite with ShouldMatchers {
       request.verb should equal(Envelope.Verb.GET)
       request.env.subQueue should equal(Some("queue01"))
       request.payload.getPoint.getName should equal("*")
-      Some(Response[MeasOverride](Envelope.Status.OK, "", List()))
+      Some(Response[MeasOverride](Envelope.Status.OK))
     }
 
     tester.box.receiveWithin(5000) {
@@ -90,22 +90,22 @@ class ServiceHandlerTest extends Suite with ShouldMatchers {
   }
 
   def testRouting {
-    val reg = new MockProtoRegistry
-    val tester = new ServiceHandlerMock(reg, 5000)
+    val conn = new MockConnection {}
+    val tester = new ServiceHandlerMock(conn, 5000)
 
-    val queueEvent = reg.getEvent(classOf[MeasOverride])
+    val queueEvent = conn.getEvent(classOf[MeasOverride])
     val notify: String => Unit = queueEvent.observer.get
     val eventAccept = queueEvent.accept
 
     tester.start()
 
     notify("queue01")
-    val cons = reg.getMockClient
+    val cons = conn.getMockClient
     cons.respond[MeasOverride] { request =>
       request.verb should equal(Envelope.Verb.GET)
       request.env.subQueue should equal(Some("queue01"))
       request.payload.getPoint.getName should equal("*")
-      Some(Response[MeasOverride](Envelope.Status.OK, "", Nil))
+      Some(Response[MeasOverride](Envelope.Status.OK))
     }
 
     tester.box.receiveWithin(5000) {

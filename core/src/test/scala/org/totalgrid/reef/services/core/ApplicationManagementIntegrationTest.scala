@@ -56,7 +56,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
     amqp.bindService("app_config", applicationConfigService.respond)
     amqp.bindService("process_status", processStatusService.respond)
 
-    val client = amqp.getProtoServiceClient(ReefServicesList, 5000)
+    val client = amqp.getProtoClientSession(ReefServicesList, 5000)
 
     /// current state of the StatusSnapshot
     var lastSnapShot = new SyncVar[Option[StatusSnapshot]](None: Option[StatusSnapshot])

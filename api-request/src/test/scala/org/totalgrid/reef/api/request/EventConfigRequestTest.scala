@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigRequestTest
-    extends ServiceClientSuite("EventConfig.xml", "Event Config",
+    extends ClientSessionSuite("EventConfig.xml", "Event Config",
       <div>
         <p>
           Event Configs describe all of the types of "well known" event types in the system. When an event occurs,

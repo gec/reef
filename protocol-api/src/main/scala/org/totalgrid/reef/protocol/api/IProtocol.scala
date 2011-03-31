@@ -52,11 +52,11 @@ trait IProtocol {
    * if true the protocol trait will verify that the each device is associated with a port, if false we dont care
    * if there is a port or not.
    */
-  def requiresPort: Boolean
+  def requiresChannel: Boolean
 
-  def addPort(p: FEP.Port): Unit
-  def removePort(port: String): Unit
+  def addChannel(channel: FEP.Port): Unit
+  def removeChannel(channel: String): Unit
 
-  def addEndpoint(endpoint: String, portName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
+  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
   def removeEndpoint(endpoint: String): Unit
 }

@@ -41,18 +41,18 @@ class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
     transaction {
       var ent = EQ.findOrCreateEntity(req.getName, req.getTypesList.head) // TODO: need better message if getTypesList is empty: "BAD_REQUEST with message: java.util.NoSuchElementException"
       req.getTypesList.tail.foreach(t => if (ent.types.value.find(_ == t).isEmpty) ent = EQ.addTypeToEntity(ent, t))
-      new Response(Envelope.Status.OK, EQ.entityToProto(ent).build)
+      Response(Envelope.Status.OK, EQ.entityToProto(ent).build :: Nil)
     }
   }
-  override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = noVerb("delete")
-  override def post(req: EntityProto, env: RequestEnv): Response[EntityProto] = noVerb("post")
+  override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = noDelete
+  override def post(req: EntityProto, env: RequestEnv): Response[EntityProto] = noPost
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     transaction {
       info("Query: " + req)
       val result = EQ.fullQuery(req);
       info("Result: " + result)
-      new Response(Envelope.Status.OK, result)
+      Response(Envelope.Status.OK, result)
     }
   }
 }
@@ -84,17 +84,17 @@ class EntityEdgeService extends AsyncToSyncServiceAdapter[EntityEdgeProto] {
         case None => (EQ.addEdge(parentEntity, childEntity, req.getRelationship), Envelope.Status.CREATED)
       }
       val proto = convertToProto(edge)
-      new Response(status, proto)
+      Response(status, proto :: Nil)
     }
   }
-  override def delete(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noVerb("delete")
-  override def post(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noVerb("post")
+  override def delete(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noDelete
+  override def post(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noPost
 
   override def get(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
     transaction {
       // TODO: add edge searching
       val edges = EQ.edges.where(t => true === true).toList
-      new Response(Envelope.Status.OK, edges.map { convertToProto(_) })
+      Response(Envelope.Status.OK, edges.map { convertToProto(_) })
     }
   }
 }

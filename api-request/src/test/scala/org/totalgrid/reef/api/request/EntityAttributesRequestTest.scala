@@ -31,7 +31,7 @@ import org.totalgrid.reef.api.request.builders.EntityAttributesBuilders
 
 @RunWith(classOf[JUnitRunner])
 class EntityAttributesRequestTest
-    extends ServiceClientSuite("EntityAttributes.xml", "EntityAttributes",
+    extends ClientSessionSuite("EntityAttributes.xml", "EntityAttributes",
       <div>
         <p>
           Attributes can be attached to entities to provide extra information (i.e. location, display name).

@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryTest
-    extends ServiceClientSuite("AlarmQuery.xml", "Alarm Query",
+    extends ClientSessionSuite("AlarmQuery.xml", "Alarm Query",
       <div>
         <p>
           Use<span class="proto">AlarmList</span>

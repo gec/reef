@@ -20,30 +20,24 @@
  */
 package org.totalgrid.reef.services.core
 
+import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.models.UserCommandModel
 
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
-import org.totalgrid.reef.api.ServiceTypes.Response
-//import org.totalgrid.reef.api.service.
-
-import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 
-class UserCommandRequestService(
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+
+class UserCommandRequestServiceBackup(
   protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel])
-    extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
-    with AsyncGetEnabled
-    with AsyncPutPostEnabled
-    with AsyncDeleteDisabled
-    with SubscribeEnabled {
+    extends SyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
+    with GetEnabled
+    with SubscribeEnabled
+    with PutPostEnabled
+    with DeleteDisabled {
 
   override val descriptor = Descriptors.userCommandRequest
-
-  override def doAsyncPutPost(rsp: Response[ProtoType], callback: Response[ProtoType] => Unit) = {
-    callback(rsp)
-  }
 
   private def doCommonValidation(proto: UserCommandRequest) = {
 
@@ -74,6 +68,6 @@ class UserCommandRequestService(
 
 }
 
-object UserCommandRequestService {
+object UserCommandRequestServiceBackup {
   val defaultTimeout = 30000
 }
