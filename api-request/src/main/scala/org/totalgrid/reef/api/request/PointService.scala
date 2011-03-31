@@ -35,6 +35,12 @@ import org.totalgrid.reef.api.{ ISubscription, ReefServiceException }
 trait PointService {
 
   /**
+   * get all points in the system
+   * @return all points
+   */
+  def getAllPoints(): java.util.List[Point]
+
+  /**
    * retrieve a point by name, throws exception if point is unknown
    * @param name of the Point we are retrieving
    * @return the point object with matching name

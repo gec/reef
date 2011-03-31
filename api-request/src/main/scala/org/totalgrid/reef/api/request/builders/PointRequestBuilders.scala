@@ -25,6 +25,8 @@ import org.totalgrid.reef.proto.Model.{ Entity, Point }
 object PointRequestBuilders {
   def getAll = Point.newBuilder.setUid("*").build
 
+  def getAbnormal(): Point = Point.newBuilder.setAbnormal(true).build
+
   def getByUid(uid: String): Point = Point.newBuilder.setUid(uid).build
   def getByUid(point: Point): Point = getByUid(point.getUid)
 

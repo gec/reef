@@ -47,26 +47,13 @@ class PointRequestTest
 
     client.addExplanation("Get all", "Get all Points")
     // keep list of all points so we can use them for uid and name queries
-    val allResp = client.getOrThrow(PointRequestBuilders.getAll)
+    val allResp = client.getAllPoints
 
     client.addExplanation("Get by UID", "Get point that matches a certain UID.")
-    client.getOneOrThrow(PointRequestBuilders.getByUid(allResp.head))
+    client.getPointByUid(new ReefUUID(allResp.head.getUid))
 
     client.addExplanation("Get by name", "Get point that matches a certain name.")
-    client.getOneOrThrow(PointRequestBuilders.getByName(allResp.head.getName))
-  }
-
-  test("Entity query") {
-
-    val pointEntities = client.getOrThrow(EntityRequestBuilders.getByType("Point"))
-
-    val desc = <div>
-                 Given an Entity of type "Point", the service can return the corresponding Point object.
-               </div>
-
-    client.addExplanation("Get by entity", desc)
-    client.getOrThrow(PointRequestBuilders.getByEntity(pointEntities.head))
-
+    client.getPointByName(allResp.head.getName)
   }
 
   test("Entity tree query") {
@@ -76,9 +63,10 @@ class PointRequestTest
       type "Point" that are found will have their corresponding Point objects added to the result set.
                </div>
 
-    client.addExplanation("Get points owned by equipment", desc)
-    client.getOrThrow(PointRequestBuilders.getOwnedByEntityWithName("StaticSubstation.Breaker02"))
+    val entity = client.getEntityByName("StaticSubstation.Breaker02")
 
+    client.addExplanation("Get points owned by equipment", desc)
+    client.getPointsOwnedByEntity(entity)
   }
 
   /*test("Abnormal") {
