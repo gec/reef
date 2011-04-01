@@ -27,6 +27,8 @@ import org.totalgrid.reef.api.ISubscription.convertISubToRequestEnv
 import org.totalgrid.reef.proto.Measurements.{ Measurement }
 import org.totalgrid.reef.api.request.MeasurementService
 import org.totalgrid.reef.api.request.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
+import org.totalgrid.reef.api.javaclient.IEventAcceptor
+import org.totalgrid.reef.proto.Descriptors
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 
@@ -96,6 +98,10 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
   def getMeasurementHistory(point: Point, since: Long, limit: Int, sub: ISubscription[Measurement]) = {
     val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub)
     history.getMeasurementsList
+  }
+
+  def createMeasurementSubscription(callback: IEventAcceptor[Measurement]): ISubscription[Measurement] = {
+    ops.addSubscription(Descriptors.measurementSnapshot().getKlass, callback.onEvent)
   }
 }
 

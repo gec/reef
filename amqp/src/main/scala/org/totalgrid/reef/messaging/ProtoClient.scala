@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagement }
 
 import com.google.protobuf.GeneratedMessage
 
@@ -34,10 +34,12 @@ import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
  * doesn't have to manage the clients manually. NOT THREAD SAFE, needs to be used from a single thread at a time.
+ *
+ * TODO: merge SubscriptionManagement into ClientSession trait
  */
 class ProtoClient(
     factory: ClientSessionFactory,
-    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging {
+    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging with SubscriptionManagement {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ClientSession]
@@ -70,16 +72,6 @@ class ProtoClient(
     }
 
     correlator.send(request, info.exchange, dest.key, handleResponse)
-  }
-
-  def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription[A] = {
-
-    val applyMethod = ea.getClass.getDeclaredMethods.find { x => x.getName.equals("apply") }.get
-    val klass = applyMethod.getParameterTypes.apply(1).asInstanceOf[Class[A]]
-
-    val proxy = { (evt: Event[A]) => ea(evt.event, evt.result) }
-
-    addSubscription(klass, proxy)
   }
 
   def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription[A] = {

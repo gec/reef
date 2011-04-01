@@ -23,6 +23,7 @@ package org.totalgrid.reef.api.request
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.api.{ ReefServiceException, ISubscription }
+import org.totalgrid.reef.api.javaclient.IEventAcceptor
 
 /**
  * Non-exhaustive API for using the reef Measurement services. This API allows the client code to read current measurement
@@ -123,4 +124,11 @@ trait MeasurementService {
    */
   @throws(classOf[ReefServiceException])
   def publishMeasurements(measurements: java.util.List[Measurement])
+
+  /**
+   * Create a subscription object that can receive Measurements.
+   * @return "blank" subscription object, needs to have the subscription configured by passing it with another request
+   */
+  @throws(classOf[ReefServiceException])
+  def createMeasurementSubscription(callback: IEventAcceptor[Measurement]): ISubscription[Measurement]
 }

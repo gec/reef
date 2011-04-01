@@ -102,7 +102,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 		// mock object that will receive queue and measurement subscription
 		MockEventAcceptor<Measurements.Measurement> mock = new MockEventAcceptor<Measurements.Measurement>();
 
-		ISubscription sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
+		ISubscription sub = helpers.createMeasurementSubscription(mock);
 
         List<Model.Point> points = SampleRequests.getAllPoints(client);
 

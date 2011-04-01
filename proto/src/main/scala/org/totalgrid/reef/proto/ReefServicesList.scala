@@ -68,6 +68,6 @@ object ReefServiceMap {
 }
 
 object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap) {
-  def getInstance() = this
+  def getInstance(): ServiceList = this
 }
 

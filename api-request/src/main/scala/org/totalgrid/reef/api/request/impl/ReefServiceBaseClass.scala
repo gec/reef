@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,8 +18,10 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.scalaclient.SyncOperations
+package org.totalgrid.reef.api.request.impl
+
+import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, SyncOperations }
 
 trait ReefServiceBaseClass {
-  protected val ops: SyncOperations
+  protected val ops: SyncOperations with SubscriptionManagement
 }
