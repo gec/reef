@@ -128,7 +128,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(9)
 
       feps.foreach { fepUid =>
-        val fassign = many(3, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepUid).build))
+        val fassign = many(3, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepUid).build))
         coord.checkFeps(fassign, false, Some(fepUid), true)
       }
       procs.foreach { measUid =>
@@ -152,18 +152,18 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val serialLocB1 = coord.addDnp3Device("serialLocB1", None, Some("locB"))
       val serialLocB2 = coord.addDnp3Device("serialLocB2", None, Some("locB"))
 
-      coord.checkFeps(many(1, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
-      coord.checkFeps(many(1, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
-      coord.checkFeps(many(2, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
+      coord.checkFeps(many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
+      coord.checkFeps(many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
+      coord.checkFeps(many(2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
 
       val ipNetA1 = coord.addDnp3Device("ipNetA1", Some("netA"), None)
       val ipNetA2 = coord.addDnp3Device("ipNetA2", Some("netA"), None)
       val ipNetB1 = coord.addDnp3Device("ipNetB1", Some("netB"), None)
       val ipNetB2 = coord.addDnp3Device("ipNetB2", Some("netB"), None)
 
-      coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
-      coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
-      coord.checkFeps(many(2, coord.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
+      coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
+      coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
+      coord.checkFeps(many(2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
 
     }
   }

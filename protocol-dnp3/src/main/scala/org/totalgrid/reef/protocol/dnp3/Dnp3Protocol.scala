@@ -52,7 +52,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.Port, listener: IChannelListener) = {
+  override def _addChannel(p: FEP.CommChannel, listener: IChannelListener) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 

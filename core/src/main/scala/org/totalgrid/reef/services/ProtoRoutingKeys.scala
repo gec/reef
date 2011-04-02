@@ -41,8 +41,8 @@ object ProtoRoutingKeys {
   }
   implicit def optionsToKey(l: List[Option[Any]]): String = generateRoutingKey(l)
 
-  def routingKey(proto: CommunicationEndpointConfig): String = routingKeyOptions(proto)
-  def routingKeyOptions(proto: CommunicationEndpointConfig): List[Option[Any]] = {
+  def routingKey(proto: CommEndpointConfig): String = routingKeyOptions(proto)
+  def routingKeyOptions(proto: CommEndpointConfig): List[Option[Any]] = {
     hasGet(proto.hasUid, proto.getUid) ::
       hasGet(proto.hasName, proto.getName) :: Nil
   }
@@ -60,8 +60,8 @@ object ProtoRoutingKeys {
       hasGet(proto.hasEntity, proto.getEntity.getUid) :: Nil
   }
 
-  def routingKey(proto: CommunicationEndpointConnection): String = routingKeyOptions(proto)
-  def routingKeyOptions(proto: CommunicationEndpointConnection): List[Option[Any]] = {
+  def routingKey(proto: CommEndpointConnection): String = routingKeyOptions(proto)
+  def routingKeyOptions(proto: CommEndpointConnection): List[Option[Any]] = {
     hasGet(proto.hasFrontEnd, proto.getFrontEnd.hasUid, proto.getFrontEnd.getUid) ::
       hasGet(proto.hasUid, proto.getUid) :: Nil
   }
@@ -89,8 +89,8 @@ object ProtoRoutingKeys {
       hasGet(proto.hasEntity, proto.getEntity.getUid) :: Nil
   }
 
-  def routingKey(proto: Port): String = routingKeyOptions(proto)
-  def routingKeyOptions(proto: Port): List[Option[Any]] = {
+  def routingKey(proto: CommChannel): String = routingKeyOptions(proto)
+  def routingKeyOptions(proto: CommChannel): List[Option[Any]] = {
     hasGet(proto.hasName, proto.getName) ::
       hasGet(proto.hasIp, proto.getIp.getNetwork) ::
       hasGet(proto.hasSerial, proto.getSerial.getLocation) :: Nil

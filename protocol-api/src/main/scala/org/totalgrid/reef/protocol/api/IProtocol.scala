@@ -76,7 +76,7 @@ trait IProtocol {
    */
   def requiresChannel: Boolean
 
-  def addChannel(channel: FEP.Port, listener: IChannelListener): Unit
+  def addChannel(channel: FEP.CommChannel, listener: IChannelListener): Unit
   def removeChannel(channel: String): IChannelListener
 
   def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler

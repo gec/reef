@@ -42,10 +42,8 @@ trait ServiceModel[MessageType, ModelType]
 
   def createFromProto(req: MessageType): ModelType = create(createModelEntry(req))
 
-
   def updateFromProto(proto: MessageType, existing: ModelType): (ModelType, Boolean) =
     update(updateModelEntry(proto, existing), existing)
-
 
   /**
    * Convert message type to model type when creating

@@ -140,7 +140,7 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
 
-    val port: Option[Port.Builder] = if (overriddenProtocolName != BENCHMARK)
+    val port: Option[CommChannel.Builder] = if (overriddenProtocolName != BENCHMARK)
       Some(processInterface(profiles))
     else
       None
@@ -270,7 +270,7 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
    * first one found by search backwards through the list of profiles.
    *
    */
-  def processInterface(profiles: List[EndpointType]): Port.Builder = {
+  def processInterface(profiles: List[EndpointType]): CommChannel.Builder = {
 
     val endpointName = profiles.last.getName
     // Walk the endpointTypes backwards to find the first interface specified. The list of profiles
@@ -307,7 +307,7 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
       .setNetwork(network)
       .setMode(IpPort.Mode.CLIENT)
 
-    val portProto = Port.newBuilder
+    val portProto = CommChannel.newBuilder
       .setName("tcp://" + ip + ":" + port + "@" + network)
       .setIp(ipProto)
       .build
@@ -496,18 +496,18 @@ class CommunicationsLoader(client: SyncOperations, loadCache: LoadCacheCom) exte
     name: String,
     protocol: String,
     configFiles: List[Model.ConfigFile.Builder],
-    port: Option[Port.Builder],
+    port: Option[CommChannel.Builder],
     controls: HashMap[String, Control],
-    points: HashMap[String, PointType]): CommunicationEndpointConfig.Builder = {
+    points: HashMap[String, PointType]): CommEndpointConfig.Builder = {
 
-    val proto = CommunicationEndpointConfig.newBuilder
+    val proto = CommEndpointConfig.newBuilder
       .setName(name)
       .setProtocol(protocol)
       .setOwnerships(toEndpointOwnership(controls, points))
     //TODO: .setEntity()
 
     if (port.isDefined)
-      proto.setPort(port.get)
+      proto.setChannel(port.get)
 
     configFiles.foreach(proto.addConfigFiles)
 

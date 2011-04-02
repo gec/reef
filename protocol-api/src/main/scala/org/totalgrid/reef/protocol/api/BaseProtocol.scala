@@ -27,14 +27,14 @@ import org.totalgrid.reef.util.Logging
 
 trait BaseProtocol extends IProtocol with Logging {
 
-  case class Endpoint(name: String, channel: Option[FEP.Port], config: List[Model.ConfigFile], listener: IEndpointListener) /// The issue function and the channel
-  case class Channel(config: FEP.Port, listener: IChannelListener)
+  case class Endpoint(name: String, channel: Option[FEP.CommChannel], config: List[Model.ConfigFile], listener: IEndpointListener) /// The issue function and the channel
+  case class Channel(config: FEP.CommChannel, listener: IChannelListener)
 
   // only mutable state is current assignment of these variables
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
   private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  override def addChannel(p: FEP.Port, listener: IChannelListener): Unit = {
+  override def addChannel(p: FEP.CommChannel, listener: IChannelListener): Unit = {
     channels.get(p.getName) match {
       case None =>
         channels = channels + (p.getName -> Channel(p, listener))
@@ -92,7 +92,7 @@ trait BaseProtocol extends IProtocol with Logging {
   }
 
   /// These get implemented by the parent
-  protected def _addChannel(p: FEP.Port, listener: IChannelListener)
+  protected def _addChannel(p: FEP.CommChannel, listener: IChannelListener)
   protected def _removeChannel(channel: String)
   protected def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
   protected def _removeEndpoint(endpoint: String)

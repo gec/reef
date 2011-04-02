@@ -21,7 +21,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.{ Commands, Measurements }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.messaging.Connection
 import org.totalgrid.reef.api.scalaclient.ClientSession
 
@@ -55,7 +55,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
-    val port = c.getEndpoint.getPort
+    val port = c.getEndpoint.getChannel
 
     val publisher = getPublisher(conn.getClientSession(), c.getRouting.getServiceRoutingKey)
 
@@ -71,7 +71,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   def removeEntry(c: ConnProto) {
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
-    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getPort.getName)
+    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 

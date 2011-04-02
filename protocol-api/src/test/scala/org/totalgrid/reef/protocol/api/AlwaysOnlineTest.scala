@@ -47,7 +47,7 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     val mp = new MockProtocol with ChannelAlwaysOnline
     val listener = getMockChannelListener
 
-    mp.addChannel(FEP.Port.newBuilder.setName("channel1").build, listener)
+    mp.addChannel(FEP.CommChannel.newBuilder.setName("channel1").build, listener)
     mp.removeChannel("channel1")
 
     listener.queue should equal(Queue(ChannelState.State.OPENING, ChannelState.State.OPEN, ChannelState.State.CLOSED))

@@ -26,14 +26,13 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.FEP
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 @RunWith(classOf[JUnitRunner])
 class BaseProtocolTest extends FunSuite with ShouldMatchers {
 
   import MockProtocol._
 
-  val port = FEP.Port.newBuilder().setName("port1").build()
+  val port = FEP.CommChannel.newBuilder.setName("port1").build()
 
   test("RemoveExceptions") {
     val m = new MockProtocol

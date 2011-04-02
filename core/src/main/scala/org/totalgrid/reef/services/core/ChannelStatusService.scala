@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationSchema, ChannelStatus }
-import org.totalgrid.reef.proto.Communications.{ChannelState, ChannelStatus => ChannelStatusProto}
+import org.totalgrid.reef.proto.Communications.{ ChannelState, ChannelStatus => ChannelStatusProto }
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Descriptors
@@ -43,14 +43,13 @@ class ChannelStatusServiceModelFactory(pub: ServiceEventPublishers)
 }
 
 class ChannelStatusServiceModel(protected val subHandler: ServiceSubscriptionHandler)
-    extends SquerylServiceModel[ChannelStatusProto, ChannelStatus]
-    with EventedServiceModel[ChannelStatusProto, ChannelStatus]
-    with ChannelStatusServiceConversion
-
+  extends SquerylServiceModel[ChannelStatusProto, ChannelStatus]
+  with EventedServiceModel[ChannelStatusProto, ChannelStatus]
+  with ChannelStatusServiceConversion
 
 trait ChannelStatusServiceConversion
-  extends MessageModelConversion[ChannelStatusProto, ChannelStatus]
-  with UniqueAndSearchQueryable[ChannelStatusProto, ChannelStatus] {
+    extends MessageModelConversion[ChannelStatusProto, ChannelStatus]
+    with UniqueAndSearchQueryable[ChannelStatusProto, ChannelStatus] {
 
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._
@@ -62,7 +61,7 @@ trait ChannelStatusServiceConversion
     List(proto.state.enum.asParam(sql.state === _.getNumber))
 
   def uniqueQuery(proto: ChannelStatusProto, sql: ChannelStatus) =
-     List(proto.uid.asParam(sql.id === _.toLong))
+    List(proto.uid.asParam(sql.id === _.toLong))
 
   def getRoutingKey(req: ChannelStatusProto) =
     ProtoRoutingKeys.generateRoutingKey(req.uid :: req.state.enum :: Nil)
@@ -73,7 +72,7 @@ trait ChannelStatusServiceConversion
   }
 
   def createModelEntry(proto: ChannelStatusProto): ChannelStatus =
-    ChannelStatus(proto.getUid, proto.getState.getEnum)
+    ChannelStatus(proto.getUid, proto.getState.getEnum.getNumber)
 
   def isModified(a: ChannelStatus, b: ChannelStatus): Boolean = a.state != b.state
 

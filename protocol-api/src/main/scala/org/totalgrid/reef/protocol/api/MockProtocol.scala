@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.{ FEP, Model, Commands }
 import scala.concurrent.MailBox
 
 object MockProtocol {
-  case class AddPort(p: FEP.Port)
+  case class AddPort(p: FEP.CommChannel)
   case class RemovePort(name: String)
   case class AddEndpoint(endpoint: String, port: String, config: List[Model.ConfigFile])
   case class RemoveEndpoint(endpoint: String)
@@ -56,7 +56,7 @@ class MockProtocol(needsChannel: Boolean = true) extends BaseProtocol with Endpo
 
   val name: String = "mock"
 
-  override def _addChannel(channel: FEP.Port, listener: IChannelListener) = mail send AddPort(channel)
+  override def _addChannel(channel: FEP.CommChannel, listener: IChannelListener) = mail send AddPort(channel)
 
   override def _removeChannel(channel: String) = mail send RemovePort(channel)
 

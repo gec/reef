@@ -29,7 +29,7 @@ import org.totalgrid.reef.util.LazyVar
 
 import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.proto.Communications.{ChannelState, EndpointState}
+import org.totalgrid.reef.proto.Communications.{ ChannelState, EndpointState }
 
 class ActiveModelException(msg: String) extends Exception(msg)
 
@@ -116,9 +116,7 @@ case class CommunicationProtocolApplicationInstance(
   val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
-case class ChannelStatus(val name: String, enum: ChannelState.State) extends ModelWithId {
-  val state = enum.getNumber
-}
+case class ChannelStatus(val name: String, val state: Int) extends ModelWithId
 
 case class Point(
     val name: String,
