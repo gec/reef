@@ -47,7 +47,8 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
     extends ModeledServiceBase[Event, EventStore, EventServiceModel] with AsyncToSyncServiceAdapter[Event]
     with GetEnabled
     with SubscribeEnabled
-    with PostLikeEnabled
+    with PutOnlyCreates
+    with PostDisabled
     with DeleteEnabled {
 
   override val descriptor = Descriptors.event

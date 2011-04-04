@@ -220,7 +220,8 @@ class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenSe
     extends ModeledServiceBase[AuthToken, AuthTokenModel, AuthTokenServiceModel]
     with AsyncToSyncServiceAdapter[AuthToken]
     with GetEnabled
-    with PostLikeEnabled // every PUT should create a new entry
+    with PutOnlyCreates
+    with PostDisabled
     with DeleteEnabled
     with SubscribeDisabled {
   override val useAuth = false

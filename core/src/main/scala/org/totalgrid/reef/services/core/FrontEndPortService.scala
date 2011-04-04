@@ -80,8 +80,6 @@ trait FrontEndPortConversion
     true
   }
 
-
-
   def createModelEntry(proto: ChannelProto): FrontEndPort = {
     new FrontEndPort(
       proto.getName,

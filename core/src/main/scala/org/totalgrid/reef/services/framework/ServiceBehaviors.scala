@@ -54,9 +54,7 @@ object ServiceBehaviors {
   /**
    * PUTs and POSTs always create a new entry, there are no updates
    */
-  trait PostLikeEnabled { self: ModeledService =>
-
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
+  trait PutOnlyCreates { self: ModeledService =>
 
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
       modelTrans.transaction { (model: ServiceModelType) =>
@@ -76,14 +74,10 @@ object ServiceBehaviors {
     }
   }
 
-  trait PostMerges
-
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */
-  trait PutPostEnabled { self: ModeledService =>
-
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
+  trait PutEnabled { self: ModeledService =>
 
     protected def doPut(req: ProtoType, env: RequestEnv, model: ServiceModelType): Response[ProtoType] = {
       model.setEnv(env)
@@ -123,9 +117,7 @@ object ServiceBehaviors {
     }
   }
 
-  trait AsyncPutPostEnabled extends PutPostEnabled { self: ModeledService =>
-
-    def postAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = putAsync(req, env)(callback)
+  trait AsyncPutEnabled extends PutEnabled { self: ModeledService =>
 
     def putAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit =
       modelTrans.transaction { model => doAsyncPutPost(doPut(req, env, model), callback) }

@@ -31,6 +31,7 @@ import ServiceBehaviors._
 trait BasicSyncModeledService[ProtoType <: GeneratedMessage, ModelType, ServiceModelType <: ServiceModel[ProtoType, ModelType]]
   extends ModeledServiceBase[ProtoType, ModelType, ServiceModelType] with AsyncToSyncServiceAdapter[ProtoType]
   with GetEnabled
-  with SubscribeEnabled
-  with PutPostEnabled
+  with PutEnabled
   with DeleteEnabled
+  with PostDisabled
+  with SubscribeEnabled
