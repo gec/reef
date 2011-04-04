@@ -74,6 +74,22 @@ object ServiceBehaviors {
     }
   }
 
+  trait PostPartialUpdate { self: ModeledService =>
+
+    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = modelTrans.transaction { model =>
+      model.setEnv(env)
+      val (proto, status) = model.findRecord(req) match {
+        case Some(x) => merge(model, req, x)
+        case None => throw new BadRequestException("Record not found: " + req)
+      }
+      env.subQueue.foreach(subscribe(model, proto, _))
+      Response(status, proto :: Nil)
+    }
+
+    protected def merge(model: ServiceModelType, req: ProtoType, current: ModelType): (ProtoType, Envelope.Status)
+
+  }
+
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */

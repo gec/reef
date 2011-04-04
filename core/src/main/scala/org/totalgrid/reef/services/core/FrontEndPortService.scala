@@ -23,6 +23,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
+import org.totalgrid.reef.api.Envelope
+
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.services.ProtoRoutingKeys
@@ -31,13 +33,24 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
+import org.totalgrid.reef.services.framework.ServiceBehaviors._
+
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
-    extends BasicSyncModeledService[ChannelProto, FrontEndPort, FrontEndPortServiceModel] {
+    extends BasicSyncModeledService[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
+    with GetEnabled
+    with PutEnabled
+    with DeleteEnabled
+    with PostPartialUpdate
+    with SubscribeEnabled {
+
+  override def merge(model: ServiceModelType, req: ProtoType, current: ModelType) : (ProtoType, Envelope.Status) = {
+    throw new Exception
+  }
 
   override val descriptor = Descriptors.commChannel
 }

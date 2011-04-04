@@ -34,7 +34,8 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
-    extends BasicSyncModeledService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel] {
+    extends BasicSyncModeledService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.commEndpointConfig
 }

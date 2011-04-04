@@ -41,7 +41,8 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
 class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceModel])
-    extends BasicSyncModeledService[Alarm, AlarmModel, AlarmServiceModel] {
+    extends BasicSyncModeledService[Alarm, AlarmModel, AlarmServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.alarm
 

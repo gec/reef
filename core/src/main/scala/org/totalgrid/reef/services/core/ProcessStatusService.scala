@@ -42,7 +42,8 @@ import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 class ProcessStatusService(protected val modelTrans: ServiceTransactable[ProcessStatusServiceModel])
-    extends BasicSyncModeledService[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel] {
+    extends BasicSyncModeledService[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.statusSnapshot
 }

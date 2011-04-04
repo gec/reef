@@ -41,7 +41,8 @@ import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
 class ApplicationConfigService(protected val modelTrans: ServiceTransactable[ApplicationConfigServiceModel])
-    extends BasicSyncModeledService[ApplicationConfig, ApplicationInstance, ApplicationConfigServiceModel] with AsyncToSyncServiceAdapter[ApplicationConfig] {
+    extends BasicSyncModeledService[ApplicationConfig, ApplicationInstance, ApplicationConfigServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.applicationConfig
 }

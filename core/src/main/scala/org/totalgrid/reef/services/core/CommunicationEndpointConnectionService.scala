@@ -42,7 +42,8 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.measurementstore.MeasurementStore
 
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
-    extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel] {
+    extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.commEndpointConnection
 }

@@ -31,7 +31,8 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class ChannelStatusService(protected val modelTrans: ServiceTransactable[ChannelStatusServiceModel])
-    extends BasicSyncModeledService[ChannelStatusProto, ChannelStatus, ChannelStatusServiceModel] {
+    extends BasicSyncModeledService[ChannelStatusProto, ChannelStatus, ChannelStatusServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.channelStatus
 }
