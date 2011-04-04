@@ -30,7 +30,6 @@ import org.totalgrid.reef.api.{ Envelope, RequestEnv }
  */
 trait ServiceModel[MessageType, ModelType]
     extends ModelCrud[ModelType]
-    //with MessageModelConversion[MessageType, ModelType]
     with EnvHolder {
 
   /**

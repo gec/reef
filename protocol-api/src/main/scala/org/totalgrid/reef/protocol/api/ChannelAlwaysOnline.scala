@@ -20,19 +20,19 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ FEP, Communications }
+import org.totalgrid.reef.proto.FEP.CommChannel
 
 trait ChannelAlwaysOnline extends IProtocol {
 
-  abstract override def addChannel(p: FEP.CommChannel, listener: IChannelListener): Unit = {
+  abstract override def addChannel(p: CommChannel, listener: IChannelListener): Unit = {
     super.addChannel(p, listener)
-    listener.onStateChange(Communications.ChannelState.State.OPENING)
-    listener.onStateChange(Communications.ChannelState.State.OPEN)
+    listener.onStateChange(CommChannel.State.OPENING)
+    listener.onStateChange(CommChannel.State.OPEN)
   }
 
   abstract override def removeChannel(name: String): IChannelListener = {
     val ret = super.removeChannel(name)
-    ret.onStateChange(Communications.ChannelState.State.CLOSED)
+    ret.onStateChange(CommChannel.State.CLOSED)
     ret
   }
 

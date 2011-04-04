@@ -74,26 +74,28 @@ object ServiceBehaviors {
     }
   }
 
-  trait PostPartialUpdate { self: ModeledService =>
+  trait PostPartialUpdate extends HasUpdate { self: ModeledService =>
 
     def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = modelTrans.transaction { model =>
       model.setEnv(env)
       val (proto, status) = model.findRecord(req) match {
-        case Some(x) => merge(model, req, x)
+        case Some(x) => update(model, req, x)
         case None => throw new BadRequestException("Record not found: " + req)
       }
       env.subQueue.foreach(subscribe(model, proto, _))
       Response(status, proto :: Nil)
     }
 
-    protected def merge(model: ServiceModelType, req: ProtoType, current: ModelType): (ProtoType, Envelope.Status)
+    override def preUpdate(proto: ProtoType, existing: ModelType): ProtoType = merge(proto, existing)
+
+    protected def merge(req: ProtoType, current: ModelType): ProtoType
 
   }
 
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */
-  trait PutEnabled { self: ModeledService =>
+  trait PutEnabled extends HasCreate with HasUpdate { self: ModeledService =>
 
     protected def doPut(req: ProtoType, env: RequestEnv, model: ServiceModelType): Response[ProtoType] = {
       model.setEnv(env)
@@ -115,13 +117,20 @@ object ServiceBehaviors {
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] =
       modelTrans.transaction { doPut(req, env, _) }
 
-    // Create and update implementations
+  }
+
+  trait HasCreate { self: ModeledService =>
+
     protected def create(model: ServiceModelType, req: ProtoType): Tuple2[ProtoType, Envelope.Status] = {
       val proto = preCreate(req)
       val sql = model.createFromProto(req)
       postCreate(sql, req)
       (model.convertToProto(sql), Envelope.Status.CREATED)
     }
+
+  }
+
+  trait HasUpdate { self: ModeledService =>
 
     // Found an existing record. Update it.
     protected def update(model: ServiceModelType, req: ProtoType, existing: ModelType): Tuple2[ProtoType, Envelope.Status] = {

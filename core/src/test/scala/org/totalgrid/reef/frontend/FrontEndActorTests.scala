@@ -132,7 +132,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     }
   }
 
-  def respondToSingleGet(fix: Fixture, portname: String) {
+  def respondToConnectionQueries(fix: Fixture, portname: String) {
     fix.client.respond[ConfigProto] { request =>
       request.verb should equal(Envelope.Verb.GET)
       val port = CommChannel.newBuilder.setUid(portname).setName(portname).build
@@ -141,6 +141,18 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     }
     fix.client.respond[CommChannel] { request =>
       request.verb should equal(Envelope.Verb.GET)
+      Some(Response(Envelope.Status.OK, List(request.payload)))
+    }
+
+    fix.client.respond[CommChannel] { request =>
+      request.verb should equal(Envelope.Verb.POST)
+      request.payload.getState should equal(CommChannel.State.OPENING)
+      Some(Response(Envelope.Status.OK, List(request.payload)))
+    }
+
+    fix.client.respond[CommChannel] { request =>
+      request.verb should equal(Envelope.Verb.POST)
+      request.payload.getState should equal(CommChannel.State.OPEN)
       Some(Response(Envelope.Status.OK, List(request.payload)))
     }
   }
@@ -170,7 +182,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     val rt = CommEndpointRouting.newBuilder
     val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
     respondToConnectionSubscribe(fix.conn, List(conn)) //return 1 subscription     
-    respondToSingleGet(fix, "port") //respond to the request to read the config/port
+    respondToConnectionQueries(fix, "port") //respond to the request to read the config/port
 
     //at this point the fep should have all of things it needs to add a device,
     //so we can check the mock protocol to see if things get added correctly
@@ -191,7 +203,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
 
     fix.conn.getEvent(classOf[ConnProto]).accept(Event(Envelope.Event.ADDED, conn))
 
-    respondToSingleGet(fix, "port") //respond to the request to read the config/port
+    respondToConnectionQueries(fix, "port") //respond to the request to read the config/port
 
     //at this point the fep should have all of things it needs to add a device,
     //so we can check the mock protocol to see if things get added correctly

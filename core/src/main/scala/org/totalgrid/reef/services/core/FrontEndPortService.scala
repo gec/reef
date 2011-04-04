@@ -48,8 +48,15 @@ class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEnd
     with PostPartialUpdate
     with SubscribeEnabled {
 
-  override def merge(model: ServiceModelType, req: ProtoType, current: ModelType) : (ProtoType, Envelope.Status) = {
-    throw new Exception
+  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+
+    import org.totalgrid.reef.proto.OptionalProtos._
+
+    val builder = FrontEndPortConversion.convertToProto(current).toBuilder
+    req.state.foreach { builder.setState(_) }
+    req.ip.foreach { builder.setIp(_) }
+    req.serial.foreach { builder.setSerial(_) }
+    builder.build
   }
 
   override val descriptor = Descriptors.commChannel
@@ -66,6 +73,8 @@ class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHand
     with EventedServiceModel[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {
 }
+
+object FrontEndPortConversion extends FrontEndPortConversion
 
 trait FrontEndPortConversion
     extends MessageModelConversion[ChannelProto, FrontEndPort]
@@ -105,6 +114,8 @@ trait FrontEndPortConversion
   def convertToProto(entry: FrontEndPort): ChannelProto = {
     ChannelProto.parseFrom(entry.proto).toBuilder
       .setUid(entry.id.toString)
+      .setName(entry.name)
+      .setState(ChannelProto.State.valueOf(entry.state))
       .build
   }
 }

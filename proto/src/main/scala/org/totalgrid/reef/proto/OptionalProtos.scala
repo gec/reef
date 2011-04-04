@@ -210,6 +210,7 @@ object OptionalProtos {
     val name = optionally(_.hasName, _.getName)
     val ip = new OptFEPIpPort(optionally(_.hasIp, _.getIp))
     val serial = new OptFEPSerialPort(optionally(_.hasSerial, _.getSerial))
+    val state = optionally(_.hasState, _.getState)
   }
   implicit def proto2OptFEPCommEndpointRouting(a: org.totalgrid.reef.proto.FEP.CommEndpointRouting): OptFEPCommEndpointRouting = new OptFEPCommEndpointRouting(Some(a))
   class OptFEPCommEndpointRouting(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointRouting]) extends OptionalStruct(real) {

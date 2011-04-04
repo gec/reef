@@ -22,7 +22,9 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 
-import org.totalgrid.reef.proto.Communications.{ ChannelState, EndpointState }
+import FEP.CommChannel
+
+import org.totalgrid.reef.proto.Communications.{ EndpointState }
 
 object IProtocol {
 
@@ -48,7 +50,7 @@ trait IEndpointListener {
 }
 
 trait IChannelListener {
-  def onStateChange(state: ChannelState.State)
+  def onStateChange(state: CommChannel.State)
 }
 
 case object NullPublisher extends IPublisher {
@@ -60,7 +62,7 @@ case object NullEndpointListener extends IEndpointListener {
 }
 
 case object NullChannelListener extends IChannelListener {
-  def onStateChange(state: ChannelState.State) = {}
+  def onStateChange(state: CommChannel.State) = {}
 }
 
 trait IProtocol {
