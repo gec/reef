@@ -89,6 +89,9 @@
         <command name="attr/clear">
             <action class="org.totalgrid.reef.shell.proto.AttributeClearCommand"/>
         </command>
+        <command name="channel/list">
+            <action class="org.totalgrid.reef.shell.proto.ChannelListCommand"/>
+        </command>
     </command-bundle>
 
 </blueprint>

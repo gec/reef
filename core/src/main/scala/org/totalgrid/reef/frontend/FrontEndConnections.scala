@@ -24,6 +24,7 @@ import org.totalgrid.reef.proto.{ Commands, Measurements }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP.CommChannel
 import org.totalgrid.reef.messaging.Connection
+import org.totalgrid.reef.api.ReefServiceException
 import org.totalgrid.reef.api.scalaclient.ClientSession
 
 import scala.collection.JavaConversions._
@@ -57,19 +58,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getChannel
 
-    val publisher = getPublisher(conn.getClientSession(), c.getRouting.getServiceRoutingKey)
-
-    val channelListener = new IChannelListener {
-
-      val session = conn.getClientSession
-      val uid = port.getUid
-
-      def onStateChange(state: CommChannel.State) = {
-        val update = CommChannel.newBuilder.setUid(uid).setState(state).build
-        session.postOneOrThrow(update)
-      }
-
-    }
+    val publisher = getPublisher(conn.getClientSession, c.getRouting.getServiceRoutingKey)
+    val channelListener = newChannelListener(port.getUid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
@@ -85,6 +75,21 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     protocol.removeEndpoint(c.getEndpoint.getName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
+  }
+
+  private def newChannelListener(channelUid: String) = new IChannelListener {
+
+    val session = conn.getClientSession
+
+    def onStateChange(state: CommChannel.State) = {
+      val update = CommChannel.newBuilder.setUid(channelUid).setState(state).build
+      try {
+        session.postOneOrThrow(update)
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
+    }
+
   }
 
   /**
