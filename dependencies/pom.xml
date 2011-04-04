@@ -122,10 +122,14 @@
                     <instructions>
                         <Bundle-Name>Reef Dependencies Bundle</Bundle-Name>
                         <Export-Package>
-                            scala.*;version="2.8.0",org.apache.mina.*;version="1.0.1",org.apache.commons.dbcp;version="1.4",*
+                            scala.*;version="2.8.0",org.apache.commons.dbcp;version="1.4",*
                         </Export-Package>
                         <Import-Package>
-                            *;resolution:=optional,com.sun.jdmk.comm;resolution:=optional,com.sun.management;resolution:=optional,com.sun.misc;resolution:=optional
+                            com.sun.jdmk.comm;resolution:=optional,com.sun.management;resolution:=optional,com.sun.misc;resolution:=optional,javax.*;resolution:=optional
+                            org.w3c.dom;resolution:=optional,org.xml.sax.*;resolution:=optional,org.w3c.dom.*;resolution:=optional,sun.misc;resolution:=optional,
+                            net.sf.cglib.asm.util;resolution:=optional,org.apache.commons.jxpath.*;resolution:=optional,
+                            org.apache.tools.ant;resolution:=optional,org.apache.tools.ant.*;resolution:=optional,
+                            org.apache.avalon.framework.logger;resolution:=optional,org.apache.log;resolution:=optional,org.apache.log4j;resolution:=optional,org.ietf.jgss;resolution:=optional,org.slf4j;resolution:=optional
                         </Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>
