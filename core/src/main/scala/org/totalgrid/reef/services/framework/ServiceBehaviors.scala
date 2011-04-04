@@ -76,6 +76,8 @@ object ServiceBehaviors {
     }
   }
 
+  trait PostMerges
+
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */

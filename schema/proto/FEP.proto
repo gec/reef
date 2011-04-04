@@ -43,10 +43,21 @@ message SerialPort {
 // this is a wrapper type that we can reference by name or uid which contains channel details
 // either ip or serial will be populated, client code must check which is set.
 message CommChannel {
+
+    enum State {
+        CLOSED = 1;
+        OPENING = 2;
+        OPEN = 3;
+        ERROR = 4;
+        UNKNOWN = 5;
+    }
+
+
     optional string     uid    = 1;
     optional string     name   = 2;
     optional IpPort     ip     = 3;
     optional SerialPort serial = 4;
+    optional State      state  = 5;
 }
 
 message CommEndpointRouting {

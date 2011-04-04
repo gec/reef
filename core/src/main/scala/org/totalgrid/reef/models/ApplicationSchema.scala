@@ -29,7 +29,7 @@ import org.totalgrid.reef.util.LazyVar
 
 import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.proto.Communications.{ ChannelState, EndpointState }
+import org.totalgrid.reef.proto.FEP.CommChannel
 
 class ActiveModelException(msg: String) extends Exception(msg)
 
@@ -199,9 +199,10 @@ case class FrontEndPort(
     val name: String,
     val network: Option[String],
     val location: Option[String],
+    val state: Int,
     var proto: Array[Byte]) extends ModelWithId {
 
-  def this() = this("", Some(""), Some(""), Array.empty[Byte])
+  def this() = this("", Some(""), Some(""), CommChannel.State.UNKNOWN.getNumber, Array.empty[Byte])
 }
 
 case class ConfigFile(
