@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,21 +18,22 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.request.AllScadaService
+package org.totalgrid.reef.api.request
 
-/**
- * "Super" implementation of all of the service interfaces
- */
-trait AllScadaServiceImpl
-  extends AllScadaService
-  with AuthTokenServiceImpl
-  with EntityServiceImpl
-  with ConfigFileServiceImpl
-  with MeasurementServiceImpl
-  with MeasurementOverrideServiceImpl
-  with EventServiceImpl
-  with CommandServiceImpl
-  with PointServiceImpl
-  with AlarmServiceImpl
-  with AgentServiceImpl
+import org.totalgrid.reef.proto.Auth._
 
+trait AgentService {
+
+  def getAgent(name: String): Agent
+
+  def getAgents(): java.util.List[Agent]
+
+  def getPermissionSets(): java.util.List[PermissionSet]
+
+  def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]): Agent
+
+  def deleteAgent(agent: Agent): Agent
+
+  def setAgentPassword(agent: Agent, newPassword: String)
+
+}

@@ -34,4 +34,5 @@ trait AllScadaService
   with CommandService
   with PointService
   with AlarmService
+  with AgentService
 

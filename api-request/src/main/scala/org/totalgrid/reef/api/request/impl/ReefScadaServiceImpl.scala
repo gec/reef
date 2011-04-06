@@ -43,3 +43,4 @@ class EventServiceWrapper(session: ISession) extends SessionWrapper(session) wit
 class CommandServiceWrapper(session: ISession) extends SessionWrapper(session) with CommandService with CommandServiceImpl
 class PointServiceWrapper(session: ISession) extends SessionWrapper(session) with PointService with PointServiceImpl
 class AlarmServiceWrapper(session: ISession) extends SessionWrapper(session) with AlarmService with AlarmServiceImpl
+class AgentServiceWrapper(session: ISession) extends SessionWrapper(session) with AgentService with AgentServiceImpl

@@ -44,10 +44,10 @@
         <command name="access/remove">
             <action class="org.totalgrid.reef.shell.proto.AccessRemoveCommand"/>
         </command>
-         <command name="reef/login">
+        <command name="reef/login">
             <action class="org.totalgrid.reef.shell.proto.ReefLoginCommand"/>
         </command>
-         <command name="reef/logout">
+        <command name="reef/logout">
             <action class="org.totalgrid.reef.shell.proto.ReefLogoutCommand"/>
         </command>
         <command name="entity/type">
@@ -103,6 +103,21 @@
         </command>
         <command name="endpoint/list">
             <action class="org.totalgrid.reef.shell.proto.EndpointListCommand"/>
+        </command>
+        <command name="agent/password">
+            <action class="org.totalgrid.reef.shell.proto.AgentSetPasswordCommand"/>
+        </command>
+        <command name="agent/list">
+            <action class="org.totalgrid.reef.shell.proto.AgentListCommand"/>
+        </command>
+        <command name="agent/permissions">
+            <action class="org.totalgrid.reef.shell.proto.AgentPermissionsCommand"/>
+        </command>
+        <command name="agent/create">
+            <action class="org.totalgrid.reef.shell.proto.AgentCreateCommand"/>
+        </command>
+        <command name="agent/delete">
+            <action class="org.totalgrid.reef.shell.proto.AgentDeleteCommand"/>
         </command>
     </command-bundle>
 
