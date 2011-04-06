@@ -54,13 +54,12 @@ trait AsyncServiceBase[A] extends IServiceAsync[A] with ServiceHelpers[A] with L
     } catch {
       case px: ReefServiceException =>
         error(px)
+        error(px.getStackTraceString)
         callback.onResponse(getFailure(req.getId, px.getStatus, px.getMsg))
       case x: Exception =>
         error(x)
-        val result = new java.io.StringWriter
-        val printWriter = new java.io.PrintWriter(result)
-        x.printStackTrace(printWriter)
-        val msg = x.toString + "\n" + result.toString
+        error(x.getStackTraceString)
+        val msg = x.toString + "\n" + x.getStackTraceString
         callback.onResponse(getFailure(req.getId, Envelope.Status.BAD_REQUEST, msg))
     }
   }
