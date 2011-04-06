@@ -26,7 +26,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, ProtocolWithoutChannel }
+import org.totalgrid.reef.protocol.api._
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
@@ -49,7 +49,7 @@ trait ControllableSimulator {
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class BenchmarkProtocol extends ProtocolWithoutChannel with SimulatorManagement with Logging {
+class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline with ChannelAlwaysOnline with SimulatorManagement with Logging {
 
   override def name: String = "benchmark"
 
@@ -69,7 +69,7 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with SimulatorManagement 
       r
   }
 
-  def _addEndpoint(endpoint: String, channel: String, files: List[Model.ConfigFile], publisher: IPublisher): ICommandHandler = {
+  def _addEndpoint(endpoint: String, channel: String, files: List[Model.ConfigFile], publisher: IPublisher, listener: IEndpointListener): ICommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 

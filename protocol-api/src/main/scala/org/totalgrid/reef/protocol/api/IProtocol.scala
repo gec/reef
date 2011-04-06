@@ -22,6 +22,8 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 
+import FEP.CommChannel
+
 object IProtocol {
 
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
@@ -41,6 +43,26 @@ trait ICommandHandler {
   def issue(cmd: Commands.CommandRequest, rspHandler: IResponseHandler)
 }
 
+trait IEndpointListener {
+  def onStateChange(state: FEP.CommEndpointConnection.State)
+}
+
+trait IChannelListener {
+  def onStateChange(state: CommChannel.State)
+}
+
+case object NullPublisher extends IPublisher {
+  def publish(batch: Measurements.MeasurementBatch): Unit = {}
+}
+
+case object NullEndpointListener extends IEndpointListener {
+  def onStateChange(state: FEP.CommEndpointConnection.State) = {}
+}
+
+case object NullChannelListener extends IChannelListener {
+  def onStateChange(state: CommChannel.State) = {}
+}
+
 trait IProtocol {
 
   /**
@@ -54,9 +76,9 @@ trait IProtocol {
    */
   def requiresChannel: Boolean
 
-  def addChannel(channel: FEP.Port): Unit
-  def removeChannel(channel: String): Unit
+  def addChannel(channel: FEP.CommChannel, listener: IChannelListener): Unit
+  def removeChannel(channel: String): IChannelListener
 
-  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
-  def removeEndpoint(endpoint: String): Unit
+  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
+  def removeEndpoint(endpoint: String): IEndpointListener
 }

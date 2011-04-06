@@ -25,23 +25,19 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandAccess }
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
 import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.messaging.mock.MockConnection
 import org.totalgrid.reef.messaging.SessionPool
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig, CommunicationEndpointConnection, EndpointOwnership }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.util.EmptySyncVar
 
-//import org.totalgrid.reef.models.{ UserCommandModel, CommandAccessModel }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import CommandAccess._
 
 import org.totalgrid.reef.services._
@@ -76,7 +72,7 @@ class CommandRequestServicesIntegration
       val owns = EndpointOwnership.newBuilder
       commands.foreach { c => owns.addCommands(c) }
 
-      val send = CommunicationEndpointConfig.newBuilder()
+      val send = CommEndpointConfig.newBuilder()
         .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
       one(endpointService.put(send))
     }
@@ -182,7 +178,7 @@ class CommandRequestServicesIntegration
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 
-    val conn = one(fixture.frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setUid("*").build))
+    val conn = one(fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
 
     println(conn.getRouting.getServiceRoutingKey)
 

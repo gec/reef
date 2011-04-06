@@ -20,15 +20,18 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.protocol.api.{ BaseProtocol, IProtocol, IPublisher, ICommandHandler => IProtocolCmdHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api._
+
+import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandler }
+
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer }
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
+import org.totalgrid.reef.util.XMLHelper
 
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 
-class Dnp3Protocol extends BaseProtocol with Logging {
+class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
 
   override def name = "dnp3"
 
@@ -39,17 +42,12 @@ class Dnp3Protocol extends BaseProtocol with Logging {
   // this object. Keep a map of meas adapters around by name to prevent this.
   private var map = immutable.Map.empty[String, MeasAdapter]
 
-  // Is this an i18n problem?
-  private var logVarNameMap = immutable.Map(
-    "comms_status" -> immutable.Map(0 -> "Down", 2 -> "Up"),
-    "port_state" -> immutable.Map(0 -> "Closed", 1 -> "Opening", 2 -> "Waiting", 3 -> "Open", 4 -> "Stopped"))
-
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
-  private val log = new LogAdapter(logVarNameMap)
+  private val log = new LogAdapter
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.Port) = {
+  override def _addChannel(p: FEP.CommChannel, listener: IChannelListener) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -72,7 +70,7 @@ class Dnp3Protocol extends BaseProtocol with Logging {
     dnp3.RemovePort(channel)
   }
 
-  override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher): IProtocolCmdHandler = {
+  override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher, listener: IEndpointListener): ProtocolCommandHandler = {
 
     info { "Adding device with uid: " + endpoint + " onto channel " + channelName }
 

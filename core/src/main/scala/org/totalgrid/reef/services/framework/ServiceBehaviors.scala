@@ -54,9 +54,7 @@ object ServiceBehaviors {
   /**
    * PUTs and POSTs always create a new entry, there are no updates
    */
-  trait PostLikeEnabled { self: ModeledService =>
-
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
+  trait PutOnlyCreates { self: ModeledService =>
 
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
       modelTrans.transaction { (model: ServiceModelType) =>
@@ -76,12 +74,28 @@ object ServiceBehaviors {
     }
   }
 
+  trait PostPartialUpdate extends HasUpdate { self: ModeledService =>
+
+    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = modelTrans.transaction { model =>
+      model.setEnv(env)
+      val (proto, status) = model.findRecord(req) match {
+        case Some(x) => update(model, req, x)
+        case None => throw new BadRequestException("Record not found: " + req)
+      }
+      env.subQueue.foreach(subscribe(model, proto, _))
+      Response(status, proto :: Nil)
+    }
+
+    override def preUpdate(proto: ProtoType, existing: ModelType): ProtoType = merge(proto, existing)
+
+    protected def merge(req: ProtoType, current: ModelType): ProtoType
+
+  }
+
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */
-  trait PutPostEnabled { self: ModeledService =>
-
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = put(req, env)
+  trait PutEnabled extends HasCreate with HasUpdate { self: ModeledService =>
 
     protected def doPut(req: ProtoType, env: RequestEnv, model: ServiceModelType): Response[ProtoType] = {
       model.setEnv(env)
@@ -103,13 +117,20 @@ object ServiceBehaviors {
     def put(req: ProtoType, env: RequestEnv): Response[ProtoType] =
       modelTrans.transaction { doPut(req, env, _) }
 
-    // Create and update implementations
+  }
+
+  trait HasCreate { self: ModeledService =>
+
     protected def create(model: ServiceModelType, req: ProtoType): Tuple2[ProtoType, Envelope.Status] = {
       val proto = preCreate(req)
       val sql = model.createFromProto(req)
       postCreate(sql, req)
       (model.convertToProto(sql), Envelope.Status.CREATED)
     }
+
+  }
+
+  trait HasUpdate { self: ModeledService =>
 
     // Found an existing record. Update it.
     protected def update(model: ServiceModelType, req: ProtoType, existing: ModelType): Tuple2[ProtoType, Envelope.Status] = {
@@ -121,9 +142,7 @@ object ServiceBehaviors {
     }
   }
 
-  trait AsyncPutPostEnabled extends PutPostEnabled { self: ModeledService =>
-
-    def postAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = putAsync(req, env)(callback)
+  trait AsyncPutEnabled extends PutEnabled { self: ModeledService =>
 
     def putAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit =
       modelTrans.transaction { model => doAsyncPutPost(doPut(req, env, model), callback) }

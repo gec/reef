@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.FEP.{ Port, FrontEndProcessor, CommunicationEndpointRouting }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.{ CommChannel, FrontEndProcessor, CommEndpointRouting }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig => ConfigProto, CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.api.ServiceTypes.{ Response, Event }
@@ -132,14 +132,14 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     }
   }
 
-  def respondToSingleGet(fix: Fixture, portname: String) {
+  def respondToConnectionQueries(fix: Fixture, portname: String) {
     fix.client.respond[ConfigProto] { request =>
       request.verb should equal(Envelope.Verb.GET)
-      val port = Port.newBuilder.setUid(portname).setName(portname).build
-      val rsp = ConfigProto.newBuilder(request.payload).setProtocol("mock").setPort(port).build
+      val port = CommChannel.newBuilder.setUid(portname).setName(portname).build
+      val rsp = ConfigProto.newBuilder(request.payload).setProtocol("mock").setChannel(port).build
       Some(Response(Envelope.Status.OK, List(rsp)))
     }
-    fix.client.respond[Port] { request =>
+    fix.client.respond[CommChannel] { request =>
       request.verb should equal(Envelope.Verb.GET)
       Some(Response(Envelope.Status.OK, List(request.payload)))
     }
@@ -165,12 +165,12 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
   def testProtocolAddViaSubscribe(fix: Fixture) {
     val fep = respondToAnnounce(fix.conn, Envelope.Status.OK)
     sendEventQueueNotifications(fix.conn)
-    val pt = Port.newBuilder.setUid("port")
-    val cfg = ConfigProto.newBuilder.setUid("config").setPort(pt).setName("connection")
-    val rt = CommunicationEndpointRouting.newBuilder
+    val pt = CommChannel.newBuilder.setUid("port")
+    val cfg = ConfigProto.newBuilder.setUid("config").setChannel(pt).setName("connection")
+    val rt = CommEndpointRouting.newBuilder
     val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
     respondToConnectionSubscribe(fix.conn, List(conn)) //return 1 subscription     
-    respondToSingleGet(fix, "port") //respond to the request to read the config/port
+    respondToConnectionQueries(fix, "port") //respond to the request to read the config/port
 
     //at this point the fep should have all of things it needs to add a device,
     //so we can check the mock protocol to see if things get added correctly
@@ -184,14 +184,14 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     sendEventQueueNotifications(fix.conn)
     respondToConnectionSubscribe(fix.conn, Nil) //return 0 subscriptions
 
-    val pt = Port.newBuilder.setUid("port")
-    val cfg = ConfigProto.newBuilder.setUid("config").setPort(pt).setName("connection")
-    val rt = CommunicationEndpointRouting.newBuilder
+    val pt = CommChannel.newBuilder.setUid("port")
+    val cfg = ConfigProto.newBuilder.setUid("config").setChannel(pt).setName("connection")
+    val rt = CommEndpointRouting.newBuilder
     val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
 
     fix.conn.getEvent(classOf[ConnProto]).accept(Event(Envelope.Event.ADDED, conn))
 
-    respondToSingleGet(fix, "port") //respond to the request to read the config/port
+    respondToConnectionQueries(fix, "port") //respond to the request to read the config/port
 
     //at this point the fep should have all of things it needs to add a device,
     //so we can check the mock protocol to see if things get added correctly

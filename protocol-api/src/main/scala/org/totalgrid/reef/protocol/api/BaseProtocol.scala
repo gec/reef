@@ -27,43 +27,44 @@ import org.totalgrid.reef.util.Logging
 
 trait BaseProtocol extends IProtocol with Logging {
 
-  case class Endpoint(name: String, channel: Option[FEP.Port], config: List[Model.ConfigFile]) /// The issue function and the channel
+  case class Endpoint(name: String, channel: Option[FEP.CommChannel], config: List[Model.ConfigFile], listener: IEndpointListener) /// The issue function and the channel
+  case class Channel(config: FEP.CommChannel, listener: IChannelListener)
 
   // only mutable state is current assignment of these variables
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
-  private var channels = immutable.Map.empty[String, FEP.Port] /// maps uids to a Port
+  private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  override def addChannel(p: FEP.Port): Unit = {
+  override def addChannel(p: FEP.CommChannel, listener: IChannelListener): Unit = {
     channels.get(p.getName) match {
       case None =>
-        channels = channels + (p.getName -> p)
-        _addChannel(p)
+        channels = channels + (p.getName -> Channel(p, listener))
+        _addChannel(p, listener)
       case Some(x) =>
         if (x == p) info("Ignoring duplicate channel " + p)
         else throw new IllegalArgumentException("Port with that name already exists: " + p)
     }
   }
 
-  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler = {
+  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
       case None =>
         channels.get(channelName) match {
           case Some(p) =>
-            endpoints += endpoint -> Endpoint(endpoint, Some(p), config)
-            _addEndpoint(endpoint, channelName, config, publish)
+            endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, listener)
+            _addEndpoint(endpoint, channelName, config, publish, listener)
           case None =>
             if (requiresChannel) throw new IllegalArgumentException("Port not registered " + channelName)
-            endpoints += endpoint -> Endpoint(endpoint, None, config)
-            _addEndpoint(endpoint, channelName, config, publish)
+            endpoints += endpoint -> Endpoint(endpoint, None, config, listener)
+            _addEndpoint(endpoint, channelName, config, publish, listener)
         }
     }
   }
 
-  override def removeChannel(channel: String): Unit = {
+  override def removeChannel(channel: String): IChannelListener = {
     channels.get(channel) match {
-      case Some(p) =>
+      case Some(Channel(_, listener)) =>
         endpoints.values.filter { e => // if a channel is removed, remove all devices on that channel first
           e.channel match {
             case Some(x) => x.getName == channel
@@ -72,26 +73,28 @@ trait BaseProtocol extends IProtocol with Logging {
         }.foreach { e => removeEndpoint(e.name) }
         channels -= channel
         _removeChannel(channel)
+        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown channel " + channel)
     }
   }
 
   /// remove the device from the map and its channel's device list
-  override def removeEndpoint(endpoint: String): Unit = {
+  override def removeEndpoint(endpoint: String): IEndpointListener = {
     endpoints.get(endpoint) match {
-      case Some(Endpoint(name, _, _)) =>
-        endpoints -= name
-        _removeEndpoint(name)
+      case Some(Endpoint(_, _, _, listener)) =>
+        endpoints -= endpoint
+        _removeEndpoint(endpoint)
+        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown endpoint " + endpoint)
     }
   }
 
   /// These get implemented by the parent
-  protected def _addChannel(p: FEP.Port)
+  protected def _addChannel(p: FEP.CommChannel, listener: IChannelListener)
   protected def _removeChannel(channel: String)
-  protected def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: IPublisher): ICommandHandler
+  protected def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
   protected def _removeEndpoint(endpoint: String)
 
 }

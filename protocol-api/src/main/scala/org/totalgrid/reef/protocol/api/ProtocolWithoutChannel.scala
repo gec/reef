@@ -24,6 +24,6 @@ import org.totalgrid.reef.proto.FEP
 
 trait ProtocolWithoutChannel extends BaseProtocol {
   final def requiresChannel = false
-  final def _addChannel(channel: FEP.Port) = {}
+  final def _addChannel(channel: FEP.CommChannel, listener: IChannelListener) = {}
   final def _removeChannel(channel: String) = {}
 }

@@ -20,16 +20,17 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.{ Commands, Measurements, ReefServicesList }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.{ Commands, Measurements }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.CommChannel
 import org.totalgrid.reef.messaging.Connection
+import org.totalgrid.reef.api.ReefServiceException
 import org.totalgrid.reef.api.scalaclient.ClientSession
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
-import org.totalgrid.reef.app.ServiceHandler
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, IChannelListener, IEndpointListener }
 import org.totalgrid.reef.api.{ Envelope, IDestination, AddressableService }
 
 // Data structure for handling the life cycle of connections
@@ -55,13 +56,15 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
-    val port = c.getEndpoint.getPort
+    val port = c.getEndpoint.getChannel
 
-    val publisher = getPublisher(conn.getClientSession(), c.getRouting.getServiceRoutingKey)
+    val publisher = newPublisher(c.getRouting.getServiceRoutingKey)
+    val channelListener = newChannelListener(port.getUid)
+    val endpointListener = newEndpointListener(c.getUid)
 
     // add the device, get the command issuer callback
-    if (protocol.requiresChannel) protocol.addChannel(port)
-    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher)
+    if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
+    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, endpointListener)
     val service = new SingleEndpointCommandService(cmdHandler)
     conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
 
@@ -71,8 +74,37 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   def removeEntry(c: ConnProto) {
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
-    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getPort.getName)
+    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
+  }
+
+  private def newEndpointListener(endpointUid: String) = new IEndpointListener {
+
+    val session = conn.getClientSession
+
+    override def onStateChange(state: ConnProto.State) = {
+      val update = ConnProto.newBuilder.setUid(endpointUid).setState(state).build
+      try {
+        session.postOneOrThrow(update)
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
+    }
+  }
+
+  private def newChannelListener(channelUid: String) = new IChannelListener {
+
+    val session = conn.getClientSession
+
+    override def onStateChange(state: CommChannel.State) = {
+      val update = CommChannel.newBuilder.setUid(channelUid).setState(state).build
+      try {
+        session.postOneOrThrow(update)
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
+    }
+
   }
 
   /**
@@ -91,8 +123,11 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def getPublisher(client: ClientSession, routingKey: String) = new IPublisher {
-    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(client, 0, AddressableService(routingKey))(batch)
+  private def newPublisher(routingKey: String) = new IPublisher {
+
+    val session = conn.getClientSession
+
+    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(session, 0, AddressableService(routingKey))(batch)
   }
 
   private def getResponseHandler(client: ClientSession) = new IResponseHandler {

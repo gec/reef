@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.protocol.benchmark
 
-import org.totalgrid.reef.protocol.api.{ IPublisher, IResponseHandler }
+import org.totalgrid.reef.protocol.api.{ IPublisher, IResponseHandler, NullEndpointListener }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -79,7 +79,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   test("add remove") {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
-    protocol.addEndpoint(endpointName, "", getConfigFiles(), cb)
+    protocol.addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
 
     cb.measurements.waitFor(_.size > 0)
 
@@ -94,7 +94,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   test("command responded to") {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
-    val cmdHandler = protocol.addEndpoint(endpointName, "", getConfigFiles(), cb)
+    val cmdHandler = protocol.addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
 
     cmdHandler.issue(getCmdRequest("success"), cb)
 
@@ -111,9 +111,9 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
     // need to call the NVII functions or else we are only testing the BaseProtocol code
-    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb)
+    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
     intercept[IllegalArgumentException] {
-      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb)
+      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
     }
   }
 

@@ -25,10 +25,10 @@ import org.totalgrid.reef.api.{ ServiceListOnMap, ServiceInfo, ITypeDescriptor, 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(
 
-    getEntry(Descriptors.port, "front_end_port"),
+    getEntry(Descriptors.commChannel, "front_end_port"),
     getEntry(Descriptors.frontEndProcessor, "front_end_processor"),
-    getEntry(Descriptors.communicationEndpointConfig, "comm_endpoint"),
-    getEntry(Descriptors.communicationEndpointConnection, "front_end_assignment"),
+    getEntry(Descriptors.commEndpointConfig, "comm_endpoint"),
+    getEntry(Descriptors.commEndpointConnection, "front_end_assignment"),
     getEntry(Descriptors.measurementProcessingConnection, "meas_proc_assignment"),
 
     getEntry(Descriptors.measurementBatch, "measurement_batch"),

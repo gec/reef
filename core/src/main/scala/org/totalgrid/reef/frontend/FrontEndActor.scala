@@ -31,7 +31,7 @@ import org.totalgrid.reef.api.ServiceTypes.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto, CommunicationEndpointConfig => ConfigProto, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
@@ -83,7 +83,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
 
     ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getOneOrThrow(cf)))
 
-    if (ep.hasPort) endpoint.setPort(client.getOneOrThrow(ep.getPort))
+    if (ep.hasChannel) endpoint.setChannel(client.getOneOrThrow(ep.getChannel))
     cp.setEndpoint(endpoint).build()
   }
 

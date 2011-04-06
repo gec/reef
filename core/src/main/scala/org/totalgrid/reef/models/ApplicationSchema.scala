@@ -29,6 +29,8 @@ import org.totalgrid.reef.util.LazyVar
 
 import org.totalgrid.reef.proto.Alarms._
 
+import org.totalgrid.reef.proto.FEP.CommChannel
+
 class ActiveModelException(msg: String) extends Exception(msg)
 
 trait ActiveModel {
@@ -114,6 +116,8 @@ case class CommunicationProtocolApplicationInstance(
   val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
+case class ChannelStatus(val name: String, val state: Int) extends ModelWithId
+
 case class Point(
     val name: String,
     val entityId: Long,
@@ -195,9 +199,10 @@ case class FrontEndPort(
     val name: String,
     val network: Option[String],
     val location: Option[String],
+    val state: Int,
     var proto: Array[Byte]) extends ModelWithId {
 
-  def this() = this("", Some(""), Some(""), Array.empty[Byte])
+  def this() = this("", Some(""), Some(""), CommChannel.State.UNKNOWN.getNumber, Array.empty[Byte])
 }
 
 case class ConfigFile(
@@ -430,6 +435,7 @@ object ApplicationSchema extends Schema {
 
   val apps = table[ApplicationInstance]
   val capabilities = table[ApplicationCapability]
+  val channelStatuses = table[ChannelStatus]
   val heartbeats = table[HeartbeatStatus]
   val protocols = table[CommunicationProtocolApplicationInstance]
   val points = table[Point]

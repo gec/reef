@@ -35,7 +35,8 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]
     with GetEnabled
     with SubscribeEnabled
-    with PostLikeEnabled
+    with PutOnlyCreates
+    with PostDisabled
     with DeleteEnabled {
 
   import AccessProto._

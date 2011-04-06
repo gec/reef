@@ -40,7 +40,7 @@ import org.totalgrid.reef.messaging.ProtoSerializer._
 
 class FrontEndProcessorService(protected val modelTrans: ServiceTransactable[FrontEndProcessorServiceModel])
     extends BasicSyncModeledService[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel]
-    with AsyncToSyncServiceAdapter[FrontEndProcessor] {
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.frontEndProcessor
 }

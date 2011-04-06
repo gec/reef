@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, CommunicationEndpoint, ApplicationInstance, MeasProcAssignment }
 
@@ -33,7 +33,8 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.BadRequestException
+import ServiceBehaviors._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -42,9 +43,23 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.measurementstore.MeasurementStore
 
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
-    extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel] {
+    extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
+    with GetEnabled
+    with PutEnabled
+    with DeleteEnabled
+    with PostPartialUpdate
+    with SubscribeEnabled {
 
-  override val descriptor = Descriptors.communicationEndpointConnection
+  override val descriptor = Descriptors.commEndpointConnection
+
+  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+    import org.totalgrid.reef.proto.OptionalProtos._
+
+    val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
+    req.state.foreach { builder.setState(_) }
+    req.online.foreach { builder.setOnline(_) }
+    builder.build
+  }
 }
 
 class CommunicationEndpointConnectionModelFactory(pub: ServiceEventPublishers, measurementStore: MeasurementStore)
@@ -157,6 +172,8 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
   }
 }
 
+object CommunicationEndpointConnectionConversion extends CommunicationEndpointConnectionConversion
+
 trait CommunicationEndpointConnectionConversion
     extends MessageModelConversion[ConnProto, FrontEndAssignment]
     with UniqueAndSearchQueryable[ConnProto, FrontEndAssignment] {
@@ -192,8 +209,8 @@ trait CommunicationEndpointConnectionConversion
     val b = ConnProto.newBuilder.setUid(entry.id.toString)
 
     entry.applicationId.foreach(appId => b.setFrontEnd(FrontEndProcessor.newBuilder.setUid(appId.toString)))
-    entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommunicationEndpointConfig.newBuilder.setUid(endpoint.entity.value.id.toString)))
-    entry.serviceRoutingKey.foreach(k => b.setRouting(CommunicationEndpointRouting.newBuilder.setServiceRoutingKey(k)))
+    entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommEndpointConfig.newBuilder.setUid(endpoint.entity.value.id.toString)))
+    entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
     b.setOnline(entry.online)
     b.build
   }
