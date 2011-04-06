@@ -35,8 +35,8 @@ class MeasCommand extends ReefCommandSupport {
 
   def doCommand() = {
     Option(name) match {
-      case Some(measName) => MeasView.printInspect(MeasRequest.measByName(measName, this))
-      case None => MeasView.printTable(MeasRequest.allMeasurements(this))
+      case Some(measName) => MeasView.printInspect(MeasRequest.measByName(measName, reefSession))
+      case None => MeasView.printTable(MeasRequest.allMeasurements(reefSession))
     }
   }
 }
@@ -48,7 +48,7 @@ class MeasFromCommand extends ReefCommandSupport {
   var parentId: String = null
 
   def doCommand(): Unit = {
-    MeasView.printTable(MeasRequest.measForEntity(parentId, this))
+    MeasView.printTable(MeasRequest.measForEntity(parentId, reefSession))
   }
 }
 
@@ -62,6 +62,6 @@ class MeasHistCommand extends ReefCommandSupport {
   var count: Int = 10
 
   def doCommand(): Unit = {
-    MeasView.printTable(MeasRequest.measHistory(name, count, this))
+    MeasView.printTable(MeasRequest.measHistory(name, count, reefSession))
   }
 }

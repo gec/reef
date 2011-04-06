@@ -44,9 +44,7 @@ class ReefLoginCommand extends ReefCommandSupport {
       System.out.println("WARNING: Password will be visible in karaf command history!")
     }
 
-    val request = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(userName).setPassword(password)).build
-    val response = putOneOrThrow(request)
-    this.login(userName, response.getToken)
+    this.login(userName, services.createNewAuthorizationToken(userName, password))
   }
 }
 

@@ -60,6 +60,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-api-request</artifactId>
+            <version>0.2.3-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.karaf.shell</groupId>
             <artifactId>org.apache.karaf.shell.console</artifactId>
             <version>2.2.0</version>

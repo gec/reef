@@ -51,7 +51,7 @@ class LoadConfigCommand extends ReefCommandSupport {
   private var configFile: String = null
 
   override def doCommand(): Unit = {
-    LoadManager.loadFile(this, configFile, benchmark)
+    LoadManager.loadFile(reefSession, configFile, benchmark)
   }
 
 }

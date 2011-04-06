@@ -24,11 +24,14 @@ import org.totalgrid.reef.proto.Model.{ Relationship, Entity }
 import org.totalgrid.reef.api.scalaclient.SyncOperations
 import RequestFailure._
 import org.totalgrid.reef.proto.Processing.TriggerSet
+import org.totalgrid.reef.api.request.{ ReefUUID, EntityService }
+
+import scala.collection.JavaConversions._
 
 object EntityRequest {
 
-  def getAll(client: SyncOperations) = {
-    val results = client.getOrThrow(EntityRequest.all)
+  def getAll(client: EntityService) = {
+    val results = client.getAllEntities().toList
     if (results.isEmpty) throw RequestFailure("No entities found.")
     results
   }

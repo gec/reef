@@ -33,8 +33,8 @@ class EntityCommand extends ReefCommandSupport {
 
   def doCommand() = {
     Option(id) match {
-      case Some(entId) => EntityView.printInspect(EntityRequest.getById(entId, this))
-      case None => EntityView.printList(EntityRequest.getAll(this))
+      case Some(entId) => EntityView.printInspect(EntityRequest.getById(entId, reefSession))
+      case None => EntityView.printList(EntityRequest.getAll(services))
     }
   }
 }
@@ -46,7 +46,7 @@ class EntityTypeCommand extends ReefCommandSupport {
   var typeName: String = null
 
   def doCommand() = {
-    EntityView.printList(EntityRequest.getAllOfType(typeName, this))
+    EntityView.printList(EntityRequest.getAllOfType(typeName, reefSession))
   }
 
 }
@@ -67,7 +67,7 @@ class EntityChildrenCommand extends ReefCommandSupport {
   var depths: Boolean = false
 
   def doCommand() = {
-    val ents = EntityRequest.getChildren(parentId, Option(relType), Option(subType).toList, depths, this)
+    val ents = EntityRequest.getChildren(parentId, Option(relType), Option(subType).toList, depths, reefSession)
     if (depths) {
       EntityView.printTreeMultiDepth(ents.head)
     } else {
@@ -80,7 +80,7 @@ class EntityChildrenCommand extends ReefCommandSupport {
 @Command(scope = "point", name = "list", description = "Lists points")
 class PointListCommand extends ReefCommandSupport {
 
-  def doCommand() = EntityView.printList(EntityRequest.getAllOfType("Point", this))
+  def doCommand() = EntityView.printList(EntityRequest.getAllOfType("Point", reefSession))
 
 }
 
@@ -92,8 +92,8 @@ class TriggerCommand extends ReefCommandSupport {
 
   def doCommand() = {
     Option(id) match {
-      case Some(entId) => println(EntityRequest.getTriggers(entId, this))
-      case None => println(EntityRequest.getAllTriggers(this))
+      case Some(entId) => println(EntityRequest.getTriggers(entId, reefSession))
+      case None => println(EntityRequest.getAllTriggers(reefSession))
     }
   }
 

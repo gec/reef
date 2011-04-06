@@ -26,6 +26,8 @@ import org.totalgrid.reef.proto.Events.Event
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.request.builders.{ AlarmRequestBuilders, AlarmListRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.proto.Alarms.Alarm
+import org.totalgrid.reef.api.javaclient.IEventAcceptor
+import org.totalgrid.reef.proto.Descriptors
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
@@ -54,5 +56,25 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
     val alarms = ops.getOrThrow(AlarmRequestBuilders.getAllByType("*"), sub)
     if (limit > alarms.size) throw new Exception("Limit larger than temporary limit of : " + alarms.size)
     alarms.slice(0, limit)
+  }
+
+  def createAlarmSubscription(callback: IEventAcceptor[Alarm]) = {
+    ops.addSubscription(Descriptors.alarm.getKlass, callback.onEvent)
+  }
+
+  def createEventSubscription(callback: IEventAcceptor[Event]) = {
+    ops.addSubscription(Descriptors.event.getKlass, callback.onEvent)
+  }
+
+  def removeAlarm(alarm: Alarm) = {
+    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build)
+  }
+
+  def acknowledgeAlarm(alarm: Alarm) = {
+    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build)
+  }
+
+  def silenceAlarm(alarm: Alarm) = {
+    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build)
   }
 }

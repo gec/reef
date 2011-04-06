@@ -22,8 +22,6 @@ package org.totalgrid.reef.shell.proto
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.scalaclient.{ SyncOperations, DefaultHeaders }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, MultiResult, Failure }
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
 import org.totalgrid.reef.api.Envelope.Verb
@@ -37,6 +35,8 @@ import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.api._
+import scalaclient.{ SubscriptionManagement, SyncOperations, DefaultHeaders }
+import org.totalgrid.reef.api.ServiceTypes.{ Event, Response, MultiResult, Failure }
 
 class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
 
@@ -109,4 +109,18 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
     }
   }
 
+}
+
+class OSGISession(bundleContext: BundleContext, authToken: Option[String]) extends OSGiSyncOperations with SubscriptionManagement {
+  def getBundleContext: BundleContext = bundleContext
+
+  override def getDefaultHeaders: RequestEnv = {
+    val headers = new ServiceHandlerHeaders
+    authToken.foreach { x => headers.addAuthToken(x) }
+    super.mergeHeaders(headers.env)
+  }
+
+  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: (Event[A]) => Unit) = {
+    throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
+  }
 }

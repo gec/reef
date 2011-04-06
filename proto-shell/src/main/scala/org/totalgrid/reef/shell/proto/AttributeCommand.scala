@@ -34,7 +34,7 @@ class AttributeCommand extends ReefCommandSupport {
   private var id: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.getByEntityUid(id, this))
+    AttributeView.printAttributes(AttributeRequest.getByEntityUid(id, reefSession))
   }
 }
 
@@ -51,7 +51,7 @@ class AttributeSetCommand extends ReefCommandSupport {
   private var value: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.setEntityAttribute(id, name, value, this))
+    AttributeView.printAttributes(AttributeRequest.setEntityAttribute(id, name, value, reefSession))
   }
 }
 
@@ -65,7 +65,7 @@ class AttributeRemoveCommand extends ReefCommandSupport {
   private var name: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.removeEntityAttribute(id, name, this))
+    AttributeView.printAttributes(AttributeRequest.removeEntityAttribute(id, name, reefSession))
   }
 }
 
@@ -76,6 +76,6 @@ class AttributeClearCommand extends ReefCommandSupport {
   private var id: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.clearEntityAttributes(id, this))
+    AttributeView.printAttributes(AttributeRequest.clearEntityAttributes(id, reefSession))
   }
 }

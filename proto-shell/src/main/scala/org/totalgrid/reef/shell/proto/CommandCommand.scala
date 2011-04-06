@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 class CommandListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    CommandView.commandList(CommandRequest.getAllCommands(this).toList)
+    CommandView.commandList(CommandRequest.getAllCommands(reefSession).toList)
   }
 }
 
@@ -42,7 +42,7 @@ class CommandIssueCommand extends ReefCommandSupport {
 
   def doCommand() = getUser match {
     case Some(user) => {
-      CommandView.commandResponse(CommandRequest.issueForId(id, user, this))
+      CommandView.commandResponse(CommandRequest.issueForId(id, user, reefSession))
     }
     case None => throw new Exception("Cannot issue command, user is not defined!")
   }
@@ -55,7 +55,7 @@ class CommandStatusCommand extends ReefCommandSupport {
   private var id: String = null
 
   def doCommand() = {
-    CommandView.commandResponse(CommandRequest.statusOf(id, this))
+    CommandView.commandResponse(CommandRequest.statusOf(id, reefSession))
   }
 }
 
@@ -68,9 +68,9 @@ class AccessCommand extends ReefCommandSupport {
   def doCommand() = {
     Option(id) match {
       case Some(uid) =>
-        CommandView.accessInspect(CommandRequest.getAccessEntry(uid, this))
+        CommandView.accessInspect(CommandRequest.getAccessEntry(uid, reefSession))
       case None =>
-        CommandView.printAccessTable(CommandRequest.getAllAccessEntries(this))
+        CommandView.printAccessTable(CommandRequest.getAllAccessEntries(reefSession))
     }
   }
 }
@@ -90,7 +90,7 @@ class AccessBlockCommand extends ReefCommandSupport {
       return
     }
 
-    CommandView.blockResponse(CommandRequest.blockCommands(cmdIds, getUser.get, this))
+    CommandView.blockResponse(CommandRequest.blockCommands(cmdIds, getUser.get, reefSession))
   }
 }
 
@@ -109,7 +109,7 @@ class AccessRemoveCommand extends ReefCommandSupport {
       return
     }
 
-    CommandView.removeBlockResponse(CommandRequest.removeSelects(accIds, getUser.get, this))
+    CommandView.removeBlockResponse(CommandRequest.removeSelects(accIds, getUser.get, reefSession))
   }
 }
 

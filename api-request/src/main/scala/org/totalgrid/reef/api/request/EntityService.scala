@@ -57,6 +57,13 @@ import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 trait EntityService {
 
   /**
+   * Get all entities, should not be used in large systems
+   * @return all entities in the system
+   */
+  @throws(classOf[ReefServiceException])
+  def getAllEntities(): java.util.List[Entity]
+
+  /**
    * Get an entity using its unique identification.
    * @param uid   The entity id.
    * @return The entity object.

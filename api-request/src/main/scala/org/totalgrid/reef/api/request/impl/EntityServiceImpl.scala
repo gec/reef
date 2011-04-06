@@ -28,6 +28,10 @@ import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, Entit
 
 trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
+  def getAllEntities(): java.util.List[Entity] = {
+    ops.getOrThrow(EntityRequestBuilders.getAll)
+  }
+
   def getEntityByUid(uid: ReefUUID): Entity = {
     ops.getOneOrThrow(EntityRequestBuilders.getByUid(uid))
   }
