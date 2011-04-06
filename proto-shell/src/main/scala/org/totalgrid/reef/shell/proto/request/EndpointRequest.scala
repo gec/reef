@@ -18,23 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.shell.proto
+package org.totalgrid.reef.shell.proto.request
 
-import org.apache.felix.gogo.commands.Command
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.api.scalaclient.SyncOperations
+object EndpointRequest {
 
-import org.totalgrid.reef.shell.proto.request.ChannelRequest
-
-//import scala.collection.JavaConversions._
-
-@Command(scope = "channel", name = "list", description = "Prints channel information")
-class ChannelListCommand extends ReefCommandSupport {
-
-  def doCommand() = {
-
-    val results = ChannelRequest.getAll(this)
-    println("Found " + results.size + " channel(s)")
-    results.foreach { channel =>
-      println(channel.getName + ": " + channel.getState)
-    }
+  def getAll(client: SyncOperations): List[CommEndpointConnection] = {
+    client.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
   }
 }

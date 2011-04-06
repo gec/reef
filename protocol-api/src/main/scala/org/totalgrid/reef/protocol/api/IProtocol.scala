@@ -24,8 +24,6 @@ import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 
 import FEP.CommChannel
 
-import org.totalgrid.reef.proto.Communications.{ EndpointState }
-
 object IProtocol {
 
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
@@ -46,7 +44,7 @@ trait ICommandHandler {
 }
 
 trait IEndpointListener {
-  def onStateChange(state: EndpointState.State)
+  def onStateChange(state: FEP.CommEndpointConnection.State)
 }
 
 trait IChannelListener {
@@ -58,7 +56,7 @@ case object NullPublisher extends IPublisher {
 }
 
 case object NullEndpointListener extends IEndpointListener {
-  def onStateChange(state: EndpointState.State) = {}
+  def onStateChange(state: FEP.CommEndpointConnection.State) = {}
 }
 
 case object NullChannelListener extends IChannelListener {

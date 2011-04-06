@@ -87,9 +87,18 @@ message CommEndpointConfig {
 }
 
 message CommEndpointConnection {
+
+    enum State {
+        COMMS_UP = 1;
+        COMMS_DOWN = 2;
+        UNKNOWN = 3;
+        ERROR = 4;
+    }
+
     optional string                 uid                 = 1;
     optional FrontEndProcessor      front_end           = 2;
     optional CommEndpointConfig     endpoint            = 3;
+    optional State                  state               = 4;
     optional CommEndpointRouting    routing             = 5;
     optional bool                   online              = 6;
 }

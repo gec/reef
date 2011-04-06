@@ -92,26 +92,6 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandResponse.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandResponse]
   }
-  def endpointState() = new ITypeDescriptor[org.totalgrid.reef.proto.Communications.EndpointState] {
-    def serialize(typ: org.totalgrid.reef.proto.Communications.EndpointState): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Communications.EndpointState.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Communications.EndpointState]
-  }
-  def channelState() = new ITypeDescriptor[org.totalgrid.reef.proto.Communications.ChannelState] {
-    def serialize(typ: org.totalgrid.reef.proto.Communications.ChannelState): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Communications.ChannelState.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Communications.ChannelState]
-  }
-  def endpointStatus() = new ITypeDescriptor[org.totalgrid.reef.proto.Communications.EndpointStatus] {
-    def serialize(typ: org.totalgrid.reef.proto.Communications.EndpointStatus): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Communications.EndpointStatus.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Communications.EndpointStatus]
-  }
-  def channelStatus() = new ITypeDescriptor[org.totalgrid.reef.proto.Communications.ChannelStatus] {
-    def serialize(typ: org.totalgrid.reef.proto.Communications.ChannelStatus): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Communications.ChannelStatus.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Communications.ChannelStatus]
-  }
   def event() = new ITypeDescriptor[org.totalgrid.reef.proto.Events.Event] {
     def serialize(typ: org.totalgrid.reef.proto.Events.Event): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Events.Event.parseFrom(bytes)

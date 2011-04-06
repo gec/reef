@@ -143,18 +143,6 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
       request.verb should equal(Envelope.Verb.GET)
       Some(Response(Envelope.Status.OK, List(request.payload)))
     }
-
-    fix.client.respond[CommChannel] { request =>
-      request.verb should equal(Envelope.Verb.POST)
-      request.payload.getState should equal(CommChannel.State.OPENING)
-      Some(Response(Envelope.Status.OK, List(request.payload)))
-    }
-
-    fix.client.respond[CommChannel] { request =>
-      request.verb should equal(Envelope.Verb.POST)
-      request.payload.getState should equal(CommChannel.State.OPEN)
-      Some(Response(Envelope.Status.OK, List(request.payload)))
-    }
   }
 
   def testSingleAnnounce(fix: Fixture) {

@@ -30,7 +30,7 @@ object MockProtocol {
   case class RemoveEndpoint(endpoint: String)
 }
 
-class MockProtocol(needsChannel: Boolean = true) extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
+class MockProtocol(needsChannel: Boolean = true) extends BaseProtocol {
 
   def requiresChannel = needsChannel
 

@@ -127,24 +127,6 @@ object OptionalProtos {
     val correlationId = optionally(_.getCorrelationId)
     val status = optionally(_.getStatus)
   }
-  implicit def proto2OptCommunicationsEndpointState(a: org.totalgrid.reef.proto.Communications.EndpointState): OptCommunicationsEndpointState = new OptCommunicationsEndpointState(Some(a))
-  class OptCommunicationsEndpointState(real: Option[org.totalgrid.reef.proto.Communications.EndpointState]) extends OptionalStruct(real) {
-    val enum = optionally(_.getEnum)
-  }
-  implicit def proto2OptCommunicationsChannelState(a: org.totalgrid.reef.proto.Communications.ChannelState): OptCommunicationsChannelState = new OptCommunicationsChannelState(Some(a))
-  class OptCommunicationsChannelState(real: Option[org.totalgrid.reef.proto.Communications.ChannelState]) extends OptionalStruct(real) {
-    val enum = optionally(_.getEnum)
-  }
-  implicit def proto2OptCommunicationsEndpointStatus(a: org.totalgrid.reef.proto.Communications.EndpointStatus): OptCommunicationsEndpointStatus = new OptCommunicationsEndpointStatus(Some(a))
-  class OptCommunicationsEndpointStatus(real: Option[org.totalgrid.reef.proto.Communications.EndpointStatus]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
-    val state = new OptCommunicationsEndpointState(optionally(_.hasState, _.getState))
-  }
-  implicit def proto2OptCommunicationsChannelStatus(a: org.totalgrid.reef.proto.Communications.ChannelStatus): OptCommunicationsChannelStatus = new OptCommunicationsChannelStatus(Some(a))
-  class OptCommunicationsChannelStatus(real: Option[org.totalgrid.reef.proto.Communications.ChannelStatus]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
-    val state = new OptCommunicationsChannelState(optionally(_.hasState, _.getState))
-  }
   implicit def proto2OptEventsEvent(a: org.totalgrid.reef.proto.Events.Event): OptEventsEvent = new OptEventsEvent(Some(a))
   class OptEventsEvent(real: Option[org.totalgrid.reef.proto.Events.Event]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
@@ -242,6 +224,7 @@ object OptionalProtos {
     val uid = optionally(_.hasUid, _.getUid)
     val frontEnd = new OptFEPFrontEndProcessor(optionally(_.hasFrontEnd, _.getFrontEnd))
     val endpoint = new OptFEPCommEndpointConfig(optionally(_.hasEndpoint, _.getEndpoint))
+    val state = optionally(_.hasState, _.getState)
     val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
     val online = optionally(_.hasOnline, _.getOnline)
   }

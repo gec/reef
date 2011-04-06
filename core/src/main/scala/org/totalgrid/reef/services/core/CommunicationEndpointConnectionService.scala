@@ -33,7 +33,8 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.BadRequestException
+import ServiceBehaviors._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -43,9 +44,22 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
     extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
-    with DefaultSyncBehaviors {
+    with GetEnabled
+    with PutEnabled
+    with DeleteEnabled
+    with PostPartialUpdate
+    with SubscribeEnabled {
 
   override val descriptor = Descriptors.commEndpointConnection
+
+  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+    import org.totalgrid.reef.proto.OptionalProtos._
+
+    val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
+    req.state.foreach { builder.setState(_) }
+    req.online.foreach { builder.setOnline(_) }
+    builder.build
+  }
 }
 
 class CommunicationEndpointConnectionModelFactory(pub: ServiceEventPublishers, measurementStore: MeasurementStore)
@@ -157,6 +171,8 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
 
   }
 }
+
+object CommunicationEndpointConnectionConversion extends CommunicationEndpointConnectionConversion
 
 trait CommunicationEndpointConnectionConversion
     extends MessageModelConversion[ConnProto, FrontEndAssignment]

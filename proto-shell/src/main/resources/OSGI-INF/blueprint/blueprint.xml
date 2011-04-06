@@ -92,6 +92,9 @@
         <command name="channel/list">
             <action class="org.totalgrid.reef.shell.proto.ChannelListCommand"/>
         </command>
+        <command name="endpoint/list">
+            <action class="org.totalgrid.reef.shell.proto.EndpointListCommand"/>
+        </command>
     </command-bundle>
 
 </blueprint>

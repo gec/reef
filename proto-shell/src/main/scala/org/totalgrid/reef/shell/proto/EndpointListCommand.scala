@@ -22,19 +22,19 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.Command
 
-import org.totalgrid.reef.shell.proto.request.ChannelRequest
+import org.totalgrid.reef.shell.proto.request.EndpointRequest
 
 //import scala.collection.JavaConversions._
 
-@Command(scope = "channel", name = "list", description = "Prints channel information")
-class ChannelListCommand extends ReefCommandSupport {
+@Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
+class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val results = ChannelRequest.getAll(this)
-    println("Found " + results.size + " channel(s)")
-    results.foreach { channel =>
-      println(channel.getName + ": " + channel.getState)
+    val results = EndpointRequest.getAll(this)
+    println("Found " + results.size + " endpoints(s)")
+    results.foreach { ep =>
+      println(ep.getUid + ": " + ep.getState)
     }
   }
 }

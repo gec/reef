@@ -20,19 +20,19 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ Model, Communications }
+import org.totalgrid.reef.proto.{ Model, FEP }
 
 trait EndpointAlwaysOnline extends IProtocol {
 
   abstract override def addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler = {
     val ret = super.addEndpoint(endpoint, channel, config, publish, listener)
-    listener.onStateChange(Communications.EndpointState.State.COMMS_UP)
+    listener.onStateChange(FEP.CommEndpointConnection.State.COMMS_UP)
     ret
   }
 
   abstract override def removeEndpoint(endpoint: String): IEndpointListener = {
     val ret = super.removeEndpoint(endpoint)
-    ret.onStateChange(Communications.EndpointState.State.COMMS_DOWN)
+    ret.onStateChange(FEP.CommEndpointConnection.State.COMMS_DOWN)
     ret
   }
 

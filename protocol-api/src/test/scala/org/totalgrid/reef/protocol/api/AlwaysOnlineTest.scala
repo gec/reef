@@ -20,9 +20,7 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.FEP
-import FEP.CommChannel
-import org.totalgrid.reef.proto.Communications.{ EndpointState }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
 
 import scala.collection.immutable.Queue
 
@@ -40,15 +38,15 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
   }
 
   def getMockEndpointListener = new IEndpointListener {
-    var queue = Queue.empty[EndpointState.State]
-    def onStateChange(state: EndpointState.State) = queue += state
+    var queue = Queue.empty[CommEndpointConnection.State]
+    def onStateChange(state: CommEndpointConnection.State) = queue += state
   }
 
   test("Channel callbacks") {
     val mp = new MockProtocol with ChannelAlwaysOnline
     val listener = getMockChannelListener
 
-    mp.addChannel(FEP.CommChannel.newBuilder.setName("channel1").build, listener)
+    mp.addChannel(CommChannel.newBuilder.setName("channel1").build, listener)
     mp.removeChannel("channel1")
 
     listener.queue should equal(Queue(CommChannel.State.OPENING, CommChannel.State.OPEN, CommChannel.State.CLOSED))
@@ -59,10 +57,10 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     val listener = getMockEndpointListener
 
     mp.addEndpoint("endpoint1", "", Nil, NullPublisher, listener)
-    listener.queue should equal(Queue(EndpointState.State.COMMS_UP))
+    listener.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))
 
     mp.removeEndpoint("endpoint1")
-    listener.queue should equal(Queue(EndpointState.State.COMMS_UP, EndpointState.State.COMMS_DOWN))
+    listener.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP, CommEndpointConnection.State.COMMS_DOWN))
   }
 
 }

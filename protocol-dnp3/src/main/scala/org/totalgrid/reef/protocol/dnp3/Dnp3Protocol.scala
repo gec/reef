@@ -26,7 +26,7 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandl
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer }
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
+import org.totalgrid.reef.util.XMLHelper
 
 import scala.collection.immutable
 import scala.collection.JavaConversions._
@@ -42,13 +42,8 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   // this object. Keep a map of meas adapters around by name to prevent this.
   private var map = immutable.Map.empty[String, MeasAdapter]
 
-  // Is this an i18n problem?
-  private var logVarNameMap = immutable.Map(
-    "comms_status" -> immutable.Map(0 -> "Down", 2 -> "Up"),
-    "port_state" -> immutable.Map(0 -> "Closed", 1 -> "Opening", 2 -> "Waiting", 3 -> "Open", 4 -> "Stopped"))
-
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
-  private val log = new LogAdapter(logVarNameMap)
+  private val log = new LogAdapter
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 

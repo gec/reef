@@ -30,7 +30,7 @@ import org.totalgrid.reef.api.scalaclient.ClientSession
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, IChannelListener, NullEndpointListener }
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, IChannelListener, IEndpointListener }
 import org.totalgrid.reef.api.{ Envelope, IDestination, AddressableService }
 
 // Data structure for handling the life cycle of connections
@@ -58,12 +58,13 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getChannel
 
-    val publisher = getPublisher(conn.getClientSession, c.getRouting.getServiceRoutingKey)
+    val publisher = newPublisher(c.getRouting.getServiceRoutingKey)
     val channelListener = newChannelListener(port.getUid)
+    val endpointListener = newEndpointListener(c.getUid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
-    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, NullEndpointListener)
+    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, endpointListener)
     val service = new SingleEndpointCommandService(cmdHandler)
     conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
 
@@ -77,11 +78,25 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
+  private def newEndpointListener(endpointUid: String) = new IEndpointListener {
+
+    val session = conn.getClientSession
+
+    override def onStateChange(state: ConnProto.State) = {
+      val update = ConnProto.newBuilder.setUid(endpointUid).setState(state).build
+      try {
+        session.postOneOrThrow(update)
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
+    }
+  }
+
   private def newChannelListener(channelUid: String) = new IChannelListener {
 
     val session = conn.getClientSession
 
-    def onStateChange(state: CommChannel.State) = {
+    override def onStateChange(state: CommChannel.State) = {
       val update = CommChannel.newBuilder.setUid(channelUid).setState(state).build
       try {
         session.postOneOrThrow(update)
@@ -108,8 +123,11 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def getPublisher(client: ClientSession, routingKey: String) = new IPublisher {
-    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(client, 0, AddressableService(routingKey))(batch)
+  private def newPublisher(routingKey: String) = new IPublisher {
+
+    val session = conn.getClientSession
+
+    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(session, 0, AddressableService(routingKey))(batch)
   }
 
   private def getResponseHandler(client: ClientSession) = new IResponseHandler {
