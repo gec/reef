@@ -42,4 +42,8 @@ object AlarmListRequestBuilders {
   def getUnacknowledgedWithType(typ: String, limit: Int): AlarmList = {
     getByAlarmSelect(getUnacknowledgedSelector().setEventSelect(EventSelect.newBuilder.setLimit(limit).addEventType(typ)))
   }
+
+  def getUnacknowledgedWithTypes(typs: java.util.List[String], limit: Int): AlarmList = {
+    getByAlarmSelect(getUnacknowledgedSelector().setEventSelect(EventSelect.newBuilder.setLimit(limit).addAllEventType(typs)))
+  }
 }

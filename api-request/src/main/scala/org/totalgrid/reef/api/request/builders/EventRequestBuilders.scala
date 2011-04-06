@@ -22,6 +22,7 @@ package org.totalgrid.reef.api.request.builders
  */
 import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.api.request.ReefUUID
 
 object EventRequestBuilders {
   def makeNewEventForEntityByName(eventType: String, entityName: String) = {
@@ -35,5 +36,9 @@ object EventRequestBuilders {
         attrs.addAttribute(Attribute.newBuilder.setName(name).setValueString(value).setVtype(Attribute.Type.STRING))
     }
     Event.newBuilder.setEventType(eventType).setArgs(attrs).build
+  }
+
+  def getByUUID(uuid: ReefUUID) = {
+    Event.newBuilder.setUid(uuid.getUuid).build
   }
 }

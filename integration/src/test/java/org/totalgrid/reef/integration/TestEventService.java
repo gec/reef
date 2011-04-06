@@ -23,9 +23,11 @@ package org.totalgrid.reef.integration;
 import org.junit.Test;
 import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.request.AlarmService;
 import org.totalgrid.reef.api.request.EventService;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
+import org.totalgrid.reef.api.request.impl.AlarmServiceWrapper;
 import org.totalgrid.reef.api.request.impl.EventServiceWrapper;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
@@ -64,10 +66,10 @@ public class TestEventService extends JavaBridgeTestBase {
 	public void subscribeEvents() throws ReefServiceException, InterruptedException {
 
         MockEventAcceptor<Events.Event> mock = new MockEventAcceptor<Events.Event>(true);
-		ISubscription<Events.Event> sub = client.addSubscription(Descriptors.event(), mock);
 
         EventService es = new EventServiceWrapper(client);
 
+        ISubscription<Events.Event> sub = es.createEventSubscription(mock);
 		List<Events.Event> events = es.getRecentEvents(10, sub);
         assertEquals(events.size(), 10);
 
@@ -96,11 +98,12 @@ public class TestEventService extends JavaBridgeTestBase {
 	public void subscribeAlarms() throws ReefServiceException, InterruptedException {
 
         MockEventAcceptor<Alarm> mock = new MockEventAcceptor<Alarm>(true);
-		ISubscription<Alarm> sub = client.addSubscription(Descriptors.alarm(), mock);
 
         EventService es = new EventServiceWrapper(client);
+        AlarmService as = new AlarmServiceWrapper(client);
 
-		List<Alarm> events = es.getRecentAlarms(2, sub);
+        ISubscription<Alarm> sub = as.createAlarmSubscription(mock);
+		List<Alarm> events = as.getActiveAlarms(2, sub);
         assertEquals(events.size(), 2);
 
         es.publishEvent(EventRequestBuilders.makeNewEventForEntityByName("Test.Alarm", "StaticSubstation.Line02.Current"));

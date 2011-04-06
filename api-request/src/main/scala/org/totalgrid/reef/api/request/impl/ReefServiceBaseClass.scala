@@ -21,7 +21,16 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, SyncOperations }
+import org.totalgrid.reef.api.ExpectationException
 
 trait ReefServiceBaseClass {
   protected val ops: SyncOperations with SubscriptionManagement
+
+  def reThrowExpectationException[R](why: => String)(f: => R): R = {
+    try {
+      f
+    } catch {
+      case e: ExpectationException => throw new ExpectationException(why)
+    }
+  }
 }

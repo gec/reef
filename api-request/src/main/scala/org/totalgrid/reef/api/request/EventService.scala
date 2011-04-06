@@ -32,7 +32,13 @@ import org.totalgrid.reef.api.javaclient.IEventAcceptor
  */
 trait EventService {
   /**
-   * get the most recent events
+   * get a single event
+   * @param uuid UUID of event
+   */
+  def getEvent(uuid: ReefUUID): Event
+
+  /**
+   *  get the most recent events
    * @param limit the number of incoming events
    */
   @throws(classOf[ReefServiceException])
@@ -47,19 +53,12 @@ trait EventService {
   def getRecentEvents(limit: Int, sub: ISubscription[Event]): java.util.List[Event]
 
   /**
-   * get the most recent alarms
-   * @param limit the number of incoming alarms
-   */
-  @throws(classOf[ReefServiceException])
-  def getRecentAlarms(limit: Int): java.util.List[Alarm]
-
-  /**
-   * get the most recent alarms and setup a subscription to all future alarms
+   * get the most recent events
+   * @param types event type names
    * @param limit the number of incoming events
-   * @param sub a subscription object that consumes the new Alarms coming in
    */
   @throws(classOf[ReefServiceException])
-  def getRecentAlarms(limit: Int, sub: ISubscription[Alarm]): java.util.List[Alarm]
+  def getRecentEvents(types: java.util.List[String], limit: Int): java.util.List[Event]
 
   /**
    * publish a new Event to the system
@@ -68,32 +67,9 @@ trait EventService {
   def publishEvent(event: Event): Event
 
   /**
-   * silences an audible alarm
-   */
-  @throws(classOf[ReefServiceException])
-  def silenceAlarm(alarm: Alarm): Alarm
-
-  /**
-   * acknowledge the alarm (silences if not already silenced)
-   */
-  @throws(classOf[ReefServiceException])
-  def acknowledgeAlarm(alarm: Alarm): Alarm
-
-  /**
-   * "remove" an Alarm from the active list.
-   */
-  @throws(classOf[ReefServiceException])
-  def removeAlarm(alarm: Alarm): Alarm
-
-  /**
    * Create a subscription object that can receive Events.
    * @return "blank" subscription object, needs to have the subscription configured by passing it with another request
    */
   def createEventSubscription(callback: IEventAcceptor[Event]): ISubscription[Event]
 
-  /**
-   * Create a subscription object that can receive Alarms.
-   * @return "blank" subscription object, needs to have the subscription configured by passing it with another request
-   */
-  def createAlarmSubscription(callback: IEventAcceptor[Alarm]): ISubscription[Alarm]
 }

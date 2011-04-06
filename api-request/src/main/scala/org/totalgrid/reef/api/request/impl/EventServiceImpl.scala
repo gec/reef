@@ -20,16 +20,21 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.request.EventService
 import org.totalgrid.reef.api.ISubscription
 import org.totalgrid.reef.proto.Events.Event
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.request.builders.{ AlarmRequestBuilders, AlarmListRequestBuilders, EventListRequestBuilders }
-import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.request.{ ReefUUID, EventService }
+import org.totalgrid.reef.api.request.builders.{ EventRequestBuilders, EventListRequestBuilders }
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
+
+  def getEvent(uuid: ReefUUID) = {
+    reThrowExpectationException("Event with UUID: " + uuid.getUuid + " not found") {
+      ops.getOneOrThrow(EventRequestBuilders.getByUUID(uuid))
+    }
+  }
 
   def getRecentEvents(limit: Int) = {
     val ret = ops.getOneOrThrow(EventListRequestBuilders.getAll(limit))
@@ -43,38 +48,16 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
     if (limit > events.size) throw new Exception("Limit larger than temporary limit of : " + events.size)
     events.slice(0, limit)
   }
+  def getRecentEvents(types: java.util.List[String], limit: Int) = {
+    val ret = ops.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit))
+    ret.getEventsList
+  }
   def publishEvent(event: Event) = {
     ops.putOneOrThrow(event)
-  }
-
-  def getRecentAlarms(limit: Int) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getAll(limit))
-    ret.getAlarmsList
-  }
-  def getRecentAlarms(limit: Int, sub: ISubscription[Alarm]) = {
-    // TODO: add subscription to AlarmList service
-    val alarms = ops.getOrThrow(AlarmRequestBuilders.getAllByType("*"), sub)
-    if (limit > alarms.size) throw new Exception("Limit larger than temporary limit of : " + alarms.size)
-    alarms.slice(0, limit)
-  }
-
-  def createAlarmSubscription(callback: IEventAcceptor[Alarm]) = {
-    ops.addSubscription(Descriptors.alarm.getKlass, callback.onEvent)
   }
 
   def createEventSubscription(callback: IEventAcceptor[Event]) = {
     ops.addSubscription(Descriptors.event.getKlass, callback.onEvent)
   }
 
-  def removeAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build)
-  }
-
-  def acknowledgeAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build)
-  }
-
-  def silenceAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build)
-  }
 }

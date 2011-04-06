@@ -23,8 +23,8 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 
 import org.totalgrid.reef.shell.proto.presentation.{ AlarmView }
-import request.{ AlarmRequest }
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.request.ReefUUID
 
 @Command(scope = "alarm", name = "alarm", description = "Prints alarms.")
 class AlarmCommand extends ReefCommandSupport {
@@ -32,13 +32,62 @@ class AlarmCommand extends ReefCommandSupport {
   @GogoOption(name = "-t", description = "Show alarms of type.", required = false, multiValued = true)
   var types: java.util.List[String] = null
 
-  @GogoOption(name = "-u", description = "Show alarms of user.", required = false, multiValued = true)
-  var users: java.util.List[String] = null
+  @GogoOption(name = "-l", description = "Limit number of displayed events", required = false, multiValued = true)
+  var limit: Int = 10
 
   def doCommand() = {
     val typList = Option(types).map(_.toList) getOrElse Nil
-    val userList = Option(users).map(_.toList) getOrElse Nil
 
-    AlarmView.printTable(AlarmRequest.getAlarms(userList, typList, reefSession).reverse)
+    val alarms = services.getActiveAlarms(typList, limit).toList.reverse
+
+    AlarmView.printTable(alarms)
+  }
+}
+
+@Command(scope = "alarm", name = "silence", description = "Silences an Alarm")
+class AlarmSilenceCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "id", description = "Alarm id", required = true, multiValued = false)
+  private var id: String = null
+
+  def doCommand() = {
+
+    val alarm = services.getAlarm(new ReefUUID(id))
+
+    val edittedAlarm = services.silenceAlarm(alarm)
+
+    AlarmView.printTable(edittedAlarm :: Nil)
+  }
+}
+
+@Command(scope = "alarm", name = "ack", description = "Acknowledges an Alarm")
+class AlarmAcknowledgeCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "id", description = "Alarm id", required = true, multiValued = false)
+  private var id: String = null
+
+  def doCommand() = {
+
+    val alarm = services.getAlarm(new ReefUUID(id))
+
+    val edittedAlarm = services.acknowledgeAlarm(alarm)
+
+    AlarmView.printTable(edittedAlarm :: Nil)
+  }
+}
+
+@Command(scope = "alarm", name = "remove", description = "Removes an Alarm")
+class AlarmRemoveCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "id", description = "Alarm id", required = true, multiValued = false)
+  private var id: String = null
+
+  def doCommand() = {
+
+    val alarm = services.getAlarm(new ReefUUID(id))
+
+    val edittedAlarm = services.removeAlarm(alarm)
+
+    AlarmView.printTable(edittedAlarm :: Nil)
   }
 }

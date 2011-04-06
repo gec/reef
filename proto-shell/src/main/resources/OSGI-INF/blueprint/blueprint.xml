@@ -74,6 +74,15 @@
         <command name="alarm/alarm">
             <action class="org.totalgrid.reef.shell.proto.AlarmCommand"/>
         </command>
+        <command name="alarm/silence">
+            <action class="org.totalgrid.reef.shell.proto.AlarmSilenceCommand"/>
+        </command>
+        <command name="alarm/ack">
+            <action class="org.totalgrid.reef.shell.proto.AlarmAcknowledgeCommand"/>
+        </command>
+        <command name="alarm/remove">
+            <action class="org.totalgrid.reef.shell.proto.AlarmRemoveCommand"/>
+        </command>
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
         </command>
