@@ -20,23 +20,33 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.apache.felix.gogo.commands.{ Command, Argument }
+import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
+import java.io.{ BufferedReader, InputStreamReader }
 
-@Command(scope = "reef", name = "login", description = "Logs a user into the system")
+@Command(scope = "reef", name = "login", description = "Logs a user into the system, asks for password interactively")
 class ReefLoginCommand extends ReefCommandSupport {
   override val requiresLogin = false
 
   @Argument(index = 0, name = "user name", description = "user name", required = true, multiValued = false)
-  private var username: String = null
+  private var userName: String = null
 
-  @Argument(index = 1, name = "password", description = "password", required = true, multiValued = false)
+  @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
   private var password: String = null
 
   def doCommand() = {
-    val request = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(username).setPassword(password)).build
+    if (password == null) {
+      val stdIn = new BufferedReader(new InputStreamReader(System.in))
+
+      System.out.println("Enter Password: ")
+      password = stdIn.readLine.trim
+    } else {
+      System.out.println("WARNING: Password will be visible in karaf command history!")
+    }
+
+    val request = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(userName).setPassword(password)).build
     val response = putOneOrThrow(request)
-    this.login(username, response.getToken)
+    this.login(userName, response.getToken)
   }
 }
 
