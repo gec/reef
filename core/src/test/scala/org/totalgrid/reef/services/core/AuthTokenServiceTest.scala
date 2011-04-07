@@ -46,7 +46,9 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   class Fixture {
     val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
-    val service = new AuthTokenService(modelFac.authTokens)
+    val authService = new AuthTokenService(modelFac.authTokens)
+
+    val agentService = new AgentService(modelFac.agents)
 
     def loginFrom(user: String, location: String) = {
       login(user, user, None, None, location)
@@ -58,7 +60,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
       val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location)
       permissionSetName.foreach(ps => b.addPermissionSets(PermissionSet.newBuilder.setName(ps)))
       timeoutAt.foreach(t => b.setExpirationTime(t))
-      val authToken = one(service.put(b.build))
+      val authToken = one(authService.put(b.build))
       // just check that the token is not a blank string
       authToken.getToken.length should not equal (0)
       authToken.getExpirationTime should (be >= System.currentTimeMillis)
@@ -153,7 +155,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
     val fix = new Fixture
 
     val authToken = fix.login("core", "core")
-    val deletedToken = one(fix.service.delete(authToken))
+    val deletedToken = one(fix.authService.delete(authToken))
 
     deletedToken.getExpirationTime should equal(-1)
   }
@@ -221,7 +223,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val fix = new AuthFixture
 
     val authToken = fix.login("guest", "guest")
-    one(fix.service.delete(authToken))
+    one(fix.authService.delete(authToken))
 
     fix.testRequest(Status.UNAUTHORIZED, Verb.GET, List(authToken.getToken))
   }

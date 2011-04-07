@@ -53,6 +53,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
     // we do not lock out people without auth tokens from the authtoken service, otherwise we couldn't bootstrap
     new AuthTokenService(modelFac.authTokens),
+    new AgentService(modelFac.agents),
 
     new CommandAccessService(modelFac.accesses),
 

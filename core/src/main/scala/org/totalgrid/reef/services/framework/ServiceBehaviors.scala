@@ -123,6 +123,7 @@ object ServiceBehaviors {
 
     protected def create(model: ServiceModelType, req: ProtoType): Tuple2[ProtoType, Envelope.Status] = {
       val proto = preCreate(req)
+      // TODO: fix this bug, check tests
       val sql = model.createFromProto(req)
       postCreate(sql, req)
       (model.convertToProto(sql), Envelope.Status.CREATED)

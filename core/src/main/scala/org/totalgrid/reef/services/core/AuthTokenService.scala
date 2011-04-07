@@ -231,33 +231,6 @@ class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenSe
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: move agent and permissions converstion traits to own files when services are implemented
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-trait AgentConversions
-    extends MessageModelConversion[Agent, AgentModel]
-    with UniqueAndSearchQueryable[Agent, AgentModel] {
-
-  val table = ApplicationSchema.agents
-
-  def uniqueQuery(proto: Agent, sql: AgentModel) = {
-    List(
-      proto.uid.asParam(sql.id === _.toInt),
-      proto.name.asParam(sql.name === _))
-  }
-
-  def searchQuery(proto: Agent, sql: AgentModel) = Nil
-
-  def getRoutingKey(req: Agent) = ProtoRoutingKeys.generateRoutingKey {
-    req.name :: Nil
-  }
-
-  def isModified(existing: AgentModel, updated: AgentModel): Boolean = false
-
-  def convertToProto(entry: AgentModel): Agent = {
-    Agent.newBuilder.setUid(entry.id.toString).setName(entry.name).build
-  }
-
-  def createModelEntry(proto: Agent): AgentModel = throw new Exception
-}
-object AgentConversions extends AgentConversions
 
 trait PermissionSetConversions
     extends MessageModelConversion[PermissionSet, PermissionSetModel]

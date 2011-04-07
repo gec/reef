@@ -66,6 +66,7 @@ object Agent {
   }
 }
 
+// not a case class because we dont want to accidentally print the digest+salt in the logs
 class Agent(
     val name: String,
     val digest: String,
@@ -73,25 +74,33 @@ class Agent(
 
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
 
+  val authTokens = LazyVar(ApplicationSchema.authTokens.where(au => au.agentId === id))
+
   def checkPassword(password: String): Boolean = {
     import SaltedPasswordHelper._
     dec64(digest) == calcDigest(dec64(salt), password)
   }
+
+  def copyWithUpdatedPassword(password: String): Agent = {
+    val agent = Agent.createAgentWithPassword(name, password)
+    agent.id = id
+    agent
+  }
 }
-class AuthPermission(
+case class AuthPermission(
     val allow: Boolean,
     val resource: String,
     val verb: String) extends ModelWithId {
 
 }
-class PermissionSet(
+case class PermissionSet(
     val name: String,
     val defaultExpirationTime: Long) extends ModelWithId {
 
   val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionId === id) select (&(p.permissionId)))))
 }
 
-class AuthToken(
+case class AuthToken(
     val token: String,
     val agentId: Long,
     val loginLocation: String,

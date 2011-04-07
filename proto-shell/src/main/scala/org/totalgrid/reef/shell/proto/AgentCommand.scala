@@ -28,16 +28,9 @@ import org.totalgrid.reef.shell.proto.presentation.AgentView
 import scala.collection.JavaConversions._
 
 abstract class AgentCommandBase extends ReefCommandSupport {
-  @Argument(index = 0, name = "agent name", description = "agent name", required = true, multiValued = false)
-  var agentName: String = null
-
   lazy val authService: AgentService = services
-}
 
-@Command(scope = "agents", name = "password", description = "Sets the password for an agent")
-class AgentSetPasswordCommand extends AgentCommandBase {
-
-  def doCommand() = {
+  def getRepeatedPassword(): String = {
     val stdin = new BufferedReader(new InputStreamReader(System.in))
     System.out.println("   New Password: ")
     val newPassword = stdin.readLine.trim
@@ -46,13 +39,28 @@ class AgentSetPasswordCommand extends AgentCommandBase {
     val repeatedPassword = stdin.readLine.trim
 
     if (repeatedPassword != newPassword) {
-      System.out.println("Passwords didn't match")
-    } else {
-      val agent = authService.getAgent(agentName)
-
-      authService.setAgentPassword(agent, newPassword)
-      System.out.println("Updated password for agent: " + agentName)
+      throw new Exception("Passwords didn't match")
     }
+
+    repeatedPassword
+  }
+}
+
+abstract class SingleAgentCommandBase extends AgentCommandBase {
+  @Argument(index = 0, name = "agent name", description = "agent name", required = true, multiValued = false)
+  var agentName: String = null
+}
+
+@Command(scope = "agents", name = "password", description = "Sets the password for an agent")
+class AgentSetPasswordCommand extends SingleAgentCommandBase {
+
+  def doCommand() = {
+
+    val newPassword = getRepeatedPassword()
+    val agent = authService.getAgent(agentName)
+
+    authService.setAgentPassword(agent, newPassword)
+    System.out.println("Updated password for agent: " + agentName)
   }
 }
 
@@ -79,28 +87,23 @@ class AgentPermissionsCommand extends AgentCommandBase {
 }
 
 @Command(scope = "agents", name = "create", description = "Create a new agent on system")
-class AgentCreateCommand extends AgentCommandBase {
+class AgentCreateCommand extends SingleAgentCommandBase {
 
   @GogoOption(name = "-s", description = "Names of wanted permissionSets, must include at least one", required = true, multiValued = true)
   var permissionSets: java.util.List[String] = null
 
   def doCommand() = {
 
-    val stdin = new BufferedReader(new InputStreamReader(System.in))
-    System.out.println("   New Password: ")
-    val newPassword = stdin.readLine.trim
+    val newPassword = getRepeatedPassword()
 
-    System.out.println("Repeat Password: ")
-    val repeatedPassword = stdin.readLine.trim
-
-    val agent = authService.createNewAgent(agentName, repeatedPassword, permissionSets)
+    val agent = authService.createNewAgent(agentName, newPassword, permissionSets)
 
     AgentView.printAgents(agent :: Nil)
   }
 }
 
 @Command(scope = "agents", name = "delete", description = "Delete an agent from the system")
-class AgentDeleteCommand extends AgentCommandBase {
+class AgentDeleteCommand extends SingleAgentCommandBase {
 
   def doCommand() = {
 
