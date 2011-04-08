@@ -59,16 +59,14 @@ class EventQueryTest
     val desc = "Get all events by specifying a wildcard EventSelect (except a limit of 2 records returned)."
 
     client.addExplanation("Get all events", desc)
-    client.getOneOrThrow(EventListRequestBuilders.getAll(2))
-
+    client.getRecentEvents(2)
   }
 
   test("Get all login/logout events") {
     val desc = "Get all login/logout events (limit 2)."
 
     client.addExplanation("Get all login/logout events", desc)
-    client.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(List("System.UserLogin", "System.UserLogout"), 2))
-
+    client.getRecentEvents(List("System.UserLogin", "System.UserLogout"), 2)
   }
 
   test("Get events with multiple selects") {
@@ -79,7 +77,7 @@ class EventQueryTest
     val twoHoursFromNow = nowPlus(Calendar.HOUR, 2)
 
     client.addExplanation("Get events with multiple selects", desc)
-    client.getOneOrThrow(EventListRequestBuilders.getByTimeRangeAndSubsystem(yesterday, twoHoursFromNow, "Core", 2))
+    client.getEvents(EventListRequestBuilders.getByTimeRangeAndSubsystemSelector(yesterday, twoHoursFromNow, "Core", 2).build)
   }
 
   // Get a time offset based on the well known NOW_MS

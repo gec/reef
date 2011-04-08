@@ -34,6 +34,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api._
 import service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, ServiceEventPublishers }
+import org.totalgrid.reef.services.ProtoRoutingKeys
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -49,13 +51,17 @@ object EventQueryService {
   def buildQuery(row: EventStore, select: EventSelect): List[Option[LogicalBoolean]] = {
 
     // Each can have 1 or more lists of values to match against.
-    // TODO: Squeryl problem? if (select.getSeverityCount > 0) expressions ::= (row.severity in select.getSeverityList.toList)
-    // TODO: check if _.getUID is empty string.
-    //if (select.getEntityCount > 0) expressions ::= (row.entityId in EQ.findEntities(select.getEntityList.toList).map(_.id))
+
+    var severityOptions = routingOption(select.getSeverityList) { _.map { _.intValue } }
+    if (select.hasSeverityOrHigher) {
+      val higherOptions = new Range(1, select.getSeverityOrHigher + 1, 1).toList
+      severityOptions = (higherOptions ::: severityOptions).distinct
+    }
 
     List(
       select.getEventTypeList.asParam { row.eventType in _ },
       select.getSubsystemList.asParam { row.subsystem in _ },
+      severityOptions.asParam { row.severity in _ },
       select.getUserIdList.asParam { row.userId in _ },
       select.getEntityList.asParam { row.entityId in _.map(EQ.idsFromProtoQuery(_)).flatten.distinct },
       select.timeFrom.asParam(row.time gte _),
@@ -63,10 +69,36 @@ object EventQueryService {
       select.uidAfter.asParam(row.id gt _.toLong))
   }
 
+  def makeSubscriptionKeyParts(select: EventSelect): List[List[String]] = {
+    if (select.hasTimeTo) throw new BadRequestException("Illegal subscribe query: timeTo field set, all subscriptions must be live.")
+
+    var severityOptions = routingOption(select.getSeverityList) { _.map { _.toString } }
+    if (select.hasSeverityOrHigher) {
+      val higherOptions = new Range(1, select.getSeverityOrHigher + 1, 1).map { _.toString }.toList
+      severityOptions = (higherOptions ::: severityOptions).distinct
+    }
+
+    val routingKeyParts =
+      routingOption(select.getEventTypeList) { s => s } ::
+        severityOptions ::
+        routingOption(select.getSubsystemList) { s => s } ::
+        routingOption(select.getUserIdList) { s => s } ::
+        routingOption(select.getEntityList) { _.map(EQ.idsFromProtoQuery(_)).flatten.distinct.map { _.toString } } :: Nil
+
+    val multipleTypesSubscription = routingKeyParts.filter(_.size > 1)
+    if (multipleTypesSubscription.size > 1) {
+      throw new BadRequestException("Illegal subscribe query: cannot subscribe using multiple entries in multiple lists, multiple entries allowed in at most 1 list")
+    }
+    routingKeyParts
+
+  }
 }
 
-class EventQueryService(protected val modelTrans: ServiceTransactable[EventServiceModel])
+class EventQueryService(protected val modelTrans: ServiceTransactable[EventServiceModel], subHandler: ServiceSubscriptionHandler)
     extends AsyncToSyncServiceAdapter[EventList] {
+
+  def this(cm: ServiceTransactable[EventServiceModel], pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[Event]))
+
   import EventQueryService._
 
   override val descriptor = Descriptors.eventList
@@ -77,14 +109,16 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
   override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 
-    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
-
-    if (!req.hasSelect)
-      throw new BadRequestException("Must include select")
+    if (!req.hasSelect) throw new BadRequestException("Must include select")
+    val select = req.getSelect
 
     modelTrans.transaction { (model: EventServiceModel) =>
 
-      val select = req.getSelect
+      env.subQueue.foreach { queueName =>
+        val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
+        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts)))
+      }
+
       val limit = select.limit.getOrElse(1000) // default all queries to max of 1000 events.
 
       val entries =

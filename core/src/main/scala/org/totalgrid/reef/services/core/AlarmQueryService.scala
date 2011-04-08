@@ -33,6 +33,8 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
 import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -50,9 +52,19 @@ object AlarmQueryService {
     List(
       select.getStateList.asParam(row.state in _.map(_.getNumber))) ::: select.eventSelect.map(EventQueryService.buildQuery(eventRow, _)).getOrElse(Nil)
   }
+
+  def makeSubscriptionKeyParts(select: AlarmSelect): List[List[String]] = {
+
+    val eventParts = EventQueryService.makeSubscriptionKeyParts(select.getEventSelect)
+    val alarmParts = List(Nil: List[String]) ::: eventParts
+
+    alarmParts
+  }
 }
 
-class AlarmQueryService extends AsyncToSyncServiceAdapter[AlarmList] {
+class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[AlarmList] {
+
+  def this(pubs: ServiceEventPublishers) = this(pubs.getEventSink(classOf[Alarm]))
 
   override val descriptor = Descriptors.alarmList
 
@@ -64,14 +76,15 @@ class AlarmQueryService extends AsyncToSyncServiceAdapter[AlarmList] {
     import ApplicationSchema._
     import AlarmQueryService._
 
-    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
+    if (!req.hasSelect) throw new BadRequestException("Must include select")
 
-    if (!req.hasSelect)
-      throw new BadRequestException("Must include select")
+    val select = req.getSelect
 
     transaction {
-
-      val select = req.getSelect
+      env.subQueue.foreach { queueName =>
+        val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
+        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts)))
+      }
 
       // default all queries to max of 1000 events.
       val limit = select.eventSelect.limit getOrElse 1000

@@ -155,7 +155,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
     val pubs = new SilentEventPublishers
     val fac = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
-    val service = new AlarmQueryService
+    val service = new AlarmQueryService(pubs)
 
     Fixture(service)
   }

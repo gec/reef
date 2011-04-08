@@ -205,9 +205,7 @@ object SquerylModel {
   }
   implicit def makeAsParam[A](o: Option[A]): FilterStars[A] = new FilterStars(o)
 
-  class ListFilterStars[A](javaList: java.util.List[A]) {
-    import scala.collection.JavaConversions._
-    val list = javaList.toList
+  class ListFilterStars[A](list: List[A]) {
     def asParam(f: List[A] => LogicalBoolean): Option[LogicalBoolean] = {
       list match {
         case List() => None
@@ -216,5 +214,27 @@ object SquerylModel {
       }
     }
   }
-  implicit def makeListAsParam[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList)
+  implicit def makeListAsParam[A](list: List[A]): ListFilterStars[A] = new ListFilterStars(list)
+  import scala.collection.JavaConversions._
+  implicit def makeListAsParam[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList.toList)
+
+  def routingOption[A, R](jList: java.util.List[A])(f: List[A] => List[R]): List[R] = {
+    import scala.collection.JavaConversions._
+    routingOption(jList.toList)(f)
+  }
+
+  def routingOption[A, R](list: List[A])(f: List[A] => List[R]): List[R] = {
+    list match {
+      case List() => Nil
+      case List("*") => Nil
+      case _ => f(list)
+    }
+  }
+
+  def createSubscriptionPermutations(lists: List[List[String]]): List[List[Option[String]]] = {
+    lists.foldLeft(List(Nil: List[Option[String]])) { (keys, entries) =>
+      if (entries.isEmpty) keys.map { k => None :: k }
+      else entries.map { e => keys.map { k => Some(e) :: k } }.flatten
+    }.map { _.reverse }
+  }
 }

@@ -78,10 +78,10 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new MeasurementHistoryService(wrappedHistorian, pubs),
     new MeasurementSnapshotService(wrappedDb, pubs),
     new EventConfigService(modelFac.eventConfig),
-    new EventQueryService(modelFac.events),
+    new EventQueryService(modelFac.events, pubs),
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms),
-    new AlarmQueryService)
+    new AlarmQueryService(pubs))
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),

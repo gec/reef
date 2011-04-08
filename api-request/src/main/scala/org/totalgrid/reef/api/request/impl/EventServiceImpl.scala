@@ -21,12 +21,12 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.ISubscription
-import org.totalgrid.reef.proto.Events.Event
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.request.{ ReefUUID, EventService }
 import org.totalgrid.reef.api.request.builders.{ EventRequestBuilders, EventListRequestBuilders }
+import org.totalgrid.reef.proto.Events.{ EventSelect, Event }
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
@@ -41,15 +41,19 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
     ret.getEventsList
   }
   def getRecentEvents(limit: Int, sub: ISubscription[Event]) = {
-    // TODO: add subscription to EventList service
-    // currently eventlist doesnt let us subscribe so we work around it by calling regular event
-    // service, only issue is the limit is fixed.
-    val events = ops.getOrThrow(Event.newBuilder.setEventType("*").build, sub)
-    if (limit > events.size) throw new Exception("Limit larger than temporary limit of : " + events.size)
-    events.slice(0, limit)
+    val ret = ops.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub)
+    ret.getEventsList
   }
   def getRecentEvents(types: java.util.List[String], limit: Int) = {
     val ret = ops.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit))
+    ret.getEventsList
+  }
+  def getEvents(selector: EventSelect) = {
+    val ret = ops.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector))
+    ret.getEventsList
+  }
+  def getEvents(selector: EventSelect, sub: ISubscription[Event]) = {
+    val ret = ops.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub)
     ret.getEventsList
   }
   def publishEvent(event: Event) = {

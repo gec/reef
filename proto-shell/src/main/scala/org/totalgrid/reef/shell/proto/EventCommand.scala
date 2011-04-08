@@ -33,13 +33,12 @@ class EventCommand extends ReefCommandSupport {
   @GogoOption(name = "-t", description = "Show events of type.", required = false, multiValued = true)
   var types: java.util.List[String] = null
 
-  @GogoOption(name = "-u", description = "Show events of user.", required = false, multiValued = true)
-  var users: java.util.List[String] = null
+  @GogoOption(name = "-l", description = "Limit number of displayed events", required = false, multiValued = true)
+  var limit: Int = 10
 
   def doCommand() = {
-    val typList = Option(types).map(_.toList) getOrElse Nil
-    val userList = Option(users).map(_.toList) getOrElse Nil
+    val typList = Option(types).map(_.toList) getOrElse List("*")
 
-    EventView.printEventTable(EventRequest.getEvents(userList, typList, reefSession).reverse)
+    EventView.printEventTable(services.getRecentEvents(typList, limit).toList.reverse)
   }
 }

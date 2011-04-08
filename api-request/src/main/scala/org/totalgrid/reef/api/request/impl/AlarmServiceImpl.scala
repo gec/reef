@@ -41,10 +41,8 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
     ret.getAlarmsList
   }
   def getActiveAlarms(limit: Int, sub: ISubscription[Alarm]) = {
-    // TODO: add subscription to AlarmList service
-    val alarms = ops.getOrThrow(AlarmRequestBuilders.getAllByType("*"), sub)
-    if (limit > alarms.size) throw new Exception("Limit larger than temporary limit of : " + alarms.size)
-    alarms.slice(0, limit)
+    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub)
+    ret.getAlarmsList
   }
 
   def getActiveAlarms(types: java.util.List[String], limit: Int) = {

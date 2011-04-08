@@ -130,7 +130,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     val alarms = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
     val eventConfig = new EventConfigServiceModelFactory(pubs)
     val fac = new EventServiceModelFactory(pubs, eventConfig, alarms)
-    val service = new EventQueryService(fac)
+    val service = new EventQueryService(fac, pubs)
 
     Fixture(service)
   }

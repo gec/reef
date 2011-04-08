@@ -44,6 +44,9 @@ object EventListRequestBuilders {
   def getAllByEventTypes(typs: java.util.List[String], limit: Int): EventList = getByEventSelect(withLimit(limit).addAllEventType(typs))
 
   def getByTimeRangeAndSubsystem(from: Long, to: Long, subsystem: String, limit: Int) = {
-    getByEventSelect(withLimit(limit).setTimeFrom(from).setTimeTo(to).addSubsystem(subsystem))
+    getByEventSelect(getByTimeRangeAndSubsystemSelector(from, to, subsystem, limit))
+  }
+  def getByTimeRangeAndSubsystemSelector(from: Long, to: Long, subsystem: String, limit: Int) = {
+    withLimit(limit).setTimeFrom(from).setTimeTo(to).addSubsystem(subsystem)
   }
 }
