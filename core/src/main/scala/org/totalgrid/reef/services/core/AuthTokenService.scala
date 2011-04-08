@@ -95,7 +95,7 @@ trait AuthTokenConversions
   }
 
   def searchQuery(proto: AuthToken, sql: AuthTokenModel) = {
-    List(proto.expirationTime.asParam(sql.expirationTime))
+    Nil
   }
 
   def isModified(existing: AuthTokenModel, updated: AuthTokenModel): Boolean = {

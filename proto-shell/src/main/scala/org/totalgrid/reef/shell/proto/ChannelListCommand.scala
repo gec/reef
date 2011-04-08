@@ -31,7 +31,7 @@ class ChannelListCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val results = ChannelRequest.getAll(this)
+    val results = ChannelRequest.getAll(reefSession)
     println("Found " + results.size + " channel(s)")
     results.foreach { channel =>
       println(channel.getName + ": " + channel.getState)

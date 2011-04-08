@@ -44,6 +44,7 @@ trait AlarmService {
    * get a single alarm
    * @param uuid UUID of event
    */
+  @throws(classOf[ReefServiceException])
   def getAlarm(uuid: ReefUUID): Alarm
 
   /**

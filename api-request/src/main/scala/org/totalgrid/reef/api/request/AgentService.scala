@@ -21,26 +21,75 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.api.ReefServiceException
 
 trait AgentService {
 
+  /**
+   * @param name of agent to find
+   * @return the agent requested or throws exception
+   */
+  @throws(classOf[ReefServiceException])
   def getAgent(name: String): Agent
 
+  /**
+   * @return list of all agents
+   */
+  @throws(classOf[ReefServiceException])
   def getAgents(): java.util.List[Agent]
 
+  /**
+   * Creates (or overwrites) an agent and grants them access to the named PermissionSets
+   *
+   * @param name agent name
+   * @param password password for agent, must obey systems password rules
+   * @param permissionSetNames list of permissions sets we want to assign to the user
+   * @return the newly created agent object
+   */
+  @throws(classOf[ReefServiceException])
   def createNewAgent(name: String, password: String, permissionSetNames: java.util.List[String]): Agent
 
+  /**
+   * @param agent the agent to delete
+   * @return the deleted agent
+   */
+  @throws(classOf[ReefServiceException])
   def deleteAgent(agent: Agent): Agent
 
+  /**
+   * Updates the agent password
+   *
+   * @param agent the agent to update
+   * @param newPassword the new password, must obey systems password rules
+   */
+  @throws(classOf[ReefServiceException])
   def setAgentPassword(agent: Agent, newPassword: String)
 
-  def getLoginLocations(agent : Agent)
-
+  /**
+   * @return list of all of the possible permission sets
+   */
+  @throws(classOf[ReefServiceException])
   def getPermissionSets(): java.util.List[PermissionSet]
 
+  /**
+   * @param name of PermissionSet
+   * @return the permissionset with matching name or an exception is thrown
+   */
+  @throws(classOf[ReefServiceException])
   def getPermissionSet(name: String): PermissionSet
 
+  /**
+   * @param name descriptive name for the PermissionSet
+   * @param permissions list of allows and denies we want to create
+   * @return the created PermissionSet or throws an exception
+   */
+  @throws(classOf[ReefServiceException])
   def createPermissionSet(name: String, permissions: java.util.List[Permission]): PermissionSet
 
-  def deletePermissionSet(agent: PermissionSet): PermissionSet
+  /**
+   * @param permission the PermissionSet to delete
+   * @return the deleted PermissionSet
+   */
+  @throws(classOf[ReefServiceException])
+  def deletePermissionSet(permission: PermissionSet): PermissionSet
 }

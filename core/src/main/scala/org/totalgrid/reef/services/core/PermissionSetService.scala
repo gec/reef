@@ -35,7 +35,8 @@ import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 
 class PermissionSetService(protected val modelTrans: ServiceTransactable[PermissionSetServiceModel])
-    extends BasicSyncModeledService[PermissionSetProto, PermissionSet, PermissionSetServiceModel] {
+    extends BasicSyncModeledService[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.permissionSet
 }

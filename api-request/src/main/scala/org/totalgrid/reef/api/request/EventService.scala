@@ -35,6 +35,7 @@ trait EventService {
    * get a single event
    * @param uuid UUID of event
    */
+  @throws(classOf[ReefServiceException])
   def getEvent(uuid: ReefUUID): Event
 
   /**

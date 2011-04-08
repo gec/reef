@@ -31,7 +31,7 @@ class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val results = EndpointRequest.getAll(this)
+    val results = EndpointRequest.getAll(reefSession)
     println("Found " + results.size + " endpoints(s)")
     results.foreach { ep =>
       println(ep.getUid + ": " + ep.getState)
