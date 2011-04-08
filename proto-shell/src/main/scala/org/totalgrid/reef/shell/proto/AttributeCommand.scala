@@ -22,27 +22,31 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 
-import presentation.AttributeView
-import request.AttributeRequest
+import org.totalgrid.reef.shell.proto.presentation.AttributeView
+
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
+
+import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.util.Conversion
 
 @Command(scope = "attr", name = "attr", description = "Prints the attributes for an entity.")
 class AttributeCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
-  private var id: String = null
+  @Argument(index = 0, name = "entity name", description = "Entity name", required = true, multiValued = false)
+  private var entityName: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.getByEntityUid(id, reefSession))
+    val entity = services.getEntityByName(entityName)
+    val attributes = services.getEntityAttributes(new ReefUUID(entity.getUid))
+    AttributeView.printAttributes(attributes)
   }
 }
 
 @Command(scope = "attr", name = "set", description = "Prints events.")
 class AttributeSetCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
-  private var id: String = null
+  @Argument(index = 0, name = "entity name", description = "Entity name", required = true, multiValued = false)
+  private var entityName: String = null
 
   @Argument(index = 1, name = "name", description = "Attribute name", required = true, multiValued = false)
   private var name: String = null
@@ -51,31 +55,46 @@ class AttributeSetCommand extends ReefCommandSupport {
   private var value: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.setEntityAttribute(id, name, value, reefSession))
+
+    val entity = services.getEntityByName(entityName)
+    val entityUUID = new ReefUUID(entity.getUid)
+    val attributes = Conversion.convertStringToType(value) match {
+      case x: Long => services.setEntityAttribute(entityUUID, name, x)
+      case x: Double => services.setEntityAttribute(entityUUID, name, x)
+      case x: Boolean => services.setEntityAttribute(entityUUID, name, x)
+      case x: String => services.setEntityAttribute(entityUUID, name, x)
+      case x: Any => throw new Exception("Couldn't convert " + x + " into long,boolean,double or string: " + x.asInstanceOf[AnyRef].getClass)
+    }
+
+    AttributeView.printAttributes(attributes)
   }
 }
 
 @Command(scope = "attr", name = "remove", description = "Prints events.")
 class AttributeRemoveCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
-  private var id: String = null
+  @Argument(index = 0, name = "entity name", description = "Entity name", required = true, multiValued = false)
+  private var entityName: String = null
 
   @Argument(index = 1, name = "name", description = "Attribute name", required = true, multiValued = false)
   private var name: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.removeEntityAttribute(id, name, reefSession))
+    val entity = services.getEntityByName(entityName)
+    val attributes = services.removeEntityAttribute(new ReefUUID(entity.getUid), name)
+    AttributeView.printAttributes(attributes)
   }
 }
 
 @Command(scope = "attr", name = "clear", description = "Prints events.")
 class AttributeClearCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Entity id", required = true, multiValued = false)
-  private var id: String = null
+  @Argument(index = 0, name = "entity name", description = "Entity name", required = true, multiValued = false)
+  private var entityName: String = null
 
   def doCommand() = {
-    AttributeView.printAttributes(AttributeRequest.clearEntityAttributes(id, reefSession))
+    val entity = services.getEntityByName(entityName)
+    val attributes = services.clearEntityAttributes(new ReefUUID(entity.getUid))
+    AttributeView.printAttributes(attributes)
   }
 }

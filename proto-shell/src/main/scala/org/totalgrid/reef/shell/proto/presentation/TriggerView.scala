@@ -18,18 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.shell.proto.request
+package org.totalgrid.reef.shell.proto.presentation
 
-case class RequestFailure(why: String) extends Exception(why)
+import org.totalgrid.reef.proto.Processing.TriggerSet
 
-object RequestFailure {
-  def interpretAs[R](why: String)(f: => R): R = {
-    try f catch { case _ => throw RequestFailure(why) }
+object TriggerView {
+  def printTable(triggers: List[TriggerSet]) = {
+    Table.printTable(header, triggers.map(row(_)))
   }
 
-  def interpretNilAs[A](why: String)(f: => List[A]): List[A] = {
-    val result = f
-    if (result.isEmpty) throw RequestFailure(why)
-    result
+  def header = {
+    "PointId" :: "PointName" :: "TriggerCount" :: Nil
+  }
+
+  def row(a: TriggerSet) = {
+    "[" + a.getPoint.getUid + "]" :: a.getPoint.getName :: a.getTriggersCount.toString :: Nil
+  }
+
+  def inspectTrigger(a: TriggerSet) = {
+    println(a)
   }
 }

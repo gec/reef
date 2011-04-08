@@ -18,13 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.shell.proto.request
+package org.totalgrid.reef.shell.proto
 
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.api.scalaclient.SyncOperations
-object EndpointRequest {
+case class RequestFailure(why: String) extends Exception(why)
 
-  def getAll(client: SyncOperations): List[CommEndpointConnection] = {
-    client.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
+object RequestFailure {
+  def interpretAs[R](why: String)(f: => R): R = {
+    try f catch { case _ => throw RequestFailure(why) }
+  }
+
+  def interpretNilAs[A](why: String)(f: => List[A]): List[A] = {
+    val result = f
+    if (result.isEmpty) throw RequestFailure(why)
+    result
   }
 }

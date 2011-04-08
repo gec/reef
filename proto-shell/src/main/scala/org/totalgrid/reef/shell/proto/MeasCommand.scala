@@ -24,8 +24,8 @@ import org.apache.felix.gogo.commands.{ Command, Argument }
 
 import org.totalgrid.reef.shell.proto.presentation.{ MeasView }
 
-import org.totalgrid.reef.shell.proto.request.{ MeasRequest, PointRequest }
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.request.ReefUUID
 
 @Command(scope = "meas", name = "meas", description = "Prints all measurements or a specified measurement.")
 class MeasCommand extends ReefCommandSupport {
@@ -35,8 +35,10 @@ class MeasCommand extends ReefCommandSupport {
 
   def doCommand() = {
     Option(name) match {
-      case Some(measName) => MeasView.printInspect(MeasRequest.measByName(measName, reefSession))
-      case None => MeasView.printTable(MeasRequest.allMeasurements(reefSession))
+      case Some(measName) => MeasView.printInspect(services.getMeasurementByName(name))
+      case None =>
+        val points = services.getAllPoints
+        MeasView.printTable(services.getMeasurementsByPoints(points).toList)
     }
   }
 }
@@ -44,11 +46,15 @@ class MeasCommand extends ReefCommandSupport {
 @Command(scope = "meas", name = "from", description = "Prints measurements under an entity.")
 class MeasFromCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "parentId", description = "Parent entity uid/name.", required = true, multiValued = false)
-  var parentId: String = null
+  @Argument(index = 0, name = "parentId", description = "Parent entity name.", required = true, multiValued = false)
+  var parentName: String = null
 
   def doCommand(): Unit = {
-    MeasView.printTable(MeasRequest.measForEntity(parentId, reefSession))
+
+    val entity = services.getEntityByName(parentName)
+    val pointEntites = services.getEntityRelatedChildrenOfType(new ReefUUID(entity.getUid), "owns", "Point")
+
+    MeasView.printTable(services.getMeasurementsByNames(pointEntites.map { _.getName }).toList)
   }
 }
 
@@ -62,6 +68,8 @@ class MeasHistCommand extends ReefCommandSupport {
   var count: Int = 10
 
   def doCommand(): Unit = {
-    MeasView.printTable(MeasRequest.measHistory(name, count, reefSession))
+
+    val point = services.getPointByName(name)
+    MeasView.printTable(services.getMeasurementHistory(point, count).toList)
   }
 }

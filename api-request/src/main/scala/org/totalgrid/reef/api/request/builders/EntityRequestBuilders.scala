@@ -85,6 +85,18 @@ object EntityRequestBuilders {
         Entity.newBuilder.addTypes("Command"))).build
   }
 
+  def optionalChildrenSelector(parentName: String, relType: Option[String], subTypes: List[String], anyDepth: Boolean) = {
+    val req = Entity.newBuilder.setName(parentName)
+
+    val rel = Relationship.newBuilder
+      .setDescendantOf(true)
+      .setRelationship(relType getOrElse ("owns"))
+
+    if (!anyDepth) rel.setDistance(1)
+    subTypes.foreach(typ => rel.addEntities(Entity.newBuilder.addTypes(typ)))
+    req.addRelations(rel).build
+  }
+
 }
 
 import scala.collection.JavaConversions._

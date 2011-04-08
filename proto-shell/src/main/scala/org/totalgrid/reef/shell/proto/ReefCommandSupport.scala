@@ -21,8 +21,6 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders }
-import request.RequestFailure
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.request.impl.AllScadaServiceImpl
 

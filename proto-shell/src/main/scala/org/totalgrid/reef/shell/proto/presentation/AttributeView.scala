@@ -39,16 +39,16 @@ object AttributeView {
   }
 
   def toLine(attr: Attribute) = {
-    val v = attr.getVtype match {
-      case Attribute.Type.BOOL => attr.getValueBool
-      case Attribute.Type.STRING => attr.getValueString
-      case Attribute.Type.SINT64 => attr.getValueSint64
-      case Attribute.Type.DOUBLE => attr.getValueDouble
+    val (value, typeS) = attr.getVtype match {
+      case Attribute.Type.BOOL => (attr.getValueBool, "B")
+      case Attribute.Type.STRING => (attr.getValueString, "S")
+      case Attribute.Type.SINT64 => (attr.getValueSint64, "I")
+      case Attribute.Type.DOUBLE => (attr.getValueDouble, "D")
       case Attribute.Type.BYTES => {
         "data [length = " + attr.getValueBytes.size + "]"
       }
     }
 
-    attr.getName :: v.toString :: Nil
+    attr.getName :: value.toString :: "(" + typeS + ")" :: Nil
   }
 }

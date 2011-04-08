@@ -32,9 +32,6 @@
         <command name="command/issue">
             <action class="org.totalgrid.reef.shell.proto.CommandIssueCommand"/>
         </command>
-        <command name="command/status">
-            <action class="org.totalgrid.reef.shell.proto.CommandStatusCommand"/>
-        </command>
         <command name="access/access">
             <action class="org.totalgrid.reef.shell.proto.AccessCommand"/>
         </command>

@@ -132,6 +132,12 @@ trait CommandService {
   def getCommandLocks(): java.util.List[CommandAccess]
 
   /**
+   * get a command locks by UUID
+   */
+  @throws(classOf[ReefServiceException])
+  def getCommandLock(uuid: ReefUUID): CommandAccess
+
+  /**
    * get the command lock (if it exists) for a Command
    *
    * TODO: figure out how to handle null return values in scala
@@ -160,4 +166,11 @@ trait CommandService {
    */
   @throws(classOf[ReefServiceException])
   def getCommands(): java.util.List[Command]
+
+  /**
+   * @param name command with name
+   * @return command with name
+   */
+  @throws(classOf[ReefServiceException])
+  def getCommandByName(name: String): Command
 }

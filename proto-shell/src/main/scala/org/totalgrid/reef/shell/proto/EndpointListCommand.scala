@@ -22,16 +22,14 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.Command
 
-import org.totalgrid.reef.shell.proto.request.EndpointRequest
-
-//import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 
 @Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
 class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val results = EndpointRequest.getAll(reefSession)
+    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
     println("Found " + results.size + " endpoints(s)")
     results.foreach { ep =>
       println(ep.getUid + ": " + ep.getState)
