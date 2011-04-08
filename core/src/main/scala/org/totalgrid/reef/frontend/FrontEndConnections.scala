@@ -115,8 +115,10 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
       client.putOrThrow(x, destination = dest)
     } catch {
       case e: Exception =>
-        if (attempts >= maxAttemptsToRetryMeasurements) error(e)
-        else {
+        if (attempts >= maxAttemptsToRetryMeasurements) {
+          error("Error publishing measurements to MeasurementProcessor at: " + dest)
+          error(e)
+        } else {
           info("Retrying publishing measurements : " + x.getMeasCount)
           batchPublish(client, attempts + 1, dest)(x)
         }
