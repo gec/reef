@@ -97,7 +97,7 @@ case class PermissionSet(
     val name: String,
     val defaultExpirationTime: Long) extends ModelWithId {
 
-  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionId === id) select (&(p.permissionId)))))
+  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionSetId === id) select (&(p.permissionId)))))
 }
 
 case class AuthToken(

@@ -37,6 +37,17 @@ trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
   def getPermissionSets() = {
     ops.getOrThrow(PermissionSet.newBuilder.setUid("*").build)
   }
+  def getPermissionSet(name: String) = {
+    ops.getOneOrThrow(PermissionSet.newBuilder.setName(name).build)
+  }
+
+  def createPermissionSet(name: String, permissions: java.util.List[Permission]) = {
+    ops.putOneOrThrow(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build)
+  }
+
+  def deletePermissionSet(permissionSet: PermissionSet) = {
+    ops.deleteOneOrThrow(permissionSet)
+  }
 
   def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = {
     val agent = Agent.newBuilder.setName(name).setPassword(password)

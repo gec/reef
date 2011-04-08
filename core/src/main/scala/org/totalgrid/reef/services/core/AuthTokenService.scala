@@ -95,7 +95,7 @@ trait AuthTokenConversions
   }
 
   def searchQuery(proto: AuthToken, sql: AuthTokenModel) = {
-    Nil
+    List(proto.expirationTime.asParam(sql.expirationTime))
   }
 
   def isModified(existing: AuthTokenModel, updated: AuthTokenModel): Boolean = {
@@ -106,6 +106,7 @@ trait AuthTokenConversions
     val b = AuthToken.newBuilder
     b.setAgent(AgentConversions.convertToProto(entry.agent.value))
     b.setExpirationTime(entry.expirationTime)
+    b.setLoginLocation(entry.loginLocation)
     entry.permissionSets.value.foreach(ps => b.addPermissionSets(PermissionSetConversions.convertToProto(ps)))
     b.setToken(entry.token).build
   }
@@ -227,66 +228,3 @@ class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenSe
   override val useAuth = false
   override val descriptor = Descriptors.authToken
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// TODO: move agent and permissions converstion traits to own files when services are implemented
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-trait PermissionSetConversions
-    extends MessageModelConversion[PermissionSet, PermissionSetModel]
-    with UniqueAndSearchQueryable[PermissionSet, PermissionSetModel] {
-
-  val table = ApplicationSchema.permissionSets
-
-  def uniqueQuery(proto: PermissionSet, sql: PermissionSetModel) = {
-    List(
-      proto.uid.asParam(sql.id === _.toInt),
-      proto.name.asParam(sql.name === _))
-  }
-
-  def searchQuery(proto: PermissionSet, sql: PermissionSetModel) = Nil
-
-  def getRoutingKey(req: PermissionSet) = ProtoRoutingKeys.generateRoutingKey {
-    req.name :: Nil
-  }
-
-  def isModified(existing: PermissionSetModel, updated: PermissionSetModel): Boolean = false
-
-  def convertToProto(entry: PermissionSetModel): PermissionSet = {
-    val b = PermissionSet.newBuilder.setUid(entry.id.toString)
-    b.setName(entry.name)
-    b.setDefaultExpirationTime(entry.defaultExpirationTime)
-    entry.permissions.value.foreach(p => b.addPermissions(PermissionConversion.convertToProto(p)))
-    b.build
-  }
-
-  def createModelEntry(proto: PermissionSet): PermissionSetModel = throw new Exception
-}
-object PermissionSetConversions extends PermissionSetConversions
-
-trait PermissionConversion
-    extends UniqueAndSearchQueryable[Permission, AuthPermission] {
-
-  val table = ApplicationSchema.permissions
-
-  def convertToProto(entry: AuthPermission): Permission = {
-    val b = Permission.newBuilder.setUid(entry.id.toString)
-    b.setAllow(entry.allow)
-    b.setResource(entry.resource)
-    b.setVerb(entry.verb)
-    b.build
-  }
-
-  def uniqueQuery(proto: Permission, sql: AuthPermission) = {
-    List(
-      proto.uid.asParam(sql.id === _.toInt))
-  }
-
-  def searchQuery(proto: Permission, sql: AuthPermission) = {
-    List(
-      proto.allow.asParam(sql.allow === _),
-      proto.resource.asParam(sql.resource === _),
-      proto.verb.asParam(sql.verb === _))
-  }
-}
-object PermissionConversion extends PermissionConversion

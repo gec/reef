@@ -48,6 +48,7 @@ class ModelFactories(pubs: ServiceEventPublishers, summaries: SummaryPoints = ne
 
   val authTokens = new AuthTokenServiceModelFactory(pubs, events.model.createFromProto)
   val agents = new AgentServiceModelFactory(pubs)
+  val permissionSets = new PermissionSetServiceModelFactory(pubs)
 
   val procStatus = new ProcessStatusServiceModelFactory(pubs, measProcConn, fepConn)
   val appConfig = new ApplicationConfigServiceModelFactory(pubs, procStatus)

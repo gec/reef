@@ -28,12 +28,19 @@ trait AgentService {
 
   def getAgents(): java.util.List[Agent]
 
-  def getPermissionSets(): java.util.List[PermissionSet]
-
-  def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]): Agent
+  def createNewAgent(name: String, password: String, permissionSetNames: java.util.List[String]): Agent
 
   def deleteAgent(agent: Agent): Agent
 
   def setAgentPassword(agent: Agent, newPassword: String)
 
+  def getLoginLocations(agent : Agent)
+
+  def getPermissionSets(): java.util.List[PermissionSet]
+
+  def getPermissionSet(name: String): PermissionSet
+
+  def createPermissionSet(name: String, permissions: java.util.List[Permission]): PermissionSet
+
+  def deletePermissionSet(agent: PermissionSet): PermissionSet
 }

@@ -46,7 +46,6 @@ object ReefServiceMap {
     getEntry(Descriptors.authToken, "auth_token"),
     getEntry(Descriptors.agent, "agent"),
     getEntry(Descriptors.permissionSet, "permission_set"),
-    getEntry(Descriptors.permission, "permission"),
 
     getEntry(Descriptors.userCommandRequest, "user_command_request"),
     getEntry(Descriptors.commandAccess, "command_access"),

@@ -49,6 +49,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     val authService = new AuthTokenService(modelFac.authTokens)
 
     val agentService = new AgentService(modelFac.agents)
+    val permissionSetService = new PermissionSetService(modelFac.permissionSets)
 
     def loginFrom(user: String, location: String) = {
       login(user, user, None, None, location)

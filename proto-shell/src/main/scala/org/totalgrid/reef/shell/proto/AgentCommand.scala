@@ -26,6 +26,7 @@ import org.totalgrid.reef.api.request.AgentService
 import org.totalgrid.reef.shell.proto.presentation.AgentView
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Auth.Permission
 
 abstract class AgentCommandBase extends ReefCommandSupport {
   lazy val authService: AgentService = services
@@ -75,14 +76,62 @@ class AgentListCommand extends AgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "permissions", description = "View permission sets")
-class AgentPermissionsCommand extends AgentCommandBase {
+@Command(scope = "agents", name = "permissions:list", description = "View permission sets")
+class AgentPermissionsListCommand extends AgentCommandBase {
 
   def doCommand() = {
 
     val permissions = authService.getPermissionSets()
 
     AgentView.printPermissionSets(permissions.toList)
+  }
+}
+
+@Command(scope = "agents", name = "permissions:create", description = "Edit a permission set")
+class AgentPermissionsCreateCommand extends AgentCommandBase {
+
+  @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
+  var permissionSetName: String = null
+
+  @GogoOption(name = "-a", description = "Allowed Permisson qualifiers of form [VERB],[RESOURCE]. Ex: GET,measurements", required = false, multiValued = true)
+  var allowed: java.util.List[String] = null
+
+  @GogoOption(name = "-d", description = "Denied Permisson qualifiers of form [VERB],[RESOURCE]. Ex: GET,measurements", required = false, multiValued = true)
+  var denied: java.util.List[String] = null
+
+  def doCommand() = {
+
+    val permissions = createPermissions(true, allowed) ::: createPermissions(false, denied)
+
+    if (permissions.size == 0) throw new Exception("Must specify atleast 1 allow or 1 deny permission")
+
+    val permissionSet = authService.createPermissionSet(permissionSetName, permissions)
+
+    AgentView.printPermissionSets(permissionSet :: Nil)
+  }
+
+  private def createPermissions(allow: Boolean, qualifiers: java.util.List[String]) = {
+    Option(qualifiers).map { _.toList }.getOrElse(Nil).map { qualifier =>
+      val parts = qualifier.split(',')
+      if (parts.size != 2) throw new Exception("Qualifer should be of form \"[VERB],[RESOURCE]\". " + qualifier + " not valid.")
+      Permission.newBuilder.setAllow(allow).setVerb(parts(0)).setResource(parts(1)).build
+    }
+  }
+}
+
+@Command(scope = "agents", name = "permissions:delete", description = "Delete a PermissionSet")
+class AgentPermissionsDeleteCommand extends AgentCommandBase {
+
+  @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
+  var permissionSetName: String = null
+
+  def doCommand() = {
+
+    val permissionSet = authService.getPermissionSet(permissionSetName)
+
+    val deletedPermissionSet = authService.deletePermissionSet(permissionSet)
+
+    AgentView.printPermissionSets(deletedPermissionSet :: Nil)
   }
 }
 
