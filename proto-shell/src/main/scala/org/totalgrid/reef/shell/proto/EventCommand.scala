@@ -23,7 +23,6 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 
 import org.totalgrid.reef.shell.proto.presentation.{ EventView }
-import org.totalgrid.reef.shell.proto.request.EventRequest
 
 import scala.collection.JavaConversions._
 
