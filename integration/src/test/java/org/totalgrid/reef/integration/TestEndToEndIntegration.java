@@ -70,6 +70,7 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 		Commands.UserCommandRequest request = UserCommandRequestBuilders.executeControl(cmd);
 		ISubscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
 		Commands.UserCommandRequest result = client.putOne(request, sub);
+        cs.deleteCommandLock(accessResponse);
 
         assertEquals(Commands.CommandStatus.SUCCESS, result.getStatus());
 
