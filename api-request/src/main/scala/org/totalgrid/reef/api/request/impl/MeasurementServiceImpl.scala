@@ -85,8 +85,8 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     history.getMeasurementsList
   }
 
-  def getMeasurementHistory(point: Point, since: Long, before: Long, limit: Int): java.util.List[Measurement] = {
-    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, limit))
+  def getMeasurementHistory(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int): java.util.List[Measurement] = {
+    val history = ops.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, returnNewest, limit))
     history.getMeasurementsList
   }
 

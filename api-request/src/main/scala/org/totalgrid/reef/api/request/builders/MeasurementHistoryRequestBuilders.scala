@@ -30,6 +30,6 @@ object MeasurementHistoryRequestBuilders {
   def getByPointSince(point: Point, since: Long, limit: Int) =
     MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).build
 
-  def getByPointBetween(point: Point, since: Long, before: Long, limit: Int) =
-    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).setEndTime(before).build
+  def getByPointBetween(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int) =
+    MeasurementHistory.newBuilder.setPointName(point.getName).setLimit(limit).setStartTime(since).setEndTime(before).setKeepNewest(returnNewest).build
 }

@@ -67,7 +67,7 @@ class MeasurementHistoryTest
     last2.map { _.getDoubleVal } should equal(List(startValue + 9, startValue + 10))
 
     client.addExplanation("Get measurements in range", "We can ask for a specific time range of measurements, this implies not getting live data.")
-    val middle = client.getMeasurementHistory(point, now + 3, now + 5, 100)
+    val middle = client.getMeasurementHistory(point, now + 3, now + 5, true, 100)
     middle.map { _.getDoubleVal } should equal(List(startValue + 3, startValue + 4, startValue + 5))
 
     queue.size should equal(0)

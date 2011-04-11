@@ -34,11 +34,15 @@ trait PointServiceImpl extends ReefServiceBaseClass with PointService {
   }
 
   def getPointByName(name: String) = {
-    ops.getOneOrThrow(PointRequestBuilders.getByName(name))
+    reThrowExpectationException("Point not found.") {
+      ops.getOneOrThrow(PointRequestBuilders.getByName(name))
+    }
   }
 
   def getPointByUid(uuid: ReefUUID) = {
-    ops.getOneOrThrow(PointRequestBuilders.getByUid(uuid.getUuid))
+    reThrowExpectationException("Point not found.") {
+      ops.getOneOrThrow(PointRequestBuilders.getByUid(uuid.getUuid))
+    }
   }
 
   def getPointsOwnedByEntity(parentEntity: Entity) = {

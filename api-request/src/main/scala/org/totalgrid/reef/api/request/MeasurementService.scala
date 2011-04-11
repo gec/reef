@@ -93,10 +93,11 @@ trait MeasurementService {
    * measurements since this can lead to missed measurements.
    * @param since - don't return measurements older than this, inclusive (millis)
    * @param before - don't return measurements newer than this, inclusive (millis)
+   * @param returnNewest - if there are more measurements in the range the range than limit return the newest measurements
    * @param limit - max number of measurements returned
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementHistory(point: Point, since: Long, before: Long, limit: Int): java.util.List[Measurement]
+  def getMeasurementHistory(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int): java.util.List[Measurement]
 
   /**
    * get the most recent measurements for a point and setup a subscription for new measurements
