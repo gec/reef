@@ -66,8 +66,9 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   }
 
   override def _removeChannel(channel: String) = {
-    info { "removed channel with name: " + channel }
+    info { "removing channel with name: " + channel }
     dnp3.RemovePort(channel)
+    info { "removed channel with name: " + channel }
   }
 
   override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher, listener: IEndpointListener): ProtocolCommandHandler = {
@@ -79,14 +80,19 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
 
     val meas_adapter = new MeasAdapter(mapping, publisher.publish)
     map += endpoint -> meas_adapter
-    val cmd = dnp3.AddMaster(channelName, channelName, FilterLevel.LEV_WARNING, meas_adapter, master)
+    val cmd = dnp3.AddMaster(channelName, endpoint, FilterLevel.LEV_WARNING, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
 
   override def _removeEndpoint(endpoint: String) = {
-
-    dnp3.RemoveStack(endpoint)
-    map -= endpoint
+    info { "removing stack with name: " + endpoint }
+    try {
+      dnp3.RemoveStack(endpoint)
+      map -= endpoint
+    } catch {
+      case x => println("From remove stack: " + x)
+    }
+    info { "removed stack with name: " + endpoint }
   }
 
   private def getMasterConfig(file: Model.ConfigFile): MasterStackConfig = {

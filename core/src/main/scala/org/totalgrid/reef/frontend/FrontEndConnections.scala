@@ -72,8 +72,11 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   }
 
   def removeEntry(c: ConnProto) {
+    info("Removing endpoint " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
+    info("Pre removeEndpoint")
     protocol.removeEndpoint(c.getEndpoint.getName)
+    info("Pre removeChannel " + protocol.requiresChannel)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }

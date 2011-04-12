@@ -40,7 +40,11 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
 
   override def _End() = if (batch.getMeasCount > 0) {
     info("Publishing batch size: " + batch.getMeasCount)
-    accept(batch.build)
+    try {
+      accept(batch.build)
+    } catch {
+      case e: Exception => error("Batch publishing threw exception: " + e.toString)
+    }
   }
 
   override def _Update(v: Binary, index: Long): Unit =
