@@ -92,11 +92,17 @@ class MeasDownloadCommand extends ReefCommandSupport {
   @GogoOption(name = "-c", description = "Columns in CSV file", required = false, multiValued = false)
   var columnString: String = "name,longTime,shortTime,value,shortQuality,longQuality,unit"
 
-  @GogoOption(name = "-s", description = "Start time as \"yyyy-MM-dd HH:mm\" or milliseconds", required = false, multiValued = false)
+  @GogoOption(name = "-s", description = "Start time as \"yyyy-MM-dd HH:mm\" or milliseconds, defaults to 0", required = false, multiValued = false)
   var startTime: String = null
 
-  @GogoOption(name = "-e", description = "End time as \"yyyy-MM-dd HH:mm\" or milliseconds", required = false, multiValued = false)
+  @GogoOption(name = "-e", description = "End time as \"yyyy-MM-dd HH:mm\" or milliseconds, defaults to now", required = false, multiValued = false)
   var endTime: String = null
+
+  @GogoOption(name = "-oh", description = "Offest Hours, number of hours before end time", required = false, multiValued = false)
+  var hoursAgo: Int = 0
+
+  @GogoOption(name = "-om", description = "Offest Minutes, number of minutes before end time", required = false, multiValued = false)
+  var minutesAgo: Int = 0
 
   def doCommand(): Unit = {
 
@@ -114,8 +120,10 @@ class MeasDownloadCommand extends ReefCommandSupport {
       })
     }
 
-    val startTimeAsMillis = asMillis(startTime, 0)
     val endTimeAsMillis = asMillis(endTime, System.currentTimeMillis)
+
+    val startDefault = if (hoursAgo != 0 || minutesAgo != 0) endTimeAsMillis - (hoursAgo * 60 * 60) - (minutesAgo * 60) * 1000 else 0
+    val startTimeAsMillis = asMillis(startTime, startDefault)
 
     // get the point before creating the file
     val point = services.getPointByName(name)
