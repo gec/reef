@@ -72,6 +72,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   }
 
   def removeEntry(c: ConnProto) {
+    debug("Removing endpoint " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
@@ -85,7 +86,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     override def onStateChange(state: ConnProto.State) = {
       val update = ConnProto.newBuilder.setUid(endpointUid).setState(state).build
       try {
-        session.postOneOrThrow(update)
+        val result = session.postOneOrThrow(update)
+        debug { "Updated connection state: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
       }
@@ -99,7 +101,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     override def onStateChange(state: CommChannel.State) = {
       val update = CommChannel.newBuilder.setUid(channelUid).setState(state).build
       try {
-        session.postOneOrThrow(update)
+        val result = session.postOneOrThrow(update)
+        debug { "Updated channel: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
       }

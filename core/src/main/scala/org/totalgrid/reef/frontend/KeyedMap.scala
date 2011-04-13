@@ -85,6 +85,7 @@ trait KeyedMap[A] extends Logging {
     active.get(getKey(c)) match {
       case None => warn { "Remove on unregistered key: " + getKey(c) }
       case Some(x) =>
+        info { "removing ... " + getKey(c) }
         removeEntry(x)
         active -= getKey(c)
         info { "removed ... " + getKey(c) }

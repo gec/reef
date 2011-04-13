@@ -30,12 +30,12 @@ class LogAdapter extends ILogBase with Logging {
 
   override def Log(lev: FilterLevel, logger: String, location: String, message: String, code: Int): Unit = {
     lev match {
-      case FilterLevel.LEV_COMM => debug { message }
-      case FilterLevel.LEV_DEBUG => debug { message }
-      case FilterLevel.LEV_ERROR => error { message }
-      case FilterLevel.LEV_INFO => info { message }
-      case FilterLevel.LEV_INTERPRET => info { message }
-      case FilterLevel.LEV_WARNING => warn { message }
+      case FilterLevel.LEV_COMM => debug { logger + " - " + message }
+      case FilterLevel.LEV_DEBUG => debug { logger + " - " + message }
+      case FilterLevel.LEV_ERROR => error { logger + " - " + message }
+      case FilterLevel.LEV_INFO => info { logger + " - " + message }
+      case FilterLevel.LEV_INTERPRET => info { logger + " - " + message }
+      case FilterLevel.LEV_WARNING => warn { logger + " - " + message }
     }
   }
 
