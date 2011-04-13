@@ -28,7 +28,7 @@ import java.io.{ BufferedReader, InputStreamReader }
 class ReefLoginCommand extends ReefCommandSupport {
   override val requiresLogin = false
 
-  @Argument(index = 0, name = "user name", description = "user name", required = true, multiValued = false)
+  @Argument(index = 0, name = "userName", description = "user name", required = true, multiValued = false)
   private var userName: String = null
 
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")

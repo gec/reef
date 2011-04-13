@@ -29,6 +29,7 @@ import org.totalgrid.reef.api.request.ReefUUID
 import java.io.File
 import org.totalgrid.reef.proto.Measurements.Measurement
 import java.text.SimpleDateFormat
+import org.totalgrid.reef.proto.Model.Point
 
 @Command(scope = "meas", name = "meas", description = "Prints all measurements or a specified measurement.")
 class MeasCommand extends ReefCommandSupport {
@@ -80,14 +81,14 @@ class MeasHistCommand extends ReefCommandSupport {
 @Command(scope = "meas", name = "download", description = "Download all measurements for a point to CSV file.")
 class MeasDownloadCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "pointName", description = "Point name.", required = true, multiValued = false)
-  var name: String = null
-
-  @Argument(index = 1, name = "fileName", description = "Absolute filename to write csv file.", required = true, multiValued = false)
+  @Argument(index = 0, name = "fileName", description = "Absolute filename to write csv file.", required = true, multiValued = false)
   var fileName: String = null
 
+  @Argument(index = 1, name = "pointNames", description = "Point names.", required = true, multiValued = true)
+  var names: java.util.List[String] = null
+
   //@GogoOption(name = "-i", description = "Chunk size", required = false, multiValued = false)
-  var chunkSize: Int = 5000
+  var chunkSize: Int = 1000
 
   @GogoOption(name = "-c", description = "Columns in CSV file", required = false, multiValued = false)
   var columnString: String = "name,longTime,shortTime,value,shortQuality,longQuality,unit"
@@ -103,6 +104,8 @@ class MeasDownloadCommand extends ReefCommandSupport {
 
   @GogoOption(name = "-om", description = "Offest Minutes, number of minutes before end time", required = false, multiValued = false)
   var minutesAgo: Int = 0
+
+  case class LastPoint(point: Point, var startTime: Long, var hasMore: Boolean, var measurements: List[Measurement], var totalRead: Int)
 
   def doCommand(): Unit = {
 
@@ -122,39 +125,53 @@ class MeasDownloadCommand extends ReefCommandSupport {
 
     val endTimeAsMillis = asMillis(endTime, System.currentTimeMillis)
 
-    val startDefault = if (hoursAgo != 0 || minutesAgo != 0) endTimeAsMillis - (hoursAgo * 60 * 60) - (minutesAgo * 60) * 1000 else 0
+    val startDefault = if (hoursAgo != 0 || minutesAgo != 0) endTimeAsMillis - ((hoursAgo * 60 * 60) + (minutesAgo * 60)) * 1000 else 0
     val startTimeAsMillis = asMillis(startTime, startDefault)
 
-    // get the point before creating the file
-    val point = services.getPointByName(name)
+    // get the points before creating the file
+    val points = names.toList.map { name => new LastPoint(services.getPointByName(name), startTimeAsMillis, true, Nil, 0) }
     val f = new File(fileName)
 
     printToFile(f) { p =>
-      addMeasHeader(columns.map { _._1 }, p)
-      var measurements = services.getMeasurementHistory(point, startTimeAsMillis, endTimeAsMillis, false, chunkSize).toList
-      addCsvMeas(measurements, columns.map { _._2 }, p)
-      while (chunkSize == measurements.size) {
-        // TODO: add better paging for measurement history
-        measurements = services.getMeasurementHistory(point, measurements.last.getTime + 1, endTimeAsMillis, false, chunkSize).toList
-        addCsvMeas(measurements, columns.map { _._2 }, p)
+      addMeasHeader(points.map { _.point }, columns.map { _._1 }, p)
+      while (points.find(_.hasMore == true).isDefined) {
+        points.foreach { lastPoint =>
+          lastPoint.measurements = services.getMeasurementHistory(lastPoint.point, lastPoint.startTime, endTimeAsMillis, false, chunkSize).toList
+          val measRead = lastPoint.measurements.size
+          lastPoint.hasMore = measRead == chunkSize
+          if (lastPoint.hasMore) {
+            lastPoint.startTime = lastPoint.measurements.last.getTime + 1
+          }
+          lastPoint.totalRead += measRead
+        }
+        addCsvMeas(points.map { _.measurements }, columns.map { _._2 }, p)
       }
+    }
+    println("Created csv file: " + f.getAbsolutePath())
+    points.foreach(lastPoint => println(lastPoint.point.getName + " : " + lastPoint.totalRead + " measurements"))
+  }
+
+  private def addCsvMeas(measurementsForPoint: List[List[Measurement]], columns: Seq[Measurement => String], p: java.io.PrintWriter) {
+    val measurements: List[List[Measurement]] = padAndTranspose(measurementsForPoint, null)
+    measurements.foreach { l: List[Measurement] =>
+      p.println(l.map { m: Measurement =>
+        columns.map { func =>
+          if (m == null) "" else func(m)
+        }
+      }.flatten.mkString(","))
     }
   }
 
-  def addCsvMeas(measurements: Seq[Measurement], columns: Seq[Measurement => String], p: java.io.PrintWriter) {
-    measurements.foreach { m => p.println(columns.map { _(m) }.mkString(",")) }
+  private def addMeasHeader(points: Seq[Point], columns: Seq[String], p: java.io.PrintWriter) {
+    p.println(points.map { p => columns }.flatten.mkString(","))
   }
 
-  def addMeasHeader(columns: Seq[String], p: java.io.PrintWriter) {
-    p.println(columns.mkString(","))
-  }
-
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+  private def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
 
-  def asMillis(str: String, default: Long): Long = {
+  private def asMillis(str: String, default: Long): Long = {
     if (str == null) return default
     try {
       return str.toLong
@@ -164,5 +181,27 @@ class MeasDownloadCommand extends ReefCommandSupport {
         if (date == null) throw new Exception("Couldnt parse " + str + " into a valid date or millisecond value. Format is yyyy-MM-dd HH:mm, remember to enclose argument in quotes. Ex: -s \"2011-05-01 00:00\"")
         return date.getTime
     }
+  }
+
+  /**
+   * take a list of lists and return a List with zipped together elements of the original lists.
+   * Output is same size as longest list with default elements added to fill out zipped sets
+   *
+   * List(List(a, b, c), List(1, 2), List(6, 7, 8, 9)) =>
+   * List(List(a, 1, 6), List(b, 2, 7), List(c, null, 8), List(null, null, 9))
+   */
+  private def padAndTranspose[T](l: List[List[T]], padding: T): List[List[T]] = {
+
+    def transpose[T](l: List[List[T]]): List[List[T]] = l match {
+      case Nil => Nil
+      case Nil :: _ => Nil
+      case _ => (l map (_.head)) :: transpose(l map (_.tail))
+    }
+
+    // get longest entry
+    val size = l.map { _.size }.sorted.reverse.head
+    // pad them to matching length
+    val trans = l.map(_.padTo(size, padding))
+    transpose(trans)
   }
 }
