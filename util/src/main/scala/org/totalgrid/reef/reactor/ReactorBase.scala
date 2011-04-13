@@ -78,7 +78,7 @@ trait ReactorBase extends Actor with Logging {
 
   def stop() = {
     if (running) {
-      val ret = this.!?(60000, Stop)
+      val ret = this.!?(10000, Stop)
       if (ret != Some(Stop)) try {
         throw new Exception("Actor deadlock detected on stop")
       } catch {

@@ -39,7 +39,7 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
     batch = MeasBatch.newBuilder.setWallTime(System.currentTimeMillis)
 
   override def _End() = if (batch.getMeasCount > 0) {
-    info("Publishing batch size: " + batch.getMeasCount)
+    debug("Publishing batch size: " + batch.getMeasCount)
     try {
       accept(batch.build)
     } catch {

@@ -136,7 +136,7 @@ object ServiceBehaviors {
     // Found an existing record. Update it.
     protected def update(model: ServiceModelType, req: ProtoType, existing: ModelType): Tuple2[ProtoType, Envelope.Status] = {
       val proto = preUpdate(req, existing)
-      val (sql, updated) = model.updateFromProto(req, existing)
+      val (sql, updated) = model.updateFromProto(proto, existing)
       postUpdate(sql, req)
       val status = if (updated) Envelope.Status.UPDATED else Envelope.Status.NOT_MODIFIED
       (model.convertToProto(sql), status)
