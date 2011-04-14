@@ -18,19 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.shell.proto
+package org.totalgrid.reef.shell.proto.presentation
 
-import org.apache.felix.gogo.commands.Command
+import org.totalgrid.reef.proto.FEP.CommChannel
 
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import presentation.EndpointView
+object ChannelView {
+  def printTable(channels: List[CommChannel]) = {
+    Table.printTable(header, channels.map(row(_)))
+  }
 
-@Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
-class EndpointListCommand extends ReefCommandSupport {
+  def header = {
+    "Name" :: "State" :: Nil
+  }
 
-  def doCommand() = {
-
-    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
-    EndpointView.printTable(results)
+  def row(a: CommChannel) = {
+    a.getName ::
+      a.getState.toString ::
+      Nil
   }
 }

@@ -100,6 +100,6 @@ message CommEndpointConnection {
     optional CommEndpointConfig     endpoint            = 3;
     optional State                  state               = 4;
     optional CommEndpointRouting    routing             = 5;
-    optional bool                   online              = 6;
+    optional uint64                 last_update         = 7;
 }
 

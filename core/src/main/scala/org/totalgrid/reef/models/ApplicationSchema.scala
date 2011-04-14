@@ -167,6 +167,7 @@ case class Command(
 
 case class FrontEndAssignment(
     val endpointId: Long,
+    val state: Int,
 
     val serviceRoutingKey: Option[String],
     val applicationId: Option[Long],
@@ -174,12 +175,11 @@ case class FrontEndAssignment(
     var offlineTime: Option[Long],
     var onlineTime: Option[Long]) extends ModelWithId {
 
-  def this() = this(0, Some(""), Some(0), Some(0), Some(0), Some(0))
+  def this() = this(0, 0, Some(""), Some(0), Some(0), Some(0), Some(0))
 
   val application = LazyVar(mayHaveOne(ApplicationSchema.apps, applicationId))
   val endpoint = LazyVar(ApplicationSchema.endpoints.where(p => p.id === endpointId).headOption)
 
-  def online = onlineTime.isDefined
 }
 
 case class MeasProcAssignment(

@@ -23,16 +23,13 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.Command
 
 import org.totalgrid.reef.proto.FEP.CommChannel
+import presentation.ChannelView
 
 @Command(scope = "channel", name = "list", description = "Prints channel information")
 class ChannelListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-
     val results = reefSession.getOrThrow(CommChannel.newBuilder.setName("*").build)
-    println("Found " + results.size + " channel(s)")
-    results.foreach { channel =>
-      println(channel.getName + ": " + channel.getState)
-    }
+    ChannelView.printTable(results)
   }
 }

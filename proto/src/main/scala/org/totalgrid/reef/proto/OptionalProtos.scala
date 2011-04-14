@@ -74,6 +74,7 @@ object OptionalProtos {
     val uid = optionally(_.hasUid, _.getUid)
     val name = optionally(_.hasName, _.getName)
     val password = optionally(_.hasPassword, _.getPassword)
+    val permissionSets = optionally(_.getPermissionSetsList.toList.map { i => new OptAuthPermissionSet(Some(i)) })
   }
   implicit def proto2OptAuthPermission(a: org.totalgrid.reef.proto.Auth.Permission): OptAuthPermission = new OptAuthPermission(Some(a))
   class OptAuthPermission(real: Option[org.totalgrid.reef.proto.Auth.Permission]) extends OptionalStruct(real) {
@@ -226,7 +227,7 @@ object OptionalProtos {
     val endpoint = new OptFEPCommEndpointConfig(optionally(_.hasEndpoint, _.getEndpoint))
     val state = optionally(_.hasState, _.getState)
     val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
-    val online = optionally(_.hasOnline, _.getOnline)
+    val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)
   }
   implicit def proto2OptMappingMeasMap(a: org.totalgrid.reef.proto.Mapping.MeasMap): OptMappingMeasMap = new OptMappingMeasMap(Some(a))
   class OptMappingMeasMap(real: Option[org.totalgrid.reef.proto.Mapping.MeasMap]) extends OptionalStruct(real) {

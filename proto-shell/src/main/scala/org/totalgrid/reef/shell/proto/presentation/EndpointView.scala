@@ -18,19 +18,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.shell.proto
-
-import org.apache.felix.gogo.commands.Command
+package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import presentation.EndpointView
+import org.totalgrid.reef.proto.OptionalProtos._
 
-@Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
-class EndpointListCommand extends ReefCommandSupport {
+object EndpointView {
+  def printTable(endpoints: List[CommEndpointConnection]) = {
+    Table.printTable(header, endpoints.map(row(_)))
+  }
 
-  def doCommand() = {
+  def header = {
+    "Endpoint" :: "State" :: "FrontEnd" :: "LastUpdated" :: Nil
+  }
 
-    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
-    EndpointView.printTable(results)
+  def row(a: CommEndpointConnection) = {
+    a.endpoint.name.getOrElse("unknown") ::
+      a.getState.toString ::
+      a.frontEnd.appConfig.instanceName.getOrElse("Unassigned") ::
+      new java.util.Date(a.getLastUpdate).toString ::
+      Nil
   }
 }

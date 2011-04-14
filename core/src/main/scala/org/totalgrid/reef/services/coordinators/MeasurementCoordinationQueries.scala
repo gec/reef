@@ -62,7 +62,8 @@ trait MeasurementCoordinationQueries {
     val sortedApps = possibleApps.map(fep =>
       fep -> countFun(fep)).toList.sortBy(_._2)
     val minCount = sortedApps.head._2
-    val minimalApps = sortedApps.filter(minCount == _._2)
+    // sort by name to keep results stable
+    val minimalApps = sortedApps.filter(minCount == _._2).sortBy(_._1.instanceName)
 
     minimalApps.head._1
   }

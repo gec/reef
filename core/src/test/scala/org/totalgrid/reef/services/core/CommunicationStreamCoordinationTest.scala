@@ -161,9 +161,10 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val ipNetB1 = coord.addDnp3Device("ipNetB1", Some("netB"), None)
       val ipNetB2 = coord.addDnp3Device("ipNetB2", Some("netB"), None)
 
+      // fepNetALocA should have got both netA devices and the fepNetB* feps will split the netB additions
       coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
-      coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
-      coord.checkFeps(many(2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
+      coord.checkFeps(many(1 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
+      coord.checkFeps(many(2 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
 
     }
   }

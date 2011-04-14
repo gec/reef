@@ -35,6 +35,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.BadRequestException
 import ServiceBehaviors._
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -57,7 +58,6 @@ class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTr
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
     req.state.foreach { builder.setState(_) }
-    req.online.foreach { builder.setOnline(_) }
     builder.build
   }
 }
@@ -88,7 +88,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     val applicationId = getFep(ce).map { _.id }
     val assignedTime = applicationId.map { x => now }
 
-    create(new FrontEndAssignment(ce.id, serviceRoutingKey, applicationId, assignedTime, Some(now), None))
+    create(new FrontEndAssignment(ce.id, ConnProto.State.COMMS_DOWN.getNumber, serviceRoutingKey, applicationId, assignedTime, Some(now), None))
   }
 
   def onEndpointUpdated(ce: CommunicationEndpoint) {
@@ -108,16 +108,19 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
   }
 
   def onMeasProcAssignmentChanged(meas: MeasProcAssignment, added: Boolean) {
-    info { "MeasProc Change: added: " + added + " rechecking: " + meas.endpoint.value.get.name.value }
+    info { "MeasProc Change: added: " + added + " rechecking: " + meas.endpoint.value.get.name.value + " readyTime: " + meas.readyTime + " key:" + meas.serviceRoutingKey }
     table.where(fep => fep.endpointId === meas.endpointId).headOption.foreach { assign =>
 
-      val newAssign = if (added && meas.readyTime.isDefined && meas.serviceRoutingKey.isDefined) {
-        assign.copy(serviceRoutingKey = meas.serviceRoutingKey)
+      if (added && meas.readyTime.isDefined && meas.serviceRoutingKey.isDefined) {
+        val newAssign = assign.copy(serviceRoutingKey = meas.serviceRoutingKey)
+        update(newAssign, assign)
+        checkAssignment(newAssign, assign.endpoint.value.get)
       } else {
-        markOffline(assign.endpoint.value.get)
-        assign.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, serviceRoutingKey = None)
+        if (assign.offlineTime == None) markOffline(assign.endpoint.value.get)
+        val newAssign = assign.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, serviceRoutingKey = None)
+        update(newAssign, assign)
       }
-      update(newAssign, assign)
+
     }
   }
 
@@ -140,8 +143,8 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId) {
       val now = System.currentTimeMillis
-      markOffline(ce)
-      val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, offlineTime = Some(now), onlineTime = None)
+      if (assign.offlineTime == None) markOffline(ce)
+      val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, offlineTime = Some(now), onlineTime = None, state = ConnProto.State.COMMS_DOWN.getNumber)
       update(newAssign, assign)
     }
   }
@@ -150,23 +153,22 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     if (existing.application.value.isEmpty)
       throw new BadRequestException("No application assigned")
 
-    if (proto.getOnline == existing.online)
-      throw new BadRequestException("Already online: " + existing.online)
+    val endpoint = existing.endpoint.value.get
 
-    val endpoint = existing.endpoint.value
+    val newState = proto.getState.getNumber
+    val online = proto.getState == ConnProto.State.COMMS_UP
 
-    if (proto.getOnline) {
-      markOnline(endpoint.get)
-      val updated = existing.copy(onlineTime = Some(System.currentTimeMillis))
+    if (newState == existing.state)
+      throw new BadRequestException("Allready has state: " + proto.getState)
+
+    if (online) {
+      markOnline(endpoint)
+      val updated = existing.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
       update(updated, existing)
     } else {
-      if (endpoint.isEmpty) {
-        markOffline(endpoint.get)
-        val updated = existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None)
-        update(updated, existing)
-      } else {
-        (delete(existing), true)
-      }
+      if (assign.offlineTime == None) markOffline(endpoint)
+      val updated = existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
+      update(updated, existing)
     }
 
   }
@@ -197,7 +199,7 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def isModified(entry: FrontEndAssignment, existing: FrontEndAssignment): Boolean = {
-    entry.applicationId != existing.applicationId || entry.serviceRoutingKey != existing.serviceRoutingKey
+    entry.applicationId != existing.applicationId || entry.serviceRoutingKey != existing.serviceRoutingKey || entry.state != existing.state
   }
 
   def createModelEntry(proto: ConnProto): FrontEndAssignment = {
@@ -208,10 +210,15 @@ trait CommunicationEndpointConnectionConversion
 
     val b = ConnProto.newBuilder.setUid(entry.id.toString)
 
-    entry.applicationId.foreach(appId => b.setFrontEnd(FrontEndProcessor.newBuilder.setUid(appId.toString)))
-    entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommEndpointConfig.newBuilder.setUid(endpoint.entity.value.id.toString)))
+    entry.applicationId.foreach(appId => b.setFrontEnd(FrontEndProcessor.newBuilder.setUid(appId.toString).setAppConfig(ApplicationConfig.newBuilder.setInstanceName(entry.application.value.get.instanceName))))
+    entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommEndpointConfig.newBuilder.setUid(endpoint.entity.value.id.toString).setName(endpoint.entity.value.name)))
     entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
-    b.setOnline(entry.online)
+    b.setState(ConnProto.State.valueOf(entry.state))
+
+    // get the most recent change
+    val times = entry.onlineTime :: entry.offlineTime :: entry.assignedTime :: Nil
+    b.setLastUpdate(times.flatten.max)
+
     b.build
   }
 }
