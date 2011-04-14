@@ -116,7 +116,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
         update(newAssign, assign)
         checkAssignment(newAssign, assign.endpoint.value.get)
       } else {
-        if (assign.offlineTime == None) markOffline(assign.endpoint.value.get)
+        markOffline(assign.endpoint.value.get)
         val newAssign = assign.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, serviceRoutingKey = None)
         update(newAssign, assign)
       }
@@ -143,7 +143,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId) {
       val now = System.currentTimeMillis
-      if (assign.offlineTime == None) markOffline(ce)
+      markOffline(ce)
       val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, offlineTime = Some(now), onlineTime = None, state = ConnProto.State.COMMS_DOWN.getNumber)
       update(newAssign, assign)
     }
@@ -166,7 +166,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
       val updated = existing.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
       update(updated, existing)
     } else {
-      if (assign.offlineTime == None) markOffline(endpoint)
+      if (existing.offlineTime == None) markOffline(endpoint)
       val updated = existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
       update(updated, existing)
     }
