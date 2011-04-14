@@ -39,7 +39,7 @@ import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
  */
 class ProtoClient(
     factory: ClientSessionFactory,
-    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging with SubscriptionManagement {
+    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ClientSession]

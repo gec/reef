@@ -35,9 +35,12 @@ trait MessageConsumer {
   def receive(bytes: Array[Byte], replyTo: Option[Destination])
 }
 
-trait ChannelObserver {
+trait ChannelObserver extends BrokerChannelCloseListener {
   def online(broker: BrokerChannel)
-  def offline()
+}
+
+trait BrokerChannelCloseListener {
+  def onClosed(channel: BrokerChannel, expected: Boolean)
 }
 
 /**
@@ -45,7 +48,7 @@ trait ChannelObserver {
  * In AMQP, channels are parallel entities on a connection, any one channel needs to be manipulated only from a
  * single thread.
  */
-trait BrokerChannel {
+trait BrokerChannel extends BrokerChannelCloseProvider {
   def declareQueue(queue: String = "*", autoDelete: Boolean = true, exclusive: Boolean = true): String
 
   def declareExchange(exchange: String, exchangeType: String = "topic"): Unit
@@ -58,7 +61,32 @@ trait BrokerChannel {
 
   def listen(queue: String, mc: MessageConsumer)
 
+  def start()
+
   def close()
+}
+
+/**
+ * thick trait for implementing add/remove/notify behavior for BrokerChannelCloseListeners
+ */
+trait BrokerChannelCloseProvider { self: BrokerChannel =>
+
+  private var brokerClosedListeners = List.empty[BrokerChannelCloseListener]
+
+  def addCloseListener(listener: BrokerChannelCloseListener) = brokerClosedListeners.synchronized {
+    brokerClosedListeners = listener :: brokerClosedListeners
+  }
+
+  def removeCloseListener(listener: BrokerChannelCloseListener) = brokerClosedListeners.synchronized {
+    brokerClosedListeners = brokerClosedListeners.filterNot(_ != listener)
+  }
+
+  /**
+   * BrokerChannel implimentations need to call this callback when terminated
+   */
+  protected def onClose(expected: Boolean) = brokerClosedListeners.synchronized {
+    brokerClosedListeners.foreach(_.onClosed(this, expected))
+  }
 }
 
 trait BrokerConnection {

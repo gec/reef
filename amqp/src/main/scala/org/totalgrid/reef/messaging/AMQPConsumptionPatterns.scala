@@ -25,24 +25,32 @@ import org.totalgrid.reef.api.IRoutingKey
 /**
  * base class for AMQP subscripton modes, provides online/offline notifiers
  */
-trait AMQPConsumptionPattern extends ChannelObserver with ObserverableBrokerObject {
+trait AMQPConsumptionPattern extends ChannelObserver with ObserverableBrokerObject with BrokerChannelCloseListener {
 
   def getQueue(broker: BrokerChannel): String
 
   /// store the queue name we registered with so we can do the resubscribe call correctly
   var queue: Option[String] = None
+  var channel: Option[BrokerChannel] = None
 
-  def online(broker: BrokerChannel) = {
+  def online(broker: BrokerChannel) = this.synchronized {
+    broker.addCloseListener(this)
+    channel = Some(broker)
     queue = Some(getQueue(broker))
+    broker.start
     onConnectEvent(true)
     onChange(true, queue.get)
   }
 
-  def offline() = {
+  def onClosed(broker: BrokerChannel, expected: Boolean) = this.synchronized {
+    broker.removeCloseListener(this)
     onConnectEvent(false)
     onChange(false, "")
     queue = None
+    channel = None
   }
+
+  def close() = this.synchronized { channel.foreach(_.close()) }
 }
 
 object QueuePatterns {

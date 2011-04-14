@@ -32,9 +32,11 @@ import org.totalgrid.reef.api.ServiceTypes.Event
  */
 class SyncSubscription[A](channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription[A] {
   private val queue = QueuePatterns.getPrivateUnboundQueue(channel, consumer)
+  channel.start()
   override def setHeaders(headers: ServiceHandlerHeaders) =
     headers.setSubscribeQueue(queue)
   override def cancel() = channel.close()
+  //override def start() = channel.start()
 }
 
 trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {

@@ -24,6 +24,7 @@ import scala.collection.immutable
 import scala.util.Random
 
 import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.api.ServiceIOException
 
 /**
  * Very simple round robin implementation for mocking purposes
@@ -58,16 +59,68 @@ object MockBrokerInterface {
   }
 }
 
-class MockBrokerInterface(connectCorrectly: Boolean = true) extends BrokerChannel with BrokerConnection {
+class MockBrokerChannel(parent: MockBrokerInterface) extends BrokerChannel {
+  var started = true
+
+  var messageConsumer: Option[MessageConsumer] = None
+  var queueName: Option[String] = None
+
+  def start() {
+    started = true
+    parent.listen(queueName.get, messageConsumer.get)
+  }
+  def close() {
+    started = false
+    onClose(true)
+  }
+
+  def throwOnClosed() = if (!started) throw new ServiceIOException("Allready closed")
+
+  def listen(queue: String, mc: MessageConsumer) = {
+    throwOnClosed()
+    queueName = Some(queue)
+    messageConsumer = Some(mc)
+  }
+
+  def publish(exchange: String, key: String, b: Array[Byte], replyTo: Option[Destination]) = {
+    throwOnClosed()
+    parent.publish(exchange, key, b, replyTo)
+  }
+
+  def unbindQueue(queue: String, exchange: String, key: String) = {
+    throwOnClosed()
+    parent.unbindQueue(queue, exchange, key)
+  }
+
+  def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean) = {
+    throwOnClosed()
+    parent.bindQueue(queue, exchange, key, unbindFirst)
+  }
+
+  def declareExchange(exchange: String, exchangeType: String) = {
+    throwOnClosed()
+    parent.declareExchange(exchange, exchangeType)
+  }
+
+  def declareQueue(queue: String, autoDelete: Boolean, exclusive: Boolean) = {
+    throwOnClosed()
+    parent.declareQueue(queue, autoDelete, exclusive)
+  }
+}
+
+class MockBrokerInterface(connectCorrectly: Boolean = true, reportCorrectClosure: Boolean = true) extends BrokerConnection {
   import MockBrokerInterface._
 
   private var connected = false
+  private var channels = List.empty[MockBrokerChannel]
 
   def isConnected = connected
 
   def newBrokerChannel(): BrokerChannel = {
     if (!connected) throw new Exception("Mock broker not connected")
-    this
+    val c = new MockBrokerChannel(this)
+    channels = c :: channels
+    c
   }
 
   def connect() = {
@@ -80,6 +133,7 @@ class MockBrokerInterface(connectCorrectly: Boolean = true) extends BrokerChanne
   /// dependencies or listeners to unravel
   def close {
     connected = false
+    channels.foreach(_.close())
     listeners.foreach(_.closed())
   }
 
@@ -114,7 +168,7 @@ class MockBrokerInterface(connectCorrectly: Boolean = true) extends BrokerChanne
     }
   }
 
-  def listen(queue: String, mc: MessageConsumer) = {
+  def listen(queue: String, mc: MessageConsumer) {
     synchronized {
       queues.get(queue) match {
         case Some(roundRobin) =>
@@ -166,7 +220,7 @@ class MockBrokerInterface(connectCorrectly: Boolean = true) extends BrokerChanne
           }
         case None =>
           declareExchange(exchange)
-          bindQueue(queue, exchange, key)
+          bindQueue(queue, exchange, key, unbindFirst)
       }
     }
   }

@@ -56,7 +56,7 @@ class BrokerObjectConsumerActor(reactor: Reactable) extends BrokerObjectConsumer
     queued.foreach(_(b))
     queued = Queue.empty
   }
-  def offline() = reactor.execute {
+  def onClosed(b: BrokerChannel, expected: Boolean) = reactor.execute {
     channel = None
   }
 

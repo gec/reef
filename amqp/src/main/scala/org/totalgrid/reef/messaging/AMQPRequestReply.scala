@@ -26,10 +26,19 @@ import org.totalgrid.reef.api.Envelope._
  * trait used to present a simple interface to a request/reply interface as a
  * simple async channel
  */
-trait RequestReplyChannel[R, S] {
-  def send(request: R, exchange: String, key: String)
-  def setResponseDest(response: S => Unit)
+trait RequestReplyChannel[RequestType, ReplyType] {
+  def send(request: RequestType, exchange: String, key: String)
   def close(): Unit
+
+  def setResponseHandler(handler: ResponseHandler[ReplyType])
+}
+
+/**
+ * trait for clients of RequestReplyChannels
+ */
+trait ResponseHandler[R] {
+  def onResponse(response: R)
+  def onClosed()
 }
 
 /**
@@ -50,13 +59,15 @@ trait ProtoServiceChannel extends RequestReplyChannel[ServiceRequest, ServiceRes
  * RequestReplyChannel interface primarily used by service clients
  */
 abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => Array[Byte], deseralize: Array[Byte] => R)
-    extends AMQPPublisher(Nil) with RequestReplyChannel[S, R] with MessageConsumer {
+    extends AMQPPublisher(Nil) with RequestReplyChannel[S, R] with MessageConsumer with BrokerChannelCloseListener {
 
-  override def close(): Unit = {} // TODO: implement close on async request reply
+  private var channel: Option[BrokerChannel] = None
+  override def close(): Unit = channel.foreach { _.close }
 
   /// where to send the received data, optional to break circular construction dependency, will blow
   /// up if used without setting the destination
-  private var dest: Option[R => Unit] = None
+  private var handler: Option[ResponseHandler[R]] = None
+  def setResponseHandler(h: ResponseHandler[R]) = handler = Some(h)
 
   /// private queue we will recieve responses by setting the AMQP reply address
   private val responseQueue = new AMQPPrivateResponseQueueListener(responseExchange, this)
@@ -66,8 +77,12 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
     send(serialize(value), exchange, key)
   }
 
-  def setResponseDest(x: R => Unit) {
-    dest = Some(x)
+  override def onClosed(b: BrokerChannel, expected: Boolean) = {
+    responseQueue.close()
+    handler.get.onClosed()
+    super.onClosed(b, expected)
+    channel = None
+    b.removeCloseListener(this)
   }
 
   /**
@@ -75,18 +90,15 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
    */
   override def online(b: BrokerChannel) {
     // This ordering is very important for avoiding race conditions!!
+    b.addCloseListener(this)
+    channel = Some(b)
     responseQueue.online(b)
     super.online(b)
   }
 
-  override def offline() {
-    responseQueue.offline()
-    super.offline()
-  }
-
   def receive(bytes: Array[Byte], replyTo: Option[Destination]) {
     try {
-      dest.get(deseralize(bytes))
+      handler.get.onResponse(deseralize(bytes))
     } catch { case ex: Exception => warn(ex) }
   }
 }

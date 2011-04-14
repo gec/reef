@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.scalaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,34 +18,25 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.scalaclient.mock
+
+import org.totalgrid.reef.api.scalaclient.ClientOperations
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.ServiceTypes.MultiResult
 
-/**
- * scala analog to the java ISession
- */
-trait ClientSession extends ClientOperations with SubscriptionManagement {
+import scala.collection.mutable.Queue
 
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
-}
+case class RequestRecord[A](verb: Envelope.Verb, payload: A, env: RequestEnv, callback: MultiResult[A] => Unit)
 
-/**
- * Provides a thick interface full of helper functions via implement of a single abstract request function
- */
-trait ClientOperations
-    extends SyncOperations
-    with AsyncOperations
-    with FutureOperations
-    with AsyncScatterGatherOperations
-    with SyncScatterGatherOperations
-    with DefaultHeaders {
+class MockClientOperations extends ClientOperations {
 
-  /**
-   *    Implements a synchronous request in terms of a future
-   */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): MultiResult[A] = requestFuture(verb, payload, env, dest)()
+  private val queue = new Queue[RequestRecord[_]]
+
+  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
+    queue += RequestRecord(verb, payload, env, callback)
+  }
+
+  def next(): AnyRef = queue.dequeue
+  def callback[A <: AnyRef](result: MultiResult[A]) = queue.front.callback.asInstanceOf[MultiResult[A] => Unit](result)
 
 }

@@ -34,16 +34,19 @@ import org.totalgrid.reef.api.ServiceIOException
 
 class QpidBrokerInterface(session: Session) extends SessionListener with BrokerChannel with Logging {
   var messageConsumer: ScalaOption[MessageConsumer] = None
+  var userClosed = false
+  var queueName: ScalaOption[String] = None
 
   session.setSessionListener(this)
 
   def closed(s: Session) {
     info("Qpid session closed")
+    onClose(userClosed)
   }
 
   def exception(s: Session, e: SessionException) {
-    warn(e)
-    // TODO: on exception we need to throw away session, it is closed
+    warn("Qpid Exception: " + e)
+    onClose(userClosed)
   }
 
   def opened(s: Session) {}
@@ -61,10 +64,12 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
   /* -- Implement BrokerChannel -- */
 
   def close() = {
+    userClosed = true
     // qpid just does a 60 second timeout if close is called more than once
     if (!session.isClosing()) {
       debug("closing session")
       session.close()
+      onClose(userClosed)
     }
   }
 
@@ -118,6 +123,17 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
     debug("Listening: " + queue + " to " + mc)
     messageConsumer = Some(mc)
+    queueName = Some(queue)
+
+  }
+
+  def start() {
+    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
+
+    val queue = queueName.get
+
+    debug("starting: " + queue)
+
     session.messageSubscribe(queue, queue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null)
     session.messageFlow(queue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT)
     session.messageFlow(queue, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT)

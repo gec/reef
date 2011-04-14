@@ -96,6 +96,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
         sv.update(value)
       }
     })
+    channel.start
 
     channel.publish("test", "hi", "hi".getBytes, None)
 
@@ -113,5 +114,29 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     value.get should equal(0)
   }
 
+  test("Qpid Close") {
+    val default = BrokerConnectionInfo.loadInfo("test")
+    val amqp = new AMQPConnectionReactor with ReactActor {
+      val broker = new QpidBrokerConnection(default)
+    }
+
+    amqp.connect(1000)
+
+    val channel = amqp.getChannel
+
+    var expectedClose: Option[Boolean] = None
+
+    channel.addCloseListener(new BrokerChannelCloseListener {
+      def onClosed(channel: BrokerChannel, expected: Boolean) = {
+        expectedClose = Some(expected)
+      }
+    })
+
+    expectedClose should equal(None)
+
+    channel.close
+
+    expectedClose should equal(Some(true))
+  }
 }
 

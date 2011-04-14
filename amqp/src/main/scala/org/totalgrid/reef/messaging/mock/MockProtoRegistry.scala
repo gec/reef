@@ -71,6 +71,10 @@ class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends Clien
       }
     }
   }
+
+  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: (Event[A]) => Unit) = {
+    throw new IllegalArgumentException("Subscriptions not implemented for MockRegistry.")
+  }
 }
 
 trait MockProtoPublisherRegistry {

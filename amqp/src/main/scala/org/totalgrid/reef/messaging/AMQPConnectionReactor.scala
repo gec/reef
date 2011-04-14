@@ -43,6 +43,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   def add[A <: ChannelObserver](handler: A): A = {
     execute { addChannelObserver(handler) }
     handler
+    // TODO: need to add a removeChannelObserver function if keeping async around
   }
 
   def addConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
@@ -132,7 +133,6 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   override def closed() {
     info(" Connection closed. reconnecting:" + reconnectOnClose)
     if (reconnectOnClose) this.delay(1000) { reconnect() }
-    queue.foreach { a => a.offline() }
     this.synchronized { listeners.foreach { _.closed() } }
   }
 
