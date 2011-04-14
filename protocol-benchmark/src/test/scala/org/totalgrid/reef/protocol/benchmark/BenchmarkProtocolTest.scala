@@ -69,6 +69,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
 
     def publish(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)
+    def close() {}
 
     def onResponse(c: Commands.CommandResponse) = cmdResponses.update(Some(c))
 

@@ -52,6 +52,7 @@ class Simulator(name: String, publisher: IPublisher, config: SimMapping.Simulato
   }
   override def beforeStop() {
     this.synchronized {
+      publisher.close()
       repeater.foreach { _.cancel }
     }
   }

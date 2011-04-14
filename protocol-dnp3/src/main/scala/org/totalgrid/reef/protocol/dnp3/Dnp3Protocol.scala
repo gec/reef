@@ -40,7 +40,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, MeasAdapter]
+  private var map = immutable.Map.empty[String, (MeasAdapter, IPublisher)]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
@@ -79,12 +79,14 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
     val meas_adapter = new MeasAdapter(mapping, publisher.publish)
-    map += endpoint -> meas_adapter
+    map += endpoint -> (meas_adapter, publisher)
     val cmd = dnp3.AddMaster(channelName, endpoint, FilterLevel.LEV_WARNING, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
 
   override def _removeEndpoint(endpoint: String) = {
+    // close the publisher
+    map(endpoint)._2.close
     debug { "Not removing stack " + endpoint + " as per workaround" }
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll
     times out.
