@@ -161,13 +161,14 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("stop twice throws exception") {
+  test("stop and start calls are idempotent") {
     val a = getActor
 
+    a.start
+    a.start
+
     a.stop
-    intercept[IllegalStateException] {
-      a.stop
-    }
+    a.stop
   }
 
   test("timer doesnt kill parent") {

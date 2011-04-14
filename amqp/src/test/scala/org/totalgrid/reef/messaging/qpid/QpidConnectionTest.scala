@@ -69,6 +69,9 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     intercept[ServiceIOException] {
       amqp.connect(100)
     }
+
+    amqp.disconnect(100)
+    amqp.disconnect(100)
   }
 
   test("Qpid bind/unbind") {
