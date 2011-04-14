@@ -40,12 +40,6 @@ class SyncRequestReply[S, R](
   deseralize: Array[Byte] => R)
     extends MsgPublisher(channel) with RequestReplyChannel[S, R] with MessageConsumer with BrokerChannelCloseListener {
 
-  channel.addCloseListener(this)
-  channel.start
-
-  /// Set's the publisher's reply to field
-  this.setReplyTo(Destination("amq.direct", queue))
-
   /**
    * Close the underlying channel. No further requests or responses are possible.
    */
@@ -59,7 +53,13 @@ class SyncRequestReply[S, R](
   /// Here's the subscription that gets setup synchronously
   private val queue = QueuePatterns.getPrivateResponseQueue(channel, "amq.direct", this)
 
-  def onClosed(channel: BrokerChannel, expected: Boolean) = handler.get.onClosed()
+  channel.addCloseListener(this)
+  channel.start
+
+  /// Set's the publisher's reply to field
+  this.setReplyTo(Destination("amq.direct", queue))
+
+  def onClosed(channel: BrokerChannel, expected: Boolean) = handler.foreach(_.onClosed())
 
   def send(value: S, exchange: String, key: String): Unit = send(serialize(value), exchange, key) //call publishers send
 
