@@ -36,6 +36,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
     val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef"))
+    logout()
     Services.resetSystem(sql, sql)
   }
 
