@@ -61,8 +61,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
 
     // For now, pass in a get function that always returns an empty list.
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
-    val loader = new CommunicationsLoader(client, new LoadCache().loadCacheCom)
+    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCom)
 
     test(Fixture(client, loader, model))
   }

@@ -50,8 +50,9 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     // For now, pass in a get function that always returns an empty list.
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
-    val loader = new EquipmentLoader(client, new LoadCache().loadCacheEqu)
+    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu)
 
     test(Fixture(client, loader, model))
   }

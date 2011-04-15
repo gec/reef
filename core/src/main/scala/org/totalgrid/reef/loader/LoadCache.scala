@@ -21,14 +21,13 @@
 package org.totalgrid.reef.loader
 
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.util.Logging
 
 /**
  * When loading a configuration, we need to validate the equipment model
  * against the communications model. This class records the points and
  * controls found, then does a validation at the end.
  */
-class LoadCache extends Logging {
+class LoadCache {
 
   val controls = HashMap[String, CachedControl]()
   val points = HashMap[String, CachedPoint]()
@@ -36,11 +35,23 @@ class LoadCache extends Logging {
   val loadCacheEqu = new LoadCacheEqu(this)
   val loadCacheCom = new LoadCacheCom(this)
 
-  def validate = {
+  def validate: Boolean = {
     import ValidateResult._
 
+    var valid = true
+
+    def info(msg: String) = println(msg)
+    def warn(msg: String) = {
+      valid = false
+      println(msg)
+    }
+    def warnIf(msg: String, b: Boolean) = {
+      if (b) warn(msg) else info(msg)
+    }
+    def spacer() = println
+
     if (controls.isEmpty && points.isEmpty)
-      println("WARNING: No controls or points found.")
+      warn("WARNING: No controls or points found.")
 
     var pEquOnly = List[CachedObject]()
     var pComOnly = List[CachedObject]()
@@ -64,14 +75,14 @@ class LoadCache extends Logging {
       pMultiple = pMultiple.sortBy(_.name)
       pNone = pNone.sortBy(_.name)
 
-      println("POINTS SUMMARY:  ")
-      println("   Points found in equipmentModel and communicationsModel: " + pComplete.length)
-      println("   Points found in equipmentModel only:      " + pComOnly.length)
-      println("   Points found in communicationsModel only: " + pEquOnly.length)
+      info("POINTS SUMMARY:  ")
+      info("   Points found in equipmentModel and communicationsModel: " + pComplete.length)
+      warnIf("   Points found in equipmentModel only:      " + pComOnly.length, pComOnly.length > 0)
+      warnIf("   Points found in communicationsModel only: " + pEquOnly.length, pComOnly.length > 0)
       if (pMultiple.length > 0)
-        println("   Points found in both models more than once: " + pMultiple.length)
+        warn("   Points found in both models more than once: " + pMultiple.length)
       if (pNone.length > 0)
-        println("   Points found in neither model (internal error): " + pNone.length)
+        warn("   Points found in neither model (internal error): " + pNone.length)
     }
 
     var cEquOnly = List[CachedObject]()
@@ -96,56 +107,58 @@ class LoadCache extends Logging {
       cMultiple = cMultiple.sortBy(_.name)
       cNone = cNone.sortBy(_.name)
 
-      println("CONTROLS SUMMARY:  ")
-      println("   Controls found in equipmentModel and communicationsModel: " + cComplete.length)
-      println("   Controls found in equipmentModel only:      " + cComOnly.length)
-      println("   Controls found in communicationsModel only: " + cEquOnly.length)
+      info("CONTROLS SUMMARY:  ")
+      info("   Controls found in equipmentModel and communicationsModel: " + cComplete.length)
+      info("   Controls found in equipmentModel only:      " + cComOnly.length)
+      info("   Controls found in communicationsModel only: " + cEquOnly.length)
       if (cMultiple.length > 0)
-        println("   Controls found in one model more than once: " + cMultiple.length)
+        warn("   Controls found in one model more than once: " + cMultiple.length)
       if (cNone.length > 0)
-        println("   Controls found in neither model (internal error): " + cNone.length)
+        warn("   Controls found in neither model (internal error): " + cNone.length)
 
     }
-    println
 
-    if (cEquOnly.length > 0 || cComOnly.length > 0 || cMultiple.length > 0 || cNone.length > 0) {
-      println("POINT WARNINGS:")
+    if (pEquOnly.length > 0 || pComOnly.length > 0 || pMultiple.length > 0 || pNone.length > 0) {
+      spacer
+      warn("POINT WARNINGS:")
       if (pEquOnly.length > 0)
-        println("  Points found in equipmentModel only: \n" + pEquOnly.mkString("    ", "\n    ", "\n"))
+        warn("  Points found in equipmentModel only: \n" + pEquOnly.mkString("    ", "\n    ", "\n"))
       if (pComOnly.length > 0)
-        println("  Points found in communicationsModel only:\n" + pComOnly.mkString("    ", "\n    ", "\n"))
+        warn("  Points found in communicationsModel only:\n" + pComOnly.mkString("    ", "\n    ", "\n"))
       if (pMultiple.length > 0)
-        println("  Points found in both models more than once:\n" + pMultiple.mkString("    ", "\n    ", "\n"))
+        warn("  Points found in both models more than once:\n" + pMultiple.mkString("    ", "\n    ", "\n"))
       if (pNone.length > 0)
-        println("  Points found in neither model (internal error):\n" + pNone.mkString("    ", "\n    ", "\n"))
+        warn("  Points found in neither model (internal error):\n" + pNone.mkString("    ", "\n    ", "\n"))
     }
 
     if (cEquOnly.length > 0 || cComOnly.length > 0 || cMultiple.length > 0 || cNone.length > 0) {
-      println("CONTROL WARNINGS:")
+      spacer
+      warn("CONTROL WARNINGS:")
       if (cEquOnly.length > 0)
-        println("  Controls found in equipmentModel only:\n" + cEquOnly.mkString("    ", "\n    ", "\n"))
+        warn("  Controls found in equipmentModel only:\n" + cEquOnly.mkString("    ", "\n    ", "\n"))
       if (cComOnly.length > 0)
-        println("  Controls found in communicationsModel only:\n" + cComOnly.mkString("    ", "\n    ", "\n"))
+        warn("  Controls found in communicationsModel only:\n" + cComOnly.mkString("    ", "\n    ", "\n"))
       if (cMultiple.length > 0)
-        println("  Controls found in both models more than once:\n" + cMultiple.mkString("    ", "\n    ", "\n"))
+        warn("  Controls found in both models more than once:\n" + cMultiple.mkString("    ", "\n    ", "\n"))
       if (cNone.length > 0)
-        println("  Controls found in neither model (internal error):\n" + cNone.mkString("    ", "\n    ", "\n"))
+        warn("  Controls found in neither model (internal error):\n" + cNone.mkString("    ", "\n    ", "\n"))
     }
-  }
-  println
 
-  val pWarnings = points.values.filterNot(_.warnings.isEmpty)
-  if (!pWarnings.isEmpty) {
-    pWarnings.foreach(p =>
-      println("WARNINGS for Point '" + p.name + "':\n    " + p.warnings.mkString("\n    ")))
-    println
-  }
+    val pWarnings = points.values.filterNot(_.warnings.isEmpty)
+    if (!pWarnings.isEmpty) {
+      spacer
+      pWarnings.foreach(p =>
+        warn("WARNINGS for Point '" + p.name + "':\n    " + p.warnings.mkString("\n    ")))
+    }
 
-  val cWarnings = controls.values.filterNot(_.warnings.isEmpty)
-  if (!cWarnings.isEmpty) {
-    cWarnings.foreach(c =>
-      println("WARNINGS for Control '" + c.name + "':\n    " + c.warnings.mkString("\n    ")))
-    println
+    val cWarnings = controls.values.filterNot(_.warnings.isEmpty)
+    if (!cWarnings.isEmpty) {
+      spacer
+      cWarnings.foreach(c =>
+        warn("WARNINGS for Control '" + c.name + "':\n    " + c.warnings.mkString("\n    ")))
+    }
+
+    valid
   }
 
 }

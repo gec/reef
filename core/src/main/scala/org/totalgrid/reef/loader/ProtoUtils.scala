@@ -28,7 +28,6 @@ import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
 import org.totalgrid.reef.loader.communications.Scale
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 /**
  * Utility methods to crate protos
@@ -87,7 +86,7 @@ object ProtoUtils {
     triggerSet
   }
 
-  def addTriggers(client: SyncOperations, point: Point, triggers: List[Trigger.Builder]) {
+  def addTriggers(client: ModelLoader, point: Point, triggers: List[Trigger.Builder]) {
     var triggerSets = client.getOrThrow(toTriggerSet(point))
     var triggerSet = triggerSets.size match {
       case 0 => TriggerSet.newBuilder.setPoint(point)

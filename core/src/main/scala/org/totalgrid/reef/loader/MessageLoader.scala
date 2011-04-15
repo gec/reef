@@ -24,13 +24,12 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 /**
  * Load the message configuration for alarms, events, and logs.
  */
 
-class MessageLoader(client: SyncOperations) extends Logging {
+class MessageLoader(client: ModelLoader) extends Logging {
 
   /**
    * Load this equipment node and all children. Create edges to connect the children.
