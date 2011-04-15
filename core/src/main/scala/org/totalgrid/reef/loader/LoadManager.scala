@@ -89,32 +89,49 @@ object LoadManager extends Logging {
     if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
       throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
 
-    if (xml.isSetMessageModel) {
-      val messageLoader = new MessageLoader(client)
-      val messageModel = xml.getMessageModel
-      messageLoader.load(messageModel)
-    }
-
-    if (xml.isSetActionModel) {
-      val actionSets = xml.getActionModel.getActionSet.toList
-      actionSets.foreach(as => actionModel += (as.getName -> as))
-    }
-
     val loadCache = new LoadCache
+    val ex = new LoadingExceptionCollector
+    try {
+      if (xml.isSetMessageModel) {
+        val messageLoader = new MessageLoader(client, ex)
+        val messageModel = xml.getMessageModel
+        messageLoader.load(messageModel)
+      }
 
-    if (xml.isSetEquipmentModel) {
-      val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu)
-      val equModel = xml.getEquipmentModel
-      equipmentPointUnits = equLoader.load(equModel, actionModel)
+      if (xml.isSetActionModel) {
+        val actionSets = xml.getActionModel.getActionSet.toList
+        actionSets.foreach(as => actionModel += (as.getName -> as))
+      }
+
+      if (xml.isSetEquipmentModel) {
+        val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu, ex)
+        val equModel = xml.getEquipmentModel
+        equipmentPointUnits = equLoader.load(equModel, actionModel)
+      }
+
+      if (xml.isSetCommunicationsModel) {
+        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom, ex)
+        val comModel = xml.getCommunicationsModel
+        comLoader.load(comModel, path, equipmentPointUnits, benchmark)
+      }
+    } catch {
+      case exception: Exception =>
+        println("Parsing halted by terminal error: " + exception.getMessage)
+        println("Fix Critical Errors and try again.")
+        warn(exception.getStackTraceString)
     }
 
-    if (xml.isSetCommunicationsModel) {
-      val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom)
-      val comModel = xml.getCommunicationsModel
-      comLoader.load(comModel, path, equipmentPointUnits, benchmark)
-    }
+    val errors = ex.getErrors
 
-    loadCache.validate
+    if (errors.size > 0) {
+      println
+      println("Critical Errors found:")
+      errors.foreach(println(_))
+      println
+      false
+    } else {
+      loadCache.validate
+    }
   }
 
   def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean): Unit = {

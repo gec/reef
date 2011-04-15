@@ -33,7 +33,7 @@ import org.totalgrid.reef.proto.Processing._
  *
  * TODO: generic_type is not set
  */
-class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logging {
+class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: ExceptionCollector) extends Logging {
 
   val equipmentProfiles = HashMap[String, EquipmentType]()
   val pointProfiles = HashMap[String, PointProfile]()
@@ -61,11 +61,14 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logg
   def load(model: EquipmentModel, actionModel: HashMap[String, ActionSet]): HashMap[String, String] = {
 
     info("Start")
-    // Collect all the profiles in name->profile maps.
-    val profiles = model.getProfiles
-    if (profiles != null) {
-      profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
-      profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
+
+    ex.collect("Equipment Profiles: ") {
+      // Collect all the profiles in name->profile maps.
+      val profiles = model.getProfiles
+      if (profiles != null) {
+        profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
+        profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
+      }
     }
 
     println("Loading Equipment: Found PointProfiles: " + pointProfiles.keySet.mkString(", "))
@@ -73,7 +76,9 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logg
 
     model.getEquipment.toList.foreach(e => {
       println("Loading Equipment: processing equipment '" + e.getName + "'")
-      loadEquipment(e, "", actionModel)
+      ex.collect("Equipment: " + e.getName) {
+        loadEquipment(e, "", actionModel)
+      }
     })
 
     info("End")
@@ -200,7 +205,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logg
       case false =>
         point.isSetPointProfile match {
           case true => getAttribute[A](name, getPointProfile(name, point), isSet, get, attributeName)
-          case false => throw new Exception("Point '" + name + "' is missing required attribute '" + attributeName + "'.")
+          case false => throw new LoadingException("Point '" + name + "' is missing required attribute '" + attributeName + "'.")
         }
     }
     value
@@ -221,7 +226,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logg
     if (commandEntities.contains(commandName))
       commandEntities(commandName)
     else
-      throw new Exception("control '" + commandName + "' referenced from '" + elementName + "' was not found in configuration.")
+      throw new LoadingException("control '" + commandName + "' referenced from '" + elementName + "' was not found in configuration.")
   }
 
   def getPointProfile(elementName: String, point: PointType): PointProfile = {
@@ -229,7 +234,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logg
     if (pointProfiles.contains(p))
       pointProfiles(p)
     else
-      throw new Exception("pointProfile '" + p + "' referenced from '" + elementName + "' was not found in configuration.")
+      throw new LoadingException("pointProfile '" + p + "' referenced from '" + elementName + "' was not found in configuration.")
   }
 
   /**
@@ -240,7 +245,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu) extends Logg
       .setName(name)
     val types = profiles.flatMap(_.getType.toList)
     if (types.isEmpty)
-      throw new Exception(name + " needs at least one <type> specified in the Equipment Model.")
+      throw new LoadingException(name + " needs at least one <type> specified in the Equipment Model.")
     types.foreach(typ => proto.addTypes(typ.getName))
 
     //profiles.foreach( p => p.getType.toList.foreach(typ => proto.addTypes(typ.getName)) )

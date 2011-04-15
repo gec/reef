@@ -36,6 +36,10 @@ import org.totalgrid.reef.api.scalaclient.MockSyncOperations
 import org.totalgrid.reef.api.ServiceTypes._
 import org.totalgrid.reef.api.Envelope
 
+class NullExceptionCollector extends ExceptionCollector {
+  def collect[A](name: => String)(f: => Unit) { f }
+}
+
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -52,7 +56,8 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
-    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu)
+    val ex = new NullExceptionCollector
+    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu, ex)
 
     test(Fixture(client, loader, model))
   }

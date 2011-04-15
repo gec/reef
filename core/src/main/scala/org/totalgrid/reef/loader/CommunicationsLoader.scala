@@ -46,7 +46,7 @@ object CommunicationsLoader {
  * TODO: Add serial interfaces
  *
  */
-class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends Logging {
+class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: ExceptionCollector) extends Logging {
 
   val controlProfiles = HashMap[String, ControlProfile]()
   val pointProfiles = HashMap[String, PointProfile]()
@@ -94,7 +94,9 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
     // Load endpoints
     model.getEndpoint.toList.foreach(e => {
       println("Loading Communications: processing endpoint '" + e.getName + "'")
-      loadEndpoint(e, path, equipmentPointUnits, benchmark)
+      ex.collect("Endpoint: " + e.getName) {
+        loadEndpoint(e, path, equipmentPointUnits, benchmark)
+      }
     })
 
     info("End")
@@ -109,7 +111,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
     //  pointProfiles: scale
     for ((name, profile) <- pointProfiles) {
       if (profile.isSetScale)
-        validatePointScale("profile '" + name + "'", profile.getScale)
+        validatePointScale(ex, "profile '" + name + "'", profile.getScale)
     }
 
     // TODO: more profile validation ...
@@ -159,12 +161,14 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
     for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex) // TODO fill in endpoint name
 
     // Validate that the indexes within each type are unique
-    var errorMsg = "Endpoint '" + endpointName + "':"
+    val errorMsg = "Endpoint '" + endpointName + "':"
     val isBenchmark = overriddenProtocolName == BENCHMARK
-    validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg)
-    validateIndexesAreUnique[PointType](statuses, isBenchmark, errorMsg)
-    validateIndexesAreUnique[PointType](analogs, isBenchmark, errorMsg)
-    validateIndexesAreUnique[PointType](counters, isBenchmark, errorMsg)
+    ex.collect("Checking Indexes: " + endpointName) {
+      validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg)
+      validateIndexesAreUnique[PointType](statuses, isBenchmark, errorMsg)
+      validateIndexesAreUnique[PointType](analogs, isBenchmark, errorMsg)
+      validateIndexesAreUnique[PointType](counters, isBenchmark, errorMsg)
+    }
 
     // Collect all the point types into points while making sure each name is unique
     // across all point types.
@@ -176,11 +180,15 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
     trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
     overriddenProtocolName match {
-      case DNP3 => configFiles ::= processIndexMapping(endpointName, controls, points)
+      case DNP3 =>
+        ex.collect("DNP3 Indexes:" + endpointName) {
+          configFiles ::= processIndexMapping(endpointName, controls, points)
+        }
       case BENCHMARK => {
         val delay = if (protocol.isSetSimOptions && protocol.getSimOptions.isSetDelay) Some(protocol.getSimOptions.getDelay) else None
-
-        configFiles ::= createSimulatorMapping(endpointName, controls, points, delay)
+        ex.collect("Simulator Mapping:" + endpointName) {
+          configFiles ::= createSimulatorMapping(endpointName, controls, points, delay)
+        }
       }
     }
 
@@ -203,12 +211,12 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       if (indexable.isSetIndex) {
         val index = indexable.getIndex
         map.contains(index) match {
-          case true => throw new Exception(error + " both '" + name + "' and '" + map(index) + "' cannot use the same index=\"" + index + "\"")
+          case true => throw new LoadingException(error + " both '" + name + "' and '" + map(index) + "' cannot use the same index=\"" + index + "\"")
           case false => map += (index -> name)
         }
       } else {
         if (!isBenchmark)
-          throw new Exception(error + " '" + name + "' does not specify an index.")
+          throw new LoadingException(error + " '" + name + "' does not specify an index.")
       }
     }
   }
@@ -219,7 +227,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
   def addUniquePoint(points: HashMap[String, PointType], name: String, point: PointType, error: String): Unit = {
 
     points.contains(name) match {
-      case true => throw new Exception(error + " name=\"" + name + "\" cannot be the same name as another point in this endpoint.")
+      case true => throw new LoadingException(error + " name=\"" + name + "\" cannot be the same name as another point in this endpoint.")
       case false => points += (name -> point)
     }
   }
@@ -236,12 +244,12 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       case Some(endpoint) => endpoint.getProtocol
       case None =>
         profiles.size match {
-          case 1 => throw new IllegalArgumentException("Endpoint '" + endpointName + "' has no protocol element specified.")
-          case _ => throw new IllegalArgumentException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify a protocol.")
+          case 1 => throw new LoadingException("Endpoint '" + endpointName + "' has no protocol element specified.")
+          case _ => throw new LoadingException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify a protocol.")
         }
     }
     if (!protocol.isSetName)
-      throw new IllegalArgumentException("Endpoint '" + endpointName + "' has a protocol element without a name attribute (ex: <protocol name=\"benchmark\"/>).")
+      throw new LoadingException("Endpoint '" + endpointName + "' has a protocol element without a name attribute (ex: <protocol name=\"benchmark\"/>).")
 
     protocol
   }
@@ -278,8 +286,8 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       case Some(endpoint) => endpoint.getInterface
       case None =>
         profiles.size match {
-          case 1 => throw new IllegalArgumentException("Endpoint '" + endpointName + "' has no interface element specified.")
-          case _ => throw new IllegalArgumentException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify an interface.")
+          case 1 => throw new LoadingException("Endpoint '" + endpointName + "' has no interface element specified.")
+          case _ => throw new LoadingException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify an interface.")
         }
     }
 
@@ -333,7 +341,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       case false =>
         reference match {
           case Some(i) => get(i)
-          case _ => throw new IllegalArgumentException("Endpoint '" + endpointName + "' interface is missing required '" + attributeName + "' attribute.")
+          case _ => throw new LoadingException("Endpoint '" + endpointName + "' interface is missing required '" + attributeName + "' attribute.")
         }
     }
     value
@@ -389,7 +397,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
   def processPointScaling(endpointName: String, points: HashMap[String, PointType], equipmentPointUnits: HashMap[String, String], isBenchmark: Boolean): Unit = {
     import ProtoUtils._
 
-    for ((name, point) <- points) {
+    for ((name, point) <- points) ex.collect("Point: " + endpointName + "." + name) {
       val profile = getPointProfile(endpointName, point)
       val scale = if (point.isSetScale) // point/scale overrides any pointProfile/scale.
         Some(point.getScale)
@@ -407,7 +415,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
         val s = scale.get
 
         if (!s.isSetEngUnit)
-          throw new Exception("Endpoint '" + endpointName + "': <scale> element used by point '" + name + "' does not have required attribute 'engUnit'")
+          throw new LoadingException("Endpoint '" + endpointName + "': <scale> element used by point '" + name + "' does not have required attribute 'engUnit'")
 
         val unit = s.getEngUnit
 
@@ -416,7 +424,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
         equipmentPointUnits.get(name) match {
           case Some(u) =>
             if (unit != u)
-              throw new Exception("Endpoint '" + endpointName + "': <scale ... engUnit=\"" + unit + "\"/> does not match point '" + name + "' unit=\"" + u + "\" in equipment model.")
+              throw new LoadingException("Endpoint '" + endpointName + "': <scale ... engUnit=\"" + unit + "\"/> does not match point '" + name + "' unit=\"" + u + "\" in equipment model.")
           case _ => // OK: the equipment point doesn't have to be in this config file. TODO: could check the database.
         }
 
@@ -435,7 +443,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       if (pointProfiles.contains(p))
         Some(pointProfiles(p))
       else
-        throw new Exception("pointProfile '" + p + "' referenced from '" + elementName + "' was not found in configuration.")
+        throw new LoadingException("pointProfile '" + p + "' referenced from '" + elementName + "' was not found in configuration.")
     } else
       None
   }
@@ -481,7 +489,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
 
   def addUnique[A](map: HashMap[String, A], key: String, indexable: A, error: String): Unit = {
     if (map.contains(key))
-      throw new Exception(error + "'" + key + "'. Point names need to be unique, even across different point types.")
+      throw new LoadingException(error + "'" + key + "'. Point names need to be unique, even across different point types.")
     map += (key -> indexable)
   }
 
@@ -569,7 +577,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
     if (point.isSetIndex)
       proto.setIndex(point.getIndex)
     else
-      throw new IllegalArgumentException("ERROR in endpoint '" + endpointName + "' - Point '" + name + "' has no index specified.")
+      throw new LoadingException("ERROR in endpoint '" + endpointName + "' - Point '" + name + "' has no index specified.")
 
     val typ = point match {
       case status: Status => MAPPING_STATUS
@@ -593,8 +601,8 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       case Some(ct) => ct.getIndex
       case None =>
         reverseProfiles.size match {
-          case 1 => throw new IllegalArgumentException("Control '" + name + "' has no index specified.")
-          case _ => throw new IllegalArgumentException("Control '" + name + "' and its associated controlProfile element(s) do not specify an index.")
+          case 1 => throw new LoadingException("Control '" + name + "' has no index specified.")
+          case _ => throw new LoadingException("Control '" + name + "' and its associated controlProfile element(s) do not specify an index.")
         }
     }
     debug("    COMMAND " + index + " -> " + name)
@@ -604,8 +612,8 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom) extends
       case Some(ct) => ct.getOptionsDnp3
       case None =>
         reverseProfiles.size match {
-          case 1 => throw new IllegalArgumentException("Control '" + name + "' has no optionsDnp3 element specified.")
-          case _ => throw new IllegalArgumentException("Control '" + name + "' and its associated controlProfile element(s) do not specify an optionsDnp3 element.")
+          case 1 => throw new LoadingException("Control '" + name + "' has no optionsDnp3 element specified.")
+          case _ => throw new LoadingException("Control '" + name + "' and its associated controlProfile element(s) do not specify an optionsDnp3 element.")
         }
     }
 

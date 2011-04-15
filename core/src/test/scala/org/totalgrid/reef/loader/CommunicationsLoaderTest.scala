@@ -63,7 +63,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
-    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCom)
+    val ex = new NullExceptionCollector
+    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCom, ex)
 
     test(Fixture(client, loader, model))
   }

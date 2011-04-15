@@ -372,14 +372,16 @@ object ProtoUtils {
     proto
   }
 
-  def validatePointScale(parent: String, scale: Scale): Unit = {
-    if (!(scale.isSetRawLow && scale.isSetRawHigh && scale.isSetEngLow && scale.isSetEngHigh) &&
-      !(scale.isSetSlope && scale.isSetOffset)) {
-      throw new Exception("<scale> element in " + parent + " does not have require attributes: (rawLow,rawHigh,engLow,engHigh) or (slope,offset)")
-    }
+  def validatePointScale(ex: ExceptionCollector, parent: String, scale: Scale): Unit = {
+    ex.collect("PointScaling: " + parent) {
+      if (!(scale.isSetRawLow && scale.isSetRawHigh && scale.isSetEngLow && scale.isSetEngHigh) &&
+        !(scale.isSetSlope && scale.isSetOffset)) {
+        throw new Exception("<scale> element in " + parent + " does not have require attributes: (rawLow,rawHigh,engLow,engHigh) or (slope,offset)")
+      }
 
-    if (!scale.isSetEngUnit)
-      throw new Exception("<scale> element in " + parent + " does not have require attribute engUnit")
+      if (!scale.isSetEngUnit)
+        throw new Exception("<scale> element in " + parent + " does not have require attribute engUnit")
+    }
   }
 
   /**
