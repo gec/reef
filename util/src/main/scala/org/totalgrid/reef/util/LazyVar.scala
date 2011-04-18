@@ -38,7 +38,8 @@ class LazyVar[A](init: => A) {
    */
   def value = thunked match {
     case Some(t) => t
-    case None => thunked = Some(thunk()); thunked.get
+    case None =>
+      thunked = Some(thunk()); thunked.get
   }
 
   /**
