@@ -55,7 +55,7 @@ trait AsyncServiceBase[A] extends IServiceAsync[A] with ServiceHelpers[A] with L
       case px: ReefServiceException =>
         error(px)
         error(px.getStackTraceString)
-        callback.onResponse(getFailure(req.getId, px.getStatus, px.getMsg))
+        callback.onResponse(getFailure(req.getId, px.getStatus, px.getMessage))
       case x: Exception =>
         error(x)
         error(x.getStackTraceString)

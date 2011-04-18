@@ -9,10 +9,10 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.2.3
+Version 0.2.3-SNAPSHOT
 ==============
 
-Primarily a stability and useability release, very limited new functionality.
+Primarily a stability and usability release, very limited new functionality.
 
 ### API Updates:
 
@@ -21,6 +21,7 @@ Primarily a stability and useability release, very limited new functionality.
 * Added Mid-Level-APIs for Agents, Entities, MeasurementOverrides and Points
 * Calling ISession.close is thread safe and will terminate any active requests, all future requests will fail instantly
 * Mid-Level-APIs now have createSubscription(EventAcceptor<T>) functions so we don't need to pass sessions to mid-level client consumers
+* Duplicate getMsg() function removed from ReefServiceException, use getMessage()
 
 ### Service Updates:
 
@@ -73,7 +74,7 @@ Version 0.2.3-dev
 
 ### Breaking Changes:
 
-* MeasurementHistory no longer has "ascending" flag, allways oldest to newest. REEF-27
+* MeasurementHistory no longer has "ascending" flag, always oldest to newest. REEF-27
 * Command UID is now Entity UUID, not name
 * Units now more strictly enforced in XML loading
 * IConnection Start/Stop now take millisecond timeouts
@@ -90,7 +91,7 @@ Version 0.2.3-dev
 * Indexes not needed for benchmark protocol communication endpoints
 * Timers use "constant delay" rather than "constant offset" semantics
 * Measurements are flushed when overridden (rather than on next field measurement update)
-* Services requests for "all" of a resource are trucated to 100 entries: REEF-20
+* Services requests for "all" of a resource are truncated to 100 entries: REEF-20
 * Measurements from DNP3 endpoints have correct units: REEF-24
 * Fixed corruption of password salts that was causing test failures.
 
