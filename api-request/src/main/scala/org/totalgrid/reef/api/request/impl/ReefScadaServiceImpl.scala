@@ -22,10 +22,10 @@ package org.totalgrid.reef.api.request.impl
  */
 import org.totalgrid.reef.api.javaclient.ISession
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagement }
+import org.totalgrid.reef.api.scalaclient.{ ClientSession }
 
 abstract class SessionWrapper(session: ISession) {
-  protected val ops: ClientSession with SubscriptionManagement = session.getUnderlyingClient
+  protected val ops: ClientSession = session.getUnderlyingClient
 }
 
 /**

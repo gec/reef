@@ -22,20 +22,19 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagement }
-
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import _root_.scala.collection.JavaConversions._
+
 import org.totalgrid.reef.api.{ ServiceList, IDestination, Envelope, RequestEnv, ISubscription }
 import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
  * doesn't have to manage the clients manually. NOT THREAD SAFE, needs to be used from a single thread at a time.
  *
- * TODO: merge SubscriptionManagement into ClientSession trait
  */
 class ProtoClient(
     factory: ClientSessionFactory,
