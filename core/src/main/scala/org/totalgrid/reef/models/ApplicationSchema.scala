@@ -453,6 +453,9 @@ object ApplicationSchema extends Schema {
   val commandToBlocks = table[CommandBlockJoin]
 
   val events = table[EventStore]
+  on(events)(s => declare(
+    s.time is (indexed)))
+
   val eventConfigs = table[EventConfigStore]
 
   val triggers = table[TriggerConfig]
@@ -462,6 +465,8 @@ object ApplicationSchema extends Schema {
   val triggerSets = table[TriggerSet]
 
   val alarms = table[AlarmModel]
+  on(alarms)(s => declare(
+    s.eventUid is (indexed)))
 
   val agents = table[Agent]
   val permissions = table[AuthPermission]

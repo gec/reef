@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
+import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity, EntityToTypeJoins }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Descriptors
@@ -46,6 +46,8 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.squeryl.dsl.ast.LogicalBoolean
 
+import org.totalgrid.reef.util.Timing
+
 object AlarmQueryService {
 
   def buildQuery(row: AlarmModel, eventRow: EventStore, select: AlarmSelect): List[Option[LogicalBoolean]] = {
@@ -59,6 +61,19 @@ object AlarmQueryService {
     val alarmParts = List(Nil: List[String]) ::: eventParts
 
     alarmParts
+  }
+
+  def tupleGroup[A, B](tuples: List[(A, B)]): Map[A, List[B]] = {
+    val map = scala.collection.mutable.Map[A, List[B]]()
+    for (tup <- tuples) {
+      val (k, v) = tup
+      if (map contains k) {
+        map(k) = v :: map(k)
+      } else {
+        map(k) = v :: Nil
+      }
+    }
+    map.toMap
   }
 }
 
@@ -89,13 +104,50 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToS
       // default all queries to max of 1000 events.
       val limit = select.eventSelect.limit getOrElse 1000
 
-      val results = from(alarms, events)((alarm, event) =>
-        where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
-          alarm.eventUid === event.id)
-          select ((alarm, event))
-          orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList // page(page_offset, page_length)
+      val results =
+        from(alarms, events)((alarm, event) =>
+          where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
+            alarm.eventUid === event.id)
+            select ((alarm, event))
+            orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList
 
-      val alarmProtos = results.map(x => AlarmConversion.convertToProto(x._1, x._2)) // AlalarmModel, EventStore
+      val entIds = results.map { case (_, event) => event.entityId }.flatten.distinct
+
+      /*val entToTypes: List[(Entity, Option[String])] =
+        from(entities, entityTypes.leftOuter)((e, t) =>
+          where(e.id in entIds)
+            select(e, t.map(_.entType))
+            on(e.id === t.map(_.entityId))).toList */
+
+      /*
+      def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
+    join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
+      where(ent.id === uid.toLong)
+        select (ent, attr)
+        on (ent.id === attr.map(_.entityId))).toList
+  }
+       */
+      val entToTypes: List[(Entity, Option[String])] =
+        join(entities, entityTypes.leftOuter)((e, t) =>
+          where(e.id in entIds)
+            select (e, t.map(_.entType))
+            on (e.id === t.map(_.entityId))).toList
+
+      val typMap = AlarmQueryService.tupleGroup(entToTypes)
+
+      typMap.foreach { case (ent, typList) => ent.types.value = typList.flatten }
+
+      val entMap = typMap.keys.map(e => (e.id, e)).toMap
+
+      val alarmProtos =
+        results.map {
+          case (alarm, event) =>
+            event.entityId.foreach { entId =>
+              event.entity.value = entMap.get(entId)
+            }
+            AlarmConversion.convertToProto(alarm, event)
+        }
+
       val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
 
       Response(Envelope.Status.OK, alarmList :: Nil)
@@ -110,4 +162,3 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToS
   }
 
 }
-
