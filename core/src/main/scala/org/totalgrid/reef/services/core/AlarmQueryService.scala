@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
+import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity, EntityToTypeJoins }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Descriptors
@@ -113,14 +113,29 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToS
 
       val entIds = results.map { case (_, event) => event.entityId }.flatten.distinct
 
-      val entToTypes =
-        from(entities, entityTypes)((e, t) =>
-          where((e.id in entIds) and (e.id === t.entityId))
-            select (e, t.entType))toList
+      /*val entToTypes: List[(Entity, Option[String])] =
+        from(entities, entityTypes.leftOuter)((e, t) =>
+          where(e.id in entIds)
+            select(e, t.map(_.entType))
+            on(e.id === t.map(_.entityId))).toList */
+
+      /*
+      def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
+    join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
+      where(ent.id === uid.toLong)
+        select (ent, attr)
+        on (ent.id === attr.map(_.entityId))).toList
+  }
+       */
+      val entToTypes: List[(Entity, Option[String])] =
+        join(entities, entityTypes.leftOuter)((e, t) =>
+          where(e.id in entIds)
+            select (e, t.map(_.entType))
+            on (e.id === t.map(_.entityId))).toList
 
       val typMap = AlarmQueryService.tupleGroup(entToTypes)
 
-      typMap.foreach { case (ent, typList) => ent.types.value = typList }
+      typMap.foreach { case (ent, typList) => ent.types.value = typList.flatten }
 
       val entMap = typMap.keys.map(e => (e.id, e)).toMap
 
