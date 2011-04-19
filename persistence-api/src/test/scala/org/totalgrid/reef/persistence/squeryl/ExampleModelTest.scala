@@ -83,10 +83,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
         doSomething(true)
       }
 
-      intercept[Exception] {
-        // fails with "no session exception"
-        FooSchema.foos.where(f => f.value === "test").size should equal(1)
-      }
+      FooSchema.foos.where(f => f.value === "test").size should equal(1)
     }
   }
 
@@ -98,10 +95,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
 
       doSomething(false)
 
-      intercept[Exception] {
-        // fails with "no session exception"
-        FooSchema.foos.where(f => f.value === "test").size should equal(1)
-      }
+      FooSchema.foos.where(f => f.value === "test").size should equal(1)
     }
   }
 
