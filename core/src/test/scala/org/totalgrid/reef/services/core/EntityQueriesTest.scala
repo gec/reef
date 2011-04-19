@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.services.coordinators._
 
@@ -35,6 +34,7 @@ import org.totalgrid.reef.messaging.BrokerObjectConsumer
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 
 @RunWith(classOf[JUnitRunner])
 class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
@@ -117,7 +117,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
   test("Proto to QueryNode (no ent)") {
     val req = EntityProto.newBuilder
-      .setUid("1")
+      //.setUuid("1")
       .addRelations(
         Relationship.newBuilder
           .setRelationship("owns")
@@ -134,7 +134,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
   test("Proto to QueryNode (depth)") {
     val req = EntityProto.newBuilder
-      .setUid("1")
+      //.setUuid("1")
       .addRelations(
         Relationship.newBuilder
           .setRelationship("owns")
@@ -162,7 +162,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
   test("Proto to QueryNode (two entities)") {
     val req = EntityProto.newBuilder
-      .setUid("1")
+      //.setUuid("1")
       .addRelations(
         Relationship.newBuilder
           .setRelationship("owns")
@@ -190,7 +190,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
   test("Proto to QueryNode (two rels)") {
     val req = EntityProto.newBuilder
-      .setUid("1")
+      //.setUuid("1")
       .addRelations(
         Relationship.newBuilder
           .setRelationship("owns")
@@ -286,7 +286,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
     }
 
     def checkEnt(proto: EntityProto, uid: String, name: String, typ: String, relCount: Int) = {
-      proto.getUid should equal(uid)
+      proto.getUuid.getUuid should equal(uid)
       proto.getName should equal(name)
       proto.getTypesCount should equal(1)
       proto.getTypes(0) should equal(typ)
@@ -476,7 +476,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Get all") {
-    val req = EntityProto.newBuilder.setUid("*")
+    val req = EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*"))
 
     val ents = ApplicationSchema.entities.where(t => true === true)
     val spec = ents.map(_.name).toList
@@ -488,7 +488,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   test("Double types") {
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA").head
     val req = EntityProto.newBuilder
-      .setUid(entRoot.id.toString)
+      .setUuid(ReefUUID.newBuilder.setUuid(entRoot.id.toString))
       .setName("RegA-SubA")
       .addTypes("Substation")
       .addTypes("EquipmentGroup")

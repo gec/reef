@@ -44,7 +44,7 @@ class ProcessHeartbeatActorTest extends Suite with ShouldMatchers {
 
   def makeConfig(): HeartbeatConfig = {
     HeartbeatConfig.newBuilder
-      .setUid("1")
+      .setProcessId("1")
       .setPeriodMs(10)
       .setRoutingKey("key")
       .setDest(EXCHANGE).build

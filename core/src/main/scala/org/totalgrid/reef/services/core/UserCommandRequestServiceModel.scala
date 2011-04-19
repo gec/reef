@@ -130,7 +130,7 @@ trait UserCommandRequestConversion extends MessageModelConversion[UserCommandReq
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.uuid.uuid ::
       req.user ::
       req.commandRequest.name ::
       req.commandRequest.correlationId :: Nil
@@ -139,7 +139,7 @@ trait UserCommandRequestConversion extends MessageModelConversion[UserCommandReq
   // Relies on implicit to combine LogicalBooleans
   def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
-      proto.uid.asParam(sql.id === _.toLong),
+      proto.uuid.uuid.asParam(sql.id === _.toLong),
       proto.commandRequest.correlationId.asParam(sql.corrolationId === _))
   }
 
@@ -158,7 +158,7 @@ trait UserCommandRequestConversion extends MessageModelConversion[UserCommandReq
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
     UserCommandRequest.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setUser(entry.agent)
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))

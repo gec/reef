@@ -48,7 +48,7 @@ class CommandRequestTest
     client.addExplanation("Get all", "Get all Commands")
     client.getOrThrow(CommandRequestBuilders.getAll())
 
-    /*val uidReq = Command.newBuilder.setUid(allResp.head.getUid).build
+    /*val uidReq = Command.newBuilder.setUuid(allResp.head.getUuid).build
     val uidResp = client.getOrThrow(uidReq)
 
     doc.addCase("Get by UID", "Get", "Get point that matches a certain UID.", uidReq, uidResp)

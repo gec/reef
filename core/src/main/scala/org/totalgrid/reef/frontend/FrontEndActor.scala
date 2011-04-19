@@ -118,7 +118,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
         case SingleSuccess(status, fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
           info {
-            "Got uid: " + fem.getUid
+            "Got uid: " + fem.getUuid.getUuid
           }
           val query = ConnProto.newBuilder.setFrontEnd(fem).build
           // this is where we actually bind up the service calls

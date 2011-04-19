@@ -102,9 +102,9 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
    * this is the subscription routingKey
    */
   def getRoutingKey(req: PointProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.uuid.uuid ::
       req.name ::
-      req.entity.uid ::
+      req.entity.uuid.uuid ::
       req.abnormal :: // this subscribes the users to all points that have their abnormal field changed
       Nil
   }
@@ -113,16 +113,16 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
    * this is the service event notifaction routingKey
    */
   def getRoutingKey(req: PointProto, entry: Point) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.uuid.uuid ::
       req.name ::
-      req.entity.uid ::
+      req.entity.uuid.uuid ::
       Some(entry.abnormalUpdated) :: // we actually publish the key to intrested parties on change, not on current state
       Nil
   }
 
   def uniqueQuery(proto: PointProto, sql: Point) = {
     List(
-      proto.uid.asParam(sql.id === _.toLong),
+      proto.uuid.uuid.asParam(sql.id === _.toLong),
       proto.name.asParam(sql.name === _),
       //proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
       proto.entity.map(ent => sql.entityId in EQ.typeIdsFromProtoQuery(ent, "Point")),
@@ -138,10 +138,10 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
   def convertToProto(sql: Point): PointProto = {
     val b = PointProto.newBuilder()
 
-    b.setUid(sql.id.toString)
+    b.setUuid(makeUuid(sql))
     b.setName(sql.name)
     sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
-    sql.logicalNode.asOption.foreach(_.foreach(ln => b.setLogicalNode(EntityProto.newBuilder.setUid(ln.id.toString).setName(ln.name))))
+    sql.logicalNode.asOption.foreach(_.foreach(ln => b.setLogicalNode(EntityProto.newBuilder.setUuid(makeUuid(ln)).setName(ln.name))))
     b.setAbnormal(sql.abnormal)
     b.build
   }
@@ -175,7 +175,7 @@ object PointTiedModel {
    */
   def populatedPointProto(point: Point): PointProto.Builder = {
     val pb = PointProto.newBuilder
-    pb.setName(point.name).setUid(point.id.toString)
+    pb.setName(point.name).setUuid(makeUuid(point))
     pb.setEntity(EQ.entityToProto(point.entity.value))
     point.logicalNode.value.foreach(p => pb.setLogicalNode(EQ.entityToProto(p)))
     pb

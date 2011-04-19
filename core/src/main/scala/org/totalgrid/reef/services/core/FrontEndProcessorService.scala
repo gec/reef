@@ -63,7 +63,7 @@ class FrontEndProcessorServiceModel(
   link(fepModel)
 
   override def createFromProto(req: FrontEndProcessor): ApplicationInstance = {
-    val appInstance = table.where(a => a.id === req.getAppConfig.getUid.toLong).single
+    val appInstance = table.where(a => a.id === req.getAppConfig.getUuid.getUuid.toLong).single
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, appInstance.id)))
     info { "Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList }
     fepModel.onAppChanged(appInstance, true)
@@ -91,7 +91,7 @@ trait FrontEndProcessorConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(req: FrontEndProcessor) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid :: Nil
+    req.uuid.uuid :: Nil
   }
 
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
@@ -101,7 +101,7 @@ trait FrontEndProcessorConversion
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    proto.uid.asParam(sql.id === _.toLong) ::
+    proto.uuid.uuid.asParam(sql.id === _.toLong) ::
       proto.appConfig.instanceName.asParam(sql.instanceName === _) ::
       Nil
   }
@@ -118,7 +118,7 @@ trait FrontEndProcessorConversion
     val protocols = ApplicationSchema.protocols.where(i => i.applicationId === entry.id).map(_.protocol)
 
     val b = FrontEndProcessor.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setAppConfig(ApplicationConfigConversion.convertToProto(entry))
 
     protocols.foreach(b.addProtocols(_))

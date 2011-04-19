@@ -25,7 +25,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import org.totalgrid.reef.shell.proto.presentation.{ MeasView }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.request.ReefUUID
+
 import java.io.File
 import org.totalgrid.reef.proto.Measurements.Measurement
 import java.text.SimpleDateFormat
@@ -56,7 +56,7 @@ class MeasFromCommand extends ReefCommandSupport {
   def doCommand(): Unit = {
 
     val entity = services.getEntityByName(parentName)
-    val pointEntites = services.getEntityRelatedChildrenOfType(new ReefUUID(entity.getUid), "owns", "Point")
+    val pointEntites = services.getEntityRelatedChildrenOfType(entity.getUuid, "owns", "Point")
 
     MeasView.printTable(services.getMeasurementsByNames(pointEntites.map { _.getName }).toList)
   }

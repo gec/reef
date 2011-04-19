@@ -30,6 +30,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
@@ -47,24 +48,24 @@ class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
       .setLocation("farm1")
       .addCapabilites("FEP")
 
-    service.get(ApplicationConfig.newBuilder().setUid("*").build).size should equal(0)
+    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).size should equal(0)
 
     one(Status.CREATED, service.put(b.build))
 
-    service.get(ApplicationConfig.newBuilder().setUid("*").build).size should equal(1)
+    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).size should equal(1)
     val list = service.get(ApplicationConfig.newBuilder().setInstanceName("fep01").build)
     list.size should equal(1)
     val updated = one(Status.UPDATED, service.put(list.head.toBuilder.setLocation("farm2").build))
     updated.getLocation should equal("farm2")
 
     one(Status.NOT_MODIFIED, service.put(updated))
-    val list2 = service.get(ApplicationConfig.newBuilder().setUid("*").build)
+    val list2 = service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build)
     list2.size should equal(1)
 
     val config = list2.head
     config.getLocation should equal("farm2")
 
     one(Status.DELETED, service.delete(config))
-    service.get(ApplicationConfig.newBuilder().setUid("*").build).size should equal(0)
+    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).size should equal(0)
   }
 }

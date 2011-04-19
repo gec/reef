@@ -83,7 +83,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       }
       MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantReactor {})
 
-      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
+      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUuid }
 
       measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
     }
@@ -219,20 +219,20 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean) {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
       //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
-      feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUid == f.getFrontEnd.getUid) } should equal(true)
+      feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
       //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
     }
 
     def checkMeasProcs(procs: List[MeasurementProcessingConnection], measProcUid: Option[ApplicationConfig], serviceRouting: Boolean) {
       procs.forall { f => f.hasLogicalNode == true } should equal(true)
-      procs.forall { f => f.hasMeasProc == measProcUid.isDefined && (measProcUid.isEmpty || measProcUid.get.getUid == f.getMeasProc.getUid) } should equal(true)
+      procs.forall { f => f.hasMeasProc == measProcUid.isDefined && (measProcUid.isEmpty || measProcUid.get.getUuid == f.getMeasProc.getUuid) } should equal(true)
       procs.forall { f => f.hasRouting == serviceRouting } should equal(true)
     }
 
     def checkAssignments(num: Int, fepFrontEndUid: Option[FrontEndProcessor], measProcUid: Option[ApplicationConfig]) {
-      val feps = many(num, frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
-      val procs = many(num, measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build))
+      val feps = many(num, frontEndConnection.get(CommEndpointConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
+      val procs = many(num, measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
 
       checkFeps(feps, false, fepFrontEndUid, measProcUid.isDefined)
       checkMeasProcs(procs, measProcUid, measProcUid.isDefined)

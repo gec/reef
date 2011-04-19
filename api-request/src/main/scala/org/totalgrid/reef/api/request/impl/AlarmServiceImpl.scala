@@ -21,13 +21,14 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.ISubscription
-import org.totalgrid.reef.api.request.{ AlarmService, ReefUUID }
+import org.totalgrid.reef.api.request.{ AlarmService }
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.request.builders.{ AlarmListRequestBuilders, AlarmRequestBuilders }
 import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   def getAlarm(uuid: ReefUUID) = {

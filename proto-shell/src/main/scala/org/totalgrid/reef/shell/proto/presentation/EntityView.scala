@@ -27,7 +27,7 @@ object EntityView {
 
   def printInspect(ent: Entity) = {
     val lines =
-      ("uid" :: ent.getUid :: Nil) ::
+      ("uid" :: ent.getUuid.getUuid :: Nil) ::
         ("name" :: ent.getName :: Nil) ::
         ("types" :: "(" + ent.getTypesList.toList.mkString(", ") + ")" :: Nil) ::
         Nil
@@ -46,7 +46,7 @@ object EntityView {
   }
 
   def toLine(ent: Entity): List[String] = {
-    "[" + ent.getUid + "]" ::
+    "[" + ent.getUuid.getUuid + "]" ::
       ent.getName ::
       "(" + ent.getTypesList.toList.mkString(", ") + ")" ::
       Nil

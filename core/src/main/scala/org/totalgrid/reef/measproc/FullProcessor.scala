@@ -39,19 +39,19 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
     extends ServiceHandler with ServiceContext[ConnProto] with KeyedMap[ConnProto]
     with Reactable with Lifecycle {
 
-  protected override def getKey(c: ConnProto) = c.getUid
+  protected override def getKey(c: ConnProto) = c.getUuid.getUuid
 
   private var map = Map.empty[String, MeasurementStreamProcessingNode]
 
   override def addEntry(ep: ConnProto) = {
     val entry = fun(ep)
-    map += ep.getUid -> entry
+    map += getKey(ep) -> entry
     entry.start
   }
 
   override def removeEntry(ep: ConnProto) = {
-    map.get(ep.getUid).get.stop
-    map -= ep.getUid
+    map.get(getKey(ep)).get.stop
+    map -= getKey(ep)
   }
 
   override def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {

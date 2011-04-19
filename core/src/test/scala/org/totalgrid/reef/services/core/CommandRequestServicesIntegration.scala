@@ -48,6 +48,7 @@ import org.totalgrid.reef.api.{ RequestEnv, ServiceTypes, Envelope, AddressableS
 import ServiceTypes.Response
 
 import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -163,7 +164,7 @@ class CommandRequestServicesIntegration
     // Send a select (access request)
     val select = commandAccess()
     val selectResult = one(fixture.access.put(select, reqEnv))
-    val selectId = selectResult.getUid
+    val selectId = selectResult.getUuid
 
     // the 'remote' service that will handle the call
     val service = new AsyncToSyncServiceAdapter[UserCommandRequest] {
@@ -178,7 +179,7 @@ class CommandRequestServicesIntegration
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 
-    val conn = one(fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
+    val conn = one(fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
 
     println(conn.getRouting.getServiceRoutingKey)
 

@@ -76,7 +76,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
     val req = PointProto.newBuilder.setEntity(entReq).build
     val specIds = ApplicationSchema.points.where(t => t.name === "Pittsboro.B12.Kv" or t.name === "Pittsboro.B24.Kv").map(_.id).toList
     val resp = service.get(req)
-    val resultIds = resp.map(_.getUid.toLong)
+    val resultIds = resp.map(_.getUuid.getUuid.toLong)
 
     specIds.foldLeft(resultIds) { (left, id) =>
       left.contains(id) should equal(true)

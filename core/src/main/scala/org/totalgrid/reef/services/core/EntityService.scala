@@ -31,6 +31,7 @@ import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.services.framework.SquerylModel
 
 class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
 
@@ -66,8 +67,9 @@ class EntityEdgeService extends AsyncToSyncServiceAdapter[EntityEdgeProto] {
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {
     val b = EntityEdgeProto.newBuilder()
-    b.setParent(EntityProto.newBuilder.setUid(entry.parentId.toString))
-    b.setChild(EntityProto.newBuilder.setUid(entry.childId.toString))
+    import org.totalgrid.reef.services.framework.SquerylModel._
+    b.setParent(EntityProto.newBuilder.setUuid(makeUuid(entry.parentId)))
+    b.setChild(EntityProto.newBuilder.setUuid(makeUuid(entry.childId)))
     b.setRelationship(entry.relationship)
     b.build
   }

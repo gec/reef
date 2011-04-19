@@ -22,8 +22,8 @@ package org.totalgrid.reef.api.request.impl
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.request.{ ReefUUID, PointService }
-import org.totalgrid.reef.proto.Model.{ Point, Entity }
+import org.totalgrid.reef.api.request.{ PointService }
+import org.totalgrid.reef.proto.Model.{ Point, Entity, ReefUUID }
 import org.totalgrid.reef.api.ISubscription
 import org.totalgrid.reef.api.request.builders.PointRequestBuilders
 
@@ -41,7 +41,7 @@ trait PointServiceImpl extends ReefServiceBaseClass with PointService {
 
   def getPointByUid(uuid: ReefUUID) = {
     reThrowExpectationException("Point not found.") {
-      ops.getOneOrThrow(PointRequestBuilders.getByUid(uuid.getUuid))
+      ops.getOneOrThrow(PointRequestBuilders.getByUid(uuid))
     }
   }
 

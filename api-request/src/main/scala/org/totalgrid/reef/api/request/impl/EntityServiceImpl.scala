@@ -20,9 +20,9 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.request.{ ReefUUID, EntityService }
+import org.totalgrid.reef.api.request.{ EntityService }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity }
+import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity, ReefUUID }
 import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, EntityRequestBuilders }
 
@@ -63,7 +63,7 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   }
 
   def getEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid.getUuid))
+    ops.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid))
   }
 
   def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
@@ -90,18 +90,18 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     val prev = getEntityAttributes(uid)
     val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
 
-    ops.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid.getUuid, set))
+    ops.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set))
   }
 
   def clearEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid.getUuid))
+    ops.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid))
   }
 
   protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = {
     val prev = getEntityAttributes(uid)
     val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
 
-    val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(uid.getUuid))
+    val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
     prevSet.foreach(req.addAttributes(_))
     req.addAttributes(attr)
 

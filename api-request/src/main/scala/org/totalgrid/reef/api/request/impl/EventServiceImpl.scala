@@ -24,9 +24,10 @@ import org.totalgrid.reef.api.ISubscription
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.request.{ ReefUUID, EventService }
+import org.totalgrid.reef.api.request.{ EventService }
 import org.totalgrid.reef.api.request.builders.{ EventRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.proto.Events.{ EventSelect, Event }
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.builders
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,11 +18,13 @@ package org.totalgrid.reef.api.request.builders
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.api.request.ReefUUID
+
+package org.totalgrid.reef.api.request.builders
+
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object CommandRequestBuilders {
-  def getAll() = Command.newBuilder.setUid("*").build
+  def getAll() = Command.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
 
   def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setEntity(EntityRequestBuilders.getByUid(uid)).build
   def getByEntityName(name: String) = Command.newBuilder.setEntity(EntityRequestBuilders.getByName(name)).build

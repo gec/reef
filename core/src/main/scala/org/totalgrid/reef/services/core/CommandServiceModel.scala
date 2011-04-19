@@ -82,16 +82,16 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 trait CommandServiceConversion extends MessageModelConversion[CommandProto, Command] with UniqueAndSearchQueryable[CommandProto, Command] {
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(req.hasUid, req.getUid) ::
+    hasGet(req.hasUuid, req.getUuid) ::
       hasGet(req.hasName, req.getName) ::
-      hasGet(req.hasEntity, req.getEntity.getUid) :: Nil
+      hasGet(req.hasEntity, req.getEntity.getUuid) :: Nil
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
     List(
       proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
       proto.name.asParam(name => sql.name === name),
-      proto.uid.asParam(sql.entityId === _.toLong))
+      proto.uuid.uuid.asParam(sql.entityId === _.toLong))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
@@ -111,14 +111,14 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def convertToProto(sql: Command): CommandProto = {
     // TODO: fill out connected and selected parts of proto
     val b = CommandProto.newBuilder
-      .setUid(sql.entityId.toString)
+      .setUuid(makeUuid(sql.entityId))
       .setName(sql.name)
       .setDisplayName(sql.displayName)
 
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
       case Some(e) => b.setEntity(EQ.entityToProto(e))
-      case None => b.setEntity(EntityProto.newBuilder.setUid(sql.entityId.toString))
+      case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
     sql.logicalNode.asOption.foreach(_.foreach(ln => EQ.entityToProto(ln)))

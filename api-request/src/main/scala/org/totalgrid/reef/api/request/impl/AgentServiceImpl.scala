@@ -24,6 +24,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.request.AgentService
 import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
   def getAgent(name: String) = {
@@ -31,11 +32,11 @@ trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
   }
 
   def getAgents() = {
-    ops.getOrThrow(Agent.newBuilder.setUid("*").build)
+    ops.getOrThrow(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build)
   }
 
   def getPermissionSets() = {
-    ops.getOrThrow(PermissionSet.newBuilder.setUid("*").build)
+    ops.getOrThrow(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build)
   }
   def getPermissionSet(name: String) = {
     ops.getOneOrThrow(PermissionSet.newBuilder.setName(name).build)

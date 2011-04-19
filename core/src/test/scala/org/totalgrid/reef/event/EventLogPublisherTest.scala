@@ -69,7 +69,7 @@ class EventLogPublisherTest extends FixtureSuite with ShouldMatchers {
       .setEventType(EventType.Scada.ControlExe)
       .setSubsystem("FEP")
       .setUserId("userId")
-      .setEntity(Entity.newBuilder.setUid("42").build)
+      .setEntity(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("42")).build)
       .setArgs(alist.toProto)
       .build
 

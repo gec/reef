@@ -106,7 +106,7 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
 trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFile] with UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
   def getRoutingKey(req: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid :: req.name :: req.mimeType :: Nil
+    req.uuid.uuid :: req.name :: req.mimeType :: Nil
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
@@ -122,7 +122,7 @@ trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFil
 
   def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
     List(
-      proto.uid.asParam(sql.id === _.toInt),
+      proto.uuid.uuid.asParam(sql.id === _.toInt),
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 
@@ -146,7 +146,7 @@ trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFil
   import org.totalgrid.reef.messaging.ProtoSerializer.convertBytesToByteString
   def convertToProto(entry: ConfigFile): ConfigProto = {
     val b = ConfigProto.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setName(entry.entity.value.name)
       .setMimeType(entry.mimeType)
       .setFile(entry.file)

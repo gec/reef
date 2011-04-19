@@ -21,8 +21,8 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.proto.Model.Command
 import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 /**
  * To affect changes in the field devices SCADA systems use commands. Commands are usually executed in the field

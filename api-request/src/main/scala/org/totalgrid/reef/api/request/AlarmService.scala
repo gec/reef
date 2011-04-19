@@ -23,6 +23,7 @@ package org.totalgrid.reef.api.request
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.{ ISubscription, ReefServiceException }
 import org.totalgrid.reef.api.javaclient.IEventAcceptor
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 /**
  *

@@ -207,6 +207,11 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Measurements.MeasurementHistory.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Measurements.MeasurementHistory]
   }
+  def reefUUID() = new ITypeDescriptor[org.totalgrid.reef.proto.Model.ReefUUID] {
+    def serialize(typ: org.totalgrid.reef.proto.Model.ReefUUID): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.ReefUUID.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Model.ReefUUID]
+  }
   def entity() = new ITypeDescriptor[org.totalgrid.reef.proto.Model.Entity] {
     def serialize(typ: org.totalgrid.reef.proto.Model.Entity): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Entity.parseFrom(bytes)

@@ -22,16 +22,14 @@ package org.totalgrid.reef.api.request.builders
  */
 
 import com.google.protobuf.ByteString
-
-import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, ConfigFile }
 
 /**
  * the RequestBuilders objects are used to encapsulate most of the direct proto manipulations and
  * minimize duplication of Builder code.
  */
 object ConfigFileRequestBuilders {
-  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUid(uid.getUuid).build
+  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUuid(uid).build
   def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
 
   def getByMimeType(mimeType: String) = ConfigFile.newBuilder().setMimeType(mimeType).build

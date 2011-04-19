@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events.{ Event => EventProto }
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ReefUUID }
 import org.totalgrid.reef.services.core.util._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -192,7 +192,7 @@ class EventServiceTest extends DatabaseUsingTestBase {
       .setEventType(event)
       .setSubsystem("FEP")
       .setUserId("flint")
-      .setEntity(EntityProto.newBuilder.setUid("42").build)
+      .setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("42")).build)
       .setArgs(alist.toProto)
       .build
   }
@@ -202,7 +202,7 @@ class EventServiceTest extends DatabaseUsingTestBase {
    */
   def makeAlarm(uid: Long, state: Alarm.State) =
     Alarm.newBuilder
-      .setUid(uid.toString)
+      .setUuid(ReefUUID.newBuilder.setUuid(uid.toString))
       .setState(state)
       .build
 }

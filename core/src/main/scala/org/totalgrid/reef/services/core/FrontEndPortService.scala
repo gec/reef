@@ -93,7 +93,7 @@ trait FrontEndPortConversion
   }
 
   def uniqueQuery(proto: ChannelProto, sql: FrontEndPort) = {
-    proto.uid.asParam(sql.id === _.toLong) ::
+    proto.uuid.uuid.asParam(sql.id === _.toLong) ::
       proto.name.asParam(sql.name === _) ::
       Nil
   }
@@ -113,7 +113,7 @@ trait FrontEndPortConversion
 
   def convertToProto(entry: FrontEndPort): ChannelProto = {
     ChannelProto.parseFrom(entry.proto).toBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setName(entry.name)
       .setState(ChannelProto.State.valueOf(entry.state))
       .build

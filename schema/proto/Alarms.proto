@@ -1,6 +1,7 @@
 package org.totalgrid.reef.proto.Alarms;
 
 import "Events.proto";
+import "Model.proto";
 
 option java_package = "org.totalgrid.reef.proto";
 option java_outer_classname = "Alarms";
@@ -79,7 +80,7 @@ message Alarm {
     REMOVED       = 4;  // Alarm not visible in standard Alarm List.
   }
 
-  optional string   uid      = 1;  // UID of alarm is not equal to event.uid
+  optional org.totalgrid.reef.proto.Model.ReefUUID       uuid      = 1;  // UID of alarm is not equal to event.uid
   optional State    state    = 2;
   optional org.totalgrid.reef.proto.Events.Event event = 3;
   optional string   rendered = 4;  // This alarm rendered as a localized string.
@@ -132,3 +133,4 @@ message EventConfig {
   optional Alarm.State      alarm_state   = 4 ; // Initial alarm start state: UNACK_AUDIBLE, UNACK_SILENT, or ACKNOWLEDGED.
   optional string           resource      = 5 ; // Use this to render the message (including attributes)
 }
+

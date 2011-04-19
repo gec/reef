@@ -20,15 +20,14 @@ package org.totalgrid.reef.api.request.builders
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Model.{ Entity, Relationship }
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
 
 object EntityRequestBuilders {
 
-  def getAll = Entity.newBuilder.setUid("*").build
+  def getAll = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
 
-  def getByUid(uid: ReefUUID) = Entity.newBuilder.setUid(uid.getUuid).build
-  def getByUid(entity: Entity): Entity = getByUid(ReefUUID(entity.getUid))
+  def getByUid(uuid: ReefUUID) = Entity.newBuilder.setUuid(uuid).build
+  def getByUid(entity: Entity): Entity = getByUid(entity.getUuid)
 
   def getByName(name: String) = Entity.newBuilder.setName(name).build
 
@@ -44,14 +43,14 @@ object EntityRequestBuilders {
   }
 
   def getOwnedChildrenOfTypeFromRootUid(rootUid: ReefUUID, typ: String): Entity = {
-    Entity.newBuilder.setUid(rootUid.getUuid).addRelations(childrenRelatedWithType("owns", typ)).build
+    Entity.newBuilder.setUuid(rootUid).addRelations(childrenRelatedWithType("owns", typ)).build
   }
   def getOwnedChildrenOfTypeFromRootUid(rootNode: Entity, typ: String): Entity = {
-    Entity.newBuilder.setUid(rootNode.getUid).addRelations(childrenRelatedWithType("owns", typ)).build
+    Entity.newBuilder.setUuid(rootNode.getUuid).addRelations(childrenRelatedWithType("owns", typ)).build
   }
 
   def getRelatedChildrenOfTypeFromRootUid(rootNode: ReefUUID, relationship: String, typ: String): Entity = {
-    Entity.newBuilder.setUid(rootNode.getUuid).addRelations(childrenRelatedWithType(relationship, typ)).build
+    Entity.newBuilder.setUuid(rootNode).addRelations(childrenRelatedWithType(relationship, typ)).build
   }
 
   private def childrenRelatedWithType(relationship: String, typ: String) = {
@@ -63,16 +62,16 @@ object EntityRequestBuilders {
 
   def getAllRelatedChildrenFromRootUid(rootUid: ReefUUID, relationship: String) = {
     val rel = Relationship.newBuilder.setDescendantOf(true).setRelationship(relationship)
-    Entity.newBuilder.setUid(rootUid.getUuid).addRelations(rel).build
+    Entity.newBuilder.setUuid(rootUid).addRelations(rel).build
   }
 
   def getDirectChildrenFromRootUid(rootUid: ReefUUID, relationship: String) = {
     val rel = Relationship.newBuilder.setDescendantOf(true).setRelationship(relationship).setDistance(1)
-    Entity.newBuilder.setUid(rootUid.getUuid).addRelations(rel).build
+    Entity.newBuilder.setUuid(rootUid).addRelations(rel).build
   }
 
   def getAllPointsSortedByOwningEquipment(rootUid: ReefUUID) = {
-    Entity.newBuilder.setUid(rootUid.getUuid).addRelations(
+    Entity.newBuilder.setUuid(rootUid).addRelations(
       Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
         Entity.newBuilder.addTypes("Equipment").addRelations(
           Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(

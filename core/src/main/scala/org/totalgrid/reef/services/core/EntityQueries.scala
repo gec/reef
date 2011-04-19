@@ -110,14 +110,14 @@ trait EntityTreeQueries { self: EntityQueries =>
   def protoTreeQuery(proto: EntityProto): List[ResultNode] = {
 
     // For the moment not allowing a root set of everything
-    if (proto.uid == None && proto.name == None && proto.getTypesCount == 0)
+    if (proto.uuid.uuid == None && proto.name == None && proto.getTypesCount == 0)
       throw new BadRequestException("Must specify root set")
 
     // verify that every entity type in the request is in system
     checkAllTypesInSystem(proto)
 
     def expr(ent: Entity, typ: EntityToTypeJoins) = {
-      proto.uid.map(ent.id === _.toLong) ::
+      proto.uuid.uuid.map(ent.id === _.toLong) ::
         proto.name.map(ent.name === _) ::
         ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
           and (typ.entityId === ent.id))) ::
@@ -131,7 +131,7 @@ trait EntityTreeQueries { self: EntityQueries =>
           select (ent)).distinct
     } else {
       from(entities)(ent =>
-        where((proto.uid.map(ent.id === _.toLong) ::
+        where((proto.uuid.uuid.map(ent.id === _.toLong) ::
           proto.name.map(ent.name === _) :: Nil).flatten)
           select (ent))
     }
@@ -245,7 +245,7 @@ trait EntityTreeQueries { self: EntityQueries =>
      * Traverses tree to create Entity/Relationship proto tree.
      */
     def toProto: EntityProto = {
-      val b = EntityProto.newBuilder.setUid(ent.id.toString).setName(ent.name)
+      val b = EntityProto.newBuilder.setUuid(makeUuid(ent)).setName(ent.name)
       types.foreach(b.addTypes(_))
       for ((rel, nodes) <- subNodes) {
         val r = Relationship.newBuilder
@@ -377,7 +377,7 @@ trait EntityQueries extends EntityTreeQueries {
 
   def entityToProto(entry: Entity): EntityProto.Builder = {
     val b = EntityProto.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setName(entry.name)
     entry.types.value.foreach(t => b.addTypes(t))
     b
@@ -415,8 +415,8 @@ trait EntityQueries extends EntityTreeQueries {
   }
 
   def findEntity(proto: EntityProto): Option[Entity] = {
-    if (proto.hasUid) {
-      returnSingleOption(entities.where(t => t.id === proto.getUid.toLong).toList)
+    if (proto.hasUuid) {
+      returnSingleOption(entities.where(t => t.id === proto.getUuid.getUuid.toLong).toList)
     } else if (proto.hasName) {
       returnSingleOption(entities.where(t => t.name === proto.getName).toList)
     } else {
@@ -430,7 +430,7 @@ trait EntityQueries extends EntityTreeQueries {
 
   // Main entry point for requests in the form of protos
   def fullQuery(proto: EntityProto): List[EntityProto] = {
-    if (proto.hasUid && proto.getUid == "*") {
+    if (proto.hasUuid && proto.getUuid.getUuid == "*") {
       allQuery
     } else {
       protoTreeQuery(proto).map(_.toProto)
@@ -570,7 +570,7 @@ trait EntityQueries extends EntityTreeQueries {
   }
 
   def findIdsOfChildren(rootNode: EntityProto, relation: String, childType: String): Query[Long] = {
-    if (rootNode.uid == Some("*") || rootNode.name == Some("*")) {
+    if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
       val rootEnt = EntitySearches.findRecord(rootNode).get
@@ -583,7 +583,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   val table = ApplicationSchema.entities
   def uniqueQuery(proto: EntityProto, sql: Entity) = {
     List(
-      proto.uid.asParam(sql.id === _.toLong),
+      proto.uuid.uuid.asParam(sql.id === _.toLong),
       proto.name.asParam(sql.name === _),
       EQ.noneIfEmpty(proto.types).asParam(sql.id in EQ.entityIdsFromTypes(_)))
   }

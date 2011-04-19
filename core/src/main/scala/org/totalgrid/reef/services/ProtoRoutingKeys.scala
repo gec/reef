@@ -43,32 +43,32 @@ object ProtoRoutingKeys {
 
   def routingKey(proto: CommEndpointConfig): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: CommEndpointConfig): List[Option[Any]] = {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasName, proto.getName) :: Nil
   }
 
   def routingKey(proto: ApplicationConfig): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: ApplicationConfig): List[Option[Any]] = {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasInstanceName, proto.getInstanceName) :: Nil
   }
 
   def routingKey(proto: Command): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: Command): List[Option[Any]] = {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasName, proto.getName) ::
-      hasGet(proto.hasEntity, proto.getEntity.getUid) :: Nil
+      hasGet(proto.hasEntity, proto.getEntity.getUuid) :: Nil
   }
 
   def routingKey(proto: CommEndpointConnection): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: CommEndpointConnection): List[Option[Any]] = {
-    hasGet(proto.hasFrontEnd, proto.getFrontEnd.hasUid, proto.getFrontEnd.getUid) ::
-      hasGet(proto.hasUid, proto.getUid) :: Nil
+    hasGet(proto.hasFrontEnd, proto.getFrontEnd.hasUuid, proto.getFrontEnd.getUuid) ::
+      hasGet(proto.hasUuid, proto.getUuid) :: Nil
   }
 
   def routingKey(proto: ConfigFile): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: ConfigFile): List[Option[Any]] = {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasName, proto.getName) :: Nil
   }
 
@@ -79,14 +79,14 @@ object ProtoRoutingKeys {
 
   def routingKey(proto: FrontEndProcessor): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: FrontEndProcessor): List[Option[Any]] = {
-    hasGet(proto.hasUid, proto.getUid) :: Nil
+    hasGet(proto.hasUuid, proto.getUuid) :: Nil
   }
 
   def routingKey(proto: Point): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: Point): List[Option[Any]] = {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasName, proto.getName) ::
-      hasGet(proto.hasEntity, proto.getEntity.getUid) :: Nil
+      hasGet(proto.hasEntity, proto.getEntity.getUuid) :: Nil
   }
 
   def routingKey(proto: CommChannel): String = routingKeyOptions(proto)
@@ -98,20 +98,20 @@ object ProtoRoutingKeys {
 
   def routingKey(proto: MeasurementProcessingConnection): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: MeasurementProcessingConnection): List[Option[Any]] = {
-    hasGet(proto.hasMeasProc, proto.getMeasProc.hasUid, proto.getMeasProc.getUid) ::
-      hasGet(proto.hasUid, proto.getUid) :: Nil
+    hasGet(proto.hasMeasProc, proto.getMeasProc.hasUuid, proto.getMeasProc.getUuid) ::
+      hasGet(proto.hasUuid, proto.getUuid) :: Nil
   }
 
   def routingKey(proto: MeasOverride): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: MeasOverride): List[Option[Any]] = {
     // TODO: use the OptionalStruct implicts here instead
-    hasGet(proto.hasPoint, proto.getPoint.hasLogicalNode, proto.getPoint.getLogicalNode.hasUid, proto.getPoint.getLogicalNode.getUid) ::
+    hasGet(proto.hasPoint, proto.getPoint.hasLogicalNode, proto.getPoint.getLogicalNode.hasUuid, proto.getPoint.getLogicalNode.getUuid) ::
       hasGet(proto.hasPoint, proto.getPoint.hasName, proto.getPoint.getName) :: Nil
   }
 
   /*def routingKey(proto: Trigger): String = routingKeyOptions(proto)
   def routingKeyOptions(proto: Trigger): List[Option[Any]] = {
-    hasGet(proto.hasPoint, proto.getPoint.hasEntity, proto.getPoint.getEntity.hasUid, proto.getPoint.getEntity.getUid) ::
+    hasGet(proto.hasPoint, proto.getPoint.hasEntity, proto.getPoint.getEntity.hasUuid, proto.getPoint.getEntity.getUuid) ::
       hasGet(proto.hasPoint, proto.getPoint.hasName, proto.getPoint.getName) ::
       hasGet(proto.hasTriggerName, proto.getTriggerName) :: Nil
   }*/
@@ -132,7 +132,7 @@ object ProtoRoutingKeys {
       hasGet(proto.hasSeverity, proto.getSeverity) ::
       hasGet(proto.hasSubsystem, proto.getSubsystem) ::
       hasGet(proto.hasUserId, proto.getUserId) ::
-      hasGet(proto.hasEntity, proto.getEntity.getUid) :: Nil
+      hasGet(proto.hasEntity, proto.getEntity.getUuid) :: Nil
   }
 
   def routingKey(proto: StatusSnapshot): String = routingKeyOptions(proto)

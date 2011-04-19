@@ -111,11 +111,11 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val fix = new ProcessStatusFixture
 
-    val beat = fix.namedProto.setUid("11111").setTime(0).build
+    val beat = fix.namedProto.setProcessId("11111").setTime(0).build
 
     fix.coord.handleRawStatus(beat)
 
-    none(fix.service.get(StatusSnapshot.newBuilder().setUid("11111").build))
+    none(fix.service.get(StatusSnapshot.newBuilder().setProcessId("11111").build))
   }
 
   test("Raw messages are correctly handled") {
@@ -130,7 +130,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     val failsAt = ss.getTime
 
     // simulate a raw message received before the timeout
-    val beat = fix.namedProto.setUid(fix.app.getHeartbeatCfg.getUid).setOnline(true).setTime(failsAt - 1).build
+    val beat = fix.namedProto.setProcessId(fix.app.getHeartbeatCfg.getProcessId).setOnline(true).setTime(failsAt - 1).build
     fix.coord.handleRawStatus(beat)
 
     val ss2 = one(fix.service.get(fix.namedProto.build))
@@ -139,7 +139,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     // simulate a raw message received far in the future
     val failTime = failsAt + 5 * fix.app.getHeartbeatCfg.getPeriodMs
-    val beat2 = fix.namedProto.setUid(fix.app.getHeartbeatCfg.getUid).setOnline(false).setTime(failTime).build
+    val beat2 = fix.namedProto.setProcessId(fix.app.getHeartbeatCfg.getProcessId).setOnline(false).setTime(failTime).build
     fix.coord.handleRawStatus(beat2)
 
     // since it should have now failed, we should have seen a modified offline message 
@@ -186,7 +186,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     fix.enrollApp("processId2")
 
-    val offlineHeartBeat = fix.namedProto.setUid("processId1").setOnline(false).setTime(failsAt).build
+    val offlineHeartBeat = fix.namedProto.setProcessId("processId1").setOnline(false).setTime(failsAt).build
     fix.coord.handleRawStatus(offlineHeartBeat)
 
     val ss2 = one(fix.service.get(fix.namedProto.build))

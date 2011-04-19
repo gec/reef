@@ -125,7 +125,7 @@ trait ProcessStatusConversion
   }
 
   def uniqueQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {
-    proto.uid.asParam(sql.id === _.toLong) ::
+    proto.processId.asParam(sql.processId === _) ::
       proto.instanceName.map { inst =>
         val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build // TODO: Make this better; shouldn't have to make a proto to use interface
         sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(nameProto, { _.id })
@@ -142,7 +142,7 @@ trait ProcessStatusConversion
 
   def convertToProto(entry: HeartbeatStatus): StatusSnapshot = {
     StatusSnapshot.newBuilder
-      .setUid(entry.id.toString)
+      .setProcessId(entry.processId)
       .setInstanceName(entry.instanceName.value)
       .setOnline(entry.isOnline)
       .setTime(entry.timeoutAt)
@@ -168,7 +168,7 @@ class ProcessStatusModel(subHandler: ServiceSubscriptionHandler)
   def toProto(sql: HeartbeatStatus): StatusSnapshot = {
     val b = StatusSnapshot.newBuilder
     val app = sql.application
-    b.setUid(sql.id.toString)
+    b.setUuid(makeUuid(sql))
     b.setInstanceName(app.instanceName)
 
     b.setOnline(sql.isOnline).setTime(sql.timeoutAt)

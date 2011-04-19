@@ -53,7 +53,7 @@ message CommChannel {
     }
 
 
-    optional string     uid    = 1;
+    optional org.totalgrid.reef.proto.Model.ReefUUID       uuid    = 1;
     optional string     name   = 2;
     optional IpPort     ip     = 3;
     optional SerialPort serial = 4;
@@ -65,7 +65,7 @@ message CommEndpointRouting {
 }
 
 message FrontEndProcessor {
-    optional string uid       = 1;
+    optional org.totalgrid.reef.proto.Model.ReefUUID       uuid       = 1;
     repeated string protocols = 2; // protocol names ex: dnp3, modbus, benchmark
     optional org.totalgrid.reef.proto.Application.ApplicationConfig app_config = 3;
 }
@@ -77,7 +77,7 @@ message EndpointOwnership {
 
 // and endpoint config _is_a_ LogicalNode with the extra port + protocol parameters
 message CommEndpointConfig {
-    optional string            uid          = 1;
+    optional org.totalgrid.reef.proto.Model.ReefUUID       uuid          = 1;
     optional string            name         = 2;
     optional org.totalgrid.reef.proto.Model.Entity entity = 7;
     optional string            protocol     = 3;
@@ -95,7 +95,7 @@ message CommEndpointConnection {
         ERROR = 4;
     }
 
-    optional string                 uid                 = 1;
+    optional org.totalgrid.reef.proto.Model.ReefUUID       uuid                 = 1;
     optional FrontEndProcessor      front_end           = 2;
     optional CommEndpointConfig     endpoint            = 3;
     optional State                  state               = 4;

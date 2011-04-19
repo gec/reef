@@ -26,8 +26,8 @@ import org.totalgrid.reef.shell.proto.presentation.AttributeView
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.request.ReefUUID
 import org.totalgrid.reef.util.Conversion
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 @Command(scope = "attr", name = "attr", description = "Prints the attributes for an entity.")
 class AttributeCommand extends ReefCommandSupport {
@@ -37,7 +37,7 @@ class AttributeCommand extends ReefCommandSupport {
 
   def doCommand() = {
     val entity = services.getEntityByName(entityName)
-    val attributes = services.getEntityAttributes(new ReefUUID(entity.getUid))
+    val attributes = services.getEntityAttributes(entity.getUuid)
     AttributeView.printAttributes(attributes)
   }
 }
@@ -57,7 +57,7 @@ class AttributeSetCommand extends ReefCommandSupport {
   def doCommand() = {
 
     val entity = services.getEntityByName(entityName)
-    val entityUUID = new ReefUUID(entity.getUid)
+    val entityUUID = entity.getUuid
     val attributes = Conversion.convertStringToType(value) match {
       case x: Long => services.setEntityAttribute(entityUUID, name, x)
       case x: Double => services.setEntityAttribute(entityUUID, name, x)
@@ -81,7 +81,7 @@ class AttributeRemoveCommand extends ReefCommandSupport {
 
   def doCommand() = {
     val entity = services.getEntityByName(entityName)
-    val attributes = services.removeEntityAttribute(new ReefUUID(entity.getUid), name)
+    val attributes = services.removeEntityAttribute(entity.getUuid, name)
     AttributeView.printAttributes(attributes)
   }
 }
@@ -94,7 +94,7 @@ class AttributeClearCommand extends ReefCommandSupport {
 
   def doCommand() = {
     val entity = services.getEntityByName(entityName)
-    val attributes = services.clearEntityAttributes(new ReefUUID(entity.getUid))
+    val attributes = services.clearEntityAttributes(entity.getUuid)
     AttributeView.printAttributes(attributes)
   }
 }

@@ -24,13 +24,14 @@ import org.apache.felix.gogo.commands.Command
 
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import presentation.EndpointView
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 @Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
 class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
+    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build)
     EndpointView.printTable(results)
   }
 }

@@ -195,7 +195,7 @@ public class TestEntityService extends JavaBridgeTestBase {
         Entity sub = client.getOne(Entity.newBuilder().setName("StaticSubstation").build());
 
         // Tree request, asks for points under this substation and the commands associated with those points.
-        Entity request = Entity.newBuilder().setUid(sub.getUid()).addRelations(
+        Entity request = Entity.newBuilder().setUuid(sub.getUuid()).addRelations(
                 Relationship.newBuilder().setRelationship("owns").setDescendantOf(true).addEntities(
                                 Entity.newBuilder().addTypes("Point").addRelations(
                                         Relationship.newBuilder().setRelationship("feedback").setDescendantOf(true).addEntities(

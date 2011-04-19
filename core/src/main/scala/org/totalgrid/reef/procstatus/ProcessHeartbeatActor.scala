@@ -34,7 +34,7 @@ abstract class ProcessHeartbeatActor(amqp: AMQPProtoFactory, configuration: Hear
 
   private def makeProto(online: Boolean): StatusSnapshot = {
     StatusSnapshot.newBuilder
-      .setUid(configuration.getUid)
+      .setProcessId(configuration.getProcessId)
       .setInstanceName(configuration.getInstanceName)
       .setTime(System.currentTimeMillis)
       .setOnline(online).build

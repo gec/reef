@@ -22,8 +22,7 @@ package org.totalgrid.reef.api.request.builders
  */
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.CommandAccess
-import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object CommandAccessRequestBuilders {
 
@@ -59,16 +58,16 @@ object CommandAccessRequestBuilders {
   }
   def blockAccessForCommands(commands: java.util.List[Command]): CommandAccess = blockAccessForCommands(commands.toList)
 
-  def getAll() = CommandAccess.newBuilder.setUid("*").build
+  def getAll() = CommandAccess.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
   def getByCommand(command: Command) = CommandAccess.newBuilder.addCommands(command.getName).build
   def getByCommands(commands: java.util.List[Command]) = CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).build
   def getByCommandName(command: String) = CommandAccess.newBuilder.addCommands(command).build
   def getByCommandNames(commands: java.util.List[String]) = CommandAccess.newBuilder.addAllCommands(commands).build
 
-  def getForUid(uid: ReefUUID) = CommandAccess.newBuilder.setUid(uid.getUuid).build
+  def getForUid(uid: ReefUUID) = CommandAccess.newBuilder.setUuid(uid).build
 
   def getForUser(user: String) = CommandAccess.newBuilder.setUser(user).build
 
-  def deleteByUid(uid: ReefUUID) = CommandAccess.newBuilder.setUid(uid.getUuid).build
-  def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setUid(cmd.getUid).build
+  def deleteByUid(uid: ReefUUID) = CommandAccess.newBuilder.setUuid(uid).build
+  def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setUuid(cmd.getUuid).build
 }

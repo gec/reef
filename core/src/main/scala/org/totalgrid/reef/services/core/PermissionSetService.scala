@@ -116,7 +116,7 @@ trait PermissionSetConversions
 
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
     List(
-      proto.uid.asParam(sql.id === _.toInt),
+      proto.uuid.uuid.asParam(sql.id === _.toInt),
       proto.name.asParam(sql.name === _))
   }
 
@@ -130,7 +130,7 @@ trait PermissionSetConversions
     existing.defaultExpirationTime != updated.defaultExpirationTime
 
   def convertToProto(entry: PermissionSet): PermissionSetProto = {
-    val b = PermissionSetProto.newBuilder.setUid(entry.id.toString)
+    val b = PermissionSetProto.newBuilder.setUuid(makeUuid(entry))
     b.setName(entry.name)
     b.setDefaultExpirationTime(entry.defaultExpirationTime)
     entry.permissions.value.foreach(p => b.addPermissions(PermissionConversions.convertToProto(p)))
@@ -147,7 +147,7 @@ trait PermissionConversions
   val table = ApplicationSchema.permissions
 
   def convertToProto(entry: AuthPermission): Permission = {
-    val b = Permission.newBuilder.setUid(entry.id.toString)
+    val b = Permission.newBuilder.setUuid(makeUuid(entry))
     b.setAllow(entry.allow)
     b.setResource(entry.resource)
     b.setVerb(entry.verb)
@@ -156,7 +156,7 @@ trait PermissionConversions
 
   def uniqueQuery(proto: Permission, sql: AuthPermission) = {
     List(
-      proto.uid.asParam(sql.id === _.toInt))
+      proto.uuid.uuid.asParam(sql.id === _.toInt))
   }
 
   def searchQuery(proto: Permission, sql: AuthPermission) = {

@@ -20,12 +20,12 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
+import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile, ReefUUID }
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.ExpectationException
-import org.totalgrid.reef.api.request.{ ReefUUID, ConfigFileService }
+import org.totalgrid.reef.api.request.{ ConfigFileService }
 import org.totalgrid.reef.api.request.builders.{ EntityRequestBuilders, ConfigFileRequestBuilders }
 
 /**
@@ -72,18 +72,18 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
   }
 
   def updateConfigFile(configFile: ConfigFile, data: Array[Byte]): ConfigFile = {
-    if (!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot update a config file with only a name, need to know uid.")
+    if (!configFile.hasUuid) throw new ExpectationException("uid field is expected to be set. Cannot update a config file with only a name, need to know uid.")
     ops.putOneOrThrow(configFile.toBuilder.setFile(ByteString.copyFrom(data)).build)
   }
 
   def addConfigFileUserByEntity(configFile: ConfigFile, entity: Entity): ConfigFile = {
-    if (!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot add a config file user with only a name, need to know uid.")
+    if (!configFile.hasUuid) throw new ExpectationException("uid field is expected to be set. Cannot add a config file user with only a name, need to know uid.")
     ops.putOneOrThrow(configFile.toBuilder.addEntities(entity).build)
   }
 
   def deleteConfigFile(configFile: ConfigFile): ConfigFile = {
-    if (!configFile.hasUid) throw new ExpectationException("uid field is expected to be set. Cannot delete a config file with only a name, need to know uid.")
-    ops.deleteOneOrThrow(ConfigFile.newBuilder.setUid(configFile.getUid).build)
+    if (!configFile.hasUuid) throw new ExpectationException("uid field is expected to be set. Cannot delete a config file with only a name, need to know uid.")
+    ops.deleteOneOrThrow(ConfigFile.newBuilder.setUuid(configFile.getUuid).build)
   }
 }
 

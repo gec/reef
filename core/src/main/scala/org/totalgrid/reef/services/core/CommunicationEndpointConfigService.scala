@@ -135,13 +135,13 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
   val table = ApplicationSchema.endpoints
 
   def getRoutingKey(proto: CommEndCfgProto) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasName, proto.getName) :: Nil
   }
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.uid.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUid(uid).build, { _.id })),
+      proto.uuid.uuid.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(proto.uuid.get).build, { _.id })),
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 
@@ -156,12 +156,12 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
   def convertToProto(sql: CommunicationEndpoint): CommEndCfgProto = {
     val b = CommEndCfgProto.newBuilder()
 
-    b.setUid(sql.entity.value.id.toString)
+    b.setUuid(makeUuid(sql.entity.value))
     b.setName(sql.entity.value.name)
     b.setProtocol(sql.protocol)
-    sql.frontEndPortId.foreach(id => b.setChannel(CommChannel.newBuilder().setUid(id.toString).build))
+    sql.frontEndPortId.foreach(id => b.setChannel(CommChannel.newBuilder().setUuid(makeUuid(id)).build))
 
-    sql.configFiles.value.foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUid(cf.id.toString).build))
+    sql.configFiles.value.foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cf)).build))
 
     val o = EndpointOwnership.newBuilder
     sql.points.value.foreach(p => o.addPoints(p.name))

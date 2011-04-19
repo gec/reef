@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
 import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, ConfigFile }
 
 /**
  * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.

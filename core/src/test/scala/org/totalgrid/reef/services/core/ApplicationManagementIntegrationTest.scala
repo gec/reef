@@ -104,7 +104,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
     /// simulate doing sending a heartbeat from the application
     def doHeartBeat(online: Boolean, time: Long) {
       val msg = StatusSnapshot.newBuilder
-        .setUid(appConfig.getHeartbeatCfg.getUid)
+        .setProcessId(appConfig.getHeartbeatCfg.getProcessId)
         .setInstanceName(appConfig.getInstanceName)
         .setTime(time)
         .setOnline(online).build

@@ -21,11 +21,11 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest, CommandStatus, CommandAccess }
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.proto.Model.{ Command, ReefUUID }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.totalgrid.reef.api.ServiceTypes
-import org.totalgrid.reef.api.request.{ ReefUUID, CommandService }
+import org.totalgrid.reef.api.request.{ CommandService }
 
 trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 
@@ -38,7 +38,7 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(uuid))
   }
   def deleteCommandLock(ca: CommandAccess): CommandAccess = {
-    ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(new ReefUUID(ca.getUid)))
+    ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(ca.getUuid))
   }
 
   def clearCommandLocks(): java.util.List[CommandAccess] = {
@@ -79,7 +79,7 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
   }
 
   def getCommandHistory(): java.util.List[UserCommandRequest] = {
-    ops.getOrThrow(UserCommandRequestBuilders.getForUid(new ReefUUID("*")))
+    ops.getOrThrow(UserCommandRequestBuilders.getForUid(ReefUUID.newBuilder.setUuid("*").build))
   }
 
   def getCommands(): java.util.List[Command] = {

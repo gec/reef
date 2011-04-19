@@ -104,7 +104,7 @@ trait ApplicationConfigConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(proto.hasUid, proto.getUid) ::
+    hasGet(proto.hasUuid, proto.getUuid) ::
       hasGet(proto.hasInstanceName, proto.getInstanceName) :: Nil
   }
 
@@ -115,7 +115,7 @@ trait ApplicationConfigConversion
   }
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    List(proto.uid.asParam(sql.id === _.toInt),
+    List(proto.uuid.uuid.asParam(sql.id === _.toInt),
       proto.instanceName.asParam(sql.instanceName === _))
   }
 
@@ -138,7 +138,7 @@ trait ApplicationConfigConversion
     val h = HeartbeatConfig.newBuilder
       .setDest("proc_status")
       .setPeriodMs(hbeat.value.periodMS)
-      .setUid(hbeat.value.processId)
+      .setProcessId(hbeat.value.processId)
       .setRoutingKey(entry.instanceName)
       .setInstanceName(entry.instanceName)
 
@@ -148,7 +148,7 @@ trait ApplicationConfigConversion
       .setNonopDest("raw_meas")
 
     val b = ApplicationConfig.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setUserName(entry.userName)
       .setInstanceName(entry.instanceName)
       .setNetwork(entry.network)

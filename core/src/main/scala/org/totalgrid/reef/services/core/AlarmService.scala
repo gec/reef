@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 // implicit proto properties
-import SquerylModel.makeAsParam
+import SquerylModel._
 import org.totalgrid.reef.util.Optional._
 
 class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceModel])
@@ -75,7 +75,7 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
   override def getEventProtoAndKey(alarm: AlarmModel) = {
     val (_, eventKeys) = EventConversion.makeEventProtoAndKey(alarm.event.value)
     val proto = convertToProto(alarm)
-    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.uid :: Nil) + "." + _ }
+    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.uuid.uuid :: Nil) + "." + _ }
 
     (proto, keys)
   }
@@ -83,7 +83,7 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
   override def getSubscribeKeys(req: Alarm): List[String] = {
     val eventKeys = EventConversion.makeSubscribeKeys(req.event.getOrElse(EventProto.newBuilder.build))
 
-    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uid :: Nil) + "." + _ }
+    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uuid.uuid :: Nil) + "." + _ }
   }
 
   // Update an Alarm. Currently, only the state can be updated.
@@ -209,7 +209,7 @@ trait AlarmConversion
   def createModelEntry(proto: Alarm): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
-      proto.getEvent.getUid.toLong)
+      proto.getEvent.getUuid.getUuid.toLong)
   }
 
   // Don't allow any updates except on the alarm state.
@@ -225,7 +225,7 @@ trait AlarmConversion
 
   def convertToProto(entry: AlarmModel, event: EventStore): Alarm = {
     Alarm.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setState(Alarm.State.valueOf(entry.state))
       .setEvent(EventConversion.convertToProto(event))
       .build
@@ -249,7 +249,7 @@ trait AlarmQueries {
   }
 
   def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
-    (proto.uid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
+    (proto.uuid.uuid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {

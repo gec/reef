@@ -28,14 +28,14 @@ object CommandView {
 
   def commandList(list: List[Command]) = {
     val rows = list.map { cmd =>
-      ("[" + cmd.getUid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
+      ("[" + cmd.getUuid.getUuid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
     }
     Table.justifyColumns(rows).foreach { line => println(line mkString " ") }
   }
 
   //def selectResponse(resp: CommandAccess)
   def commandResponse(resp: UserCommandRequest) = {
-    val rows = ("ID: " :: "[" + resp.getUid + "]" :: Nil) ::
+    val rows = ("ID: " :: "[" + resp.getUuid.getUuid + "]" :: Nil) ::
       ("Command:" :: resp.getCommandRequest.getName :: Nil) ::
       ("User:" :: resp.getUser :: Nil) ::
       ("Status:" :: resp.getStatus.toString :: Nil) :: Nil
@@ -49,7 +49,7 @@ object CommandView {
   }
 
   def removeBlockResponse(removed: List[CommandAccess]) = {
-    val rows = removed.map(acc => "Removed:" :: "[" + acc.getUid + "]" :: Nil)
+    val rows = removed.map(acc => "Removed:" :: "[" + acc.getUuid.getUuid + "]" :: Nil)
     Table.renderRows(rows, " ")
   }
 
@@ -63,7 +63,7 @@ object CommandView {
     val first = commands.headOption.getOrElse("")
     val tail = commands.tail
 
-    val rows: List[List[String]] = ("ID:" :: "[" + acc.getUid + "]" :: Nil) ::
+    val rows: List[List[String]] = ("ID:" :: "[" + acc.getUuid.getUuid + "]" :: Nil) ::
       ("Mode:" :: acc.getAccess.toString :: Nil) ::
       ("User:" :: acc.getUser :: Nil) ::
       ("Expires:" :: timeString(acc) :: Nil) ::
@@ -83,7 +83,7 @@ object CommandView {
   def accessRow(acc: CommandAccess): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
-    acc.getUid :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
+    acc.getUuid.getUuid :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
   }
 
   def commandsEllipsis(names: List[String]) = {

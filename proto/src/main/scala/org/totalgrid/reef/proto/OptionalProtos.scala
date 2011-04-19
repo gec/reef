@@ -20,7 +20,7 @@ object OptionalProtos {
 
   implicit def proto2OptAlarmsAlarm(a: org.totalgrid.reef.proto.Alarms.Alarm): OptAlarmsAlarm = new OptAlarmsAlarm(Some(a))
   class OptAlarmsAlarm(real: Option[org.totalgrid.reef.proto.Alarms.Alarm]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val state = optionally(_.hasState, _.getState)
     val event = new OptEventsEvent(optionally(_.hasEvent, _.getEvent))
     val rendered = optionally(_.hasRendered, _.getRendered)
@@ -45,7 +45,7 @@ object OptionalProtos {
   }
   implicit def proto2OptApplicationHeartbeatConfig(a: org.totalgrid.reef.proto.Application.HeartbeatConfig): OptApplicationHeartbeatConfig = new OptApplicationHeartbeatConfig(Some(a))
   class OptApplicationHeartbeatConfig(real: Option[org.totalgrid.reef.proto.Application.HeartbeatConfig]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val processId = optionally(_.hasProcessId, _.getProcessId)
     val dest = optionally(_.hasDest, _.getDest)
     val periodMs = optionally(_.hasPeriodMs, _.getPeriodMs)
     val routingKey = optionally(_.hasRoutingKey, _.getRoutingKey)
@@ -59,7 +59,7 @@ object OptionalProtos {
   }
   implicit def proto2OptApplicationApplicationConfig(a: org.totalgrid.reef.proto.Application.ApplicationConfig): OptApplicationApplicationConfig = new OptApplicationApplicationConfig(Some(a))
   class OptApplicationApplicationConfig(real: Option[org.totalgrid.reef.proto.Application.ApplicationConfig]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val userName = optionally(_.hasUserName, _.getUserName)
     val instanceName = optionally(_.hasInstanceName, _.getInstanceName)
     val processId = optionally(_.hasProcessId, _.getProcessId)
@@ -71,28 +71,28 @@ object OptionalProtos {
   }
   implicit def proto2OptAuthAgent(a: org.totalgrid.reef.proto.Auth.Agent): OptAuthAgent = new OptAuthAgent(Some(a))
   class OptAuthAgent(real: Option[org.totalgrid.reef.proto.Auth.Agent]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val password = optionally(_.hasPassword, _.getPassword)
     val permissionSets = optionally(_.getPermissionSetsList.toList.map { i => new OptAuthPermissionSet(Some(i)) })
   }
   implicit def proto2OptAuthPermission(a: org.totalgrid.reef.proto.Auth.Permission): OptAuthPermission = new OptAuthPermission(Some(a))
   class OptAuthPermission(real: Option[org.totalgrid.reef.proto.Auth.Permission]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val allow = optionally(_.hasAllow, _.getAllow)
     val resource = optionally(_.hasResource, _.getResource)
     val verb = optionally(_.hasVerb, _.getVerb)
   }
   implicit def proto2OptAuthPermissionSet(a: org.totalgrid.reef.proto.Auth.PermissionSet): OptAuthPermissionSet = new OptAuthPermissionSet(Some(a))
   class OptAuthPermissionSet(real: Option[org.totalgrid.reef.proto.Auth.PermissionSet]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val defaultExpirationTime = optionally(_.hasDefaultExpirationTime, _.getDefaultExpirationTime)
     val permissions = optionally(_.getPermissionsList.toList.map { i => new OptAuthPermission(Some(i)) })
   }
   implicit def proto2OptAuthAuthToken(a: org.totalgrid.reef.proto.Auth.AuthToken): OptAuthAuthToken = new OptAuthAuthToken(Some(a))
   class OptAuthAuthToken(real: Option[org.totalgrid.reef.proto.Auth.AuthToken]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val agent = new OptAuthAgent(optionally(_.hasAgent, _.getAgent))
     val loginLocation = optionally(_.hasLoginLocation, _.getLoginLocation)
     val permissionSets = optionally(_.getPermissionSetsList.toList.map { i => new OptAuthPermissionSet(Some(i)) })
@@ -101,7 +101,7 @@ object OptionalProtos {
   }
   implicit def proto2OptCommandsUserCommandRequest(a: org.totalgrid.reef.proto.Commands.UserCommandRequest): OptCommandsUserCommandRequest = new OptCommandsUserCommandRequest(Some(a))
   class OptCommandsUserCommandRequest(real: Option[org.totalgrid.reef.proto.Commands.UserCommandRequest]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val commandRequest = new OptCommandsCommandRequest(optionally(_.hasCommandRequest, _.getCommandRequest))
     val status = optionally(_.hasStatus, _.getStatus)
     val user = optionally(_.hasUser, _.getUser)
@@ -109,7 +109,7 @@ object OptionalProtos {
   }
   implicit def proto2OptCommandsCommandAccess(a: org.totalgrid.reef.proto.Commands.CommandAccess): OptCommandsCommandAccess = new OptCommandsCommandAccess(Some(a))
   class OptCommandsCommandAccess(real: Option[org.totalgrid.reef.proto.Commands.CommandAccess]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val commands = optionally(_.getCommandsList.toList)
     val access = optionally(_.hasAccess, _.getAccess)
     val expireTime = optionally(_.hasExpireTime, _.getExpireTime)
@@ -130,7 +130,7 @@ object OptionalProtos {
   }
   implicit def proto2OptEventsEvent(a: org.totalgrid.reef.proto.Events.Event): OptEventsEvent = new OptEventsEvent(Some(a))
   class OptEventsEvent(real: Option[org.totalgrid.reef.proto.Events.Event]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val eventType = optionally(_.hasEventType, _.getEventType)
     val alarm = optionally(_.hasAlarm, _.getAlarm)
     val time = optionally(_.hasTime, _.getTime)
@@ -154,7 +154,6 @@ object OptionalProtos {
     val entity = optionally(_.getEntityList.toList.map { i => new OptModelEntity(Some(i)) })
     val limit = optionally(_.hasLimit, _.getLimit)
     val ascending = optionally(_.hasAscending, _.getAscending)
-    val uidAfter = optionally(_.hasUidAfter, _.getUidAfter)
   }
   implicit def proto2OptEventsEventList(a: org.totalgrid.reef.proto.Events.EventList): OptEventsEventList = new OptEventsEventList(Some(a))
   class OptEventsEventList(real: Option[org.totalgrid.reef.proto.Events.EventList]) extends OptionalStruct(real) {
@@ -189,7 +188,7 @@ object OptionalProtos {
   }
   implicit def proto2OptFEPCommChannel(a: org.totalgrid.reef.proto.FEP.CommChannel): OptFEPCommChannel = new OptFEPCommChannel(Some(a))
   class OptFEPCommChannel(real: Option[org.totalgrid.reef.proto.FEP.CommChannel]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val ip = new OptFEPIpPort(optionally(_.hasIp, _.getIp))
     val serial = new OptFEPSerialPort(optionally(_.hasSerial, _.getSerial))
@@ -201,7 +200,7 @@ object OptionalProtos {
   }
   implicit def proto2OptFEPFrontEndProcessor(a: org.totalgrid.reef.proto.FEP.FrontEndProcessor): OptFEPFrontEndProcessor = new OptFEPFrontEndProcessor(Some(a))
   class OptFEPFrontEndProcessor(real: Option[org.totalgrid.reef.proto.FEP.FrontEndProcessor]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val protocols = optionally(_.getProtocolsList.toList)
     val appConfig = new OptApplicationApplicationConfig(optionally(_.hasAppConfig, _.getAppConfig))
   }
@@ -212,7 +211,7 @@ object OptionalProtos {
   }
   implicit def proto2OptFEPCommEndpointConfig(a: org.totalgrid.reef.proto.FEP.CommEndpointConfig): OptFEPCommEndpointConfig = new OptFEPCommEndpointConfig(Some(a))
   class OptFEPCommEndpointConfig(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConfig]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val protocol = optionally(_.hasProtocol, _.getProtocol)
@@ -222,7 +221,7 @@ object OptionalProtos {
   }
   implicit def proto2OptFEPCommEndpointConnection(a: org.totalgrid.reef.proto.FEP.CommEndpointConnection): OptFEPCommEndpointConnection = new OptFEPCommEndpointConnection(Some(a))
   class OptFEPCommEndpointConnection(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConnection]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val frontEnd = new OptFEPFrontEndProcessor(optionally(_.hasFrontEnd, _.getFrontEnd))
     val endpoint = new OptFEPCommEndpointConfig(optionally(_.hasEndpoint, _.getEndpoint))
     val state = optionally(_.hasState, _.getState)
@@ -247,7 +246,6 @@ object OptionalProtos {
   }
   implicit def proto2OptMappingIndexMapping(a: org.totalgrid.reef.proto.Mapping.IndexMapping): OptMappingIndexMapping = new OptMappingIndexMapping(Some(a))
   class OptMappingIndexMapping(real: Option[org.totalgrid.reef.proto.Mapping.IndexMapping]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
     val deviceUid = optionally(_.hasDeviceUid, _.getDeviceUid)
     val measmap = optionally(_.getMeasmapList.toList.map { i => new OptMappingMeasMap(Some(i)) })
     val commandmap = optionally(_.getCommandmapList.toList.map { i => new OptMappingCommandMap(Some(i)) })
@@ -317,9 +315,13 @@ object OptionalProtos {
     val sampling = optionally(_.hasSampling, _.getSampling)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
+  implicit def proto2OptModelReefUUID(a: org.totalgrid.reef.proto.Model.ReefUUID): OptModelReefUUID = new OptModelReefUUID(Some(a))
+  class OptModelReefUUID(real: Option[org.totalgrid.reef.proto.Model.ReefUUID]) extends OptionalStruct(real) {
+    val uuid = optionally(_.getUuid)
+  }
   implicit def proto2OptModelEntity(a: org.totalgrid.reef.proto.Model.Entity): OptModelEntity = new OptModelEntity(Some(a))
   class OptModelEntity(real: Option[org.totalgrid.reef.proto.Model.Entity]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val types = optionally(_.getTypesList.toList)
     val name = optionally(_.hasName, _.getName)
     val relations = optionally(_.getRelationsList.toList.map { i => new OptModelRelationship(Some(i)) })
@@ -333,7 +335,7 @@ object OptionalProtos {
   }
   implicit def proto2OptModelEntityEdge(a: org.totalgrid.reef.proto.Model.EntityEdge): OptModelEntityEdge = new OptModelEntityEdge(Some(a))
   class OptModelEntityEdge(real: Option[org.totalgrid.reef.proto.Model.EntityEdge]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val parent = new OptModelEntity(optionally(_.hasParent, _.getParent))
     val child = new OptModelEntity(optionally(_.hasChild, _.getChild))
     val relationship = optionally(_.hasRelationship, _.getRelationship)
@@ -345,7 +347,7 @@ object OptionalProtos {
   }
   implicit def proto2OptModelPoint(a: org.totalgrid.reef.proto.Model.Point): OptModelPoint = new OptModelPoint(Some(a))
   class OptModelPoint(real: Option[org.totalgrid.reef.proto.Model.Point]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
@@ -353,7 +355,7 @@ object OptionalProtos {
   }
   implicit def proto2OptModelCommand(a: org.totalgrid.reef.proto.Model.Command): OptModelCommand = new OptModelCommand(Some(a))
   class OptModelCommand(real: Option[org.totalgrid.reef.proto.Model.Command]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val displayName = optionally(_.hasDisplayName, _.getDisplayName)
     val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
@@ -361,7 +363,7 @@ object OptionalProtos {
   }
   implicit def proto2OptModelConfigFile(a: org.totalgrid.reef.proto.Model.ConfigFile): OptModelConfigFile = new OptModelConfigFile(Some(a))
   class OptModelConfigFile(real: Option[org.totalgrid.reef.proto.Model.ConfigFile]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val mimeType = optionally(_.hasMimeType, _.getMimeType)
     val file = optionally(_.hasFile, _.getFile)
@@ -369,7 +371,7 @@ object OptionalProtos {
   }
   implicit def proto2OptStatusSnapshot(a: StatusSnapshot): OptStatusSnapshot = new OptStatusSnapshot(Some(a))
   class OptStatusSnapshot(real: Option[StatusSnapshot]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val processId = optionally(_.hasProcessId, _.getProcessId)
     val instanceName = optionally(_.hasInstanceName, _.getInstanceName)
     val online = optionally(_.hasOnline, _.getOnline)
     val time = optionally(_.hasTime, _.getTime)
@@ -419,6 +421,7 @@ object OptionalProtos {
   }
   implicit def proto2OptTriggerSet(a: TriggerSet): OptTriggerSet = new OptTriggerSet(Some(a))
   class OptTriggerSet(real: Option[TriggerSet]) extends OptionalStruct(real) {
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
     val triggers = optionally(_.getTriggersList.toList.map { i => new OptTrigger(Some(i)) })
   }
@@ -450,7 +453,7 @@ object OptionalProtos {
   }
   implicit def proto2OptMeasurementProcessingConnection(a: MeasurementProcessingConnection): OptMeasurementProcessingConnection = new OptMeasurementProcessingConnection(Some(a))
   class OptMeasurementProcessingConnection(real: Option[MeasurementProcessingConnection]) extends OptionalStruct(real) {
-    val uid = optionally(_.hasUid, _.getUid)
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val measProc = new OptApplicationApplicationConfig(optionally(_.hasMeasProc, _.getMeasProc))
     val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
     val routing = new OptMeasurementProcessingRouting(optionally(_.hasRouting, _.getRouting))

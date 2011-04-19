@@ -31,11 +31,12 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, IChannelListener, IEndpointListener }
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
 
-  def getKey(c: ConnProto) = c.getUid
+  def getKey(c: ConnProto) = c.getUuid.getUuid
 
   val protocols = comms.mapify { _.name }
 
@@ -58,8 +59,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     val port = c.getEndpoint.getChannel
 
     val publisher = newPublisher(c.getRouting.getServiceRoutingKey)
-    val channelListener = newChannelListener(port.getUid)
-    val endpointListener = newEndpointListener(c.getUid)
+    val channelListener = newChannelListener(port.getUuid)
+    val endpointListener = newEndpointListener(c.getUuid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
@@ -78,12 +79,12 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
-  private def newEndpointListener(endpointUid: String) = new IEndpointListener {
+  private def newEndpointListener(endpointUid: ReefUUID) = new IEndpointListener {
 
     val session = conn.getClientSession
 
     override def onStateChange(state: ConnProto.State) = {
-      val update = ConnProto.newBuilder.setUid(endpointUid).setState(state).build
+      val update = ConnProto.newBuilder.setUuid(endpointUid).setState(state).build
       try {
         val result = session.postOneOrThrow(update)
         debug { "Updated connection state: " + result }
@@ -93,12 +94,12 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newChannelListener(channelUid: String) = new IChannelListener {
+  private def newChannelListener(channelUid: ReefUUID) = new IChannelListener {
 
     val session = conn.getClientSession
 
     override def onStateChange(state: CommChannel.State) = {
-      val update = CommChannel.newBuilder.setUid(channelUid).setState(state).build
+      val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
       try {
         val result = session.postOneOrThrow(update)
         debug { "Updated channel: " + result }

@@ -35,7 +35,7 @@ object EventView {
   def timeString(e: Event) = new java.util.Date(e.getTime).toString
 
   def row(e: Event) = {
-    e.getUid :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getSubsystem :: e.getUserId :: timeString(e) :: e.getRendered :: Nil
+    e.getUuid.getUuid :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getSubsystem :: e.getUserId :: timeString(e) :: e.getRendered :: Nil
   }
 
 }

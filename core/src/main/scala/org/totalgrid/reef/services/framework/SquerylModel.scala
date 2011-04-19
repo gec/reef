@@ -167,6 +167,16 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 }
 
 object SquerylModel {
+
+  def makeUuid[A <: ModelWithId](entry: A) = {
+    import org.totalgrid.reef.proto.Model.ReefUUID
+    ReefUUID.newBuilder.setUuid(entry.id.toString)
+  }
+  def makeUuid(id: Long) = {
+    import org.totalgrid.reef.proto.Model.ReefUUID
+    ReefUUID.newBuilder.setUuid(id.toString)
+  }
+
   import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
 
   class NoSearchTermsException(msg: String) extends BadRequestException(msg)

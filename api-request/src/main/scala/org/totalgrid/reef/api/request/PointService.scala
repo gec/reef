@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Model.{ Entity, Point }
 import org.totalgrid.reef.api.{ ISubscription, ReefServiceException }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, Point }
 
 /**
  * A Point represents a configured input point for data acquisition. Measurements associated with this

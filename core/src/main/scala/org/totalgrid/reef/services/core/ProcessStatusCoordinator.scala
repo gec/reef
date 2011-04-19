@@ -76,7 +76,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
     def update(model: ProcessStatusServiceModel, hbeat: HeartbeatStatus) {
       if (hbeat.isOnline) {
         if (ss.getOnline) {
-          info { "Got heartbeat for: " + ss.getInstanceName + ": " + ss.getUid + " by " + (hbeat.timeoutAt - ss.getTime) }
+          info { "Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime) }
           hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
           // don't publish a modify
           ApplicationSchema.heartbeats.update(hbeat)
@@ -90,12 +90,12 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
     }
 
     trans.transaction { model =>
-      if (!ss.hasUid) {
+      if (!ss.hasProcessId) {
         warn { "Malformed" + ss.getInstanceName + ": isn't configured!" }
       } else {
-        ApplicationSchema.heartbeats.where(_.processId === ss.getUid).toList match {
+        ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
           case List(hbeat) => update(model, hbeat)
-          case _ => warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getUid)
+          case _ => warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
         }
       }
     }
@@ -154,7 +154,7 @@ class ProcessStatusCoordinator(publishers: ServiceEventPublishers) extends Loggi
     def update(hbeat: HeartbeatStatus) {
       if (hbeat.isOnline) {
         if (ss.getOnline) {
-          info { "Got heartbeat for: " + ss.getInstanceName + ": " + ss.getUid + " by " + (hbeat.timeoutAt - ss.getTime) }
+          info { "Got heartbeat for: " + ss.getInstanceName + ": " + ss.getUuid + " by " + (hbeat.timeoutAt - ss.getTime) }
           hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
           // don't publish a modify
           ApplicationSchema.heartbeats.update(hbeat)
@@ -167,10 +167,10 @@ class ProcessStatusCoordinator(publishers: ServiceEventPublishers) extends Loggi
     }
 
     coordinatorModel.transaction {
-      if (!ss.hasUid) {
+      if (!ss.hasUuid) {
         warn { "Malformed" + ss.getInstanceName + ": isn't configured!" }
       } else {
-        ApplicationSchema.heartbeats.lookup(ss.getUid.toLong) match {
+        ApplicationSchema.heartbeats.lookup(ss.getUuid.toLong) match {
           case Some(hbeat) => update(hbeat)
           case None => warn("App " + ss.getInstanceName + ": isn't configured!")
         }
