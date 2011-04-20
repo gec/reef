@@ -9,7 +9,7 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.2.3-RC1
+Version 0.2.3-RC2
 ==============
 
 Primarily a stability and usability release, very limited new functionality.
@@ -59,7 +59,7 @@ Primarily a stability and usability release, very limited new functionality.
 * DNP protocol adapter sets units correctly REEF-24
 * Other bugs mentioned in previous sections: REEF-43, REEF-10
 * Alarm retrievals and updates by UID work as expected now
-
+* Better loader warnings and behavior when config files are missing
 
 Version 0.2.3-dev
 ==============
