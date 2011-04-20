@@ -44,7 +44,7 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: SyncOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
+  def loadFile(client: => SyncOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
 
     info("Loading configuration file '" + filename + "'")
 
@@ -134,21 +134,26 @@ object LoadManager extends Logging {
     }
   }
 
-  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean): Unit = {
-
-    amqp.connect(5000)
-
+  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean): Unit = {
     try {
-      // client that lets us talk to all the services through 1 interface
-      val client = new ProtoClient(amqp, ReefServicesList, 5000)
+      // we only connect to amqp if we are not doing a dry run
+      def client = {
+        amqp.connect(5000)
 
-      // get an auth token and attach it to the client for all future requests
-      val authToken = client.putOneOrThrow(ApplicationEnroller.buildLogin())
-      val env = new RequestEnv
-      env.addAuthToken(authToken.getToken)
-      client.setDefaultHeaders(env)
+        // client that lets us talk to all the services through 1 interface
+        val client = new ProtoClient(amqp, ReefServicesList, 5000)
 
-      loadFile(client, filename, benchmark, false)
+        // get an auth token and attach it to the client for all future requests
+        val authToken = client.putOneOrThrow(ApplicationEnroller.buildLogin())
+        val env = new RequestEnv
+        env.addAuthToken(authToken.getToken)
+        client.setDefaultHeaders(env)
+
+        client
+      }
+
+      loadFile(client, filename, benchmark, dryRun)
+
     } finally {
       amqp.disconnect(5000)
     }
@@ -165,10 +170,11 @@ object LoadManager extends Logging {
     var args = argsA.toList
     var filename: Option[String] = None
     var benchmark = false
+    var dryRun = false
 
     println("main: " + args.mkString(","))
 
-    if (args.size < 2 || args.size > 3)
+    if (args.size < 2 || args.size > 4)
       usage
 
     try {
@@ -181,6 +187,8 @@ object LoadManager extends Logging {
             filename = Some(args.head)
           case "-benchmark" =>
             benchmark = true
+          case "-dryRun" =>
+            dryRun = true
         }
         args = args drop 1
       }
@@ -199,7 +207,7 @@ object LoadManager extends Logging {
       val broker = new QpidBrokerConnection(dbInfo)
     }
 
-    run(amqp, filename.get, benchmark)
+    run(amqp, filename.get, benchmark, dryRun)
   }
 
   /**
@@ -226,6 +234,7 @@ object LoadManager extends Logging {
     println("                     Load configuration data from <configuration.xml>")
     println("  -benchmark         Override endpoint protocol to force all endpoints in")
     println("                     configuration file to be simulated.")
+    println("  -dryRun            Only validate the file, dont upload to server")
     println("")
     java.lang.System.exit(-1)
   }
