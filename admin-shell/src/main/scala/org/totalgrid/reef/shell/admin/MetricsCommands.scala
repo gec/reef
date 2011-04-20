@@ -50,12 +50,7 @@ abstract class MetricsCommands extends OsgiCommandSupport {
 
   def getMetrics(executeCalculations: Boolean = true) = {
     val rawMetrics = MetricsSink.values(filters.get)
-    if (executeCalculations) doCalcs(rawMetrics) else rawMetrics
-  }
-
-  def doCalcs(values: Map[String, Any]): Map[String, Any] = {
-    val calcedValues = calculations.get.map { MetricsMapHelpers.sumAndCount(values, _) }
-    MetricsMapHelpers.mergeMap(values :: calcedValues)
+    if (executeCalculations) MetricsMapHelpers.performCalculations(rawMetrics, calculations.get) else rawMetrics
   }
 }
 
@@ -107,7 +102,7 @@ class MetricsRates extends MetricsCommands {
 
     val endValues = getMetrics(false)
     val pubValues = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
-    val calcedValues = doCalcs(pubValues)
+    val calcedValues = MetricsMapHelpers.performCalculations(pubValues, calculations.get)
 
     output(calcedValues)
 
@@ -165,3 +160,38 @@ class MetricsCalcs extends MetricsCommands {
   }
 }
 
+@Command(scope = "metrics", name = "throughput", description = "Displays current state and overall rate for a key.")
+class MetricsThroughput extends MetricsCommands {
+
+  @Argument(index = 0, name = "key", description = "Key to do operation on (usually needs wildcard \"*\" to be useful)", required = false, multiValued = false)
+  private var key: String = null
+
+  @Option(name = "-time", aliases = Array[String](), description = "Dont run the same calc on future metrics reads", required = false, multiValued = false)
+  private var time: Int = 10
+
+  override def doExecute(): Object = {
+
+    val filters = List(key)
+
+    val startValues = MetricsSink.values(filters)
+    val totals = MetricsMapHelpers.performCalculations(startValues, List(key))
+
+    println("Totals:")
+    output(totals)
+
+    println("Waiting " + time + " seconds for rates")
+    println
+    Thread.sleep(time * 1000)
+    println("Rates:")
+
+    val endValues = MetricsSink.values(filters)
+
+    val valuesWithRates = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
+
+    val calcedRates = MetricsMapHelpers.performCalculations(valuesWithRates, List(key + ".Rate"))
+
+    output(calcedRates)
+
+    null
+  }
+}

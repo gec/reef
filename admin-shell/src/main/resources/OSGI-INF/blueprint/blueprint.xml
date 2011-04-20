@@ -47,6 +47,9 @@
         <command name="metrics/calcs">
             <action class="org.totalgrid.reef.shell.admin.MetricsCalcs"/>
         </command>
+        <command name="metrics/throughput">
+            <action class="org.totalgrid.reef.shell.admin.MetricsThroughput"/>
+        </command>
     </command-bundle>
 
 </blueprint>
