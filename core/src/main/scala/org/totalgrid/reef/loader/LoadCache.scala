@@ -259,20 +259,20 @@ class CachedPoint(
   def this(referencedFrom: CacheType, _name: String, _unit: String) = this(referencedFrom, "", _name, _unit, -1)
   def this(referencedFrom: CacheType, _endpointName: String, _name: String, _index: Int) = this(referencedFrom, _endpointName, _name, "", _index)
 
-  def addReference(referencedFrom: CacheType, _endpointName: String, _unit: String = "", _index: Int = -1) = {
+  def addReference(_referencedFrom: CacheType, _endpointName: String, _unit: String = "", _index: Int = -1) = {
     if (_endpointName.length > 0) {
       if (endpointName.length > 0)
-        warnings ::= "point '" + name + "' is referenced by two endpoints: '" + endpointName + "' and '" + _endpointName + "'"
+        warnings ::= "Point '" + name + "' is referenced by two endpoints: '" + endpointName + "' and '" + _endpointName + "'"
       endpointName = _endpointName
     }
 
     if (_unit.length > 0) {
-      if (unit.length > 0)
-        warnings ::= "point '" + name + "' is referenced by two endpoints: '" + unit + "' and '" + _unit + "'"
+      if (unit.length > 0 && unit != _unit && unit != "raw" && _unit != "raw")
+        warnings ::= "Point '" + name + "' has two different units: '" + unit + "' and '" + _unit + "'"
       unit = _unit
     }
 
-    incrementReference(referencedFrom)
+    incrementReference(_referencedFrom)
   }
 
 }
@@ -288,7 +288,7 @@ class CachedControl(
   def addReference(referencedFrom: CacheType, _endpointName: String = "", _index: Int = -1) = {
     if (_endpointName.length > 0) {
       if (endpointName.length > 0)
-        warnings ::= "point '" + name + "' is referenced by two endpoints: '" + endpointName + "' and '" + _endpointName + "'"
+        warnings ::= "Control '" + name + "' is referenced by two endpoints: '" + endpointName + "' and '" + _endpointName + "'"
       endpointName = _endpointName
     }
 

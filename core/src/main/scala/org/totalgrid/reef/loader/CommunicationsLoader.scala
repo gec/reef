@@ -179,6 +179,8 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
     trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
+    processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
+
     overriddenProtocolName match {
       case DNP3 =>
         ex.collect("DNP3 Indexes:" + endpointName) {
@@ -191,8 +193,6 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
         }
       }
     }
-
-    processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
 
     // Now we have a list of all the controls and points for this Endpoint
     client.putOrThrow(toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, port, controls, points).build)
@@ -535,11 +535,21 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
    * TODO: it would be nice if we did NOT put the same config file multiple times.
    */
   def toConfigFile(path: File, configFile: ConfigFile): Model.ConfigFile.Builder = {
-    val file = new File(path, configFile.getName)
+
     val proto = Model.ConfigFile.newBuilder
       .setName(configFile.getName)
       .setMimeType("text/xml")
-      .setFile(com.google.protobuf.ByteString.copyFrom(scala.io.Source.fromFile(file).mkString.getBytes))
+
+    ex.collect("Config Files:") {
+      try {
+        val file = new File(path, configFile.getName)
+        proto.setFile(com.google.protobuf.ByteString.copyFrom(scala.io.Source.fromFile(file).mkString.getBytes))
+      } catch {
+        case f: Exception =>
+          throw new LoadingException("Error loading config file: " + path + " Message: " + f.getMessage)
+          error(f)
+      }
+    }
 
     proto
   }
@@ -694,7 +704,9 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   }
 
   def configureNumericMeasSim(proto: SimMapping.MeasSim.Builder, triggerSet: Option[TriggerSet], inBoundsRatio: Double) {
-    val firstTrigger = triggerSet.map { _.getTriggersList.find(_.hasAnalogLimit).map { _.getAnalogLimit } }.map { x => x.get }
+    val firstTriggerOption: Option[Option[Processing.AnalogLimit]] = triggerSet.map { _.getTriggersList.find(_.hasAnalogLimit).map { _.getAnalogLimit } }
+
+    val firstTrigger = firstTriggerOption.flatMap { x => x }
 
     val min = firstTrigger.map { _.getLowerLimit }.getOrElse(-50.0)
     val max = firstTrigger.map { _.getUpperLimit }.getOrElse(50.0)
