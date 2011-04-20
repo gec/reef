@@ -32,6 +32,7 @@ import Processing._
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.{ RoutingKeys, ReefServicesList }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
+import org.totalgrid.reef.api.AddressableService
 import org.totalgrid.reef.metrics.MetricsHookContainer
 
 /**
@@ -68,7 +69,7 @@ class MeasurementStreamProcessingNode(
   // we'll process them on the chainActor 
   private def startProcessing() {
     MeasurementStreamProcessingNode.attachNode(processor, connection, amqp, reactor)
-    val client = registry.getServiceClient()
+    val client = registry.getClientSession()
 
     val connectionBuilder = connection.toBuilder.setReadyTime(System.currentTimeMillis)
 
@@ -91,6 +92,6 @@ object MeasurementStreamProcessingNode extends Logging {
     val measBatchService = new AddressableMeasurementBatchService(processor)
     val exchange = ReefServicesList.getServiceInfo(measBatchService.descriptor.getKlass).exchange
     info { "Attached " + exchange + " key: " + connection.getRouting.getServiceRoutingKey }
-    amqp.bindAddressableService(exchange, connection.getRouting.getServiceRoutingKey, measBatchService.respond _, false, Some(reactor))
+    amqp.bindService(exchange, measBatchService.respond, AddressableService(connection.getRouting.getServiceRoutingKey), false, Some(reactor))
   }
 }

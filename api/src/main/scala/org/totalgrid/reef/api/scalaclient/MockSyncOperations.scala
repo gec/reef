@@ -22,10 +22,10 @@ package org.totalgrid.reef.api.scalaclient
  */
 import com.google.protobuf.GeneratedMessage
 import scala.collection.mutable.Queue
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.ServiceTypes._
 /**
- * Mock the SyncServiceClient to collect all puts, posts, and deletes. A 'get' function
+ * Mock the ISyncClientSession to collect all puts, posts, and deletes. A 'get' function
  * is specified upon construction.
  *
  * @param doGet    Function that is called for client.get
@@ -69,14 +69,14 @@ class MockSyncOperations(
   /**
    * Override request to define all of the verb helpers
    */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders): MultiResult[A] = verb match {
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode): MultiResult[A] = verb match {
     case Envelope.Verb.GET => doGet(payload).asInstanceOf[MultiResult[A]]
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload)
-      MultiSuccess(List[A](payload))
+      MultiSuccess(Envelope.Status.OK, List[A](payload))
     case Envelope.Verb.PUT =>
       putQueue.enqueue(payload)
-      MultiSuccess(List[A](payload))
+      MultiSuccess(Envelope.Status.OK, List[A](payload))
     case Envelope.Verb.POST => throw new Exception("unimplemented")
   }
 

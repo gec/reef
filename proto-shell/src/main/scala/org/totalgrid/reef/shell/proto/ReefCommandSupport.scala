@@ -21,17 +21,25 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders }
-import request.RequestFailure
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.api.request.impl.AllScadaServiceImpl
 
-abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperations {
+abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
   protected val requiresLogin = true
 
-  override def getDefaultHeaders: RequestEnv = {
-    val headers = new ServiceHandlerHeaders
-    get("auth_token").foreach { x => headers.addAuthToken(x) }
-    super.mergeHeaders(headers.env)
+  /**
+   * session to use to interact with services
+   *
+   * would like this to be called session but OsgiCommandSupport already defines session
+   */
+  protected lazy val reefSession = new OSGISession(getBundleContext, get("auth_token"))
+
+  /**
+   * "all services" wrapper around the reefSession
+   */
+  protected lazy val services = new AllScadaServiceImpl {
+    override val ops = reefSession
   }
 
   protected def getUser: Option[String] = this.get("user")
@@ -67,7 +75,9 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with OSGiSyncOperat
       } else doCommand()
     } catch {
       case RequestFailure(why) => println(why)
-      case ex: Exception => println("Error running command: " + ex)
+      case ex: Exception =>
+        println("Error running command: " + ex)
+        error(ex.getStackTraceString)
     }
     println("")
     null

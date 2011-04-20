@@ -45,7 +45,7 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
   val maxActorPowerOf2: Int
 
   abstract class TestActorBase extends Reactable with Lifecycle {
-    var running = new SyncVar(None: Option[Boolean])
+    var running = new SyncVar[Option[Boolean]](None: Option[Boolean])
     var called = new SyncVar(0)
 
     private var children: List[TestActorBase] = Nil
@@ -161,13 +161,14 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("stop twice throws exception") {
+  test("stop and start calls are idempotent") {
     val a = getActor
 
+    a.start
+    a.start
+
     a.stop
-    intercept[IllegalStateException] {
-      a.stop
-    }
+    a.stop
   }
 
   test("timer doesnt kill parent") {

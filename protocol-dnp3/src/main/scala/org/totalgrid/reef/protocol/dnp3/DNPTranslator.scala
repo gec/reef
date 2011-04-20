@@ -37,36 +37,36 @@ object DNPTranslator {
 
   /* Translation functions from DNP3 type to proto measurements */
 
-  def translate(v: Binary, name: String) = {
-    translateCommon(v, name, translateBinaryQual) { m =>
+  def translate(v: Binary, name: String, unit: String) = {
+    translateCommon(v, name, unit, translateBinaryQual) { m =>
       m.setType(Measurements.Measurement.Type.BOOL)
       m.setBoolVal(v.GetValue)
     }
   }
 
-  def translate(v: Analog, name: String) = {
-    translateCommon(v, name, translateAnalogQual) { m =>
+  def translate(v: Analog, name: String, unit: String) = {
+    translateCommon(v, name, unit, translateAnalogQual) { m =>
       m.setType(Measurements.Measurement.Type.DOUBLE)
       m.setDoubleVal(v.GetValue)
     }
   }
 
-  def translate(v: Counter, name: String) = {
-    translateCommon(v, name, translateCounterQual) { m =>
+  def translate(v: Counter, name: String, unit: String) = {
+    translateCommon(v, name, unit, translateCounterQual) { m =>
       m.setType(Measurements.Measurement.Type.INT)
       m.setIntVal(v.GetValue)
     }
   }
 
-  def translate(v: ControlStatus, name: String) = {
-    translateCommon(v, name, translateControlQual) { m =>
+  def translate(v: ControlStatus, name: String, unit: String) = {
+    translateCommon(v, name, unit, translateControlQual) { m =>
       m.setType(Measurements.Measurement.Type.BOOL)
       m.setBoolVal(v.GetValue)
     }
   }
 
-  def translate(v: SetpointStatus, name: String) = {
-    translateCommon(v, name, translateSetpointQual) { m =>
+  def translate(v: SetpointStatus, name: String, unit: String) = {
+    translateCommon(v, name, unit, translateSetpointQual) { m =>
       m.setType(Measurements.Measurement.Type.DOUBLE)
       m.setDoubleVal(v.GetValue)
     }
@@ -111,16 +111,16 @@ object DNPTranslator {
       case Mapping.CommandType.LATCH_OFF => ControlCode.CC_LATCH_OFF
       case Mapping.CommandType.PULSE => ControlCode.CC_PULSE
       case Mapping.CommandType.PULSE_CLOSE => ControlCode.CC_PULSE_CLOSE
-      case Mapping.CommandType.PUSLE_TRIP => ControlCode.CC_PULSE_TRIP
+      case Mapping.CommandType.PULSE_TRIP => ControlCode.CC_PULSE_TRIP
       case _ => throw new Exception("Invalid Command code")
     }
   }
 
-  private def translateCommon(v: DataPoint, name: String, q: Short => Measurements.Quality.Builder)(f: Measurements.Measurement.Builder => Unit) = {
+  private def translateCommon(v: DataPoint, name: String, unit: String, q: Short => Measurements.Quality.Builder)(f: Measurements.Measurement.Builder => Unit) = {
     val m = Measurements.Measurement.newBuilder
       .setName(name)
       .setQuality(q(v.GetQuality)) // apply the specified quality conversion function
-      .setUnit("raw")
+      .setUnit(unit)
     // we only set the time on the proto if the protocol gave us a valid time
     val t = v.GetTime
     if (t != 0) m.setTime(t)

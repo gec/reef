@@ -42,8 +42,8 @@ class SessionStats {
 }
 
 /**
- * wraps the squeryl Session so we can count actions and track which requests are making too many 
- * queries to the database so its clear where we need to optimize. 
+ * wraps the squeryl Session so we can count actions and track which requests are making too many
+ * queries to the database so its clear where we need to optimize.
  */
 class CountingSession(c: Connection, d: DatabaseAdapter) extends Session {
   def connection = c

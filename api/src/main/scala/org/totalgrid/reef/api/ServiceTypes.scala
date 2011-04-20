@@ -20,19 +20,16 @@
  */
 package org.totalgrid.reef.api
 
-/**Contains types/case classes used in the proto service interfaces
+/**
+ * Contains types/case classes used in the proto service interfaces
  */
 object ServiceTypes {
 
   /* ---- Case classes that make the service api easier to use ---- */
 
-  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv)
+  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
 
-  case class Response[A](status: Envelope.Status, error: String, result: List[A]) {
-    def this(status: Envelope.Status, result: List[A]) = this(status, "", result)
-
-    def this(status: Envelope.Status, result: A) = this(status, "", List(result))
-  }
+  case class Response[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, result: List[A] = Nil, error: String = "")
 
   case class Event[A](event: Envelope.Event, result: A) {
     // accessors for java client
@@ -47,9 +44,9 @@ object ServiceTypes {
 
   trait SingleResult[+A]
 
-  case class SingleSuccess[A](result: A) extends SingleResult[A]
+  case class SingleSuccess[A](status: Envelope.Status, result: A) extends SingleResult[A]
 
-  case class MultiSuccess[A](result: List[A]) extends MultiResult[A]
+  case class MultiSuccess[A](status: Envelope.Status, result: List[A]) extends MultiResult[A]
 
   case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
     override def toString: String = super.toString + " " + status + " message: " + error

@@ -23,9 +23,10 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
-import org.totalgrid.reef.api.IConnectionListener
+import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 
-/** Keeps the connection to qpid up. Notifies linked AMQPSessionHandler 
+/**
+ * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
  */
 trait AMQPConnectionReactor extends Reactor with Lifecycle
     with IConnectionListener with Logging {
@@ -33,18 +34,25 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /// must be defined in concrete class
   protected val broker: BrokerConnection
 
-  /** Add a session handler to the connection. If the actor is already connected, 
+  /**
+   * Add a session handler to the connection. If the actor is already connected,
    * 	the session handler will be notified immediately.
-   *   
-   *	@param handler class that will receive new session notifications 	
+   *
+   * @param handler class that will receive new session notifications
    */
   def add[A <: ChannelObserver](handler: A): A = {
     execute { addChannelObserver(handler) }
     handler
+    // TODO: need to add a removeChannelObserver function if keeping async around
   }
 
-  def addConnectionListener(listener: IConnectionListener): Unit =
+  def addConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
     listeners = listeners.enqueue(listener)
+  }
+
+  def removeConnectionListener(listener: IConnectionListener) = this.synchronized {
+    listeners = listeners.filterNot(_ == listener)
+  }
 
   def getChannel(): BrokerChannel = broker.newBrokerChannel()
 
@@ -52,9 +60,31 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   private var listeners = Queue.empty[IConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
   private var reconnectOnClose = true
+  private var connectedState = new BrokerConnectionState
+  addConnectionListener(connectedState)
+
+  def connect(timeoutMs: Long) {
+    if (timeoutMs <= 0) throw new IllegalArgumentException("Start timeout must be greater than 0.")
+    super.start()
+
+    try {
+      connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
+    } catch {
+      case se: ServiceIOException =>
+        info("Syncronous start failed, stopping actor")
+        super.stop()
+        throw se
+    }
+  }
+
+  def disconnect(timeoutMs: Long) {
+    if (timeoutMs <= 0) throw new IllegalArgumentException("Stop timeout must be greater than 0.")
+    super.stop()
+    connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
+  }
 
   override def afterStart() = {
-    broker.setConnectionListener(Some(this))
+    broker.addConnectionListener(this)
     reconnectOnClose = true
     this.reconnect()
   }
@@ -71,11 +101,11 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   }
 
   // helper for starting a new connection chain
-  private def reconnect() = execute { connect(1000) }
+  private def reconnect() = execute { attemptConnection(1000) }
 
   /// Makes a connection attempt. Retries if with exponential backoff
   /// if the attempt fails
-  private def connect(retryms: Long): Unit = {
+  private def attemptConnection(retryms: Long): Unit = {
     try {
       broker.connect()
       queue.foreach { createChannel(_) }
@@ -84,7 +114,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
       case t: Throwable =>
         error(t)
         // if we fail, retry, use exponential backoff
-        delay(retryms) { connect(2 * retryms) }
+        delay(retryms) { attemptConnection(2 * retryms) }
     }
   }
 
@@ -101,15 +131,14 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /* --- Implement Broker Connection Listener --- */
 
   override def closed() {
-    info(" Connection closed")
+    info(" Connection closed. reconnecting:" + reconnectOnClose)
     if (reconnectOnClose) this.delay(1000) { reconnect() }
-    queue.foreach { a => a.offline() }
-    listeners.foreach { _.closed() }
+    this.synchronized { listeners.foreach { _.closed() } }
   }
 
   override def opened() = {
     info("Connection opened")
-    listeners.foreach { _.opened() }
+    this.synchronized { listeners.foreach { _.opened() } }
   }
 
 }

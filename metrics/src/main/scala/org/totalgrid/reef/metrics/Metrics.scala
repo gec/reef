@@ -45,7 +45,8 @@ class SilentHookSource extends MetricsHookSource {
   }
 }
 
-/** Base trait shared by MetricsHooks and HookedObjectContainer so classes concerned with setting the 
+/**
+ * Base trait shared by MetricsHooks and HookedObjectContainer so classes concerned with setting the
  * sources can treat hooked objects and hookedcontainers the same
  */
 trait HookableObject {
@@ -56,7 +57,7 @@ trait HookableObject {
   def setHookSource(source: MetricsHookSource)
 }
 
-/** 
+/**
  * this trait simplifies the common task of having one or more child objects that generate metrics values
  * and allows the actual hooking to be delayed until after construction without requiring a complex component
  * to expose its "hookable" sub objects. Of course all objects in HookedObjectContainer should expect to
@@ -95,7 +96,8 @@ trait MetricsHookContainer extends MetricsHooks with HookedObjectContainer {
 }
 
 object MetricsHookFunctions {
-  /** blank function used when no hook is needed for the function
+  /**
+   * blank function used when no hook is needed for the function
    * TODO: change getSinkFunction signature to return Optional function
    */
   val nop = (i: Int) => {}

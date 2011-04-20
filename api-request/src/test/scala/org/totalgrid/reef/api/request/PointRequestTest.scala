@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
+import builders.{ EntityRequestBuilders, PointRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -28,7 +29,7 @@ import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
 
 @RunWith(classOf[JUnitRunner])
 class PointRequestTest
-    extends ServiceClientSuite("Point.xml", "Point",
+    extends ClientSessionSuite("Point.xml", "Point",
       <div>
         <p>
           A Point represents a configured input point for data acquisition. Measurements associated with
@@ -44,51 +45,28 @@ class PointRequestTest
 
   test("Simple gets") {
 
-    val allReq = Point.newBuilder.setUid("*").build
-    val allResp = client.getOrThrow(allReq)
+    client.addExplanation("Get all", "Get all Points")
+    // keep list of all points so we can use them for uid and name queries
+    val allResp = client.getAllPoints
 
-    doc.addCase("Get all", "Get", "Get all Points", allReq, allResp)
+    client.addExplanation("Get by UID", "Get point that matches a certain UID.")
+    client.getPointByUid(new ReefUUID(allResp.head.getUid))
 
-    val uidReq = Point.newBuilder.setUid(allResp.head.getUid).build
-    val uidResp = client.getOneOrThrow(uidReq)
-
-    doc.addCase("Get by UID", "Get", "Get point that matches a certain UID.", uidReq, uidResp)
-
-    val nameReq = Point.newBuilder.setName(allResp.head.getName).build
-    val nameResp = client.getOneOrThrow(nameReq)
-
-    doc.addCase("Get by name", "Get", "Get point that matches a certain name.", nameReq, nameResp)
-  }
-
-  test("Entity query") {
-    val pointEnt = client.getOneOrThrow(Entity.newBuilder.setName("StaticSubstation.Breaker02.Bkr").build)
-
-    val req = Point.newBuilder.setEntity(Entity.newBuilder.setUid(pointEnt.getUid)).build
-    val resp = client.getOrThrow(req)
-
-    val desc = <div>
-                 Given an Entity of type "Point", the service can return the corresponding Point object.
-               </div>
-
-    doc.addCase("Get by entity", "Get", desc, req, resp)
-
+    client.addExplanation("Get by name", "Get point that matches a certain name.")
+    client.getPointByName(allResp.head.getName)
   }
 
   test("Entity tree query") {
-    val entDesc = Entity.newBuilder.setName("StaticSubstation.Breaker02").addRelations(
-      Relationship.newBuilder.setRelationship("owns").setDescendantOf(true).addEntities(
-        Entity.newBuilder.addTypes("Point"))).build
-
-    val req = Point.newBuilder.setEntity(entDesc).build
-    val resp = client.getOrThrow(req)
 
     val desc = <div>
                  Search for points using an entity tree query. The entity field can be any entity query; any entities of
       type "Point" that are found will have their corresponding Point objects added to the result set.
                </div>
 
-    doc.addCase("Get by entity query", "Get", desc, req, resp)
+    val entity = client.getEntityByName("StaticSubstation.Breaker02")
 
+    client.addExplanation("Get points owned by equipment", desc)
+    client.getPointsOwnedByEntity(entity)
   }
 
   /*test("Abnormal") {

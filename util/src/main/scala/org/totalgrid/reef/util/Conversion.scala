@@ -47,7 +47,7 @@ class Mapified[A](i: Iterable[A]) {
 class TakeRand[A](l: List[A]) {
 
   /**
-   * @return an Option with either a random element from the list or None if list is empty 
+   * @return an Option with either a random element from the list or None if list is empty
    */
   def takeRand: Option[A] = {
     if (l.size == 0) None
@@ -61,4 +61,50 @@ object Conversion {
   implicit def convertIterableToMapified[A](i: Iterable[A]) = new Mapified(i)
   implicit def convertAnyToOption[A <: Any](x: A): Option[A] = Option(x)
   implicit def convertListToRandList[A](l: List[A]): TakeRand[A] = new TakeRand[A](l)
+
+  /**
+   * takes a string and tries to cast it to long, double, boolean or returns the string
+   * if none of those conversions work
+   */
+  def convertStringToType(s: String): Any = {
+    import Unappliers._
+    s match {
+      case Long(x) => x
+      case Double(x) => x
+      case Boolean(x) => x
+      case _ => s
+    }
+  }
+
+}
+
+object Unappliers {
+  object Int {
+    def unapply(s: String): Option[Int] = try {
+      Some(s.toInt)
+    } catch {
+      case _: java.lang.NumberFormatException => None
+    }
+  }
+  object Boolean {
+    def unapply(s: String): Option[Boolean] = try {
+      Some(s.toBoolean)
+    } catch {
+      case _: java.lang.NumberFormatException => None
+    }
+  }
+  object Double {
+    def unapply(s: String): Option[Double] = try {
+      Some(s.toDouble)
+    } catch {
+      case _: java.lang.NumberFormatException => None
+    }
+  }
+  object Long {
+    def unapply(s: String): Option[Long] = try {
+      Some(s.toLong)
+    } catch {
+      case _: java.lang.NumberFormatException => None
+    }
+  }
 }

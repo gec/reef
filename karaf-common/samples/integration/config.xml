@@ -28,12 +28,20 @@
     <eq:equipmentModel>
 
         <eq:profiles>
-
-            <eq:pointProfile name="NormallyFalseAlarmed">
-                <eq:unexpected booleanValue="true" actionSet="Nominal"/>
+            <eq:pointProfile name="TrippedStatus">
+                <eq:transform transformationType="status">
+                  <eq:valueMap fromValue="true" toValue="TRIPPED"/>
+                  <eq:valueMap fromValue="false" toValue="CLOSED"/>
+                </eq:transform>
+                <eq:unexpected stringValue="TRIPPED" actionSet="Nominal"/>
             </eq:pointProfile>
-            <eq:pointProfile name="NormallyTrueAlarmed">
-                <eq:unexpected booleanValue="false" actionSet="Nominal"/>
+            <eq:pointProfile name="BreakerStatus">
+                <!-- fromUnit and toUnit can be ommitted, we assume "raw" for fromUnit and point unit for toUnit -->
+                <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+                  <eq:valueMap fromValue="true" toValue="CLOSED"/>
+                  <eq:valueMap fromValue="false" toValue="TRIPPED"/>
+                </eq:transform>
+                <eq:unexpected stringValue="CLOSED" actionSet="Nominal"/>
             </eq:pointProfile>
 
 
@@ -49,12 +57,12 @@
                 <eq:control name="Trip"/>
                 <eq:control name="Close"/>
 
-                <eq:status name="Bkr" unit="status" pointProfile="NormallyTrueAlarmed">
+                <eq:status name="Bkr" unit="status" pointProfile="BreakerStatus">
                     <eq:control name="Trip"/>
                     <eq:control name="Close"/>
                 </eq:status>
 
-                <eq:status name="Tripped" unit="status" pointProfile="NormallyFalseAlarmed"/>
+                <eq:status name="Tripped" unit="status" pointProfile="TrippedStatus"/>
             </eq:equipmentProfile>
 
              <eq:equipmentProfile name="MockLine">

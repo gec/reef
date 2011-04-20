@@ -74,6 +74,7 @@ object OptionalProtos {
     val uid = optionally(_.hasUid, _.getUid)
     val name = optionally(_.hasName, _.getName)
     val password = optionally(_.hasPassword, _.getPassword)
+    val permissionSets = optionally(_.getPermissionSetsList.toList.map { i => new OptAuthPermissionSet(Some(i)) })
   }
   implicit def proto2OptAuthPermission(a: org.totalgrid.reef.proto.Auth.Permission): OptAuthPermission = new OptAuthPermission(Some(a))
   class OptAuthPermission(real: Option[org.totalgrid.reef.proto.Auth.Permission]) extends OptionalStruct(real) {
@@ -186,15 +187,16 @@ object OptionalProtos {
     val parity = optionally(_.hasParity, _.getParity)
     val flow = optionally(_.hasFlow, _.getFlow)
   }
-  implicit def proto2OptFEPPort(a: org.totalgrid.reef.proto.FEP.Port): OptFEPPort = new OptFEPPort(Some(a))
-  class OptFEPPort(real: Option[org.totalgrid.reef.proto.FEP.Port]) extends OptionalStruct(real) {
+  implicit def proto2OptFEPCommChannel(a: org.totalgrid.reef.proto.FEP.CommChannel): OptFEPCommChannel = new OptFEPCommChannel(Some(a))
+  class OptFEPCommChannel(real: Option[org.totalgrid.reef.proto.FEP.CommChannel]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
     val name = optionally(_.hasName, _.getName)
     val ip = new OptFEPIpPort(optionally(_.hasIp, _.getIp))
     val serial = new OptFEPSerialPort(optionally(_.hasSerial, _.getSerial))
+    val state = optionally(_.hasState, _.getState)
   }
-  implicit def proto2OptFEPCommunicationEndpointRouting(a: org.totalgrid.reef.proto.FEP.CommunicationEndpointRouting): OptFEPCommunicationEndpointRouting = new OptFEPCommunicationEndpointRouting(Some(a))
-  class OptFEPCommunicationEndpointRouting(real: Option[org.totalgrid.reef.proto.FEP.CommunicationEndpointRouting]) extends OptionalStruct(real) {
+  implicit def proto2OptFEPCommEndpointRouting(a: org.totalgrid.reef.proto.FEP.CommEndpointRouting): OptFEPCommEndpointRouting = new OptFEPCommEndpointRouting(Some(a))
+  class OptFEPCommEndpointRouting(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointRouting]) extends OptionalStruct(real) {
     val serviceRoutingKey = optionally(_.hasServiceRoutingKey, _.getServiceRoutingKey)
   }
   implicit def proto2OptFEPFrontEndProcessor(a: org.totalgrid.reef.proto.FEP.FrontEndProcessor): OptFEPFrontEndProcessor = new OptFEPFrontEndProcessor(Some(a))
@@ -208,23 +210,24 @@ object OptionalProtos {
     val points = optionally(_.getPointsList.toList)
     val commands = optionally(_.getCommandsList.toList)
   }
-  implicit def proto2OptFEPCommunicationEndpointConfig(a: org.totalgrid.reef.proto.FEP.CommunicationEndpointConfig): OptFEPCommunicationEndpointConfig = new OptFEPCommunicationEndpointConfig(Some(a))
-  class OptFEPCommunicationEndpointConfig(real: Option[org.totalgrid.reef.proto.FEP.CommunicationEndpointConfig]) extends OptionalStruct(real) {
+  implicit def proto2OptFEPCommEndpointConfig(a: org.totalgrid.reef.proto.FEP.CommEndpointConfig): OptFEPCommEndpointConfig = new OptFEPCommEndpointConfig(Some(a))
+  class OptFEPCommEndpointConfig(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConfig]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
     val name = optionally(_.hasName, _.getName)
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val protocol = optionally(_.hasProtocol, _.getProtocol)
-    val port = new OptFEPPort(optionally(_.hasPort, _.getPort))
+    val channel = new OptFEPCommChannel(optionally(_.hasChannel, _.getChannel))
     val ownerships = new OptFEPEndpointOwnership(optionally(_.hasOwnerships, _.getOwnerships))
     val configFiles = optionally(_.getConfigFilesList.toList.map { i => new OptModelConfigFile(Some(i)) })
   }
-  implicit def proto2OptFEPCommunicationEndpointConnection(a: org.totalgrid.reef.proto.FEP.CommunicationEndpointConnection): OptFEPCommunicationEndpointConnection = new OptFEPCommunicationEndpointConnection(Some(a))
-  class OptFEPCommunicationEndpointConnection(real: Option[org.totalgrid.reef.proto.FEP.CommunicationEndpointConnection]) extends OptionalStruct(real) {
+  implicit def proto2OptFEPCommEndpointConnection(a: org.totalgrid.reef.proto.FEP.CommEndpointConnection): OptFEPCommEndpointConnection = new OptFEPCommEndpointConnection(Some(a))
+  class OptFEPCommEndpointConnection(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConnection]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
     val frontEnd = new OptFEPFrontEndProcessor(optionally(_.hasFrontEnd, _.getFrontEnd))
-    val endpoint = new OptFEPCommunicationEndpointConfig(optionally(_.hasEndpoint, _.getEndpoint))
-    val routing = new OptFEPCommunicationEndpointRouting(optionally(_.hasRouting, _.getRouting))
-    val online = optionally(_.hasOnline, _.getOnline)
+    val endpoint = new OptFEPCommEndpointConfig(optionally(_.hasEndpoint, _.getEndpoint))
+    val state = optionally(_.hasState, _.getState)
+    val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
+    val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)
   }
   implicit def proto2OptMappingMeasMap(a: org.totalgrid.reef.proto.Mapping.MeasMap): OptMappingMeasMap = new OptMappingMeasMap(Some(a))
   class OptMappingMeasMap(real: Option[org.totalgrid.reef.proto.Mapping.MeasMap]) extends OptionalStruct(real) {
@@ -310,7 +313,7 @@ object OptionalProtos {
     val startTime = optionally(_.hasStartTime, _.getStartTime)
     val endTime = optionally(_.hasEndTime, _.getEndTime)
     val limit = optionally(_.hasLimit, _.getLimit)
-    val ascending = optionally(_.hasAscending, _.getAscending)
+    val keepNewest = optionally(_.hasKeepNewest, _.getKeepNewest)
     val sampling = optionally(_.hasSampling, _.getSampling)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
@@ -335,6 +338,11 @@ object OptionalProtos {
     val child = new OptModelEntity(optionally(_.hasChild, _.getChild))
     val relationship = optionally(_.hasRelationship, _.getRelationship)
   }
+  implicit def proto2OptModelEntityAttributes(a: org.totalgrid.reef.proto.Model.EntityAttributes): OptModelEntityAttributes = new OptModelEntityAttributes(Some(a))
+  class OptModelEntityAttributes(real: Option[org.totalgrid.reef.proto.Model.EntityAttributes]) extends OptionalStruct(real) {
+    val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
+    val attributes = optionally(_.getAttributesList.toList.map { i => new OptUtilsAttribute(Some(i)) })
+  }
   implicit def proto2OptModelPoint(a: org.totalgrid.reef.proto.Model.Point): OptModelPoint = new OptModelPoint(Some(a))
   class OptModelPoint(real: Option[org.totalgrid.reef.proto.Model.Point]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
@@ -347,6 +355,7 @@ object OptionalProtos {
   class OptModelCommand(real: Option[org.totalgrid.reef.proto.Model.Command]) extends OptionalStruct(real) {
     val uid = optionally(_.hasUid, _.getUid)
     val name = optionally(_.hasName, _.getName)
+    val displayName = optionally(_.hasDisplayName, _.getDisplayName)
     val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
   }
@@ -381,6 +390,8 @@ object OptionalProtos {
     val setBool = optionally(_.hasSetBool, _.getSetBool)
     val setUnit = optionally(_.hasSetUnit, _.getSetUnit)
     val event = new OptEventGeneration(optionally(_.hasEvent, _.getEvent))
+    val boolTransform = new OptBoolEnumTransform(optionally(_.hasBoolTransform, _.getBoolTransform))
+    val intTransform = new OptIntEnumTransform(optionally(_.hasIntTransform, _.getIntTransform))
   }
   implicit def proto2OptLinearTransform(a: LinearTransform): OptLinearTransform = new OptLinearTransform(Some(a))
   class OptLinearTransform(real: Option[LinearTransform]) extends OptionalStruct(real) {
@@ -403,6 +414,8 @@ object OptionalProtos {
     val unit = optionally(_.hasUnit, _.getUnit)
     val valueType = optionally(_.hasValueType, _.getValueType)
     val boolValue = optionally(_.hasBoolValue, _.getBoolValue)
+    val stringValue = optionally(_.hasStringValue, _.getStringValue)
+    val intValue = optionally(_.hasIntValue, _.getIntValue)
   }
   implicit def proto2OptTriggerSet(a: TriggerSet): OptTriggerSet = new OptTriggerSet(Some(a))
   class OptTriggerSet(real: Option[TriggerSet]) extends OptionalStruct(real) {
@@ -414,6 +427,20 @@ object OptionalProtos {
     val upperLimit = optionally(_.hasUpperLimit, _.getUpperLimit)
     val lowerLimit = optionally(_.hasLowerLimit, _.getLowerLimit)
     val deadband = optionally(_.hasDeadband, _.getDeadband)
+  }
+  implicit def proto2OptBoolEnumTransform(a: BoolEnumTransform): OptBoolEnumTransform = new OptBoolEnumTransform(Some(a))
+  class OptBoolEnumTransform(real: Option[BoolEnumTransform]) extends OptionalStruct(real) {
+    val trueString = optionally(_.getTrueString)
+    val falseString = optionally(_.getFalseString)
+  }
+  implicit def proto2OptIntEnumTransform(a: IntEnumTransform): OptIntEnumTransform = new OptIntEnumTransform(Some(a))
+  class OptIntEnumTransform(real: Option[IntEnumTransform]) extends OptionalStruct(real) {
+    val mappings = optionally(_.getMappingsList.toList.map { i => new OptIntToString(Some(i)) })
+  }
+  implicit def proto2OptIntToString(a: IntToString): OptIntToString = new OptIntToString(Some(a))
+  class OptIntToString(real: Option[IntToString]) extends OptionalStruct(real) {
+    val value = optionally(_.getValue)
+    val string = optionally(_.getString)
   }
   implicit def proto2OptMeasurementProcessingRouting(a: MeasurementProcessingRouting): OptMeasurementProcessingRouting = new OptMeasurementProcessingRouting(Some(a))
   class OptMeasurementProcessingRouting(real: Option[MeasurementProcessingRouting]) extends OptionalStruct(real) {

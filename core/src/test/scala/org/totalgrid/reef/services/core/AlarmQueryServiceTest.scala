@@ -24,21 +24,16 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.Envelope
 
-// proto list to scala list
-
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
@@ -48,7 +43,7 @@ import org.totalgrid.reef.services.core.util._
 import java.util.{ Date, Calendar }
 
 @RunWith(classOf[JUnitRunner])
-class AlarmQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
+class AlarmQueryServiceTest extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
   import Alarm.State._
 
@@ -83,14 +78,9 @@ class AlarmQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
 
   val SUB1 = "subsystem1"
 
-  /**
-   *  Do this once, then run all tests.
-   */
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-    transaction { ApplicationSchema.reset }
+  override def beforeEach() {
+    super.beforeEach()
     val al = new AlarmAndEventInserter
-    // All our tests are gets, so seed the table once for all tests.
     al.seedEventConfigTable
     al.seedMessages
   }
@@ -116,6 +106,7 @@ class AlarmQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
         EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}"))
 
       transaction {
+        ApplicationSchema.eventConfigs.deleteWhere(e => true === true)
         ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
       }
     }
@@ -160,27 +151,28 @@ class AlarmQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
   /**
    *  This is run before each test.
    */
-  def withFixture(test: OneArgTest) = {
-    import EventType._
+  def getFixture() = {
 
     val pubs = new SilentEventPublishers
     val fac = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
-    val service = new AlarmQueryService
+    val service = new AlarmQueryService(pubs)
 
-    test(Fixture(service))
+    Fixture(service)
   }
 
-  def testFailPutAlarmList(fixture: Fixture) {
+  import EventType._
+
+  test("FailPutAlarmList") {
+    val fixture = getFixture()
     import fixture._
-    import EventType._
 
     val resp = service.put(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
     resp.status should equal(Envelope.Status.NOT_ALLOWED)
   }
 
-  def testSimpleQueries(fixture: Fixture) {
+  test("SimpleQueries") {
+    val fixture = getFixture()
     import fixture._
-    import EventType._
 
     // Select EventType only.
     //

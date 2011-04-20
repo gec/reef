@@ -21,31 +21,66 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
-import scala.collection.immutable
+
+import FEP.CommChannel
 
 object IProtocol {
-  type Issue = Commands.CommandRequest => Unit
-  type Respond = Commands.CommandResponse => Unit
-  type Publish = Measurements.MeasurementBatch => Unit
 
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
     files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
   }
 }
 
+trait IPublisher {
+  def publish(batch: Measurements.MeasurementBatch): Unit
+  def close()
+}
+
+trait IResponseHandler {
+  def onResponse(rsp: Commands.CommandResponse): Unit
+}
+
+trait ICommandHandler {
+  def issue(cmd: Commands.CommandRequest, rspHandler: IResponseHandler)
+}
+
+trait IEndpointListener {
+  def onStateChange(state: FEP.CommEndpointConnection.State)
+}
+
+trait IChannelListener {
+  def onStateChange(state: CommChannel.State)
+}
+
+case object NullPublisher extends IPublisher {
+  def publish(batch: Measurements.MeasurementBatch): Unit = {}
+  def close() {}
+}
+
+case object NullEndpointListener extends IEndpointListener {
+  def onStateChange(state: FEP.CommEndpointConnection.State) = {}
+}
+
+case object NullChannelListener extends IChannelListener {
+  def onStateChange(state: CommChannel.State) = {}
+}
+
 trait IProtocol {
 
-  val name: String /// unique name, i.e. dnp3
+  /**
+   * @return Unique name, i.e. 'dnp3'
+   */
+  def name: String
 
   /**
    * if true the protocol trait will verify that the each device is associated with a port, if false we dont care
    * if there is a port or not.
    */
-  val requiresPort: Boolean
+  def requiresChannel: Boolean
 
-  def addPort(p: FEP.Port): Unit
-  def removePort(port: String): Unit
+  def addChannel(channel: FEP.CommChannel, listener: IChannelListener): Unit
+  def removeChannel(channel: String): IChannelListener
 
-  def addEndpoint(endpoint: String, portName: String, config: List[Model.ConfigFile], publish: IProtocol.Publish, command: IProtocol.Respond): IProtocol.Issue
-  def removeEndpoint(endpoint: String): Unit
+  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
+  def removeEndpoint(endpoint: String): IEndpointListener
 }

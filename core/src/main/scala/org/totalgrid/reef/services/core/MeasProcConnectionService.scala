@@ -40,7 +40,8 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
 class MeasurementProcessingConnectionService(protected val modelTrans: ServiceTransactable[MeasurementProcessingConnectionServiceModel])
-    extends BasicProtoService[ConnProto, MeasProcAssignment, MeasurementProcessingConnectionServiceModel] {
+    extends BasicSyncModeledService[ConnProto, MeasProcAssignment, MeasurementProcessingConnectionServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.measurementProcessingConnection
 }

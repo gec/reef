@@ -20,8 +20,10 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ Port => PortProto }
+import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
+
+import org.totalgrid.reef.api.Envelope
 
 import org.totalgrid.reef.services.framework._
 
@@ -31,46 +33,66 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
+import org.totalgrid.reef.services.framework.ServiceBehaviors._
+
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
-    extends BasicProtoService[PortProto, FrontEndPort, FrontEndPortServiceModel] {
+    extends BasicSyncModeledService[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
+    with GetEnabled
+    with PutEnabled
+    with DeleteEnabled
+    with PostPartialUpdate
+    with SubscribeEnabled {
 
-  override val descriptor = Descriptors.port
+  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+
+    import org.totalgrid.reef.proto.OptionalProtos._
+
+    val builder = FrontEndPortConversion.convertToProto(current).toBuilder
+    req.state.foreach { builder.setState(_) }
+    req.ip.foreach { builder.setIp(_) }
+    req.serial.foreach { builder.setSerial(_) }
+    builder.build
+  }
+
+  override val descriptor = Descriptors.commChannel
 }
 
 class FrontEndPortModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[PortProto, FrontEndPortServiceModel](pub, classOf[PortProto]) {
+    extends BasicModelFactory[ChannelProto, FrontEndPortServiceModel](pub, classOf[ChannelProto]) {
 
   def model = new FrontEndPortServiceModel(subHandler)
 }
 
 class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHandler)
-    extends SquerylServiceModel[PortProto, FrontEndPort]
-    with EventedServiceModel[PortProto, FrontEndPort]
+    extends SquerylServiceModel[ChannelProto, FrontEndPort]
+    with EventedServiceModel[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {
 }
 
+object FrontEndPortConversion extends FrontEndPortConversion
+
 trait FrontEndPortConversion
-    extends MessageModelConversion[PortProto, FrontEndPort]
-    with UniqueAndSearchQueryable[PortProto, FrontEndPort] {
+    extends MessageModelConversion[ChannelProto, FrontEndPort]
+    with UniqueAndSearchQueryable[ChannelProto, FrontEndPort] {
 
   val table = ApplicationSchema.frontEndPorts
 
-  def getRoutingKey(req: PortProto) = ProtoRoutingKeys.generateRoutingKey {
+  def getRoutingKey(req: ChannelProto) = ProtoRoutingKeys.generateRoutingKey {
     req.name ::
       req.ip.network ::
       req.serial.location :: Nil
   }
 
-  def searchQuery(proto: PortProto, sql: FrontEndPort) = {
+  def searchQuery(proto: ChannelProto, sql: FrontEndPort) = {
     Nil
   }
 
-  def uniqueQuery(proto: PortProto, sql: FrontEndPort) = {
+  def uniqueQuery(proto: ChannelProto, sql: FrontEndPort) = {
     proto.uid.asParam(sql.id === _.toLong) ::
       proto.name.asParam(sql.name === _) ::
       Nil
@@ -80,17 +102,20 @@ trait FrontEndPortConversion
     true
   }
 
-  def createModelEntry(proto: PortProto): FrontEndPort = {
+  def createModelEntry(proto: ChannelProto): FrontEndPort = {
     new FrontEndPort(
       proto.getName,
       proto.ip.network,
       proto.serial.location,
+      proto.getState.getNumber,
       proto.toByteString.toByteArray)
   }
 
-  def convertToProto(entry: FrontEndPort): PortProto = {
-    PortProto.parseFrom(entry.proto).toBuilder
+  def convertToProto(entry: FrontEndPort): ChannelProto = {
+    ChannelProto.parseFrom(entry.proto).toBuilder
       .setUid(entry.id.toString)
+      .setName(entry.name)
+      .setState(ChannelProto.State.valueOf(entry.state))
       .build
   }
 }

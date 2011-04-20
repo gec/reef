@@ -21,7 +21,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
 
@@ -31,8 +30,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
 import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
-class EntityService extends ServiceEndpoint[EntityProto] {
+class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
 
   override val descriptor = Descriptors.entity
 
@@ -41,18 +41,18 @@ class EntityService extends ServiceEndpoint[EntityProto] {
     transaction {
       var ent = EQ.findOrCreateEntity(req.getName, req.getTypesList.head) // TODO: need better message if getTypesList is empty: "BAD_REQUEST with message: java.util.NoSuchElementException"
       req.getTypesList.tail.foreach(t => if (ent.types.value.find(_ == t).isEmpty) ent = EQ.addTypeToEntity(ent, t))
-      new Response(Envelope.Status.OK, EQ.entityToProto(ent).build)
+      Response(Envelope.Status.OK, EQ.entityToProto(ent).build :: Nil)
     }
   }
-  override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = noVerb("delete")
-  override def post(req: EntityProto, env: RequestEnv): Response[EntityProto] = noVerb("post")
+  override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = noDelete
+  override def post(req: EntityProto, env: RequestEnv): Response[EntityProto] = noPost
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     transaction {
       info("Query: " + req)
       val result = EQ.fullQuery(req);
       info("Result: " + result)
-      new Response(Envelope.Status.OK, result)
+      Response(Envelope.Status.OK, result)
     }
   }
 }
@@ -60,9 +60,8 @@ class EntityService extends ServiceEndpoint[EntityProto] {
 import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
-class EntityEdgeService extends ServiceEndpoint[EntityEdgeProto] {
+class EntityEdgeService extends AsyncToSyncServiceAdapter[EntityEdgeProto] {
 
-  def deserialize(bytes: Array[Byte]) = EntityEdgeProto.parseFrom(bytes)
   override val descriptor = Descriptors.entityEdge
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {
@@ -85,17 +84,17 @@ class EntityEdgeService extends ServiceEndpoint[EntityEdgeProto] {
         case None => (EQ.addEdge(parentEntity, childEntity, req.getRelationship), Envelope.Status.CREATED)
       }
       val proto = convertToProto(edge)
-      new Response(status, proto)
+      Response(status, proto :: Nil)
     }
   }
-  override def delete(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noVerb("delete")
-  override def post(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noVerb("post")
+  override def delete(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noDelete
+  override def post(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noPost
 
   override def get(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
     transaction {
       // TODO: add edge searching
       val edges = EQ.edges.where(t => true === true).toList
-      new Response(Envelope.Status.OK, edges.map { convertToProto(_) })
+      Response(Envelope.Status.OK, edges.map { convertToProto(_) })
     }
   }
 }

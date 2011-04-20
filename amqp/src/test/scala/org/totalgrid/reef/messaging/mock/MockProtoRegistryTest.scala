@@ -87,25 +87,25 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
   }
 
   test("GetEventException") {
-    val reg = new MockProtoServiceRegistry {}
+    val reg = new MockConnection {}
     intercept[MatchError] {
       reg.getEvent(classOf[Envelope.RequestHeader])
     }
   }
 
   test("DefineEventQueue") {
-    val reg = new MockProtoServiceRegistry {}
+    val reg = new MockConnection {}
     reg.defineEventQueue(Envelope.RequestHeader.parseFrom, (x: Any) => x)
     reg.getEvent(classOf[Envelope.RequestHeader])
   }
 
   test("testMockProtoConsumerRespondTimeout") {
-    val reg = new MockServiceClient
+    val reg = new MockClientSession
     intercept[MatchError] { reg.respondWithTimeout[Int](1) { x => None } } //when we timeout, we should get a match error
   }
 
   test("MockProtoConsumerRequestTimeout") {
-    val reg = new MockServiceClient(1)
+    val reg = new MockClientSession(1)
     val exc = intercept[ReefServiceException] {
       reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build)
     }
@@ -114,7 +114,7 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   // Do a full request/respond
   test("ConsumerRequestResponse") {
-    val reg = new MockServiceClient
+    val reg = new MockClientSession
 
     //fire off a read on an actor
     Timer.now {
@@ -125,13 +125,13 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
       request.verb should equal(Envelope.Verb.PUT)
       request.env.subQueue should equal(None)
       request.payload.getValue should equal("4")
-      Some(Response(Envelope.Status.OK, "", List(request.payload)))
+      Some(Response(Envelope.Status.OK, List(request.payload)))
     }
   }
 
   // mock objects are not available until they are created
   test("MockServiceRegistryException") {
-    val reg = new MockProtoServiceRegistry {}
+    val reg = new MockConnection {}
     intercept[NoSuchElementException] {
       reg.getMockClient
     }
@@ -139,8 +139,8 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   // tests that once the consumer is requested, the mock will be available
   test("MockServiceRegistryLookupDefaultstoREQUEST") {
-    val reg = new MockProtoServiceRegistry {}
-    reg.getServiceClient()
+    val reg = new MockConnection {}
+    reg.getClientSession()
     reg.getMockClient
   }
 

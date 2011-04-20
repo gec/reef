@@ -24,9 +24,9 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.ServiceList
 
 /**
- * mixin that manages the lazy creation and storing of subscription handlers (publishers) 
+ * mixin that manages the lazy creation and storing of subscription handlers (publishers)
  * that the models use. This way the models can be constructed multiple times and all publications
- * go through the same publishingactors  
+ * go through the same publishingactors
  */
 abstract class ServiceEventPublisherMap(lookup: ServiceList) extends ServiceEventPublishers {
 

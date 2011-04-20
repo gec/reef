@@ -25,17 +25,17 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 /**
- * mixin that handles the add/remove/modify/subscribed behavior by keeping protos in a map and freeing up the 
+ * mixin that handles the add/remove/modify/subscribed behavior by keeping protos in a map and freeing up the
  * user code to handle only the "payload" add/remove behavior. User code can therefore skip any checks to make
  * sure that the object isn't allready created/removed.
- * 
+ *
  * This class can be mixed in to implement the abstract functions of ServiceContext[A]
  */
 trait KeyedMap[A] extends Logging {
 
-  def hasChangedEnoughForReload(updated: A, existing: A): Boolean
+  protected def hasChangedEnoughForReload(updated: A, existing: A): Boolean
 
-  def getKey(value: A): String
+  protected def getKey(value: A): String
 
   /**
    * called when a new entry is added to the map
@@ -47,9 +47,10 @@ trait KeyedMap[A] extends Logging {
   def removeEntry(c: A)
 
   /* ----- Mutable state -----  */
-  private var active = Map.empty[String, A] //active connections
+  private var active = Map.empty[String, A]
 
-  /**    Load a list of slave device connections
+  /**
+   *    Load a list of slave device connections
    */
   def subscribed(list: List[A]): Unit = {
     val map = list.mapify { x => getKey(x) }
@@ -84,6 +85,7 @@ trait KeyedMap[A] extends Logging {
     active.get(getKey(c)) match {
       case None => warn { "Remove on unregistered key: " + getKey(c) }
       case Some(x) =>
+        info { "removing ... " + getKey(c) }
         removeEntry(x)
         active -= getKey(c)
         info { "removed ... " + getKey(c) }

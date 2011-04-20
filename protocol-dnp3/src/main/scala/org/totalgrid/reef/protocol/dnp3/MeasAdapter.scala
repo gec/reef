@@ -25,8 +25,9 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Mapping
 import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
 
-/** Transforms dnp3 values as they come in from the stack and forwards them.
- *	@param cfg Measurement mapping configuration
+/**
+ * Transforms dnp3 values as they come in from the stack and forwards them.
+ * @param cfg Measurement mapping configuration
  * 	@param accept Function that accepts the converted measurement types
  */
 class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends IDataObserver with Logging {
@@ -38,29 +39,33 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
     batch = MeasBatch.newBuilder.setWallTime(System.currentTimeMillis)
 
   override def _End() = if (batch.getMeasCount > 0) {
-    info("Publishing batch size: " + batch.getMeasCount)
-    accept(batch.build)
+    debug("Publishing batch size: " + batch.getMeasCount)
+    try {
+      accept(batch.build)
+    } catch {
+      case e: Exception => error("Batch publishing threw exception: " + e.toString)
+    }
   }
 
   override def _Update(v: Binary, index: Long): Unit =
-    add(index, Mapping.DataType.BINARY) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.BINARY) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: Analog, index: Long) =
-    add(index, Mapping.DataType.ANALOG) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.ANALOG) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: Counter, index: Long) =
-    add(index, Mapping.DataType.COUNTER) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.COUNTER) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: SetpointStatus, index: Long) =
-    add(index, Mapping.DataType.SETPOINT_STATUS) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.SETPOINT_STATUS) { DNPTranslator.translate(v, _, _) }
 
   override def _Update(v: ControlStatus, index: Long) =
-    add(index, Mapping.DataType.CONTROL_STATUS) { DNPTranslator.translate(v, _) }
+    add(index, Mapping.DataType.CONTROL_STATUS) { DNPTranslator.translate(v, _, _) }
 
   /// if the measurement exits, transform using the specified function and send to the actor
-  private def add(index: Long, t: Mapping.DataType)(f: String => Meas) = {
+  private def add(index: Long, t: Mapping.DataType)(f: (String, String) => Meas) = {
     map.get((index, t.getNumber)) match {
-      case Some(name) => batch.addMeas(f(name))
+      case Some(pointInfo) => batch.addMeas(f(pointInfo.getPointName, pointInfo.getUnit))
       case None => debug { "Unknown type/index: " + t.toString + "/" + index }
     }
   }

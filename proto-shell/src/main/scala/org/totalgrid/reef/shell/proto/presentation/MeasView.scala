@@ -39,6 +39,11 @@ object MeasView {
     }
   }
 
+  def value(m: Measurement): Any = {
+    val (value, typ) = valueAndType(m)
+    value
+  }
+
   def unit(m: Measurement) = if (m.hasUnit) m.getUnit else ""
 
   def shortQuality(m: Measurement) = {
@@ -84,7 +89,7 @@ object MeasView {
       case Quality.Validity.QUESTIONABLE => "Questionable"
     }
 
-    overall + " (" + list.reverse.mkString(", ") + ")"
+    overall + " (" + list.reverse.mkString("; ") + ")"
   }
 
   def timeString(m: Measurement): String = {

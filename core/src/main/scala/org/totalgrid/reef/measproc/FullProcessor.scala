@@ -39,27 +39,28 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
     extends ServiceHandler with ServiceContext[ConnProto] with KeyedMap[ConnProto]
     with Reactable with Lifecycle {
 
-  def getKey(c: ConnProto) = c.getUid
+  protected override def getKey(c: ConnProto) = c.getUid
 
-  var map = Map.empty[String, MeasurementStreamProcessingNode]
+  private var map = Map.empty[String, MeasurementStreamProcessingNode]
 
-  def addEntry(ep: ConnProto) = {
+  override def addEntry(ep: ConnProto) = {
     val entry = fun(ep)
     map += ep.getUid -> entry
     entry.start
   }
 
-  def removeEntry(ep: ConnProto) = {
+  override def removeEntry(ep: ConnProto) = {
     map.get(ep.getUid).get.stop
     map -= ep.getUid
   }
 
-  def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
+  override def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
     updated.getAssignedTime != existing.getAssignedTime
   }
 }
 
-/**  Non-entry point meas processor setup
+/**
+ *  Non-entry point meas processor setup
  */
 class FullProcessor(components: CoreApplicationComponents, measStoreConfig: ConnInfo) extends Logging with Lifecycle {
 

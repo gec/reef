@@ -26,12 +26,12 @@ import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.api.ServiceTypes.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConnection => ConnProto, CommunicationEndpointConfig => ConfigProto, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
@@ -43,12 +43,12 @@ object FrontEndActor {
   val retryms = 5000
 }
 
-abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
+abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
     extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
 
   //helper objects that sets up all of the services/publishers from abstract registries
-  val session = registry.getServiceClient()
-  val connections = new FrontEndConnections(protocols, registry, this)
+  val session = conn.getClientSession()
+  val connections = new FrontEndConnections(protocols, conn)
 
   /* ---- Implement ServiceContext[Endpoint] ---- */
 
@@ -74,7 +74,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
     connections.remove(ep)
   }
 
-  def loadOrThrow(client: ServiceClient, conn: ConnProto): ConnProto = {
+  def loadOrThrow(client: ClientSession, conn: ConnProto): ConnProto = {
 
     val cp = ConnProto.newBuilder(conn)
 
@@ -83,7 +83,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
     ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getOneOrThrow(cf)))
 
-    if (ep.hasPort) endpoint.setPort(client.getOneOrThrow(ep.getPort))
+    if (ep.hasChannel) endpoint.setChannel(client.getOneOrThrow(ep.getChannel))
     cp.setEndpoint(endpoint).build()
   }
 
@@ -93,7 +93,9 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
   /* ---- Done implementing ServiceContext[Endpoint] ---- */
 
-  override def afterStart() = annouce
+  override def afterStart() = {
+    annouce
+  }
 
   override def beforeStop() = {
     info {
@@ -113,14 +115,14 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
 
     session.asyncPutOne(msg) {
       _ match {
-        case SingleSuccess(fem) =>
+        case SingleSuccess(status, fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
           info {
             "Got uid: " + fem.getUid
           }
           val query = ConnProto.newBuilder.setFrontEnd(fem).build
           // this is where we actually bind up the service calls
-          this.addServiceContext(registry, retryms, ConnProto.parseFrom, query, this)
+          this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
         case x: Failure =>
           warn(x)
           delay(retryms) {
@@ -131,7 +133,7 @@ abstract class FrontEndActor(registry: ProtoRegistry, protocols: Seq[Protocol], 
   }
 
   /**
-   * when setting up asynchronous callbacks it is doubly important to catch exceptions 
+   * when setting up asynchronous callbacks it is doubly important to catch exceptions
    * near where they are thrown or else they will bubble all the way up into the calling code
    */
   private def tryWrap[A](msg: String)(fun: => A) {

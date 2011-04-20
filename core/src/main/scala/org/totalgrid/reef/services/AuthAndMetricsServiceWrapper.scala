@@ -20,13 +20,13 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.app.CoreApplicationComponents
 
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
  *  - auth wrapper that does high level access granting based on resource and verb
- *  - metrics collectors that monitor how many and how long the requests are taking 
+ *  - metrics collectors that monitor how many and how long the requests are taking
  */
 class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, serviceConfiguration: ServiceOptions) {
 
@@ -48,14 +48,14 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// takes an endpoint and either returns that endpoint unaltered or wraps it metrics
   /// collecting code
-  def getInstrumentedRespondFunction(endpoint: ServiceDescriptor[_], exch: String): ServiceDescriptor[_] = {
+  def getInstrumentedRespondFunction(endpoint: IServiceAsync[_], exch: String): IServiceAsync[_] = {
     if (serviceConfiguration.metrics) {
       val hooks = if (serviceConfiguration.metricsSplitByService) {
         generateHooks(exch) // make a new hook object for each service
       } else {
         allHooks // use the same hook object for all of the services
       }
-      new ProtoServicableMetrics(endpoint, hooks, serviceConfiguration.slowQueryThreshold)
+      new ServiceMetrics(endpoint, hooks, serviceConfiguration.slowQueryThreshold)
     } else {
       endpoint
     }
@@ -63,7 +63,7 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
-  def instrumentCallback(exchange: String, endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+  def instrumentCallback(exchange: String, endpoint: IServiceAsync[_]): IServiceAsync[_] = {
 
     val responder = getInstrumentedRespondFunction(endpoint, exchange)
 

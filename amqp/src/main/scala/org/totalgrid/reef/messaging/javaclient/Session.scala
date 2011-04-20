@@ -87,11 +87,11 @@ class Session(client: ProtoClient) extends ISession {
   def postAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPost(payload)(callback)
   def putAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPut(payload)(callback)
 
-  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription = {
+  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
     client.addSubscription(pd.getKlass, ea.onEvent)
   }
 
-  // we create a defaultEnv here and pass it to the underlying ServiceClient so we keep a reference to a request
+  // we create a defaultEnv here and pass it to the underlying ClientSession so we keep a reference to a request
   // env that we control and can update, the underlying client will see any updates
   // TODO: make defaultEnv immutable
   private val defaultEnv = new ServiceHandlerHeaders(new RequestEnv)
@@ -99,7 +99,8 @@ class Session(client: ProtoClient) extends ISession {
 
   override def getDefaultEnv = defaultEnv
 
-  def close() = client.close
+  def close() = client.close()
 
+  def getUnderlyingClient() = client
 }
 

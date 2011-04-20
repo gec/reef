@@ -40,23 +40,13 @@ package org.totalgrid.reef.services.core.util
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.{ FunSuite }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-/**
- * Created by IntelliJ IDEA.
- * User: flint
- * Date: Dec 20, 2010
- * Time: 7:14:10 PM
- * To change this template use File | Settings | File Templates.
- */
 @RunWith(classOf[JUnitRunner])
-class MessageFormatterTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
-
-  override def beforeAll() {
-  }
+class MessageFormatterTest extends FunSuite with ShouldMatchers {
 
   test("Simple messages") {
     val alist = new AttributeList

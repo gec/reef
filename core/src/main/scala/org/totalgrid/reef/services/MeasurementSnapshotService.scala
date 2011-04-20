@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
@@ -31,17 +31,18 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceTypes }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
-class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends ServiceEndpoint[MeasurementSnapshot] {
+class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[MeasurementSnapshot] {
 
   def this(cm: RTDatabase, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementSnapshot]))
 
   override val descriptor = Descriptors.measurementSnapshot
 
-  override def put(req: MeasurementSnapshot, env: RequestEnv) = noVerb("put")
-  override def delete(req: MeasurementSnapshot, env: RequestEnv) = noVerb("delete")
-  override def post(req: MeasurementSnapshot, env: RequestEnv) = noVerb("post")
+  override def put(req: MeasurementSnapshot, env: RequestEnv) = noPut
+  override def delete(req: MeasurementSnapshot, env: RequestEnv) = noDelete
+  override def post(req: MeasurementSnapshot, env: RequestEnv) = noPost
 
   override def get(req: MeasurementSnapshot, env: RequestEnv): Response[MeasurementSnapshot] = {
 
@@ -62,7 +63,7 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
       b.addAllMeasurements(measurements.values())
       b.addAllPointNames(measurements.values().map(_.getName).toList)
     }
-    new Response(Envelope.Status.OK, b.build :: Nil)
+    Response(Envelope.Status.OK, b.build :: Nil)
   }
 
 }

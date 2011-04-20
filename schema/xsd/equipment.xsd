@@ -18,6 +18,25 @@
     </xs:complexType>
   </xs:element>
   
+  <xs:simpleType name="TransformType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="status" />
+      <xs:enumeration value="counter" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:element name="transform">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="valueMap" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="fromUnit" type="xs:string"/>
+      <xs:attribute name="toUnit" type="xs:string"/>
+      <xs:attribute name="priority" type="xs:unsignedShort"/>
+      <xs:attribute name="transformationType" type="TransformType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
   <xs:element name="unexpected">
     <xs:complexType>
       <xs:attribute name="stringValue" type="xs:string" />
@@ -33,6 +52,7 @@
       <xs:attribute name="actionSet" type="xs:string" use="required"/>
       <xs:attribute name="low" type="xs:double"/>
       <xs:attribute name="high" type="xs:double"/>
+      <xs:attribute name="unit" type="xs:string"/>
       <xs:attribute name="deadband" type="xs:double" default="0"/>
     </xs:complexType>
   </xs:element>
@@ -57,7 +77,7 @@
   <!-- Meta data for point types that have values (i.e. not controls) -->
   <xs:complexType name="PointType" abstract="true">
     <xs:sequence>
-      <xs:element ref="valueMap" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="transform" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="range" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="unexpected" minOccurs="0" maxOccurs="unbounded"/>

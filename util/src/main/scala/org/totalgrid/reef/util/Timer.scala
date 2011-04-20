@@ -34,7 +34,7 @@ trait Timer {
   def cancel()
 
   /**
-   *  Execute the pending callback immediately 
+   *  Execute the pending callback immediately
    */
   def now()
 }
@@ -42,7 +42,7 @@ trait Timer {
 /**
  *  Provides an actor based timer implementation that calls
  *  the specified function from an actor thread
- * 
+ *
  */
 @deprecated("Use Reactable.delay instead, these timers don't get cancel automatically")
 object Timer {
@@ -55,8 +55,9 @@ object Timer {
     def now() = a ! Now
   }
 
-  /** Sleeps and then calls a function
-   * 
+  /**
+   * Sleeps and then calls a function
+   *
    *  @param 	delayms 	delay in milliseconds
    *  @param 	fun 		function to call after delay
    *  @return 				Actor implementing the delay
@@ -85,8 +86,9 @@ object Timer {
     new ActorTimer(a)
   }
 
-  /** Overload that fires instantly
-   * 
+  /**
+   * Overload that fires instantly
+   *
    *  @param 	fun 	function to call after delay
    *  @return 	Actor 	implementing the delay
    */

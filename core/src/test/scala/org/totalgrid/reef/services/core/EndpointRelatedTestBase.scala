@@ -20,12 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.measproc.MeasurementStreamProcessingNode
@@ -37,31 +31,23 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceEndpoint }
-
-import org.totalgrid.reef.util.SyncVar
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import _root_.scala.collection.JavaConversions._
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
-
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.util.{ Logging, SyncVar }
-import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.proto.{ ReefServicesList }
-import org.totalgrid.reef.api._
-import ServiceTypes.Event
 
-abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction with Logging {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.service.IServiceAsync
+
+import ServiceTypes.Event
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction }
+
+abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 
   class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
 
@@ -106,13 +92,14 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
   class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
 
+    val connection = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
     val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
-    def attachServices(endpoints: Seq[ServiceEndpoint[_]]): Unit = endpoints.foreach { ep =>
+    def attachServices(endpoints: Seq[IServiceAsync[_]]): Unit = endpoints.foreach { ep =>
       val exch = ReefServicesList.getServiceInfo(ep.descriptor.getKlass).exchange
-      amqp.bindService(exch, ep.respond, true)
+      amqp.bindService(exch, ep.respond, competing = true)
     }
 
     val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus)
@@ -189,30 +176,27 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
       meas
     }
 
-    def addDevice(name: String, pname: String = "test_point"): CommunicationEndpointConfig = {
+    def addDevice(name: String, pname: String = "test_point"): CommEndpointConfig = {
       val owns = EndpointOwnership.newBuilder.addPoints(name + "." + pname).addCommands(name + ".test_commands")
-      val send = CommunicationEndpointConfig.newBuilder()
+      val send = CommEndpointConfig.newBuilder()
         .setName(name).setProtocol("benchmark").setOwnerships(owns).build
       one(commEndpointService.put(send))
     }
 
-    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None): CommunicationEndpointConfig = {
-      val netPort = network.map { net => Port.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
-      val locPort = location.map { loc => Port.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
+    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None): CommEndpointConfig = {
+      val netPort = network.map { net => CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
+      val locPort = location.map { loc => CommChannel.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
       val port = one(portService.put(netPort.getOrElse(locPort.get)))
       val owns = EndpointOwnership.newBuilder.addPoints(name + ".test_point").addCommands(name + ".test_commands")
-      val send = CommunicationEndpointConfig.newBuilder()
-        .setName(name).setProtocol("dnp3").setPort(port).setOwnerships(owns).build
+      val send = CommEndpointConfig.newBuilder()
+        .setName(name).setProtocol("dnp3").setChannel(port).setOwnerships(owns).build
       one(commEndpointService.put(send))
     }
 
-    def getPoint(device: String): Point = {
+    def getPoint(device: String): Point =
       one(pointService.get(Point.newBuilder.setName(device + ".test_point").build))
-    }
 
-    def getValue(pname: String): Long = {
-      rtDb.get(pname).map(_.getIntVal).getOrElse(0)
-    }
+    def getValue(pname: String): Long = rtDb.get(pname).map(_.getIntVal).getOrElse(0)
 
     def updatePoint(pname: String, value: Int = 10) {
       // simulate a measproc shoving a measurement into the rtDatabase
@@ -220,26 +204,21 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
       rtDb.set(makeInt(pname, value) :: Nil)
     }
 
-    def pointsInDatabase(): Int = {
-      rtDb.numPoints
-    }
+    def pointsInDatabase(): Int = rtDb.numPoints
 
-    def pointsWithBadQuality(): Int = {
+    def pointsWithBadQuality(): Int =
       rtDb.allCurrent.filter { m => m.getQuality.getValidity != Quality.Validity.GOOD }.size
-    }
 
     def checkPoints(numTotal: Int, numBad: Int = -1) {
       pointsInDatabase should equal(numTotal)
       if (numBad != -1) pointsWithBadQuality should equal(numBad)
     }
 
-    def listenForMeasurements(measProcName: String) = {
-      measProcMap.get(measProcName).get.mb
-    }
+    def listenForMeasurements(measProcName: String) = measProcMap.get(measProcName).get.mb
 
-    def checkFeps(feps: List[CommunicationEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean) {
+    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean) {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
-      feps.forall { f => f.getOnline == online } should equal(true)
+      //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
       feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUid == f.getFrontEnd.getUid) } should equal(true)
       //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
@@ -252,7 +231,7 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     }
 
     def checkAssignments(num: Int, fepFrontEndUid: Option[FrontEndProcessor], measProcUid: Option[ApplicationConfig]) {
-      val feps = many(num, frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setUid("*").build))
+      val feps = many(num, frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
       val procs = many(num, measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build))
 
       checkFeps(feps, false, fepFrontEndUid, measProcUid.isDefined)
@@ -260,8 +239,8 @@ abstract class EndpointRelatedTestBase extends FunSuite with ShouldMatchers with
     }
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {
-      val (updates, env) = getEventQueueWithCode[CommunicationEndpointConnection](amqp, CommunicationEndpointConnection.parseFrom)
-      many(expected, frontEndConnection.get(CommunicationEndpointConnection.newBuilder.setFrontEnd(fep).build, env))
+      val (updates, env) = getEventQueueWithCode[CommEndpointConnection](amqp, CommEndpointConnection.parseFrom)
+      many(expected, frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env))
       updates.size should equal(0)
       updates
     }

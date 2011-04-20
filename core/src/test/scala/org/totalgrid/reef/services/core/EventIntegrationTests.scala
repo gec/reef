@@ -20,36 +20,23 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
-import org.totalgrid.reef.models.{ Entity }
-
 import org.squeryl.PrimitiveTypeMode.transaction
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
-@RunWith(classOf[JUnitRunner])
-class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
+import scala.collection.JavaConversions._
 
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    import org.totalgrid.reef.models.ApplicationSchema
-    transaction { ApplicationSchema.reset }
-  }
-
+class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: AMQPProtoFactory) {
@@ -61,6 +48,9 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
     val alarms = new AlarmService(factories.alarms)
     val events = new EventService(factories.events)
     val eventConfigs = new EventConfigService(factories.eventConfig)
+
+    val eventQuery = new EventQueryService(factories.events, publishers)
+    val alarmQuery = new AlarmQueryService(publishers)
 
     transaction { seed() }
 
@@ -102,6 +92,21 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
       (result, updates)
     }
 
+    def subscribeEvents(expected: Int, req: EventListProto) = {
+      val (updates, env) = getEventQueue[EventProto](amqp, EventProto.parseFrom)
+      val result = one(eventQuery.get(req, env))
+      updates.size should equal(0)
+      result.getEventsCount should equal(expected)
+      (result.getEventsList.toList, updates)
+    }
+
+    def subscribeAlarms(expected: Int, req: AlarmListProto) = {
+      val (updates, env) = getEventQueue[AlarmProto](amqp, AlarmProto.parseFrom)
+      val result = one(alarmQuery.get(req, env))
+      result.getAlarmsCount should equal(expected)
+      (result.getAlarmsList.toList, updates)
+    }
+
     def checkSummaries(expectedValues: Map[String, Int]) = {
       // check that the "live" counted summaries match our expectations
       summaries.getMap should equal(expectedValues)
@@ -129,6 +134,50 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
       }
     }
   }
+
+  def makeEvent(event: String, entityName: String, subsystem: String = "FEP") =
+    EventProto.newBuilder
+      .setTime(0)
+      .setDeviceTime(0)
+      .setEventType(event)
+      .setSubsystem(subsystem)
+      .setUserId("flint")
+      .setEntity(EntityProto.newBuilder.setName(entityName).build)
+      .build
+
+  def makeEC(event: String, severity: Int, designation: EventConfigProto.Designation) =
+    EventConfigProto.newBuilder
+      .setEventType(event)
+      .setSeverity(severity)
+      .setDesignation(designation)
+      .build
+
+  def makeEventByEntityName(name: String) = {
+    val ent = EntityProto.newBuilder.setName(name)
+    ent.addRelations(
+      RelationshipProto.newBuilder
+        .setRelationship("owns")
+        .setDescendantOf(true))
+    EventProto.newBuilder.setEntity(ent).build
+  }
+
+  def makeEventByType(name: String) = {
+    val ent = EntityProto.newBuilder.addTypes(name)
+    ent.addRelations(
+      RelationshipProto.newBuilder
+        .setRelationship("owns")
+        .setDescendantOf(true))
+    EventProto.newBuilder.setEntity(ent).build
+  }
+  def makeAllEvent() = {
+    EventProto.newBuilder.setEventType("*").build
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class EventIntegrationTests extends EventIntegrationTestsBase {
+
+  import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   test("Event Subscribe at multiple levels") {
     AMQPFixture.mock(true) { amqp =>
@@ -325,45 +374,4 @@ class EventIntegrationTests extends FunSuite with ShouldMatchers with BeforeAndA
     }
   }
 
-  ////////////////////////////////////////////////////////
-  // Utilities
-  // TODO: merge all of the event helper code into one place
-
-  def makeEvent(event: String, entityName: String, subsystem: String = "FEP") =
-    EventProto.newBuilder
-      .setTime(0)
-      .setDeviceTime(0)
-      .setEventType(event)
-      .setSubsystem(subsystem)
-      .setUserId("flint")
-      .setEntity(EntityProto.newBuilder.setName(entityName).build)
-      .build
-
-  def makeEC(event: String, severity: Int, designation: EventConfigProto.Designation) =
-    EventConfigProto.newBuilder
-      .setEventType(event)
-      .setSeverity(severity)
-      .setDesignation(designation)
-      .build
-
-  def makeEventByEntityName(name: String) = {
-    val ent = EntityProto.newBuilder.setName(name)
-    ent.addRelations(
-      RelationshipProto.newBuilder
-      .setRelationship("owns")
-      .setDescendantOf(true))
-    EventProto.newBuilder.setEntity(ent).build
-  }
-
-  def makeEventByType(name: String) = {
-    val ent = EntityProto.newBuilder.addTypes(name)
-    ent.addRelations(
-      RelationshipProto.newBuilder
-      .setRelationship("owns")
-      .setDescendantOf(true))
-    EventProto.newBuilder.setEntity(ent).build
-  }
-  def makeAllEvent() = {
-    EventProto.newBuilder.setEventType("*").build
-  }
 }

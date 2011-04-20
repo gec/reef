@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.reactor
 
-/** Convenience class for common use case of repeated to keep running forever
+/**
+ * Convenience class for common use case of repeated to keep running forever
  */
 abstract class PeriodicReactor(intervalMS: Long, func: () => Unit) extends Reactable with Lifecycle {
 

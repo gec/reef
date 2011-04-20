@@ -32,7 +32,8 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 
-/**  Contains entry point specific code for the measurement processor
+/**
+ *  Contains entry point specific code for the measurement processor
  */
 object ProcessorEntryPoint extends ShutdownHook {
 

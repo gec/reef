@@ -72,25 +72,25 @@ trait ControlType[A] { self: communications.ControlType =>
 
 class ControlProfile(_name: String) extends communications.ControlProfile with ControlType[ControlProfile] {
   setName(_name)
-  def this(_name: String, _index: Int) = {
+  def this(_name: String, _index: Option[Int]) = {
     this(_name)
-    setIndex(_index)
+    _index.foreach(setIndex)
   }
 }
 
-class Control(_name: String, _index: Int) extends communications.Control with ControlType[Control] {
+class Control(_name: String, _index: Option[Int]) extends communications.Control with ControlType[Control] {
   setName(_name)
-  setIndex(_index)
-  def this(_name: String, _index: Int, _profile: ControlProfile) = {
+  _index.foreach(setIndex)
+  def this(_name: String, _index: Option[Int], _profile: ControlProfile) = {
     this(_name, _index)
     add(_profile)
   }
 }
 
 trait PointType[A] { self: communications.PointType =>
-  def init(_name: String, _index: Int, _unit: Option[String], _pointProfile: Option[PointProfile]) = {
+  def init(_name: String, _index: Option[Int], _unit: Option[String], _pointProfile: Option[PointProfile]) = {
     setName(_name)
-    setIndex(_index)
+    _index.foreach(setIndex)
     _unit.foreach(setUnit)
     _pointProfile.foreach(p => setPointProfile(p.getName))
   }
@@ -102,25 +102,28 @@ class PointProfile(_name: String, _unit: Option[String] = None, _index: Option[I
   _unit.foreach(setUnit)
   _index.foreach(setIndex)
   def this(_name: String, _unit: String) = this(_name, Some(_unit))
-  def this(_name: String, _index: Int) = this(_name, None, Some(_index))
+  def this(_name: String, _index: Option[Int]) = this(_name, None, _index)
 }
-class Status(_name: String, _index: Int, _unit: Option[String], _pointProfile: Option[PointProfile] = None) extends communications.Status with PointType[Status] {
+class Status(_name: String, _index: Option[Int], _unit: Option[String], _pointProfile: Option[PointProfile] = None) extends communications.Status with PointType[Status] {
   init(_name, _index, _unit, _pointProfile)
-  def this(_name: String, _index: Int, _pointProfile: PointProfile) = this(_name, _index, None, Some(_pointProfile))
-  def this(_name: String, _index: Int, _unit: String) = this(_name, _index, Some(_unit))
-  def this(_name: String, _index: Int) = this(_name, _index, None)
+  def this(_name: String, _index: Option[Int], _pointProfile: PointProfile) = this(_name, _index, None, Some(_pointProfile))
+  def this(_name: String, _index: Option[Int], _unit: String) = this(_name, _index, Some(_unit))
+  def this(_name: String, _index: Option[Int]) = this(_name, _index, None)
+  def this(_name: String) = this(_name, None, None)
 }
-class Analog(_name: String, _index: Int, _unit: Option[String], _pointProfile: Option[PointProfile] = None) extends communications.Analog with PointType[Analog] {
+class Analog(_name: String, _index: Option[Int], _unit: Option[String], _pointProfile: Option[PointProfile] = None) extends communications.Analog with PointType[Analog] {
   init(_name, _index, _unit, _pointProfile)
-  def this(_name: String, _index: Int, _pointProfile: PointProfile) = this(_name, _index, None, Some(_pointProfile))
-  def this(_name: String, _index: Int, _unit: String) = this(_name, _index, Some(_unit))
-  def this(_name: String, _index: Int) = this(_name, _index, None)
+  def this(_name: String, _index: Option[Int], _pointProfile: PointProfile) = this(_name, _index, None, Some(_pointProfile))
+  def this(_name: String, _index: Option[Int], _unit: String) = this(_name, _index, Some(_unit))
+  def this(_name: String, _index: Option[Int]) = this(_name, _index, None)
+  def this(_name: String) = this(_name, None, None)
 }
-class Counter(_name: String, _index: Int, _unit: Option[String], _pointProfile: Option[PointProfile] = None) extends communications.Counter with PointType[Counter] {
+class Counter(_name: String, _index: Option[Int], _unit: Option[String], _pointProfile: Option[PointProfile] = None) extends communications.Counter with PointType[Counter] {
   init(_name, _index, _unit, _pointProfile)
-  def this(_name: String, _index: Int, _pointProfile: PointProfile) = this(_name, _index, None, Some(_pointProfile))
-  def this(_name: String, _index: Int, _unit: String) = this(_name, _index, Some(_unit))
-  def this(_name: String, _index: Int) = this(_name, _index, None)
+  def this(_name: String, _index: Option[Int], _pointProfile: PointProfile) = this(_name, _index, None, Some(_pointProfile))
+  def this(_name: String, _index: Option[Int], _unit: String) = this(_name, _index, Some(_unit))
+  def this(_name: String, _index: Option[Int]) = this(_name, _index, None)
+  def this(_name: String) = this(_name, None, None)
 }
 
 class Profiles extends communications.Profiles {

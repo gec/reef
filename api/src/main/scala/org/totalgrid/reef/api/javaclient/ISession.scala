@@ -23,7 +23,7 @@ package org.totalgrid.reef.api.javaclient
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.{ Envelope, ServiceHandlerHeaders, ReefServiceException, ServiceIOException, ISubscription, IHeaderInfo, ITypeDescriptor }
-import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**
  *  The interface that a concrete service client must provide.
@@ -102,9 +102,11 @@ trait ISession {
 
   /* --- Misc --- */
   @throws(classOf[ServiceIOException])
-  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription
+  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription[A]
 
   def getDefaultEnv(): ServiceHandlerHeaders
 
   def close()
+
+  def getUnderlyingClient(): ClientSession
 }

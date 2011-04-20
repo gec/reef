@@ -26,27 +26,33 @@ import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Ev
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.proto.Utils.AttributeList
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.squeryl.dsl.QueryYield
+import org.squeryl.dsl.ast.OrderByArg
+import org.squeryl.dsl.fsm.{ SelectState }
+
+//import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.core.util.MessageFormatter
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import BaseProtoService._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
+import ServiceBehaviors._
 
 class EventService(protected val modelTrans: ServiceTransactable[EventServiceModel])
-    extends BaseProtoService[Event, EventStore, EventServiceModel]
+    extends ModeledServiceBase[Event, EventStore, EventServiceModel] with AsyncToSyncServiceAdapter[Event]
     with GetEnabled
     with SubscribeEnabled
-    with PostLikeEnabled
+    with PutOnlyCreates
+    with PostDisabled
     with DeleteEnabled {
 
   override val descriptor = Descriptors.event
@@ -136,6 +142,8 @@ trait EventConversion
     with UniqueAndSearchQueryable[Event, EventStore] {
 
   val table = ApplicationSchema.events
+
+  override def getOrdering[R](select: SelectState[R], sql: EventStore): QueryYield[R] = select.orderBy(new OrderByArg(sql.time).asc)
 
   // Derive a AMQP routing key from a proto. Used by post?
   def getRoutingKey(req: Event) = ProtoRoutingKeys.generateRoutingKey {

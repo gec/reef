@@ -39,7 +39,7 @@ object Reactor {
 }
 
 /**
- *  Generic actor that can be used to execute 
+ *  Generic actor that can be used to execute
  *  arbitrary blocks of code. Useful for synchronizing
  *  lots of other threads.
  *
@@ -48,14 +48,9 @@ trait Reactor extends Reactable with Lifecycle {
 
   case object CANCEL
   case object NOW
+  case object OPERATION_COMPLETE
 
   import Reactor._
-
-  /// The time being used for delay or repeat. Time is in ms.
-  protected var repeatDelay = 0l
-
-  /// Get the time being used for delay or repeat. Time is in ms.
-  override def getRepeatDelay = repeatDelay
 
   /// start execution and run fun just afterwards
   override def dispatchStart() = {
@@ -90,7 +85,6 @@ trait Reactor extends Reactable with Lifecycle {
 
   /// sends a unit of work to do after a specficied time has elapsed.    
   def delay(msec: Long)(fun: => Unit): Timer = {
-    repeatDelay = msec
     new ActorDelayHandler(
       actor {
         link(myactor)
@@ -109,20 +103,31 @@ trait Reactor extends Reactable with Lifecycle {
 
   /// send a unit of work to do immediatley and then repeat function until the actor is killed
   def repeat(msec: Long)(fun: => Unit): Timer = {
-    repeatDelay = msec
     new ActorDelayHandler(
       actor {
+        val timerActor = self // trying to get self in other contexts is problematic, just get reference here
+        var waitingForDoneMessage = false
         link(myactor)
         this.execute(fun)
         loop {
-          reactWithin(msec) {
-            case CANCEL =>
-              unlink(myactor)
-              exit()
-            case NOW =>
-              this.execute(fun)
-            case TIMEOUT =>
-              this.execute(fun)
+          if (waitingForDoneMessage)
+            react {
+              case CANCEL =>
+                unlink(myactor)
+                exit()
+              case OPERATION_COMPLETE =>
+                waitingForDoneMessage = false
+            }
+          else {
+            reactWithin(msec) {
+              case CANCEL =>
+                unlink(myactor)
+                exit()
+              case NOW | TIMEOUT =>
+                waitingForDoneMessage = true
+                this.execute(fun)
+                this.execute({ timerActor ! OPERATION_COMPLETE })
+            }
           }
         }
       })

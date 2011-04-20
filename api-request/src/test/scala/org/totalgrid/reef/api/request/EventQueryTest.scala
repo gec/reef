@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
+import builders.EventListRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -29,7 +30,7 @@ import java.util.{ Date, Calendar }
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryTest
-    extends ServiceClientSuite("EventQuery.xml", "Event Query",
+    extends ClientSessionSuite("EventQuery.xml", "Event Query",
       <div>
         <p>
           Use
@@ -57,72 +58,32 @@ class EventQueryTest
   test("Get all events (limit 2)") {
     val desc = "Get all events by specifying a wildcard EventSelect (except a limit of 2 records returned)."
 
-    val request =
-      EventList.newBuilder
-        .setSelect(
-          EventSelect.newBuilder
-          .setLimit(2).addEventType("*"))
-        .build
-
-    val response = client.getOneOrThrow(request)
-
-    doc.addCase[EventList]("Get all events", "Get", desc, request, response)
-
+    client.addExplanation("Get all events", desc)
+    client.getRecentEvents(2)
   }
 
   test("Get all login/logout events") {
     val desc = "Get all login/logout events (limit 2)."
 
-    val request: EventList =
-      EventList.newBuilder
-        .setSelect(
-          EventSelect.newBuilder
-          .addEventType("System.UserLogin")
-          .addEventType("System.UserLogout")
-          .setLimit(2))
-        .build
-
-    val response = client.getOneOrThrow(request)
-
-    doc.addCase("Get all login/logout events", "Get", desc, request, response)
-
+    client.addExplanation("Get all login/logout events", desc)
+    client.getRecentEvents(List("System.UserLogin", "System.UserLogout"), 2)
   }
 
   test("Get events with multiple selects") {
 
-    val desc = "Get events with subsystem 'Core' from yesterday until 2hrs ago (limit 2)"
+    val desc = "Get events with subsystem 'Core' from yesterday until 2hrs from now (limit 2)"
 
-    val NOW = now()
     val yesterday = nowPlus(Calendar.DATE, -1)
-    val HOURS_AGO_2 = nowPlus(Calendar.HOUR, -2)
+    val twoHoursFromNow = nowPlus(Calendar.HOUR, 2)
 
-    val request: EventList =
-      EventList.newBuilder
-        .setSelect(
-          EventSelect.newBuilder
-          .setTimeFrom(yesterday)
-          .setTimeTo(HOURS_AGO_2)
-          .addSubsystem("Core")
-          .setLimit(2))
-        .build
-
-    val response = client.getOneOrThrow(request)
-
-    doc.addCase("Get events with multiple selects", "Get", desc, request, response)
-
-  }
-
-  // Get a time offset based on the well known NOW_MS
-  def now(): Long = {
-    val cal = Calendar.getInstance()
-    cal.set(Calendar.MILLISECOND, 0) // truncate milliseconds to 0.
-    cal.getTimeInMillis
+    client.addExplanation("Get events with multiple selects", desc)
+    client.getEvents(EventListRequestBuilders.getByTimeRangeAndSubsystemSelector(yesterday, twoHoursFromNow, "Core", 2).build)
   }
 
   // Get a time offset based on the well known NOW_MS
   def nowPlus(field: Int, amount: Int): Long = {
     val cal = Calendar.getInstance
-    cal.setTimeInMillis(now)
+    cal.set(Calendar.MILLISECOND, 0) // truncate milliseconds to 0.
     cal.add(field, amount)
     cal.getTimeInMillis
   }

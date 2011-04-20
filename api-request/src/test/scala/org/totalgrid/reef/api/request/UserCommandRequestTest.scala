@@ -20,15 +20,17 @@
  */
 package org.totalgrid.reef.api.request
 
+import builders.{ UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.proto.Commands
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest
-    extends ServiceClientSuite("UserCommandRequest.xml", "UserCommandRequest",
+    extends ClientSessionSuite("UserCommandRequest.xml", "UserCommandRequest",
       <div>
         <p>
           Clients use UserCommandRequest to issue a command. The CommandRequest object describes the command
@@ -39,21 +41,16 @@ class UserCommandRequestTest
     with ShouldMatchers {
 
   test("Issue command") {
-    val desc = "Issue a command request for the specified point."
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
-    val acc = CommandAccessRequestBuilders.allowAccessForCommand(cmdName)
+    val acc = CommandAccessRequestBuilders.allowAccessForCommandName(cmdName)
     val accResp = client.putOneOrThrow(acc)
 
-    val req = UserCommandRequestBuilders.executeCommand(cmdName)
-    val resp = client.putOneOrThrow(req)
+    client.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
+    val executingCommand = client.putOneOrThrow(UserCommandRequestBuilders.executeControl(cmdName))
 
-    doc.addCase("Issue command", "Put", desc, req, resp)
-
-    val getReq = UserCommandRequestBuilders.getForUid(resp.getUid)
-    val getResp = client.getOneOrThrow(getReq)
-
-    doc.addCase("Current status of request", "Get", "Get the status of a already-issued command request.", getReq, getResp)
+    client.addExplanation("Current status of request", "Get the status of a already-issued command request.")
+    client.getOneOrThrow(UserCommandRequestBuilders.getStatus(executingCommand))
 
     client.deleteOneOrThrow(accResp)
   }

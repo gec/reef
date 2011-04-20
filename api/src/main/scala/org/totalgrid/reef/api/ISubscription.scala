@@ -21,8 +21,22 @@
 package org.totalgrid.reef.api
 
 /**
- *  A subscription object provides header info and can also be canceled
+ * A subscription object provides header info and can also be canceled. It carries the message type
+ * primarily to make message signatures more expressive.
+ * TODO: add ISubscriptions to scala apis
  */
-trait ISubscription extends IHeaderInfo {
+trait ISubscription[SubscriptionMessageType] extends IHeaderInfo {
   def cancel()
+}
+
+object ISubscription {
+  /**
+   * convert a ISubscription to the RequestEnv used in scala SyncOps
+   * TODO: rationalize RequestEnv and ISubscription interfaces
+   */
+  implicit def convertISubToRequestEnv(sub: ISubscription[_]): RequestEnv = {
+    val serviceHeaders = new ServiceHandlerHeaders()
+    sub.setHeaders(serviceHeaders)
+    serviceHeaders.env
+  }
 }

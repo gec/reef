@@ -25,6 +25,7 @@ import org.totalgrid.reef.reactor.Reactable
 
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
 object AMQPMessageConsumers extends Logging {
 
@@ -58,37 +59,42 @@ object AMQPMessageConsumers extends Logging {
       }
     }
   }
-  /** Provides a receive function that binds a service to a publisher
-   * 
-   *  @param  publish publishes response to return exchange/request
-   *  @param  service Service handler used to get responses
+
+  /**
+   * Provides a receive function that binds a service to a publisher
+   *
+   * @param publish publishes response to return exchange/request
+   * @param service Service handler used to get responses
    */
-  def makeServiceBinding(publish: (Envelope.ServiceResponse, String, String) => Unit, service: ServiceRequestHandler.Respond): MessageConsumer = {
-    import ProtoSerializer.convertProtoToBytes
+  def makeServiceBinding(publish: (Envelope.ServiceResponse, String, String) => Unit, service: IServiceAsync.ServiceFunction): MessageConsumer = {
+
     new MessageConsumer {
+      def receive(data: Array[Byte], replyTo: Option[Destination]): Unit = safeExecute {
 
-      def receive(data: Array[Byte], replyTo: Option[Destination]): Unit = {
+        replyTo match {
+          case None => error("Service request without replyTo field")
+          case Some(dest) =>
 
-        safeExecute {
-          replyTo match {
-            case None => error("Service request without replyTo field")
-            case Some(dest) =>
-              val rspExchange = dest.exchange
-              val rspKey = dest.key
-              val request = Envelope.ServiceRequest.parseFrom(data)
+            val request = Envelope.ServiceRequest.parseFrom(data)
+            val rspExchange = dest.exchange
+            val rspKey = dest.key
 
-              import _root_.scala.collection.JavaConversions._
-              import ServiceHandlerHeaders._
+            import _root_.scala.collection.JavaConversions._
+            import ServiceHandlerHeaders._
 
-              val env = new RequestEnv
-              // convert the headers back into the RequestEnv object
-              request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
-              publish(service(request, env), rspExchange, rspKey)
-          }
+            val env = new RequestEnv
+            // convert the headers back into the RequestEnv object
+            request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
+
+            val callback = new IServiceResponseCallback {
+              def onResponse(rsp: Envelope.ServiceResponse) = publish(rsp, rspExchange, rspKey)
+            }
+
+            service(request, env, callback) //invoke the service, it will publish the result when done
         }
-
       }
     }
+
   }
 
   /**

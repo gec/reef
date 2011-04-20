@@ -30,14 +30,15 @@ class ProtoSyncRequestReply(channel: BrokerChannel)
     ProtoSerializer.convertProtoToBytes,
     Envelope.ServiceResponse.parseFrom) with ProtoServiceChannel
 
-/** combines a response queue and a publisher into one class that provides implements the
+/**
+ * combines a response queue and a publisher into one class that provides implements the
  *  RequestReplyChannel interface primarily used by service clients
  */
 class SyncRequestReply[S, R](
   channel: BrokerChannel,
   serialize: S => Array[Byte],
   deseralize: Array[Byte] => R)
-    extends MsgPublisher(channel) with RequestReplyChannel[S, R] with MessageConsumer {
+    extends MsgPublisher(channel) with RequestReplyChannel[S, R] with MessageConsumer with BrokerChannelCloseListener {
 
   /**
    * Close the underlying channel. No further requests or responses are possible.
@@ -46,22 +47,26 @@ class SyncRequestReply[S, R](
 
   /// where to send the received data, optional to break circular construction dependency, will blow
   /// up if used without setting the destination
-  private var dest: Option[R => Unit] = None
+  private var handler: Option[ResponseHandler[R]] = None
+  def setResponseHandler(h: ResponseHandler[R]) = handler = Some(h)
 
   /// Here's the subscription that gets setup synchronously
   private val queue = QueuePatterns.getPrivateResponseQueue(channel, "amq.direct", this)
 
+  channel.addCloseListener(this)
+  channel.start
+
   /// Set's the publisher's reply to field
   this.setReplyTo(Destination("amq.direct", queue))
 
+  def onClosed(channel: BrokerChannel, expected: Boolean) = handler.foreach(_.onClosed())
+
   def send(value: S, exchange: String, key: String): Unit = send(serialize(value), exchange, key) //call publishers send
 
-  def setResponseDest(x: R => Unit) = dest = Some(x)
-
-  def receive(bytes: Array[Byte], replyTo: Option[Destination]) = dest match {
-    case Some(f) =>
+  def receive(bytes: Array[Byte], replyTo: Option[Destination]) = handler match {
+    case Some(handle) =>
       try {
-        f(deseralize(bytes)) //forward the deserialized response somewhere else
+        handle.onResponse(deseralize(bytes)) //forward the deserialized response somewhere else
       } catch { case ex: Exception => error(ex) }
     case None => error("Response callback has not been set")
   }

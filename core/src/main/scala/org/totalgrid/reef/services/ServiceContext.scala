@@ -20,7 +20,9 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ServiceDescriptor }
+import org.totalgrid.reef.api.service.IServiceAsync
+
+import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
 import org.totalgrid.reef.util.{ Logging }
@@ -55,7 +57,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     coord.addAMQPConsumers(components.amqp, reactor)
   }
 
-  def attachService(endpoint: ServiceDescriptor[_]): ServiceDescriptor[_] = {
+  def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
     val exchange = ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass).exchange
     val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint)
 
@@ -65,7 +67,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     this.add(serviceReactor)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    components.amqp.bindService(exchange, instrumentedEndpoint.respond, true, Some(serviceReactor))
+    components.amqp.bindService(exchange, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
     instrumentedEndpoint
   }
 

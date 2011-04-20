@@ -29,7 +29,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.BadRequestException
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
@@ -110,14 +111,17 @@ trait EntityTreeQueries { self: EntityQueries =>
 
     // For the moment not allowing a root set of everything
     if (proto.uid == None && proto.name == None && proto.getTypesCount == 0)
-      throw new Exception("Must specify root set")
+      throw new BadRequestException("Must specify root set")
+
+    // verify that every entity type in the request is in system
+    checkAllTypesInSystem(proto)
 
     def expr(ent: Entity, typ: EntityToTypeJoins) = {
       proto.uid.map(ent.id === _.toLong) ::
         proto.name.map(ent.name === _) ::
         ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
           and (typ.entityId === ent.id))) ::
-        Nil
+          Nil
     }
 
     // If query specifies type, do a join, otherwise simpler query on uid/name
@@ -135,6 +139,29 @@ trait EntityTreeQueries { self: EntityQueries =>
     // Execute query (unless root set is nil)
     if (rootQuery.size == 0) Nil
     else resultsForQuery(protoToQuery(proto), rootQuery)
+  }
+
+  /**
+   * go through the request recursivley and check that every type is a valid
+   * and expected type
+   */
+  private def checkAllTypesInSystem(proto: EntityProto) {
+    // recusivley collect all types asked for in the request
+    def getTypes(e: EntityProto): List[String] = {
+      e.getTypesList.toList :::
+        e.getRelationsList.toList.map { rel => rel.getEntitiesList.toList.map { getTypes(_) }.flatten }.flatten
+    }
+
+    val requestTypes = getTypes(proto).distinct.sorted
+    if (!requestTypes.isEmpty) {
+      // TODO: check entityTypes from meta model, not whats in current system
+      val inSystemTypes = from(entityTypes)(et =>
+        where(et.entType in requestTypes)
+          select (et.entType)).distinct.toList.sorted
+
+      val missing = requestTypes.diff(inSystemTypes)
+      if (!missing.isEmpty) throw new BadRequestException("Requested unknown entity types: " + missing)
+    }
   }
 
   /**
@@ -161,7 +188,7 @@ trait EntityTreeQueries { self: EntityQueries =>
   case class Relate(rel: String, descendantOf: Boolean, dist: Int)
 
   /**
-   * Tree node of entity query results, wraps an Entity (this node) with its 
+   * Tree node of entity query results, wraps an Entity (this node) with its
    * relationships to subnodes.
    */
   case class ResultNode(val ent: Entity, val subNodes: Map[Relate, List[ResultNode]]) {

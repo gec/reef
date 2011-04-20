@@ -20,12 +20,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel }
+import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity, EntityToTypeJoins }
 import org.totalgrid.reef.api.ServiceTypes.Response
 
-import org.totalgrid.reef.messaging.ServiceEndpoint; import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -33,6 +32,9 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -50,43 +52,89 @@ object AlarmQueryService {
     List(
       select.getStateList.asParam(row.state in _.map(_.getNumber))) ::: select.eventSelect.map(EventQueryService.buildQuery(eventRow, _)).getOrElse(Nil)
   }
+
+  def makeSubscriptionKeyParts(select: AlarmSelect): List[List[String]] = {
+
+    val eventParts = EventQueryService.makeSubscriptionKeyParts(select.getEventSelect)
+    val alarmParts = List(Nil: List[String]) ::: eventParts
+
+    alarmParts
+  }
+
+  def tupleGroup[A, B](tuples: List[(A, B)]): Map[A, List[B]] = {
+    val map = scala.collection.mutable.Map[A, List[B]]()
+    for (tup <- tuples) {
+      val (k, v) = tup
+      if (map contains k) {
+        map(k) = v :: map(k)
+      } else {
+        map(k) = v :: Nil
+      }
+    }
+    map.toMap
+  }
 }
 
-class AlarmQueryService
-    extends ServiceEndpoint[AlarmList] {
+class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[AlarmList] {
+
+  def this(pubs: ServiceEventPublishers) = this(pubs.getEventSink(classOf[Alarm]))
 
   override val descriptor = Descriptors.alarmList
 
-  override def put(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("put")
-  override def delete(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("delete")
-  override def post(req: AlarmList, env: RequestEnv): Response[AlarmList] = noVerb("post")
+  override def put(req: AlarmList, env: RequestEnv): Response[AlarmList] = noPut
+  override def delete(req: AlarmList, env: RequestEnv): Response[AlarmList] = noDelete
+  override def post(req: AlarmList, env: RequestEnv): Response[AlarmList] = noPost
 
   override def get(req: AlarmList, env: RequestEnv): Response[AlarmList] = {
     import ApplicationSchema._
     import AlarmQueryService._
 
-    env.subQueue.foreach(queueName => throw new BadRequestException("Subscribe not allowed: " + queueName))
+    if (!req.hasSelect) throw new BadRequestException("Must include select")
 
-    if (!req.hasSelect)
-      throw new BadRequestException("Must include select")
+    val select = req.getSelect
 
     transaction {
-
-      val select = req.getSelect
+      env.subQueue.foreach { queueName =>
+        val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
+        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts)))
+      }
 
       // default all queries to max of 1000 events.
       val limit = select.eventSelect.limit getOrElse 1000
 
-      val results = from(alarms, events)((alarm, event) =>
-        where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
-          alarm.eventUid === event.id)
-          select ((alarm, event))
-          orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList // page(page_offset, page_length)
+      val results =
+        from(alarms, events)((alarm, event) =>
+          where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
+            alarm.eventUid === event.id)
+            select ((alarm, event))
+            orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList
 
-      val alarmProtos = results.map(x => AlarmConversion.convertToProto(x._1, x._2)) // AlalarmModel, EventStore
+      val entIds = results.map { case (_, event) => event.entityId }.flatten.distinct
+
+      val entToTypes: List[(Entity, Option[String])] =
+        join(entities, entityTypes.leftOuter)((e, t) =>
+          where(e.id in entIds)
+            select (e, t.map(_.entType))
+            on (e.id === t.map(_.entityId))).toList
+
+      val typMap = AlarmQueryService.tupleGroup(entToTypes)
+
+      typMap.foreach { case (ent, typList) => ent.types.value = typList.flatten }
+
+      val entMap = typMap.keys.map(e => (e.id, e)).toMap
+
+      val alarmProtos =
+        results.map {
+          case (alarm, event) =>
+            event.entityId.foreach { entId =>
+              event.entity.value = entMap.get(entId)
+            }
+            AlarmConversion.convertToProto(alarm, event)
+        }
+
       val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
 
-      new Response(Envelope.Status.OK, alarmList)
+      Response(Envelope.Status.OK, alarmList :: Nil)
     }
   }
 
@@ -98,4 +146,3 @@ class AlarmQueryService
   }
 
 }
-

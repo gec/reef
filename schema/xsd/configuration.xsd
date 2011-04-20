@@ -192,7 +192,7 @@
         <xs:element ref="transition" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
-      <xs:attribute name="priority" type="xs:unsignedShort" use="required"/>
+      <xs:attribute name="priority" type="xs:unsignedShort"/>
     </xs:complexType>
   </xs:element>
 

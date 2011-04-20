@@ -26,20 +26,20 @@ import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, ISubscription }
 import ServiceTypes.Event
 
 /**
- * factory trait that defines what we need to construct ServiceClients and subscriptions
+ * factory trait that defines what we need to construct ClientSessions and subscriptions
  */
-trait ServiceClientFactory {
+trait ClientSessionFactory {
 
   /**
    * the factory must create and start a ServiceResponseCorrelator that will be shared by all clients
    */
   def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
 
-  def getProtoServiceClient(lookup: ServiceList, timeoutms: Long, key: String = "request") = new ProtoClient(this, lookup, timeoutms, key)
+  def getProtoClientSession(lookup: ServiceList, timeoutms: Long) = new ProtoClient(this, lookup, timeoutms)
 
   /**
    * the factory must create subscription objects of the appropriate type even if its a "stream type"
    */
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A]
 
 }

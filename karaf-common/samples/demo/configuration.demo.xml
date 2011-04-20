@@ -255,19 +255,59 @@
             <cm:interface name="Nim_IP"/>
 
             <cm:equipment name="Apex">
-
-                <cm:equipment name="CB11003">
-                    <cm:status name="Aph_Trip" index="1"/>
-                    <cm:status name="Bph_Trip" index="2"/>
-                    <cm:status name="Cph_Trip" index="3"/>
+                <cm:equipment name="CB11001">
+                    <cm:control name="Trip" index="28">
+                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
+                    </cm:control>
+                    <cm:control name="Close" index="29">
+                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
+                    </cm:control>
+                    <cm:status name="Bkr" index="27"/>
+                    <cm:status name="APh_Trip" index="0"/>
+                    <cm:status name="BPh_Trip" index="1"/>
+                    <cm:status name="CPh_Trip" index="3"/>
                     <cm:status name="G_Trip" index="4"/>
-                    <cm:status name="50_Trip" index="0"/>
+                    <cm:status name="50_Trip" index="5"/>
+                    <cm:status name="79_LO" index="6"/>
+                    <cm:status name="51_Trip" index="7"/>
+                </cm:equipment>
+                <cm:equipment name="CB11003">
+                    <cm:control name="Trip" index="30">
+                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
+                    </cm:control>
+                    <cm:control name="Close" index="31">
+                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
+                    </cm:control>
+                    <cm:status name="APh_Trip" index="8"/>
+                    <cm:status name="BPh_Trip" index="9"/>
+                    <cm:status name="CPh_Trip" index="10"/>
+                    <cm:status name="G_Trip" index="11"/>
+                    <cm:status name="50_Trip" index="12"/>
+                    <cm:status name="79_LO" index="13"/>
+                    <cm:status name="51_Trip" index="14"/>
+                </cm:equipment>
+                <cm:equipment name="CB11004">
+                    <cm:control name="Trip" index="32">
+                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
+                    </cm:control>
+                    <cm:control name="Close" index="33">
+                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
+                    </cm:control>
+                    <cm:status name="APh_Trip" index="15"/>
+                    <cm:status name="BPh_Trip" index="16"/>
+                    <cm:status name="CPh_Trip" index="17"/>
+                    <cm:status name="G_Trip" index="18"/>
+                    <cm:status name="50_Trip" index="19"/>
+                    <cm:status name="79_LO" index="20"/>
+                    <cm:status name="51_Trip" index="21"/>
                 </cm:equipment>
 
                 <cm:equipment name="F155">
-                    <cm:analog name="Ia" index="1" unit="A"/>
-                    <cm:analog name="Ib" index="2" unit="A"/>
-                    <cm:analog name="Ic" index="3" unit="A"/>
+                    <cm:analog name="Mw" index="22" unit="MW"/>
+                    <cm:analog name="Mvar" index="23" unit="Mvar"/>
+                    <cm:analog name="Ia" index="24" unit="A"/>
+                    <cm:analog name="Ib" index="25" unit="A"/>
+                    <cm:analog name="Ic" index="26" unit="A"/>
                 </cm:equipment>
 
             </cm:equipment>
@@ -281,25 +321,7 @@
             <cm:type>Endpoint</cm:type>
             <cm:protocol name="dnp3"/>
             <cm:interface name="351-1_IP"/>
-
             <cm:equipment name="Apex">
-
-                <cm:equipment name="CB11001">
-                    <cm:control name="trip" index="16">
-                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
-                    </cm:control>
-                    <cm:control name="close" index="17">
-                        <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
-                    </cm:control>
-                    <cm:status name="Bkr" index="4"/>
-                    <cm:status name="APh_Trip" index="0"/>
-                    <cm:status name="BPh_Trip" index="1"/>
-                    <cm:status name="CPh_Trip" index="2"/>
-                    <cm:status name="50_Trip" index="3"/>
-                    <cm:status name="G_Trip" index="7"/>
-                    <cm:status name="79_LO" index="8"/>
-                    <cm:status name="51_Trip" index="9"/>
-                </cm:equipment>
 
                 <cm:equipment name="L200">
                     <cm:analog name="Mw" index="14" unit="MW"/>
@@ -309,8 +331,13 @@
                     <cm:analog name="Ic" index="2" unit="A"/>
                 </cm:equipment>
 
+                <cm:equipment name="G1">
+                    <cm:analog name="Mw" index="16" unit="MW"/>
+                    <cm:analog name="Mvar" index="17" unit="Mvar"/>
+
+                </cm:equipment>
                 <cm:equipment name="Bus1">
-                    <cm:analog name="Kv" index="4" unit="kV"/>
+                    <cm:analog name="Kv" index="6" unit="kV"/>
                     <cm:analog name="Freq" index="13" unit="Hz"/>
                 </cm:equipment>
 
@@ -329,10 +356,10 @@
             <cm:equipment name="Apex">
 
                 <cm:equipment name="CB11002">
-                    <cm:control name="trip" index="16">
+                    <cm:control name="Trip" index="16">
                         <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
                     </cm:control>
-                    <cm:control name="close" index="17">
+                    <cm:control name="Close" index="17">
                         <cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/>
                     </cm:control>
                     <cm:status name="Bkr" index="4"/>

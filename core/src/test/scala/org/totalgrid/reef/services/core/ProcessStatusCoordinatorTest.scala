@@ -20,15 +20,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.ProcessStatus._
@@ -41,17 +34,10 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.api.{ Envelope }
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class ProcessStatusCoordinatorTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
   class CountingSubscriptionHandler extends ServiceSubscriptionHandler {
     var count = new SyncVar(0: Int)

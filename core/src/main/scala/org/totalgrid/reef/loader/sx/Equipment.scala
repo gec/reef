@@ -64,6 +64,18 @@ class Unexpected private (_actionSet: String) extends equipment.Unexpected {
   }
 }
 
+class ValueMap(fromString: String, toString: String) extends equipment.ValueMap {
+  setFromValue(fromString)
+  setToValue(toString)
+}
+
+class Transform(fromUnit: String, toUnit: String, valueMaps: ValueMap*) extends equipment.Transform {
+  setFromUnit(fromUnit)
+  setToUnit(toUnit)
+  setTransformationType(equipment.TransformType.STATUS)
+  valueMaps.foreach(getValueMap.add(_))
+}
+
 trait PointType[A] { self: equipment.PointType =>
   def init(_name: String, _unit: String = "", _pointProfile: String = "") = {
     setName(_name)
@@ -75,14 +87,14 @@ trait PointType[A] { self: equipment.PointType =>
   def add(x: Range): A = { getRange.add(x); this.asInstanceOf[A] }
   def add(x: Control): A = { getControl.add(x); this.asInstanceOf[A] }
   def add(x: Unexpected): A = { getUnexpected.add(x); this.asInstanceOf[A] }
-  //def add( x: ValueMap*): A = { getValueMap.add(x); this.asInstanceOf[A] }
+  def add(x: Transform): A = { getTransform.add(x); this.asInstanceOf[A] }
 }
 class PointProfile(_name: String) extends equipment.PointProfile {
   setName(_name)
   def add(x: Range) = { getRange.add(x); this }
   def add(x: Control) = { getControl.add(x); this }
   def add(x: Unexpected) = { getUnexpected.add(x); this }
-  //def add( x: ValueMap*) = { getValueMap.add(x); this }
+  def add(x: Transform) = { getTransform.add(x); this }
 }
 class Status(_name: String, _unit: String = "", _pointProfile: Option[PointProfile] = None) extends equipment.Status with PointType[Status] {
   init(_name, _unit, if (_pointProfile.isDefined) _pointProfile.get.getName else "")

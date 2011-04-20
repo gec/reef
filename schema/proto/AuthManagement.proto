@@ -8,6 +8,7 @@ message Agent{
     optional string uid                = 1;
     optional string name               = 2;
     optional string password           = 3;
+    repeated PermissionSet permission_sets = 4;
 }
 
 message Permission{

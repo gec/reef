@@ -25,6 +25,7 @@ import org.totalgrid.reef.util.LazyVar
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
+ * http://www.jasypt.org/howtoencryptuserpasswords.html
  */
 object SaltedPasswordHelper {
   import org.apache.commons.codec.binary.Base64
@@ -44,12 +45,15 @@ object SaltedPasswordHelper {
   def makeDigestAndSalt(password: String): (String, String) = {
     val b = new Array[Byte](20)
     new SecureRandom().nextBytes(b)
-    val salt = new String(b, "UTF-8")
+    val salt = dec64(enc64(new String(b, "UTF-8")))
     (calcDigest(salt, password), salt)
   }
 
   def calcDigest(salt: String, pass: String) = {
-    new String(MessageDigest.getInstance("SHA-256").digest((salt + ":" + pass).getBytes("UTF-8")), "UTF-8")
+    val combinedSaltPassword = (salt + pass).getBytes("UTF-8")
+    val digestBytes = MessageDigest.getInstance("SHA-256").digest(combinedSaltPassword)
+    // TODO: figure out how to roundtrip bytes through UTF-8
+    dec64(enc64(new String(digestBytes, "UTF-8")))
   }
 }
 
@@ -62,6 +66,7 @@ object Agent {
   }
 }
 
+// not a case class because we dont want to accidentally print the digest+salt in the logs
 class Agent(
     val name: String,
     val digest: String,
@@ -69,25 +74,33 @@ class Agent(
 
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
 
+  val authTokens = LazyVar(ApplicationSchema.authTokens.where(au => au.agentId === id))
+
   def checkPassword(password: String): Boolean = {
     import SaltedPasswordHelper._
     dec64(digest) == calcDigest(dec64(salt), password)
   }
+
+  def copyWithUpdatedPassword(password: String): Agent = {
+    val agent = Agent.createAgentWithPassword(name, password)
+    agent.id = id
+    agent
+  }
 }
-class AuthPermission(
+case class AuthPermission(
     val allow: Boolean,
     val resource: String,
     val verb: String) extends ModelWithId {
 
 }
-class PermissionSet(
+case class PermissionSet(
     val name: String,
     val defaultExpirationTime: Long) extends ModelWithId {
 
-  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionId === id) select (&(p.permissionId)))))
+  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionSetId === id) select (&(p.permissionId)))))
 }
 
-class AuthToken(
+case class AuthToken(
     val token: String,
     val agentId: Long,
     val loginLocation: String,

@@ -116,10 +116,10 @@ class CurrentMetricsValueHolderTests extends FunSuite with ShouldMatchers {
     val end = cv.values()
 
     val results = MetricsMapHelpers.changePerSecond(start, end, 500)
-    results.get("all.test") should equal(Some(10.0))
+    results.get("all.test.Rate") should equal(Some(10.0))
 
     val results2 = MetricsMapHelpers.changePerSecond(start, end, 5000)
-    results2.get("all.test") should equal(Some(1.0))
+    results2.get("all.test.Rate") should equal(Some(1.0))
   }
 
   test("Sum and Count") {

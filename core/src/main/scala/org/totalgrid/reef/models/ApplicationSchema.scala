@@ -29,6 +29,8 @@ import org.totalgrid.reef.util.LazyVar
 
 import org.totalgrid.reef.proto.Alarms._
 
+import org.totalgrid.reef.proto.FEP.CommChannel
+
 class ActiveModelException(msg: String) extends Exception(msg)
 
 trait ActiveModel {
@@ -114,6 +116,8 @@ case class CommunicationProtocolApplicationInstance(
   val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
+case class ChannelStatus(val name: String, val state: Int) extends ModelWithId
+
 case class Point(
     val name: String,
     val entityId: Long,
@@ -130,7 +134,7 @@ case class Point(
   /**
    * updated when the abnormal state is changed so we can "tunnel" this update through
    * to the service event.
-   * The \@Transient attribute tells squeryl not to put this field in the database 
+   * The \@Transient attribute tells squeryl not to put this field in the database
    */
   @Transient
   var abnormalUpdated = false
@@ -140,13 +144,16 @@ case class Point(
 
 case class Command(
     val name: String,
+    val displayName: String,
     val entityId: Long,
     var connected: Boolean,
     var lastSelectId: Option[Long],
     var triggerId: Option[Long]) extends ModelWithId {
 
-  def this() = this("", 0, false, Some(0), Some(0))
-  def this(name: String, entityId: Long) = this(name, entityId, false, None, None)
+  def this() = this("", "", 0, false, Some(0), Some(0))
+  def this(name: String, displayName: String, entityId: Long) = this(name, displayName, entityId, false, None, None)
+  //def this(name: String, entityId: Long, connected: Boolean, lastSelectId: Option[Long], triggerId: Option[Long]) = this(name, name, entityId, false, None, None)
+  def this(name: String, entityId: Long) = this(name, name, entityId, false, None, None)
 
   val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
 
@@ -154,10 +161,13 @@ case class Command(
 
   val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
+  val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
+
 }
 
 case class FrontEndAssignment(
     val endpointId: Long,
+    val state: Int,
 
     val serviceRoutingKey: Option[String],
     val applicationId: Option[Long],
@@ -165,12 +175,11 @@ case class FrontEndAssignment(
     var offlineTime: Option[Long],
     var onlineTime: Option[Long]) extends ModelWithId {
 
-  def this() = this(0, Some(""), Some(0), Some(0), Some(0), Some(0))
+  def this() = this(0, 0, Some(""), Some(0), Some(0), Some(0), Some(0))
 
   val application = LazyVar(mayHaveOne(ApplicationSchema.apps, applicationId))
   val endpoint = LazyVar(ApplicationSchema.endpoints.where(p => p.id === endpointId).headOption)
 
-  def online = onlineTime.isDefined
 }
 
 case class MeasProcAssignment(
@@ -190,9 +199,10 @@ case class FrontEndPort(
     val name: String,
     val network: Option[String],
     val location: Option[String],
+    val state: Int,
     var proto: Array[Byte]) extends ModelWithId {
 
-  def this() = this("", Some(""), Some(""), Array.empty[Byte])
+  def this() = this("", Some(""), Some(""), CommChannel.State.UNKNOWN.getNumber, Array.empty[Byte])
 }
 
 case class ConfigFile(
@@ -345,6 +355,8 @@ class Entity(
 
   val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
 
+  val attributes = LazyVar(from(ApplicationSchema.entityAttributes)(t => where(id === t.entityId) select (t)).toList)
+
   def asType[A <: { val entityId: Long }](table: Table[A], ofType: String) = {
     if (types.value.find(_ == ofType).isEmpty) {
       throw new Exception("entity: " + id + " didnt have type: " + ofType + " but had: " + types)
@@ -389,11 +401,27 @@ class EntityDerivedEdge(
   val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
 
+class EntityAttribute(
+    val entityId: Long,
+    val attrName: String,
+    val stringVal: Option[String],
+    val boolVal: Option[Boolean],
+    val longVal: Option[Long],
+    val doubleVal: Option[Double],
+    val byteVal: Option[Array[Byte]]) extends ModelWithId {
+
+  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+
+  def this() = this(5, "", Some(""), Some(true), Some(50L), Some(84.33), Some(Array.empty[Byte]))
+}
+
 object ApplicationSchema extends Schema {
   val entities = table[Entity]
   val edges = table[EntityEdge]
   val derivedEdges = table[EntityDerivedEdge]
   val entityTypes = table[EntityToTypeJoins]
+
+  val entityAttributes = table[EntityAttribute]
 
   on(entities)(s => declare(
     //s.id is (indexed), // dont need index on primary keys
@@ -407,6 +435,7 @@ object ApplicationSchema extends Schema {
 
   val apps = table[ApplicationInstance]
   val capabilities = table[ApplicationCapability]
+  val channelStatuses = table[ChannelStatus]
   val heartbeats = table[HeartbeatStatus]
   val protocols = table[CommunicationProtocolApplicationInstance]
   val points = table[Point]
@@ -424,6 +453,9 @@ object ApplicationSchema extends Schema {
   val commandToBlocks = table[CommandBlockJoin]
 
   val events = table[EventStore]
+  on(events)(s => declare(
+    s.time is (indexed)))
+
   val eventConfigs = table[EventConfigStore]
 
   val triggers = table[TriggerConfig]
@@ -433,6 +465,8 @@ object ApplicationSchema extends Schema {
   val triggerSets = table[TriggerSet]
 
   val alarms = table[AlarmModel]
+  on(alarms)(s => declare(
+    s.eventUid is (indexed)))
 
   val agents = table[Agent]
   val permissions = table[AuthPermission]

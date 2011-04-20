@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => CommEndCfgProto, EndpointOwnership, Port }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
@@ -34,9 +34,10 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
-    extends BasicProtoService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel] {
+    extends BasicSyncModeledService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
+    with DefaultSyncBehaviors {
 
-  override val descriptor = Descriptors.communicationEndpointConfig
+  override val descriptor = Descriptors.commEndpointConfig
 }
 
 class CommEndCfgServiceModelFactory(
@@ -111,7 +112,7 @@ class CommEndCfgServiceModel(
 
   def createModelEntry(proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
 
-    val linkedPort = proto.port.map { portProto =>
+    val linkedPort = proto.channel.map { portProto =>
       portModel.findRecord(portProto) match {
         case Some(p) => p
         case None => portModel.createFromProto(portProto)
@@ -158,7 +159,7 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
     b.setUid(sql.entity.value.id.toString)
     b.setName(sql.entity.value.name)
     b.setProtocol(sql.protocol)
-    sql.frontEndPortId.foreach(id => b.setPort(Port.newBuilder().setUid(id.toString).build))
+    sql.frontEndPortId.foreach(id => b.setChannel(CommChannel.newBuilder().setUid(id.toString).build))
 
     sql.configFiles.value.foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUid(cf.id.toString).build))
 

@@ -26,7 +26,8 @@ import scala.collection.immutable
 
 object Lifecycle extends ShutdownHook {
 
-  /**      Runs the specified components and blocks for a shutdown signal
+  /**
+   *      Runs the specified components and blocks for a shutdown signal
    */
   def run(lc: Lifecycle)(beforeShutdownFun: => Unit): Unit = {
     lc.start()
@@ -42,7 +43,8 @@ object Lifecycle extends ShutdownHook {
 
 }
 
-/** start components up and shut them down in reverse order
+/**
+ * start components up and shut them down in reverse order
  */
 class LifecycleWrapper(components: Seq[Lifecycle]) extends Lifecycle {
   override def doStart() = components.foreach { _.start }
@@ -51,7 +53,7 @@ class LifecycleWrapper(components: Seq[Lifecycle]) extends Lifecycle {
 
 /**
  * handles the start/stopping of a set of lifecycle objects including starting
- * objects that are added after we started the manager. 
+ * objects that are added after we started the manager.
  */
 class LifecycleManager(components: List[Lifecycle] = Nil) extends Lifecycle {
 
@@ -79,28 +81,34 @@ class LifecycleManager(components: List[Lifecycle] = Nil) extends Lifecycle {
   }
 }
 
-/**     Abstracts the lifecycle of thread-like entities    
+/**
+ * Abstracts the lifecycle of thread-like entities, lifecycle objects can have start and stop called
+ * idempotently
  */
-trait Lifecycle extends Logging {
+trait Lifecycle extends IdempotentLifecycle
+
+/**
+ * base trait that defines an object that can be started and stopped
+ */
+trait LifecycleBase extends Logging {
 
   protected val mutex = new Object
   protected var started = false
 
-  final def start() = mutex.synchronized {
-    if (started) throw new IllegalStateException("Already started")
-    info("Starting " + this.getClass())
-    this.dispatchStart()
-    started = true
-    info("Started " + this.getClass())
-  }
+  /**
+   * called to start or restart an object, calling start when already started has no effect
+   */
+  def start()
 
-  final def stop() = mutex.synchronized {
-    if (!started) if (started) throw new IllegalStateException("Already stopped")
-    info("Stopping " + this.getClass())
-    this.dispatchStop()
-    started = false
-    info("Stopped " + this.getClass())
-  }
+  /**
+   * called to stop an object, calling stop when already stopped has no effect
+   */
+  def stop()
+
+  /**
+   * gets the currently running state of the object
+   */
+  def isRunning() = mutex.synchronized { started }
 
   /// executes just after starting
   protected def afterStart() {}
@@ -127,4 +135,48 @@ trait Lifecycle extends Logging {
   protected def doStart() {}
   protected def doStop() {}
 
+}
+
+/**
+ * allows us to call start or stop multiple times without errors
+ */
+trait IdempotentLifecycle extends LifecycleBase {
+  final def start() = mutex.synchronized {
+    if (!started) {
+      info("Starting " + this.getClass())
+      this.dispatchStart()
+      started = true
+      info("Started " + this.getClass())
+    }
+  }
+
+  final def stop() = mutex.synchronized {
+    if (started) {
+      info("Stopping " + this.getClass())
+      this.dispatchStop()
+      started = false
+      info("Stopped " + this.getClass())
+    }
+  }
+}
+
+/**
+ * alternative implementation of lifecycle that throws exceptions if start or stop are recalled
+ */
+trait StatefulLifecycle extends LifecycleBase {
+  final def start() = mutex.synchronized {
+    if (started) throw new IllegalStateException("Already started")
+    info("Starting " + this.getClass())
+    this.dispatchStart()
+    started = true
+    info("Started " + this.getClass())
+  }
+
+  final def stop() = mutex.synchronized {
+    if (!started) throw new IllegalStateException("Already stopped")
+    info("Stopping " + this.getClass())
+    this.dispatchStop()
+    started = false
+    info("Stopped " + this.getClass())
+  }
 }

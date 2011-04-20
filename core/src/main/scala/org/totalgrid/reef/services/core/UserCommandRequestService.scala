@@ -20,55 +20,88 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.UserCommandRequest
-import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.api.scalaclient.ISessionPool
+
+import org.totalgrid.reef.proto.Commands
+import Commands.UserCommandRequest
+
 import org.totalgrid.reef.models.UserCommandModel
 
-import CommandAccess._
-import BaseProtoService._
-
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
+
+import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
+
+import org.totalgrid.reef.models.{ ApplicationSchema, Command }
+
+import org.totalgrid.reef.services.framework._
+import org.squeryl.PrimitiveTypeMode._
+import ServiceBehaviors._
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel])
-    extends BaseProtoService[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
-    with GetEnabled
-    with SubscribeEnabled
-    with PutPostEnabled
-    with DeleteDisabled {
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
+    extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
+    with AsyncGetEnabled
+    with AsyncPutEnabled
+    with AsyncPostDisabled
+    with AsyncDeleteDisabled
+    with SubscribeEnabled {
 
   override val descriptor = Descriptors.userCommandRequest
 
-  override protected def preCreate(proto: UserCommandRequest): UserCommandRequest = {
+  override def doAsyncPutPost(rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
 
-    // Verify the necessary request fields
+    val request = rsp.result.head
+
+    val command = ApplicationSchema.commands.where(cmd => cmd.name === request.getCommandRequest.getName).single
+
+    val address = command.endpoint.value match {
+      case Some(ep) =>
+        ep.frontEndAssignment.value.serviceRoutingKey match {
+          case Some(key) => AddressableService(key)
+          case None => throw new BadRequestException("No routing info for endpoint: " + ep.name.value)
+        }
+      case None => throw new BadRequestException("Command has no endpoint set " + request)
+    }
+
+    pool.borrow { session =>
+      session.asyncPutOne(request, dest = address) { result =>
+        val response: Response[UserCommandRequest] = result match {
+          case SingleSuccess(status, cmd) => Response(status, UserCommandRequest.newBuilder(request).setStatus(cmd.getStatus).build :: Nil)
+          case Failure(status, msg) => Response(status, error = msg)
+        }
+        callback(response)
+      }
+    }
+  }
+
+  private def doCommonValidation(proto: UserCommandRequest) = {
+
     if (!proto.hasCommandRequest)
       throw new BadRequestException("Request must specify command information", Envelope.Status.BAD_REQUEST)
+
+    proto
+  }
+
+  override protected def preCreate(proto: UserCommandRequest) = {
 
     if (!proto.getCommandRequest.hasName)
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
 
-    // If the request included a status, reject it because the client may not be doing what he thinks he's doing
     if (proto.hasStatus)
-      throw new BadRequestException("Request must not specify status", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Update must not specify status", Envelope.Status.BAD_REQUEST)
 
-    // NOTE: at the moment relying on protobuf to ensure a valid timeout
-    proto
+    this.doCommonValidation(proto)
   }
 
-  override protected def preUpdate(proto: UserCommandRequest, existing: UserCommandModel): UserCommandRequest = {
-
-    // Verify the necessary request fields
-    if (!proto.hasCommandRequest)
-      throw new BadRequestException("Update must specify command information", Envelope.Status.BAD_REQUEST)
+  override protected def preUpdate(proto: UserCommandRequest, existing: UserCommandModel) = {
 
     if (!proto.hasStatus)
       throw new BadRequestException("Update must specify status", Envelope.Status.BAD_REQUEST)
 
-    proto
+    doCommonValidation(proto)
   }
+
 }
 
 object UserCommandRequestService {

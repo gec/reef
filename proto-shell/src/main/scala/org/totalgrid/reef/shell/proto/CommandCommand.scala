@@ -21,41 +21,35 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument }
-import presentation.{ EntityView, CommandView }
-import request.{ EntityRequest, CommandRequest }
+import presentation.{ CommandView }
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.request.ReefUUID
 
 @Command(scope = "command", name = "list", description = "Lists commands")
 class CommandListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    EntityView.printList(EntityRequest.getAllOfType("Command", this))
+    CommandView.commandList(services.getCommands().toList)
   }
 }
 
 @Command(scope = "command", name = "issue", description = "Issues a command")
 class CommandIssueCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Command uid/name", required = true, multiValued = false)
-  private var id: String = null
-
-  def doCommand() = getUser match {
-    case Some(user) => {
-      CommandView.commandResponse(CommandRequest.issueForId(id, user, this))
-    }
-    case None => throw new Exception("Cannot issue command, user is not defined!")
-  }
-}
-
-@Command(scope = "command", name = "status", description = "Views status of previously executed command.")
-class CommandStatusCommand extends ReefCommandSupport {
-
-  @Argument(index = 0, name = "id", description = "Command Request id", required = true, multiValued = false)
-  private var id: String = null
+  @Argument(index = 0, name = "Command Name", description = "Command name", required = true, multiValued = false)
+  private var cmdName: String = null
 
   def doCommand() = {
-    CommandView.commandResponse(CommandRequest.statusOf(id, this))
+    val cmd = services.getCommandByName(cmdName)
+    val select = services.createCommandExecutionLock(cmd)
+    val response = try {
+      services.executeCommandAsControl(cmd)
+    } finally {
+      services.deleteCommandLock(select)
+    }
+
+    CommandView.commandResponse(response)
   }
 }
 
@@ -68,9 +62,9 @@ class AccessCommand extends ReefCommandSupport {
   def doCommand() = {
     Option(id) match {
       case Some(uid) =>
-        CommandView.accessInspect(CommandRequest.getAccessEntry(uid, this))
+        CommandView.accessInspect(services.getCommandLock(new ReefUUID(id)))
       case None =>
-        CommandView.printAccessTable(CommandRequest.getAllAccessEntries(this))
+        CommandView.printAccessTable(services.getCommandLocks().toList)
     }
   }
 }
@@ -78,38 +72,27 @@ class AccessCommand extends ReefCommandSupport {
 @Command(scope = "access", name = "block", description = "Block specified commands.")
 class AccessBlockCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Uid/nanme of commands to block.", required = false, multiValued = true)
-  private var commands: java.util.List[String] = null
+  @Argument(index = 0, name = "id", description = "Name of commands to block.", required = false, multiValued = true)
+  private var commandNames: java.util.List[String] = null
 
   def doCommand(): Unit = {
-    if (getUser.isEmpty) throw new Exception("User not found")
 
-    val cmdIds = Option(commands).map(_.toList) getOrElse Nil
-    if (cmdIds.isEmpty) {
-      println("Must specify at least one command.")
-      return
-    }
-
-    CommandView.blockResponse(CommandRequest.blockCommands(cmdIds, getUser.get, this))
+    val commands = commandNames.map { cmdName => services.getCommandByName(cmdName) }
+    val block = services.createCommandDenialLock(commands)
+    CommandView.blockResponse(block)
   }
 }
 
-@Command(scope = "access", name = "remove", description = "Remove blocks/selects.")
+@Command(scope = "access", name = "remove", description = "Remove block/select.")
 class AccessRemoveCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Block/select id.", required = false, multiValued = true)
-  private var ids: java.util.List[String] = null
+  @Argument(index = 0, name = "id", description = "Block/select id.", required = true, multiValued = false)
+  private var id: String = null
 
   def doCommand(): Unit = {
-    if (getUser.isEmpty) throw new Exception("User not found")
 
-    val accIds = Option(ids).map(_.toList) getOrElse Nil
-    if (accIds.isEmpty) {
-      println("Must specify at least one block/select.")
-      return
-    }
-
-    CommandView.removeBlockResponse(CommandRequest.removeSelects(accIds, getUser.get, this))
+    val access = services.deleteCommandLock(new ReefUUID(id))
+    CommandView.removeBlockResponse(access :: Nil)
   }
 }
 

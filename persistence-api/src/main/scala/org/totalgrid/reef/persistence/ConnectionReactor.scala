@@ -60,7 +60,7 @@ trait ConnectionReactor[ConnType] extends Logging {
 
   if (connectOnStart) connect
 
-  /**   
+  /**
    * Starts connection manually. Only valid if connectOnStart = false
    */
   def connect(): Unit = connect(startdelay)

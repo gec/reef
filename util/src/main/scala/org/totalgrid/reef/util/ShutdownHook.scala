@@ -20,14 +20,16 @@
  */
 package org.totalgrid.reef.util
 
-/** provides a mechanism for entry points to gracefully shutdown by calling
+/**
+ * provides a mechanism for entry points to gracefully shutdown by calling
  *  a generic handler
  */
 trait ShutdownHook {
 
-  /**  Waits until a shutdown condition occurs (i.e. signal) and then
+  /**
+   *  Waits until a shutdown condition occurs (i.e. signal) and then
    *   calls the provided hook.
-   * 
+   *
    *   @param	hook	Shutdown callback
    */
   def waitForShutdown(hook: => Unit) = {

@@ -44,10 +44,10 @@ trait EventQueueingObserver[ProtoType <: GeneratedMessage, A]
   /**
    * Queue up a "service notification" event to be sent at the end of the model transaction.
    * @param event  envent type add/remove/modify
-   * @param entry  the sql object that is 
-   * @param currentSnapshot 
-   *      whether to "render" the protos now or at the end of the transaction, if deleting the 
-   *      sql object will been deleted and lost access to all linked resources at end of 
+   * @param entry  the sql object that is
+   * @param currentSnapshot
+   *      whether to "render" the protos now or at the end of the transaction, if deleting the
+   *      sql object will been deleted and lost access to all linked resources at end of
    *      transaction, if adding, child objects are not generally ready till end of transaction
    */
   def queueEvent(event: Envelope.Event, entry: A, currentSnapshot: Boolean) = {

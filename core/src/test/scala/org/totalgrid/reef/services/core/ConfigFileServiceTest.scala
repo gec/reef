@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
@@ -29,21 +27,13 @@ import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.proto.Model.Entity
 import org.totalgrid.reef.api.Envelope.Status
 
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-import org.squeryl.PrimitiveTypeMode._
-
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class ConfigFileServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-
-  override def beforeAll() = DbConnector.connect(DbInfo.loadInfo("test"))
-
-  override def beforeEach() = transaction { ApplicationSchema.reset }
+class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
   def makeConfigFile(name: String, mime: String, data: String, owner: Option[Entity] = None) = {
     import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString

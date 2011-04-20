@@ -20,57 +20,27 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import com.google.protobuf.GeneratedMessage
 
-import ProtoConversions._
-import org.totalgrid.reef.api.RequestEnv
 import org.totalgrid.reef.api.ServiceTypes._
-import org.totalgrid.reef.api.Envelope.Verb
 
-//implicits
+//import ProtoConversions._
 
 trait AsyncScatterGatherOperations {
 
   self: AsyncOperations with DefaultHeaders =>
 
-  def requestAsyncScatterGather[A <: AnyRef](verb: Verb, payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[MultiResult[A]] => Unit) {
+  def requestAsyncScatterGather[A <: AnyRef](requests: List[Request[A]])(callback: List[MultiResult[A]] => Unit) {
 
     // the results we're collecting and a counter
-    val map = new java.util.concurrent.ConcurrentHashMap[Int, MultiResult[A]]
-    val latch = new java.util.concurrent.CountDownLatch(payloads.size)
+    var map = Map.empty[Int, MultiResult[A]]
 
     def gather(idx: Int)(rsp: MultiResult[A]) {
-      map.put(idx, rsp)
-      latch.countDown()
-      if (latch.getCount == 0) callback(payloads.indices.map(i => map.get(i)).toList) //last callback orders and calls the callback
+      map += idx -> rsp
+      if (map.size == requests.size) callback(requests.indices.map(i => map(i)).toList) //last callback orders and calls the callback
     }
 
-    payloads.zipWithIndex.foreach { case (p, i) => asyncRequest(verb, p, env)(gather(i)) }
+    requests.zipWithIndex.foreach { case (request, i) => asyncRequest(request.verb, request.payload, request.env, request.destination)(gather(i)) }
   }
-
-  def asyncGetScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[MultiResult[A]] => Unit) =
-    requestAsyncScatterGather(Verb.GET, payloads, env)(callback)
-
-  def asyncPutScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[MultiResult[A]] => Unit) =
-    requestAsyncScatterGather(Verb.PUT, payloads, env)(callback)
-
-  def asyncPostScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[MultiResult[A]] => Unit) =
-    requestAsyncScatterGather(Verb.POST, payloads, env)(callback)
-
-  def asyncDeleteScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[MultiResult[A]] => Unit) =
-    requestAsyncScatterGather(Verb.DELETE, payloads, env)(callback)
-
-  def asyncGetOneScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[SingleResult[A]] => Unit) =
-    asyncGetScatterGather(payloads, env)(callback)
-
-  def asyncPutOneScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[SingleResult[A]] => Unit) =
-    asyncPutScatterGather(payloads, env)(callback)
-
-  def asyncPostOneScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[SingleResult[A]] => Unit) =
-    asyncPostScatterGather(payloads, env)(callback)
-
-  def asyncDeleteOneScatterGather[A <: AnyRef](payloads: List[A], env: RequestEnv = getDefaultHeaders)(callback: List[SingleResult[A]] => Unit) =
-    asyncDeleteScatterGather(payloads, env)(callback)
 
 }
 

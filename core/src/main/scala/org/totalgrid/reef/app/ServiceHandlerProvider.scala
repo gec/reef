@@ -20,19 +20,17 @@
  */
 package org.totalgrid.reef.app
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.app.ServiceHandler._
-import org.totalgrid.reef.messaging.ProtoRegistry
+import org.totalgrid.reef.messaging.Connection
 
 // Trait allows type to be negotiated between user and provider, and hidden from factory steps in between
-class ServiceHandlerProvider(registry: ProtoRegistry, handler: ServiceHandler) extends SubscriptionProvider {
+class ServiceHandlerProvider(conn: Connection, handler: ServiceHandler) extends SubscriptionProvider {
 
   def subscribe[A <: AnyRef](
     parseFrom: Array[Byte] => A,
     searchKey: A,
     respHandler: ResponseHandler[A],
     eventHandler: EventHandler[A]) = {
-    handler.addService(registry, 5000, parseFrom, searchKey, respHandler, eventHandler)
+    handler.addService(conn, 5000, parseFrom, searchKey, respHandler, eventHandler)
   }
 }

@@ -22,18 +22,20 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.api.ServiceIOException
 
 object AMQPPublisher {
   val defaultBufferSize = 1024 * 1024
 
 }
 
-/**	A basic AMQP publisher that can buffer messages if the connection is down.
- * 	
+/**
+ * 	A basic AMQP publisher that can buffer messages if the connection is down.
+ *
  * 	@param	exchangeList	AMQP exchanges to declare when connecting to the bus
  * 	@param	bufferSize	Maximum size of the buffer in bytes
  */
-abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int = AMQPPublisher.defaultBufferSize) extends ChannelObserver with Reactable with Logging {
+abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int = AMQPPublisher.defaultBufferSize) extends ChannelObserver with BrokerChannelCloseListener with Reactable with Logging {
 
   case class Msg(bytes: Array[Byte], exchange: String, key: String)
 
@@ -42,6 +44,7 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
   private var bytesDelayed: Int = 0
   private var replyTo: Option[Destination] = None
   private var channel: Option[BrokerChannel] = None
+  private var closedPermenantly = false
 
   // implement ChannelObserver
   override def online(b: BrokerChannel) = this.execute {
@@ -50,7 +53,10 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
     replayDelayedMessages()
   }
 
-  override def offline() = this.execute { channel = None }
+  override def onClosed(b: BrokerChannel, expected: Boolean) = this.execute {
+    channel = None
+    closedPermenantly = expected
+  }
 
   /**
    * This replyTo address is set on all outgoing messages from this publisher
@@ -63,17 +69,22 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
    * @param exchange
    * @param key
    */
-  def send(bytes: Array[Byte], exchange: String, key: String) = this.execute {
-    if (channel.isDefined) {
-      try {
-        channel.get.publish(exchange, key, bytes, replyTo)
-      } catch {
-        case ex: Exception =>
-          error(ex)
-          delayMessage(bytes, exchange, key)
+  def send(bytes: Array[Byte], exchange: String, key: String) = {
+    // we need to check this flag on the callers thread so they get exception on publish
+    if (closedPermenantly) throw new ServiceIOException("Publisher permenantly closed")
+
+    this.execute {
+      if (channel.isDefined) {
+        try {
+          channel.get.publish(exchange, key, bytes, replyTo)
+        } catch {
+          case ex: Exception =>
+            error(ex)
+            delayMessage(bytes, exchange, key)
+        }
+      } else {
+        delayMessage(bytes, exchange, key)
       }
-    } else {
-      delayMessage(bytes, exchange, key)
     }
   }
 

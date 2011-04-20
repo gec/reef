@@ -22,19 +22,20 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 
+import scala.collection.JavaConversions._
 import org.totalgrid.reef.shell.proto.presentation.{ EntityView }
-import org.totalgrid.reef.shell.proto.request.EntityRequest
+import org.totalgrid.reef.api.request.builders.EntityRequestBuilders
 
 @Command(scope = "entity", name = "entity", description = "Prints all entities or information on a specific entity.")
 class EntityCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Entity uid/name.", required = false, multiValued = false)
-  var id: String = null
+  @Argument(index = 0, name = "Entity Name", description = "Entity name.", required = false, multiValued = false)
+  var entityName: String = null
 
   def doCommand() = {
-    Option(id) match {
-      case Some(entId) => EntityView.printInspect(EntityRequest.getById(entId, this))
-      case None => EntityView.printList(EntityRequest.getAll(this))
+    Option(entityName) match {
+      case Some(entId) => EntityView.printInspect(services.getEntityByName(entityName))
+      case None => EntityView.printList(services.getAllEntities().toList)
     }
   }
 }
@@ -46,7 +47,7 @@ class EntityTypeCommand extends ReefCommandSupport {
   var typeName: String = null
 
   def doCommand() = {
-    EntityView.printList(EntityRequest.getAllOfType(typeName, this))
+    EntityView.printList(services.getAllEntitiesWithType(typeName).toList)
   }
 
 }
@@ -54,8 +55,8 @@ class EntityTypeCommand extends ReefCommandSupport {
 @Command(scope = "entity", name = "children", description = "Lists children of a parent entity.")
 class EntityChildrenCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Parent entity uid/name.", required = true, multiValued = false)
-  var parentId: String = null
+  @Argument(index = 0, name = "Parent Entity Name", description = "Parent entity name.", required = true, multiValued = false)
+  var parentName: String = null
 
   @Argument(index = 1, name = "relType", description = "Relationship type.", required = false, multiValued = false)
   var relType: String = null
@@ -67,11 +68,14 @@ class EntityChildrenCommand extends ReefCommandSupport {
   var depths: Boolean = false
 
   def doCommand() = {
-    val ents = EntityRequest.getChildren(parentId, Option(relType), Option(subType).toList, depths, this)
+
+    val selector = EntityRequestBuilders.optionalChildrenSelector(parentName, Option(relType), Option(subType).toList, depths)
+
+    val ents = services.getEntityTree(selector)
     if (depths) {
-      EntityView.printTreeMultiDepth(ents.head)
+      EntityView.printTreeMultiDepth(ents)
     } else {
-      EntityView.printTreeSingleDepth(ents.head)
+      EntityView.printTreeSingleDepth(ents)
     }
   }
 
@@ -80,21 +84,7 @@ class EntityChildrenCommand extends ReefCommandSupport {
 @Command(scope = "point", name = "list", description = "Lists points")
 class PointListCommand extends ReefCommandSupport {
 
-  def doCommand() = EntityView.printList(EntityRequest.getAllOfType("Point", this))
+  def doCommand() = EntityView.printList(services.getAllEntitiesWithType("Point").toList)
 
 }
 
-@Command(scope = "trigger", name = "trigger", description = "Lists triggers")
-class TriggerCommand extends ReefCommandSupport {
-
-  @Argument(index = 0, name = "id", description = "Trigger uid/name.", required = false, multiValued = false)
-  var id: String = null
-
-  def doCommand() = {
-    Option(id) match {
-      case Some(entId) => println(EntityRequest.getTriggers(entId, this))
-      case None => println(EntityRequest.getAllTriggers(this))
-    }
-  }
-
-}

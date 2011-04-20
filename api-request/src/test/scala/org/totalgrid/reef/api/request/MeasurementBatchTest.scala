@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch, Me
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest
-    extends ServiceClientSuite("MeasurementBatch.xml", "MeasurementBatch",
+    extends ClientSessionSuite("MeasurementBatch.xml", "MeasurementBatch",
       <div>
         <p>
           The MeasurementSnapshot service provides the current state of measurements. The request contains the
@@ -38,40 +38,39 @@ class MeasurementBatchTest
       </div>)
     with ShouldMatchers {
 
-  def putMeas(m: Measurement) = client.putOneOrThrow(MeasurementBatch.newBuilder.addMeas(m).setWallTime(System.currentTimeMillis).build)
-  def putAll(m: List[Measurement]) = client.putOneOrThrow(MeasurementBatch.newBuilder.addAllMeas(m).setWallTime(System.currentTimeMillis).build)
+  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil)
+  def putAll(m: List[Measurement]) = client.publishMeasurements(m)
 
   test("Simple puts") {
     val pointName = "StaticSubstation.Line02.Current"
-    val original = client.getOneOrThrow(MeasurementSnapshot.newBuilder.addPointNames("StaticSubstation.Line02.Current").build).getMeasurementsList.head
+    // read the current value so we can edit it
+    val original = client.getMeasurementByName(pointName)
 
+    client.addExplanation("Put measurement", "Put a single new measurement.")
+
+    // double the value and post it
     val updated = original.toBuilder.setDoubleVal(original.getDoubleVal * 2).setTime(System.currentTimeMillis).build
-    val req = MeasurementBatch.newBuilder.addMeas(updated).setWallTime(System.currentTimeMillis).build
-    val resp = client.putOneOrThrow(req)
-
-    doc.addCase("Put measurement", "Put", "Put a single new measurement.", req, resp)
+    putMeas(updated)
 
     putMeas(original.toBuilder.setTime(System.currentTimeMillis).build)
   }
 
   test("Multi put") {
-    val points = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
-    val originals = client.getOneOrThrow(MeasurementSnapshot.newBuilder.addAllPointNames(points).build).getMeasurementsList.toList
+    val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
+    val originals = client.getMeasurementsByNames(names)
 
-    val updateds = originals.map { m =>
+    val updated = originals.map { m =>
       if (m.getType == Measurement.Type.DOUBLE)
         m.toBuilder.setDoubleVal(m.getDoubleVal * 2).setTime(System.currentTimeMillis).build
       else if (m.getType == Measurement.Type.BOOL)
         m.toBuilder.setBoolVal(!m.getBoolVal).setTime(System.currentTimeMillis).build
       else m.toBuilder.setTime(System.currentTimeMillis).build
-    }
+    }.toList
 
-    val req = MeasurementBatch.newBuilder.addAllMeas(updateds).setWallTime(System.currentTimeMillis).build
-    val resp = client.putOneOrThrow(req)
+    client.addExplanation("Put multiple measurements", "Put multiple new measurements in a single MeasurementBatch.")
+    putAll(updated)
 
-    doc.addCase("Put multiple measurements", "Put", "Put multiple new measurements in a single MeasurementBatch.", req, resp)
-
-    val reverteds = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }
-    putAll(reverteds)
+    val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }.toList
+    putAll(reverted)
   }
 }

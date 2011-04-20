@@ -32,9 +32,9 @@ import Measurements.{ Measurement => Meas }
 
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.IProtocol
+import org.totalgrid.reef.protocol.api.{ IPublisher, ICommandHandler, IResponseHandler }
 
-class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.Respond, config: SimMapping.SimulatorMapping, reactor: Reactable) extends Lifecycle with Logging {
+class Simulator(name: String, publisher: IPublisher, config: SimMapping.SimulatorMapping, reactor: Reactable) extends Lifecycle with ICommandHandler with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -51,23 +51,24 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     setUpdateParams(delay)
   }
   override def beforeStop() {
-    repeater.foreach { _.cancel }
+    this.synchronized {
+      publisher.close()
+      repeater.foreach { _.cancel }
+    }
   }
 
   def getRepeatDelay = delay
 
-  def adjustUpdateParams(newDelay: Long) = setUpdateParams(delay + newDelay)
-
   def setUpdateParams(newDelay: Long) = {
-    if (newDelay > 0) {
-      delay = newDelay
-      reactor.execute {
-        info { "Updating parameters for " + name + ": delay = " + delay }
-        repeater.foreach(_.cancel)
-        repeater = Some(reactor.repeat(delay) {
-          update(measurements.toList)
-        })
-      }
+    // if the delay is 0 we shouldn't publish any random values after
+    // the initial integrity poll
+    delay = newDelay
+    info { "Updating parameters for " + name + ": delay = " + delay }
+    this.synchronized {
+      repeater.foreach(_.cancel)
+      repeater = if (delay == 0) None else Some(reactor.repeat(delay) {
+        update(measurements.toList)
+      })
     }
   }
 
@@ -80,7 +81,7 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     }
     if (batch.getMeasCount > 0) {
       debug { name + " publishing batch of size: " + batch.getMeasCount }
-      publish(batch.build)
+      publisher.publish(batch.build)
     }
   }
 
@@ -95,15 +96,13 @@ class Simulator(name: String, publish: IProtocol.Publish, respondFun: IProtocol.
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest): Unit = reactor.execute {
-    cmdMap.get(cr.getName) match {
-      case Some(x) =>
-        info { "handled command:" + cr }
-        val rsp = Commands.CommandResponse.newBuilder
-        rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
-        respondFun(rsp.build)
-      case None =>
-    }
+  def issue(cr: Commands.CommandRequest, rspHandler: IResponseHandler) = cmdMap.get(cr.getName) match {
+    case Some(x) =>
+      info { "handled command:" + cr }
+      val rsp = Commands.CommandResponse.newBuilder
+      rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
+      rspHandler.onResponse(rsp.build)
+    case None =>
   }
 
   /////////////////////////////////////////////////

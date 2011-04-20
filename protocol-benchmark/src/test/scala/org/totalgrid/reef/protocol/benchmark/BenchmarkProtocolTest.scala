@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.protocol.benchmark
 
+import org.totalgrid.reef.protocol.api.{ IPublisher, IResponseHandler, NullEndpointListener }
+
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -61,17 +63,16 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     Commands.CommandRequest.newBuilder.setName(name).build
   }
 
-  class Callbacks {
+  class Callbacks extends IPublisher with IResponseHandler {
 
-    val cmdResponses = new SyncVar(None: Option[Commands.CommandResponse])
+    val cmdResponses = new SyncVar[Option[Commands.CommandResponse]](None: Option[Commands.CommandResponse])
     val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
 
-    def publish(m: Measurements.MeasurementBatch) {
-      measurements.atomic(l => (m :: l).reverse)
-    }
-    def respond(c: Commands.CommandResponse) {
-      cmdResponses.update(Some(c))
-    }
+    def publish(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)
+    def close() {}
+
+    def onResponse(c: Commands.CommandResponse) = cmdResponses.update(Some(c))
+
   }
 
   val endpointName = "endpoint"
@@ -79,7 +80,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   test("add remove") {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
-    protocol.addEndpoint(endpointName, "", getConfigFiles(), cb.publish _, cb.respond _)
+    protocol.addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
 
     cb.measurements.waitFor(_.size > 0)
 
@@ -94,13 +95,13 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   test("command responded to") {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
-    val issue = protocol.addEndpoint(endpointName, "", getConfigFiles(), cb.publish _, cb.respond _)
+    val cmdHandler = protocol.addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
 
-    issue(getCmdRequest("success"))
+    cmdHandler.issue(getCmdRequest("success"), cb)
 
     cb.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.SUCCESS }.getOrElse(false))
 
-    issue(getCmdRequest("fail"))
+    cmdHandler.issue(getCmdRequest("fail"), cb)
 
     cb.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.HARDWARE_ERROR }.getOrElse(false))
 
@@ -111,9 +112,9 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     val protocol = new BenchmarkProtocol
     val cb = new Callbacks
     // need to call the NVII functions or else we are only testing the BaseProtocol code
-    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb.publish _, cb.respond _)
+    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
     intercept[IllegalArgumentException] {
-      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb.publish _, cb.respond _)
+      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
     }
   }
 

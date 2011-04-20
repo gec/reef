@@ -22,15 +22,14 @@ package org.totalgrid.reef.integration.helpers;
 
 import org.junit.*;
 
-import org.osgi.framework.ServiceException;
 import org.totalgrid.reef.api.IConnectionListener;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.messaging.javaclient.Connection;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 
-import org.totalgrid.reef.integration.SampleRequests;
 import org.totalgrid.reef.api.javaclient.IConnection;
 import org.totalgrid.reef.api.javaclient.ISession;
 
@@ -42,28 +41,12 @@ public class JavaBridgeTestBase {
 
 	private boolean autoLogon;
 
-	public class MockConnectionListener implements IConnectionListener {
-		private BlockingQueue<Boolean> queue = new BlockingQueue<Boolean>();
-
-		public void opened() {
-			queue.push(true);
-		}
-
-		public void closed() {
-			queue.push(false);
-		}
-
-		boolean waitForStateChange(int timeout) throws InterruptedException {
-			return queue.pop(timeout);
-		}
-	}
-
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
 	protected IConnection connection = new Connection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
 	protected ISession client = null;
-	protected MockConnectionListener listener = new MockConnectionListener();
+    protected AtollService helpers = null;
 
 	/**
 	 * Baseclass for junit integration tests, provides a Connection that is started and stopped with
@@ -75,7 +58,6 @@ public class JavaBridgeTestBase {
 	 */
 	public JavaBridgeTestBase(boolean autoLogon) {
 		this.autoLogon = autoLogon;
-		connection.addConnectionListener(listener);
 	}
 
 	/**
@@ -106,19 +88,18 @@ public class JavaBridgeTestBase {
 
 	@Before
 	public void startBridge() throws InterruptedException, ReefServiceException {
-		connection.start();
-		org.junit.Assert.assertTrue(listener.waitForStateChange(5000));
+		connection.connect(5000);
 		client = connection.newSession();
+        helpers = new AtollService(client);
 		if (autoLogon) {
-			// core user has full read/write permissions
-			SampleRequests.logonAs(client, "core", "core", true);
+            // core user has full read/write permissions
+            client.getDefaultEnv().setAuthToken(helpers.createNewAuthorizationToken("core", "core"));
 		}
 	}
 
 	@After
-	public void stopBridge() throws InterruptedException {
+	public void stopBridge() throws InterruptedException, ReefServiceException {
 		client.close();
-		connection.stop();
-		org.junit.Assert.assertFalse(listener.waitForStateChange(5000));
+		connection.disconnect(5000);
 	}
 }

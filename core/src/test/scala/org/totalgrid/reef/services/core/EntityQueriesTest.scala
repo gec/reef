@@ -20,17 +20,12 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
 
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
-import org.totalgrid.reef.models.{ ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.services.coordinators._
 
@@ -38,47 +33,16 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import org.totalgrid.reef.messaging.BrokerObjectConsumer
 import scala.collection.JavaConversions._
-
-/*
-@RunWith(classOf[JUnitRunner])
-class ModelSeedTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"), List(ApplicationSchema.reset))
-    transaction {
-      ModelSeed.seed()
-    }
-  }
-
-  test("Basic") {
-    val entRoot = ApplicationSchema.entities.where(t => t.name === "Pittsboro").head
-    val req = EntityProto.newBuilder
-      .setUid(entRoot.id.toString)
-      .addRelations(
-        Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Breaker"))).build
-
-    println(req)
-    val results = EQ.fullQuery(req)
-
-    results.length should equal(1)
-    val root = results.head
-    //println(root)
-    //checkResults(parseTree(root), tree)
-  }
-}*/
+import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
 
 @RunWith(classOf[JUnitRunner])
-class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with RunTestsInsideTransaction {
+class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
   import EQ._
 
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+  override def beforeEach() {
+    super.beforeEach()
     transaction {
-      ApplicationSchema.reset
       seed
     }
   }
@@ -156,9 +120,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(1)
@@ -173,19 +137,19 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .setDistance(1)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Point")
-          .addRelations(Relationship.newBuilder
-            .setRelationship("owns")
-            .setDescendantOf(true)
-            .setDistance(1)
-            .addEntities(
-              EntityProto.newBuilder
-              .addTypes("Command")))))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Point")
+              .addRelations(Relationship.newBuilder
+                .setRelationship("owns")
+                .setDescendantOf(true)
+                .setDistance(1)
+                .addEntities(
+                  EntityProto.newBuilder
+                    .addTypes("Command")))))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(1)
@@ -201,16 +165,16 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .setDistance(1)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Point"))
-        .addEntities(
-          EntityProto.newBuilder
-          .setName("Junk01")
-          .addTypes("Junk")))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Point"))
+            .addEntities(
+              EntityProto.newBuilder
+                .setName("Junk01")
+                .addTypes("Junk")))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(2)
@@ -229,19 +193,19 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .setUid("1")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Point")))
-      .addRelations(
-        Relationship.newBuilder
-        .setRelationship("refs")
-        .setDistance(4)
-        .addEntities(
-          EntityProto.newBuilder
-          .setName("Thing1")
-          .addTypes("Thing")))
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Point")))
+        .addRelations(
+          Relationship.newBuilder
+            .setRelationship("refs")
+            .setDistance(4)
+            .addEntities(
+              EntityProto.newBuilder
+                .setName("Thing1")
+                .addTypes("Thing")))
 
     val nodes = protoToQuery(req.build)
     nodes.size should equal(2)
@@ -260,9 +224,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .addTypes("Breaker")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     val results = protoTreeQuery(req.build)
     results.size should equal(2)
@@ -279,9 +243,9 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
     val req = EntityProto.newBuilder
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     intercept[Exception] {
       val results = protoTreeQuery(req.build)
@@ -290,12 +254,12 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
 
   test("Proto query, root set nil") {
     val req = EntityProto.newBuilder
-      .addTypes("Nonexistent")
+      .setName("Nonexistent")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("refs")
-        .setDescendantOf(true)
-        .setDistance(1))
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1))
 
     protoTreeQuery(req.build) should equal(Nil)
   }
@@ -530,11 +494,11 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       .addTypes("EquipmentGroup")
       .addRelations(
         Relationship.newBuilder
-        .setRelationship("owns")
-        .setDescendantOf(true)
-        .addEntities(
-          EntityProto.newBuilder
-          .addTypes("Equipment"))).build
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .addEntities(
+            EntityProto.newBuilder
+              .addTypes("Equipment"))).build
 
     val results = EQ.fullQuery(req)
     results.length should equal(1)
@@ -559,6 +523,28 @@ class EntityQueriesTest extends FunSuite with ShouldMatchers with BeforeAndAfter
       "RegA-SubA-DeviceB-PointB")
 
     checkResults(spec, names)
+  }
+
+  test("Asking for unknown Type") {
+    val req = EntityProto.newBuilder.addTypes("ShouldHaveBeenSubstation")
+
+    intercept[BadRequestException] {
+      EQ.fullQuery(req.build)
+    }
+  }
+
+  test("Asking for unknown in sub proto") {
+    val req = EntityProto.newBuilder.setName("Nonexistent")
+      .addRelations(
+        Relationship.newBuilder
+          .setRelationship("refs")
+          .setDescendantOf(true)
+          .setDistance(1).addEntities(
+            EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
+
+    intercept[BadRequestException] {
+      EQ.fullQuery(req.build)
+    }
   }
 
 }

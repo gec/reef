@@ -17,7 +17,7 @@ enum CommandType {
     LATCH_ON    = 2;
     LATCH_OFF   = 3;
     PULSE_CLOSE = 4;
-    PUSLE_TRIP  = 5;
+    PULSE_TRIP  = 5;
     SETPOINT    = 6;
 }
 

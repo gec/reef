@@ -44,26 +44,44 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: SyncOperations, filename: String, benchmark: Boolean) = {
+  def loadFile(client: SyncOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
 
     info("Loading configuration file '" + filename + "'")
+
+    val file = new File(filename)
+    val reader = new FileReader(file)
     try {
-      val file = new File(filename)
-      val xml = XMLHelper.read(new FileReader(file), classOf[Configuration])
 
-      loadConfiguration(client, xml, benchmark, file.getParentFile)
+      val xml = XMLHelper.read(reader, classOf[Configuration])
 
-      info("Finished loading configuration '" + filename + "'")
+      val loader = new CachingModelLoader(None)
+
+      val valid = loadConfiguration(loader, xml, benchmark, file.getParentFile)
+
+      info("Finished analyzing configuration '" + filename + "'")
+
+      if (!valid && !ignoreWarnings) {
+        println("Configuration invalid, fix errors or add ignoreWarnings argument")
+      } else if (!dryRun) {
+        println("Uploading: " + loader.size + " objects to server...")
+        loader.flush(client)
+        println("Configuration loaded.")
+      } else {
+        println("DRYRUN: Skipping upload of " + loader.size + " objects.")
+      }
 
     } catch {
       case ex =>
         println("Error loading configuration file '" + filename + "' " + ex.getMessage)
         throw ex
     }
+    finally {
+      reader.close
+    }
 
   }
 
-  def loadConfiguration(client: SyncOperations, xml: Configuration, benchmark: Boolean, path: File = new File(".")) = {
+  def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, path: File = new File(".")): Boolean = {
 
     var equipmentPointUnits = HashMap[String, String]()
     val actionModel = HashMap[String, ActionSet]()
@@ -71,37 +89,54 @@ object LoadManager extends Logging {
     if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
       throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
 
-    if (xml.isSetMessageModel) {
-      val messageLoader = new MessageLoader(client)
-      val messageModel = xml.getMessageModel
-      messageLoader.load(messageModel)
-    }
-
-    if (xml.isSetActionModel) {
-      val actionSets = xml.getActionModel.getActionSet.toList
-      actionSets.foreach(as => actionModel += (as.getName -> as))
-    }
-
     val loadCache = new LoadCache
+    val ex = new LoadingExceptionCollector
+    try {
+      if (xml.isSetMessageModel) {
+        val messageLoader = new MessageLoader(client, ex)
+        val messageModel = xml.getMessageModel
+        messageLoader.load(messageModel)
+      }
 
-    if (xml.isSetEquipmentModel) {
-      val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu)
-      val equModel = xml.getEquipmentModel
-      equipmentPointUnits = equLoader.load(equModel, actionModel)
+      if (xml.isSetActionModel) {
+        val actionSets = xml.getActionModel.getActionSet.toList
+        actionSets.foreach(as => actionModel += (as.getName -> as))
+      }
+
+      if (xml.isSetEquipmentModel) {
+        val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu, ex)
+        val equModel = xml.getEquipmentModel
+        equipmentPointUnits = equLoader.load(equModel, actionModel)
+      }
+
+      if (xml.isSetCommunicationsModel) {
+        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom, ex)
+        val comModel = xml.getCommunicationsModel
+        comLoader.load(comModel, path, equipmentPointUnits, benchmark)
+      }
+    } catch {
+      case exception: Exception =>
+        println("Parsing halted by terminal error: " + exception.getMessage)
+        println("Fix Critical Errors and try again.")
+        warn(exception.getStackTraceString)
     }
 
-    if (xml.isSetCommunicationsModel) {
-      val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom)
-      val comModel = xml.getCommunicationsModel
-      comLoader.load(comModel, path, equipmentPointUnits, benchmark)
-    }
+    val errors = ex.getErrors
 
-    loadCache.validate
+    if (errors.size > 0) {
+      println
+      println("Critical Errors found:")
+      errors.foreach(println(_))
+      println
+      false
+    } else {
+      loadCache.validate
+    }
   }
 
   def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean): Unit = {
 
-    amqp.start
+    amqp.connect(5000)
 
     try {
       // client that lets us talk to all the services through 1 interface
@@ -113,9 +148,9 @@ object LoadManager extends Logging {
       env.addAuthToken(authToken.getToken)
       client.setDefaultHeaders(env)
 
-      loadFile(client, filename, benchmark)
+      loadFile(client, filename, benchmark, false)
     } finally {
-      amqp.stop
+      amqp.disconnect(5000)
     }
   }
 

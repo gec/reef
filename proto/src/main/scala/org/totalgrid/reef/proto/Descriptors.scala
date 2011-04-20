@@ -122,15 +122,15 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.SerialPort.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.FEP.SerialPort]
   }
-  def port() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.Port] {
-    def serialize(typ: org.totalgrid.reef.proto.FEP.Port): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.Port.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.FEP.Port]
+  def commChannel() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommChannel] {
+    def serialize(typ: org.totalgrid.reef.proto.FEP.CommChannel): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommChannel.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommChannel]
   }
-  def communicationEndpointRouting() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommunicationEndpointRouting] {
-    def serialize(typ: org.totalgrid.reef.proto.FEP.CommunicationEndpointRouting): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommunicationEndpointRouting.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommunicationEndpointRouting]
+  def commEndpointRouting() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommEndpointRouting] {
+    def serialize(typ: org.totalgrid.reef.proto.FEP.CommEndpointRouting): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommEndpointRouting.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommEndpointRouting]
   }
   def frontEndProcessor() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.FrontEndProcessor] {
     def serialize(typ: org.totalgrid.reef.proto.FEP.FrontEndProcessor): Array[Byte] = typ.toByteArray
@@ -142,15 +142,15 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.EndpointOwnership.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.FEP.EndpointOwnership]
   }
-  def communicationEndpointConfig() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommunicationEndpointConfig] {
-    def serialize(typ: org.totalgrid.reef.proto.FEP.CommunicationEndpointConfig): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommunicationEndpointConfig.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommunicationEndpointConfig]
+  def commEndpointConfig() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommEndpointConfig] {
+    def serialize(typ: org.totalgrid.reef.proto.FEP.CommEndpointConfig): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommEndpointConfig.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommEndpointConfig]
   }
-  def communicationEndpointConnection() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommunicationEndpointConnection] {
-    def serialize(typ: org.totalgrid.reef.proto.FEP.CommunicationEndpointConnection): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommunicationEndpointConnection.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommunicationEndpointConnection]
+  def commEndpointConnection() = new ITypeDescriptor[org.totalgrid.reef.proto.FEP.CommEndpointConnection] {
+    def serialize(typ: org.totalgrid.reef.proto.FEP.CommEndpointConnection): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommEndpointConnection.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommEndpointConnection]
   }
   def measMap() = new ITypeDescriptor[org.totalgrid.reef.proto.Mapping.MeasMap] {
     def serialize(typ: org.totalgrid.reef.proto.Mapping.MeasMap): Array[Byte] = typ.toByteArray
@@ -222,6 +222,11 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.EntityEdge.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.Model.EntityEdge]
   }
+  def entityAttributes() = new ITypeDescriptor[org.totalgrid.reef.proto.Model.EntityAttributes] {
+    def serialize(typ: org.totalgrid.reef.proto.Model.EntityAttributes): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.EntityAttributes.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Model.EntityAttributes]
+  }
   def point() = new ITypeDescriptor[org.totalgrid.reef.proto.Model.Point] {
     def serialize(typ: org.totalgrid.reef.proto.Model.Point): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Point.parseFrom(bytes)
@@ -276,6 +281,21 @@ object Descriptors {
     def serialize(typ: AnalogLimit): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = AnalogLimit.parseFrom(bytes)
     def getKlass = classOf[AnalogLimit]
+  }
+  def boolEnumTransform() = new ITypeDescriptor[BoolEnumTransform] {
+    def serialize(typ: BoolEnumTransform): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = BoolEnumTransform.parseFrom(bytes)
+    def getKlass = classOf[BoolEnumTransform]
+  }
+  def intEnumTransform() = new ITypeDescriptor[IntEnumTransform] {
+    def serialize(typ: IntEnumTransform): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = IntEnumTransform.parseFrom(bytes)
+    def getKlass = classOf[IntEnumTransform]
+  }
+  def intToString() = new ITypeDescriptor[IntToString] {
+    def serialize(typ: IntToString): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = IntToString.parseFrom(bytes)
+    def getKlass = classOf[IntToString]
   }
   def measurementProcessingRouting() = new ITypeDescriptor[MeasurementProcessingRouting] {
     def serialize(typ: MeasurementProcessingRouting): Array[Byte] = typ.toByteArray

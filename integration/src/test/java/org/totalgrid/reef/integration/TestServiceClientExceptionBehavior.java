@@ -41,4 +41,13 @@ public class TestServiceClientExceptionBehavior extends JavaBridgeTestBase {
 		}
 	}
 
+    @Test
+	public void settingNullAuthTokenThrows() {
+		try{
+            client.getDefaultEnv().setAuthToken(null);
+            assertTrue(false);
+        }catch(IllegalArgumentException e){
+            assertTrue(true);
+        }
+	}
 }

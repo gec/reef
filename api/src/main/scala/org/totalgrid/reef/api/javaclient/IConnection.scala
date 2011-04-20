@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,7 +18,9 @@ package org.totalgrid.reef.api.javaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.IConnectionListener
+package org.totalgrid.reef.api.javaclient
+
+import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 
 /**
  * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
@@ -30,23 +30,51 @@ trait IConnection {
 
   /**
    * register a listener for open/close events
-   * 
+   *
    * @param listener Interace to call back with open/close events
    */
   def addConnectionListener(listener: IConnectionListener)
 
   /**
-   *  Starts execution of the messaging connection
+   * remove a listener for open/close events
+   *
+   * @param listener Interace to call back with open/close events
+   */
+  def removeConnectionListener(listener: IConnectionListener)
+
+  /**
+   * Starts execution of the messaging connection. Once the service has been started the connection to
+   * the broker may be lost so it is important to use an IConnectionListener to be informed of those
+   * non-client initiated disconnection events.
+   * @param timeoutMs how long to wait (milliseconds) for the first good connection before throwing ServiceIOException.
+   *    values of 0 or less will throw illegal argument exception
+   */
+  @throws(classOf[ServiceIOException])
+  def connect(timeoutMs: Long)
+
+  /**
+   * Starts execution of the messaging connection. Once the service has been started the connection to
+   * the broker may be lost so it is important to use an IConnectionListener to be informed of those
+   * non-client initiated disconnection events.
    */
   def start()
 
   /**
-   *  Halts execution of the messaging connection
+   * Halts the messaging connection and waits for a closed callback
+   * @param timeoutMs how long to wait (milliseconds) for stop before throwing ServiceIOException.
+   *    values of 0 or less will throw illegal argument exception
+   */
+  @throws(classOf[ServiceIOException])
+  def disconnect(timeoutMs: Long)
+
+  /**
+   * Begins halting execution of the messaging connection
    */
   def stop()
 
   /**
    * creates a non thread-safe (use from single thread only) client
+   * TODO: have newSession throw exception if not open
    */
   def newSession(): ISession
 }

@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 object TriggerFactory {
   import Triggers._
 
-  /** 
+  /**
    * Converts proto activation type to scala activation type
    * @param proto   Proto activation type
    * @return        Scala activation type
@@ -90,7 +90,9 @@ trait TriggerFactory { self: ActionFactory =>
       proto.quality.map(new QualityCondition(_)),
       proto.unit.map(new UnitCondition(_)),
       proto.valueType.map(new TypeCondition(_)),
-      proto.boolValue.map(new BoolValue(_))).flatten
+      proto.boolValue.map(new BoolValue(_)),
+      proto.intValue.map(new IntegerValue(_)),
+      proto.stringValue.map(new StringValue(_))).flatten
 
     val actions = proto.getActionsList.toList.map(buildAction(_))
     new BasicTrigger(cacheID, conditions, actions, stopProc)
@@ -105,6 +107,21 @@ object Triggers {
     def apply(m: Measurement, prev: Boolean): Boolean = {
       (m.getType == Measurement.Type.BOOL) &&
         (m.getBoolVal == b)
+    }
+  }
+
+  // integer as in "not floating point", not integer as in 2^32, values on measurements are actually Longs
+  class IntegerValue(i: Long) extends Trigger.Condition {
+    def apply(m: Measurement, prev: Boolean): Boolean = {
+      (m.getType == Measurement.Type.INT) &&
+        (m.getIntVal == i)
+    }
+  }
+
+  class StringValue(s: String) extends Trigger.Condition {
+    def apply(m: Measurement, prev: Boolean): Boolean = {
+      (m.getType == Measurement.Type.STRING) &&
+        (m.getStringVal == s)
     }
   }
 

@@ -38,7 +38,8 @@ abstract class MetricsCommands extends OsgiCommandSupport {
   val outputToCSV = new SessionHeldObject[scala.Option[String]]("metrics.csv", { this.session }, None)
 
   def output(pubValues: Map[String, Any]) = {
-    if (outputToScreen.get) pubValues.foreach { case (name, result) => println(name + " => " + result) }
+    val names = pubValues.keys.toList.sorted
+    if (outputToScreen.get) names.foreach { name => println(name + " => " + pubValues(name)) }
     outputToCSV.get.foreach { fileName =>
       // TODO: move csv publisher to admin package?
       val publisher = new CSVMetricPublisher(fileName)
@@ -47,10 +48,14 @@ abstract class MetricsCommands extends OsgiCommandSupport {
     }
   }
 
-  def getMetrics() = {
+  def getMetrics(executeCalculations: Boolean = true) = {
     val rawMetrics = MetricsSink.values(filters.get)
-    val calcedValues = calculations.get.map { MetricsMapHelpers.sumAndCount(rawMetrics, _) }
-    MetricsMapHelpers.mergeMap(rawMetrics :: calcedValues)
+    if (executeCalculations) doCalcs(rawMetrics) else rawMetrics
+  }
+
+  def doCalcs(values: Map[String, Any]): Map[String, Any] = {
+    val calcedValues = calculations.get.map { MetricsMapHelpers.sumAndCount(values, _) }
+    MetricsMapHelpers.mergeMap(values :: calcedValues)
   }
 }
 
@@ -67,7 +72,7 @@ class MetricsReset extends MetricsCommands {
 class MetricsShow extends MetricsCommands {
 
   override def doExecute(): Object = {
-    output(getMetrics)
+    output(getMetrics())
     null
   }
 }
@@ -95,15 +100,16 @@ class MetricsRates extends MetricsCommands {
   private var time: Long = 10
 
   override def doExecute(): Object = {
-    val startValues = getMetrics
+    val startValues = getMetrics(false)
 
     println("Waiting " + time + " seconds for rates")
     Thread.sleep(time * 1000)
 
-    val endValues = getMetrics
+    val endValues = getMetrics(false)
     val pubValues = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
+    val calcedValues = doCalcs(pubValues)
 
-    output(pubValues)
+    output(calcedValues)
 
     null
   }

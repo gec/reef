@@ -22,7 +22,8 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.{ GeneratedMessage, CodedOutputStream, ByteString }
 
-/**	Provides some implicits useful for dealing with google protobuf bindings.
+/**
+ * 	Provides some implicits useful for dealing with google protobuf bindings.
  */
 object ProtoSerializer {
 

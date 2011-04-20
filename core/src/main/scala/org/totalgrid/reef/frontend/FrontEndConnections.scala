@@ -21,19 +21,19 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.{ Commands, Measurements }
-import org.totalgrid.reef.proto.FEP.{ CommunicationEndpointConfig => ConfigProto, CommunicationEndpointConnection => ConnProto }
-import org.totalgrid.reef.messaging.ProtoRegistry
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.messaging.Connection
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
-import org.totalgrid.reef.app.ServiceHandler
 
-import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, IChannelListener, IEndpointListener }
+import org.totalgrid.reef.api._
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler: ServiceHandler) extends KeyedMap[ConnProto] {
+class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
 
   def getKey(c: ConnProto) = c.getUid
 
@@ -41,7 +41,7 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
 
   val maxAttemptsToRetryMeasurements = 1
 
-  private def getProtocol(name: String): Protocol = protocols.get(name) match {
+  private def getProtocol(name: String): IProtocol = protocols.get(name) match {
     case Some(p) => p
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
@@ -55,76 +55,88 @@ class FrontEndConnections(comms: Seq[Protocol], registry: ProtoRegistry, handler
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
-    val port = c.getEndpoint.getPort
+    val port = c.getEndpoint.getChannel
 
-    // addressable client for the measurement stream
-    val measClient = registry.getServiceClient(c.getRouting.getServiceRoutingKey)
-
-    // extra client to break circular client -> handler -> issuer -> client chain
-    val cmdClient = registry.getServiceClient()
+    val publisher = newPublisher(c.getRouting.getServiceRoutingKey)
+    val channelListener = newChannelListener(port.getUid)
+    val endpointListener = newEndpointListener(c.getUid)
 
     // add the device, get the command issuer callback
-    if (protocol.requiresPort) protocol.addPort(port)
-    val issuer = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublish(measClient, 0), responsePublish(cmdClient))
+    if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
+    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, endpointListener)
+    val service = new SingleEndpointCommandService(cmdHandler)
+    conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
 
     info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
-
-    // TODO: subscribe to command requests by entity
-    val subProto = Commands.UserCommandRequest.newBuilder.setStatus(Commands.CommandStatus.EXECUTING).build
-    handler.addService(registry, 5000, Commands.UserCommandRequest.parseFrom, subProto, initialCommands(issuer), newCommands(issuer))
   }
 
   def removeEntry(c: ConnProto) {
+    debug("Removing endpoint " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
-    if (protocol.requiresPort) protocol.removePort(c.getEndpoint.getPort.getName)
+    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
+  }
+
+  private def newEndpointListener(endpointUid: String) = new IEndpointListener {
+
+    val session = conn.getClientSession
+
+    override def onStateChange(state: ConnProto.State) = {
+      val update = ConnProto.newBuilder.setUid(endpointUid).setState(state).build
+      try {
+        val result = session.postOneOrThrow(update)
+        debug { "Updated connection state: " + result }
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
+    }
+  }
+
+  private def newChannelListener(channelUid: String) = new IChannelListener {
+
+    val session = conn.getClientSession
+
+    override def onStateChange(state: CommChannel.State) = {
+      val update = CommChannel.newBuilder.setUid(channelUid).setState(state).build
+      try {
+        val result = session.postOneOrThrow(update)
+        debug { "Updated channel: " + result }
+      } catch {
+        case ex: ReefServiceException => error(ex)
+      }
+    }
+
   }
 
   /**
    * push measurement batchs to the addressable service
    */
-  private def batchPublish(client: ServiceClient, attempts: Int)(x: Measurements.MeasurementBatch): Unit = {
+  private def batchPublish(client: ClientSession, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
     try {
-      client.putOrThrow(x)
+      client.putOrThrow(x, destination = dest)
     } catch {
-      case e: Exception =>
-        if (attempts >= maxAttemptsToRetryMeasurements) error(e)
-        else {
+      case a: ResponseTimeoutException =>
+        if (attempts >= maxAttemptsToRetryMeasurements) {
+          error("Multiple timeouts publishing measurements to MeasurementProcessor at: " + dest)
+          error(a)
+        } else {
           info("Retrying publishing measurements : " + x.getMeasCount)
-          batchPublish(client, attempts + 1)(x)
+          batchPublish(client, attempts + 1, dest)(x)
         }
+      case e: Exception =>
+        error("Error publishing measurements to MeasurementProcessor at: " + dest)
+        error(e)
     }
   }
 
-  /**
-   * send command responses back to the server
-   */
-  private def responsePublish(client: ServiceClient)(x: Commands.CommandResponse): Unit = {
-    try {
-      val cr = Commands.CommandRequest.newBuilder.setCorrelationId(x.getCorrelationId)
-      val msg = Commands.UserCommandRequest.newBuilder.setCommandRequest(cr).setStatus(x.getStatus).build
-      client.putOrThrow(msg)
-    } catch {
-      case e: Exception => error(e)
-    }
-  }
+  private def newPublisher(routingKey: String) = new IPublisher {
 
-  /**
-   * handle the "integrity poll" of commands that are still to be worked on
-   * TODO: ignore old commands? only return non-expired commands?
-   */
-  private def initialCommands(issuer: Protocol.Issue)(crs: List[Commands.UserCommandRequest]) {
-    crs.foreach { x =>
-      issuer(x.getCommandRequest)
-    }
-  }
+    val session = conn.getClientSession
 
-  /**
-   * handle new added command commands, issuer will only respond to correct commands
-   */
-  private def newCommands(issuer: Protocol.Issue)(evt: Envelope.Event, cr: Commands.UserCommandRequest) {
-    if (evt == Envelope.Event.ADDED) issuer(cr.getCommandRequest)
+    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(session, 0, AddressableService(routingKey))(batch)
+
+    override def close() = session.close
   }
 }
 

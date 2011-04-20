@@ -20,16 +20,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.ProcessStatus._
@@ -44,16 +36,10 @@ import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistr
 
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagementTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
 
   class Fixture(amqp: AMQPProtoFactory) {
 
@@ -70,10 +56,10 @@ class ApplicationManagementTest extends FunSuite with ShouldMatchers with Before
     amqp.bindService("app_config", applicationConfigService.respond)
     amqp.bindService("process_status", processStatusService.respond)
 
-    val client = amqp.getProtoServiceClient(ReefServicesList, 5000)
+    val client = amqp.getProtoClientSession(ReefServicesList, 5000)
 
     /// current state of the StatusSnapshot
-    var lastSnapShot = new SyncVar(None: Option[StatusSnapshot])
+    var lastSnapShot = new SyncVar[Option[StatusSnapshot]](None: Option[StatusSnapshot])
 
     /// register the application with the services handler
     val appConfig = registerInstance()

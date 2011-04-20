@@ -51,7 +51,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
 
     val overCache = new MockObjectCache[Measurement]
     val measCache = new MockObjectCache[Measurement]
-    val proc = new OverrideProcessor(measQueue.enqueue(_), overCache, measCache.get(_))
+    val proc = new OverrideProcessor((m, b) => measQueue.enqueue(m), overCache, measCache.get(_))
 
     def configure(config: List[MeasOverride]) = proc.subscribed(config)
     def event(ev: Envelope.Event, proto: MeasOverride) = proc.handleEvent(ev, proto)

@@ -26,6 +26,8 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.messaging.SessionPool
+
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
@@ -41,17 +43,22 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
   val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
   val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
 
+  val sessionPool = new SessionPool(components.registry)
+
   val services = List(
 
     new EntityService,
     new EntityEdgeService,
+    new EntityAttributesService,
 
     // we do not lock out people without auth tokens from the authtoken service, otherwise we couldn't bootstrap
     new AuthTokenService(modelFac.authTokens),
+    new AgentService(modelFac.agents),
+    new PermissionSetService(modelFac.permissionSets),
 
     new CommandAccessService(modelFac.accesses),
 
-    new UserCommandRequestService(modelFac.userRequests),
+    new UserCommandRequestService(modelFac.userRequests, sessionPool),
 
     new CommandService(modelFac.cmds),
     new CommunicationEndpointService(modelFac.endpoints),
@@ -68,13 +75,13 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new TriggerSetService(modelFac.triggerSets),
 
     new MeasurementBatchService(components.amqp),
-    new MeasurementHistoryService(wrappedHistorian),
+    new MeasurementHistoryService(wrappedHistorian, pubs),
     new MeasurementSnapshotService(wrappedDb, pubs),
     new EventConfigService(modelFac.eventConfig),
-    new EventQueryService(modelFac.events),
+    new EventQueryService(modelFac.events, pubs),
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms),
-    new AlarmQueryService)
+    new AlarmQueryService(pubs))
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),

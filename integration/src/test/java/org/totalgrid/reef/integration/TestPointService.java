@@ -68,7 +68,7 @@ public class TestPointService extends JavaBridgeTestBase {
 	public void pointFeedback() throws ReefServiceException {
 
 		// Get a command from the command service
-		List<Command> commands = SampleRequests.getAllCommands(client);
+		List<Command> commands = helpers.getCommands();
 		assertTrue(commands.size() > 0);
 		Command cmd = commands.get(0);
 

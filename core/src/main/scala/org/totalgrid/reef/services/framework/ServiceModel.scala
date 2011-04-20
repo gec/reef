@@ -30,7 +30,6 @@ import org.totalgrid.reef.api.{ Envelope, RequestEnv }
  */
 trait ServiceModel[MessageType, ModelType]
     extends ModelCrud[ModelType]
-    //with MessageModelConversion[MessageType, ModelType]
     with EnvHolder {
 
   /**
@@ -40,13 +39,10 @@ trait ServiceModel[MessageType, ModelType]
    */
   def subscribe(req: MessageType, queue: String): Unit
 
-  def createFromProto(req: MessageType): ModelType = {
-    create(createModelEntry(req))
-  }
+  def createFromProto(req: MessageType): ModelType = create(createModelEntry(req))
 
-  def updateFromProto(proto: MessageType, existing: ModelType): (ModelType, Boolean) = {
+  def updateFromProto(proto: MessageType, existing: ModelType): (ModelType, Boolean) =
     update(updateModelEntry(proto, existing), existing)
-  }
 
   /**
    * Convert message type to model type when creating
@@ -61,7 +57,7 @@ trait ServiceModel[MessageType, ModelType]
    * @param existing  Existing model entry
    * @return          Updated model entry
    */
-  def updateModelEntry(proto: MessageType, existing: ModelType): ModelType // = createModelEntry(proto)
+  def updateModelEntry(proto: MessageType, existing: ModelType): ModelType
 
   /**
    * Convert model entry to message type
@@ -96,8 +92,8 @@ trait EnvHolder extends QueuedEvaluation {
   }
 }
 
-/** 
- * Composed trait for the implementation of the service bridge of 
+/**
+ * Composed trait for the implementation of the service bridge of
  * models (event buffering/publishing, subscribe requests)
  */
 trait EventedServiceModel[MessageType <: GeneratedMessage, ModelType]

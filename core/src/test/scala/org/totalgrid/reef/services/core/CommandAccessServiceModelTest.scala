@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
@@ -29,11 +27,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.api.ReefServiceException
 
-import org.totalgrid.reef.models.{ ApplicationSchema, Command, CommandAccessModel }
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models.RunTestsInsideTransaction
-
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.models._
 
 trait CommandTestRig {
   val commandModel = new CommandServiceModel(new SilentServiceSubscriptionHandler)
@@ -50,24 +45,12 @@ trait AccessTestRig extends CommandTestRig {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String) {
-    seed(new Command(name, 0, false, None, None))
+    seed(new Command(name, name, 0, false, None, None))
   }
 }
 
 @RunWith(classOf[JUnitRunner])
-class CommandAccessServiceModelTest
-    extends FunSuite
-    with ShouldMatchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with RunTestsInsideTransaction {
-
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
   import AccessProto._
 
@@ -110,8 +93,8 @@ class CommandAccessServiceModelTest
 
   test("Block") {
     val r = new TestRig
-    r.seed(new Command("cmd01", 0, false, None, None))
-    r.seed(new Command("cmd02", 0, false, None, None))
+    r.seed(new Command("cmd01", "", 0, false, None, None))
+    r.seed(new Command("cmd02", "", 0, false, None, None))
 
     // Do the block
     val inserted = r.model.blockCommands("user01", List("cmd01"))
@@ -147,8 +130,8 @@ class CommandAccessServiceModelTest
 
   test("Multi-Block") {
     val r = new TestRig
-    val cmd1 = r.seed(new Command("cmd01", 0, false, None, None))
-    r.seed(new Command("cmd02", 0, false, None, None))
+    val cmd1 = r.seed(new Command("cmd01", "", 0, false, None, None))
+    r.seed(new Command("cmd02", "", 0, false, None, None))
 
     // Do the block
     val block1 = r.model.blockCommands("user01", List("cmd01", "cmd02"))
@@ -200,8 +183,8 @@ class CommandAccessServiceModelTest
     val r = new TestRig
     transaction {
       r.seed("cmd01")
-      r.seed(new Command("cmd02", 0, false, None, None))
-      r.seed(new Command("cmd03", 0, false, None, None))
+      r.seed(new Command("cmd02", "", 0, false, None, None))
+      r.seed(new Command("cmd03", "", 0, false, None, None))
     }
 
     val blockedCmds = List("cmd01", "cmd02", "cmd03")
@@ -223,7 +206,7 @@ class CommandAccessServiceModelTest
 
   test("Select") {
     val r = new TestRig
-    r.seed(new Command("cmd01", 0, false, None, None))
+    r.seed(new Command("cmd01", "", 0, false, None, None))
 
     val expireTime = System.currentTimeMillis + 5000
     val inserted = r.model.selectCommands("user01", Some(expireTime), List("cmd01"))
@@ -249,7 +232,7 @@ class CommandAccessServiceModelTest
 
   test("Select twice") {
     val r = new TestRig
-    val cmd = r.seed(new Command("cmd01", 0, false, None, None))
+    val cmd = r.seed(new Command("cmd01", "", 0, false, None, None))
 
     val expireTime = System.currentTimeMillis + 5000
     val inserted = r.model.selectCommands("user01", Some(expireTime), List("cmd01"))

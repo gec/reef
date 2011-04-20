@@ -48,7 +48,7 @@ import org.totalgrid.reef.proto.Utils
 object MessageFormatter {
 
   /**
-   * Render the resource string using the AttributeList. 
+   * Render the resource string using the AttributeList.
    */
   def format(resource: String, alist: AttributeList): String =
     parseResource(resource).map(_.apply(alist)).mkString("")
@@ -60,7 +60,7 @@ object MessageFormatter {
     format(resource, new AttributeList(proto))
 
   /**
-   * Render the resource string using the AttributeList proto byte array. 
+   * Render the resource string using the AttributeList proto byte array.
    */
   def format(resource: String, bytes: Array[Byte]): String =
     format(resource, new AttributeList(Utils.AttributeList.parseFrom(bytes)))

@@ -22,10 +22,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.ReefServiceException
 
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 
@@ -37,19 +33,12 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])
-class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
-  }
-  override def beforeEach() {
-    transaction { ApplicationSchema.reset }
-  }
+class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   val pubs = new SilentEventPublishers
   val rtDb = new InMemoryMeasurementStore()
@@ -63,13 +52,13 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
   val portService = new FrontEndPortService(modelFac.fepPort)
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
-    CommunicationEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
+    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
   }
   def getIPPort(name: String = "device") = {
-    Port.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork("any").setAddress("localhost").setPort(1200))
+    CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork("any").setAddress("localhost").setPort(1200))
   }
   def getSerialPort(name: String = "device") = {
-    Port.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation("any").setPortName("COM1"))
+    CommChannel.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation("any").setPortName("COM1"))
   }
   def getOwnership(name: String = "device", pointNames: List[String] = List("test_point"), controlNames: List[String] = List("test_command")) = {
     val owners = EndpointOwnership.newBuilder
@@ -98,14 +87,14 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
     val cf = one(configFileService.put(getConfigFile().build))
     val port = one(portService.put(getIPPort().build))
 
-    val endpoint = getEndpoint().setPort(port).addConfigFiles(cf).setOwnerships(getOwnership())
+    val endpoint = getEndpoint().setChannel(port).addConfigFiles(cf).setOwnerships(getOwnership())
 
     val returned = one(endpointService.put(endpoint.build))
 
     returned.getConfigFilesCount should equal(1)
-    returned.hasPort should equal(true)
+    returned.hasChannel should equal(true)
 
-    returned.getPort.getUid should equal(port.getUid)
+    returned.getChannel.getUid should equal(port.getUid)
     returned.getConfigFiles(0).getUid should equal(cf.getUid)
 
     returned.getOwnerships.getPointsCount should equal(1)
@@ -116,14 +105,14 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
   }
 
   test("Endpoint put adds all needed entries") {
-    val endpoint = getEndpoint().setPort(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
+    val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
 
     val returned = one(endpointService.put(endpoint.build))
 
     returned.getConfigFilesCount should equal(1)
-    returned.hasPort should equal(true)
+    returned.hasChannel should equal(true)
 
-    returned.getPort.hasUid should equal(true)
+    returned.getChannel.hasUid should equal(true)
     returned.getConfigFiles(0).hasUid should equal(true)
 
     returned.getOwnerships.getPointsCount should equal(1)
@@ -138,7 +127,7 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
 
     val returned = one(endpointService.put(endpoint.build))
 
-    returned.hasPort should equal(false)
+    returned.hasChannel should equal(false)
 
     returned.getConfigFilesCount should equal(1)
     returned.getConfigFiles(0).hasUid should equal(true)
@@ -161,7 +150,7 @@ class CommunicationEndpointServiceTest extends FunSuite with ShouldMatchers with
       configFileService.put(getConfigFile(None, Some("data"), Some("data")).build)
     }
     intercept[ReefServiceException] {
-      endpointService.put(getEndpoint().setPort(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
+      endpointService.put(getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
     }
   }
 

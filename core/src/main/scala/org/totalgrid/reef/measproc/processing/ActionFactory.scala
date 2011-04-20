@@ -71,6 +71,12 @@ trait ActionFactory { self: ProcessingResources =>
       new SetUnit(proto.getSetUnit)
     } else if (proto.hasEvent) {
       new EventGenerator(publishEvent, proto.getEvent.getEventType, proto.getEvent.getSeverity, subsystem)
+    } else if (proto.hasBoolTransform) {
+      new BoolEnumTransformer(proto.getBoolTransform.getFalseString, proto.getBoolTransform.getTrueString)
+    } else if (proto.hasIntTransform) {
+      import scala.collection.JavaConversions._
+      val intMapping = proto.getIntTransform.getMappingsList.toList.map { vm => vm.getValue -> vm.getString }.toMap
+      new IntegerEnumTransformer(intMapping)
     } else {
       throw new Exception("Must specify at least one action")
     }
@@ -150,6 +156,34 @@ object Actions {
         .setArgs(alist.toProto)
         .build)
       m
+    }
+  }
+
+  class BoolEnumTransformer(falseString: String, trueString: String) extends Action.Evaluation {
+    def apply(m: Measurement): Measurement = {
+      if (!m.hasBoolVal) {
+        // TODO: handle non boolean measurements in enum transform
+        m
+      } else {
+        m.toBuilder.setType(Measurement.Type.STRING)
+          .setStringVal(if (m.getBoolVal) trueString else falseString).build
+      }
+    }
+  }
+
+  // integer as in "not floating point", not integer as in 2^32, values on measurements are actually Longs
+  class IntegerEnumTransformer(mapping: Map[Long, String]) extends Action.Evaluation {
+    def apply(m: Measurement): Measurement = {
+      if (!m.hasIntVal) {
+        // TODO: handle non int measurements in int transform
+        m
+      } else {
+        mapping.get(m.getIntVal) match {
+          case Some(s) => m.toBuilder.setStringVal(s).setType(Measurement.Type.STRING).build
+          case None => m // TODO: how to handle unknown states in int transform?
+        }
+
+      }
     }
   }
 

@@ -23,18 +23,13 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.Envelope
 
-// proto list to scala list
-
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.models._
@@ -42,10 +37,10 @@ import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
 
-import java.util.{ Date, Calendar }
+import java.util.{ Calendar }
 
 @RunWith(classOf[JUnitRunner])
-class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
+class EventQueryServiceTest extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   // Need some well known times in the past... all based on NOW
@@ -77,14 +72,8 @@ class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
 
   val SUB1 = "subsystem1"
 
-  /**
-   *  Do this once, then run all tests.
-   */
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(DbInfo.loadInfo("test"))
-    transaction { ApplicationSchema.reset }
-    // All our tests are gets, so seed the table once for all tests.
+  override def beforeEach() {
+    super.beforeEach()
     seedEventTable
   }
 
@@ -136,33 +125,29 @@ class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
   case class Fixture(service: EventQueryService)
   type FixtureParam = Fixture
 
-  /**
-   *  This is run before each test.
-   */
-  def withFixture(test: OneArgTest) = {
-    import EventType._
-
+  def getFixture(): Fixture = {
     val pubs = new SilentEventPublishers
     val alarms = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
     val eventConfig = new EventConfigServiceModelFactory(pubs)
     val fac = new EventServiceModelFactory(pubs, eventConfig, alarms)
-    val service = new EventQueryService(fac)
+    val service = new EventQueryService(fac, pubs)
 
-    test(Fixture(service))
+    Fixture(service)
   }
 
-  def testFailPutEventList(fixture: Fixture) {
+  import EventType._
 
+  test("FailPutEventList") {
+    val fixture = getFixture
     import fixture._
-    import EventType._
 
     val resp = service.put(makeEL(0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
     resp.status should equal(Envelope.Status.NOT_ALLOWED)
   }
 
-  def testSimpleQueries(fixture: Fixture) {
+  test("SimpleQueries") {
+    val fixture = getFixture
     import fixture._
-    import EventType._
 
     // Select EventType only.
     //
@@ -204,9 +189,9 @@ class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
 
   }
 
-  def testQueriesWithSets(fixture: Fixture) {
+  test("QueriesWithSets") {
+    val fixture = getFixture
     import fixture._
-    import EventType._
 
     val empty = List[String]()
     val anyEventType = List[EventType]()
@@ -228,9 +213,9 @@ class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
 
   }
 
-  def testQueriesWithTime(fixture: Fixture) {
+  test("QueriesWithTime") {
+    val fixture = getFixture
     import fixture._
-    import EventType._
 
     var resp = one(service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)))
     resp.getEventsCount should equal(9)
@@ -260,8 +245,10 @@ class EventQueryServiceTest extends FixtureSuite with BeforeAndAfterAll with Sho
   /**
    *  Add some events to the database, and see if we're getting the updates.
    */
-  def testUpdates(fixture: Fixture) {
+  test("Updates") {
+    val fixture = getFixture
     import fixture._
+
     import EventType._
     import org.squeryl.PrimitiveTypeMode._
     import org.squeryl.Table

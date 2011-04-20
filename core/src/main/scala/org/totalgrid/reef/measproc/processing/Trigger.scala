@@ -33,7 +33,7 @@ object Trigger extends Logging {
   type Condition = (Measurement, Boolean) => Boolean
 
   /**
-   * Helper function to extract analog values from measurements 
+   * Helper function to extract analog values from measurements
    * @param m   Measurement
    * @return    Value in form of Double, or None
    */
@@ -69,7 +69,7 @@ object Trigger extends Logging {
 trait Trigger {
   /**
    * Conditionally process input measurement. May raise flag to stop further processing.
-   * 
+   *
    * @param m         Input measurement.
    * @param cache     Previous trigger state cache.
    * @return          Measurement result, flag to stop further processing.

@@ -27,11 +27,10 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.api.IConnectionListener
-
 import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {
@@ -53,12 +52,26 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     amqp.addConnectionListener(listener)
 
     10.times {
-      amqp.start
+      amqp.start()
       listener.connected.waitUntil(true)
-      amqp.stop
+      amqp.stop()
       listener.connected.waitUntil(false)
     }
 
+  }
+
+  test("Connection Timeout") {
+    val default = new BrokerConnectionInfo("127.0.0.1", 10000, "", "", "")
+    val amqp = new AMQPConnectionReactor with ReactActor {
+      val broker = new QpidBrokerConnection(default)
+    }
+
+    intercept[ServiceIOException] {
+      amqp.connect(100)
+    }
+
+    amqp.disconnect(100)
+    amqp.disconnect(100)
   }
 
   test("Qpid bind/unbind") {
@@ -67,10 +80,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
       val broker = new QpidBrokerConnection(default)
     }
 
-    val listener = new MockConnectionListener
-    amqp.addConnectionListener(listener)
-    amqp.start
-    listener.connected.waitUntil(true)
+    amqp.connect(1000)
 
     val channel = amqp.getChannel
 
@@ -89,6 +99,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
         sv.update(value)
       }
     })
+    channel.start
 
     channel.publish("test", "hi", "hi".getBytes, None)
 
@@ -106,5 +117,29 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     value.get should equal(0)
   }
 
+  test("Qpid Close") {
+    val default = BrokerConnectionInfo.loadInfo("test")
+    val amqp = new AMQPConnectionReactor with ReactActor {
+      val broker = new QpidBrokerConnection(default)
+    }
+
+    amqp.connect(1000)
+
+    val channel = amqp.getChannel
+
+    var expectedClose: Option[Boolean] = None
+
+    channel.addCloseListener(new BrokerChannelCloseListener {
+      def onClosed(channel: BrokerChannel, expected: Boolean) = {
+        expectedClose = Some(expected)
+      }
+    })
+
+    expectedClose should equal(None)
+
+    channel.close
+
+    expectedClose should equal(Some(true))
+  }
 }
 

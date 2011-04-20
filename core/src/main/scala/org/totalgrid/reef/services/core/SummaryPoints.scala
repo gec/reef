@@ -24,14 +24,15 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.{ IDestination, AddressableService }
 
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying
  * to update the same summary values it is easiest conceptually to split apart the inital value calcualtion
  * and the incrementing of the value. We plan on moving the summary point aggragation to a dedicated tool
  * like redis which has built in increment operations and using this interface should make that transition
- * easy. 
+ * easy.
  */
 trait SummaryPoints {
 
@@ -48,7 +49,7 @@ trait SummaryPoints {
 }
 
 /**
- * stores the current value of the summary points for inspect via testing. If using multi-threaded tests 
+ * stores the current value of the summary points for inspect via testing. If using multi-threaded tests
  * an onPublish callback can be provided to be notified of updates.
  */
 class SilentSummaryPoints(onPublish: (String, Int) => Any = (x, y) => {}) extends SummaryPointHolder {
@@ -68,7 +69,7 @@ class SilentSummaryPoints(onPublish: (String, Int) => Any = (x, y) => {}) extend
 }
 
 /**
- * base trait for summary point publishes that holds the initial value and # of increments for each point  
+ * base trait for summary point publishes that holds the initial value and # of increments for each point
  */
 trait SummaryPointHolder extends SummaryPoints with Logging {
   protected case class ValueHolder(var increments: Int, var initialValue: Int, var initialSet: Boolean) {
@@ -128,7 +129,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
   private var clients = Map.empty[String, Channel]
 
   /**
-   * attempt to publish the current value iff the point is enabled and a meas_proc is online 
+   * attempt to publish the current value iff the point is enabled and a meas_proc is online
    * @param name
    * @param current
    */
@@ -170,8 +171,11 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
    * @return
    */
   private def findChannel(name: String): Option[Channel] = {
+
+    //TODO reenable summary points
+
     import org.squeryl.PrimitiveTypeMode._
-    import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
+    import org.totalgrid.reef.models.ApplicationSchema
     var ret: Option[Channel] = None
     transaction {
       ApplicationSchema.points.where(p => p.name === name).headOption match {
@@ -187,8 +191,8 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
                   clients.get(routingKey) match {
                     case Some(callback) => ret = Some(callback)
                     case None =>
-                      val client = amqp.getProtoServiceClient(ReefServicesList, 1000, routingKey)
-                      val func = publishMeasurement(client, LastAttempt(0, true)) _
+                      val client = amqp.getProtoClientSession(ReefServicesList, 1000)
+                      val func = publishMeasurement(client, LastAttempt(0, true), AddressableService(routingKey)) _
                       clients += (routingKey -> func)
                       ret = Some(func)
                   }
@@ -201,6 +205,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
       }
     }
     ret
+
   }
 
   /**
@@ -208,7 +213,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
    */
   case class LastAttempt(var nextTime: Long, var success: Boolean)
 
-  private def publishMeasurement(client: ServiceClient, lastAttempt: LastAttempt)(mb: Measurements.MeasurementBatch) {
+  private def publishMeasurement(client: ClientSession, lastAttempt: LastAttempt, dest: IDestination)(mb: Measurements.MeasurementBatch) {
     val now = System.currentTimeMillis
     if (!lastAttempt.success && now < lastAttempt.nextTime) {
       info { "failed last time, skipping publishing summary until: " + lastAttempt.nextTime }
@@ -216,7 +221,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
     }
     try {
       lastAttempt.nextTime = now + 5000
-      client.putOrThrow(mb)
+      client.putOrThrow(mb, destination = dest)
       lastAttempt.success = true
     } catch {
       case e: Exception =>

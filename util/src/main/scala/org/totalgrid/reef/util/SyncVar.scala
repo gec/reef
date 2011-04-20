@@ -23,13 +23,23 @@ package org.totalgrid.reef.util
 import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 
+class EmptySyncVar[A <: Any] extends SyncVar[A] {
+
+  override def evaluate(fun: A => Boolean): Boolean = {
+    if (queue.size == 0) false
+    else evaluateQueue(fun)
+  }
+}
+
 // New implementation of sync var uses standard synchronization and a mutable queue
-class SyncVar[A <: Any](initialValue: A) {
+class SyncVar[A <: Any](initialValue: Option[A] = None) {
+
+  def this(initialValue: A) = this(Some(initialValue))
 
   val defaultTimeout = 5000
 
-  private var queue = new Queue[A]
-  queue.enqueue(initialValue)
+  protected val queue = new Queue[A]
+  initialValue.foreach { x => queue.enqueue(x) }
 
   def current = queue.synchronized { queue.last }
 
@@ -48,15 +58,15 @@ class SyncVar[A <: Any](initialValue: A) {
     current
   }
 
-  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
-    waitFor(current => current == value, msec, throwOnFailure)
+  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = {
+    waitFor(current => current == value, msec, throwOnFailure, customException)
   }
 
-  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = {
-    waitFor(current => current != value, msec, throwOnFailure)
+  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = {
+    waitFor(current => current != value, msec, throwOnFailure, customException)
   }
 
-  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true): Boolean = queue.synchronized {
+  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = queue.synchronized {
 
     @tailrec
     def waitUntilExpiration(fun: A => Boolean, expiration: Long): Boolean = {
@@ -67,8 +77,9 @@ class SyncVar[A <: Any](initialValue: A) {
           queue.wait(diff)
           waitUntilExpiration(fun, expiration)
         } else {
-          if (throwOnFailure) throw new Exception("Condition not met, final value was: " + queue.last)
-          else false
+          if (throwOnFailure) {
+            throw customException.getOrElse(new Exception("Condition not met, final value was: " + queue.last))
+          } else false
         }
       }
     }
@@ -77,16 +88,18 @@ class SyncVar[A <: Any](initialValue: A) {
   }
 
   @tailrec
-  private def evaluate(fun: A => Boolean): Boolean = {
+  final protected def evaluateQueue(fun: A => Boolean): Boolean = {
     val i = queue.dequeue()
     if (queue.size == 0) {
       queue.enqueue(i) //never let the queue be empty
       fun(i)
     } else {
       if (fun(i)) true
-      else evaluate(fun)
+      else evaluateQueue(fun)
     }
   }
+
+  protected def evaluate(fun: A => Boolean): Boolean = evaluateQueue(fun)
 
 }
 

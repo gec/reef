@@ -36,7 +36,8 @@ import SquerylModel._
 import scala.collection.JavaConversions._
 
 class ConfigFileService(protected val modelTrans: ServiceTransactable[ConfigFileServiceModel])
-    extends BasicProtoService[ConfigProto, ConfigFile, ConfigFileServiceModel] /*(modelTrans)*/ {
+    extends BasicSyncModeledService[ConfigProto, ConfigFile, ConfigFileServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.configFile
 }

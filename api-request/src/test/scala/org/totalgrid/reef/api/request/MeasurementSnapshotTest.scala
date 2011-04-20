@@ -20,16 +20,18 @@
  */
 package org.totalgrid.reef.api.request
 
+import builders.PointRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementSnapshot }
+import org.totalgrid.reef.api.ExpectationException
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementSnapshotTest
-    extends ServiceClientSuite("MeasurementSnapshot.xml", "MeasurementSnapshot",
+    extends ClientSessionSuite("MeasurementSnapshot.xml", "MeasurementSnapshot",
       <div>
         <p>
           The MeasurementSnapshot service provides the current state of measurements. The request contains the
@@ -40,14 +42,25 @@ class MeasurementSnapshotTest
 
   test("Simple gets") {
 
-    val points = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
+    val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
 
-    val req = MeasurementSnapshot.newBuilder.addPointNames(points.head).build
-    val resp = client.getOneOrThrow(req)
-    doc.addCase("Get single measurement", "Get", "Get the current state of a single measurement.", req, resp)
+    client.addExplanation("Get single measurement", "Get the current state of a single measurement.")
+    client.getMeasurementsByNames(names.subList(0, 1))
 
-    val reqMulti = MeasurementSnapshot.newBuilder.addAllPointNames(points).build
-    val respMulti = client.getOneOrThrow(reqMulti)
-    doc.addCase("Get multiple measurements", "Get", "Get the current state of a multiple measurements..", reqMulti, respMulti)
+    client.addExplanation("Get multiple measurements", "Get the current state of multiple measurements. Notice that they are all returned wrapped in a single parent object.")
+    client.getMeasurementsByNames(names)
+  }
+
+  test("Non existant measurement get") {
+
+    intercept[ExpectationException] {
+      client.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
+      client.getMeasurementsByNames("UnknownPoint" :: Nil)
+    }
+
+    intercept[ExpectationException] {
+      client.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")
+      client.getOneOrThrow(PointRequestBuilders.getByName("UnknownPoint"))
+    }
   }
 }

@@ -20,27 +20,16 @@
  */
 package org.totalgrid.reef.messaging
 
-import com.google.protobuf.GeneratedMessage
-
-import org.totalgrid.reef.api.scalaclient.ServiceClient
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, RequestEnv }
+import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, RequestEnv, IDestination, AnyNode }
+import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.reactor.Reactable
 import ServiceTypes.Event
 
-/** functions for working with named queues and exchanges rather than 'well known' exchanges queues */
-trait ProtoQueueRegistry {
+/** Combines the various registry traits into a single interface */
+trait Connection {
 
-  /** set up a listener that is called whenever a proto is sent to queue */
-  def listen[A](deserialize: (Array[Byte]) => A, queueName: String)(accept: A => Unit): Unit
-
-  /** publish a proto to an arbitrary exchange */
-  def broadcast[A <: GeneratedMessage](exchangeName: String, keygen: A => String): A => Unit
-}
-
-/** Abstracts how services and their associated event queues are retrieved */
-trait ProtoServiceRegistry {
-
-  /** Creates a service consumer of type A */
-  def getServiceClient(key: String = "request"): ServiceClient
+  def getClientSession(): ClientSession
 
   /** Creates an event queue of type A that can be monitored using an ObservableSubscription */
   def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit
@@ -48,28 +37,41 @@ trait ProtoServiceRegistry {
   /** Overload that defines the subscription in the function call */
   def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit
 
+  /**
+   * bind a service handler to the bus for a given exchange
+   * @param exchange   exchange to bind to
+   * @param service handler for the ServiceRequest, must return ServiceReponse
+   * @param destination Optionally overrides the default destination of AnyNode
+   * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
+   * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
+   */
+  def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit
+
 }
 
-/** Combines the various registry traits into a single interface */
-trait ProtoRegistry extends ProtoServiceRegistry with ProtoQueueRegistry
-
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
-class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends ProtoRegistry {
+class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection {
 
-  def getServiceClient(key: String): ServiceClient = {
-    val client = new ProtoClient(factory, lookup, timeoutms, key)
+  override def getClientSession(): ClientSession = {
+    val client = new ProtoClient(factory, lookup, timeoutms)
     defaultEnv.foreach(client.setDefaultHeaders)
     client
   }
 
-  def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
+  override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     factory.getEventQueue(deserialize, accept)
   }
 
-  def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
+  override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
     factory.getEventQueue(deserialize, accept, notify)
   }
 
+  override def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+    val exchange = lookup.getServiceInfo(service.descriptor.getKlass).exchange
+    factory.bindService(exchange, service.respond, destination, competing, reactor)
+  }
+
+  /*
   def listen[A](deserialize: (Array[Byte]) => A, queueName: String)(accept: A => Unit): Unit = {
     factory.listen(queueName, deserialize, accept)
   }
@@ -77,5 +79,6 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
   def broadcast[A <: GeneratedMessage](exchangeName: String, keygen: A => String): A => Unit = {
     factory.publish(exchangeName, keygen)
   }
+  */
 
 }

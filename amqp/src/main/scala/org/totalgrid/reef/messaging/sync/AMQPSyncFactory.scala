@@ -30,17 +30,19 @@ import org.totalgrid.reef.api.ServiceTypes.Event
 /**
  * syncronous subscription object, allows canceling
  */
-class SyncSubscription(channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription {
+class SyncSubscription[A](channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription[A] {
   private val queue = QueuePatterns.getPrivateUnboundQueue(channel, consumer)
+  channel.start()
   override def setHeaders(headers: ServiceHandlerHeaders) =
     headers.setSubscribeQueue(queue)
   override def cancel() = channel.close()
+  //override def start() = channel.start()
 }
 
-trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
+trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
   /**
-   * creates a correlator channel that can multiplex ServiceRequests to different exchanges and collect the inputs 
+   * creates a correlator channel that can multiplex ServiceRequests to different exchanges and collect the inputs
    * and demultiplexes them back to the right clients.
    */
   def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator = {
@@ -49,7 +51,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
     new ServiceResponseCorrelator(timeoutms, reqReply)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A] = {
     val channel = getChannel()
 
     val consumer = if (subIsStreamType)
@@ -57,6 +59,6 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ServiceClientFactory {
     else
       AMQPMessageConsumers.makeEventConsumer(deserialize, callback)
 
-    new SyncSubscription(channel, consumer)
+    new SyncSubscription[A](channel, consumer)
   }
 }

@@ -27,14 +27,13 @@ import org.totalgrid.reef.loader.equipment._
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command }
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 /**
  * EquipmentLoader loads the logical model.
  *
  * TODO: generic_type is not set
  */
-class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends Logging {
+class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: ExceptionCollector) extends Logging {
 
   val equipmentProfiles = HashMap[String, EquipmentType]()
   val pointProfiles = HashMap[String, PointProfile]()
@@ -62,11 +61,14 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
   def load(model: EquipmentModel, actionModel: HashMap[String, ActionSet]): HashMap[String, String] = {
 
     info("Start")
-    // Collect all the profiles in name->profile maps.
-    val profiles = model.getProfiles
-    if (profiles != null) {
-      profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
-      profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
+
+    ex.collect("Equipment Profiles: ") {
+      // Collect all the profiles in name->profile maps.
+      val profiles = model.getProfiles
+      if (profiles != null) {
+        profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
+        profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
+      }
     }
 
     println("Loading Equipment: Found PointProfiles: " + pointProfiles.keySet.mkString(", "))
@@ -74,7 +76,9 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
 
     model.getEquipment.toList.foreach(e => {
       println("Loading Equipment: processing equipment '" + e.getName + "'")
-      loadEquipment(e, "", actionModel)
+      ex.collect("Equipment: " + e.getName) {
+        loadEquipment(e, "", actionModel)
+      }
     })
 
     info("End")
@@ -105,7 +109,10 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
 
     // Commands are controls and setpoints. TODO: setpoints
     trace("load equipment: " + name + " commands")
-    val commands = profiles.flatMap(_.getControl.toList).map(c => processControl(childPrefix + c.getName, entity))
+    val commands = profiles.flatMap(_.getControl.toList).map { c =>
+      val displayName = Option(c.getDisplayName) getOrElse c.getName
+      processControl(childPrefix + c.getName, displayName, entity)
+    }
 
     // Points
     trace("load equipment: " + name + " points")
@@ -119,13 +126,13 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name: String, equipmentEntity: Entity) = {
+  def processControl(name: String, displayName: String, equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
     loadCache.addControl(name)
     val commandEntity = toEntityType(name, List("Command"))
-    val command = toCommand(name, commandEntity)
+    val command = toCommand(name, displayName, commandEntity)
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
 
@@ -172,9 +179,10 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
     val unexpectedValues = getElements[Unexpected](name, pointT, _.getUnexpected.toList)
     triggers = triggers ::: unexpectedValues.map { unexpected => toTrigger(name, unexpected, unit, actionModel) }
 
-    if (!triggers.isEmpty) addTriggers(client, point, triggers)
+    val convertValues = getElements[Transform](name, pointT, _.getTransform.toList)
+    triggers = triggers ::: convertValues.map { transform => toTrigger(name, transform, unit) }
 
-    // TODO: process valueMap
+    if (!triggers.isEmpty) addTriggers(client, point, triggers)
 
     pointEntity
   }
@@ -197,7 +205,7 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
       case false =>
         point.isSetPointProfile match {
           case true => getAttribute[A](name, getPointProfile(name, point), isSet, get, attributeName)
-          case false => throw new Exception("Point '" + name + "' is missing required attribute '" + attributeName + "'.")
+          case false => throw new LoadingException("Point '" + name + "' is missing required attribute '" + attributeName + "'.")
         }
     }
     value
@@ -218,7 +226,7 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
     if (commandEntities.contains(commandName))
       commandEntities(commandName)
     else
-      throw new Exception("control '" + commandName + "' referenced from '" + elementName + "' was not found in configuration.")
+      throw new LoadingException("control '" + commandName + "' referenced from '" + elementName + "' was not found in configuration.")
   }
 
   def getPointProfile(elementName: String, point: PointType): PointProfile = {
@@ -226,7 +234,7 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
     if (pointProfiles.contains(p))
       pointProfiles(p)
     else
-      throw new Exception("pointProfile '" + p + "' referenced from '" + elementName + "' was not found in configuration.")
+      throw new LoadingException("pointProfile '" + p + "' referenced from '" + elementName + "' was not found in configuration.")
   }
 
   /**
@@ -237,7 +245,7 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
       .setName(name)
     val types = profiles.flatMap(_.getType.toList)
     if (types.isEmpty)
-      throw new Exception(name + " needs at least one <type> specified in the Equipment Model.")
+      throw new LoadingException(name + " needs at least one <type> specified in the Equipment Model.")
     types.foreach(typ => proto.addTypes(typ.getName))
 
     //profiles.foreach( p => p.getType.toList.foreach(typ => proto.addTypes(typ.getName)) )
@@ -249,9 +257,10 @@ class EquipmentLoader(client: SyncOperations, loadCache: LoadCacheEqu) extends L
   /**
    * Commands are controls and setpoints. TODO: setpoints
    */
-  def toCommand(name: String, entity: Entity): Command = {
+  def toCommand(name: String, displayName: String, entity: Entity): Command = {
     val proto = Command.newBuilder
       .setName(name)
+      .setDisplayName(displayName)
       .setEntity(entity)
 
     proto.build

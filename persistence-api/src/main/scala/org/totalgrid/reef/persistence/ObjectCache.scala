@@ -22,7 +22,8 @@ package org.totalgrid.reef.persistence
 
 case class KeyValue[A](key: String, value: A)
 
-/**  Interface to a cache that stores objects of type A
+/**
+ *  Interface to a cache that stores objects of type A
  */
 trait ObjectCache[A] {
 

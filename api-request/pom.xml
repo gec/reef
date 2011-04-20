@@ -42,7 +42,7 @@
             <id>test</id>
             <build>
                 <plugins>
-                      <plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-site-plugin</artifactId>
                         <version>2.2</version>
@@ -53,7 +53,7 @@
                             <template>site.vm</template>
                             -->
                         </configuration>
-                      </plugin>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
@@ -66,21 +66,21 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
                         <executions>
-                          <execution>
-                            <phase>prepare-package</phase>
-                            <goals>
-                              <goal>transform</goal>
-                            </goals>
-                          </execution>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                            </execution>
                         </executions>
                         <configuration>
-                          <transformationSets>
-                            <transformationSet>
-                              <dir>target/docxml</dir>
-                              <stylesheet>serviceToXDoc.xsl</stylesheet>
-                                <outputDir>target/site-dir/xdoc</outputDir>
-                            </transformationSet>
-                          </transformationSets>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>target/docxml</dir>
+                                    <stylesheet>serviceToXDoc.xsl</stylesheet>
+                                    <outputDir>target/site-dir/xdoc</outputDir>
+                                </transformationSet>
+                            </transformationSets>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -133,9 +133,30 @@
                     </excludes>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.0</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <phase>format</phase>
+                        <goals>
+                            <goal>doc</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/builders/*.scala</exclude>
+                                <exclude>**/impl/*.scala</exclude>
+                                <exclude>**/utils/*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>

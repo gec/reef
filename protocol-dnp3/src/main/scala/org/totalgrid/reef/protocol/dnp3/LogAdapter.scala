@@ -23,20 +23,19 @@ package org.totalgrid.reef.protocol.dnp3
 import org.totalgrid.reef.util.Logging
 import scala.collection.Map
 
-/** Shim layer to push log messages and non-operational logvars to the bus from the c++ dnp3 world
- * @param nonOpPub c++ LogVars are translated to non-operational data.
- * @param enumToString Map that defines which log variable names are string enums and what that mapping is
+/**
+ * Shim layer to push log messages from the c++ dnp3 world
  */
-class LogAdapter(enumToString: Map[String, Map[Int, String]]) extends ILogBase with Logging {
+class LogAdapter extends ILogBase with Logging {
 
   override def Log(lev: FilterLevel, logger: String, location: String, message: String, code: Int): Unit = {
     lev match {
-      case FilterLevel.LEV_COMM => debug { message }
-      case FilterLevel.LEV_DEBUG => debug { message }
-      case FilterLevel.LEV_ERROR => error { message }
-      case FilterLevel.LEV_INFO => info { message }
-      case FilterLevel.LEV_INTERPRET => info { message }
-      case FilterLevel.LEV_WARNING => warn { message }
+      case FilterLevel.LEV_COMM => debug { logger + " - " + message }
+      case FilterLevel.LEV_DEBUG => debug { logger + " - " + message }
+      case FilterLevel.LEV_ERROR => error { logger + " - " + message }
+      case FilterLevel.LEV_INFO => info { logger + " - " + message }
+      case FilterLevel.LEV_INTERPRET => info { logger + " - " + message }
+      case FilterLevel.LEV_WARNING => warn { logger + " - " + message }
     }
   }
 

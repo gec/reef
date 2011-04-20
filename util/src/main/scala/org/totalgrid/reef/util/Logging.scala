@@ -22,17 +22,19 @@ package org.totalgrid.reef.util
 
 import org.slf4j.{ Logger, LoggerFactory }
 
-/** Provides a scala-fied interface to slf4j. widens the logger interface
- *  to include the use of lazy logging via closures.
+/**
+ * Provides a scala-fied interface to slf4j. widens the logger interface to include
+ * the use of lazy logging via closures.
  */
 trait Logging {
-  private val log = LoggerFactory.getLogger(getClass)
+  // named so we dont conflict with the field "log" in standard java classes that use slf4j
+  private val reefLogger = LoggerFactory.getLogger(getClass)
 
-  protected def trace(f: => String): Unit = if (log.isTraceEnabled) log.trace(f)
-  protected def debug(f: => String): Unit = if (log.isDebugEnabled) log.debug(f)
-  protected def info(f: => String): Unit = if (log.isInfoEnabled) log.info(f)
-  protected def warn(f: => String): Unit = if (log.isWarnEnabled) log.warn(f)
-  protected def error(f: => String): Unit = if (log.isErrorEnabled) log.error(f)
+  protected def trace(f: => String): Unit = if (reefLogger.isTraceEnabled) reefLogger.trace(f)
+  protected def debug(f: => String): Unit = if (reefLogger.isDebugEnabled) reefLogger.debug(f)
+  protected def info(f: => String): Unit = if (reefLogger.isInfoEnabled) reefLogger.info(f)
+  protected def warn(f: => String): Unit = if (reefLogger.isWarnEnabled) reefLogger.warn(f)
+  protected def error(f: => String): Unit = if (reefLogger.isErrorEnabled) reefLogger.error(f)
 
   protected def trace(ex: Throwable): Unit = trace { ex.toString }
   protected def debug(ex: Throwable): Unit = debug { ex.toString }
@@ -40,10 +42,10 @@ trait Logging {
   protected def warn(ex: Throwable): Unit = warn { ex.toString }
   protected def error(ex: Throwable): Unit = error { ex.toString }
 
-  protected def trace(msg: String, ex: Throwable): Unit = log.trace(msg, ex)
-  protected def debug(msg: String, ex: Throwable): Unit = log.debug(msg, ex)
-  protected def info(msg: String, ex: Throwable): Unit = log.info(msg, ex)
-  protected def warn(msg: String, ex: Throwable): Unit = log.warn(msg, ex)
-  protected def error(msg: String, ex: Throwable): Unit = log.error(msg, ex)
+  protected def trace(msg: String, ex: Throwable): Unit = reefLogger.trace(msg, ex)
+  protected def debug(msg: String, ex: Throwable): Unit = reefLogger.debug(msg, ex)
+  protected def info(msg: String, ex: Throwable): Unit = reefLogger.info(msg, ex)
+  protected def warn(msg: String, ex: Throwable): Unit = reefLogger.warn(msg, ex)
+  protected def error(msg: String, ex: Throwable): Unit = reefLogger.error(msg, ex)
 
 }

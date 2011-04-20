@@ -25,14 +25,14 @@ import org.totalgrid.reef.api.{ ServiceListOnMap, ServiceInfo, ITypeDescriptor, 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(
 
-    getEntry(Descriptors.port, "front_end_port"),
+    getEntry(Descriptors.commChannel, "front_end_port"),
     getEntry(Descriptors.frontEndProcessor, "front_end_processor"),
-    getEntry(Descriptors.communicationEndpointConfig, "comm_endpoint"),
-    getEntry(Descriptors.communicationEndpointConnection, "front_end_assignment"),
+    getEntry(Descriptors.commEndpointConfig, "comm_endpoint"),
+    getEntry(Descriptors.commEndpointConnection, "front_end_assignment"),
     getEntry(Descriptors.measurementProcessingConnection, "meas_proc_assignment"),
 
     getEntry(Descriptors.measurementBatch, "measurement_batch"),
-    getEntry(Descriptors.measurementHistory, "measurement_history"),
+    getEntry(Descriptors.measurementHistory, "measurement_history", Some(Descriptors.measurement), Some("measurement")),
     getEntry(Descriptors.measurementSnapshot, "measurement_snapshot", Some(Descriptors.measurement), Some("measurement")),
     getEntry(Descriptors.measOverride, "meas_override"),
     getEntry(Descriptors.triggerSet, "trigger_set"),
@@ -44,6 +44,8 @@ object ReefServiceMap {
     getEntry(Descriptors.alarm, "alarm"),
     getEntry(Descriptors.alarmList, "alarm_list"),
     getEntry(Descriptors.authToken, "auth_token"),
+    getEntry(Descriptors.agent, "agent"),
+    getEntry(Descriptors.permissionSet, "permission_set"),
 
     getEntry(Descriptors.userCommandRequest, "user_command_request"),
     getEntry(Descriptors.commandAccess, "command_access"),
@@ -54,7 +56,8 @@ object ReefServiceMap {
     getEntry(Descriptors.command, "command"),
     getEntry(Descriptors.point, "point"),
     getEntry(Descriptors.entity, "entity"),
-    getEntry(Descriptors.entityEdge, "entity_edge"))
+    getEntry(Descriptors.entityEdge, "entity_edge"),
+    getEntry(Descriptors.entityAttributes, "entity_attributes"))
 
   private def getEntry[A, B](descriptor: ITypeDescriptor[A], exchange: String, subClass: Option[ITypeDescriptor[B]] = None, subExchange: Option[String] = None): ServiceList.ServiceTuple = {
     (descriptor.getKlass -> ServiceInfo(
@@ -67,6 +70,6 @@ object ReefServiceMap {
 }
 
 object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap) {
-  def getInstance() = this
+  def getInstance(): ServiceList = this
 }
 

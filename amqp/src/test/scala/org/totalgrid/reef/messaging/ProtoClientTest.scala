@@ -29,6 +29,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.service.{ IServiceResponseCallback, AsyncToSyncServiceAdapter }
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
@@ -44,26 +45,26 @@ object TestDescriptors {
   }
 }
 
-class ServiceNotificationServiceX3 extends ServiceEndpoint[Envelope.ServiceNotification] {
+class ServiceNotificationServiceX3 extends AsyncToSyncServiceAdapter[Envelope.ServiceNotification] {
 
   val descriptor = TestDescriptors.serviceNotification
 
-  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo, foo))
-  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("put")
-  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("delete")
-  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noVerb("post")
+  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
+  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noPut
+  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noDelete
+  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noPost
 }
 
-class HeadersX2 extends ServiceEndpoint[Envelope.RequestHeader] {
+class HeadersX2 extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
 
   val descriptor = TestDescriptors.requestHeader
 
   def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
 
-  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, "", List(foo, foo))
-  def put(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("put")
-  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("delete")
-  def post(req: Envelope.RequestHeader, env: RequestEnv) = noVerb("post")
+  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
+  def put(req: Envelope.RequestHeader, env: RequestEnv) = noPut
+  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noDelete
+  def post(req: Envelope.RequestHeader, env: RequestEnv) = noPost
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -76,26 +77,28 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
     classOf[Envelope.ServiceNotification] -> ServiceInfo.get(exchangeA, TestDescriptors.serviceNotification),
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, TestDescriptors.requestHeader)))
 
-  def setupTest(test: ProtoClient => Unit) {
+  def setupTest(addServices: Boolean)(test: (ProtoClient, AMQPProtoFactory) => Unit) {
     val connection = new MockBrokerInterface
 
     // TODO: fix setupTest to use all async and all sync
 
     AMQPFixture.run(connection, true) { amqp =>
 
-      amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, true)
-      amqp.bindService(exchangeB, (new HeadersX2).respond, true)
+      if (addServices) {
+        amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, competing = true)
+        amqp.bindService(exchangeB, (new HeadersX2).respond, competing = true)
+      }
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
         val client = new ProtoClient(syncAmqp, serviceList, 10000)
 
-        test(client)
+        test(client, amqp)
       }
     }
   }
 
   test("ProtoClient handles multiple proto types") {
-    setupTest { client =>
+    setupTest(true) { (client, amqp) =>
 
       val notificationRequest = Envelope.ServiceNotification.newBuilder.setEvent(Envelope.Event.ADDED).setPayload(ByteString.copyFromUtf8("hi")).build
       client.getOrThrow(notificationRequest).size should equal(3)
@@ -110,7 +113,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
     }
   }
   test("Subscribe class inference") {
-    setupTest { client =>
+    setupTest(true) { (client, amqp) =>
 
       val fooSubFunc = (evt: Envelope.Event, foo: Envelope.ServiceNotification) => {}
       val fooSub = client.addSubscription(fooSubFunc)
@@ -121,6 +124,36 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
       intercept[UnknownServiceException] {
         val notificationFunc = (evt: Envelope.Event, header: Envelope.ServiceResponse) => {}
         client.addSubscription(notificationFunc)
+      }
+    }
+  }
+
+  test("Client throws exception when closed") {
+    setupTest(true) { (client, amqp) =>
+      client.close
+
+      intercept[ServiceIOException] {
+        val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
+        client.getOrThrow(headerRequest)
+      }
+    }
+  }
+  test("Client fails quickly when closed") {
+    setupTest(false) { (client, amqp) =>
+
+      def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
+        // kill the client rather than returning any data
+        client.close
+      }
+
+      // TODO: make bindService synchronous callback
+      amqp.bindService(exchangeB, respond, competing = true)
+
+      Thread.sleep(500)
+
+      intercept[ResponseTimeoutException] {
+        val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
+        client.getOrThrow(headerRequest)
       }
     }
   }

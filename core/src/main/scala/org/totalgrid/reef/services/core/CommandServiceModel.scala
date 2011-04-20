@@ -35,7 +35,8 @@ import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
-    extends BasicProtoService[CommandProto, Command, CommandServiceModel] {
+    extends BasicSyncModeledService[CommandProto, Command, CommandServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.command
 }
@@ -90,7 +91,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
     List(
       proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
       proto.name.asParam(name => sql.name === name),
-      proto.uid.asParam(sql.id === _.toLong))
+      proto.uid.asParam(sql.entityId === _.toLong))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
@@ -98,7 +99,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def createModelEntry(proto: CommandProto): Command = {
     val ent = EQ.findOrCreateEntity(proto.getName, "Command")
 
-    val cmd = new Command(proto.getName, ent.id)
+    val cmd = new Command(proto.getName, proto.getDisplayName, ent.id)
     cmd.entity.value = ent
     cmd
   }
@@ -110,7 +111,10 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def convertToProto(sql: Command): CommandProto = {
     // TODO: fill out connected and selected parts of proto
     val b = CommandProto.newBuilder
-    b.setName(sql.name).setUid(sql.name)
+      .setUid(sql.entityId.toString)
+      .setName(sql.name)
+      .setDisplayName(sql.displayName)
+
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
       case Some(e) => b.setEntity(EQ.entityToProto(e))

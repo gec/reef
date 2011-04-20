@@ -34,11 +34,11 @@ import org.totalgrid.reef.api.Envelope._
  * @param channel The ProtoServiceChannel on which requests and responses will be received
  *
  */
-class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) extends Logging {
+class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) extends Logging with ResponseHandler[ServiceResponse] {
 
   type ResponseCallback = Option[ServiceResponse] => Unit
 
-  channel.setResponseDest(receive)
+  channel.setResponseHandler(this)
 
   def close() = channel.close()
 
@@ -48,10 +48,11 @@ class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) e
   /// mutable state
   private val map = mutable.Map.empty[String, Tuple2[Timer, ResponseCallback]]
 
-  /**	Sends a request with an asynchronous callback
-   *	 
-   *	@param request ServiceRequest proto to send
-   *	@param callback function to callback with an Option[ServiceResponse] 
+  /**
+   * 	Sends a request with an asynchronous callback
+   *
+   * @param request ServiceRequest proto to send
+   * @param callback function to callback with an Option[ServiceResponse]
    */
   def send(requestRaw: ServiceRequest.Builder, exchange: String, key: String, callback: ResponseCallback) {
 
@@ -75,8 +76,20 @@ class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) e
     }
   }
 
-  // TODO: send error back immediatley if response channel goes down
-  private def receive(rsp: ServiceResponse) = map.synchronized {
+  override def onClosed() = map.synchronized {
+    val keys = map.keys.toList
+    keys.foreach { keyId =>
+      map.get(keyId) match {
+        case Some((timer, callback)) =>
+          timer.cancel()
+          map.remove(keyId)
+          callback(None)
+        case None =>
+      }
+    }
+  }
+
+  override def onResponse(rsp: ServiceResponse) = map.synchronized {
     map.get(rsp.getId) match {
       case Some((timer, callback)) =>
         timer.cancel()

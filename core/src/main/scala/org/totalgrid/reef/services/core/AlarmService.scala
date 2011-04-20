@@ -22,30 +22,27 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Events.{ Event => EventProto }
-import org.totalgrid.reef.models.{ ApplicationSchema, AlarmModel, EventStore, Entity }
+import org.totalgrid.reef.models.{ ApplicationSchema, AlarmModel, EventStore }
 
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
-import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+
 import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 // implicit proto properties
-import SquerylModel._ // implict asParam
+import SquerylModel.makeAsParam
 import org.totalgrid.reef.util.Optional._
 
 class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceModel])
-    extends BaseProtoService[Alarm, AlarmModel, AlarmServiceModel]
-    with BaseProtoService.GetEnabled
-    with BaseProtoService.SubscribeEnabled
-    with BaseProtoService.PutPostEnabled
-    with BaseProtoService.DeleteEnabled {
+    extends BasicSyncModeledService[Alarm, AlarmModel, AlarmServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.alarm
 
@@ -98,7 +95,7 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
       update(updateModelEntry(proto, existing), existing)
     else {
       // TODO: access the proto to print the state names in the exception.
-      throw new BadRequestException("Invalid state transistion from " + existing.state + " to " + proto.getState.getNumber, Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Invalid state transistion from " + Alarm.State.valueOf(existing.state) + " to " + proto.getState, Envelope.Status.BAD_REQUEST)
     }
   }
 
@@ -223,11 +220,7 @@ trait AlarmConversion
   }
 
   def convertToProto(entry: AlarmModel): Alarm = {
-    Alarm.newBuilder
-      .setUid(entry.id.toString)
-      .setState(Alarm.State.valueOf(entry.state))
-      .setEvent(EventConversion.convertToProto(entry.event.value))
-      .build
+    convertToProto(entry, entry.event.value)
   }
 
   def convertToProto(entry: AlarmModel, event: EventStore): Alarm = {
@@ -259,18 +252,20 @@ trait AlarmQueries {
     (proto.uid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
-  def searchEventQuery(event: EventStore, select: Option[EventProto]): LogicalBoolean = {
-    select.map(EventConversion.searchParams(_, event)) getOrElse (true === true)
+  def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
+    select.map(EventConversion.searchQuery(_, event).flatten) getOrElse (Nil)
   }
-  def uniqueEventQuery(event: EventStore, select: Option[EventProto]): LogicalBoolean = {
-    select.map(EventConversion.uniqueParams(_, event)) getOrElse (true === true)
+  def uniqueEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
+    select.map(EventConversion.uniqueQuery(_, event).flatten) getOrElse (Nil)
   }
 
   def findRecords(req: Alarm): List[AlarmModel] = {
 
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(searchQuery(req, alarm) and
-        searchEventQuery(event, req.event) and
+      where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
+        uniqueEventQuery(event, req.event) :::
+        searchQuery(req, alarm) :::
+        searchEventQuery(event, req.event)) and
         alarm.eventUid === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)
@@ -294,8 +289,8 @@ trait AlarmQueries {
 
   def findRecord(req: Alarm): Option[AlarmModel] = {
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(uniqueQuery(req, alarm) and
-        uniqueEventQuery(event, req.event) and
+      where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
+        uniqueEventQuery(event, req.event)) and
         alarm.eventUid === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)

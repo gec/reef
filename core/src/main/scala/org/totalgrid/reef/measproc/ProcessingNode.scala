@@ -22,20 +22,14 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.persistence.{ ObjectCache, KeyValue }
 import org.totalgrid.reef.util.{ Logging }
-import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.app.{ ServiceHandler, ServiceHandlerProvider, SubscriptionProvider }
+import org.totalgrid.reef.app.SubscriptionProvider
 import org.totalgrid.reef.proto.{ Measurements, Processing, FEP, Events, Model }
 
 import Measurements._
 import Processing._
-import FEP._
 import Model._
 
-import scala.collection.immutable
-import org.totalgrid.reef.messaging.{ ProtoRegistry, AMQPProtoFactory, AMQPProtoRegistry }
-import org.totalgrid.reef.proto.RoutingKeys
-import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
 import org.totalgrid.reef.metrics.{ MetricsHooks, MetricsHookContainer }
 
 trait ProcessingNode {
@@ -89,18 +83,25 @@ class MeasurementProcessor(
   // function that builds the list and publishes to the bus
   def pubMeas(m: Measurement) = {
     list = m :: list
-    publish(m)
   }
 
   // flushes the list to the measurement cache
   def flushCache() = {
-    val publist = list.reverse.map { m => KeyValue(m.getName, m) }
+    val revlist = list.reverse
+    val publist = revlist.map { m => KeyValue(m.getName, m) }
     list = Nil
     measCache.put(publist)
+    revlist.foreach(publish(_))
+  }
+
+  def overrideFlush(m: Measurement, flushNow: Boolean) {
+    // if we get an override add/remove we need to flush the messages after we do any trigger processing
+    triggerProc.process(m)
+    if (flushNow) flushCache()
   }
 
   val triggerProc = new processing.TriggerProcessor(pubMeas, triggerFactory, stateCache)
-  val overProc = new processing.OverrideProcessor(triggerProc.process, overCache, measCache.get)
+  val overProc = new processing.OverrideProcessor(overrideFlush, overCache, measCache.get)
 
   val processor = new BasicProcessingNode(overProc.process, flushCache)
   addHookedObject(processor :: overProc :: triggerProc :: Nil)

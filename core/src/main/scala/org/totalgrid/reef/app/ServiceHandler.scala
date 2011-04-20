@@ -20,13 +20,11 @@
  */
 package org.totalgrid.reef.app
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.util.{ Timer, Logging }
 
-import org.totalgrid.reef.api.scalaclient.ServiceClient
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
-import org.totalgrid.reef.messaging.ProtoRegistry
+import org.totalgrid.reef.messaging.Connection
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 import org.totalgrid.reef.api.ServiceTypes.{ Failure, MultiSuccess, Event }
@@ -49,7 +47,7 @@ trait ServiceHandler extends Logging {
   def execute(fun: => Unit)
 
   // helper function
-  private def subscribe[A <: AnyRef](client: ServiceClient, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
+  private def subscribe[A <: AnyRef](client: ClientSession, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
     val env = new RequestEnv
     env.setSubscribeQueue(queue)
     client.asyncGet(searchObj, env) {
@@ -59,7 +57,7 @@ trait ServiceHandler extends Logging {
           Timer.delay(retryMS) {
             subscribe(client, queue, searchObj, retryMS, subHandler) //defined recursively
           }
-        case MultiSuccess(list) =>
+        case MultiSuccess(status, list) =>
           execute(subHandler(list))
       }
     }
@@ -73,8 +71,8 @@ trait ServiceHandler extends Logging {
    *  @param  context         Service context to bind the response/events
    *
    */
-  def addServiceContext[A <: AnyRef](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, context: ServiceContext[A]) =
-    addService(registry, retryMS, deserialize, searchObj, context.handleResponse _, context.handleEvent _)
+  def addServiceContext[A <: AnyRef](conn: Connection, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, context: ServiceContext[A]) =
+    addService(conn, retryMS, deserialize, searchObj, context.handleResponse _, context.handleEvent _)
 
   /**
    *  Adds a service subscription and adds callbacks for service responses/events
@@ -85,10 +83,10 @@ trait ServiceHandler extends Logging {
    *  @param	eventHandler		Callback for service events
    *
    */
-  def addService[A <: AnyRef](registry: ProtoRegistry, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, subHandler: ResponseHandler[A], evtHandler: EventHandler[A]) = {
+  def addService[A <: AnyRef](conn: Connection, retryMS: Long, deserialize: Array[Byte] => A, searchObj: A, subHandler: ResponseHandler[A], evtHandler: EventHandler[A]) = {
 
     // service client which does subscribe calls
-    val client = registry.getServiceClient()
+    val client = conn.getClientSession()
 
     // function to call when events occur
     val evtFun = { evt: Event[A] =>
@@ -101,7 +99,7 @@ trait ServiceHandler extends Logging {
     }
 
     // ask for a queue, direct all events back to this actor
-    registry.defineEventQueueWithNotifier(deserialize, evtFun)(queueFun)
+    conn.defineEventQueueWithNotifier(deserialize, evtFun)(queueFun)
 
     client
   }

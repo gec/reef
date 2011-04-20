@@ -34,6 +34,11 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.scalaclient.MockSyncOperations
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.Envelope
+
+class NullExceptionCollector extends ExceptionCollector {
+  def collect[A](name: => String)(f: => Unit) { f }
+}
 
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
@@ -48,9 +53,11 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(List[GeneratedMessage]()))
+    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
-    val loader = new EquipmentLoader(client, new LoadCache().loadCacheEqu)
+    val ex = new NullExceptionCollector
+    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu, ex)
 
     test(Fixture(client, loader, model))
   }
@@ -131,8 +138,10 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
         breaker.add(profile)
       case None =>
         val status = new Status("Bkr", "status")
-        if (isTrigger)
+        if (isTrigger) {
           status.add(new Unexpected(false, "Nominal"))
+          status.add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
+        }
         breaker
           .add(new Type("Breaker"))
           .add(new Type("Equipment"))
@@ -160,6 +169,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def makePointProfile(profileName: String, value: Boolean, actionSet: String): PointProfile = {
     new PointProfile(profileName)
       .add(new Unexpected(value, actionSet))
+      .add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
   }
 
   def makeActionSetNominal(): sx.ActionSet = {

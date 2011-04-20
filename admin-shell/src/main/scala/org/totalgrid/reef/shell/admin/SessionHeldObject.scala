@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.shell.admin
 
-import org.osgi.service.command.CommandSession
+import org.apache.felix.service.command.CommandSession
 
 /**
  * holds an objects in the command session to maintain state between command

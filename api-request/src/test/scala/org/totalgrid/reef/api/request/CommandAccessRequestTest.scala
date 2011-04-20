@@ -20,15 +20,17 @@
  */
 package org.totalgrid.reef.api.request
 
+import builders.CommandAccessRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess, CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.api.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest
-    extends ServiceClientSuite("CommandAccess.xml", "CommandAccess",
+    extends ClientSessionSuite("CommandAccess.xml", "CommandAccess",
       <div>
         <p>
           Represents the "access table" for the system. Access entries have one or two
@@ -46,30 +48,19 @@ class CommandAccessRequestTest
     with ShouldMatchers {
 
   test("Search") {
-    val firstReq = CommandAccessRequestBuilders.allowAccessForCommand("StaticSubstation.Breaker02.Trip")
-    val firstResp = client.putOneOrThrow(firstReq)
-
-    val secondReq = CommandAccessRequestBuilders.allowAccessForCommand("StaticSubstation.Breaker02.Close")
-    val secondResp = client.putOneOrThrow(secondReq)
-
     val cmdNames = "SimulatedSubstation.Breaker01.Trip" :: "SimulatedSubstation.Breaker01.Close" :: Nil
-    val thirdReq = CommandAccessRequestBuilders.blockCommands(cmdNames)
-    val thirdResp = client.putOneOrThrow(thirdReq)
+    val firstResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName(cmdNames.get(0)))
+    val secondResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName(cmdNames.get(1)))
+    val thirdResp = client.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames))
 
-    val getReq = CommandAccessRequestBuilders.getForUid(firstResp.getUid)
-    val getResp = client.getOneOrThrow(getReq)
+    client.addExplanation("Get by UID", "Search for an access entry by UID.")
+    client.getOrThrow(CommandAccessRequestBuilders.getForUid(new ReefUUID(firstResp.getUid)))
 
-    doc.addCase("Get by UID", "Get", "Search for an access entry by UID.", getReq, getResp)
+    client.addExplanation("Get all", "Search for all access entries.")
+    client.getOrThrow(CommandAccessRequestBuilders.getAll)
 
-    val getAllReq = CommandAccessRequestBuilders.allAccessEntries
-    val getAllResp = client.getOrThrow(getAllReq)
-
-    doc.addCase("Get all", "Get", "Search for all access entries.", getAllReq, getAllResp)
-
-    val getUserReq = CommandAccessRequestBuilders.getForUser(firstResp.getUser)
-    val getUserResp = client.getOrThrow(getUserReq)
-
-    doc.addCase("Get for user", "Get", "Search for all access entries for the given user.", getUserReq, getUserResp)
+    client.addExplanation("Get for user", "Search for all access entries for the given user.")
+    client.getOrThrow(CommandAccessRequestBuilders.getForUser(firstResp.getUser))
 
     client.deleteOneOrThrow(firstResp)
     client.deleteOneOrThrow(secondResp)
@@ -79,31 +70,39 @@ class CommandAccessRequestTest
   test("Allowed") {
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
-    val create = CommandAccessRequestBuilders.allowAccessForCommand(cmdName)
-    val createResp = client.putOneOrThrow(create)
-
-    doc.addCase("Create allow access", "Put", "Create ALLOWED access entry for a command.", create, createResp)
-
-    val deleteResp = client.deleteOneOrThrow(createResp)
+    client.addExplanation("Create allow access", "Create ALLOWED access entry for a command.")
+    val createResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName(cmdName))
 
     val delDesc = "The same proto object that was used to create an entry can be used to delete it. " +
       "The service identifies the object by uid, other fields are ignored."
 
-    doc.addCase("Delete access using original object", "Delete", delDesc, createResp, deleteResp)
+    client.addExplanation("Delete access using original object", delDesc)
+    client.deleteOneOrThrow(createResp)
   }
 
   test("Block") {
 
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
-    val create = CommandAccessRequestBuilders.blockCommands(cmdNames)
-    val createResp = client.putOneOrThrow(create)
+    client.addExplanation("Block commands", "Create BLOCKED access for multiple commands.")
+    val createdResp = client.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames))
 
-    doc.addCase("Block commands", "Put", "Create BLOCKED access for multiple commands.", create, createResp)
-
-    val deleteReq = CommandAccess.newBuilder.setUid(createResp.getUid).build
-    val deleteResp = client.deleteOneOrThrow(deleteReq)
-
-    doc.addCase("Delete access using UID", "Delete", "Delete a command access object by UID only.", deleteReq, deleteResp)
+    client.addExplanation("Delete access using UID", "Delete a command access object by UID only.")
+    client.deleteOneOrThrow(CommandAccessRequestBuilders.delete(createdResp))
   }
 
+  test("ReBlock") {
+
+    val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
+
+    client.addExplanation("Select commands", "Create ALLOWED access for multiple commands.")
+    val createdResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandNames(cmdNames))
+
+    // TODO: add support to xslt to show bad return codes
+    client.addExplanation("Selecing Selected Commands fails", "Trying to reselect the command fails with a non success status code. (Note that this will normally mean a ReefServiceException will be thrown by client code)")
+    intercept[ReefServiceException] {
+      client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName("StaticSubstation.Breaker02.Close"))
+    }
+
+    client.deleteOneOrThrow(CommandAccessRequestBuilders.delete(createdResp))
+  }
 }

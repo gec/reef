@@ -28,6 +28,8 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+
 // implicits
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
@@ -37,7 +39,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
 class FrontEndProcessorService(protected val modelTrans: ServiceTransactable[FrontEndProcessorServiceModel])
-    extends BasicProtoService[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel] {
+    extends BasicSyncModeledService[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.frontEndProcessor
 }

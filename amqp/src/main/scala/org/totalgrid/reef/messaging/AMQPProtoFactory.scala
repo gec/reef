@@ -25,14 +25,17 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 
 import org.totalgrid.reef.api.ServiceTypes._
-import org.totalgrid.reef.api.{ Envelope, ISubscription }
+import org.totalgrid.reef.api.{ Envelope, ISubscription, IRoutingKey, IDestination, AnyNode, AllMessages }
+import org.totalgrid.reef.api.service.IServiceAsync
 
-/** Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
- *  
+/**
+ * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
+ *
  */
-trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
+trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
-  /** Configures a publisher that targets a specific exchange
+  /**
+   * Configures a publisher that targets a specific exchange
    */
   private def publish(exchange: String): (Array[Byte], String) => Unit = {
     val pub = new AMQPPublisher(exchange :: Nil) with ReactActor
@@ -52,9 +55,9 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
 
   /* ---- Functions for subscribing  ---- */
 
-  def subscribe[A](exchange: String, key: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
+  def subscribe[A](exchange: String, routingKey: IRoutingKey, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
-    add(new AMQPExclusiveConsumer(exchange, key, consumer))
+    add(new AMQPExclusiveConsumer(exchange, routingKey, consumer))
   }
 
   def subscribe[A](exchange: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
@@ -75,7 +78,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
    */
   def listen[A](queueName: String, exchange: String, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
-    add(new AMQPCompetingConsumer(exchange, queueName, "#", consumer))
+    add(new AMQPCompetingConsumer(exchange, queueName, AllMessages, consumer))
   }
 
   /* ---- publishing functions ---- */
@@ -135,7 +138,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
     add(sub)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A] = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }
@@ -143,26 +146,19 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ServiceClientFactory {
   /* ---- Functions related to implementing services ---- */
 
   /**
-   * bind an AddressableService service handler to the named exchange with default routing key ("request") making it a "well known service"
-   */
-  def bindService(exchange: String, handlerFun: ServiceRequestHandler.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
-    bindAddressableService(exchange, "request", handlerFun, competing, reactor)
-  }
-
-  /**
    * bind a service handler to the bus for a given exchange
    * @param exchange   exchange to bind to
-   * @param key        key to bind to the exchange (address of node)
-   * @param handlerFun handler for the ServiceRequest, must return ServiceReponse
-   * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message) 
+   * @param service handler for the ServiceRequest, must return ServiceReponse
+   * @param destination Optionally overrides the default destination of AnyNode
+   * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindAddressableService(exchange: String, key: String, handlerFun: ServiceRequestHandler.Respond, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     val pub = broadcast[Envelope.ServiceResponse]()
-    val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, handlerFun), reactor)
+    val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
 
-    if (competing) add(new AMQPCompetingConsumer(exchange, exchange + "_server", key, binding))
-    else add(new AMQPExclusiveConsumer(exchange, key, binding))
+    if (competing) add(new AMQPCompetingConsumer(exchange, exchange + "_server", destination, binding))
+    else add(new AMQPExclusiveConsumer(exchange, destination, binding))
   }
 
   /**

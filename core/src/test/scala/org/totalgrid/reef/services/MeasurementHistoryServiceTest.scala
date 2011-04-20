@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1
@@ -72,21 +73,21 @@ class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with Be
     AMQPFixture.mock(true) { amqp =>
       val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
       val historian = new FakeHistorian(points)
-      val service = new MeasurementHistoryService(historian)
+      val service = new MeasurementHistoryService(historian, new SilentServiceSubscriptionHandler)
       val info = ReefServicesList.getServiceInfo(classOf[MeasurementHistory])
 
       amqp.bindService(info.exchange, service.respond)
 
-      val client = amqp.getProtoServiceClient(ReefServicesList, 500000)
+      val client = amqp.getProtoClientSession(ReefServicesList, 500000)
 
       val getMeas1 = client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").build)
       getMeas1.getMeasurementsCount() should equal(2)
-      validateHistorian(historian, 0, Long.MaxValue, service.HISTORY_LIMIT, true)
+      validateHistorian(historian, 0, Long.MaxValue, service.HISTORY_LIMIT, false)
 
       client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build)
-      validateHistorian(historian, 10, 1000, service.HISTORY_LIMIT, true)
+      validateHistorian(historian, 10, 1000, service.HISTORY_LIMIT, false)
 
-      client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").setAscending(false).setLimit(99).build)
+      client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build)
       validateHistorian(historian, 0, Long.MaxValue, 99, false)
     }
   }

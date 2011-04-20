@@ -23,6 +23,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.app.{ CoreApplicationComponents, ApplicationEnroller }
 import org.totalgrid.reef.api.RequestEnv
 import org.totalgrid.reef.api.ServiceHandlerHeaders._
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 import org.totalgrid.reef.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.messaging.AMQPProtoFactory
@@ -30,7 +31,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 object ServiceBootstrap {
-  /** 
+  /**
    * since _we_are_ a service provider we can create whatever services we would normally
    * use to enroll ourselves as an application to get the CoreApplicationComponents without
    * repeating that setup logic somewhere else
@@ -60,7 +61,7 @@ object ServiceBootstrap {
   }
 
   /**
-   * sets up the default users and low level configurations for the system 
+   * sets up the default users and low level configurations for the system
    */
   def seed() {
     core.EventConfigService.seed()

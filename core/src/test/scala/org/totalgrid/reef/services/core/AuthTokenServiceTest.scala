@@ -22,10 +22,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.Envelope._
-import org.totalgrid.reef.messaging.ServiceDescriptor
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.models.RunTestsInsideTransaction
+import org.totalgrid.reef.api.service.NoOpService
+
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -36,24 +34,22 @@ import org.totalgrid.reef.services.{ AuthTokenVerifier, AuthTokenMetrics }
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.scalatest.matchers.ShouldMatchers
+import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv }
+import org.totalgrid.reef.api.service.IServiceResponseCallback
+
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ Envelope, ReefServiceException, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with RunTestsInsideTransaction {
-
-  override def beforeAll() = DbConnector.connect(DbInfo.loadInfo("test"))
-  override def beforeEach() = {
-    transaction { ApplicationSchema.reset }
-    transaction { AuthTokenService.seed() }
-  }
+class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   class Fixture {
     val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
-    val service = new AuthTokenService(modelFac.authTokens)
+    val authService = new AuthTokenService(modelFac.authTokens)
+
+    val agentService = new AgentService(modelFac.agents)
+    val permissionSetService = new PermissionSetService(modelFac.permissionSets)
 
     def loginFrom(user: String, location: String) = {
       login(user, user, None, None, location)
@@ -65,7 +61,7 @@ class AuthSystemTestBase extends FunSuite with ShouldMatchers with BeforeAndAfte
       val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location)
       permissionSetName.foreach(ps => b.addPermissionSets(PermissionSet.newBuilder.setName(ps)))
       timeoutAt.foreach(t => b.setExpirationTime(t))
-      val authToken = one(service.put(b.build))
+      val authToken = one(authService.put(b.build))
       // just check that the token is not a blank string
       authToken.getToken.length should not equal (0)
       authToken.getExpirationTime should (be >= System.currentTimeMillis)
@@ -160,7 +156,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
     val fix = new Fixture
 
     val authToken = fix.login("core", "core")
-    val deletedToken = one(fix.service.delete(authToken))
+    val deletedToken = one(fix.authService.delete(authToken))
 
     deletedToken.getExpirationTime should equal(-1)
   }
@@ -181,7 +177,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 @RunWith(classOf[JUnitRunner])
 class AuthTokenVerifierTest extends AuthSystemTestBase {
   class AuthFixture extends Fixture {
-    val wrappedService = new AuthTokenVerifier(new NonOpService, "test", new AuthTokenMetrics)
+    val wrappedService = new AuthTokenVerifier(new NoOpService, "test", new AuthTokenMetrics)
 
     /// make a request with the set verb and auth_tokens
     def makeRequest(verb: Verb, authTokens: List[String]) = {
@@ -191,24 +187,16 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
       req.setPayload(ServiceResponse.newBuilder.setId("").setStatus(Status.BUS_UNAVAILABLE).build.toByteString)
       req.build
     }
-    class NonOpService extends ServiceDescriptor[Any] {
-      /// noOpService that returns OK
-      def respond(request: ServiceRequest, env: RequestEnv): ServiceResponse = {
-        ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build
-      }
-
-      override val descriptor = new ITypeDescriptor[Any] {
-        def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
-        def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
-        def getKlass: Class[Any] = throw new Exception("unimplemented")
-      }
-    }
 
     def testRequest(status: Status, verb: Verb, authTokens: List[String]) = {
       val env = new RequestEnv
       env.setAuthTokens(authTokens)
-      val result = wrappedService.respond(makeRequest(verb, authTokens), env)
-      result.getStatus should equal(status)
+      val callback = new IServiceResponseCallback {
+        var response: Option[ServiceResponse] = None
+        def onResponse(rsp: ServiceResponse) = response = Some(rsp)
+      }
+      wrappedService.respond(makeRequest(verb, authTokens), env, callback)
+      callback.response.get.getStatus should equal(status)
     }
   }
 
@@ -236,7 +224,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val fix = new AuthFixture
 
     val authToken = fix.login("guest", "guest")
-    one(fix.service.delete(authToken))
+    one(fix.authService.delete(authToken))
 
     fix.testRequest(Status.UNAUTHORIZED, Verb.GET, List(authToken.getToken))
   }

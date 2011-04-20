@@ -20,35 +20,32 @@
  */
 package org.totalgrid.reef.api.request
 
+import impl.AllScadaServiceImpl
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.api.{ IConnectionListener, RequestEnv, ServiceHandlerHeaders }
-import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
+import org.totalgrid.reef.api.{ ServiceHandlerHeaders, IConnectionListener }
 import org.totalgrid.reef.proto.ReefServicesList
+import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
+import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
 
-abstract class ServiceClientSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   def this(file: String, title: String, desc: String) = {
     this(file, title, <div>{ desc }</div>)
   }
 
-  val doc = new Documenter(file, title, desc)
-
   override def beforeAll() {
-    factory.start
-    val waiter = new ServiceClientSuite.BrokerConnectionState
-    factory.addConnectionListener(waiter)
-    waiter.waitUntilStarted()
-
+    factory.connect(5000)
   }
   override def afterAll() {
-    factory.stop
-    doc.save
+    factory.disconnect(5000)
+
+    client.save(file, title, desc)
   }
 
   import ServiceHandlerHeaders._
@@ -62,7 +59,9 @@ abstract class ServiceClientSuite(file: String, title: String, desc: Node) exten
   lazy val client = connect
 
   def connect = {
-    val client = new ProtoClient(factory, ReefServicesList, 5000)
+    val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder {
+      val ops = this
+    }
 
     val agent = Agent.newBuilder.setName("core").setPassword("core").build
     val request = AuthToken.newBuilder.setAgent(agent).build

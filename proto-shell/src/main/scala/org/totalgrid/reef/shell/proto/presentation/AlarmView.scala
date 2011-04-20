@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.proto.Alarms.Alarm
 
 object AlarmView {

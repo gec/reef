@@ -56,7 +56,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Create a model entry
-   * 
+   *
    * @param entry   Object to be created
    * @return        Result of store creation/insertion
    */
@@ -70,7 +70,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Update an existing model entry
-   * 
+   *
    * @param entry       Object to replace existing entry
    * @param existing    Existing entry to be replaced
    * @return            Result stored in data base and whether it was modified
@@ -105,7 +105,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Lock and update a set of entries.
-   * 
+   *
    * @param existing            List of entries to be updated
    * @param acquireCondition    Condition that must be true for all entries at time of acquisition and false at release
    * @param fun                 Update logic to be performed during lock, transforms acquired entries to list of updated entries
@@ -151,7 +151,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
   /**
    * Lock and update a model entry.
-   * 
+   *
    * @param existing            Entry to be updated
    * @param acquireCondition    Condition that must be true at acquisition and false at release.
    * @param fun                 Update logic to be performed during lock, transforms acquired entry to updated entry
@@ -205,9 +205,7 @@ object SquerylModel {
   }
   implicit def makeAsParam[A](o: Option[A]): FilterStars[A] = new FilterStars(o)
 
-  class ListFilterStars[A](javaList: java.util.List[A]) {
-    import scala.collection.JavaConversions._
-    val list = javaList.toList
+  class ListFilterStars[A](list: List[A]) {
     def asParam(f: List[A] => LogicalBoolean): Option[LogicalBoolean] = {
       list match {
         case List() => None
@@ -216,5 +214,27 @@ object SquerylModel {
       }
     }
   }
-  implicit def makeListAsParam[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList)
+  implicit def makeListAsParam[A](list: List[A]): ListFilterStars[A] = new ListFilterStars(list)
+  import scala.collection.JavaConversions._
+  implicit def makeListAsParam[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList.toList)
+
+  def routingOption[A, R](jList: java.util.List[A])(f: List[A] => List[R]): List[R] = {
+    import scala.collection.JavaConversions._
+    routingOption(jList.toList)(f)
+  }
+
+  def routingOption[A, R](list: List[A])(f: List[A] => List[R]): List[R] = {
+    list match {
+      case List() => Nil
+      case List("*") => Nil
+      case _ => f(list)
+    }
+  }
+
+  def createSubscriptionPermutations(lists: List[List[String]]): List[List[Option[String]]] = {
+    lists.foldLeft(List(Nil: List[Option[String]])) { (keys, entries) =>
+      if (entries.isEmpty) keys.map { k => None :: k }
+      else entries.map { e => keys.map { k => Some(e) :: k } }.flatten
+    }.map { _.reverse }
+  }
 }

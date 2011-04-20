@@ -82,11 +82,11 @@ object ApplicationEnroller extends Logging {
 import ApplicationEnroller._
 
 /**
- * handles the creation of the ApplicationConfig registration proto and then constructing the major components that 
- * depend on the result of the registration (for output channels etc.). 
- * 
- * This object also handles the lifecycle of the 
- * 
+ * handles the creation of the ApplicationConfig registration proto and then constructing the major components that
+ * depend on the result of the registration (for output channels etc.).
+ *
+ * This object also handles the lifecycle of the
+ *
  * @param amqp bus interface
  * @param processType should be either FEP or Processing
  * @param setupFun the construction function for the class using the components, must be StartStoppable
@@ -106,7 +106,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
           case x: Failure =>
             error("Error getting auth token. " + x)
             delay(2000) { enroll() }
-          case SingleSuccess(authToken) =>
+          case SingleSuccess(status, authToken) =>
             val env = new RequestEnv
             env.addAuthToken(authToken.getToken)
             c.setDefaultHeaders(env)
@@ -115,7 +115,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
                 case x: Failure =>
                   error("Error registering application. " + x)
                   delay(2000) { enroll() }
-                case SingleSuccess(app) =>
+                case SingleSuccess(status, app) =>
                   val components = new CoreApplicationComponents(amqp, app, env)
                   container = Some(setupFun(components))
                   container.get.start

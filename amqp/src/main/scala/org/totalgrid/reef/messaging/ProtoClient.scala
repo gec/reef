@@ -22,27 +22,28 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.api.scalaclient.ServiceClient
-
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import _root_.scala.collection.JavaConversions._
-import org.totalgrid.reef.api._
+
+import org.totalgrid.reef.api.{ ServiceList, IDestination, Envelope, RequestEnv, ISubscription }
 import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
  * doesn't have to manage the clients manually. NOT THREAD SAFE, needs to be used from a single thread at a time.
+ *
  */
 class ProtoClient(
-    factory: ServiceClientFactory,
-    lookup: ServiceList, timeoutms: Long, key: String = "request") extends ServiceClient with Logging {
+    factory: ClientSessionFactory,
+    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
-  private var clients = Map.empty[Class[_], ServiceClient]
+  private var clients = Map.empty[Class[_], ClientSession]
 
-  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv)(callback: MultiResult[A] => Unit) {
+  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
 
     val info = lookup.getServiceInfo(payload.getClass.asInstanceOf[Class[A]])
     val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(payload))
@@ -56,7 +57,7 @@ class ProtoClient(
           try {
             val list = x.getPayloadList.map { x => info.descriptor.deserialize(x.toByteArray) }.toList
             val error = if (x.hasErrorMessage) x.getErrorMessage else ""
-            Some(Response(x.getStatus, error, list))
+            Some(Response(x.getStatus, list, error))
           } catch {
             case ex: Exception =>
               warn("Error deserializing proto: ", ex)
@@ -69,20 +70,10 @@ class ProtoClient(
       callback(result)
     }
 
-    correlator.send(request, info.exchange, key, handleResponse)
+    correlator.send(request, info.exchange, dest.key, handleResponse)
   }
 
-  def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription = {
-
-    val applyMethod = ea.getClass.getDeclaredMethods.find { x => x.getName.equals("apply") }.get
-    val klass = applyMethod.getParameterTypes.apply(1).asInstanceOf[Class[A]]
-
-    val proxy = { (evt: Event[A]) => ea(evt.event, evt.result) }
-
-    addSubscription(klass, proxy)
-  }
-
-  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription = {
+  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription[A] = {
 
     // TODO: lookup by subscription klass instead of serviceKlass
     val info = lookup.getServiceInfo(klass)

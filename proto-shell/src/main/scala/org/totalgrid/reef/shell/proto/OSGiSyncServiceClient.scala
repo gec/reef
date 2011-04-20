@@ -22,27 +22,56 @@ package org.totalgrid.reef.shell.proto
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.scalaclient.{ SyncOperations, DefaultHeaders }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, MultiResult, Failure }
-import org.totalgrid.reef.api.Envelope.Verb
+import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
-import org.totalgrid.reef.messaging.ServiceDescriptor
+import org.totalgrid.reef.api.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
+
+import scala.annotation.tailrec
 
 import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.api._
+import scalaclient.{ SubscriptionManagement, SyncOperations, DefaultHeaders }
+import org.totalgrid.reef.api.ServiceTypes.{ Event, Response, MultiResult, Failure }
 
-class ServiceDispatcher[A <: AnyRef](rh: ServiceDescriptor[A]) {
+class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
 
-  def request(verb: Verb, payload: A, env: RequestEnv): Response[A] =
-    getResponse(rh.respond(getRequest(verb, payload, env), env))
+  def request(verb: Verb, payload: A, env: RequestEnv, timeoutms: Long = 5000): Response[A] = {
+
+    val mutex = new Object
+    var ret: Option[Envelope.ServiceResponse] = None
+
+    val callback = new IServiceResponseCallback {
+      def onResponse(rsp: Envelope.ServiceResponse): Unit = mutex.synchronized {
+        ret = Some(rsp)
+        mutex.notify()
+      }
+    }
+
+    def extract: Envelope.ServiceResponse = mutex.synchronized {
+      @tailrec
+      def extract(wait: Boolean): Envelope.ServiceResponse = ret match {
+        case Some(x) => x
+        case None =>
+          if (wait) {
+            mutex.wait(timeoutms)
+            extract(false)
+          } else throw new ResponseTimeoutException
+      }
+      extract(true)
+    }
+
+    rh.respond(getRequest(verb, payload, env), env, callback)
+    getResponse(extract)
+  }
 
   private def getResponse(rsp: Envelope.ServiceResponse): Response[A] = {
-    Response(rsp.getStatus, rsp.getErrorMessage, rsp.getPayloadList.map(x => rh.descriptor.deserialize(x.toByteArray)).toList)
+    val result = rsp.getPayloadList.map(x => rh.descriptor.deserialize(x.toByteArray)).toList
+    Response(rsp.getStatus, result, rsp.getErrorMessage)
   }
 
   private def getRequest(verb: Envelope.Verb, payload: A, env: RequestEnv): Envelope.ServiceRequest = {
@@ -60,7 +89,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
-  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
+  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
       val rsp = new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env)
       Some(rsp)
@@ -68,9 +97,9 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
       Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
   }
 
-  private def getService[A](exchange: String): ServiceDescriptor[A] = {
-    this.getBundleContext findServices withInterface[ServiceDescriptor[_]] withFilter "exchange" === exchange andApply { x =>
-      x.asInstanceOf[ServiceDescriptor[A]]
+  private def getService[A <: AnyRef](exchange: String): IServiceAsync[A] = {
+    this.getBundleContext findServices withInterface[IServiceAsync[_]] withFilter "exchange" === exchange andApply { x =>
+      x.asInstanceOf[IServiceAsync[A]]
     } match {
       case Seq(p) => p
       case Seq(_, _) =>
@@ -80,4 +109,18 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
     }
   }
 
+}
+
+class OSGISession(bundleContext: BundleContext, authToken: Option[String]) extends OSGiSyncOperations with SubscriptionManagement {
+  def getBundleContext: BundleContext = bundleContext
+
+  override def getDefaultHeaders: RequestEnv = {
+    val headers = new ServiceHandlerHeaders
+    authToken.foreach { x => headers.addAuthToken(x) }
+    super.mergeHeaders(headers.env)
+  }
+
+  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: (Event[A]) => Unit) = {
+    throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
+  }
 }

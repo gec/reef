@@ -20,23 +20,23 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.messaging.ServiceEndpoint
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceTypes }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
-class AddressableMeasurementBatchService(measProc: ProcessingNode) extends ServiceEndpoint[MeasurementBatch] {
+class AddressableMeasurementBatchService(measProc: ProcessingNode) extends AsyncToSyncServiceAdapter[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def delete(req: MeasurementBatch, env: RequestEnv) = noVerb("delete")
-  override def get(req: MeasurementBatch, env: RequestEnv) = noVerb("get")
+  override def delete(req: MeasurementBatch, env: RequestEnv) = noDelete
+  override def get(req: MeasurementBatch, env: RequestEnv) = noGet
 
   override def post(req: MeasurementBatch, env: RequestEnv) = put(req, env)
   override def put(req: MeasurementBatch, env: RequestEnv) = {
     measProc.process(req)
-    new Response(Envelope.Status.OK, req)
+    Response(Envelope.Status.OK, req :: Nil)
   }
 }
