@@ -32,7 +32,7 @@ class EventCommand extends ReefCommandSupport {
   @GogoOption(name = "-t", description = "Show events of type.", required = false, multiValued = true)
   var types: java.util.List[String] = null
 
-  @GogoOption(name = "-l", description = "Limit number of displayed events", required = false, multiValued = true)
+  @GogoOption(name = "-l", description = "Limit number of displayed events", required = false, multiValued = false)
   var limit: Int = 10
 
   def doCommand() = {
