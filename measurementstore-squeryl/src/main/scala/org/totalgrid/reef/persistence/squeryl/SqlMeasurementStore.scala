@@ -39,9 +39,16 @@ case class MeasName(
   var id: Long = 0
 }
 
+case class CurrentValue(
+    val pointId: Long,
+    val proto: Array[Byte]) extends KeyedEntity[Long] {
+  var id: Long = pointId
+}
+
 object SqlMeasurementStoreSchema extends Schema {
   val updates = table[Measurement]
   val names = table[MeasName]
+  val currentValues = table[CurrentValue]
 
   on(updates)(s => declare(
     columns(s.pointId, s.measTime.~) are (indexed),
@@ -58,10 +65,14 @@ object SqlMeasurementStoreSchema extends Schema {
 }
 
 import org.totalgrid.reef.persistence.ConnectionOperations
-class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividualGets: Boolean = false) extends MeasurementStore {
+class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividualGets: Boolean = false, useCurrentValue: Boolean = true) extends MeasurementStore {
 
   def makeUpdate(m: Meas, pNameMap: Map[String, Long]): Measurement = {
     new Measurement(pNameMap.get(m.getName).get, m.getTime, m.toByteString.toByteArray)
+  }
+
+  def makeCurrentValue(m: Meas, pNameMap: Map[String, Long]): CurrentValue = {
+    new CurrentValue(pNameMap.get(m.getName).get, m.toByteString.toByteArray)
   }
 
   override val supportsTrim = true
@@ -82,8 +93,11 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividua
         if (numPoints < counts) {
           def ids = from(SqlMeasurementStoreSchema.updates)(u => where(true === true) select (u.id) orderBy (u.measTime.asc)).page(numPoints.toInt, Int.MaxValue)
           SqlMeasurementStoreSchema.updates.deleteWhere(u => u.id in ids)
+          Some(counts - numPoints)
+        }else{
+          Some(0)
         }
-        Some(counts - numPoints)
+
       }
     }.getOrElse(throw new Exception("Couldn't trim database"))
   }
@@ -98,7 +112,7 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividua
 
   def set(meas: Seq[Meas]) {
     if (!meas.nonEmpty) return
-    connection.doAsync { r =>
+    connection.doSync { r =>
       transaction {
         // setup list of all the points we are trying to find ids for
         var insertedMeas: Map[String, Long] = meas.map { _.getName -> (-1: Long) }.toMap
@@ -117,13 +131,20 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividua
           SqlMeasurementStoreSchema.names.insert(newNames)
           val addedNames = SqlMeasurementStoreSchema.names.where(n => n.name in newNames.map { _.name }).toList
           addedNames.foreach { p => insertedMeas = insertedMeas - p.name + (p.name -> p.id) }
+
+          val addedCurrentValues = addedNames.map { p => new CurrentValue(p.id, new Array[Byte](0)) }
+          SqlMeasurementStoreSchema.currentValues.insert(addedCurrentValues)
         }
 
         // create the list of measurements to upload
         val toInsert = meas.map { makeUpdate(_, insertedMeas) }.toList
         SqlMeasurementStoreSchema.updates.insert(toInsert)
+
+        val toUpdate = meas.map { makeCurrentValue(_, insertedMeas) }.toList
+        SqlMeasurementStoreSchema.currentValues.update(toUpdate)
       }
-    }
+      Some(true)
+    }.getOrElse(throw new Exception("Couldn't store measurements in measurement store."))
   }
 
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -144,6 +165,11 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividua
                   orderBy (timeOrder(u.measTime, false), timeOrder(u.id, false))).page(0, 1).single
               m = m + (name -> Meas.parseFrom(proto))
           }
+        } else if (useCurrentValue) {
+          val ids = insertedMeas.keys.toList
+          val cvs = from(SqlMeasurementStoreSchema.currentValues)(cv =>
+            where(cv.id in ids) select (cv.id, cv.proto))
+          cvs.foreach { case (pid, proto) => m = m + (insertedMeas.get(pid).get -> Meas.parseFrom(proto)) }
         } else {
           // http://groups.google.com/group/squeryl/browse_frm/thread/b58f3f8c23f76eb
 
@@ -190,6 +216,7 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean], doIndividua
         if (nameRows.nonEmpty) {
           SqlMeasurementStoreSchema.updates.deleteWhere(u => u.pointId in nameRows)
           SqlMeasurementStoreSchema.names.deleteWhere(n => n.id in nameRows)
+          SqlMeasurementStoreSchema.currentValues.deleteWhere(u => u.pointId in nameRows)
         }
       }
     }

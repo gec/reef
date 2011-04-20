@@ -37,7 +37,13 @@ trait MeasurementStore extends Historian with RTDatabase with MeasSink {
   val supportsTrim = false
 
   /**
-   *  tell the measurement store that it can (if it chooses) move measurements before end
+   * some implementations report the most recent value in time, others just report the most
+   * recently written value (the two should be the same usually)
+   */
+  val supportsOutOfOrderInsertion = false
+
+  /**
+   *   tell the measurement store that it can (if it chooses) move measurements before end
    * to a slower secondary storage
    * @return whether archiving is supported
    */

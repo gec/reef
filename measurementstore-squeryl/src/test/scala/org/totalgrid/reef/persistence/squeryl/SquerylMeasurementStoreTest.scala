@@ -40,6 +40,19 @@ class SqlMeasTest extends MeasurementStoreTest {
     val connection = DbConnector.connect(conn_info)
 
     transaction { SqlMeasurementStoreSchema.reset() }
+    new SqlMeasurementStore(new LockStepConnection(true), false, false)
+  }
+  lazy val cm = connect()
+}
+
+@RunWith(classOf[JUnitRunner])
+class SqlUsingCurrentValueMeasTest extends MeasurementStoreTest {
+  def connect() = {
+
+    val conn_info = DbInfo.loadInfo("test")
+    val connection = DbConnector.connect(conn_info)
+
+    transaction { SqlMeasurementStoreSchema.reset() }
     new SqlMeasurementStore(new LockStepConnection(true))
   }
   lazy val cm = connect()

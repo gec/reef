@@ -60,12 +60,12 @@ abstract class RTDatabaseReadPerformanceTestBase extends FunSuite with ShouldMat
   val setiters = 1
   val getIters = 25
   val getPoints = 100
-  val getNum = 100000
+  val getNum = 1000
   val histiters = 1
   val histpoints = 10
-  val updates = 100
+  val updates = 1000
   val rand = new Random()
-  val batchSize = 10000
+  val batchSize = 100
 
   var sequentialReadTimings = List.empty[Tuple2[Int, Long]]
   var sequentialWriteTimings = List.empty[Tuple2[Int, Long]]
@@ -110,6 +110,8 @@ abstract class RTDatabaseReadPerformanceTestBase extends FunSuite with ShouldMat
     removeTimings = ret._2
 
     cm.remove(for (i <- 1 to getPoints) yield getName(basename, i))
+    // make sure there is atleast 1 measurement for each point
+    cm.set(for (i <- 1 to getPoints) yield getMeas(getName(basename, i), 0))
     for (i <- 1 to getNum / batchSize) {
       val meas = for (j <- 1 to batchSize) yield getMeas(getName(basename, rand.nextInt(getPoints - 1) + 1), i * batchSize + j)
       cm.set(meas)
@@ -134,7 +136,7 @@ abstract class RTDatabaseReadPerformanceTestBase extends FunSuite with ShouldMat
     val measNames = for (i <- 1 to histpoints) yield getName("HistorianPerformance", i)
     cm.remove(measNames)
     measNames.map(n => for (i <- 1 to updates / batchSize) {
-      val meas = for (j <- 1 to batchSize) yield getMeas(n, i * batchSize + j)
+      val meas = for (j <- 1 to batchSize) yield getMeas(n, (i - 1) * batchSize + j)
       cm.set(meas)
     })
 
