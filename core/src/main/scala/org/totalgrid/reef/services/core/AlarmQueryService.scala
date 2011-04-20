@@ -46,8 +46,6 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.squeryl.dsl.ast.LogicalBoolean
 
-import org.totalgrid.reef.util.Timing
-
 object AlarmQueryService {
 
   def buildQuery(row: AlarmModel, eventRow: EventStore, select: AlarmSelect): List[Option[LogicalBoolean]] = {
@@ -113,20 +111,6 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToS
 
       val entIds = results.map { case (_, event) => event.entityId }.flatten.distinct
 
-      /*val entToTypes: List[(Entity, Option[String])] =
-        from(entities, entityTypes.leftOuter)((e, t) =>
-          where(e.id in entIds)
-            select(e, t.map(_.entType))
-            on(e.id === t.map(_.entityId))).toList */
-
-      /*
-      def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
-    join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
-      where(ent.id === uid.toLong)
-        select (ent, attr)
-        on (ent.id === attr.map(_.entityId))).toList
-  }
-       */
       val entToTypes: List[(Entity, Option[String])] =
         join(entities, entityTypes.leftOuter)((e, t) =>
           where(e.id in entIds)

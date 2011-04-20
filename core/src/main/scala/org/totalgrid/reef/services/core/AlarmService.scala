@@ -220,11 +220,6 @@ trait AlarmConversion
   }
 
   def convertToProto(entry: AlarmModel): Alarm = {
-    /*Alarm.newBuilder
-      .setUid(entry.id.toString)
-      .setState(Alarm.State.valueOf(entry.state))
-      .setEvent(EventConversion.convertToProto(entry.event.value))
-      .build */
     convertToProto(entry, entry.event.value)
   }
 

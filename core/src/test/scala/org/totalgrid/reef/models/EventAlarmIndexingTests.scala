@@ -40,7 +40,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
 
   override def beforeAll() {
     DbConnector.connect(DbInfo.loadInfo("test"))
-    //ServiceBootstrap.resetDb
+    ServiceBootstrap.resetDb
   }
 
   test("Seed events") {
@@ -153,7 +153,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
 
   }
 
-  test("Query") {
+  test("Query1") {
     val alarms = ApplicationSchema.alarms
     val events = ApplicationSchema.events
 
