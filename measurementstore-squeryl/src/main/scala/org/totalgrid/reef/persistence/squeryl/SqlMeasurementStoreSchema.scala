@@ -47,8 +47,7 @@ object SqlMeasurementStoreSchema extends Schema {
   val currentValues = table[CurrentValue]
 
   on(updates)(s => declare(
-    columns(s.pointId, s.measTime.~) are (indexed),
-    columns(s.pointId, s.measTime.~, s.id) are (indexed)))
+    columns(s.pointId, s.measTime.~) are (indexed)))
 
   on(names)(s => declare(
     columns(s.name) are (indexed, unique)))
