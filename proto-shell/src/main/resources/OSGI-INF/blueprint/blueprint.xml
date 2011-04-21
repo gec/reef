@@ -44,6 +44,9 @@
         <command name="reef/login">
             <action class="org.totalgrid.reef.shell.proto.ReefLoginCommand"/>
         </command>
+        <command name="reef/remote-login">
+            <action class="org.totalgrid.reef.shell.proto.ReefRemoteLoginCommand"/>
+        </command>
         <command name="reef/logout">
             <action class="org.totalgrid.reef.shell.proto.ReefLogoutCommand"/>
         </command>
