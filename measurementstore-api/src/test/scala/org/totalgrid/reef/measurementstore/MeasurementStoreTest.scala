@@ -276,7 +276,8 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
 
       cm.getOldest(basename, num).size should equal(5)
 
-      cm.getNewest(basename).get.getTime should equal(105)
+      cm.getNewest(basename).get.getTime should equal(120)
+      cm.getOldest(basename).get.getTime should equal(116)
     }
   }
 

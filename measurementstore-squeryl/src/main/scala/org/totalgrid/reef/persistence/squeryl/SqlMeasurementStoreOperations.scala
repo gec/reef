@@ -41,11 +41,21 @@ trait SqlMeasurementStoreOperations {
     true
   }
 
+  def totalValues(): Long = {
+    from(SqlMeasurementStoreSchema.updates)(u => compute(count(u.id)))
+  }
+
   def trim(numPoints: Long): Long = {
-    val counts: Long = from(SqlMeasurementStoreSchema.updates)(u => compute(count(u.id)))
+    val counts = totalValues()
     if (numPoints < counts) {
-      def ids = from(SqlMeasurementStoreSchema.updates)(u => where(true === true) select (u.id) orderBy (u.measTime.asc)).page(numPoints.toInt, Int.MaxValue)
-      SqlMeasurementStoreSchema.updates.deleteWhere(u => u.id in ids)
+      // to trim to a specific # of points we can take advantage of the ID column being an auto-incremented value
+      // we use the currentValue table to get the most recently updated point (which should have highest id value)
+      val currentValues = from(SqlMeasurementStoreSchema.currentValues)(n => select(n.proto)).map { p => Meas.parseFrom(p) }.toList
+      val mostRecentlyUpdatedPoint = currentValues.sortWith { _.getTime < _.getTime }.head.getName
+      // then get the most recent update using the fast history query
+      val mostRecentUpdate = getHistory(mostRecentlyUpdatedPoint, 0, Long.MaxValue, 1, false).head
+      // then delete all records with id less than the most recent update - numpoints we want in system
+      SqlMeasurementStoreSchema.updates.deleteWhere(u => u.id.~ <= mostRecentUpdate.id - numPoints)
       counts - numPoints
     } else {
       0
@@ -119,6 +129,13 @@ trait SqlMeasurementStoreOperations {
   }
 
   def getInRange(meas_name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
+
+    val meases = getHistory(meas_name, begin, end, max, ascending)
+    val list = meases.map(m => Meas.parseFrom(m.proto))
+    list
+  }
+
+  private def getHistory(meas_name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Measurement] = {
     // make start/end arguments optional
     val beginO = if (begin == 0) None else Some(begin)
     val endO = if (end == Long.MaxValue) None else Some(end)
@@ -129,9 +146,7 @@ trait SqlMeasurementStoreOperations {
           select (u)
           // we sort by id to keep insertion order
           orderBy (timeOrder(u.measTime, ascending), timeOrder(u.id, ascending))).page(0, max).toList
-
-    val list = meases.map(m => Meas.parseFrom(m.proto))
-    list
+    meases
   }
 
   import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
