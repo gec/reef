@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Random;
 
-
+// TODO: port all java integration tests to use api-request library reef_techdebt-9
 
 @SuppressWarnings("unchecked")
 public class SampleRequests {
@@ -99,7 +99,7 @@ public class SampleRequests {
 	 * Update the state of an existing alarm.
 	 */
 	public static Alarm updateAlarm(ISession client, Alarm alarm, Alarm.State newState)  throws ReefServiceException {
-		Alarm result = client.putOne(AlarmRequestBuilders.updateAlarmState(alarm, newState)); // TODO: Check return code.
+		Alarm result = client.putOne(AlarmRequestBuilders.updateAlarmState(alarm, newState));
 		return result;
 	}
 

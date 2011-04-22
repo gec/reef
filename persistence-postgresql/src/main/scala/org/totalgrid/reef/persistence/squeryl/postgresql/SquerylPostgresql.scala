@@ -34,7 +34,6 @@ class Connector extends DbConnectorBase with Logging {
 
     val pool = new org.apache.commons.dbcp.BasicDataSource
     pool.setDriverClassName("org.postgresql.Driver")
-    // TODO: add port to dbInfo or split different sql drivers config info
     val url = "jdbc:postgresql://%s:%s/%s".format(dbInfo.host, dbInfo.port, dbInfo.database)
     pool.setUrl(url)
     pool.setUsername(dbInfo.user)

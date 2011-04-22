@@ -35,6 +35,6 @@ trait IConnectionListener {
    */
   def opened()
 
-  // TODO: write tests to figure out what can and can't be done inside IConnectionListener callbacks
+  // TODO: write tests to figure out what can and can't be done inside IConnectionListener callbacks reef_techdebt-7
   // TODO: add exception callback for ISubscription and possibly ISession
 }

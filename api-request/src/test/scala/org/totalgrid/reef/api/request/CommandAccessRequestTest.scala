@@ -97,7 +97,6 @@ class CommandAccessRequestTest
     client.addExplanation("Select commands", "Create ALLOWED access for multiple commands.")
     val createdResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandNames(cmdNames))
 
-    // TODO: add support to xslt to show bad return codes
     client.addExplanation("Selecing Selected Commands fails", "Trying to reselect the command fails with a non success status code. (Note that this will normally mean a ReefServiceException will be thrown by client code)")
     intercept[ReefServiceException] {
       client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName("StaticSubstation.Breaker02.Close"))
