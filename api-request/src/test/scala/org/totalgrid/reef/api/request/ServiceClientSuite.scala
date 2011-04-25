@@ -73,4 +73,3 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
 }
 
-
