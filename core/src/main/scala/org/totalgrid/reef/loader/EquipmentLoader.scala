@@ -109,8 +109,8 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     // Commands are controls and setpoints. TODO: setpoints
     trace("load equipment: " + name + " commands")
     val commands = profiles.flatMap(_.getControl.toList).map { c =>
-      val displayName = Option(c.getDisplayName) getOrElse c.getName
-      processControl(childPrefix + c.getName, c, entity)
+      val display = Option(c.getDisplayName) getOrElse c.getName
+      processControl(childPrefix + c.getName, display, getTypeList(c.getType), entity)
     }
 
     // Points
@@ -125,13 +125,13 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name : String, ctrl: Control, equipmentEntity: Entity) = {
+  def processControl(name: String, displayName: String, types: List[String], equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
     loadCache.addControl(name)
-    val commandEntity = toEntityType(name, "Command" :: ctrl.getType.map(x => x.getName).toList)
-    val command = toCommand(name, ctrl.getDisplayName, commandEntity)
+    val commandEntity = toEntityType(name, "Command" :: types)
+    val command = toCommand(name, displayName, commandEntity)
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
 
@@ -140,6 +140,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     client.putOrThrow(toEntityEdge(equipmentEntity, commandEntity, "feedback"))
 
     commandEntity
+  }
+
+  def getTypeList(list: java.util.List[Type]): List[String] = Option(list) match {
+    //import scala.collection.JavaConversions._
+    case Some(x) => x.map(_.getName).toList
+    case None => Nil
   }
 
   /**
@@ -154,8 +160,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     val name = childPrefix + pointT.getName
     trace("processPointType: " + name)
-    val types = "Point" :: pointT.getType.map(x => x.getName).toList
-    val pointEntity = toEntityType(name, types)
+    val pointEntity = toEntityType(name, "Point" :: getTypeList(pointT.getType))
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)
     client.putOrThrow(point)
