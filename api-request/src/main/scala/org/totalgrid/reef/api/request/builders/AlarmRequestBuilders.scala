@@ -33,10 +33,10 @@ object AlarmRequestBuilders {
   }
 
   def updateAlarmState(alarm: Alarm, state: Alarm.State) = {
-    Alarm.newBuilder.setUuid(alarm.getUuid).setState(state).build
+    Alarm.newBuilder.setUid(alarm.getUid).setState(state).build
   }
 
-  def getByUUID(uuid: ReefUUID) = {
-    Alarm.newBuilder.setUuid(uuid).build
+  def getByUID(uid: String) = {
+    Alarm.newBuilder.setUid(uid).build
   }
 }

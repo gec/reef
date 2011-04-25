@@ -259,7 +259,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
 
     var resp = one(service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)))
     resp.getEventsCount should equal(9)
-    var lastUid = resp.getEventsList.head.getUuid // The latest UID in the database
+    var lastUid = resp.getEventsList.head.getUid // The latest UID in the database
 
     val entity = transaction {
       ApplicationSchema.entities.insert(new Entity("Entity42"))

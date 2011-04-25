@@ -52,7 +52,7 @@ class AlarmSilenceCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val alarm = services.getAlarm(ReefUUID.newBuilder.setUuid(id).build)
+    val alarm = services.getAlarm(id)
 
     val edittedAlarm = services.silenceAlarm(alarm)
 
@@ -68,7 +68,7 @@ class AlarmAcknowledgeCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val alarm = services.getAlarm(ReefUUID.newBuilder.setUuid(id).build)
+    val alarm = services.getAlarm(id)
 
     val edittedAlarm = services.acknowledgeAlarm(alarm)
 
@@ -84,7 +84,7 @@ class AlarmRemoveCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val alarm = services.getAlarm(ReefUUID.newBuilder.setUuid(id).build)
+    val alarm = services.getAlarm(id)
 
     val edittedAlarm = services.removeAlarm(alarm)
 

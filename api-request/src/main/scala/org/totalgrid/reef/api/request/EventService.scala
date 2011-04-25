@@ -34,10 +34,10 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 trait EventService {
   /**
    * get a single event
-   * @param uuid UUID of event
+   * @param uid event
    */
   @throws(classOf[ReefServiceException])
-  def getEvent(uuid: ReefUUID): Event
+  def getEvent(uid: String): Event
 
   /**
    *  get the most recent events

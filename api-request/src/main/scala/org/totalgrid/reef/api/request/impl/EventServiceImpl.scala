@@ -31,9 +31,9 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
-  def getEvent(uuid: ReefUUID) = {
-    reThrowExpectationException("Event with UUID: " + uuid.getUuid + " not found") {
-      ops.getOneOrThrow(EventRequestBuilders.getByUUID(uuid))
+  def getEvent(uid: String) = {
+    reThrowExpectationException("Event with UID: " + uid + " not found") {
+      ops.getOneOrThrow(EventRequestBuilders.getByUID(uid))
     }
   }
 

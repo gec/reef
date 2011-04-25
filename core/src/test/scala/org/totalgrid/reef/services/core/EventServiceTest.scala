@@ -202,7 +202,7 @@ class EventServiceTest extends DatabaseUsingTestBase {
    */
   def makeAlarm(uid: Long, state: Alarm.State) =
     Alarm.newBuilder
-      .setUuid(ReefUUID.newBuilder.setUuid(uid.toString))
+      .setUid(uid.toString)
       .setState(state)
       .build
 }

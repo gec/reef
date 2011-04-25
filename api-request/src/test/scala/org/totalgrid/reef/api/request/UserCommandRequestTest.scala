@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
-import builders.{ UserCommandRequestBuilders, CommandAccessRequestBuilders }
+import org.totalgrid.reef.api.request.builders.{ UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

@@ -20,7 +20,7 @@ object OptionalProtos {
 
   implicit def proto2OptAlarmsAlarm(a: org.totalgrid.reef.proto.Alarms.Alarm): OptAlarmsAlarm = new OptAlarmsAlarm(Some(a))
   class OptAlarmsAlarm(real: Option[org.totalgrid.reef.proto.Alarms.Alarm]) extends OptionalStruct(real) {
-    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
+    val uid = optionally(_.hasUid, _.getUid)
     val state = optionally(_.hasState, _.getState)
     val event = new OptEventsEvent(optionally(_.hasEvent, _.getEvent))
     val rendered = optionally(_.hasRendered, _.getRendered)
@@ -130,7 +130,7 @@ object OptionalProtos {
   }
   implicit def proto2OptEventsEvent(a: org.totalgrid.reef.proto.Events.Event): OptEventsEvent = new OptEventsEvent(Some(a))
   class OptEventsEvent(real: Option[org.totalgrid.reef.proto.Events.Event]) extends OptionalStruct(real) {
-    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
+    val uid = optionally(_.hasUid, _.getUid)
     val eventType = optionally(_.hasEventType, _.getEventType)
     val alarm = optionally(_.hasAlarm, _.getAlarm)
     val time = optionally(_.hasTime, _.getTime)

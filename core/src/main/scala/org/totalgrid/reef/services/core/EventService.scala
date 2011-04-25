@@ -201,7 +201,7 @@ trait EventConversion
   }
 
   def uniqueQuery(proto: Event, sql: EventStore) = {
-    proto.uuid.uuid.asParam(sql.id === _.toLong) :: Nil // if exists, use it.
+    proto.uid.asParam(sql.id === _.toLong) :: Nil // if exists, use it.
   }
 
   def isModified(entry: EventStore, existing: EventStore): Boolean = {
@@ -241,7 +241,7 @@ trait EventConversion
 
   def convertToProto(entry: EventStore): Event = {
     val b = Event.newBuilder
-      .setUuid(makeUuid(entry))
+      .setUid(entry.id.toString)
       .setAlarm(entry.alarm)
       .setEventType(entry.eventType)
       .setTime(entry.time)

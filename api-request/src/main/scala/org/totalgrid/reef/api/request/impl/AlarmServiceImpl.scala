@@ -31,9 +31,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
-  def getAlarm(uuid: ReefUUID) = {
-    reThrowExpectationException("Alarm with UUID: " + uuid.getUuid + " not found") {
-      ops.getOneOrThrow(AlarmRequestBuilders.getByUUID(uuid))
+  def getAlarm(uid: String) = {
+    reThrowExpectationException("Alarm with UID: " + uid + " not found") {
+      ops.getOneOrThrow(AlarmRequestBuilders.getByUID(uid))
     }
   }
 
