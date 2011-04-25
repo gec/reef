@@ -110,7 +110,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     trace("load equipment: " + name + " commands")
     val commands = profiles.flatMap(_.getControl.toList).map { c =>
       val displayName = Option(c.getDisplayName) getOrElse c.getName
-      processControl(childPrefix + c.getName, displayName, entity)
+      processControl(childPrefix + c.getName, c, entity)
     }
 
     // Points
@@ -125,13 +125,13 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name: String, displayName: String, equipmentEntity: Entity) = {
+  def processControl(name : String, ctrl: Control, equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
     loadCache.addControl(name)
-    val commandEntity = toEntityType(name, List("Command"))
-    val command = toCommand(name, displayName, commandEntity)
+    val commandEntity = toEntityType(name, "Command" :: ctrl.getType.map(x => x.getName).toList)
+    val command = toCommand(name, ctrl.getDisplayName, commandEntity)
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
 

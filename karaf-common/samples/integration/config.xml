@@ -54,8 +54,12 @@
                 <eq:type name="Breaker"/>
                 <eq:type name="Equipment"/>
 
-                <eq:control name="Trip"/>
-                <eq:control name="Close"/>
+                <eq:control name="Trip">
+                    <eq:type name = "bkrTrip" />
+                </eq:control>
+                <eq:control name="Close">
+                    <eq:type name = "bkrClose" />
+                </eq:control>
 
                 <eq:status name="Bkr" unit="status" pointProfile="BreakerStatus">
                     <eq:control name="Trip"/>
