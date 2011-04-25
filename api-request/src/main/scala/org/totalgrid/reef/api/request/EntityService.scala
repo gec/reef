@@ -88,6 +88,14 @@ trait EntityService {
   def getAllEntitiesWithType(typ: String): java.util.List[Entity]
 
   /**
+   * Find all entities with a specified type.
+   * @param typ   List of required entity types to search for.
+   * @return The list of entities that have the specified type.
+   */
+  @throws(classOf[ReefServiceException])
+  def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity]
+
+  /**
    * Return all child entities that have the correct type and a matching relationship to the parent Entity. The results
    * are "flattened" and all children are returned in one list so any relationships or groupings of the child entities
    * will be discarded.

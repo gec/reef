@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Arrays;
 
 import org.totalgrid.reef.integration.helpers.*;
 
@@ -93,6 +94,22 @@ public class TestEntityService extends JavaBridgeTestBase {
         assertEquals(2, list.size());
         for(Entity e : list){
             assertTrue(e.getTypesList().contains("Substation"));
+        }
+	}
+
+    /**
+	 * Ask for all entities of type su point and bkr
+	 *
+	 * */
+	@Test
+	public void getStatusOfTypeBreaker() throws ReefServiceException {
+        EntityService es = new EntityServiceWrapper(client);
+
+        List<Entity> list = es.getAllEntitiesWithTypes(Arrays.asList("bkrStatus"));
+        assertEquals(2, list.size());
+
+        for(Entity e : list){
+            assertTrue(e.getTypesList().contains("bkrStatus"));
         }
 	}
 

@@ -60,6 +60,7 @@
                 <eq:status name="Bkr" unit="status" pointProfile="BreakerStatus">
                     <eq:control name="Trip"/>
                     <eq:control name="Close"/>
+                    <eq:type name="bkrStatus"/>
                 </eq:status>
 
                 <eq:status name="Tripped" unit="status" pointProfile="TrippedStatus"/>

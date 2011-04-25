@@ -138,6 +138,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
         breaker.add(profile)
       case None =>
         val status = new Status("Bkr", "status")
+        status.getType.add(new Type("bkrStatus"))
         if (isTrigger) {
           status.add(new Unexpected(false, "Nominal"))
           status.add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))

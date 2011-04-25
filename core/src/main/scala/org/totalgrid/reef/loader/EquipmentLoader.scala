@@ -64,10 +64,9 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     ex.collect("Equipment Profiles: ") {
       // Collect all the profiles in name->profile maps.
-      val profiles = model.getProfiles
-      if (profiles != null) {
-        profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
-        profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
+      Option(model.getProfiles).foreach { p =>
+        p.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
+        p.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
       }
     }
 
@@ -151,10 +150,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
    */
   def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
+    import scala.collection.JavaConversions._
 
     val name = childPrefix + pointT.getName
     trace("processPointType: " + name)
-    val pointEntity = toEntityType(name, List("Point"))
+    val types = "Point" :: pointT.getType.map(x => x.getName).toList
+    val pointEntity = toEntityType(name, types)
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)
     client.putOrThrow(point)
