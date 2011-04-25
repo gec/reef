@@ -73,7 +73,15 @@ trait ModelWithId extends KeyedEntity[Long] with ActiveModel {
 
 }
 
-trait ModelWithUUID extends KeyedEntity[UUID] with ActiveModel {
-  var id: UUID
+/**
+ * trait that allows us to mixin different UUID generation methods
+ */
+trait UUIDGenerator{
+  def newUUID() : UUID = {
+    UUID.randomUUID()
+  }
+}
 
+trait ModelWithUUID extends KeyedEntity[UUID] with ActiveModel with UUIDGenerator{
+  var id : UUID = newUUID
 }
