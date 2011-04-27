@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.squeryl</groupId>
             <artifactId>squeryl_2.8.0</artifactId>
-            <version>0.9.4-RC7-uuid</version>
+            <version>0.9.4-RC7-uuid-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>

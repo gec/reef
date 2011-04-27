@@ -260,7 +260,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
     result.size should equal(0)
   }
 
-  /*test("Trim Points") {
+  test("Trim Points") {
 
     if (cm.supportsTrim) {
 
@@ -279,6 +279,6 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
       cm.getNewest(basename).get.getTime should equal(120)
       cm.getOldest(basename).get.getTime should equal(116)
     }
-  }*/
+  }
 
 }

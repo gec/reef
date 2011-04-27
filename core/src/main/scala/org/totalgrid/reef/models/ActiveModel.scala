@@ -23,8 +23,6 @@ package org.totalgrid.reef.models
 import org.squeryl._
 import org.squeryl.PrimitiveTypeMode._
 
-import java.util.UUID
-
 class ActiveModelException(msg: String) extends Exception(msg)
 
 trait ActiveModel {
@@ -73,15 +71,17 @@ trait ModelWithId extends KeyedEntity[Long] with ActiveModel {
 
 }
 
+import java.util.UUID
+
 /**
  * trait that allows us to mixin different UUID generation methods
  */
-trait UUIDGenerator{
-  def newUUID() : UUID = {
+trait UUIDGenerator {
+  def newUUID(): UUID = {
     UUID.randomUUID()
   }
 }
 
-trait ModelWithUUID extends KeyedEntity[UUID] with ActiveModel with UUIDGenerator{
-  var id : UUID = newUUID
+trait ModelWithUUID extends KeyedEntity[UUID] with ActiveModel with UUIDGenerator {
+  var id: UUID = newUUID
 }
