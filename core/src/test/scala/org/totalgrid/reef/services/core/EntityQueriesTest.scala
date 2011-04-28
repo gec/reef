@@ -35,6 +35,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
+import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
@@ -275,9 +276,10 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   test("Results to proto") {
     def buildEnt(id: Long, name: String) = {
       val e = new Entity(name)
-      e.id = id
+      e.id = uuid(id)
       e
     }
+    def uuid(id: Long) = new UUID(id, id)
 
     def buildNode(ent: Entity, types: List[String], subs: Map[Relate, List[ResultNode]]): ResultNode = {
       val n = ResultNode(ent, subs)
@@ -285,8 +287,8 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
       n
     }
 
-    def checkEnt(proto: EntityProto, uid: String, name: String, typ: String, relCount: Int) = {
-      proto.getUuid.getUuid should equal(uid)
+    def checkEnt(proto: EntityProto, uid: UUID, name: String, typ: String, relCount: Int) = {
+      proto.getUuid.getUuid should equal(uid.toString)
       proto.getName should equal(name)
       proto.getTypesCount should equal(1)
       proto.getTypes(0) should equal(typ)
@@ -310,22 +312,22 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
     val node1 = buildNode(buildEnt(1, "ent01"), List("Substation"), subMap)
 
     val proto = node1.toProto
-    checkEnt(proto, "1", "ent01", "Substation", 2)
+    checkEnt(proto, uuid(1), "ent01", "Substation", 2)
 
     val rel1 = proto.getRelations(0)
     checkRel(rel1, "owns", true, 1, 2)
 
     val line = rel1.getEntities(0)
-    checkEnt(line, "2", "ent02", "Line", 0)
+    checkEnt(line, uuid(2), "ent02", "Line", 0)
 
     val bkr = rel1.getEntities(1)
-    checkEnt(bkr, "3", "ent03", "Breaker", 0)
+    checkEnt(bkr, uuid(3), "ent03", "Breaker", 0)
 
     val rel2 = proto.getRelations(1)
     checkRel(rel2, "source", false, 1, 1)
 
     val relay = rel2.getEntities(0)
-    checkEnt(relay, "4", "ent04", "Relay", 0)
+    checkEnt(relay, uuid(4), "ent04", "Relay", 0)
   }
 
   test("Tree request downwards one level") {

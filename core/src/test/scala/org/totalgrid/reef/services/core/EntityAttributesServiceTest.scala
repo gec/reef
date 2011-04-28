@@ -35,6 +35,7 @@ import com.google.protobuf.ByteString
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, ApplicationSchema, EntityAttribute }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
+import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityAttributesServiceTest extends DatabaseUsingTestBase {
@@ -71,7 +72,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }*/
 
   test("Bad put - entity doesn't exist") {
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("0")).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(new UUID(0, 0).toString)).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build))
@@ -285,7 +286,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def noneForEntity(entId: ReefUUID) = {
     transaction {
-      ApplicationSchema.entityAttributes.where(t => t.entityId === entId.getUuid.toLong).toList should equal(Nil)
+      ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getUuid)).toList should equal(Nil)
     }
   }
 

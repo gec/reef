@@ -24,15 +24,16 @@ import org.squeryl.Table
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
+import java.util.UUID
 
 class Entity(
-    val name: String) extends ModelWithId {
+    val name: String) extends ModelWithUUID {
 
   val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
 
   val attributes = LazyVar(from(ApplicationSchema.entityAttributes)(t => where(id === t.entityId) select (t)).toList)
 
-  def asType[A <: { val entityId: Long }](table: Table[A], ofType: String) = {
+  def asType[A <: { val entityId: UUID }](table: Table[A], ofType: String) = {
     if (types.value.find(_ == ofType).isEmpty) {
       throw new Exception("entity: " + id + " didnt have type: " + ofType + " but had: " + types)
     }
@@ -45,7 +46,7 @@ class Entity(
 }
 object Entity {
 
-  def asType[A <: { val entityId: Long }](table: Table[A], entites: List[Entity], ofType: Option[String]) = {
+  def asType[A <: { val entityId: UUID }](table: Table[A], entites: List[Entity], ofType: Option[String]) = {
     if (ofType.isDefined && !entites.forall(e => { e.types.value.find(_ == ofType.get).isDefined })) {
       throw new Exception("No all entities had type: " + ofType.get)
     }
@@ -56,17 +57,17 @@ object Entity {
 }
 
 class EntityToTypeJoins(
-  val entityId: Long,
+  val entityId: UUID,
   val entType: String) {}
 
 class EntityEdge(
-    val parentId: Long,
-    val childId: Long,
+    val parentId: UUID,
+    val childId: UUID,
     val relationship: String,
     val distance: Int) extends ModelWithId {
 
-  val parent = LazyVar(hasOne(ApplicationSchema.entities, parentId))
-  val child = LazyVar(hasOne(ApplicationSchema.entities, childId))
+  val parent = LazyVar(hasOneByUuid(ApplicationSchema.entities, parentId))
+  val child = LazyVar(hasOneByUuid(ApplicationSchema.entities, childId))
 }
 class EntityDerivedEdge(
     val edgeId: Long,
@@ -77,7 +78,7 @@ class EntityDerivedEdge(
 }
 
 class EntityAttribute(
-    val entityId: Long,
+    val entityId: UUID,
     val attrName: String,
     val stringVal: Option[String],
     val boolVal: Option[Boolean],
@@ -85,7 +86,7 @@ class EntityAttribute(
     val doubleVal: Option[Double],
     val byteVal: Option[Array[Byte]]) extends ModelWithId {
 
-  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
 
-  def this() = this(5, "", Some(""), Some(true), Some(50L), Some(84.33), Some(Array.empty[Byte]))
+  def this() = this(new UUID(0, 0), "", Some(""), Some(true), Some(50L), Some(84.33), Some(Array.empty[Byte]))
 }

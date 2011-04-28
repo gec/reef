@@ -24,6 +24,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
 import org.totalgrid.reef.services.core.EQ
+import java.util.UUID
 
 case class EventStore(
     eventType: String,
@@ -33,16 +34,16 @@ case class EventStore(
     severity: Int,
     subsystem: String,
     userId: String,
-    entityId: Option[Long],
+    entityId: Option[UUID],
     args: Array[Byte],
     rendered: String) extends ModelWithId {
 
   // extra constructor for squeryl type inference
-  def this() = this("", false, 0, 0, 0, "", "", Some(0), Array[Byte](), "")
+  def this() = this("", false, 0, 0, 0, "", "", Some(new UUID(0, 0)), Array[Byte](), "")
 
   val associatedAlarm = LazyVar(ApplicationSchema.alarms.where(a => a.eventUid === id).single)
 
-  val entity = LazyVar(mayHaveOne(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(mayHaveOneByUuid(ApplicationSchema.entities, entityId))
 
   val groups = LazyVar(entityId.map { x => EQ.getParentOfType(x, "owns", "EquipmentGroup").toList }.getOrElse(Nil))
   val equipments = LazyVar(entityId.map { x => EQ.getParentOfType(x, "owns", "Equipment").toList }.getOrElse(Nil))

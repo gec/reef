@@ -25,15 +25,16 @@ import org.totalgrid.reef.services.core.EQ
 
 import org.squeryl.annotations.Transient
 import org.squeryl.PrimitiveTypeMode._
+import java.util.UUID
 
 case class Point(
     val name: String,
-    val entityId: Long,
+    val entityId: UUID,
     var abnormal: Boolean) extends ModelWithId {
 
-  def this(n: String, entityId: Long) = this(n, entityId, false)
+  def this(n: String, entityId: UUID) = this(n, entityId, false)
 
-  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 
@@ -53,17 +54,17 @@ case class Point(
 case class Command(
     val name: String,
     val displayName: String,
-    val entityId: Long,
+    val entityId: UUID,
     var connected: Boolean,
     var lastSelectId: Option[Long],
     var triggerId: Option[Long]) extends ModelWithId {
 
-  def this() = this("", "", 0, false, Some(0), Some(0))
-  def this(name: String, displayName: String, entityId: Long) = this(name, displayName, entityId, false, None, None)
-  //def this(name: String, entityId: Long, connected: Boolean, lastSelectId: Option[Long], triggerId: Option[Long]) = this(name, name, entityId, false, None, None)
-  def this(name: String, entityId: Long) = this(name, name, entityId, false, None, None)
+  def this() = this("", "", new UUID(0, 0), false, Some(0), Some(0))
+  def this(name: String, displayName: String, entityId: UUID) = this(name, displayName, entityId, false, None, None)
+  //def this(name: String, entityId: UUID, connected: Boolean, lastSelectId: Option[Long], triggerId: Option[Long]) = this(name, name, entityId, false, None, None)
+  def this(name: String, entityId: UUID) = this(name, name, entityId, false, None, None)
 
-  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 
@@ -84,11 +85,11 @@ case class FrontEndPort(
 }
 
 case class ConfigFile(
-    val entityId: Long,
+    val entityId: UUID,
     val mimeType: String,
     var file: Array[Byte]) extends ModelWithId {
 
-  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
   val owners = LazyVar(EQ.getParents(entity.value.id, "uses").toList)
 
   /// this flag allows us to tell if we have modified
@@ -97,12 +98,12 @@ case class ConfigFile(
 }
 
 case class CommunicationEndpoint(
-    val entityId: Long,
+    val entityId: UUID,
     val protocol: String,
     var frontEndPortId: Option[Long]) extends ModelWithId {
 
-  def this() = this(0, "", Some(0))
-  def this(entityId: Long, protocol: String) = this(entityId, protocol, Some(0))
+  def this() = this(new UUID(0, 0), "", Some(0))
+  def this(entityId: UUID, protocol: String) = this(entityId, protocol, Some(0))
 
   val port = LazyVar(mayHaveOne(ApplicationSchema.frontEndPorts, frontEndPortId))
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
@@ -110,7 +111,7 @@ case class CommunicationEndpoint(
 
   val configFiles = LazyVar(Entity.asType(ApplicationSchema.configFiles, EQ.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList, Some("ConfigurationFile")))
 
-  val entity = LazyVar(hasOne(ApplicationSchema.entities, entityId))
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
   val name = LazyVar(entity.value.name)
 
   val points = LazyVar(Entity.asType(ApplicationSchema.points, EQ.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))

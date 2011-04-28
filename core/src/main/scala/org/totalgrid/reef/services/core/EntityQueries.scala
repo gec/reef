@@ -31,7 +31,10 @@ import org.squeryl.dsl.ast.LogicalBoolean
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.BadRequestException
-import SquerylModel._ // implict asParam
+import SquerylModel._
+import java.util.UUID
+
+// implict asParam
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
@@ -117,7 +120,7 @@ trait EntityTreeQueries { self: EntityQueries =>
     checkAllTypesInSystem(proto)
 
     def expr(ent: Entity, typ: EntityToTypeJoins) = {
-      proto.uuid.uuid.map(ent.id === _.toLong) ::
+      proto.uuid.uuid.map(ent.id === UUID.fromString(_)) ::
         proto.name.map(ent.name === _) ::
         ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
           and (typ.entityId === ent.id))) ::
@@ -131,7 +134,7 @@ trait EntityTreeQueries { self: EntityQueries =>
           select (ent)).distinct
     } else {
       from(entities)(ent =>
-        where((proto.uuid.uuid.map(ent.id === _.toLong) ::
+        where((proto.uuid.uuid.map(ent.id === UUID.fromString(_)) ::
           proto.name.map(ent.name === _) :: Nil).flatten)
           select (ent))
     }
@@ -171,14 +174,14 @@ trait EntityTreeQueries { self: EntityQueries =>
    * @param typ Entity type to return ids of
    * @return List of entity ids from entity query of specified type
    */
-  def typeIdsFromProtoQuery(proto: EntityProto, typ: String): List[Long] = {
+  def typeIdsFromProtoQuery(proto: EntityProto, typ: String): List[UUID] = {
     protoTreeQuery(proto).flatMap(_.idsForType(typ))
   }
 
   /**
-   * Return a list of descendants of the entity along with this entity.
+   * Return a list of descendants of the entity aUUID with this entity.
    */
-  def idsFromProtoQuery(proto: EntityProto): List[Long] = {
+  def idsFromProtoQuery(proto: EntityProto): List[UUID] = {
     protoTreeQuery(proto).flatMap(_.flatIds())
   }
 
@@ -204,7 +207,7 @@ trait EntityTreeQueries { self: EntityQueries =>
     def types_=(l: List[String]) = { _types = Some(l) }
     protected var _types: Option[List[String]] = None
 
-    def traverse(f: ResultNode => Boolean): List[Long] = {
+    def traverse(f: ResultNode => Boolean): List[UUID] = {
       val subIds = for ((rel, nodes) <- subNodes; node <- nodes) yield node.traverse(f)
       val list = subIds.toList.flatten
 
@@ -217,21 +220,21 @@ trait EntityTreeQueries { self: EntityQueries =>
     /**
      * Traverses tree for a flat list of all ids of entities of a certain type.
      */
-    def idsForType(typ: String): List[Long] = {
+    def idsForType(typ: String): List[UUID] = {
       traverse(_.types.contains(typ))
     }
 
     /**
      * Traverses tree for a flat list of all ids of returned entities
      */
-    def flatIds(): List[Long] = {
+    def flatIds(): List[UUID] = {
       traverse(x => true)
     }
 
     /**
      * Traverses tree for a flat list of all ids of entities of a certain type.
      */
-    /*def idsForType(typ: String): List[Long] = {
+    /*def idsForType(typ: String): List[UUID] = {
       val subIds = for ((rel, nodes) <- subNodes; node <- nodes) yield node.idsForType(typ)
       val list = subIds.toList.flatten
 
@@ -416,7 +419,7 @@ trait EntityQueries extends EntityTreeQueries {
 
   def findEntity(proto: EntityProto): Option[Entity] = {
     if (proto.hasUuid) {
-      returnSingleOption(entities.where(t => t.id === proto.getUuid.getUuid.toLong).toList)
+      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getUuid)).toList)
     } else if (proto.hasName) {
       returnSingleOption(entities.where(t => t.name === proto.getName).toList)
     } else {
@@ -437,7 +440,7 @@ trait EntityQueries extends EntityTreeQueries {
     }
   }
 
-  def getChildren(rootId: Long, relation: String) = {
+  def getChildren(rootId: UUID, relation: String) = {
     from(entities)(ent =>
       where(ent.id in
         from(edges)(edge =>
@@ -446,7 +449,7 @@ trait EntityQueries extends EntityTreeQueries {
         select (ent))
   }
 
-  def getParents(rootId: Long, relation: String) = {
+  def getParents(rootId: UUID, relation: String) = {
     from(entities)(ent =>
       where(ent.id in
         from(edges)(edge =>
@@ -455,20 +458,20 @@ trait EntityQueries extends EntityTreeQueries {
         select (ent))
   }
 
-  def getParentsWithDistance(rootId: Long, relation: String) = {
+  def getParentsWithDistance(rootId: UUID, relation: String) = {
     from(entities, edges)((ent, edge) =>
       where(ent.id === edge.parentId and edge.childId === rootId and edge.relationship === relation)
         select (ent, edge.distance))
   }
 
-  def getChildrenWithDistance(rootId: Long, relation: String) = {
+  def getChildrenWithDistance(rootId: UUID, relation: String) = {
     from(entities, edges)((ent, edge) =>
       where(ent.id === edge.childId and edge.parentId === rootId and edge.relationship === relation)
         select (ent, edge.distance))
   }
 
   // Helper for 
-  def getChildrenOfType(rootId: Long, relation: String, entType: String) = {
+  def getChildrenOfType(rootId: UUID, relation: String, entType: String) = {
     from(entities)(ent =>
       where((ent.id in
         from(edges)(edge =>
@@ -477,7 +480,7 @@ trait EntityQueries extends EntityTreeQueries {
         select (ent))
   }
 
-  def getParentOfType(rootId: Long, relation: String, entType: String) = {
+  def getParentOfType(rootId: UUID, relation: String, entType: String) = {
     from(entities)(ent =>
       where((ent.id in
         from(edges)(edge =>
@@ -569,7 +572,7 @@ trait EntityQueries extends EntityTreeQueries {
         select (&(t.entityId)))
   }
 
-  def findIdsOfChildren(rootNode: EntityProto, relation: String, childType: String): Query[Long] = {
+  def findIdsOfChildren(rootNode: EntityProto, relation: String, childType: String): Query[UUID] = {
     if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
@@ -583,7 +586,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   val table = ApplicationSchema.entities
   def uniqueQuery(proto: EntityProto, sql: Entity) = {
     List(
-      proto.uuid.uuid.asParam(sql.id === _.toLong),
+      proto.uuid.uuid.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
       EQ.noneIfEmpty(proto.types).asParam(sql.id in EQ.entityIdsFromTypes(_)))
   }

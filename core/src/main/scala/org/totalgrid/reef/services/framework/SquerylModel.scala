@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.models.{ ModelWithId }
+import org.totalgrid.reef.models.{ ModelWithUUID, ModelWithId }
 import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
@@ -168,11 +168,19 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
 object SquerylModel {
 
-  def makeUuid[A <: ModelWithId](entry: A) = {
+  def makeUuid(entry: ModelWithId) = {
+    import org.totalgrid.reef.proto.Model.ReefUUID
+    ReefUUID.newBuilder.setUuid(entry.id.toString)
+  }
+  def makeUuid(entry: ModelWithUUID) = {
     import org.totalgrid.reef.proto.Model.ReefUUID
     ReefUUID.newBuilder.setUuid(entry.id.toString)
   }
   def makeUuid(id: Long) = {
+    import org.totalgrid.reef.proto.Model.ReefUUID
+    ReefUUID.newBuilder.setUuid(id.toString)
+  }
+  def makeUuid(id: java.util.UUID) = {
     import org.totalgrid.reef.proto.Model.ReefUUID
     ReefUUID.newBuilder.setUuid(id.toString)
   }

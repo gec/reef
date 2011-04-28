@@ -192,7 +192,7 @@ class EventServiceTest extends DatabaseUsingTestBase {
       .setEventType(event)
       .setSubsystem("FEP")
       .setUserId("flint")
-      .setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("42")).build)
+      .setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(new java.util.UUID(42, 42).toString)).build)
       .setArgs(alist.toProto)
       .build
   }

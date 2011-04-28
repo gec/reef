@@ -33,6 +33,7 @@ import org.squeryl.{ Table, Query }
 import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import java.util.UUID
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends BasicSyncModeledService[CommandProto, Command, CommandServiceModel]
@@ -91,7 +92,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
     List(
       proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
       proto.name.asParam(name => sql.name === name),
-      proto.uuid.uuid.asParam(sql.entityId === _.toLong))
+      proto.uuid.uuid.asParam(sql.entityId === UUID.fromString(_)))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil

@@ -37,6 +37,7 @@ import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute =>
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
+import java.util.UUID
 
 class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
   import EntityAttributesService._
@@ -89,8 +90,8 @@ class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
 
 object EntityAttributesService {
 
-  def deleteAllFromEntity(entId: Long) = {
-    ApplicationSchema.entityAttributes.deleteWhere(t => t.entityId === entId)
+  def deleteAllFromEntity(entityId: UUID) = {
+    ApplicationSchema.entityAttributes.deleteWhere(t => t.entityId === entityId)
   }
 
   def queryEntities(proto: EntityProto): List[AttrProto] = {
@@ -118,22 +119,22 @@ object EntityAttributesService {
 
   def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
     join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
-      where(ent.id === uid.toLong)
+      where(ent.id === UUID.fromString(uid))
         select (ent, attr)
-        on (ent.id === attr.map(_.entityId))).toList
+        on (Some(ent.id) === attr.map(_.entityId))).toList
   }
 
   def nameJoin(name: String): List[(Entity, Option[AttrModel])] = {
     join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
       where(ent.name === name)
         select (ent, attr)
-        on (ent.id === attr.map(_.entityId))).toList
+        on (Some(ent.id) === attr.map(_.entityId))).toList
   }
 
   def allJoin: List[(Entity, Option[AttrModel])] = {
     join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
       select(ent, attr)
-        on (ent.id === attr.map(_.entityId))).toList
+        on (Some(ent.id) === attr.map(_.entityId))).toList
   }
 
   def protoFromEntity(entry: Entity): AttrProto = {
@@ -178,11 +179,11 @@ object EntityAttributesService {
     proto.build
   }
 
-  def createEntryFromProto(entityId: Long, attr: Attribute) = {
+  def createEntryFromProto(entityId: UUID, attr: Attribute) = {
     ApplicationSchema.entityAttributes.insert(convertProtoToEntry(entityId, attr))
   }
 
-  def convertProtoToEntry(entityId: Long, attr: Attribute) = {
+  def convertProtoToEntry(entityId: UUID, attr: Attribute) = {
     val attrName = attr.getName
     val attrTyp = attr.getVtype
 

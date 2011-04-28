@@ -22,6 +22,7 @@ package org.totalgrid.reef.models
 
 import org.squeryl._
 import org.squeryl.PrimitiveTypeMode._
+import java.util.UUID
 
 class ActiveModelException(msg: String) extends Exception(msg)
 
@@ -34,10 +35,25 @@ trait ActiveModel {
     }
   }
 
+  def hasOneByUuid[A <: KeyedEntity[UUID]](table: Table[A], id: UUID): A = {
+    table.lookup(id) match {
+      case Some(s) => s
+      case None =>
+        throw new ActiveModelException("Missing id: " + id + " in " + table)
+    }
+  }
+
   def mayHaveOne[A <: KeyedEntity[Long]](table: Table[A], optId: Option[Long]): Option[A] = {
     optId match {
       case Some(-1) => None
       case Some(id) => Some(hasOne(table, id))
+      case None => None
+    }
+  }
+
+  def mayHaveOneByUuid[A <: KeyedEntity[UUID]](table: Table[A], optId: Option[UUID]): Option[A] = {
+    optId match {
+      case Some(id) => Some(hasOneByUuid(table, id))
       case None => None
     }
   }
