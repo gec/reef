@@ -81,7 +81,7 @@ class AuthTokenVerifier[A](service: IServiceAsync[A], exchange: String, metrics:
     // select only the permissions that either say this resource + verb exactly or are wildcarded
     val relevant = permissions.filter(p => (p.resource == "*" || p.resource == exchange) && (p.verb == "*" || p.verb == verb))
 
-    val userName = tokens.head.agent.value.name
+    val userName = tokens.head.agent.value.entityName
 
     if (relevant.size == 0) {
       return failMessage(req, Envelope.Status.UNAUTHORIZED, "Access to resource: " + req.getVerb + ":" + exchange + " by agent: " + userName + " not allowed.")
