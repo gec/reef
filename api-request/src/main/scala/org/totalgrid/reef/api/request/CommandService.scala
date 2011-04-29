@@ -74,7 +74,7 @@ trait CommandService {
    * same as deleteCommandLock
    */
   @throws(classOf[ReefServiceException])
-  def deleteCommandLock(uuid: ReefUUID): CommandAccess
+  def deleteCommandLock(uid: String): CommandAccess
 
   /**
    * Clear all of the command locks in the system. This is a dangerous operation that should only be preformed in test
@@ -135,7 +135,7 @@ trait CommandService {
    * get a command locks by UUID
    */
   @throws(classOf[ReefServiceException])
-  def getCommandLock(uuid: ReefUUID): CommandAccess
+  def getCommandLock(uid: String): CommandAccess
 
   /**
    * get the command lock (if it exists) for a Command

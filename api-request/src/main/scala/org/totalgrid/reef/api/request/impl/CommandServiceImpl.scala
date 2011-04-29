@@ -34,11 +34,11 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     ops.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommands(ids))
   }
 
-  def deleteCommandLock(uuid: ReefUUID): CommandAccess = {
-    ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(uuid))
+  def deleteCommandLock(uid: String): CommandAccess = {
+    ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(uid))
   }
   def deleteCommandLock(ca: CommandAccess): CommandAccess = {
-    ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(ca.getUuid))
+    ops.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(ca.getUid))
   }
 
   def clearCommandLocks(): java.util.List[CommandAccess] = {
@@ -63,8 +63,8 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     ops.getOrThrow(CommandAccessRequestBuilders.getAll)
   }
 
-  def getCommandLock(uuid: ReefUUID) = {
-    ops.getOneOrThrow(CommandAccessRequestBuilders.getForUid(uuid))
+  def getCommandLock(uid: String) = {
+    ops.getOneOrThrow(CommandAccessRequestBuilders.getForUid(uid))
   }
 
   def getCommandLockOnCommand(id: Command): CommandAccess = {
@@ -79,7 +79,7 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
   }
 
   def getCommandHistory(): java.util.List[UserCommandRequest] = {
-    ops.getOrThrow(UserCommandRequestBuilders.getForUid(ReefUUID.newBuilder.setUuid("*").build))
+    ops.getOrThrow(UserCommandRequestBuilders.getForUid("*"))
   }
 
   def getCommands(): java.util.List[Command] = {

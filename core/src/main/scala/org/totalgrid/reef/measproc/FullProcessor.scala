@@ -39,7 +39,7 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
     extends ServiceHandler with ServiceContext[ConnProto] with KeyedMap[ConnProto]
     with Reactable with Lifecycle {
 
-  protected override def getKey(c: ConnProto) = c.getUuid.getUuid
+  protected override def getKey(c: ConnProto) = c.getUid
 
   private var map = Map.empty[String, MeasurementStreamProcessingNode]
 

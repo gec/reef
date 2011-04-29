@@ -25,9 +25,9 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object UserCommandRequestBuilders {
 
-  def getForUid(uid: ReefUUID) = UserCommandRequest.newBuilder.setUuid(uid).build
+  def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(uid).build
 
-  def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUuid(request.getUuid).build
+  def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
 
   def executeControl(command: Command): UserCommandRequest = executeControl(command.getName)
   def executeControl(command: String): UserCommandRequest = {

@@ -164,7 +164,7 @@ class CommandRequestServicesIntegration
     // Send a select (access request)
     val select = commandAccess()
     val selectResult = one(fixture.access.put(select, reqEnv))
-    val selectId = selectResult.getUuid
+    val selectId = selectResult.getUid
 
     // the 'remote' service that will handle the call
     val service = new AsyncToSyncServiceAdapter[UserCommandRequest] {
@@ -179,7 +179,7 @@ class CommandRequestServicesIntegration
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 
-    val conn = one(fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
+    val conn = one(fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
 
     println(conn.getRouting.getServiceRoutingKey)
 

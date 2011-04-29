@@ -31,7 +31,7 @@ class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build)
+    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
     EndpointView.printTable(results)
   }
 }

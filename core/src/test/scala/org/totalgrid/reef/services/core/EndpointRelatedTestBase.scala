@@ -83,7 +83,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       }
       MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantReactor {})
 
-      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUuid }
+      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
 
       measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
     }
@@ -231,8 +231,8 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
 
     def checkAssignments(num: Int, fepFrontEndUid: Option[FrontEndProcessor], measProcUid: Option[ApplicationConfig]) {
-      val feps = many(num, frontEndConnection.get(CommEndpointConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
-      val procs = many(num, measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
+      val feps = many(num, frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
+      val procs = many(num, measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build))
 
       checkFeps(feps, false, fepFrontEndUid, measProcUid.isDefined)
       checkMeasProcs(procs, measProcUid, measProcUid.isDefined)

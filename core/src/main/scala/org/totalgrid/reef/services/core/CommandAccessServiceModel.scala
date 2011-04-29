@@ -171,15 +171,14 @@ trait CommandAccessConversion
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: AccessProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uid ::
       req.access ::
       req.user :: Nil
   }
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
-    // TODO: should be uid
     List(
-      proto.uuid.uuid.asParam(uid => sql.id === uid.toLong))
+      proto.uid.asParam(uid => sql.id === uid.toLong))
   }
 
   def searchQuery(proto: AccessProto, sql: AccessModel) = {
@@ -209,7 +208,7 @@ trait CommandAccessConversion
 
   def convertToProto(entry: AccessModel): AccessProto = {
     val b = AccessProto.newBuilder
-      .setUuid(makeUuid(entry))
+      .setUid(makeUid(entry))
       .addAllCommands(entry.commands.map(cmd => cmd.entityName))
       .setAccess(AccessMode.valueOf(entry.access))
 

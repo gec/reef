@@ -62,7 +62,7 @@ class AccessCommand extends ReefCommandSupport {
   def doCommand() = {
     Option(id) match {
       case Some(uid) =>
-        CommandView.accessInspect(services.getCommandLock(ReefUUID.newBuilder.setUuid(id).build))
+        CommandView.accessInspect(services.getCommandLock(id))
       case None =>
         CommandView.printAccessTable(services.getCommandLocks().toList)
     }
@@ -91,7 +91,7 @@ class AccessRemoveCommand extends ReefCommandSupport {
 
   def doCommand(): Unit = {
 
-    val access = services.deleteCommandLock(ReefUUID.newBuilder.setUuid(id).build)
+    val access = services.deleteCommandLock(id)
     CommandView.removeBlockResponse(access :: Nil)
   }
 }

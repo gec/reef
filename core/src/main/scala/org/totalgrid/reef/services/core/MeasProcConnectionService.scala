@@ -138,7 +138,7 @@ trait MeasurementProcessingConnectionConversion
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
     req.measProc.uuid.uuid ::
-      req.uuid.uuid ::
+      req.uid ::
       Nil
   }
 
@@ -147,8 +147,7 @@ trait MeasurementProcessingConnectionConversion
   }
 
   def uniqueQuery(proto: ConnProto, sql: MeasProcAssignment) = {
-    // TODO: should be uid
-    proto.uuid.uuid.asParam(sql.id === _.toLong) ::
+    proto.uid.asParam(sql.id === _.toLong) ::
       proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
       Nil
   }
@@ -163,7 +162,7 @@ trait MeasurementProcessingConnectionConversion
 
   def convertToProto(entry: MeasProcAssignment): ConnProto = {
 
-    val b = ConnProto.newBuilder.setUuid(makeUuid(entry))
+    val b = ConnProto.newBuilder.setUid(makeUid(entry))
 
     entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EQ.entityToProto(endpoint.entity.value)))
     entry.application.value.map(app => b.setMeasProc(ApplicationConfig.newBuilder.setUuid(makeUuid(app))))

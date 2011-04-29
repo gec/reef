@@ -36,7 +36,7 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
 
-  def getKey(c: ConnProto) = c.getUuid.getUuid
+  def getKey(c: ConnProto) = c.getUid
 
   val protocols = comms.mapify { _.name }
 
@@ -60,7 +60,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
 
     val publisher = newPublisher(c.getRouting.getServiceRoutingKey)
     val channelListener = newChannelListener(port.getUuid)
-    val endpointListener = newEndpointListener(c.getUuid)
+    val endpointListener = newEndpointListener(c.getUid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
@@ -79,12 +79,12 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
-  private def newEndpointListener(endpointUid: ReefUUID) = new IEndpointListener {
+  private def newEndpointListener(connectionUid: String) = new IEndpointListener {
 
     val session = conn.getClientSession
 
     override def onStateChange(state: ConnProto.State) = {
-      val update = ConnProto.newBuilder.setUuid(endpointUid).setState(state).build
+      val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
       try {
         val result = session.postOneOrThrow(update)
         debug { "Updated connection state: " + result }

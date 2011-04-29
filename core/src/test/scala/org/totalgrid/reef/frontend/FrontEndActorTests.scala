@@ -194,7 +194,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     val pt = CommChannel.newBuilder.setUuid("port")
     val cfg = ConfigProto.newBuilder.setUuid("config").setChannel(pt).setName("connection")
     val rt = CommEndpointRouting.newBuilder
-    val conn = ConnProto.newBuilder.setUuid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
+    val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
     respondToConnectionSubscribe(fix.conn, List(conn)) //return 1 subscription
     respondToConnectionQueries(fix, "port") //respond to the request to read the config/port
 
@@ -213,7 +213,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     val pt = CommChannel.newBuilder.setUuid("port")
     val cfg = ConfigProto.newBuilder.setUuid("config").setChannel(pt).setName("connection")
     val rt = CommEndpointRouting.newBuilder
-    val conn = ConnProto.newBuilder.setUuid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
+    val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
 
     fix.conn.getEvent(classOf[ConnProto]).accept(Event(Envelope.Event.ADDED, conn))
 

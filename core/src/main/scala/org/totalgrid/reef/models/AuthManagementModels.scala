@@ -101,9 +101,19 @@ case class AuthPermission(
     val verb: String) extends ModelWithId {
 
 }
+
+object PermissionSet {
+  def newInstance(name: String, defaultExpirationTime: Long) = {
+    val ent = EQ.findOrCreateEntity(name, "PermissionSet")
+    val a = new PermissionSet(ent.id, defaultExpirationTime)
+    a.entity.value = ent
+    a
+  }
+}
+
 case class PermissionSet(
-    val name: String,
-    val defaultExpirationTime: Long) extends ModelWithId {
+    _entityId: UUID,
+    val defaultExpirationTime: Long) extends EntityBasedModel(_entityId) {
 
   val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionSetId === id) select (&(p.permissionId)))))
 }

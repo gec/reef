@@ -59,10 +59,10 @@ object AuthTokenService {
 
         val timeout = 18144000000L // one month
 
-        val read_set = ApplicationSchema.permissionSets.insert(new PermissionSet("read_only", timeout))
+        val read_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("read_only", timeout))
         ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
 
-        val all_set = ApplicationSchema.permissionSets.insert(new PermissionSet("all", timeout))
+        val all_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("all", timeout))
         ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
 
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))

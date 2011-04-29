@@ -54,7 +54,7 @@ class CommandAccessRequestTest
     val thirdResp = client.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames))
 
     client.addExplanation("Get by UID", "Search for an access entry by UID.")
-    client.getOrThrow(CommandAccessRequestBuilders.getForUid(firstResp.getUuid))
+    client.getOrThrow(CommandAccessRequestBuilders.getForUid(firstResp.getUid))
 
     client.addExplanation("Get all", "Search for all access entries.")
     client.getOrThrow(CommandAccessRequestBuilders.getAll)
