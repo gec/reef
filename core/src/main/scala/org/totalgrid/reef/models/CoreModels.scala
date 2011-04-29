@@ -26,6 +26,15 @@ import org.totalgrid.reef.services.core.EQ
 import org.squeryl.annotations.Transient
 import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
+import org.squeryl.Query
+
+class EntityBasedModel(val entityId: UUID) extends ModelWithId {
+
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
+
+  def entityName = entity.value.name
+
+}
 
 case class Point(
     val name: String,
@@ -51,20 +60,35 @@ case class Point(
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 }
 
+object Command {
+  def newInstance(name: String, displayName: String) = {
+    val ent = EQ.findOrCreateEntity(name, "Command")
+    val c = new Command(ent.id, displayName, false, None, None)
+    c.entity.value = ent
+    c
+  }
+  def newInstance(entity: Entity) = {
+    val c = new Command(entity.id, entity.name, false, None, None)
+    c.entity.value = entity
+    c
+  }
+
+  def findByNames(names: List[String]): Query[Command] = {
+    ApplicationSchema.commands.where(_.entityId in EQ.findEntityIds(names, List("Command")))
+  }
+  def findIdsByNames(names: List[String]): Query[Long] = {
+    from(ApplicationSchema.commands)(c => where(c.entityId in EQ.findEntityIds(names, List("Command"))) select (&(c.id)))
+  }
+}
+
 case class Command(
-    val name: String,
+    _entityId: UUID,
     val displayName: String,
-    val entityId: UUID,
     var connected: Boolean,
     var lastSelectId: Option[Long],
-    var triggerId: Option[Long]) extends ModelWithId {
+    var triggerId: Option[Long]) extends EntityBasedModel(_entityId) {
 
-  def this() = this("", "", new UUID(0, 0), false, Some(0), Some(0))
-  def this(name: String, displayName: String, entityId: UUID) = this(name, displayName, entityId, false, None, None)
-  //def this(name: String, entityId: UUID, connected: Boolean, lastSelectId: Option[Long], triggerId: Option[Long]) = this(name, name, entityId, false, None, None)
-  def this(name: String, entityId: UUID) = this(name, name, entityId, false, None, None)
-
-  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
+  def this() = this(new UUID(0, 0), "", false, Some(0), Some(0))
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 

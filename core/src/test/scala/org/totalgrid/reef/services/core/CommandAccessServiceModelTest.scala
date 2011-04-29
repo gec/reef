@@ -45,7 +45,7 @@ trait AccessTestRig extends CommandTestRig {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String): Command = {
-    seed(new Command(name, name, new java.util.UUID(0, 0), false, None, None))
+    seed(Command.newInstance(name, name))
   }
 }
 
@@ -59,7 +59,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
   }
 
   def lastSelectFor(cmd: String) = {
-    ApplicationSchema.commands.where(t => t.name === cmd).head.lastSelectId
+    Command.findByNames(cmd :: Nil).head.lastSelectId
   }
 
   def checkCmds(cmds: List[Command], size: Int, accessId: Long) = {
@@ -103,7 +103,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     val entry = checkAccess(AccessMode.BLOCKED.getNumber, None, Some("user01"))
 
     // Check for command in sql
-    val cmds = r.commandModel.table.where(t => t.name === "cmd01").toList
+    val cmds = Command.findByNames("cmd01" :: Nil).toList
     val cmd = cmds.head
     cmd.lastSelectId should equal(Some(inserted.id))
 

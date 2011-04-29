@@ -557,6 +557,13 @@ trait EntityQueries extends EntityTreeQueries {
         select (ent)).distinct
   }
 
+  def findEntityIds(names: List[String], types: List[String]) = {
+    from(entities, entityTypes)((ent, typ) =>
+      where(ent.name in names and
+        typ.entityId === ent.id and (typ.entType in types))
+        select (&(ent.id))).distinct
+  }
+
   def populateRelations(builder: EntityProto.Builder, entity: Entity, relation: String, descendant: Boolean) = {
     val rels = if (descendant) getChildren(entity.id, relation) else getParents(entity.id, relation)
     val relProto = Relationship.newBuilder.setRelationship(relation).setDescendantOf(descendant)
@@ -594,5 +601,25 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   def searchQuery(proto: EntityProto, sql: Entity) = Nil
 }
 object EntitySearches extends EntitySearches
+
+case class EntitySearch(uuid: Option[String], name: Option[String], types: Option[List[String]]) {
+  def map[B](f: EntitySearch => B): Option[B] = {
+    if (uuid.isDefined || name.isDefined || (types.isDefined && !types.get.isEmpty)) Some(f(this))
+    else None
+  }
+}
+
+trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity] {
+  val table = ApplicationSchema.entities
+  def uniqueQuery(proto: EntitySearch, sql: Entity) = {
+    List(
+      proto.uuid.asParam(sql.id === UUID.fromString(_)),
+      proto.name.asParam(sql.name === _),
+      EQ.noneIfEmpty(proto.types).asParam(sql.id in EQ.entityIdsFromTypes(_)))
+  }
+
+  def searchQuery(proto: EntitySearch, sql: Entity) = Nil
+}
+object EntityPartsSearches extends EntityPartsSearches
 
 object EQ extends EntityQueries

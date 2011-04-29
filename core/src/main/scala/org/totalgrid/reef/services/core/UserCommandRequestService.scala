@@ -53,7 +53,7 @@ class UserCommandRequestService(
 
     val request = rsp.result.head
 
-    val command = ApplicationSchema.commands.where(cmd => cmd.name === request.getCommandRequest.getName).single
+    val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
     val address = command.endpoint.value match {
       case Some(ep) =>

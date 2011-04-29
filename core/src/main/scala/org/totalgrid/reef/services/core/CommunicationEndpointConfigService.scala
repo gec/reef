@@ -165,7 +165,7 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
 
     val o = EndpointOwnership.newBuilder
     sql.points.value.foreach(p => o.addPoints(p.name))
-    sql.commands.value.foreach(p => o.addCommands(p.name))
+    sql.commands.value.foreach(p => o.addCommands(p.entityName))
 
     b.setOwnerships(o)
 

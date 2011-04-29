@@ -26,6 +26,6 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 object CommandRequestBuilders {
   def getAll() = Command.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
 
-  def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setEntity(EntityRequestBuilders.getByUid(uid)).build
-  def getByEntityName(name: String) = Command.newBuilder.setEntity(EntityRequestBuilders.getByName(name)).build
+  def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setUuid(uid).build
+  def getByEntityName(name: String) = Command.newBuilder.setName(name).build
 }
