@@ -36,14 +36,24 @@ class EntityBasedModel(val entityId: UUID) extends ModelWithId {
 
 }
 
+object Point {
+  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity]) = {
+    val ent = EQ.findOrCreateEntity(name, "Point")
+    val p = new Point(ent.id, false)
+    dataSource.foreach(ln => { EQ.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
+    p.entity.value = ent
+    p
+  }
+
+  def findByName(name: String) = findByNames(name :: Nil)
+  def findByNames(names: List[String]): Query[Point] = {
+    ApplicationSchema.points.where(_.entityId in EQ.findEntityIds(names, List("Point")))
+  }
+}
+
 case class Point(
-    val name: String,
-    val entityId: UUID,
-    var abnormal: Boolean) extends ModelWithId {
-
-  def this(n: String, entityId: UUID) = this(n, entityId, false)
-
-  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
+    _entityId: UUID,
+    var abnormal: Boolean) extends EntityBasedModel(_entityId) {
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 

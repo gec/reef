@@ -51,7 +51,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
     val requests: List[Request[MeasurementBatch]] = transaction {
       // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName)
-      val points = ApplicationSchema.points.where(p => p.name in names).toList
+      val points = Point.findByNames(names).toList
 
       if (!points.forall(_.endpoint.value.isDefined))
         throw new BadRequestException("Not all points have endpoints set.")
@@ -119,7 +119,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
         val batch = MeasurementBatch.newBuilder
         batch.setWallTime(req.getWallTime)
         points.foreach { p =>
-          batch.addMeas(measList.find(_.getName == p.name).get)
+          batch.addMeas(measList.find(_.getName == p.entityName).get)
         }
         Request(Envelope.Verb.PUT, batch.build, destination = convertEndpointToDestination(ce)) :: sum
     }

@@ -90,7 +90,8 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
 
     val esearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Command")))
     List(
-      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
+      proto.entity.map(ent => sql.entityId in EQ.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil

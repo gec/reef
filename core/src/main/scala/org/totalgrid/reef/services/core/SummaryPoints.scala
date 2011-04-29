@@ -26,6 +26,7 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.api.{ IDestination, AddressableService }
+import org.totalgrid.reef.models.Point
 
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying
@@ -178,7 +179,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
     import org.totalgrid.reef.models.ApplicationSchema
     var ret: Option[Channel] = None
     transaction {
-      ApplicationSchema.points.where(p => p.name === name).headOption match {
+      Point.findByName(name).headOption match {
         case Some(point) =>
           point.endpoint.value match {
             case Some(ce) =>

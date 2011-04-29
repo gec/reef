@@ -47,7 +47,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
   }
 
   private def markPointsOffline(points: List[Point]) {
-    val names = points.map(_.name)
+    val names = points.map(_.entityName)
     val measurements = measurementStore.get(names)
     val missing = if (measurements.size != names.size) {
       val returnedNames = measurements.keys.toList

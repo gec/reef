@@ -21,12 +21,12 @@
 package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.models.{ ModelWithUUID, ModelWithId }
 import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId }
 
 /**
  * Supertype for Proto/Squeryl models
@@ -167,21 +167,20 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 }
 
 object SquerylModel {
-
+  import org.totalgrid.reef.proto.Model.ReefUUID
   def makeUuid(entry: ModelWithId) = {
-    import org.totalgrid.reef.proto.Model.ReefUUID
     ReefUUID.newBuilder.setUuid(entry.id.toString)
   }
+  def makeUuid(entry: EntityBasedModel) = {
+    ReefUUID.newBuilder.setUuid(entry.entityId.toString)
+  }
   def makeUuid(entry: ModelWithUUID) = {
-    import org.totalgrid.reef.proto.Model.ReefUUID
     ReefUUID.newBuilder.setUuid(entry.id.toString)
   }
   def makeUuid(id: Long) = {
-    import org.totalgrid.reef.proto.Model.ReefUUID
     ReefUUID.newBuilder.setUuid(id.toString)
   }
   def makeUuid(id: java.util.UUID) = {
-    import org.totalgrid.reef.proto.Model.ReefUUID
     ReefUUID.newBuilder.setUuid(id.toString)
   }
 

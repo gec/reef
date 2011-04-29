@@ -164,7 +164,7 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
     sql.configFiles.value.foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cf)).build))
 
     val o = EndpointOwnership.newBuilder
-    sql.points.value.foreach(p => o.addPoints(p.name))
+    sql.points.value.foreach(p => o.addPoints(p.entityName))
     sql.commands.value.foreach(p => o.addCommands(p.entityName))
 
     b.setOwnerships(o)
