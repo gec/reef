@@ -72,7 +72,7 @@ class AccessCommand extends ReefCommandSupport {
 @Command(scope = "access", name = "block", description = "Block specified commands.")
 class AccessBlockCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Name of commands to block.", required = false, multiValued = true)
+  @Argument(index = 0, name = "id", description = "Names of commands to block.", required = true, multiValued = true)
   private var commandNames: java.util.List[String] = null
 
   def doCommand(): Unit = {

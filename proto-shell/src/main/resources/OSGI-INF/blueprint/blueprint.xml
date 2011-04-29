@@ -107,6 +107,9 @@
         <command name="endpoint/list">
             <action class="org.totalgrid.reef.shell.proto.EndpointListCommand"/>
         </command>
+        <command name="application/list">
+            <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
+        </command>
         <command name="agent/password">
             <action class="org.totalgrid.reef.shell.proto.AgentSetPasswordCommand"/>
         </command>
