@@ -136,6 +136,7 @@ trait UserCommandRequestConversion extends MessageModelConversion[UserCommandReq
 
   // Relies on implicit to combine LogicalBooleans
   def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
+    // TODO: should be uid
     List(
       proto.uuid.uuid.asParam(sql.id === _.toLong),
       proto.commandRequest.correlationId.asParam(sql.corrolationId === _))

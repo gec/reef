@@ -29,6 +29,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import java.util.UUID
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
@@ -63,7 +64,7 @@ class FrontEndProcessorServiceModel(
   link(fepModel)
 
   override def createFromProto(req: FrontEndProcessor): ApplicationInstance = {
-    val appInstance = table.where(a => a.id === req.getAppConfig.getUuid.getUuid.toLong).single
+    val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getUuid)).single
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, appInstance.id)))
     info { "Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList }
     fepModel.onAppChanged(appInstance, true)
@@ -101,6 +102,7 @@ trait FrontEndProcessorConversion
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
+    // TODO: should be uid
     proto.uuid.uuid.asParam(sql.id === _.toLong) ::
       proto.appConfig.instanceName.asParam(sql.instanceName === _) ::
       Nil

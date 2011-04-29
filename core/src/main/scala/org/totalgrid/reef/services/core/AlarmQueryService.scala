@@ -115,7 +115,7 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToS
         join(entities, entityTypes.leftOuter)((e, t) =>
           where(e.id in entIds)
             select (e, t.map(_.entType))
-            on (e.id === createLeafNodeOfScalarUuidOptionType(t.map(_.entityId)))).toList
+            on (Some(e.id) === t.map(_.entityId))).toList
 
       val typMap = AlarmQueryService.tupleGroup(entToTypes)
 

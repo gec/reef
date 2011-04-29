@@ -115,6 +115,7 @@ trait PermissionSetConversions
   val table = ApplicationSchema.permissionSets
 
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
+    // TODO: should be uid
     List(
       proto.uuid.uuid.asParam(sql.id === _.toInt),
       proto.name.asParam(sql.name === _))
@@ -155,6 +156,7 @@ trait PermissionConversions
   }
 
   def uniqueQuery(proto: Permission, sql: AuthPermission) = {
+    // should be uid
     List(
       proto.uuid.uuid.asParam(sql.id === _.toInt))
   }

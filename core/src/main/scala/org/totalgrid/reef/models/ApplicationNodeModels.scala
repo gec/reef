@@ -23,6 +23,8 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
+import java.util.UUID
+import org.totalgrid.reef.services.core.EQ
 
 case class ApplicationCapability(
     val applicationId: Long,
@@ -31,11 +33,21 @@ case class ApplicationCapability(
   val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
+object ApplicationInstance {
+  def newInstance(instanceName: String, userName: String, location: String, network: String) = {
+    val ent = EQ.findOrCreateEntity(instanceName, "Application")
+    val a = new ApplicationInstance(ent.id, instanceName, userName, location, network)
+    a.entity.value = ent
+    a
+  }
+}
+
 case class ApplicationInstance(
+    _entityId: UUID,
     val instanceName: String,
     val userName: String,
     var location: String,
-    var network: String) extends ModelWithId {
+    var network: String) extends EntityBasedModel(_entityId) {
 
   val heartbeat = LazyVar(belongTo(ApplicationSchema.heartbeats.where(p => p.applicationId === id)))
 

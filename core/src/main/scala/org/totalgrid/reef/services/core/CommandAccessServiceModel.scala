@@ -177,8 +177,9 @@ trait CommandAccessConversion
   }
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
+    // TODO: should be uid
     List(
-      proto.uuid.uuid.asParam(uid => sql.id === uid.toInt))
+      proto.uuid.uuid.asParam(uid => sql.id === uid.toLong))
   }
 
   def searchQuery(proto: AccessProto, sql: AccessModel) = {

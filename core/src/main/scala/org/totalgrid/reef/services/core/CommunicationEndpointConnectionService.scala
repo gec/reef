@@ -193,6 +193,7 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
+    // TODO: should be uid
     proto.uuid.uuid.asParam(sql.id === _.toLong) ::
       proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
       Nil
@@ -210,7 +211,7 @@ trait CommunicationEndpointConnectionConversion
 
     val b = ConnProto.newBuilder.setUuid(makeUuid(entry))
 
-    entry.applicationId.foreach(appId => b.setFrontEnd(FrontEndProcessor.newBuilder.setUuid(makeUuid(appId)).setAppConfig(ApplicationConfig.newBuilder.setInstanceName(entry.application.value.get.instanceName))))
+    entry.application.value.foreach(app => b.setFrontEnd(FrontEndProcessor.newBuilder.setUuid(makeUuid(app)).setAppConfig(ApplicationConfig.newBuilder.setInstanceName(app.instanceName))))
     entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommEndpointConfig.newBuilder.setUuid(makeUuid(endpoint.entity.value)).setName(endpoint.entity.value.name)))
     entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
     b.setState(ConnProto.State.valueOf(entry.state))
