@@ -249,7 +249,7 @@ trait AlarmQueries {
   }
 
   def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
-    (proto.uuid.uuid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
+    (proto.uid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {

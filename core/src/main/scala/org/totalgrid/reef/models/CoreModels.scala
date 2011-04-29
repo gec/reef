@@ -28,14 +28,6 @@ import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
 import org.squeryl.Query
 
-class EntityBasedModel(val entityId: UUID) extends ModelWithId {
-
-  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
-
-  def entityName = entity.value.name
-
-}
-
 object Point {
   def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity]) = {
     val ent = EQ.findOrCreateEntity(name, "Point")
@@ -108,22 +100,30 @@ case class Command(
 
 }
 
+object FrontEndPort {
+  def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte]) = {
+    val ent = EQ.findOrCreateEntity(name, "Channel")
+    val c = new FrontEndPort(ent.id, network, location, state, proto)
+    c.entity.value = ent
+    c
+  }
+}
+
 case class FrontEndPort(
-    val name: String,
+    _entityId: UUID,
     val network: Option[String],
     val location: Option[String],
     val state: Int,
-    var proto: Array[Byte]) extends ModelWithId {
+    var proto: Array[Byte]) extends EntityBasedModel(_entityId) {
 
-  def this() = this("", Some(""), Some(""), org.totalgrid.reef.proto.FEP.CommChannel.State.UNKNOWN.getNumber, Array.empty[Byte])
+  def this() = this(new UUID(0, 0), Some(""), Some(""), 0, Array.empty[Byte])
 }
 
 case class ConfigFile(
-    val entityId: UUID,
+    _entityId: UUID,
     val mimeType: String,
-    var file: Array[Byte]) extends ModelWithId {
+    var file: Array[Byte]) extends EntityBasedModel(_entityId) {
 
-  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
   val owners = LazyVar(EQ.getParents(entity.value.id, "uses").toList)
 
   /// this flag allows us to tell if we have modified
@@ -132,21 +132,18 @@ case class ConfigFile(
 }
 
 case class CommunicationEndpoint(
-    val entityId: UUID,
+    _entityId: UUID,
     val protocol: String,
-    var frontEndPortId: Option[Long]) extends ModelWithId {
+    var frontEndPortId: Option[UUID]) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", Some(0))
-  def this(entityId: UUID, protocol: String) = this(entityId, protocol, Some(0))
+  def this() = this(new UUID(0, 0), "", Some(new UUID(0, 0)))
+  def this(entityId: UUID, protocol: String) = this(entityId, protocol, Some(new UUID(0, 0)))
 
-  val port = LazyVar(mayHaveOne(ApplicationSchema.frontEndPorts, frontEndPortId))
+  val port = LazyVar(mayHaveOneByEntityUuid(ApplicationSchema.frontEndPorts, frontEndPortId))
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
   val configFiles = LazyVar(Entity.asType(ApplicationSchema.configFiles, EQ.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList, Some("ConfigurationFile")))
-
-  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
-  val name = LazyVar(entity.value.name)
 
   val points = LazyVar(Entity.asType(ApplicationSchema.points, EQ.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))
   val commands = LazyVar(Entity.asType(ApplicationSchema.commands, EQ.getChildrenOfType(entity.value.id, "source", "Command").toList, Some("Command")))

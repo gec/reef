@@ -70,7 +70,7 @@ class MeasurementProcessingConnectionServiceModel(
 
     val applicationId = getMeasProc().map { _.id }
     val assignedTime = applicationId.map { x => now }
-    val serviceRoutingKey = applicationId.map { x => "meas_batch_" + ce.name.value }
+    val serviceRoutingKey = applicationId.map { x => "meas_batch_" + ce.entityName }
 
     create(new MeasProcAssignment(ce.id, serviceRoutingKey, applicationId, assignedTime, None))
   }
@@ -91,15 +91,15 @@ class MeasurementProcessingConnectionServiceModel(
     } else {
       table.where(measProc => measProc.applicationId === app.id).toList
     }
-    info { "Meas Proc: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.name.value } }
+    info { "Meas Proc: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName } }
     rechecks.foreach { checkAssignment(_) }
   }
 
   private def checkAssignment(assign: MeasProcAssignment) {
     val applicationId = getMeasProc().map { _.id }
-    info { assign.endpoint.value.get.name.value + " assigned MeasProc: " + applicationId }
+    info { assign.endpoint.value.get.entityName + " assigned MeasProc: " + applicationId }
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
-    val serviceRoutingKey = applicationId.map { x => "meas_batch_" + assign.endpoint.value.get.name.value }
+    val serviceRoutingKey = applicationId.map { x => "meas_batch_" + assign.endpoint.value.get.entityName }
     if (assign.applicationId != applicationId) {
       val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, serviceRoutingKey = serviceRoutingKey, readyTime = None)
       update(newAssign, assign)

@@ -108,7 +108,7 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
   }
 
   def onMeasProcAssignmentChanged(meas: MeasProcAssignment, added: Boolean) {
-    info { "MeasProc Change: added: " + added + " rechecking: " + meas.endpoint.value.get.name.value + " readyTime: " + meas.readyTime + " key:" + meas.serviceRoutingKey }
+    info { "MeasProc Change: added: " + added + " rechecking: " + meas.endpoint.value.get.entityName + " readyTime: " + meas.readyTime + " key:" + meas.serviceRoutingKey }
     table.where(fep => fep.endpointId === meas.endpointId).headOption.foreach { assign =>
 
       if (added && meas.readyTime.isDefined && meas.serviceRoutingKey.isDefined) {
@@ -131,14 +131,14 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
     } else {
       table.where(fep => fep.applicationId === app.id).toList
     }
-    info { "FEP: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.name.value } }
+    info { "FEP: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName } }
     rechecks.foreach { a => checkAssignment(a, a.endpoint.value.get) }
   }
 
   private def checkAssignment(assign: FrontEndAssignment, ce: CommunicationEndpoint) {
     val applicationId = getFep(ce).map { _.id }
 
-    info { ce.name.value + " assigned FEP: " + applicationId + " protocol: " + ce.protocol + " port: " + ce.port.value + " routingKey: " + assign.serviceRoutingKey }
+    info { ce.entityName + " assigned FEP: " + applicationId + " protocol: " + ce.protocol + " port: " + ce.port.value + " routingKey: " + assign.serviceRoutingKey }
 
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId) {

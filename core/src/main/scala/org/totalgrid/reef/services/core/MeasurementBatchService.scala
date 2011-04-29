@@ -106,7 +106,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
 
   private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {
     case Some(key) => AddressableService(key)
-    case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.name.value)
+    case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }
 
   private def getRequests(req: MeasurementBatch, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {

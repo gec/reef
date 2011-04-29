@@ -121,9 +121,9 @@ trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFil
   }
 
   def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
+    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
-      proto.uuid.uuid.asParam(sql.id === _.toInt),
-      proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 
   def isModified(entry: ConfigFile, existing: ConfigFile): Boolean = {

@@ -118,11 +118,12 @@ class CommEndCfgServiceModel(
         case None => portModel.createFromProto(portProto)
       }
     }
+    // TODO: create "using" edge between port and endpoint
 
     new CommunicationEndpoint(
       entity.id,
       proto.getProtocol(),
-      linkedPort.map { _.id })
+      linkedPort.map { _.entityId })
   }
 }
 

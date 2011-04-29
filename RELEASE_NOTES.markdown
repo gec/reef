@@ -18,6 +18,9 @@ Primarily Service and API refinements and refactorings.
 
 ### Service Updates:
 
+* All protos for "long lived" and "static" resources now have ReefUUID field
+* "long lived" and "static" resources use UUID instead of integers
+
 ### Shell Commands:
 
 ### Breaking Changes:

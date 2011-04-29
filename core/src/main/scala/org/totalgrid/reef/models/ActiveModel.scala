@@ -34,15 +34,6 @@ trait ActiveModel {
         throw new ActiveModelException("Missing id: " + id + " in " + table)
     }
   }
-
-  def hasOneByUuid[A <: KeyedEntity[UUID]](table: Table[A], id: UUID): A = {
-    table.lookup(id) match {
-      case Some(s) => s
-      case None =>
-        throw new ActiveModelException("Missing id: " + id + " in " + table)
-    }
-  }
-
   def mayHaveOne[A <: KeyedEntity[Long]](table: Table[A], optId: Option[Long]): Option[A] = {
     optId match {
       case Some(-1) => None
@@ -51,9 +42,31 @@ trait ActiveModel {
     }
   }
 
+  def hasOneByUuid[A <: KeyedEntity[UUID]](table: Table[A], id: UUID): A = {
+    table.lookup(id) match {
+      case Some(s) => s
+      case None =>
+        throw new ActiveModelException("Missing id: " + id + " in " + table)
+    }
+  }
   def mayHaveOneByUuid[A <: KeyedEntity[UUID]](table: Table[A], optId: Option[UUID]): Option[A] = {
     optId match {
       case Some(id) => Some(hasOneByUuid(table, id))
+      case None => None
+    }
+  }
+
+  def hasOneByEntityUuid[A <: EntityBasedModel](table: Table[A], id: UUID): A = {
+    table.where(_.entityId === id).headOption match {
+      case Some(s) => s
+      case None =>
+        throw new ActiveModelException("Missing id: " + id + " in " + table)
+    }
+  }
+
+  def mayHaveOneByEntityUuid[A <: EntityBasedModel](table: Table[A], optId: Option[UUID]): Option[A] = {
+    optId match {
+      case Some(id) => Some(hasOneByEntityUuid(table, id))
       case None => None
     }
   }
@@ -100,4 +113,13 @@ trait UUIDGenerator {
 
 trait ModelWithUUID extends KeyedEntity[UUID] with ActiveModel with UUIDGenerator {
   var id: UUID = newUUID
+}
+
+class EntityBasedModel(val entityId: UUID) extends ModelWithId {
+  import org.totalgrid.reef.util.LazyVar
+
+  val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
+
+  def entityName = entity.value.name
+
 }
