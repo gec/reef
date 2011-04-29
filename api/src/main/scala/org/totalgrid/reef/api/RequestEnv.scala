@@ -41,6 +41,10 @@ class RequestEnv(var headers: Map[String, List[String]]) {
     }
   }
 
+  def setHeader(key: String, value: String) {
+    headers = (headers - key) + (key -> (List(value)))
+  }
+
   def clearHeader(key: String) = {
     val removed = headers.get(key)
     headers -= key
@@ -91,8 +95,7 @@ class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
     env.addHeader("AUTH_TOKEN", notNull(token, "token"))
   }
   def setAuthToken(token: String) {
-    env.clearHeader("AUTH_TOKEN")
-    env.addHeader("AUTH_TOKEN", notNull(token, "token"))
+    env.setHeader("AUTH_TOKEN", notNull(token, "token"))
   }
   def setAuthTokens(ss: List[String]) {
     env.clearHeader("AUTH_TOKEN")

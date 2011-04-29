@@ -37,7 +37,7 @@ class ServiceProviderHeaders(e: RequestEnv) extends ServiceHandlerHeaders(e) {
 
   def userName = e.getString("USER")
 
-  def setUserName(s: String) = e.addHeader("USER", s)
+  def setUserName(s: String) = e.setHeader("USER", s)
 }
 object ServiceProviderHeaders {
   implicit def toServiceHeaders(e: RequestEnv) = new ServiceProviderHeaders(e)
