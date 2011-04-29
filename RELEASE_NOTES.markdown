@@ -9,6 +9,23 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.3.0-SNAPSHOT
+==============
+
+Primarily Service and API refinements and refactorings.
+
+### API Updates:
+
+### Service Updates:
+
+### Shell Commands:
+
+### Breaking Changes:
+
+### Reef Internals:
+
+### Bug Fixes:
+
 Version 0.2.3-SNAPSHOT
 ==============
 
