@@ -44,6 +44,11 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
+  override def beforeEach() {
+    super.beforeEach()
+    AuthTokenService.seed()
+  }
+
   class Fixture {
     val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
     val authService = new AuthTokenService(modelFac.authTokens)
