@@ -18,28 +18,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.integration;
+package org.totalgrid.reef.shell.proto
 
-import org.junit.Test;
-import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
-import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
-import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
-import org.totalgrid.reef.proto.Model;
+import presentation.ConfigFileView
+import org.apache.felix.gogo.commands.{ Argument, Command }
 
-public class TestConfigFile extends JavaBridgeTestBase {
+import scala.collection.JavaConversions._
 
-    /**
-     * example that shows the scala implementation of the api classes can be called from java code
-     */
-    @Test
-    public void testCreatingAndDeletingConfigFile()  throws ReefServiceException {
+@Command(scope = "configfile", name = "list", description = "Prints all config files")
+class ConfigFileListCommand extends ReefCommandSupport {
 
-        Model.Entity ent = helpers.getEntityByName("StaticSubstation");
+  def doCommand() = {
+    val results = services.getAllConfigFiles
+    ConfigFileView.printTable(results.toList)
+  }
+}
 
-        Model.ConfigFile created = helpers.createConfigFile("test-config-file", "text", new byte[]{0,0,0}, ent.getUuid());
+@Command(scope = "configfile", name = "view", description = "View a config file")
+class ConfigFileViewCommand extends ReefCommandSupport {
 
-        helpers.deleteConfigFile(created);
+  @Argument(index = 0, name = "name", description = "Config file name", required = true, multiValued = false)
+  private var configFileName: String = null
 
-    }
+  def doCommand() = {
+    val entry = services.getConfigFileByName(configFileName)
+    ConfigFileView.printInspect(entry)
+  }
 }

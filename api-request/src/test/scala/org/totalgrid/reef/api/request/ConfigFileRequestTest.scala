@@ -57,18 +57,18 @@ class ConfigFileRequestTest
     val entity = client.getEntityByName("StaticSubstation")
 
     client.addExplanation("Attach Config File to Entity", "If we specify an entity with the config file they will be associated")
-    val cf1 = client.createConfigFile("Test-Entity-Text-File", "text/plain", "Data".getBytes(), entity)
-    val cf2 = client.createConfigFile("Test-Entity-XML-File", "text/xml", "<Data/>".getBytes(), entity)
+    val cf1 = client.createConfigFile("Test-Entity-Text-File", "text/plain", "Data".getBytes(), entity.getUuid)
+    val cf2 = client.createConfigFile("Test-Entity-XML-File", "text/xml", "<Data/>".getBytes(), entity.getUuid)
 
     client.addExplanation("Get Config File by Entity", "We can now search for all config files that are associated to an entity")
-    client.getConfigFilesUsedByEntity(entity)
+    client.getConfigFilesUsedByEntity(entity.getUuid)
 
     client.addExplanation("Get Config File by Entity and MimeType", "We can also filter by mimeType (with or without Entity)")
-    client.getConfigFilesUsedByEntity(entity, "text/xml")
+    client.getConfigFilesUsedByEntity(entity.getUuid, "text/xml")
 
     val entity2 = client.getEntityByName("SimulatedSubstation")
     client.addExplanation("Add Entity as User of Config File", "We can attach more than one entity user to a config file, notice the returned file now has both entities as users")
-    client.addConfigFileUserByEntity(cf1, entity2)
+    client.addConfigFileUserByEntity(cf1, entity2.getUuid)
 
     client.deleteConfigFile(cf1)
     client.deleteConfigFile(cf2)

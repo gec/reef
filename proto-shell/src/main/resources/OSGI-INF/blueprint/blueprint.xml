@@ -110,6 +110,12 @@
         <command name="application/list">
             <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
         </command>
+        <command name="configfile/list">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileListCommand"/>
+        </command>
+        <command name="configfile/view">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileViewCommand"/>
+        </command>
         <command name="agent/password">
             <action class="org.totalgrid.reef.shell.proto.AgentSetPasswordCommand"/>
         </command>

@@ -22,22 +22,23 @@ package org.totalgrid.reef.api.request.builders
  */
 
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, ConfigFile }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile }
 
 /**
  * the RequestBuilders objects are used to encapsulate most of the direct proto manipulations and
  * minimize duplication of Builder code.
  */
 object ConfigFileRequestBuilders {
+  def getAll() = ConfigFile.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build
   def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUuid(uid).build
   def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
 
   def getByMimeType(mimeType: String) = ConfigFile.newBuilder().setMimeType(mimeType).build
 
-  def getByEntity(entity: Entity) = ConfigFile.newBuilder().addEntities(entity).build
+  def getByEntity(entityUid: ReefUUID) = ConfigFile.newBuilder().addEntities(EntityRequestBuilders.getByUid(entityUid)).build
 
-  def getByEntity(entity: Entity, mimeType: String) = {
-    ConfigFile.newBuilder().setMimeType(mimeType).addEntities(entity).build
+  def getByEntity(entityUid: ReefUUID, mimeType: String) = {
+    ConfigFile.newBuilder().setMimeType(mimeType).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
   }
 
   private def makeBasicConfigFile(name: String, mimeType: String, data: Array[Byte]) = {
@@ -48,7 +49,7 @@ object ConfigFileRequestBuilders {
     makeBasicConfigFile(name, mimeType, data).build
   }
 
-  def makeConfigFile(name: String, mimeType: String, data: Array[Byte], entity: Entity) = {
-    makeBasicConfigFile(name, mimeType, data).addEntities(entity).build
+  def makeConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
+    makeBasicConfigFile(name, mimeType, data).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
   }
 }
