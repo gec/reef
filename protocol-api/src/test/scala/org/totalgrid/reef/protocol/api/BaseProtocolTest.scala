@@ -67,8 +67,12 @@ class BaseProtocolTest extends FunSuite with ShouldMatchers {
     val m = new MockProtocol
     addPortAndTwoEndpoints(m)
     m.removeChannel("port1")
-    m.checkFor { case RemoveEndpoint(_) => } //order of endpoint removal isn't specified
-    m.checkFor { case RemoveEndpoint(_) => }
+    m.checkForNothing
+    m.removeEndpoint("ep1")
+    m.removeEndpoint("ep2")
+    m.checkFor { case RemoveEndpoint("ep1") => }
+    m.checkFor { case RemoveEndpoint("ep2") => }
+    m.removeChannel("port1")
     m.checkFor { case RemovePort("port1") => }
     m.checkForNothing
   }
@@ -79,7 +83,10 @@ class BaseProtocolTest extends FunSuite with ShouldMatchers {
     m.removeEndpoint("ep1")
     m.checkFor { case RemoveEndpoint("ep1") => }
     m.removeChannel("port1")
+    m.checkForNothing
+    m.removeEndpoint("ep2")
     m.checkFor { case RemoveEndpoint("ep2") => }
+    m.removeChannel("port1")
     m.checkFor { case RemovePort("port1") => }
     m.checkForNothing
   }

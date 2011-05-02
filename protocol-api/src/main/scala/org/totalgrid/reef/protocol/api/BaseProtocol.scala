@@ -40,8 +40,7 @@ trait BaseProtocol extends IProtocol with Logging {
         channels = channels + (p.getName -> Channel(p, listener))
         _addChannel(p, listener)
       case Some(x) =>
-        if (x == p) info("Ignoring duplicate channel " + p)
-        else throw new IllegalArgumentException("Port with that name already exists: " + p)
+        info("Ignoring duplicate channel " + p)
     }
   }
 
@@ -65,14 +64,17 @@ trait BaseProtocol extends IProtocol with Logging {
   override def removeChannel(channel: String): IChannelListener = {
     channels.get(channel) match {
       case Some(Channel(_, listener)) =>
-        endpoints.values.filter { e => // if a channel is removed, remove all devices on that channel first
+        // if a channel is removed, check to see that all of the endpoints using the channel have been removed
+        val noUsingEndpoints = endpoints.values.filter { e =>
           e.channel match {
             case Some(x) => x.getName == channel
             case None => false
           }
-        }.foreach { e => removeEndpoint(e.name) }
-        channels -= channel
-        _removeChannel(channel)
+        }.isEmpty
+        if (noUsingEndpoints) {
+          channels -= channel
+          _removeChannel(channel)
+        }
         listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown channel " + channel)
