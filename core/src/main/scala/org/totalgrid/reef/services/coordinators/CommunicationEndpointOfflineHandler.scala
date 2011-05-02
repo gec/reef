@@ -75,7 +75,6 @@ trait CommunicationEndpointOfflineBehaviors {
   }
 
   private def markCommandsOffline(commands: List[Command]) {
-    // TODO: mark all the commands offline in one SQL query
     commands.foreach { c =>
       c.connected = false
       ApplicationSchema.commands.update(c)
@@ -83,7 +82,7 @@ trait CommunicationEndpointOfflineBehaviors {
   }
 
   private def markCommandsOnline(commands: List[Command]) {
-    // TODO: mark all the commands online in one SQL query
+    // TODO: mark all the commands online in one SQL query reef_techdebt-11
     commands.foreach { c =>
       c.connected = true
       ApplicationSchema.commands.update(c)

@@ -26,8 +26,17 @@ import org.totalgrid.reef.api.ServiceTypes._
 /**
  * scala analog to the java ISession
  */
-trait ClientSession extends ClientOperations with SubscriptionManagement {
+trait ClientSession extends SyncClientSession with ClientOperations
 
+/**
+ * Simplest ClientSession that supports only synchronous requests
+ */
+trait SyncClientSession extends SyncOperations with SubscriptionManagement with Closeable with DefaultHeaders
+
+/**
+ * all clients should be closeable, this interface makes that explict
+ */
+trait Closeable {
   /**
    * clients should be closed before being thrown away
    */

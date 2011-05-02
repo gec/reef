@@ -89,6 +89,11 @@ object MetricsMapHelpers {
     }.flatten.toMap
   }
 
+  def performCalculations(values: Map[String, Any], calculations: List[String]): Map[String, Any] = {
+    val calcedValues = calculations.map { MetricsMapHelpers.sumAndCount(values, _) }
+    MetricsMapHelpers.mergeMap(values :: calcedValues)
+  }
+
   def sumAndCount(metrics: Map[String, Any], key: String): Map[String, Any] = {
     val sourceData = matchingKeys(metrics, key)
     if (sourceData.isEmpty) return Map.empty[String, Any]

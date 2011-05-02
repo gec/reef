@@ -95,30 +95,15 @@ trait MeasurementCoordinationQueries {
       }
     }
 
-    if (possibleFeps.size == 0) {
-      //if(protocolCapable.size == 0) alarm("No FEPs that speak protocol: " + e.protocol)
-      //event("No FEP for device: " + e.name, e)
-      None
-    } else {
-      // TODO: fep dont reassign 
-      //      if(e.frontEndAssignment.isDefined){
-      //        // if we've already got a valid assignment don't reassign
-      //        if(possibleFeps.toList.find(p => p.id == e.frontEndAssignment.value.id)) return e.frontEndAssignment.value
-      //      }
-      Some(getLeastLoadedFrontEnd(possibleFeps))
-    }
+    if (possibleFeps.size == 0) None
+    else Some(getLeastLoadedFrontEnd(possibleFeps))
   }
 
   def getMeasProc(): Option[ApplicationInstance] = {
     val measProcs = runningApps("Processing")
 
-    if (measProcs.size == 0) {
-      //alarm("No MeasProcs!")
-      None
-    } else {
-      // TODO: meas proc dont reassign 
-      Some(getLeastLoadedMeasProc(measProcs))
-    }
+    if (measProcs.size == 0) None
+    else Some(getLeastLoadedMeasProc(measProcs))
   }
 
 }

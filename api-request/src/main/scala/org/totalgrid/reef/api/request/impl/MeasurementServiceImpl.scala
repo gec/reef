@@ -65,7 +65,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     checkAndReturnByNames(points.map { _.getName }, retrievedMeas)
   }
   private def checkAndReturnByNames(names: java.util.List[String], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
-    // TODO: measurement snapshot service should except on unknown point
+    // TODO: measurement snapshot service should except on unknown point	 reef_techdebt-6
     if (names.length != retrievedMeas.length) {
       val retrievedNames = retrievedMeas.map { _.getName }
       val missing = names.diff(retrievedNames)

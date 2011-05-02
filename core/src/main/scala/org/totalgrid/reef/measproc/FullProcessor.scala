@@ -77,8 +77,6 @@ class FullProcessor(components: CoreApplicationComponents, measStoreConfig: Conn
 
   val connectionHandler = new ConnectionHandler(addStreamProcessor(_)) with ReactActor
 
-  // TODO : verify order of startup/shutdown
-
   override def doStart() {
     components.logger.event(System.SubsystemStarting)
     lifecycles.start
@@ -97,7 +95,6 @@ class FullProcessor(components: CoreApplicationComponents, measStoreConfig: Conn
     val reactor = new ReactActor {}
     val streamHandler = new MeasurementStreamProcessingNode(components.amqp, components.registry, measCache, overCache, triggerStateCache, streamConfig, reactor)
     streamHandler.setHookSource(components.metricsPublisher.getStore("measproc-" + streamConfig.getLogicalNode.getName))
-    // TODO: figure out how to link the start/stop of this object
     streamHandler
   }
 

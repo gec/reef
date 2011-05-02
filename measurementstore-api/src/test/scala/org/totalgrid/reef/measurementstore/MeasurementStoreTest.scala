@@ -93,7 +93,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
     val num = 10
     val meas1 = for (i <- 1 to num) yield getMeas(name, i)
 
-    val meas = scala.util.Random.shuffle(meas1)
+    val meas = if (cm.supportsOutOfOrderInsertion) scala.util.Random.shuffle(meas1) else meas1
 
     cm.set(meas)
     cm.archive(name, Long.MaxValue)
@@ -181,27 +181,37 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
 
       cm.numValues(name) should equal(num)
 
+      cm.getNewest(name).get should equal(cm.get(name).get)
+
       cm.getOldest(name).get.getTime should equal(0)
       cm.getNewest(name).get.getTime should equal(4)
 
       cm.getNewest(name, 2) match {
         case List(x, y) =>
           x.getTime should equal(4)
+          x.getIntVal should equal(1)
           y.getTime should equal(4)
+          y.getIntVal should equal(0)
       }
 
       cm.getOldest(name, 2) match {
         case List(x, y) =>
           x.getTime should equal(0)
+          x.getIntVal should equal(0)
           y.getTime should equal(0)
+          y.getIntVal should equal(1)
       }
 
       cm.getInRange(name, 1, 2, 100, true) match {
         case List(w, x, y, z) =>
           w.getTime should equal(1)
+          w.getIntVal should equal(0)
           x.getTime should equal(1)
+          x.getIntVal should equal(1)
           y.getTime should equal(2)
+          y.getIntVal should equal(0)
           z.getTime should equal(2)
+          z.getIntVal should equal(1)
       }
 
       cm.getInRange(name, 1, 2, 100, false) match {
@@ -266,7 +276,8 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
 
       cm.getOldest(basename, num).size should equal(5)
 
-      cm.getNewest(basename).get.getTime should equal(105)
+      cm.getNewest(basename).get.getTime should equal(120)
+      cm.getOldest(basename).get.getTime should equal(116)
     }
   }
 

@@ -22,10 +22,8 @@ package org.totalgrid.reef.event
 
 import scala.collection.mutable.HashMap
 
-/*
+/**
  * All Events derive from EventType.
- * 
- * TODO: Need to extract a generic Enumeration class from this.
  */
 abstract class EventType() {
   val name = getName
@@ -52,15 +50,7 @@ abstract class EventType() {
 object EventType {
 
   // Map container for all EventType's
-  // TODO: Want to use this to check that localization resource strings exist for all EventType's.
-  // TODO: The problem is that the resource files are by subsystem and we don't know subsystems here. 
-  // TODO: Disconnect? Can each subsystem need a different UserLogin message? We probably
-  // TODO: need a "system" resource file, then one for each subsystem. The subsystems are the
-  // TODO: main objects below. Could the enums even be defined separately in each subsystem
-  // TODO: and derive from EventType? This companion object is only allowed in one file and
-  // TODO: can't be inherited - so FEP would have to have EventType's like FEP.SomeEvent (which
-  // TODO: isn't bad.
-  //
+
   private val nameMap = HashMap[String, EventType]()
 
   object Scada {

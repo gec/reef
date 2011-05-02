@@ -42,7 +42,7 @@ import org.totalgrid.reef.proto.RoutingKeys
  *  @param registry
  *
  *  See EventRouterContext for details.
- *  // TODO: delete EventRouter
+ *  // TODO: delete EventRouter reef_techdebt-8
  */
 abstract class EventRouter(
   amqp: AMQPProtoFactory,

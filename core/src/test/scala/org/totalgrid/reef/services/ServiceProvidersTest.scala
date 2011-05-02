@@ -60,7 +60,9 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val measStore = new InMemoryMeasurementStore
       val serviceContainer = new ExchangeCheckingServiceContainer
 
-      val provider = new ServiceProviders(components, measStore)
+      val serviceOptions = ServiceOptions.loadInfo
+
+      val provider = new ServiceProviders(components, measStore, serviceOptions)
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

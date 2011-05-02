@@ -35,7 +35,7 @@ import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.api._
-import scalaclient.{ SubscriptionManagement, SyncOperations, DefaultHeaders }
+import scalaclient.{ SyncClientSession, SyncOperations, DefaultHeaders }
 import org.totalgrid.reef.api.ServiceTypes.{ Event, Response, MultiResult, Failure }
 
 class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
@@ -91,7 +91,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
   override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
-      val rsp = new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env)
+      val rsp = new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env.merge(new RequestEnv))
       Some(rsp)
     case None =>
       Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
@@ -111,16 +111,14 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
 }
 
-class OSGISession(bundleContext: BundleContext, authToken: Option[String]) extends OSGiSyncOperations with SubscriptionManagement {
+class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with SyncClientSession {
   def getBundleContext: BundleContext = bundleContext
-
-  override def getDefaultHeaders: RequestEnv = {
-    val headers = new ServiceHandlerHeaders
-    authToken.foreach { x => headers.addAuthToken(x) }
-    super.mergeHeaders(headers.env)
-  }
 
   def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: (Event[A]) => Unit) = {
     throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
+  }
+
+  def close() {
+    // nothing special to do
   }
 }

@@ -45,7 +45,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   private val measStore = MeasurementStoreFinder.getInstance(measInfo, this.add)
 
   // all the actual services are created here
-  private val providers = new ServiceProviders(components, measStore)
+  private val providers = new ServiceProviders(components, measStore, serviceConfiguration)
 
   val services = this.attachServices(providers.services)
 

@@ -23,6 +23,8 @@ package org.totalgrid.reef.shell.proto
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.request.impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.ServiceHandlerHeaders
+import org.totalgrid.reef.api.scalaclient.SyncClientSession
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -33,8 +35,22 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
    *
    * would like this to be called session but OsgiCommandSupport already defines session
    */
-  protected lazy val reefSession = new OSGISession(getBundleContext, get("auth_token"))
+  protected def reefSession: SyncClientSession = {
+    this.session.get("reefSession") match {
+      case null => throw new Exception("No session configured!")
+      case x => x.asInstanceOf[SyncClientSession]
+    }
+  }
 
+  def setReefSession(session: SyncClientSession, context: String) = {
+    this.session.put("context", context)
+    this.session.get("reefSession") match {
+      case null => // nothing to close
+      case x => x.asInstanceOf[SyncClientSession].close
+    }
+    this.session.put("reefSession", session)
+    session
+  }
   /**
    * "all services" wrapper around the reefSession
    */
@@ -42,18 +58,25 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     override val ops = reefSession
   }
 
-  protected def getUser: Option[String] = this.get("user")
+  protected def getLoginString = isLoggedIn match {
+    case true => "Logged in as User: " + this.get("user").get + " on Reef Node: " + this.get("context").get
+    case false => "Not logged in to a Reef Node."
+  }
 
-  protected def isLoggedIn = getUser.isDefined
+  protected def isLoggedIn = this.session.get("reefSession") match {
+    case null => false
+    case x => true
+  }
 
   protected def login(user: String, auth: String) = {
     this.set("user", user)
-    this.set("auth_token", auth)
+    import ServiceHandlerHeaders._
+    reefSession.getDefaultHeaders.setAuthToken(auth)
   }
 
   protected def logout() = {
     this.unset("user")
-    this.unset("auth_token")
+    setReefSession(null, null)
   }
 
   private def get(name: String): Option[String] = {

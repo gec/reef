@@ -64,10 +64,9 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     ex.collect("Equipment Profiles: ") {
       // Collect all the profiles in name->profile maps.
-      val profiles = model.getProfiles
-      if (profiles != null) {
-        profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
-        profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
+      Option(model.getProfiles).foreach { p =>
+        p.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
+        p.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
       }
     }
 
@@ -110,8 +109,8 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     // Commands are controls and setpoints. TODO: setpoints
     trace("load equipment: " + name + " commands")
     val commands = profiles.flatMap(_.getControl.toList).map { c =>
-      val displayName = Option(c.getDisplayName) getOrElse c.getName
-      processControl(childPrefix + c.getName, displayName, entity)
+      val display = Option(c.getDisplayName) getOrElse c.getName
+      processControl(childPrefix + c.getName, display, getTypeList(c.getType), entity)
     }
 
     // Points
@@ -126,12 +125,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name: String, displayName: String, equipmentEntity: Entity) = {
+  def processControl(name: String, displayName: String, types: List[String], equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
     loadCache.addControl(name)
-    val commandEntity = toEntityType(name, List("Command"))
+    val commandEntity = toEntityType(name, "Command" :: types)
     val command = toCommand(name, displayName, commandEntity)
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
@@ -143,6 +142,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     commandEntity
   }
 
+  def getTypeList(list: java.util.List[Type]): List[String] = Option(list) match {
+    //import scala.collection.JavaConversions._
+    case Some(x) => x.map(_.getName).toList
+    case None => Nil
+  }
+
   /**
    * Put the point and pointEntity and setup the owns relationship.
    * Return the pointEntity
@@ -151,10 +156,11 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
    */
   def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
+    import scala.collection.JavaConversions._
 
     val name = childPrefix + pointT.getName
     trace("processPointType: " + name)
-    val pointEntity = toEntityType(name, List("Point"))
+    val pointEntity = toEntityType(name, "Point" :: getTypeList(pointT.getType))
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)
     client.putOrThrow(point)

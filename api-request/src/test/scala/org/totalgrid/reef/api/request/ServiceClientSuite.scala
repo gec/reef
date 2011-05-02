@@ -73,16 +73,3 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
 }
 
-object ServiceClientSuite {
-  // TODO: move BrokerConnectionState into amqp
-  class BrokerConnectionState extends IConnectionListener {
-    private val connected = new SyncVar(false)
-
-    override def opened() = connected.update(true)
-    override def closed() = connected.update(false)
-
-    def waitUntilStarted(timeout: Long = 5000) = connected.waitUntil(true, timeout)
-    def waitUntilStopped(timeout: Long = 5000) = connected.waitUntil(false, timeout)
-  }
-}
-

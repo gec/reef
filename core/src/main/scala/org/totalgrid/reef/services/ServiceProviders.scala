@@ -34,7 +34,7 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore) {
+class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions) {
 
   val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   val summaries = new SummaryPointPublisher(components.amqp)
@@ -85,7 +85,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),
-    new HistoryTrimmer(cm, 60 * 15 * 1000, 100000),
+    new HistoryTrimmer(cm, serviceConfiguration.trimPeriodMinutes * 1000, serviceConfiguration.maxMeasurements),
     //serviceContainer.addCoordinator(new PointAbnormalsThunker(modelFac.points, summaries))
     //serviceContainer.addCoordinator(new AlarmSummaryInitializer(modelFac.alarms, summaries))
     new EventStreamThunker(modelFac.events, List("raw_events")))
