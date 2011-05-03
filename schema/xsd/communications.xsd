@@ -117,6 +117,15 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="setpoint">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="ControlType">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <!-- ___________________ Point Types ___________________ -->
 
   <!-- Meta data for point types that have values (i.e. not controls) -->
@@ -195,6 +204,7 @@
     <xs:sequence>
       <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>

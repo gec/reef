@@ -162,7 +162,6 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = many(2, service.get(entAttr))
-    println(results)
 
     results.foreach { result =>
       if (result.getEntity.getName == "ent01") {

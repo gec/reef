@@ -109,8 +109,8 @@ class LoadCache {
 
       info("CONTROLS SUMMARY:  ")
       info("   Controls found in equipmentModel and communicationsModel: " + cComplete.length)
-      info("   Controls found in equipmentModel only:      " + cComOnly.length)
-      info("   Controls found in communicationsModel only: " + cEquOnly.length)
+      info("   Controls found in equipmentModel only:      " + cEquOnly.length)
+      info("   Controls found in communicationsModel only: " + cComOnly.length)
       if (cMultiple.length > 0)
         warn("   Controls found in one model more than once: " + cMultiple.length)
       if (cNone.length > 0)

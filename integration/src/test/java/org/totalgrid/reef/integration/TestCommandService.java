@@ -107,15 +107,18 @@ public class TestCommandService extends JavaBridgeTestBase {
     public void testCommandSelectAndExecute() throws ReefServiceException {
 
         CommandService cs = new CommandServiceWrapper(client);
-        Command cmd = cs.getCommands().get(0);
+        List<Command> commands = cs.getCommands();
 
-        CommandAccess accessResponse = cs.createCommandExecutionLock(cmd);
-        assertTrue(accessResponse.getExpireTime() > 0);
-        CommandStatus cmdResponse = cs.executeCommandAsControl(cmd);
-        assertEquals(cmdResponse, CommandStatus.SUCCESS);
+        for(Command cmd: commands)
+        {
+            CommandAccess accessResponse = cs.createCommandExecutionLock(cmd);
+            assertTrue(accessResponse.getExpireTime() > 0);
+            CommandStatus cmdResponse = cs.executeCommandAsControl(cmd);
+            assertEquals(cmdResponse, CommandStatus.SUCCESS);
 
-        // delete select by reference (UID)
-        cs.deleteCommandLock(accessResponse);
+            // delete select by reference (UID)
+            cs.deleteCommandLock(accessResponse);
+        }
     }
 
     /**
