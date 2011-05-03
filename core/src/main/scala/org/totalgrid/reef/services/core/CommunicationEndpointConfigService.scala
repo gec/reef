@@ -32,6 +32,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
     extends BasicSyncModeledService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -45,12 +46,11 @@ class CommEndCfgServiceModelFactory(
   commandFac: ModelFactory[CommandServiceModel],
   configFac: ModelFactory[ConfigFileServiceModel],
   pointFac: ModelFactory[PointServiceModel],
-  measProcFac: ModelFactory[MeasurementProcessingConnectionServiceModel],
-  fepModelFac: ModelFactory[CommunicationEndpointConnectionServiceModel],
-  portModelFac: ModelFactory[FrontEndPortServiceModel])
+  portModelFac: ModelFactory[FrontEndPortServiceModel],
+  coordinatorFac: MeasurementStreamCoordinatorFactory)
     extends BasicModelFactory[CommEndCfgProto, CommEndCfgServiceModel](pub, classOf[CommEndCfgProto]) {
 
-  def model = new CommEndCfgServiceModel(subHandler, commandFac.model, configFac.model, pointFac.model, measProcFac.model, fepModelFac.model, portModelFac.model)
+  def model = new CommEndCfgServiceModel(subHandler, commandFac.model, configFac.model, pointFac.model, portModelFac.model, coordinatorFac.model)
 }
 
 class CommEndCfgServiceModel(
@@ -58,9 +58,8 @@ class CommEndCfgServiceModel(
   commandModel: CommandServiceModel,
   configModel: ConfigFileServiceModel,
   pointModel: PointServiceModel,
-  measProcModel: MeasurementProcessingConnectionServiceModel,
-  fepModel: CommunicationEndpointConnectionServiceModel,
-  portModel: FrontEndPortServiceModel)
+  portModel: FrontEndPortServiceModel,
+  coordinator: MeasurementStreamCoordinator)
     extends SquerylServiceModel[CommEndCfgProto, CommunicationEndpoint]
     with EventedServiceModel[CommEndCfgProto, CommunicationEndpoint]
     with CommEndCfgServiceConversion {
@@ -68,9 +67,8 @@ class CommEndCfgServiceModel(
   link(commandModel)
   link(pointModel)
   link(configModel)
-  link(measProcModel)
-  link(fepModel)
   link(portModel)
+  link(coordinator)
 
   override def createFromProto(proto: CommEndCfgProto): CommunicationEndpoint = {
     checkProto(proto)
@@ -78,8 +76,7 @@ class CommEndCfgServiceModel(
     EQ.addTypeToEntity(ent, "LogicalNode")
     val sql = create(createModelEntry(proto, ent))
     setLinkedObjects(sql, proto, ent)
-    measProcModel.onEndpointCreated(sql)
-    fepModel.onEndpointCreated(sql)
+    coordinator.onEndpointCreated(sql)
     sql
   }
 
@@ -87,8 +84,7 @@ class CommEndCfgServiceModel(
     checkProto(proto)
     val (sql, changed) = update(createModelEntry(proto, existing.entity.value), existing)
     setLinkedObjects(sql, proto, existing.entity.value)
-    measProcModel.onEndpointUpdated(sql)
-    fepModel.onEndpointUpdated(sql)
+    coordinator.onEndpointUpdated(sql)
     (sql, changed)
   }
 
@@ -98,8 +94,7 @@ class CommEndCfgServiceModel(
   }
 
   override def preDelete(sql: CommunicationEndpoint) {
-    measProcModel.onEndpointDeleted(sql)
-    fepModel.onEndpointDeleted(sql)
+    coordinator.onEndpointDeleted(sql)
   }
   import org.totalgrid.reef.proto.OptionalProtos._
   def setLinkedObjects(sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {

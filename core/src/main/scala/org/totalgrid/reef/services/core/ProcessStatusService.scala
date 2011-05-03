@@ -33,6 +33,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
 
 // Implicits
 import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
@@ -50,24 +51,21 @@ class ProcessStatusService(protected val modelTrans: ServiceTransactable[Process
 
 class ProcessStatusServiceModelFactory(
   pub: ServiceEventPublishers,
-  measProcFac: ModelFactory[MeasurementProcessingConnectionServiceModel],
-  fepModelFac: ModelFactory[CommunicationEndpointConnectionServiceModel])
+  coordinatorFac: MeasurementStreamCoordinatorFactory)
     extends BasicModelFactory[StatusSnapshot, ProcessStatusServiceModel](pub, classOf[StatusSnapshot]) {
 
-  def model = new ProcessStatusServiceModel(subHandler, measProcFac.model, fepModelFac.model)
+  def model = new ProcessStatusServiceModel(subHandler, coordinatorFac.model)
 }
 
 class ProcessStatusServiceModel(
   protected val subHandler: ServiceSubscriptionHandler,
-  measProcModel: MeasurementProcessingConnectionServiceModel,
-  fepModel: CommunicationEndpointConnectionServiceModel)
+  coordinator: MeasurementStreamCoordinator)
     extends SquerylServiceModel[StatusSnapshot, HeartbeatStatus]
     with EventedServiceModel[StatusSnapshot, HeartbeatStatus]
     with ProcessStatusConversion
     with Logging {
 
-  link(measProcModel)
-  link(fepModel)
+  link(coordinator)
 
   def addApplication(app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
 
@@ -103,8 +101,8 @@ class ProcessStatusServiceModel(
 
   def notifyModels(app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
     capabilities.foreach(_ match {
-      case "Processing" => measProcModel.onAppChanged(app, online)
-      case "FEP" => fepModel.onAppChanged(app, online)
+      case "Processing" => coordinator.onMeasProcAppChanged(app, online)
+      case "FEP" => coordinator.onFepAppChanged(app, online)
       case _ =>
     })
   }
@@ -149,69 +147,3 @@ trait ProcessStatusConversion
       .build
   }
 }
-
-/*
-class ProcessStatusModel(subHandler: ServiceSubscriptionHandler)
-  extends BasicServiceModel[StatusSnapshot, HeartbeatStatus](subHandler, ApplicationSchema.heartbeats) with Logging {
-
-  def isProtoValidModel(proto: StatusSnapshot): Boolean = {
-    return true
-  }
-
-  def getRoutingKey(req: StatusSnapshot) = ProtoRoutingKeys.routingKey(req)
-  def deserialize(bytes: Array[Byte]) = StatusSnapshot.parseFrom(bytes)
-
-  def toSql(proto: StatusSnapshot): HeartbeatStatus = {
-    throw new ReefReefServiceException("can't put heartbeat configuations")
-  }
-
-  def toProto(sql: HeartbeatStatus): StatusSnapshot = {
-    val b = StatusSnapshot.newBuilder
-    val app = sql.application
-    b.setUuid(makeUuid(sql))
-    b.setInstanceName(app.instanceName)
-
-    b.setOnline(sql.isOnline).setTime(sql.timeoutAt)
-
-    b.build
-  }
-
-  override def findRecords(req: StatusSnapshot): List[HeartbeatStatus] = {
-    req.hasInstanceName ? req.getInstanceName match {
-      case Some("*") => table.where(t => true === true).toList
-      case Some(name) =>
-        from(table)(h =>
-          where(h.applicationId in from(ApplicationSchema.apps)(a =>
-            where(a.instanceName === name)
-              select (&(a.id))))
-            select (h)).toList
-      case None => Nil
-    }
-  }
-
-  def addApplication(appId: Long, periodMS: Int, deadmanSwitch: String, now: Long = System.currentTimeMillis) {
-
-    // give the app twice as long to come online
-    val firstCheck = now + periodMS * 2
-
-    val hbSql = new HeartbeatStatus(appId, periodMS, firstCheck, true, deadmanSwitch)
-
-    info("App " + hbSql.application.instanceName + ": is being marked online at " + now)
-
-    val existing = table.where(h => h.applicationId === appId)
-    if (existing.size == 1) {
-      hbSql.id = existing.head.id
-      updateEntry(hbSql)
-    } else {
-      insertEntry(hbSql)
-    }
-  }
-
-  def takeApplicationOffline(hbeat: HeartbeatStatus, now: Long) {
-    info("App " + hbeat.application.instanceName + ": is being marked offline at " + now)
-    hbeat.isOnline = false
-    hbeat.timeoutAt = now
-
-    updateEntry(hbeat)
-  }
-}*/ 

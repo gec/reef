@@ -163,8 +163,8 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 
       // fepNetALocA should have got both netA devices and the fepNetB* feps will split the netB additions
       coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
-      coord.checkFeps(many(1 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
-      coord.checkFeps(many(2 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
+      coord.checkFeps(many(2 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
+      coord.checkFeps(many(1 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
 
     }
   }

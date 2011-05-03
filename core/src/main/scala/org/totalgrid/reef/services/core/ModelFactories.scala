@@ -22,6 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublishers
+import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFactory
 
 class ModelFactories(pubs: ServiceEventPublishers, summaries: SummaryPoints = new SilentSummaryPoints, cm: MeasurementStore = new InMemoryMeasurementStore) {
   val cmds = new CommandServiceModelFactory(pubs)
@@ -30,17 +31,19 @@ class ModelFactories(pubs: ServiceEventPublishers, summaries: SummaryPoints = ne
   val accesses = new CommandAccessServiceModelFactory(pubs, cmds)
   val userRequests = new UserCommandRequestServiceModelFactory(pubs, cmds, accesses)
 
-  val fepConn = new CommunicationEndpointConnectionModelFactory(pubs, cm)
-  val measProcConn = new MeasurementProcessingConnectionModelFactory(pubs, fepConn)
+  val coordinator = new MeasurementStreamCoordinatorFactory(pubs, cm)
 
-  val fep = new FrontEndProcessorModelFactory(pubs, fepConn)
+  val fepConn = new CommunicationEndpointConnectionModelFactory(pubs, coordinator)
+  val measProcConn = new MeasurementProcessingConnectionModelFactory(pubs, coordinator)
+
+  val fep = new FrontEndProcessorModelFactory(pubs, coordinator)
   val fepPort = new FrontEndPortModelFactory(pubs)
 
   val points = new PointServiceModelFactory(pubs)
   val overrides = new OverrideConfigModelFactory(pubs)
 
   val configFiles = new ConfigFileServiceModelFactory(pubs)
-  val endpoints = new CommEndCfgServiceModelFactory(pubs, cmds, configFiles, points, measProcConn, fepConn, fepPort)
+  val endpoints = new CommEndCfgServiceModelFactory(pubs, cmds, configFiles, points, fepPort, coordinator)
 
   val alarms = new AlarmServiceModelFactory(pubs, summaries)
   val eventConfig = new EventConfigServiceModelFactory(pubs)
@@ -50,7 +53,7 @@ class ModelFactories(pubs: ServiceEventPublishers, summaries: SummaryPoints = ne
   val agents = new AgentServiceModelFactory(pubs)
   val permissionSets = new PermissionSetServiceModelFactory(pubs)
 
-  val procStatus = new ProcessStatusServiceModelFactory(pubs, measProcConn, fepConn)
+  val procStatus = new ProcessStatusServiceModelFactory(pubs, coordinator)
   val appConfig = new ApplicationConfigServiceModelFactory(pubs, procStatus)
 
 }
