@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
-        <version>0.2.3-RC2</version>
+        <version>0.2.3-RC3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

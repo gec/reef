@@ -9,7 +9,7 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.2.3-RC2
+Version 0.2.3-RC3
 ==============
 
 Primarily a stability and usability release, very limited new functionality.
@@ -27,6 +27,8 @@ Primarily a stability and usability release, very limited new functionality.
 
 * Can subscribe to Events and Alarms through EventList and AlarmList services
 * When issuing a Command we block until the status code is returned from the field, doesn't return executing
+* Configuration files can now include custom types for a point or command. REEF-39
+* Added setpoint support to karaf shell and xml loader
 
 ### Shell Commands:
 
@@ -37,6 +39,8 @@ Primarily a stability and usability release, very limited new functionality.
 * invalid system models will not by load by default (added -ignoreWarnings option)
 * "meas:download" will download measurement history to a Comma Separated File (CSV) for offline processing
 * Added suite of Alarm related commands including silence, acknowledge and remove.
+* Added remote-login command to support using karaf HMI on remote reef node
+* Added metrics:throughput command to quickly measure measurement rates. use: "metrics:throughput *.measProcessed"
 
 ### Breaking Changes:
 
@@ -48,6 +52,8 @@ Primarily a stability and usability release, very limited new functionality.
 * Protocol Adapters now inform system when channels (ports) and endpoints change online state
 * All shell commands use Mid-Level-APIs
 * ClientSession interface includes SubscriptionManagement trait and close function
+* Postgres measurement store implementation was refactored to use multiple tables to decouple current value
+  and history requests so more historical measurements can be stored without slowing down current value queries.
 
 ### Bug Fixes:
 
@@ -59,7 +65,7 @@ Primarily a stability and usability release, very limited new functionality.
 * DNP protocol adapter sets units correctly REEF-24
 * Other bugs mentioned in previous sections: REEF-43, REEF-10
 * Alarm retrievals and updates by UID work as expected now
-* Better loader warnings and behavior when config files are missing
+* Better loader warnings and behavior when config files are missing (includes REEF-46)
 
 Version 0.2.3-dev
 ==============
