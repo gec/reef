@@ -38,6 +38,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
   var queueName: ScalaOption[String] = None
 
   session.setSessionListener(this)
+  session.setAutoSync(true)
 
   def closed(s: Session) {
     info("Qpid session closed")
@@ -59,6 +60,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     val replyTo = msg.getHeader.get(classOf[MessageProperties]).getReplyTo
     val dest = if (replyTo == null) None else Some(new Destination(replyTo.getExchange, replyTo.getRoutingKey))
     messageConsumer.foreach { mc => mc.receive(msg.getBodyBytes, dest) }
+    s.processed(msg)
   }
 
   /* -- Implement BrokerChannel -- */
@@ -154,7 +156,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
       case None =>
     }
     val hdr = new Header(dev_props, msg_props)
-    session.messageTransfer(exchange, MessageAcceptMode.EXPLICIT, MessageAcquireMode.PRE_ACQUIRED, hdr, b)
+    session.messageTransfer(exchange, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, hdr, b)
   }
 
   def unlink() {

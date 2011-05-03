@@ -30,8 +30,16 @@ import Conversion._
 class ConversionTests extends FunSuite with ShouldMatchers {
   test("convertStringToType") {
     convertStringToType("99") should equal(99)
+    convertStringToType("2147483648") should equal(2147483648L)
     convertStringToType("true") should equal(true)
     convertStringToType("100.5") should equal(100.5)
     convertStringToType("magic") should equal("magic")
+  }
+
+  test("testConversionType") {
+    convertStringToType("99") match {
+      case x: Int => x should equal(99)
+    }
+
   }
 }

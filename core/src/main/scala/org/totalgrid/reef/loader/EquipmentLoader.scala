@@ -106,11 +106,16 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     val children = profiles.flatMap(_.getEquipment).map(loadEquipment(_, childPrefix, actionModel))
     children.foreach(child => client.putOrThrow(toEntityEdge(entity, child, "owns")))
 
-    // Commands are controls and setpoints. TODO: setpoints
+    // Commands are controls and setpoints
     trace("load equipment: " + name + " commands")
-    val commands = profiles.flatMap(_.getControl.toList).map { c =>
+    val controls = profiles.flatMap(_.getControl.toList).map { c =>
       val display = Option(c.getDisplayName) getOrElse c.getName
-      processControl(childPrefix + c.getName, display, getTypeList(c.getType), entity)
+      processCommand(childPrefix + c.getName, display, "Control" :: getTypeList(c.getType), entity)
+    }
+
+    val setpoints = profiles.flatMap(_.getSetpoint.toList).map { c =>
+      val display = Option(c.getDisplayName) getOrElse c.getName
+      processCommand(childPrefix + c.getName, display, "Setpoint" :: getTypeList(c.getType), entity)
     }
 
     // Points
@@ -125,7 +130,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Process controls defined under equipment.
    */
-  def processControl(name: String, displayName: String, types: List[String], equipmentEntity: Entity) = {
+  def processCommand(name: String, displayName: String, types: List[String], equipmentEntity: Entity) = {
     import ProtoUtils._
 
     trace("processControl: " + name)
@@ -156,7 +161,6 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
    */
   def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
-    import scala.collection.JavaConversions._
 
     val name = childPrefix + pointT.getName
     trace("processPointType: " + name)
@@ -220,7 +224,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * get contained elements from this point and its pointProfile
    */
-  def getElements[A](name: String, point: PointType, get: (PointType) => List[A]): List[A] = {
+  def getElements[A](name: String, point: PointType, get: PointType => List[A]): List[A] = {
 
     if (point.isSetPointProfile)
       get(point) ::: getElements[A](name, getPointProfile(name, point), get)

@@ -61,6 +61,11 @@
                     <eq:type name = "bkrClose" />
                 </eq:control>
 
+                <!-- A made-up setpoint for use with integration tests -->
+                <eq:setpoint name="VoltageSetpoint">
+
+                </eq:setpoint>
+
                 <eq:status name="Bkr" unit="status" pointProfile="BreakerStatus">
                     <eq:control name="Trip"/>
                     <eq:control name="Close"/>
@@ -115,6 +120,7 @@
                     <cm:status name="Tripped" index="1"/>
                     <cm:control name="Trip" index="0"/>
                     <cm:control name="Close" index="1"/>
+                    <cm:setpoint name="VoltageSetpoint" index="0"/>
                 </cm:equipment>
                 <cm:equipment name="Line01">
                     <cm:analog name="Current" index="0"/>
@@ -132,6 +138,7 @@
                     <cm:status name="Tripped" index="1"/>
                     <cm:control name="Trip" index="0"/>
                     <cm:control name="Close" index="1"/>
+                    <cm:setpoint name="VoltageSetpoint" index="0"/>
                 </cm:equipment>
                 <cm:equipment name="Line02">
                     <cm:analog name="Current" index="0"/>

@@ -69,6 +69,7 @@ object Conversion {
   def convertStringToType(s: String): Any = {
     import Unappliers._
     s match {
+      case Int(x) => x
       case Long(x) => x
       case Double(x) => x
       case Boolean(x) => x
