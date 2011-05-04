@@ -105,8 +105,7 @@ trait ApplicationConfigConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(proto.hasUuid, proto.getUuid) ::
-      hasGet(proto.hasInstanceName, proto.getInstanceName) :: Nil
+    proto.uuid.uuid :: proto.instanceName :: Nil
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {

@@ -81,9 +81,7 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 trait CommandServiceConversion extends MessageModelConversion[CommandProto, Command] with UniqueAndSearchQueryable[CommandProto, Command] {
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(req.hasUuid, req.getUuid) ::
-      hasGet(req.hasName, req.getName) ::
-      hasGet(req.hasEntity, req.getEntity.getUuid) :: Nil
+    req.uuid.uuid :: req.name :: req.entity.uuid.uuid :: Nil
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {

@@ -131,8 +131,7 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
   val table = ApplicationSchema.endpoints
 
   def getRoutingKey(proto: CommEndCfgProto) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(proto.hasUuid, proto.getUuid) ::
-      hasGet(proto.hasName, proto.getName) :: Nil
+    proto.uuid.uuid :: proto.name :: Nil
   }
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {

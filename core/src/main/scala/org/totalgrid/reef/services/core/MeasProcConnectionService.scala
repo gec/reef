@@ -103,9 +103,7 @@ trait MeasurementProcessingConnectionConversion
   val table = ApplicationSchema.measProcAssignments
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.measProc.uuid.uuid ::
-      req.uid ::
-      Nil
+    req.measProc.uuid.uuid :: req.uid :: Nil
   }
 
   def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {
