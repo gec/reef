@@ -52,12 +52,4 @@ trait PointServiceImpl extends ReefServiceBaseClass with PointService {
   def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = {
     ops.getOrThrow(PointRequestBuilders.getSourcedByEndpoint(endpointUuid))
   }
-
-  def getAbnormalPoints() = {
-    ops.getOrThrow(PointRequestBuilders.getAbnormal)
-  }
-
-  def getAbnormalPoints(sub: ISubscription[Point]) = {
-    ops.getOrThrow(PointRequestBuilders.getAbnormal, sub)
-  }
 }

@@ -72,21 +72,4 @@ trait PointService {
   @throws(classOf[ReefServiceException])
   def getPointsBelongingToEndpoint(endpointUuid: ReefUUID): java.util.List[Point]
 
-  /**
-   * @return all points that are currently marked as abnormal (last measurement had abnormal
-   * flag set)
-   */
-  @throws(classOf[ReefServiceException])
-  def getAbnormalPoints(): java.util.List[Point]
-
-  /**
-   *
-   * @param sub a subscriber to recieve all future abnormal updates. Updates will all have event code
-   * MODIFIED and an event will be recieved for every transition to or from the abnormal state.
-   * @return all points that are currently marked as abnormal (last measurement had abnormal
-   * flag set)
-   */
-  @throws(classOf[ReefServiceException])
-  def getAbnormalPoints(sub: ISubscription[Point]): java.util.List[Point]
-
 }
