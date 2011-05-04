@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.util.BlockingQueue
+import org.totalgrid.reef.util.EmptySyncVar
 
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 
@@ -47,8 +47,8 @@ class EndpointManagementTest
 
     endpoints.isEmpty should equal(false)
 
-    val queue = new BlockingQueue[CommEndpointConnection]
-    val sub = client.creatEndpointConnectionSubscription(new IEventAcceptorShim(ea => queue.push(ea.result)))
+    val syncVar = new EmptySyncVar[CommEndpointConnection]()
+    val sub = client.creatEndpointConnectionSubscription(new IEventAcceptorShim(ea => syncVar.update(ea.result)))
 
     client.addExplanation("Get all endpoint connections", "")
     val connections = client.getAllEndpointConnections(sub)
@@ -62,31 +62,24 @@ class EndpointManagementTest
     connections.map { _.getState } should equal(connections.map { x => CommEndpointConnection.State.COMMS_UP })
     connections.map { _.getEnabled } should equal(connections.map { x => true })
 
+    // pick one endpoint to test enabling/disabling
     val endpointUuid = endpoints.head.getUuid
+
+    def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
+      syncVar.waitFor(x => x.getEnabled == false &&
+        x.getState == CommEndpointConnection.State.COMMS_UP &&
+        x.getEndpoint.getUuid == endpointUuid)
+    }
 
     client.disableEndpointConnection(endpointUuid)
 
-    val update1 = queue.pop(5000)
-    update1.getEndpoint.getUuid should equal(endpointUuid)
-    update1.getEnabled should equal(false)
-    update1.getState should equal(CommEndpointConnection.State.COMMS_UP)
-
-    val update2 = queue.pop(5000)
-    update2.getEndpoint.getUuid should equal(endpointUuid)
-    update2.getEnabled should equal(false)
-    update2.getState should equal(CommEndpointConnection.State.COMMS_DOWN)
+    checkState(false, CommEndpointConnection.State.COMMS_UP)
+    checkState(false, CommEndpointConnection.State.COMMS_DOWN)
 
     client.enableEndpointConnection(endpoints.head.getUuid)
 
-    val update3 = queue.pop(5000)
-    update3.getEndpoint.getUuid should equal(endpointUuid)
-    update3.getEnabled should equal(true)
-    update3.getState should equal(CommEndpointConnection.State.COMMS_DOWN)
-
-    val update4 = queue.pop(5000)
-    update4.getEndpoint.getUuid should equal(endpointUuid)
-    update4.getEnabled should equal(true)
-    update4.getState should equal(CommEndpointConnection.State.COMMS_UP)
+    checkState(true, CommEndpointConnection.State.COMMS_DOWN)
+    checkState(true, CommEndpointConnection.State.COMMS_UP)
 
   }
 
