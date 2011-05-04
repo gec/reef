@@ -20,11 +20,13 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.apache.felix.gogo.commands.{ Command, Argument }
+import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import presentation.{ CommandView }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.ReefUUID
+
+import org.totalgrid.reef.util.Conversion
 
 @Command(scope = "command", name = "list", description = "Lists commands")
 class CommandListCommand extends ReefCommandSupport {
@@ -40,11 +42,21 @@ class CommandIssueCommand extends ReefCommandSupport {
   @Argument(index = 0, name = "Command Name", description = "Command name", required = true, multiValued = false)
   private var cmdName: String = null
 
+  @Argument(index = 1, description = "Setpoint value", required = false, multiValued = false)
+  private var value: String = null
+
   def doCommand() = {
     val cmd = services.getCommandByName(cmdName)
     val select = services.createCommandExecutionLock(cmd)
     val response = try {
-      services.executeCommandAsControl(cmd)
+      Option(value) match {
+        case Some(s) => Conversion.convertStringToType(s) match {
+          case x: Int => services.executeCommandAsSetpoint(cmd, x)
+          case x: Double => services.executeCommandAsSetpoint(cmd, x)
+          case y: Any => throw new Exception("Setpoint value must be Int or Double: " + y)
+        }
+        case None => services.executeCommandAsControl(cmd)
+      }
     } finally {
       services.deleteCommandLock(select)
     }

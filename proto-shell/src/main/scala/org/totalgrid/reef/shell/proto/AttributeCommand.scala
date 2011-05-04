@@ -59,11 +59,12 @@ class AttributeSetCommand extends ReefCommandSupport {
     val entity = services.getEntityByName(entityName)
     val entityUUID = entity.getUuid
     val attributes = Conversion.convertStringToType(value) match {
+      case x: Int => services.setEntityAttribute(entityUUID, name, x)
       case x: Long => services.setEntityAttribute(entityUUID, name, x)
       case x: Double => services.setEntityAttribute(entityUUID, name, x)
       case x: Boolean => services.setEntityAttribute(entityUUID, name, x)
       case x: String => services.setEntityAttribute(entityUUID, name, x)
-      case x: Any => throw new Exception("Couldn't convert " + x + " into long,boolean,double or string: " + x.asInstanceOf[AnyRef].getClass)
+      case x: Any => throw new Exception("Couldn't convert " + x + " into long, boolean, double or string: " + x.asInstanceOf[AnyRef].getClass)
     }
 
     AttributeView.printAttributes(attributes)

@@ -107,10 +107,21 @@ trait CommandService {
    * expecting an integer value the passed in double value will be floored.
    *
    * @param id the name of the command
+   * @param value Value of the setpoint
    * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
    */
   @throws(classOf[ReefServiceException])
   def executeCommandAsSetpoint(cmd: Command, value: Double): CommandStatus
+
+  /**
+   * Setpoint overload for Long type
+   *
+   * @param id the name of the command
+   * @param value Value of the setpoint
+   * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
+   */
+  @throws(classOf[ReefServiceException])
+  def executeCommandAsSetpoint(cmd: Command, value: Int): CommandStatus
 
   /**
    * when an operator needs to make sure no one will execute any of a set of commands they

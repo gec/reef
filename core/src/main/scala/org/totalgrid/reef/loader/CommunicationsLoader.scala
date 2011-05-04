@@ -59,11 +59,11 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
    * Reset all class variables
    */
   def reset: Unit = {
-    controlProfiles.clear
-    pointProfiles.clear
-    endpointProfiles.clear
-    equipmentProfiles.clear
-    interfaces.clear
+    controlProfiles.clear()
+    pointProfiles.clear()
+    endpointProfiles.clear()
+    equipmentProfiles.clear()
+    interfaces.clear()
   }
 
   /**
@@ -149,22 +149,26 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     //  Walk the tree of equipment nodes to collect the controls and points
     // An endpoint may have multiple top level equipment objects (each with nested equipment nodes).
     val controls = HashMap[String, Control]()
+    val setpoints = HashMap[String, Setpoint]()
     val statuses = HashMap[String, PointType]()
     val analogs = HashMap[String, PointType]()
     val counters = HashMap[String, PointType]()
-    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, statuses, analogs, counters)) // TODO: should the endpoint name be used as the starting prefixed ?
+    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, setpoints, statuses, analogs, counters)) // TODO: should the endpoint name be used as the starting prefixed ?
     trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
+    trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
     trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
     trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
     trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
 
     for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex) // TODO fill in endpoint name
+    for ((name, s) <- setpoints) loadCache.addControl("", name, s.getIndex)
 
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
     val isBenchmark = overriddenProtocolName == BENCHMARK
     ex.collect("Checking Indexes: " + endpointName) {
       validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg)
+      validateIndexesAreUnique[Setpoint](setpoints, isBenchmark, errorMsg)
       validateIndexesAreUnique[PointType](statuses, isBenchmark, errorMsg)
       validateIndexesAreUnique[PointType](analogs, isBenchmark, errorMsg)
       validateIndexesAreUnique[PointType](counters, isBenchmark, errorMsg)
@@ -184,18 +188,19 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     overriddenProtocolName match {
       case DNP3 =>
         ex.collect("DNP3 Indexes:" + endpointName) {
-          configFiles ::= processIndexMapping(endpointName, controls, points)
+          configFiles ::= processIndexMapping(endpointName, controls, setpoints, points)
         }
       case BENCHMARK => {
         val delay = if (protocol.isSetSimOptions && protocol.getSimOptions.isSetDelay) Some(protocol.getSimOptions.getDelay) else None
         ex.collect("Simulator Mapping:" + endpointName) {
-          configFiles ::= createSimulatorMapping(endpointName, controls, points, delay)
+          configFiles ::= createSimulatorMapping(endpointName, controls, setpoints, points, delay)
         }
       }
     }
 
     // Now we have a list of all the controls and points for this Endpoint
-    client.putOrThrow(toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, port, controls, points).build)
+    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, port, controls, setpoints, points).build
+    client.putOrThrow(endpointCfg)
 
   }
 
@@ -372,18 +377,19 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def processIndexMapping(
     endpointName: String,
     controls: HashMap[String, Control],
+    setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType]): Model.ConfigFile.Builder = {
 
     debug(endpointName + " CONTROLS:")
-    //val controlProtos = List[Mapping.CommandMap.Builder]()
-    val controlProtos = for ((key, value) <- controls) yield toCommandMap(endpointName, key, value)
+    val controlProtos = for ((key, value) <- controls) yield controlToCommandMap(endpointName, key, value)
+
+    debug(endpointName + " SETPOINTS:")
+    val setpointsProtos = for ((key, value) <- setpoints) yield setpointToCommandMap(endpointName, key, value)
 
     debug(endpointName + " POINTS:")
-    //val pointProtos = List[Mapping.MeasMap.Builder]()
-    //for((key, value) <- points) pointProtos += toMeasMap( key, value)
     val pointProtos = for ((key, value) <- points) yield toMeasMap(endpointName, key, value)
 
-    val indexMap = toIndexMapping(controlProtos, pointProtos).build
+    val indexMap = toIndexMapping(controlProtos.toList ::: setpointsProtos.toList, pointProtos).build
 
     val cf = toConfigFile(endpointName, indexMap).build
     client.putOrThrow(cf)
@@ -406,10 +412,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       else
         None
 
-      val index = if (point.isSetIndex)
-        point.getIndex
-      else
-        -1
+      val index = if (point.isSetIndex) point.getIndex else -1
 
       if (scale.isDefined) {
         val s = scale.get
@@ -459,6 +462,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def findControlsAndPoints(equipment: Equipment,
     namePrefix: String,
     controls: HashMap[String, Control],
+    setpoints: HashMap[String, Setpoint],
     statuses: HashMap[String, PointType],
     analogs: HashMap[String, PointType],
     counters: HashMap[String, PointType]): Unit = {
@@ -472,19 +476,13 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList ::: List[EquipmentType](equipment)
 
     profiles.flatMap(_.getControl).foreach(c => addUnique[Control](controls, childPrefix + c.getName, c, "Duplicate control name: "))
+    profiles.flatMap(_.getSetpoint).foreach(c => addUnique[Setpoint](setpoints, childPrefix + c.getName, c, "Duplicate setpoint name: "))
     profiles.flatMap(_.getStatus).foreach(p => addUnique[PointType](statuses, childPrefix + p.getName, p, "Duplicate status name: "))
     profiles.flatMap(_.getAnalog).foreach(p => addUnique[PointType](analogs, childPrefix + p.getName, p, "Duplicate analog name: "))
     profiles.flatMap(_.getCounter).foreach(p => addUnique[PointType](counters, childPrefix + p.getName, p, "Duplicate counter name: "))
 
-    /* old
-    profiles.flatMap(_.getControl).foreach(c => controls += (childPrefix + c.getName -> c))
-    profiles.flatMap(_.getStatus).foreach(p => statuses += (childPrefix + p.getName -> p))
-    profiles.flatMap(_.getAnalog).foreach(p => analogs += (childPrefix + p.getName -> p))
-    profiles.flatMap(_.getCounter).foreach(p => counters += (childPrefix + p.getName -> p))
-    */
-
     // Recurse into child equipment
-    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, childPrefix, controls, statuses, analogs, counters))
+    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, childPrefix, controls, setpoints, statuses, analogs, counters))
   }
 
   def addUnique[A](map: HashMap[String, A], key: String, indexable: A, error: String): Unit = {
@@ -505,12 +503,13 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     configFiles: List[Model.ConfigFile.Builder],
     port: Option[CommChannel.Builder],
     controls: HashMap[String, Control],
+    setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType]): CommEndpointConfig.Builder = {
 
     val proto = CommEndpointConfig.newBuilder
       .setName(name)
       .setProtocol(protocol)
-      .setOwnerships(toEndpointOwnership(controls, points))
+      .setOwnerships(toEndpointOwnership(controls.keys.toList ::: setpoints.keys.toList, points.keys))
     //TODO: .setEntity()
 
     if (port.isDefined)
@@ -521,11 +520,11 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     proto
   }
 
-  def toEndpointOwnership(controls: HashMap[String, Control], points: HashMap[String, PointType]): EndpointOwnership.Builder = {
+  def toEndpointOwnership(commands: Iterable[String], points: Iterable[String]): EndpointOwnership.Builder = {
     val proto = EndpointOwnership.newBuilder
 
-    controls.keys.foreach(proto.addCommands(_))
-    points.keys.foreach(proto.addPoints(_))
+    commands.foreach(proto.addCommands(_))
+    points.foreach(proto.addPoints(_))
 
     proto
   }
@@ -599,7 +598,33 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     proto
   }
 
-  def toCommandMap(endpointName: String, name: String, control: Control): Mapping.CommandMap.Builder = {
+  def setpointToCommandMap(endpointName: String, name: String, setpoint: Setpoint): Mapping.CommandMap.Builder = {
+
+    // Profiles is a list of profiles plus this setpoint
+    // TODO: Handle exceptions when referenced profile doesn't exist.
+    val profiles: List[ControlType] = setpoint.getControlProfile.toList.map(p => controlProfiles(p.getName)) ::: List[ControlType](setpoint)
+    val reverseProfiles = profiles.reverse
+
+    // Search the reverse profile list to fInd an index
+    val index = reverseProfiles.find(_.isSetIndex) match {
+      case Some(ct) => ct.getIndex
+      case None =>
+        reverseProfiles.size match {
+          case 1 => throw new LoadingException("Command '" + name + "' has no index specified.")
+          case _ => throw new LoadingException("Command '" + name + "' and its associated controlProfile element(s) do not specify an index.")
+        }
+    }
+
+    debug("    COMMAND " + index + " -> " + name)
+
+    Mapping.CommandMap.newBuilder
+      .setCommandName(name)
+      .setIndex(index)
+      .setType(Mapping.CommandType.SETPOINT)
+
+  }
+
+  def controlToCommandMap(endpointName: String, name: String, control: Control): Mapping.CommandMap.Builder = {
 
     // Profiles is a list of profiles plus this control
     // TODO: Handle exceptions when referenced profile doesn't exist.
@@ -645,10 +670,12 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def createSimulatorMapping(
     name: String,
     controls: HashMap[String, Control],
+    setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType],
     delay: Option[Int]): Model.ConfigFile.Builder = {
 
-    val controlProtos = for ((key, value) <- controls) yield toCommandSim(key, value).build
+    val controlProtos = for ((key, value) <- controls) yield toCommandSim(key).build
+    val setpointProtos = for ((key, value) <- setpoints) yield toCommandSim(key).build
     val pointProtos = for ((key, value) <- points) yield toMeasSim(key, value).build
 
     val simMap = SimMapping.SimulatorMapping.newBuilder
@@ -656,14 +683,14 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     simMap.setDelay(delay getOrElse 500)
 
     simMap.addAllMeasurements(pointProtos.toList)
-    simMap.addAllCommands(controlProtos.toList)
+    simMap.addAllCommands(controlProtos.toList ::: setpointProtos.toList)
 
     val cf = toConfigFile(name, simMap.build).build
     client.putOrThrow(cf)
     cf.toBuilder
   }
 
-  def toCommandSim(name: String, control: Control): SimMapping.CommandSim.Builder = {
+  def toCommandSim(name: String): SimMapping.CommandSim.Builder = {
 
     SimMapping.CommandSim.newBuilder
       .setName(name)

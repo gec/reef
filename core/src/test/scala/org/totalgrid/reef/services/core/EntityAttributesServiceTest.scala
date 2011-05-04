@@ -23,6 +23,7 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
+import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 import org.totalgrid.reef.proto.Utils.Attribute
 
 import org.totalgrid.reef.api.Envelope.Status
@@ -163,7 +164,6 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = many(2, service.get(entAttr))
-    println(results)
 
     results.foreach { result =>
       if (result.getEntity.getName == "ent01") {

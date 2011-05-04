@@ -55,6 +55,11 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     result.getStatus
   }
 
+  def executeCommandAsSetpoint(id: Command, value: Int): CommandStatus = {
+    val result = ops.putOneOrThrow(UserCommandRequestBuilders.executeSetpoint(id, value))
+    result.getStatus
+  }
+
   def createCommandDenialLock(ids: java.util.List[Command]): CommandAccess = {
     ops.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommands(ids))
   }

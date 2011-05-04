@@ -63,16 +63,30 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- ___________________ Controls ___________________ -->
+  <!-- ___________________ Commands ___________________ -->
 
-  <xs:element name="control">
-    <xs:complexType>
+  <xs:complexType name="command" abstract="true">
       <xs:sequence>
-         <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="displayName" type="xs:string"/>
-    </xs:complexType>
+  </xs:complexType>
+
+  <xs:element name="control">
+      <xs:complexType>
+          <xs:complexContent>
+              <xs:extension base="command"/>
+          </xs:complexContent>
+      </xs:complexType>
+  </xs:element>
+
+  <xs:element name="setpoint">
+      <xs:complexType>
+          <xs:complexContent>
+              <xs:extension base="command"/>
+          </xs:complexContent>
+      </xs:complexType>
   </xs:element>
 
   <!-- ___________________ Point Types ___________________ -->
@@ -154,6 +168,7 @@
       <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
       <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>

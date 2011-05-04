@@ -113,6 +113,23 @@ public class TestEntityService extends JavaBridgeTestBase {
         }
 	}
 
+    /**
+	 * Ask for all entities of type su Setpoint
+	 *
+	 * */
+	@Test
+	public void getCommandOfTypeSetpoint() throws ReefServiceException {
+        EntityService es = new EntityServiceWrapper(client);
+
+        List<Entity> list = es.getAllEntitiesWithTypes(Arrays.asList("Setpoint"));
+        assertEquals(2, list.size());
+
+        for(Entity e : list) {
+            assertTrue(e.getTypesList().contains("Setpoint"));
+            assertTrue(e.getTypesList().contains("Command"));
+        }
+	}
+
 	/**
 	 * Test that their is self-consistency between points and point entities
 	 */
@@ -159,14 +176,14 @@ public class TestEntityService extends JavaBridgeTestBase {
 	}
 
 	/**
-	 * Test that all commands are owned by one and only one point
+	 * Tes and only one feedback point
 	 */
 	@Test
-	public void allCommandsHaveOnePointForFeedback() throws ReefServiceException {
+	public void allControlsHaveOnePointForFeedback() throws ReefServiceException {
 
 		// get all commands in the system and fill out any relationships of type feedback with
 		// points
-		Entity request = Entity.newBuilder().addTypes("Command").addRelations(
+		Entity request = Entity.newBuilder().addTypes("Control").addRelations(
 				Relationship.newBuilder().setRelationship("feedback").setDescendantOf(false).addEntities(Entity.newBuilder().addTypes("Point")))
 				.build();
 
@@ -176,12 +193,14 @@ public class TestEntityService extends JavaBridgeTestBase {
 
 		for (Entity e : result) {
 			assertTrue(e.getTypesList().contains("Command"));
+            assertTrue(e.getTypesList().contains("Control"));
 			assertEquals(e.getRelationsCount(), 1);
 			Relationship r = e.getRelations(0);
 			assertEquals("feedback", r.getRelationship());
 			assertFalse(r.getDescendantOf());
 			assertEquals(1, r.getEntitiesCount());
 			assertTrue(r.getEntities(0).getTypesList().contains("Point"));
+
 		}
 	}
 
