@@ -97,7 +97,7 @@ class MeasurementStreamCoordinator(
 
     // then either assign the endpoint to a compatible FEP or no FEP
     val assigned = determineFepAssignment(fepProcAssignment.copy(applicationId = None), ce)
-    fepConnection.create(assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, Some(System.currentTimeMillis), None)))
+    fepConnection.create(assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, None, None, None, Some(System.currentTimeMillis), None)))
   }
 
   def onEndpointDeleted(ce: CommunicationEndpoint) {
