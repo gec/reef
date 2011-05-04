@@ -53,24 +53,32 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
         System.out.println("WARNING: Password will be visible in karaf command history!")
       }
 
-      setupReefSession()
+      val (client, context) = setupReefSession()
 
-      this.login(userName, services.createNewAuthorizationToken(userName, password))
+      try {
+        setReefSession(client, context)
+        this.login(userName, services.createNewAuthorizationToken(userName, password))
+      } catch {
+        case x: Exception =>
+          setReefSession(null, null)
+          println("Couldn't login to Reef: " + x.getMessage)
+          error(x.getStackTraceString)
+      }
     }
   }
 
-  def setupReefSession(): SyncClientSession
+  def setupReefSession(): (SyncClientSession, String)
 }
 
-@Command(scope = "reef", name = "login", description = "Logs a user into the system, asks for password interactively")
+@Command(scope = "reef", name = "login", description = "Authorizes a user with the local Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefLoginCommandBase {
 
-  def setupReefSession(): SyncClientSession = {
-    setReefSession(new OSGISession(getBundleContext), "local")
+  def setupReefSession() = {
+    (new OSGISession(getBundleContext), "local")
   }
 }
 
-@Command(scope = "reef", name = "remote-login", description = "Logs a user into the system, asks for password interactively")
+@Command(scope = "reef", name = "remote-login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefRemoteLoginCommand extends ReefLoginCommandBase {
 
   @Argument(index = 1, name = "host", description = "broker ip address or dns name", required = true, multiValued = false)
@@ -88,7 +96,7 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
   @Argument(index = 5, name = "brokerVirtualHost", description = "broker virtual host", required = false, multiValued = false)
   private var brokerVirtualHost: String = "test"
 
-  def setupReefSession(): SyncClientSession = {
+  def setupReefSession() = {
 
     import org.totalgrid.reef.reactor.ReactActor
     import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
@@ -108,7 +116,7 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
       }
     }
 
-    setReefSession(client, connectionInfo.toString)
+    (client, connectionInfo.toString)
   }
 }
 
