@@ -227,6 +227,7 @@ object OptionalProtos {
     val state = optionally(_.hasState, _.getState)
     val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
     val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)
+    val enabled = optionally(_.hasEnabled, _.getEnabled)
   }
   implicit def proto2OptMappingMeasMap(a: org.totalgrid.reef.proto.Mapping.MeasMap): OptMappingMeasMap = new OptMappingMeasMap(Some(a))
   class OptMappingMeasMap(real: Option[org.totalgrid.reef.proto.Mapping.MeasMap]) extends OptionalStruct(real) {

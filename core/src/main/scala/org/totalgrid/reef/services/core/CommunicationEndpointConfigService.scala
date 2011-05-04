@@ -168,3 +168,4 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
     b.build
   }
 }
+object CommEndCfgServiceConversion extends CommEndCfgServiceConversion

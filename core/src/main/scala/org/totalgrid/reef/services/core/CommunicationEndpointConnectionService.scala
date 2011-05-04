@@ -36,13 +36,11 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.BadRequestException
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator, MeasurementStreamCoordinatorFactory }
+import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
-
-import org.totalgrid.reef.measurementstore.MeasurementStore
 
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
     extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
@@ -59,6 +57,7 @@ class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTr
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
     req.state.foreach { builder.setState(_) }
+    req.enabled.foreach { builder.setEnabled(_) }
     builder.build
   }
 }
@@ -87,23 +86,26 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
   }
 
   override def updateFromProto(proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
-    if (existing.application.value.isEmpty)
-      throw new BadRequestException("No application assigned")
 
     val endpoint = existing.endpoint.value.get
 
-    val newState = proto.getState.getNumber
-    val online = proto.getState == ConnProto.State.COMMS_UP
-
-    if (newState == existing.state)
-      throw new BadRequestException("Allready has state: " + proto.getState)
-
-    val updated = if (online) {
-      existing.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
+    // changing enabled flag has precendence, then connection state changes
+    val currentlyEnabled = existing.enabled
+    if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
+      update(existing.copy(enabled = proto.getEnabled), existing)
+    } else if (proto.hasState && proto.getState.getNumber != existing.state) {
+      val newState = proto.getState.getNumber
+      val online = newState == ConnProto.State.COMMS_UP.getNumber
+      val updated = if (online) {
+        existing.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
+      } else {
+        existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
+      }
+      update(updated, existing)
     } else {
-      existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
+      // state and enabled weren't altered, return NOT_MODIFIED
+      (existing, false)
     }
-    update(updated, existing)
   }
 
   override def postUpdate(sql: FrontEndAssignment, existing: FrontEndAssignment) {
@@ -126,12 +128,15 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {
-    Nil
+    proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
+      proto.state.asParam(sql.state === _.getNumber) ::
+      proto.enabled.asParam(sql.enabled === _) ::
+      Nil
   }
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
     proto.uid.asParam(sql.id === _.toLong) ::
-      proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
+      proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })) ::
       Nil
   }
 
@@ -141,7 +146,8 @@ trait CommunicationEndpointConnectionConversion
       entry.state != existing.state ||
       entry.assignedTime != existing.assignedTime ||
       entry.offlineTime != existing.offlineTime ||
-      entry.onlineTime != existing.onlineTime
+      entry.onlineTime != existing.onlineTime ||
+      entry.enabled != existing.enabled
   }
 
   def createModelEntry(proto: ConnProto): FrontEndAssignment = {
@@ -156,6 +162,7 @@ trait CommunicationEndpointConnectionConversion
     entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommEndpointConfig.newBuilder.setUuid(makeUuid(endpoint.entity.value)).setName(endpoint.entity.value.name).setProtocol(endpoint.protocol)))
     entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
     b.setState(ConnProto.State.valueOf(entry.state))
+    b.setEnabled(entry.enabled)
 
     // get the most recent change
     val times = entry.onlineTime :: entry.offlineTime :: entry.assignedTime :: Nil

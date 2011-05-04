@@ -169,4 +169,53 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
     }
   }
 
+  test("Disable/Enable Endpoint") {
+    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+      val coord = new CoordinatorFixture(amqp)
+
+      val fep = coord.addFep("fep")
+      val meas = coord.addMeasProc("meas")
+
+      val device = coord.addDnp3Device("dev1")
+      coord.pointsInDatabase should equal(1)
+      coord.checkAssignments(1, Some(fep), Some(meas))
+
+      val connection = one(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build))
+      val ret = one(coord.frontEndConnection.put(connection.toBuilder.setEnabled(false).build))
+      ret.getEnabled should equal(false)
+
+      // check that we have unassigned the fep
+      coord.checkAssignments(1, None, Some(meas))
+
+      // we can also now search by enabled == false
+      one(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(false).build))
+      none(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build))
+
+      one(coord.frontEndConnection.put(ret.toBuilder.setEnabled(true).build))
+
+      coord.checkAssignments(1, Some(fep), Some(meas))
+    }
+  }
+
+  test("Search connections by state") {
+    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+      val coord = new CoordinatorFixture(amqp)
+
+      val fep = coord.addFep("fep")
+      val meas = coord.addMeasProc("meas")
+
+      coord.addDnp3Device("dev1")
+      coord.addDnp3Device("dev2")
+
+      coord.pointsInDatabase should equal(2)
+      coord.checkAssignments(2, Some(fep), Some(meas))
+
+      val connections = many(2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build))
+      one(coord.frontEndConnection.put(connections.head.toBuilder.setState(CommEndpointConnection.State.COMMS_UP).build))
+
+      many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build))
+      many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_UP).build))
+    }
+  }
+
 }

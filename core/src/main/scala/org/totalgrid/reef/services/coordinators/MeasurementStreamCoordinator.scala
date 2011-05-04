@@ -80,7 +80,7 @@ class MeasurementStreamCoordinator(
     markOffline(ce)
 
     measProcModel.create(new MeasProcAssignment(ce.id, serviceRoutingKey, measProcId, measProcAssignedTime, None))
-    fepConnection.create(new FrontEndAssignment(ce.id, initialConnectionState, None, None, None, offlineTime, None))
+    fepConnection.create(new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
   }
 
   /**
@@ -97,7 +97,7 @@ class MeasurementStreamCoordinator(
 
     // then either assign the endpoint to a compatible FEP or no FEP
     val assigned = determineFepAssignment(fepProcAssignment.copy(applicationId = None), ce)
-    fepConnection.create(assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, None, None, None, Some(System.currentTimeMillis), None)))
+    fepConnection.create(assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, Some(System.currentTimeMillis), None)))
   }
 
   def onEndpointDeleted(ce: CommunicationEndpoint) {
@@ -137,8 +137,8 @@ class MeasurementStreamCoordinator(
     val measAssign: MeasProcAssignment = assign.endpoint.value.get.measProcAssignment.value
     val serviceRoutingKey = measAssign.readyTime.flatMap { x => measAssign.serviceRoutingKey }
 
-    // lookup a compatible FEP
-    val applicationId = getFep(ce).map { _.id }
+    // lookup a compatible FEP only if the connection is enabled
+    val applicationId = if (assign.enabled) getFep(ce).map { _.id } else None
 
     info {
       ce.entityName + " assigned FEP: " + applicationId + " protocol: " + ce.protocol +
@@ -187,6 +187,9 @@ class MeasurementStreamCoordinator(
       if (existing.offlineTime == None && sql.offlineTime != None) {
         markOffline(endpoint)
       }
+    }
+    if (sql.enabled != existing.enabled) {
+      checkFepAssignment(sql, endpoint)
     }
   }
 
