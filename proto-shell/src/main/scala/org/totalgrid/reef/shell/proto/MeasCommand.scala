@@ -62,6 +62,21 @@ class MeasFromCommand extends ReefCommandSupport {
   }
 }
 
+@Command(scope = "meas", name = "endpoint", description = "Prints measurements under an endpoint.")
+class MeasFromEndpointCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "endpointName", description = "Endpoint name.", required = true, multiValued = false)
+  var endpointName: String = null
+
+  def doCommand(): Unit = {
+
+    val endpoint = services.getEndpointByName(endpointName)
+    val points = services.getPointsBelongingToEndpoint(endpoint.getUuid)
+
+    MeasView.printTable(services.getMeasurementsByPoints(points).toList)
+  }
+}
+
 @Command(scope = "meas", name = "hist", description = "Prints recent history for a point.")
 class MeasHistCommand extends ReefCommandSupport {
 

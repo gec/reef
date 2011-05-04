@@ -59,10 +59,18 @@ trait PointService {
   /**
    * retrieve all points that are have the relationship "owns" to the parent entity
    * @param parentEntity parent we are looking for children of
-   * @return the point object with matching name
+   * @return points owned by parentEntity
    */
   @throws(classOf[ReefServiceException])
   def getPointsOwnedByEntity(parentEntity: Entity): java.util.List[Point]
+
+  /**
+   * retrieve all points that are have the relationship "source" to the endpoint
+   * @param endpointUuid uuid of endpoint
+   * @return all points that are related to endpoint
+   */
+  @throws(classOf[ReefServiceException])
+  def getPointsBelongingToEndpoint(endpointUuid: ReefUUID): java.util.List[Point]
 
   /**
    * @return all points that are currently marked as abnormal (last measurement had abnormal

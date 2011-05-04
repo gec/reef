@@ -65,6 +65,9 @@
         <command name="meas/from">
             <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
         </command>
+        <command name="meas/endpoint">
+            <action class="org.totalgrid.reef.shell.proto.MeasFromEndpointCommand"/>
+        </command>
         <command name="meas/hist">
             <action class="org.totalgrid.reef.shell.proto.MeasHistCommand"/>
         </command>
