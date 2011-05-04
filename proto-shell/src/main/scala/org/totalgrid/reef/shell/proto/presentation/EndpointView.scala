@@ -29,13 +29,14 @@ object EndpointView {
   }
 
   def header = {
-    "Endpoint" :: "Protocol" :: "State" :: "FrontEnd" :: "LastUpdated" :: Nil
+    "Endpoint" :: "Protocol" :: "State" :: "Enabled" :: "FrontEnd" :: "LastUpdated" :: Nil
   }
 
   def row(a: CommEndpointConnection) = {
     a.endpoint.name.getOrElse("unknown") ::
       a.endpoint.protocol.getOrElse("unknown") ::
       a.getState.toString ::
+      a.getEnabled.toString ::
       a.frontEnd.appConfig.instanceName.getOrElse("Unassigned") ::
       new java.util.Date(a.getLastUpdate).toString ::
       Nil

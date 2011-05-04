@@ -33,6 +33,12 @@ import xml.Node
 import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
 import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
 
+import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.javaclient.IEventAcceptor
+class IEventAcceptorShim[T](fun: Event[T] => _) extends IEventAcceptor[T] {
+  def onEvent(event: Event[T]) = fun(event)
+}
+
 abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   def this(file: String, title: String, desc: String) = {

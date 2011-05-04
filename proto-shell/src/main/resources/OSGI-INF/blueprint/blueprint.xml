@@ -107,6 +107,12 @@
         <command name="endpoint/list">
             <action class="org.totalgrid.reef.shell.proto.EndpointListCommand"/>
         </command>
+        <command name="endpoint/enable">
+            <action class="org.totalgrid.reef.shell.proto.EndpointEnableCommand"/>
+        </command>
+        <command name="endpoint/disable">
+            <action class="org.totalgrid.reef.shell.proto.EndpointDisableCommand"/>
+        </command>
         <command name="application/list">
             <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
         </command>

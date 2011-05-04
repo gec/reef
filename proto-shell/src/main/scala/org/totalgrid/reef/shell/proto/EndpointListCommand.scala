@@ -20,18 +20,48 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.apache.felix.gogo.commands.Command
-
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import presentation.EndpointView
-import org.totalgrid.reef.proto.Model.ReefUUID
+
+import org.apache.felix.gogo.commands.{ Argument, Command }
+
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 
 @Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
 class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
+    EndpointView.printTable(services.getAllEndpointConnections.toList)
+  }
+}
 
-    val results = reefSession.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
-    EndpointView.printTable(results)
+@Command(scope = "endpoint", name = "disable", description = "Disables an endpoint")
+class EndpointDisableCommand extends ReefCommandSupport with EndpointRetrieval {
+
+  @Argument(index = 0, name = "name", description = "Endpoint name. Use \"*\" for all endpoints.", required = true, multiValued = false)
+  private var endpointName: String = null
+
+  def doCommand() = {
+    EndpointView.printTable(endpoints(endpointName).map { c => services.disableEndpointConnection(c.getUuid) })
+  }
+}
+
+@Command(scope = "endpoint", name = "enable", description = "Enables an endpoint")
+class EndpointEnableCommand extends ReefCommandSupport with EndpointRetrieval {
+
+  @Argument(index = 0, name = "name", description = "Endpoint name. Use \"*\" for all endpoints.", required = true, multiValued = false)
+  private var endpointName: String = null
+
+  def doCommand() = {
+    EndpointView.printTable(endpoints(endpointName).map { c => services.enableEndpointConnection(c.getUuid) })
+  }
+}
+
+trait EndpointRetrieval { self: ReefCommandSupport =>
+  def endpoints(endpointName: String) = {
+    endpointName match {
+      case "*" => services.getAllEndpoints().toList
+      case _ => services.getEndpointByName(endpointName) :: Nil
+    }
   }
 }
