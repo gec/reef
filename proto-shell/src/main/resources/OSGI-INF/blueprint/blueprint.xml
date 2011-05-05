@@ -131,13 +131,13 @@
         <command name="agent/list">
             <action class="org.totalgrid.reef.shell.proto.AgentListCommand"/>
         </command>
-        <command name="agent/permissions:list">
+        <command name="agent-permissions/list">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsListCommand"/>
         </command>
-        <command name="agent/permissions:create">
+        <command name="agent-permissions/create">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand"/>
         </command>
-        <command name="agent/permissions:delete">
+        <command name="agent-permissions/delete">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand"/>
         </command>
         <command name="agent/create">

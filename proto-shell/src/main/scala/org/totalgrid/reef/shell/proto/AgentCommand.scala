@@ -76,7 +76,7 @@ class AgentListCommand extends AgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "permissions:list", description = "View permission sets")
+@Command(scope = "agent-permissions", name = "list", description = "View permission sets")
 class AgentPermissionsListCommand extends AgentCommandBase {
 
   def doCommand() = {
@@ -87,7 +87,7 @@ class AgentPermissionsListCommand extends AgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "permissions:create", description = "Edit a permission set")
+@Command(scope = "agent-permissions", name = "create", description = "Edit a permission set")
 class AgentPermissionsCreateCommand extends AgentCommandBase {
 
   @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
@@ -119,7 +119,7 @@ class AgentPermissionsCreateCommand extends AgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "permissions:delete", description = "Delete a PermissionSet")
+@Command(scope = "agent-permissions", name = "delete", description = "Delete a PermissionSet")
 class AgentPermissionsDeleteCommand extends AgentCommandBase {
 
   @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
