@@ -58,15 +58,17 @@ class SyncVar[A <: Any](initialValue: Option[A] = None) {
     current
   }
 
-  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = {
-    waitFor(current => current == value, msec, throwOnFailure, customException)
+  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[(A) => Exception] = { None }): Boolean = {
+    val exception = customException.orElse(Some((a: A) => new Exception("Condition not met, final value was: " + a + " not: " + value)))
+    waitFor(current => current == value, msec, throwOnFailure, exception)
   }
 
-  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = {
-    waitFor(current => current != value, msec, throwOnFailure, customException)
+  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[(A) => Exception] = { None }): Boolean = {
+    val exception = customException.orElse(Some((a: A) => new Exception("Condition not met, final value was still: " + a)))
+    waitFor(current => current != value, msec, throwOnFailure, exception)
   }
 
-  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Exception] = { None }): Boolean = queue.synchronized {
+  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[(A) => Exception] = { None }): Boolean = queue.synchronized {
 
     @tailrec
     def waitUntilExpiration(fun: A => Boolean, expiration: Long): Boolean = {
@@ -78,7 +80,8 @@ class SyncVar[A <: Any](initialValue: Option[A] = None) {
           waitUntilExpiration(fun, expiration)
         } else {
           if (throwOnFailure) {
-            throw customException.getOrElse(new Exception("Condition not met, final value was: " + queue.last))
+            if (customException.isDefined) throw customException.get(queue.last)
+            throw new Exception("Condition not met, final value was: " + queue.last)
           } else false
         }
       }

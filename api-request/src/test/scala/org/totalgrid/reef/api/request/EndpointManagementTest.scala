@@ -66,9 +66,12 @@ class EndpointManagementTest
     val endpointUuid = endpoints.head.getUuid
 
     def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
-      syncVar.waitFor(x => x.getEnabled == false &&
-        x.getState == CommEndpointConnection.State.COMMS_UP &&
-        x.getEndpoint.getUuid == endpointUuid)
+      syncVar.waitFor(x => x.getEnabled == enabled &&
+        x.getState == state &&
+        x.getEndpoint.getUuid.getUuid == endpointUuid.getUuid,
+        customException = Some((c: CommEndpointConnection) => throw new Exception(
+          "Expected enabled: " + enabled + " state: " + state + " uuid: " + endpointUuid.getUuid + " but got: " +
+            c.getEnabled + " " + c.getState + " " + c.getEndpoint.getUuid.getUuid + "\n " + c)))
     }
 
     client.disableEndpointConnection(endpointUuid)
