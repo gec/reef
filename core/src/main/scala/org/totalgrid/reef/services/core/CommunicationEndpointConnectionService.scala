@@ -53,7 +53,7 @@ class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTr
 
   override val descriptor = Descriptors.commEndpointConnection
 
-  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+  override def merge(req: ServiceType, current: ModelType): ServiceType = {
     import org.totalgrid.reef.proto.OptionalProtos._
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder

@@ -26,10 +26,10 @@ import org.totalgrid.reef.api.Envelope
 /**
  * Component that observes model changes in order to queue service events
  */
-trait EventQueueingObserver[ProtoType <: GeneratedMessage, A]
-    extends ModelObserver[A] { self: MessageModelConversion[ProtoType, A] with QueuedEvaluation =>
+trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
+    extends ModelObserver[A] { self: MessageModelConversion[ServiceType, A] with QueuedEvaluation =>
 
-  protected def publishEvent(event: Envelope.Event, resp: ProtoType, key: String): Unit
+  protected def publishEvent(event: Envelope.Event, resp: ServiceType, key: String): Unit
 
   protected def onCreated(entry: A): Unit = {
     queueEvent(Envelope.Event.ADDED, entry, false)
@@ -66,7 +66,7 @@ trait EventQueueingObserver[ProtoType <: GeneratedMessage, A]
    * that way if the reciever of a subscription update immediatley asks for the object he should find it.
    * (It might still be missing if some other process has deleted the object but that is a seperate issue)
    */
-  private def queuePublishEvent(event: Envelope.Event, resp: ProtoType, key: String): Unit = {
+  private def queuePublishEvent(event: Envelope.Event, resp: ServiceType, key: String): Unit = {
     queuePostTransaction { publishEvent(event, resp, key) }
   }
 
@@ -75,7 +75,7 @@ trait EventQueueingObserver[ProtoType <: GeneratedMessage, A]
    * be overriden to allow having a publish routing key that uses information not contained
    * in the proto.
    */
-  def getEventProtoAndKey(entry: A): (ProtoType, List[String]) = {
+  def getEventProtoAndKey(entry: A): (ServiceType, List[String]) = {
     val proto = convertToProto(entry)
     val key = getRoutingKey(proto)
     (proto, key :: Nil)

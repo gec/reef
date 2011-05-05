@@ -107,6 +107,7 @@ public class TestCommandService extends JavaBridgeTestBase {
     public void testCommandSelectAndExecute() throws ReefServiceException {
 
         CommandService cs = new CommandServiceWrapper(client);
+        cs.clearCommandLocks();
         List<Command> commands = cs.getCommands();
 
         for(Command cmd: commands)

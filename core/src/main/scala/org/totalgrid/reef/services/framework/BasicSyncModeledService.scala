@@ -28,8 +28,8 @@ import ServiceBehaviors._
 /**
  * Common super type for fully RESTful proto services
  */
-trait BasicSyncModeledService[ProtoType <: GeneratedMessage, ModelType, ServiceModelType <: ServiceModel[ProtoType, ModelType]]
-  extends ModeledServiceBase[ProtoType, ModelType, ServiceModelType] with AsyncToSyncServiceAdapter[ProtoType]
+trait BasicSyncModeledService[ServiceType <: GeneratedMessage, ModelType, ServiceModelType <: ServiceModel[ServiceType, ModelType]]
+  extends ModeledServiceBase[ServiceType, ModelType, ServiceModelType] with AsyncToSyncServiceAdapter[ServiceType]
 
 trait DefaultSyncBehaviors extends GetEnabled
     with PutEnabled

@@ -48,7 +48,7 @@ class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEnd
     with PostPartialUpdate
     with SubscribeEnabled {
 
-  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+  override def merge(req: ServiceType, current: ModelType): ServiceType = {
 
     import org.totalgrid.reef.proto.OptionalProtos._
 

@@ -26,11 +26,16 @@ import org.totalgrid.reef.api.service.{ AsyncToSyncServiceAdapter, AsyncServiceB
 /**
  * Shared dependencies for generic service implementations
  */
-trait ModeledService extends ServiceTypes with ServiceHooks {
+trait ModeledService extends HasServiceModelType {
 
   protected val modelTrans: ServiceTransactable[ServiceModelType]
 
-  def subscribe(model: ServiceModelType, req: ProtoType, queue: String)
+}
+
+trait HasSubscribe extends HasServiceModelType {
+
+  def subscribe(model: ServiceModelType, req: ServiceType, queue: String)
+
 }
 
 /**
@@ -41,7 +46,7 @@ trait ModeledService extends ServiceTypes with ServiceHooks {
  */
 trait ModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledService {
 
-  type ProtoType = PT
+  type ServiceType = PT
   type ModelType = MT
   type ServiceModelType = SMT
 }
