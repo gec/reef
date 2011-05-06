@@ -221,8 +221,7 @@ class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenSe
     extends SyncModeledServiceBase[AuthToken, AuthTokenModel, AuthTokenServiceModel]
     with GetEnabled
     with PutOnlyCreates
-    with DeleteEnabled
-    with SubscribeDisabled {
+    with DeleteEnabled {
   override val useAuth = false
   override val descriptor = Descriptors.authToken
 }

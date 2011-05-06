@@ -40,7 +40,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
-  trait GetEnabled extends HasSubscribe with ModeledService with HasSyncRestGet {
+  trait GetEnabled extends HasSubscribe with HasServiceTransactable with HasSyncRestGet {
     override def get(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { (model: ServiceModelType) =>
         model.setEnv(env)
@@ -51,7 +51,7 @@ object ServiceBehaviors {
     }
   }
 
-  trait AsyncGetEnabled extends GetEnabled with ModeledService with HasAsyncRestGet {
+  trait AsyncGetEnabled extends GetEnabled with HasServiceTransactable with HasAsyncRestGet {
 
     override def getAsync(req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = {
       doAsyncGet(get(req, env), callback)
@@ -64,7 +64,7 @@ object ServiceBehaviors {
    * PUTs and POSTs always create a new entry, there are no updates
    */
 
-  trait PutOnlyCreates extends DefinesCreate with HasSubscribe with ModeledService with HasSyncRestPut {
+  trait PutOnlyCreates extends DefinesCreate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
 
     override def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { (model: ServiceModelType) =>
@@ -77,7 +77,7 @@ object ServiceBehaviors {
 
   }
 
-  trait PostPartialUpdate extends DefinesUpdate with HasSubscribe with ModeledService with HasSyncRestPost {
+  trait PostPartialUpdate extends DefinesUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPost {
 
     override def post(req: ServiceType, env: RequestEnv): Response[ServiceType] = modelTrans.transaction { model =>
       model.setEnv(env)
@@ -98,7 +98,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */
-  trait PutEnabled extends DefinesCreate with DefinesUpdate with HasSubscribe with ModeledService with HasSyncRestPut {
+  trait PutEnabled extends DefinesCreate with DefinesUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
 
     protected def doPut(req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
       model.setEnv(env)
@@ -122,7 +122,7 @@ object ServiceBehaviors {
 
   }
 
-  trait AsyncPutEnabled extends PutEnabled with ModeledService with HasAsyncRestPut {
+  trait AsyncPutEnabled extends PutEnabled with HasServiceTransactable with HasAsyncRestPut {
 
     override def putAsync(req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       modelTrans.transaction { model => doAsyncPutPost(doPut(req, env, model), callback) }
@@ -133,7 +133,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Delete" behavior
    */
-  trait DeleteEnabled extends DefinesDelete with HasSubscribe with ModeledService with HasSyncRestDelete {
+  trait DeleteEnabled extends DefinesDelete with HasSubscribe with HasServiceTransactable with HasSyncRestDelete {
 
     override def delete(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { model: ServiceModelType =>
@@ -147,18 +147,12 @@ object ServiceBehaviors {
   }
 
   /**
-   * Default service "Subscribe" behavior, must mix in GetEnabled
+   * Basic subscribe implementation
    */
-  trait SubscribeEnabled { self: ModeledService =>
-    def subscribe(model: ServiceModelType, req: ServiceType, queue: String) = model.subscribe(req, queue)
-  }
+  trait SubscribeEnabled extends HasAllTypes with HasSubscribe {
 
-  /**
-   * REST "Subscribe" disabled, throws an exception
-   */
-  trait SubscribeDisabled { self: ModeledService =>
-    def subscribe(model: ServiceModelType, req: ServiceType, queue: String) =
-      throw new BadRequestException("Subscribe not allowed")
+    override def subscribe(model: ServiceModelType, req: ServiceType, queue: String) = model.subscribe(req, queue)
   }
 
 }
+

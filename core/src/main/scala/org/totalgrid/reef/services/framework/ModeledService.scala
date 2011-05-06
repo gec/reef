@@ -21,11 +21,12 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.api.service.{ SyncServiceBase, AsyncServiceBase }
+import org.totalgrid.reef.api.BadRequestException
 
 /**
  * Shared dependencies for generic service implementations
  */
-trait ModeledService extends HasAllTypes {
+trait HasServiceTransactable extends HasAllTypes {
 
   protected val modelTrans: ServiceTransactable[ServiceModelType]
 
@@ -33,16 +34,11 @@ trait ModeledService extends HasAllTypes {
 
 trait HasSubscribe extends HasAllTypes {
 
-  def subscribe(model: ServiceModelType, req: ServiceType, queue: String)
+  /* default behavior is disabled */
+  def subscribe(model: ServiceModelType, req: ServiceType, queue: String): Unit =
+    throw new BadRequestException("Subscribe not allowed")
 
 }
-
-/**
- * Base class for services which handle protobuf messages and act on service models.
- *
- * Implements SyncServiceBase/ProtoSyncServiceBase interfaces to the messaging system
- * and provides shared types/resource definitions for mixed-in service behavior.
- */
 
 trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with AsyncServiceBase[ST]
 
