@@ -54,7 +54,7 @@ object ServiceBehaviors {
    * PUTs and POSTs always create a new entry, there are no updates
    */
 
-  trait PutOnlyCreates extends HasCreate with HasSubscribe with ModeledService {
+  trait PutOnlyCreates extends DefinesCreate with HasSubscribe with ModeledService {
 
     def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { (model: ServiceModelType) =>
@@ -67,7 +67,7 @@ object ServiceBehaviors {
 
   }
 
-  trait PostPartialUpdate extends HasUpdate with HasSubscribe with ModeledService {
+  trait PostPartialUpdate extends DefinesUpdate with HasSubscribe with ModeledService {
 
     def post(req: ServiceType, env: RequestEnv): Response[ServiceType] = modelTrans.transaction { model =>
       model.setEnv(env)
@@ -88,7 +88,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Put" behavior, currently accessed through both put and post verbs
    */
-  trait PutEnabled extends HasCreate with HasUpdate with HasSubscribe with ModeledService {
+  trait PutEnabled extends DefinesCreate with DefinesUpdate with HasSubscribe with ModeledService {
 
     protected def doPut(req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
       model.setEnv(env)
@@ -123,7 +123,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Delete" behavior
    */
-  trait DeleteEnabled extends HasDelete with HasSubscribe with ModeledService {
+  trait DeleteEnabled extends DefinesDelete with HasSubscribe with ModeledService {
 
     def delete(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { model: ServiceModelType =>

@@ -24,12 +24,7 @@ import org.totalgrid.reef.api.Envelope
 
 trait HasCreate extends HasServiceModelType {
 
-  protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status] = {
-    val proto = preCreate(req)
-    val sql = model.createFromProto(proto)
-    postCreate(sql, req)
-    (model.convertToProto(sql), Envelope.Status.CREATED)
-  }
+  protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status]
 
   /**
    * Called before create
@@ -44,6 +39,16 @@ trait HasCreate extends HasServiceModelType {
    */
   protected def postCreate(created: ModelType, request: ServiceType): Unit = {}
 
+}
+
+trait DefinesCreate extends HasCreate {
+
+  override protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status] = {
+    val proto = preCreate(req)
+    val sql = model.createFromProto(proto)
+    postCreate(sql, req)
+    (model.convertToProto(sql), Envelope.Status.CREATED)
+  }
 }
 
 trait HasUpdate extends HasServiceModelType {
@@ -62,8 +67,15 @@ trait HasUpdate extends HasServiceModelType {
    */
   protected def postUpdate(updated: ModelType, request: ServiceType): Unit = {}
 
-  // Found an existing record. Update it.
-  protected def update(model: ServiceModelType, req: ServiceType, existing: ModelType): Tuple2[ServiceType, Envelope.Status] = {
+  /**
+   * Performs an update operation first calling preUpdate, then updating, then calling postUpdate.
+   */
+  protected def update(model: ServiceModelType, req: ServiceType, existing: ModelType): Tuple2[ServiceType, Envelope.Status]
+}
+
+trait DefinesUpdate extends HasUpdate {
+
+  override protected def update(model: ServiceModelType, req: ServiceType, existing: ModelType): Tuple2[ServiceType, Envelope.Status] = {
     val proto = preUpdate(req, existing)
     val (sql, updated) = model.updateFromProto(proto, existing)
     postUpdate(sql, req)
@@ -74,6 +86,23 @@ trait HasUpdate extends HasServiceModelType {
 
 trait HasDelete extends HasServiceModelType {
 
+  protected def doDelete(model: ServiceModelType, req: ServiceType): List[ServiceType]
+
+  /**
+   * Called before delete
+   *  @param proto    Delete request message
+   */
+  protected def preDelete(proto: ServiceType): Unit = {}
+
+  /**
+   * Called after successful delete
+   *  @param proto    Deleted objects
+   */
+  protected def postDelete(proto: List[ServiceType]): Unit = {}
+}
+
+trait DefinesDelete extends HasDelete {
+
   protected def doDelete(model: ServiceModelType, req: ServiceType): List[ServiceType] = {
     // TODO: consider stripping off everything but UID if UID set on delete
     val existing = model.findRecords(req)
@@ -81,15 +110,4 @@ trait HasDelete extends HasServiceModelType {
     existing.map(model.convertToProto(_))
   }
 
-   /**
-     * Called before delete
-     *  @param proto    Delete request message
-     */
-   protected def preDelete(proto: ServiceType): Unit = {}
-
-   /**
-     * Called after successful delete
-     *  @param proto    Deleted objects
-     */
-   protected def postDelete(proto: List[ServiceType]): Unit = {}
 }

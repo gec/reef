@@ -18,28 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.totalgrid.reef.services.framework
 
-trait HasServiceModelType extends HasServiceType with HasModelType {
-  type ServiceModelType <: ServiceModel[ServiceType, ModelType]
-}
+import org.totalgrid.reef.api.UnauthorizedException
 
-trait HasServiceType {
-  type ServiceType <: AnyRef
-}
+trait AuthorizesCreate extends HasCreate {
 
-trait HasModelType {
-  type ModelType
-}
+  abstract override protected def preCreate(proto: ServiceType): ServiceType = {
+    throw new UnauthorizedException("Create not authorized")
+    super.preCreate(proto)
+  }
 
-trait ModelTypeIs[A] extends HasModelType {
-  final override type ModelType = A
-}
-
-trait ServiceTypeIs[A <: AnyRef] extends HasServiceType {
-  final override type ServiceType = A
-}
-
-trait ServiceModelTypeIs[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends HasServiceModelType with ServiceTypeIs[ST] with ModelTypeIs[MT] {
-  final override type ServiceModelType = SMT
 }

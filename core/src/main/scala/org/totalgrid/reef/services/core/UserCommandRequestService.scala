@@ -45,7 +45,8 @@ class UserCommandRequestService(
     with AsyncPutEnabled
     with AsyncPostDisabled
     with AsyncDeleteDisabled
-    with SubscribeEnabled {
+    with SubscribeEnabled
+    with UserCommandRequestValidation {
 
   override val descriptor = Descriptors.userCommandRequest
 
@@ -75,6 +76,12 @@ class UserCommandRequestService(
     }
   }
 
+}
+
+trait UserCommandRequestValidation extends HasCreate with HasUpdate {
+
+  self: ServiceTypeIs[UserCommandRequest] with ModelTypeIs[UserCommandModel] =>
+
   private def doCommonValidation(proto: UserCommandRequest) = {
 
     if (!proto.hasCommandRequest)
@@ -91,7 +98,7 @@ class UserCommandRequestService(
     if (proto.hasStatus)
       throw new BadRequestException("Update must not specify status", Envelope.Status.BAD_REQUEST)
 
-    this.doCommonValidation(proto)
+    super.preCreate(this.doCommonValidation(proto))
   }
 
   override protected def preUpdate(proto: UserCommandRequest, existing: UserCommandModel) = {
@@ -99,9 +106,8 @@ class UserCommandRequestService(
     if (!proto.hasStatus)
       throw new BadRequestException("Update must specify status", Envelope.Status.BAD_REQUEST)
 
-    doCommonValidation(proto)
+    super.preUpdate(doCommonValidation(proto), existing)
   }
-
 }
 
 object UserCommandRequestService {

@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.services.framework
 
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.service.{ AsyncToSyncServiceAdapter, AsyncServiceBase }
 
 /**
@@ -44,14 +43,9 @@ trait HasSubscribe extends HasServiceModelType {
  * Implements SyncServiceBase/ProtoSyncServiceBase interfaces to the messaging system
  * and provides shared types/resource definitions for mixed-in service behavior.
  */
-trait ModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledService {
+trait ModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends ServiceModelTypeIs[ST, MT, SMT] with ServiceTypeIs[ST] with ModelTypeIs[MT]
 
-  type ServiceType = PT
-  type ModelType = MT
-  type ServiceModelType = SMT
-}
+trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends ModeledServiceBase[ST, MT, SMT] with AsyncServiceBase[ST]
 
-trait AsyncModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledServiceBase[PT, MT, SMT] with AsyncServiceBase[PT]
-
-trait SyncModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledServiceBase[PT, MT, SMT] with AsyncToSyncServiceAdapter[PT]
+trait SyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends ModeledServiceBase[ST, MT, SMT] with AsyncToSyncServiceAdapter[ST]
 
