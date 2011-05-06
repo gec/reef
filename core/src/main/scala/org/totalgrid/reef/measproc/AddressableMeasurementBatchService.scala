@@ -22,17 +22,14 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
-class AddressableMeasurementBatchService(measProc: ProcessingNode) extends AsyncToSyncServiceAdapter[MeasurementBatch] {
+class AddressableMeasurementBatchService(measProc: ProcessingNode) extends SyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
-
-  override def delete(req: MeasurementBatch, env: RequestEnv) = noDelete
-  override def get(req: MeasurementBatch, env: RequestEnv) = noGet
 
   override def post(req: MeasurementBatch, env: RequestEnv) = put(req, env)
   override def put(req: MeasurementBatch, env: RequestEnv) = {

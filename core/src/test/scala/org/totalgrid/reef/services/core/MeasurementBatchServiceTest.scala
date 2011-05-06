@@ -34,7 +34,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
+  import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
   class BatchFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
     val batchService = new MeasurementBatchService(amqp)

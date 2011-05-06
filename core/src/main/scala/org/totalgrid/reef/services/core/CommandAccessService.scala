@@ -36,7 +36,6 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
     with GetEnabled
     with SubscribeEnabled
     with PutOnlyCreates
-    with PostDisabled
     with DeleteEnabled {
 
   import AccessProto._

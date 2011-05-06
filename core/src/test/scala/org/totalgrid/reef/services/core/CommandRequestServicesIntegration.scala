@@ -47,7 +47,7 @@ import org.totalgrid.reef.api.{ RequestEnv, ServiceTypes, Envelope, AddressableS
 
 import ServiceTypes.Response
 
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -166,15 +166,11 @@ class CommandRequestServicesIntegration
     val selectId = selectResult.getUid
 
     // the 'remote' service that will handle the call
-    val service = new AsyncToSyncServiceAdapter[UserCommandRequest] {
+    val service = new SyncServiceBase[UserCommandRequest] {
 
       val descriptor = Descriptors.userCommandRequest
 
-      def get(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] = noGet
-      def delete(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] = noDelete
-      def post(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] = noPost
-
-      def put(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] =
+      override def put(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] =
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 

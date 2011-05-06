@@ -29,7 +29,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.{ IServiceResponseCallback, AsyncToSyncServiceAdapter }
+import org.totalgrid.reef.api.service.{ IServiceResponseCallback, SyncServiceBase }
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
@@ -45,26 +45,22 @@ object TestDescriptors {
   }
 }
 
-class ServiceNotificationServiceX3 extends AsyncToSyncServiceAdapter[Envelope.ServiceNotification] {
+class ServiceNotificationServiceX3 extends SyncServiceBase[Envelope.ServiceNotification] {
 
   val descriptor = TestDescriptors.serviceNotification
 
-  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
-  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noPut
-  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noDelete
-  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noPost
+  override def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
+
 }
 
-class HeadersX2 extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
+class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
 
   val descriptor = TestDescriptors.requestHeader
 
   def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
 
-  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
-  def put(req: Envelope.RequestHeader, env: RequestEnv) = noPut
-  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noDelete
-  def post(req: Envelope.RequestHeader, env: RequestEnv) = noPost
+  override def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
+
 }
 
 @RunWith(classOf[JUnitRunner])

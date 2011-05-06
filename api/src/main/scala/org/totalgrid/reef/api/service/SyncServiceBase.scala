@@ -20,24 +20,30 @@
  */
 package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ReefServiceException }
+import org.totalgrid.reef.api.RequestEnv
 import org.totalgrid.reef.api.ServiceTypes.Response
 
-trait AsyncToSyncServiceAdapter[A] extends AsyncServiceBase[A] {
+trait SyncServiceBase[A <: AnyRef] extends AsyncServiceBase[A] with SyncRestService {
 
-  def get(req: A, env: RequestEnv): Response[A]
-  def put(req: A, env: RequestEnv): Response[A]
-  def delete(req: A, env: RequestEnv): Response[A]
-  def post(req: A, env: RequestEnv): Response[A]
+  /*
+  def get(req: ServiceType, env: RequestEnv) : Response[ServiceType] = RestResponses.noGet[ServiceType]
+  def put(req: ServiceType, env: RequestEnv) : Response[ServiceType] = RestResponses.noPut[ServiceType]
+  def delete(req: ServiceType, env: RequestEnv) : Response[ServiceType]= RestResponses.noDelete[ServiceType]
+  def postAsync(req: ServiceType, env: RequestEnv) : Response[ServiceType] = RestResponses.noGet[ServiceType]
+  */
+
+  /* overrides */
 
   final def get(req: A): Response[A] = get(req, new RequestEnv)
   final def put(req: A): Response[A] = put(req, new RequestEnv)
   final def delete(req: A): Response[A] = delete(req, new RequestEnv)
   final def post(req: A): Response[A] = post(req, new RequestEnv)
 
-  override def getAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(get(req, env))
-  override def putAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(put(req, env))
-  override def deleteAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(delete(req, env))
-  override def postAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(post(req, env))
+  /* redirect the async calls to the synchronous ones */
+
+  final override def getAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(get(req, env))
+  final override def putAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(put(req, env))
+  final override def deleteAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(delete(req, env))
+  final override def postAsync(req: A, env: RequestEnv)(callback: Response[A] => Unit) = callback(post(req, env))
 
 }

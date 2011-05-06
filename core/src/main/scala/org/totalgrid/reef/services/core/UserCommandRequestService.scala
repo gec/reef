@@ -31,6 +31,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
 
 import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
+import org.totalgrid.reef.api.service.ServiceTypeIs
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command }
 
@@ -43,8 +44,6 @@ class UserCommandRequestService(
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with AsyncGetEnabled
     with AsyncPutEnabled
-    with AsyncPostDisabled
-    with AsyncDeleteDisabled
     with SubscribeEnabled
     with UserCommandRequestValidation {
 

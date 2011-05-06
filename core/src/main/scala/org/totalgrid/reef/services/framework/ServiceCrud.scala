@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.api.Envelope
 
-trait HasCreate extends HasServiceModelType {
+trait HasCreate extends HasAllTypes {
 
   protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status]
 
@@ -51,7 +51,7 @@ trait DefinesCreate extends HasCreate {
   }
 }
 
-trait HasUpdate extends HasServiceModelType {
+trait HasUpdate extends HasAllTypes {
 
   /**
    * Called before update
@@ -84,7 +84,7 @@ trait DefinesUpdate extends HasUpdate {
   }
 }
 
-trait HasDelete extends HasServiceModelType {
+trait HasDelete extends HasAllTypes {
 
   protected def doDelete(model: ServiceModelType, req: ServiceType): List[ServiceType]
 

@@ -32,19 +32,13 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Poi
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure, MultiResult }
+import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure }
 import org.totalgrid.reef.api.service.AsyncServiceBase
-
-import org.totalgrid.reef.services.framework.ServiceBehaviors._
 
 class MeasurementBatchService(amqp: AMQPProtoFactory)
     extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
-
-  override def deleteAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noDelete
-  override def getAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noGet
-  override def postAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noPost
 
   override def putAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = {
 

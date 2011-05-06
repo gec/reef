@@ -24,7 +24,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.api.Envelope.Status
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
@@ -218,11 +218,9 @@ class AuthTokenServiceModelFactory(pub: ServiceEventPublishers, eventSink: Event
 import ServiceBehaviors._
 
 class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenServiceModel])
-    extends ModeledServiceBase[AuthToken, AuthTokenModel, AuthTokenServiceModel]
-    with AsyncToSyncServiceAdapter[AuthToken]
+    extends SyncModeledServiceBase[AuthToken, AuthTokenModel, AuthTokenServiceModel]
     with GetEnabled
     with PutOnlyCreates
-    with PostDisabled
     with DeleteEnabled
     with SubscribeDisabled {
   override val useAuth = false

@@ -41,7 +41,7 @@ import org.totalgrid.reef.util.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
-    extends BasicSyncModeledService[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
+    extends SyncModeledServiceBase[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
     with GetEnabled
     with PutEnabled
     with DeleteEnabled

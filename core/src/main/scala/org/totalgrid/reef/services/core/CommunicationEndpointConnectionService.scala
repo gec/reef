@@ -37,6 +37,8 @@ import org.totalgrid.reef.api.BadRequestException
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
+import org.totalgrid.reef.api.service.SyncServiceBase
+
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
@@ -44,7 +46,7 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.measurementstore.MeasurementStore
 
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
-    extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
+    extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
     with GetEnabled
     with PutEnabled
     with DeleteEnabled

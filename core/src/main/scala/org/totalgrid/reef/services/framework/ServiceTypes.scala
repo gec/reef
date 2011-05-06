@@ -20,26 +20,20 @@
  */
 package org.totalgrid.reef.services.framework
 
-trait HasServiceModelType extends HasServiceType with HasModelType {
-  type ServiceModelType <: ServiceModel[ServiceType, ModelType]
-}
-
-trait HasServiceType {
-  type ServiceType <: AnyRef
-}
+import org.totalgrid.reef.api.service.{ HasServiceType, ServiceTypeIs }
 
 trait HasModelType {
   type ModelType
 }
 
 trait ModelTypeIs[A] extends HasModelType {
-  final override type ModelType = A
+  type ModelType = A
 }
 
-trait ServiceTypeIs[A <: AnyRef] extends HasServiceType {
-  final override type ServiceType = A
+trait HasAllTypes extends HasServiceType with HasModelType {
+  type ServiceModelType <: ServiceModel[ServiceType, ModelType]
 }
 
-trait ServiceModelTypeIs[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends HasServiceModelType with ServiceTypeIs[ST] with ModelTypeIs[MT] {
+trait AllTypesAre[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends HasAllTypes with ModelTypeIs[MT] with ServiceTypeIs[ST] {
   final override type ServiceModelType = SMT
 }

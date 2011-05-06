@@ -20,18 +20,18 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.service.{ AsyncToSyncServiceAdapter, AsyncServiceBase }
+import org.totalgrid.reef.api.service.{ SyncServiceBase, AsyncServiceBase }
 
 /**
  * Shared dependencies for generic service implementations
  */
-trait ModeledService extends HasServiceModelType {
+trait ModeledService extends HasAllTypes {
 
   protected val modelTrans: ServiceTransactable[ServiceModelType]
 
 }
 
-trait HasSubscribe extends HasServiceModelType {
+trait HasSubscribe extends HasAllTypes {
 
   def subscribe(model: ServiceModelType, req: ServiceType, queue: String)
 
@@ -43,9 +43,8 @@ trait HasSubscribe extends HasServiceModelType {
  * Implements SyncServiceBase/ProtoSyncServiceBase interfaces to the messaging system
  * and provides shared types/resource definitions for mixed-in service behavior.
  */
-trait ModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends ServiceModelTypeIs[ST, MT, SMT] with ServiceTypeIs[ST] with ModelTypeIs[MT]
 
-trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends ModeledServiceBase[ST, MT, SMT] with AsyncServiceBase[ST]
+trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with AsyncServiceBase[ST]
 
-trait SyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends ModeledServiceBase[ST, MT, SMT] with AsyncToSyncServiceAdapter[ST]
+trait SyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with SyncServiceBase[ST]
 

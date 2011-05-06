@@ -40,7 +40,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, BadRequestException }
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -48,11 +48,10 @@ import org.totalgrid.reef.util.Optional._
 import ServiceBehaviors._
 
 class EventService(protected val modelTrans: ServiceTransactable[EventServiceModel])
-    extends ModeledServiceBase[Event, EventStore, EventServiceModel] with AsyncToSyncServiceAdapter[Event]
+    extends SyncModeledServiceBase[Event, EventStore, EventServiceModel]
     with GetEnabled
     with SubscribeEnabled
     with PutOnlyCreates
-    with PostDisabled
     with DeleteEnabled {
 
   override val descriptor = Descriptors.event

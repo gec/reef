@@ -35,7 +35,7 @@ import org.totalgrid.reef.api.{ BadRequestException }
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
 class AgentService(protected val modelTrans: ServiceTransactable[AgentServiceModel])
-    extends BasicSyncModeledService[Agent, AgentModel, AgentServiceModel]
+    extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.agent
