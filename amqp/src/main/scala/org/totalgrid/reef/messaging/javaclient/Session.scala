@@ -31,11 +31,12 @@ import org.totalgrid.reef.messaging.ProtoClient
 
 import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api._
+import scalaclient.ClientSession
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists
  */
-class Session(client: ProtoClient) extends ISession {
+class Session(client: ClientSession) extends ISession {
 
   def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.requestThrow(verb, payload, env.env)
 

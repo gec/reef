@@ -22,9 +22,9 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.api.request.impl.AllScadaServiceImpl
 import org.totalgrid.reef.api.ServiceHandlerHeaders
 import org.totalgrid.reef.api.scalaclient.SyncClientSession
+import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -54,7 +54,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
   /**
    * "all services" wrapper around the reefSession
    */
-  protected lazy val services = new AllScadaServiceImpl {
+  protected lazy val services = new AllScadaServiceImpl with SingleSessionClientSource {
     def session = reefSession
   }
 

@@ -20,28 +20,29 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.javaclient.ISession
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.scalaclient.{ ClientSession }
+import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
 
-abstract class SessionWrapper(_session: ISession) {
-  def session: ClientSession = _session.getUnderlyingClient
+abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
+  def authToken = _authToken
+  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+}
+
+abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
+  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+}
+
+abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {
+  def session = _session.getUnderlyingClient
 }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class ReefScadaServiceImpl(session: ISession) extends SessionWrapper(session) with AllScadaService with AllScadaServiceImpl
+class AllScadaServicePooledWrapper(sessionPool: ISessionPool, authToken: String) extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
+class AllScadaServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AllScadaService with AllScadaServiceImpl
 
-class AuthTokenServiceWrapper(session: ISession) extends SessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl
-class EntityServiceWrapper(session: ISession) extends SessionWrapper(session) with EntityService with EntityServiceImpl
-class ConfigFileServiceWrapper(session: ISession) extends SessionWrapper(session) with ConfigFileService with ConfigFileServiceImpl
-class MeasurementServiceWrapper(session: ISession) extends SessionWrapper(session) with MeasurementService with MeasurementServiceImpl
-class MeasurementOverrideServiceWrapper(session: ISession) extends SessionWrapper(session) with MeasurementOverrideService with MeasurementOverrideServiceImpl
-class EventServiceWrapper(session: ISession) extends SessionWrapper(session) with EventService with EventServiceImpl
-class CommandServiceWrapper(session: ISession) extends SessionWrapper(session) with CommandService with CommandServiceImpl
-class PointServiceWrapper(session: ISession) extends SessionWrapper(session) with PointService with PointServiceImpl
-class AlarmServiceWrapper(session: ISession) extends SessionWrapper(session) with AlarmService with AlarmServiceImpl
-class AgentServiceWrapper(session: ISession) extends SessionWrapper(session) with AgentService with AgentServiceImpl
-class EndpointManagementServiceWrapper(session: ISession) extends SessionWrapper(session) with EndpointManagementService with EndpointManagementServiceImpl
+class AuthTokenServicePooledWrapper(sessionPool: ISessionPool) extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
+class AuthTokenServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl
+

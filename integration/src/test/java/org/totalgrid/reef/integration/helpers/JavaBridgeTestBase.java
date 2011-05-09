@@ -22,8 +22,9 @@ package org.totalgrid.reef.integration.helpers;
 
 import org.junit.*;
 
-import org.totalgrid.reef.api.IConnectionListener;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.javaclient.ISessionPool;
+import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.messaging.javaclient.Connection;
 import org.totalgrid.reef.messaging.BrokerConnectionInfo;
@@ -90,11 +91,10 @@ public class JavaBridgeTestBase {
 	public void startBridge() throws InterruptedException, ReefServiceException {
 		connection.connect(5000);
 		client = connection.newSession();
-        helpers = new AtollService(client);
-		if (autoLogon) {
-            // core user has full read/write permissions
-            client.getDefaultEnv().setAuthToken(helpers.createNewAuthorizationToken("core", "core"));
-		}
+        ISessionPool pool = connection.newSessionPool();
+        String authToken = new AuthTokenServicePooledWrapper(pool).createNewAuthorizationToken("core","core");
+        if (autoLogon) client.getDefaultEnv().setAuthToken(authToken);
+        helpers = new AtollService(pool, authToken);
 	}
 
 	@After

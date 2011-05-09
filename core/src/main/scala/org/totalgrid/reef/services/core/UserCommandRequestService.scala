@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.scalaclient.ISessionPool
+import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 
 import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
@@ -39,7 +39,7 @@ import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with AsyncGetEnabled
     with AsyncPutEnabled
