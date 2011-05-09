@@ -43,7 +43,7 @@ class UserCommandRequestService(
   protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with AsyncGetEnabled
-    with AsyncPutEnabled
+    with AsyncPutCreatesOrUpdates
     with SubscribeEnabled
     with UserCommandRequestValidation {
 

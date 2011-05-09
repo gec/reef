@@ -28,13 +28,6 @@ import org.totalgrid.reef.api.{ RequestEnv, BadRequestException, Envelope }
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.totalgrid.reef.api.service._
-import org.totalgrid.reef.services.framework.ServiceBehaviors.{ SubscribeEnabled, DeleteEnabled, PutEnabled, GetEnabled }
-
-trait DefaultSyncBehaviors
-  extends GetEnabled
-  with PutEnabled
-  with DeleteEnabled
-  with SubscribeEnabled
 
 object ServiceBehaviors {
   /**
@@ -96,9 +89,9 @@ object ServiceBehaviors {
   }
 
   /**
-   * Default REST "Put" behavior, currently accessed through both put and post verbs
+   * Default REST "Put" behavior updates or creates
    */
-  trait PutEnabled extends DefinesCreate with DefinesUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
+  trait PutCreatesOrUpdates extends DefinesCreate with DefinesUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
 
     protected def doPut(req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
       model.setEnv(env)
@@ -122,7 +115,7 @@ object ServiceBehaviors {
 
   }
 
-  trait AsyncPutEnabled extends PutEnabled with HasServiceTransactable with HasAsyncRestPut {
+  trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasServiceTransactable with HasAsyncRestPut {
 
     override def putAsync(req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       modelTrans.transaction { model => doAsyncPutPost(doPut(req, env, model), callback) }

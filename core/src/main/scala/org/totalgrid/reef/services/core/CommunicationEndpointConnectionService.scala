@@ -48,7 +48,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
     with GetEnabled
-    with PutEnabled
+    with PutCreatesOrUpdates
     with DeleteEnabled
     with PostPartialUpdate
     with SubscribeEnabled {

@@ -25,13 +25,6 @@ import org.totalgrid.reef.api.ServiceTypes.Response
 
 trait SyncServiceBase[A <: AnyRef] extends AsyncServiceBase[A] with SyncRestService {
 
-  /*
-  def get(req: ServiceType, env: RequestEnv) : Response[ServiceType] = RestResponses.noGet[ServiceType]
-  def put(req: ServiceType, env: RequestEnv) : Response[ServiceType] = RestResponses.noPut[ServiceType]
-  def delete(req: ServiceType, env: RequestEnv) : Response[ServiceType]= RestResponses.noDelete[ServiceType]
-  def postAsync(req: ServiceType, env: RequestEnv) : Response[ServiceType] = RestResponses.noGet[ServiceType]
-  */
-
   /* overrides */
 
   final def get(req: A): Response[A] = get(req, new RequestEnv)

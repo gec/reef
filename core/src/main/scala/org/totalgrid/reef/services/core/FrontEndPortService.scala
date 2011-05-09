@@ -43,7 +43,7 @@ import org.squeryl.PrimitiveTypeMode._
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
     extends SyncModeledServiceBase[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
     with GetEnabled
-    with PutEnabled
+    with PutCreatesOrUpdates
     with DeleteEnabled
     with PostPartialUpdate
     with SubscribeEnabled {

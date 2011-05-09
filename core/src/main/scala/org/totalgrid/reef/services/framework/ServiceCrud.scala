@@ -27,14 +27,14 @@ trait HasCreate extends HasAllTypes {
   protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status]
 
   /**
-   * Called before create
+   * Called before create. Default implementation does nothing.
    * @param proto  Create request message
    * @return Verified/modified create request message
    */
   protected def preCreate(proto: ServiceType): ServiceType = proto
 
   /**
-   * Called after successful create
+   * Called after successful create. Default implementation does nothing.
    * @param proto  Created response message
    */
   protected def postCreate(created: ModelType, request: ServiceType): Unit = {}
@@ -54,7 +54,7 @@ trait DefinesCreate extends HasCreate {
 trait HasUpdate extends HasAllTypes {
 
   /**
-   * Called before update
+   * Called before update. Default implementation does nothing.
    * @param proto      Update request message
    * @param existing   Existing model entry
    * @return Verified/modified update request message
@@ -62,7 +62,7 @@ trait HasUpdate extends HasAllTypes {
   protected def preUpdate(proto: ServiceType, existing: ModelType): ServiceType = proto
 
   /**
-   * Called after successful update
+   * Called after successful update. Default implementation does nothing.
    * @param proto Updated response message
    */
   protected def postUpdate(updated: ModelType, request: ServiceType): Unit = {}
@@ -89,13 +89,13 @@ trait HasDelete extends HasAllTypes {
   protected def doDelete(model: ServiceModelType, req: ServiceType): List[ServiceType]
 
   /**
-   * Called before delete
+   * Called before delete. Default implementation does nothing.
    *  @param proto    Delete request message
    */
   protected def preDelete(proto: ServiceType): Unit = {}
 
   /**
-   * Called after successful delete
+   * Called after successful delete. Default implementation does nothing.
    *  @param proto    Deleted objects
    */
   protected def postDelete(proto: List[ServiceType]): Unit = {}
