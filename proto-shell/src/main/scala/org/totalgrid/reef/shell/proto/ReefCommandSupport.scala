@@ -55,7 +55,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
    * "all services" wrapper around the reefSession
    */
   protected lazy val services = new AllScadaServiceImpl {
-    override val ops = reefSession
+    def session = reefSession
   }
 
   protected def getLoginString = isLoggedIn match {

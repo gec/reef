@@ -29,41 +29,41 @@ import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, Entit
 trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
   def getAllEntities(): java.util.List[Entity] = {
-    ops.getOrThrow(EntityRequestBuilders.getAll)
+    ops { _.getOrThrow(EntityRequestBuilders.getAll) }
   }
 
   def getEntityByUid(uid: ReefUUID): Entity = {
-    ops.getOneOrThrow(EntityRequestBuilders.getByUid(uid))
+    ops { _.getOneOrThrow(EntityRequestBuilders.getByUid(uid)) }
   }
 
   def getEntityByName(name: String): Entity = {
-    ops.getOneOrThrow(EntityRequestBuilders.getByName(name))
+    ops { _.getOneOrThrow(EntityRequestBuilders.getByName(name)) }
   }
   def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
-    if (typ == "*") ops.getOrThrow(EntityRequestBuilders.getAll)
-    else ops.getOrThrow(EntityRequestBuilders.getByType(typ))
+    if (typ == "*") ops { _.getOrThrow(EntityRequestBuilders.getAll) }
+    else ops { _.getOrThrow(EntityRequestBuilders.getByType(typ)) }
   }
 
   def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity] = {
-    ops.getOrThrow(EntityRequestBuilders.getByTypes(typ.toList))
+    ops { _.getOrThrow(EntityRequestBuilders.getByTypes(typ.toList)) }
   }
 
   def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = {
-    val result = ops.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ))
+    val result = ops { _.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ)) }
 
     val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
     allEntitiesList
   }
   def getEntityTree(entityTree: Entity): Entity = {
-    ops.getOneOrThrow(entityTree)
+    ops { _.getOneOrThrow(entityTree) }
   }
 
   def getEntities(entityTree: Entity): java.util.List[Entity] = {
-    ops.getOrThrow(entityTree)
+    ops { _.getOrThrow(entityTree) }
   }
 
   def getEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid))
+    ops { _.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid)) }
   }
 
   def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
@@ -90,11 +90,11 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     val prev = getEntityAttributes(uid)
     val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
 
-    ops.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set))
+    ops { _.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set)) }
   }
 
   def clearEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid))
+    ops { _.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid)) }
   }
 
   protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = {
@@ -105,7 +105,7 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     prevSet.foreach(req.addAttributes(_))
     req.addAttributes(attr)
 
-    ops.putOneOrThrow(req.build)
+    ops { _.putOneOrThrow(req.build) }
   }
 }
 

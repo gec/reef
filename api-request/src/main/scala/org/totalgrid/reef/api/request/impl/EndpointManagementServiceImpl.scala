@@ -32,15 +32,15 @@ import org.totalgrid.reef.proto.Descriptors
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
   def getAllEndpoints() = {
-    ops.getOrThrow(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build)
+    ops { _.getOrThrow(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build) }
   }
 
   def getEndpointByName(name: String) = {
-    ops.getOneOrThrow(CommEndpointConfig.newBuilder.setName(name).build)
+    ops { _.getOneOrThrow(CommEndpointConfig.newBuilder.setName(name).build) }
   }
 
   def getEndpoint(endpointUuid: ReefUUID) = {
-    ops.getOneOrThrow(CommEndpointConfig.newBuilder.setUuid(endpointUuid).build)
+    ops { _.getOneOrThrow(CommEndpointConfig.newBuilder.setUuid(endpointUuid).build) }
   }
 
   def disableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, false)
@@ -49,22 +49,22 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean) = {
     val connection = getEndpointConnection(endpointUuid)
-    ops.putOneOrThrow(connection.toBuilder.setEnabled(enabled).build)
+    ops { _.putOneOrThrow(connection.toBuilder.setEnabled(enabled).build) }
   }
 
   def getAllEndpointConnections() = {
-    ops.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build)
+    ops { _.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build) }
   }
 
   def getAllEndpointConnections(sub: ISubscription[CommEndpointConnection]) = {
-    ops.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build, sub)
+    ops { _.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build, sub) }
   }
 
   def getEndpointConnection(endpointUuid: ReefUUID) = {
-    ops.getOneOrThrow(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build)
+    ops { _.getOneOrThrow(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build) }
   }
 
   def creatEndpointConnectionSubscription(callback: IEventAcceptor[CommEndpointConnection]): ISubscription[CommEndpointConnection] = {
-    ops.addSubscription(Descriptors.commEndpointConnection.getKlass, callback.onEvent)
+    ops { _.addSubscription(Descriptors.commEndpointConnection.getKlass, callback.onEvent) }
   }
 }

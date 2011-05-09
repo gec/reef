@@ -30,26 +30,26 @@ import org.totalgrid.reef.api.request.builders.PointRequestBuilders
 trait PointServiceImpl extends ReefServiceBaseClass with PointService {
 
   def getAllPoints() = {
-    ops.getOrThrow(PointRequestBuilders.getAll)
+    ops { _.getOrThrow(PointRequestBuilders.getAll) }
   }
 
   def getPointByName(name: String) = {
     reThrowExpectationException("Point not found.") {
-      ops.getOneOrThrow(PointRequestBuilders.getByName(name))
+      ops { _.getOneOrThrow(PointRequestBuilders.getByName(name)) }
     }
   }
 
   def getPointByUid(uuid: ReefUUID) = {
     reThrowExpectationException("Point not found.") {
-      ops.getOneOrThrow(PointRequestBuilders.getByUid(uuid))
+      ops { _.getOneOrThrow(PointRequestBuilders.getByUid(uuid)) }
     }
   }
 
   def getPointsOwnedByEntity(parentEntity: Entity) = {
-    ops.getOrThrow(PointRequestBuilders.getOwnedByEntity(parentEntity))
+    ops { _.getOrThrow(PointRequestBuilders.getOwnedByEntity(parentEntity)) }
   }
 
   def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = {
-    ops.getOrThrow(PointRequestBuilders.getSourcedByEndpoint(endpointUuid))
+    ops { _.getOrThrow(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)) }
   }
 }

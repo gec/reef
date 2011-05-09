@@ -38,45 +38,45 @@ import org.totalgrid.reef.api.request.builders.{ EntityRequestBuilders, ConfigFi
 trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService {
 
   def getAllConfigFiles(): java.util.List[ConfigFile] = {
-    ops.getOrThrow(ConfigFileRequestBuilders.getAll)
+    ops { _.getOrThrow(ConfigFileRequestBuilders.getAll) }
   }
 
   def getConfigFileByUid(uid: ReefUUID): ConfigFile = {
-    ops.getOneOrThrow(ConfigFileRequestBuilders.getByUid(uid))
+    ops { _.getOneOrThrow(ConfigFileRequestBuilders.getByUid(uid)) }
   }
   def getConfigFileByName(name: String): ConfigFile = {
-    ops.getOneOrThrow(ConfigFileRequestBuilders.getByName(name))
+    ops { _.getOneOrThrow(ConfigFileRequestBuilders.getByName(name)) }
   }
 
   def getConfigFilesUsedByEntity(entityUid: ReefUUID): java.util.List[ConfigFile] = {
-    ops.getOrThrow(ConfigFileRequestBuilders.getByEntity(entityUid))
+    ops { _.getOrThrow(ConfigFileRequestBuilders.getByEntity(entityUid)) }
   }
 
   def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = {
-    ops.getOrThrow(ConfigFileRequestBuilders.getByEntity(entityUid, mimeType))
+    ops { _.getOrThrow(ConfigFileRequestBuilders.getByEntity(entityUid, mimeType)) }
   }
 
   def createConfigFile(name: String, mimeType: String, data: Array[Byte]): ConfigFile = {
-    ops.putOneOrThrow(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data))
+    ops { _.putOneOrThrow(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data)) }
   }
 
   def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile = {
-    ops.putOneOrThrow(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityUid))
+    ops { _.putOneOrThrow(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityUid)) }
   }
 
   def updateConfigFile(configFile: ConfigFile, data: Array[Byte]): ConfigFile = {
     if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set. Cannot update a config file with only a name, need to know uid.")
-    ops.putOneOrThrow(configFile.toBuilder.setFile(ByteString.copyFrom(data)).build)
+    ops { _.putOneOrThrow(configFile.toBuilder.setFile(ByteString.copyFrom(data)).build) }
   }
 
   def addConfigFileUserByEntity(configFile: ConfigFile, entityUid: ReefUUID): ConfigFile = {
     if (!configFile.hasUuid) throw new ExpectationException("uid field is expected to be set. Cannot add a config file user with only a name, need to know uid.")
-    ops.putOneOrThrow(configFile.toBuilder.addEntities(EntityRequestBuilders.getByUid(entityUid)).build)
+    ops { _.putOneOrThrow(configFile.toBuilder.addEntities(EntityRequestBuilders.getByUid(entityUid)).build) }
   }
 
   def deleteConfigFile(configFile: ConfigFile): ConfigFile = {
     if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set. Cannot delete a config file with only a name, need to know uid.")
-    ops.deleteOneOrThrow(ConfigFile.newBuilder.setUuid(configFile.getUuid).build)
+    ops { _.deleteOneOrThrow(ConfigFile.newBuilder.setUuid(configFile.getUuid).build) }
   }
 }
 

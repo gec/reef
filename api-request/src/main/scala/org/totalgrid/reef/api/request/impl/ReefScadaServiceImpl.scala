@@ -24,8 +24,8 @@ import org.totalgrid.reef.api.javaclient.ISession
 import org.totalgrid.reef.api.request._
 import org.totalgrid.reef.api.scalaclient.{ ClientSession }
 
-abstract class SessionWrapper(session: ISession) {
-  protected val ops: ClientSession = session.getUnderlyingClient
+abstract class SessionWrapper(_session: ISession) {
+  def session: ClientSession = _session.getUnderlyingClient
 }
 
 /**

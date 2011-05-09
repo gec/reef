@@ -24,7 +24,10 @@ import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, SyncOperatio
 import org.totalgrid.reef.api.ExpectationException
 
 trait ReefServiceBaseClass {
-  protected val ops: SyncOperations with SubscriptionManagement
+
+  def session: SyncOperations with SubscriptionManagement
+
+  protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = { block(session) }
 
   def reThrowExpectationException[R](why: => String)(f: => R): R = {
     try {

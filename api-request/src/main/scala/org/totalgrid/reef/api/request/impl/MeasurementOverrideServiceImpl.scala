@@ -30,21 +30,23 @@ import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilder
 trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with MeasurementOverrideService {
 
   def setPointOutOfService(point: Point): MeasOverride = {
-    ops.putOneOrThrow(MeasurementOverrideRequestBuilders.makeNotInService(point))
+    ops { _.putOneOrThrow(MeasurementOverrideRequestBuilders.makeNotInService(point)) }
   }
 
   def setPointOverriden(point: Point, measurement: Measurement) = {
-    ops.putOneOrThrow(MeasurementOverrideRequestBuilders.makeOverride(point, measurement))
+    ops { _.putOneOrThrow(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)) }
   }
 
   def deleteMeasurementOverride(measOverride: MeasOverride) = {
-    ops.deleteOneOrThrow(measOverride)
+    ops { _.deleteOneOrThrow(measOverride) }
   }
 
   def clearMeasurementOverridesOnPoint(point: Point) = {
-    ops.deleteOrThrow(MeasurementOverrideRequestBuilders.getByPoint(point)) match {
-      case list: List[_] => true
-      case _ => false
+    ops {
+      _.deleteOrThrow(MeasurementOverrideRequestBuilders.getByPoint(point)) match {
+        case list: List[_] => true
+        case _ => false
+      }
     }
   }
 }

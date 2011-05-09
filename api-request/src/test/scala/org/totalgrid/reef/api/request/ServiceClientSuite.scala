@@ -66,7 +66,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   def connect = {
     val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder {
-      val ops = this
+      def session = this
     }
 
     val agent = Agent.newBuilder.setName("core").setPassword("core").build

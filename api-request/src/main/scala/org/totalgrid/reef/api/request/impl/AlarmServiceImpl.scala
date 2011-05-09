@@ -33,37 +33,37 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   def getAlarm(uid: String) = {
     reThrowExpectationException("Alarm with UID: " + uid + " not found") {
-      ops.getOneOrThrow(AlarmRequestBuilders.getByUID(uid))
+      ops { _.getOneOrThrow(AlarmRequestBuilders.getByUID(uid)) }
     }
   }
 
   def getActiveAlarms(limit: Int) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit))
+    val ret = ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)) }
     ret.getAlarmsList
   }
   def getActiveAlarms(limit: Int, sub: ISubscription[Alarm]) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub)
+    val ret = ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub) }
     ret.getAlarmsList
   }
 
   def getActiveAlarms(types: java.util.List[String], limit: Int) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit))
+    val ret = ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)) }
     ret.getAlarmsList
   }
 
   def removeAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build)
+    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build) }
   }
 
   def acknowledgeAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build)
+    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build) }
   }
 
   def silenceAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build)
+    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build) }
   }
 
   def createAlarmSubscription(callback: IEventAcceptor[Alarm]) = {
-    ops.addSubscription(Descriptors.alarm.getKlass, callback.onEvent)
+    ops { _.addSubscription(Descriptors.alarm.getKlass, callback.onEvent) }
   }
 }

@@ -33,36 +33,36 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
   def getEvent(uid: String) = {
     reThrowExpectationException("Event with UID: " + uid + " not found") {
-      ops.getOneOrThrow(EventRequestBuilders.getByUID(uid))
+      ops { _.getOneOrThrow(EventRequestBuilders.getByUID(uid)) }
     }
   }
 
   def getRecentEvents(limit: Int) = {
-    val ret = ops.getOneOrThrow(EventListRequestBuilders.getAll(limit))
+    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit)) }
     ret.getEventsList
   }
   def getRecentEvents(limit: Int, sub: ISubscription[Event]) = {
-    val ret = ops.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub)
+    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub) }
     ret.getEventsList
   }
   def getRecentEvents(types: java.util.List[String], limit: Int) = {
-    val ret = ops.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit))
+    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit)) }
     ret.getEventsList
   }
   def getEvents(selector: EventSelect) = {
-    val ret = ops.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector))
+    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector)) }
     ret.getEventsList
   }
   def getEvents(selector: EventSelect, sub: ISubscription[Event]) = {
-    val ret = ops.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub)
+    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub) }
     ret.getEventsList
   }
   def publishEvent(event: Event) = {
-    ops.putOneOrThrow(event)
+    ops { _.putOneOrThrow(event) }
   }
 
   def createEventSubscription(callback: IEventAcceptor[Event]) = {
-    ops.addSubscription(Descriptors.event.getKlass, callback.onEvent)
+    ops { _.addSubscription(Descriptors.event.getKlass, callback.onEvent) }
   }
 
 }
