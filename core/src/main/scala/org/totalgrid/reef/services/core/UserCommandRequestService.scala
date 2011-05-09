@@ -77,7 +77,7 @@ class UserCommandRequestService(
 
 }
 
-trait UserCommandRequestValidation extends HasCreate with HasUpdate {
+trait UserCommandRequestValidation extends HasCreate with HasUpdate with AuthorizesCreate {
 
   self: ServiceTypeIs[UserCommandRequest] with ModelTypeIs[UserCommandModel] =>
 

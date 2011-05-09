@@ -33,13 +33,13 @@ object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
-  trait GetEnabled extends HasSubscribe with HasServiceTransactable with HasSyncRestGet {
+  trait GetEnabled extends DefinesRead with HasSubscribe with HasServiceTransactable with HasSyncRestGet {
     override def get(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
-      modelTrans.transaction { (model: ServiceModelType) =>
+      modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
+        val results = read(model, req)
         env.subQueue.foreach(subscribe(model, req, _))
-        val proto = model.findRecords(req).map(model.convertToProto(_))
-        Response(Envelope.Status.OK, proto)
+        Response(Envelope.Status.OK, results)
       }
     }
   }
@@ -54,13 +54,13 @@ object ServiceBehaviors {
   }
 
   /**
-   * PUTs and POSTs always create a new entry, there are no updates
+   * POSTs create a new entry, there are no updates
    */
 
   trait PutOnlyCreates extends DefinesCreate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
 
     override def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
-      modelTrans.transaction { (model: ServiceModelType) =>
+      modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
         val (value, status) = create(model, req)
         env.subQueue.foreach(subscribe(model, value, _))

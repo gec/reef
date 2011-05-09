@@ -51,6 +51,30 @@ trait DefinesCreate extends HasCreate {
   }
 }
 
+trait HasRead extends HasAllTypes {
+
+  protected def read(model: ServiceModelType, req: ServiceType): List[ServiceType]
+
+  /**
+   * Called before read. Default implementation does nothing.
+   */
+  protected def preRead(proto: ServiceType): ServiceType = proto
+
+  /**
+   * Called after read with results. Default implementation does nothing.
+   */
+  protected def postRead(results: List[ServiceType]): List[ServiceType] = results
+}
+
+trait DefinesRead extends HasRead {
+
+  override protected def read(model: ServiceModelType, request: ServiceType): List[ServiceType] = {
+    val validated = preRead(request)
+    val results = model.findRecords(validated).map(model.convertToProto(_))
+    postRead(results)
+  }
+}
+
 trait HasUpdate extends HasAllTypes {
 
   /**

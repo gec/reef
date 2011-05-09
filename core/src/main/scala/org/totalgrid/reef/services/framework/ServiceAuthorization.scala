@@ -26,7 +26,6 @@ import org.totalgrid.reef.api.UnauthorizedException
 trait AuthorizesCreate extends HasCreate {
 
   abstract override protected def preCreate(proto: ServiceType): ServiceType = {
-    throw new UnauthorizedException("Create not authorized")
     super.preCreate(proto)
   }
 
