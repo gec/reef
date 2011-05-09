@@ -27,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.api.request.EntityService;
-import org.totalgrid.reef.api.request.impl.EntityServiceWrapper;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -77,7 +76,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * */
 	@Test
 	public void getAllEntities() throws ReefServiceException {
-        EntityService es = new EntityServiceWrapper(client);
+        EntityService es = helpers;
 		List<Entity> list = es.getAllEntitiesWithType("*");
 		assertTrue(list.size() > 0); // the number here is arbitrary
 
@@ -89,7 +88,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * */
 	@Test
 	public void getSubstationEntities() throws ReefServiceException {
-        EntityService es = new EntityServiceWrapper(client);
+        EntityService es = helpers;
         List<Entity> list = es.getAllEntitiesWithType("Substation");
         assertEquals(2, list.size());
         for(Entity e : list){
@@ -103,7 +102,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * */
 	@Test
 	public void getStatusOfTypeBreaker() throws ReefServiceException {
-        EntityService es = new EntityServiceWrapper(client);
+        EntityService es = helpers;
 
         List<Entity> list = es.getAllEntitiesWithTypes(Arrays.asList("bkrStatus"));
         assertEquals(2, list.size());
@@ -119,7 +118,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 * */
 	@Test
 	public void getCommandOfTypeSetpoint() throws ReefServiceException {
-        EntityService es = new EntityServiceWrapper(client);
+        EntityService es = helpers;
 
         List<Entity> list = es.getAllEntitiesWithTypes(Arrays.asList("Setpoint"));
         assertEquals(2, list.size());
@@ -135,8 +134,9 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 */
 	@Test
 	public void pointToPointEntityConsistency() throws ReefServiceException {
-		List<Point> points = SampleRequests.getAllPoints(client);
-        EntityService es = new EntityServiceWrapper(client);
+		List<Point> points = helpers.getAllPoints();
+
+        EntityService es = helpers;
 
 		List<Entity> point_entities = es.getAllEntitiesWithType("Point");
 
@@ -157,9 +157,9 @@ public class TestEntityService extends JavaBridgeTestBase {
 	 */
 	@Test
 	public void equipmentToPointConsistency() throws ReefServiceException {
-        EntityService es = new EntityServiceWrapper(client);
+        EntityService es = helpers;
 
-        List<Point> points = SampleRequests.getAllPoints(client);
+        List<Point> points = helpers.getAllPoints();
 
 		List<Entity> point_entities = es.getAllEntitiesWithType("Point");
 
@@ -187,7 +187,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 				Relationship.newBuilder().setRelationship("feedback").setDescendantOf(false).addEntities(Entity.newBuilder().addTypes("Point")))
 				.build();
 
-        EntityService es = new EntityServiceWrapper(client);
+        EntityService es = helpers;
 
 		List<Entity> result = es.getEntities(request);
 
