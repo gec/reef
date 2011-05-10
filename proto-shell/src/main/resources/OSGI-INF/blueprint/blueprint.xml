@@ -26,6 +26,9 @@
         <command name="point/list">
             <action class="org.totalgrid.reef.shell.proto.PointListCommand"/>
         </command>
+        <command name="point/commands">
+            <action class="org.totalgrid.reef.shell.proto.PointCommandsCommand"/>
+        </command>
         <command name="command/list">
             <action class="org.totalgrid.reef.shell.proto.CommandListCommand"/>
         </command>

@@ -79,9 +79,11 @@ object EntityRequestBuilders {
   }
 
   def getAllPointsAndRelatedFeedbackCommands() = {
-    Entity.newBuilder.addTypes("Point").addRelations(
-      Relationship.newBuilder.setDescendantOf(true).setRelationship("feedback").addEntities(
-        Entity.newBuilder.addTypes("Command"))).build
+    Entity.newBuilder.addTypes("Point").addRelations(getAllFeedBackCommands()).build
+  }
+
+  def getAllFeedBackCommands() = {
+    Relationship.newBuilder.setDescendantOf(true).setRelationship("feedback").addEntities(Entity.newBuilder.addTypes("Command"))
   }
 
   def optionalChildrenSelector(parentName: String, relType: Option[String], subTypes: List[String], anyDepth: Boolean) = {
