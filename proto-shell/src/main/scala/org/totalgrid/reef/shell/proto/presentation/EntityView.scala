@@ -79,4 +79,27 @@ object EntityView {
     val rootLine = "+" :: toLine(root)
     (rootLine :: justChildren).foreach(line => println(margin + line.mkString(" ")))
   }
+
+  def printTreeRecursively(root: Entity) {
+
+    def getSubTree(root: Entity, depth: Int): List[List[String]] = {
+
+      val tag = if (root.getRelationsCount > 0 || depth == 0) "+" else "|"
+      val rootLine: List[String] = "  " * depth :: (tag + "-") :: toLine(root)
+
+      val childLines: List[List[String]] = root.getRelationsList.toList.flatMap { rel =>
+        rel.getEntitiesList.toList.map { ent =>
+          getSubTree(ent, depth + 1)
+        }
+      }.flatten
+      (rootLine :: childLines)
+
+    }
+
+    val margin = " "
+
+    val treeLines = getSubTree(root, 0)
+
+    treeLines.foreach(line => println(margin + line.mkString(" ")))
+  }
 }

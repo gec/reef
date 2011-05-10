@@ -9,7 +9,7 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.2.3-RC3
+Version 0.2.3-RC4
 ==============
 
 Primarily a stability and usability release, very limited new functionality.
@@ -30,7 +30,7 @@ Primarily a stability and usability release, very limited new functionality.
 * Configuration files can now include custom types for a point or command. REEF-39
 * Added setpoint support to karaf shell and xml loader
 
-### Shell Commands:
+ ### Shell Commands:
 
 * endpoint:list and channel:list to inspect communication path
 * Added suite of Agent related commands to create/remove agents and change passwords
@@ -41,11 +41,13 @@ Primarily a stability and usability release, very limited new functionality.
 * Added suite of Alarm related commands including silence, acknowledge and remove.
 * Added remote-login command to support using karaf HMI on remote reef node
 * Added metrics:throughput command to quickly measure measurement rates. use: "metrics:throughput *.measProcessed"
-
+* Added "point:commands" command to display points with their feedback commands.
+ 
 ### Breaking Changes:
 
 * FrontEndPort Protobuf names changed to CommChannel
 * Post verb is now off by default, only specific services use it now
+* Commands now have correct "owns" relationship to parent equipment, only "feedback" to points
 
 ### Reef Internals:
 

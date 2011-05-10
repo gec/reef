@@ -63,7 +63,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     case false => "Not logged in to a Reef Node."
   }
 
-  protected def isLoggedIn = this.session.get("reefSession") match {
+  protected def isLoggedIn = this.session.get("user") match {
     case null => false
     case x => true
   }

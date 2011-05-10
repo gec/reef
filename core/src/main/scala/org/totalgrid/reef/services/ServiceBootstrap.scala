@@ -74,8 +74,34 @@ object ServiceBootstrap {
   def resetDb() {
     import org.squeryl.PrimitiveTypeMode._
     import org.totalgrid.reef.models._
+
+    workaroundToClearAllTablesOnPostgresql()
+
     transaction {
       ApplicationSchema.reset
+    }
+  }
+
+  /**
+   * HACK to remove all tables from postgres database to workaround table name changes between version
+   * 0.9.4-RC3 and 0.9.4-RC6 of squeryl. This will be mooted when we move to a proper database schema migration system.
+   * Also mooted when we EOL 0.2.3
+   * TODO: remove workaroundToClearAllTablesOnPostgresql
+   */
+  private def workaroundToClearAllTablesOnPostgresql() {
+    import org.squeryl.Session
+    import org.squeryl.PrimitiveTypeMode._
+    transaction {
+      val s = Session.currentSession.connection.createStatement
+      val rs = s.executeQuery("SELECT 'DROP TABLE \"' || c.relname || '\" CASCADE;' FROM pg_catalog.pg_class AS c LEFT JOIN pg_catalog.pg_namespace AS n ON n.oid = c.relnamespace WHERE relkind ='r' AND n.nspname NOT IN ('pg_catalog', 'pg_toast') AND pg_catalog.pg_table_is_visible(c.oid);")
+      val dropStatement = Session.currentSession.connection.createStatement
+      while (rs.next()) {
+        dropStatement.addBatch(rs.getString(1))
+      }
+      dropStatement.executeBatch()
+      s.close
+      rs.close
+      dropStatement.close
     }
   }
 }
