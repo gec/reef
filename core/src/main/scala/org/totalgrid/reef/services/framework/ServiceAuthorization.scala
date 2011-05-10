@@ -45,11 +45,11 @@ trait AuthorizesCreate extends HasCreate with HasAuthActions with HasComponentId
    */
   protected val actionForCreate = "CREATE"
 
-  abstract override protected def preCreate(proto: ServiceType, headers: RequestEnv): ServiceType = {
+  final override def authorizeCreate(request: ServiceType, headers: RequestEnv): ServiceType = {
 
     authService.isAuthorized(componentId, actionForCreate, headers) match {
       case Some(AuthDenied(reason, _)) => throw new UnauthorizedException(reason)
-      case None => super.preCreate(proto, headers)
+      case None => request
     }
 
   }

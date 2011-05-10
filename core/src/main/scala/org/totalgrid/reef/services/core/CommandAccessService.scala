@@ -65,10 +65,10 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
     } else proto
   }
 
-  override protected def doDelete(model: CommandAccessServiceModel, req: AccessProto): List[AccessProto] = {
-    val existing = model.findRecords(req)
+  final override protected def performDelete(model: ServiceModelType, request: ServiceType): List[AccessModel] = {
+    val existing = model.findRecords(request)
     existing.foreach(model.removeAccess(_))
-    existing.map(model.convertToProto(_))
+    existing
   }
 
 }
