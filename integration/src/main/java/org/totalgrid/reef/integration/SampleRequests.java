@@ -22,18 +22,13 @@ package org.totalgrid.reef.integration;
 
 import org.totalgrid.reef.api.javaclient.ISession;
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.ReplyException;
 
-import org.totalgrid.reef.api.request.*;
 import org.totalgrid.reef.api.request.builders.*;
-import org.totalgrid.reef.api.request.impl.CommandServiceWrapper;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Auth.*;
-import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.*;
 
 import org.totalgrid.reef.proto.Alarms.*;
-import org.totalgrid.reef.proto.Events.*;
 
 import java.util.List;
 import java.util.LinkedList;
