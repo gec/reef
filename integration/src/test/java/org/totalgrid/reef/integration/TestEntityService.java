@@ -183,7 +183,7 @@ public class TestEntityService extends JavaBridgeTestBase {
 
 		// get all commands in the system and fill out any relationships of type feedback with
 		// points
-		Entity request = Entity.newBuilder().addTypes("Control").addRelations(
+		Entity request = Entity.newBuilder().addTypes("Command").addRelations(
 				Relationship.newBuilder().setRelationship("feedback").setDescendantOf(false).addEntities(Entity.newBuilder().addTypes("Point")))
 				.build();
 
@@ -193,7 +193,6 @@ public class TestEntityService extends JavaBridgeTestBase {
 
 		for (Entity e : result) {
 			assertTrue(e.getTypesList().contains("Command"));
-            assertTrue(e.getTypesList().contains("Control"));
 			assertEquals(e.getRelationsCount(), 1);
 			Relationship r = e.getRelations(0);
 			assertEquals("feedback", r.getRelationship());
@@ -258,7 +257,7 @@ public class TestEntityService extends JavaBridgeTestBase {
                 }
             }
         }
-        assertEquals(cmdCount, 2);
+        assertEquals(cmdCount, 3);
 
     }
 

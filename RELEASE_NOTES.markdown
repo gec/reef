@@ -27,6 +27,7 @@ Primarily a stability and usability release, very limited new functionality.
 
 * Can subscribe to Events and Alarms through EventList and AlarmList services
 * When issuing a Command we block until the status code is returned from the field, doesn't return executing
+* Setpoints are now supported in the loader code
 
 ### Shell Commands:
 
@@ -37,11 +38,13 @@ Primarily a stability and usability release, very limited new functionality.
 * invalid system models will not by load by default (added -ignoreWarnings option)
 * "meas:download" will download measurement history to a Comma Separated File (CSV) for offline processing
 * Added suite of Alarm related commands including silence, acknowledge and remove.
+* Added "point:commands" command to display points with their feedback commands.
 
 ### Breaking Changes:
 
 * FrontEndPort Protobuf names changed to CommChannel
 * Post verb is now off by default, only specific services use it now
+* Commands now have correct "owns" relationship to parent equipment, only "feedback" to points
 
 ### Reef Internals:
 
