@@ -31,6 +31,7 @@ import org.totalgrid.reef.measurementstore.RTDatabaseReadPerformanceTestBase
 import org.totalgrid.reef.persistence.squeryl._
 import org.totalgrid.reef.persistence.LockStepConnection
 import org.squeryl.PrimitiveTypeMode._
+import postgresql.PostgresqlReset
 
 @RunWith(classOf[JUnitRunner])
 class SqlMeasTest extends MeasurementStoreTest {
@@ -38,7 +39,7 @@ class SqlMeasTest extends MeasurementStoreTest {
 
     val conn_info = DbInfo.loadInfo("test")
     val connection = DbConnector.connect(conn_info)
-
+    PostgresqlReset.reset()
     transaction { SqlMeasurementStoreSchema.reset() }
     new SqlMeasurementStore(new LockStepConnection(true))
   }
@@ -54,6 +55,7 @@ class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTest
     val conn_info = DbInfo.loadInfo("test")
     val connection = DbConnector.connect(conn_info)
     import org.squeryl.PrimitiveTypeMode._
+    PostgresqlReset.reset()
     val store = new SqlMeasurementStore(new LockStepConnection(true))
     store.reset
     store
