@@ -26,50 +26,25 @@ import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
-import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager, Lifecycle }
-import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbInfo, DbConnector }
-import org.totalgrid.reef.util.FileConfigReader
+import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
+import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 
+import org.totalgrid.reef.api.auth.IAuthService
+
 object Services {
-  def main(argsA: Array[String]): Unit = {
 
-    var args = argsA.toList
-    var dbReset = false
+  def makeContext(auth: IAuthService): ServiceContext = makeContext(BrokerConnectionInfo.loadInfo, DbInfo.loadInfo, MeasurementStoreFinder.getConfig, ServiceOptions.loadInfo, auth)
 
-    dbReset = !Option(System.getProperty("dbreset")).isEmpty
-
-    if (args.contains("db:reset")) {
-      dbReset = true
-      args = args.filterNot(_ == "db:reset")
-    }
-
-    if (dbReset) {
-      //val propFile = Option(System.getProperty("sqlProps")).getOrElse { throw new Exception("Set property sqlProps to reef.sql properties file.") }
-      //val dbInfo = SqlProperties.get(new FileConfigReader(propFile))
-
-      val dbInfo = Option(System.getProperty("sqlProps")).map(f => SqlProperties.get(new FileConfigReader(f))).getOrElse(DbInfo.loadInfo)
-
-      resetSystem(dbInfo, dbInfo)
-      return
-    }
-
-    org.totalgrid.reef.reactor.Reactable.setupThreadPools
-
-    Lifecycle.run(makeContext) {}
-  }
-
-  def makeContext(): ServiceContext = makeContext(BrokerConnectionInfo.loadInfo, DbInfo.loadInfo, MeasurementStoreFinder.getConfig, ServiceOptions.loadInfo)
-
-  def makeContext(bi: BrokerConnectionInfo, di: DbInfo, measInfo: ConnInfo, srvOpt: ServiceOptions): ServiceContext = {
+  def makeContext(bi: BrokerConnectionInfo, di: DbInfo, measInfo: ConnInfo, srvOpt: ServiceOptions, auth: IAuthService): ServiceContext = {
     val amqp = new AMQPProtoFactory with ReactActor {
       val broker = new QpidBrokerConnection(bi)
     }
 
     DbConnector.connect(di)
 
-    new ServiceContext(amqp, measInfo, srvOpt)
+    new ServiceContext(amqp, measInfo, srvOpt, auth)
   }
 
   def resetSystem(di: DbInfo, measInfo: ConnInfo) {

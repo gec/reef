@@ -21,12 +21,37 @@
 
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.UnauthorizedException
+import org.totalgrid.reef.api.auth.{ IAuthService, AuthDenied }
+import org.totalgrid.reef.api.{ RequestEnv, UnauthorizedException }
 
-trait AuthorizesCreate extends HasCreate {
+trait HasComponentId {
+  val componentId: String
+}
 
-  abstract override protected def preCreate(proto: ServiceType): ServiceType = {
-    super.preCreate(proto)
+trait HasAuthActions {
+  def actions: List[String] = Nil
+}
+
+trait HasAuthService {
+  protected val authService: IAuthService
+}
+
+trait AuthorizesCreate extends HasCreate with HasAuthActions with HasComponentId with HasAuthService {
+
+  override def actions = actionForCreate :: super.actions
+
+  /**
+   * this is overridable, I.E. controls could use the action "EXECUTE"
+   */
+  protected val actionForCreate = "CREATE"
+
+  abstract override protected def preCreate(proto: ServiceType, headers: RequestEnv): ServiceType = {
+
+    authService.isAuthorized(componentId, actionForCreate, headers) match {
+      case Some(AuthDenied(reason, _)) => throw new UnauthorizedException(reason)
+      case None => super.preCreate(proto, headers)
+    }
+
   }
 
 }

@@ -62,7 +62,7 @@ object ServiceBehaviors {
     override def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
-        val (value, status) = create(model, req)
+        val (value, status) = create(model, req, env)
         env.subQueue.foreach(subscribe(model, value, _))
         Response(status, value :: Nil)
       }
@@ -97,14 +97,14 @@ object ServiceBehaviors {
       model.setEnv(env)
       val (proto, status) = try {
         model.findRecord(req) match {
-          case None => create(model, req)
+          case None => create(model, req, env)
           case Some(x) => update(model, req, x)
         }
       } catch {
         // some items can be created without having uniquely identifying fields
         // so may have no search terms to look for
         // TODO: evaluate replacing NoSearchTermsException with flags
-        case e: NoSearchTermsException => create(model, req)
+        case e: NoSearchTermsException => create(model, req, env)
       }
       env.subQueue.foreach(subscribe(model, proto, _))
       Response(status, proto :: Nil)

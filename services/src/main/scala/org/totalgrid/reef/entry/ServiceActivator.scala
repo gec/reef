@@ -24,7 +24,7 @@ import org.osgi.framework._
 
 import org.totalgrid.reef.api.service.IServiceAsync
 
-import org.totalgrid.reef.services.{ Services, ServiceOptions }
+import org.totalgrid.reef.services.{ Services, ServiceOptions, AuthService }
 import org.totalgrid.reef.messaging.AMQPProperties
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.reactor.Lifecycle
@@ -42,11 +42,13 @@ class ServiceActivator extends BundleActivator {
     org.totalgrid.reef.reactor.Reactable.setupThreadPools
 
     val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-
     val amqp = AMQPProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
     val options = ServiceOptions.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
 
-    val srvContext = Services.makeContext(amqp, sql, sql, options)
+    // create the authorization interface that other services will use. In the future, this could be retrieved via OSGi.
+    val auth = new AuthService {}
+
+    val srvContext = Services.makeContext(amqp, sql, sql, options, auth)
 
     // publish all of the services using the exchange as the filter
     srvContext.services.foreach { x =>

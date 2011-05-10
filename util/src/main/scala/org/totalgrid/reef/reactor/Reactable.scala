@@ -65,7 +65,7 @@ object Reactable {
     import scala.actors.{ Actor, Scheduler }
     import scala.actors.scheduler.ResizableThreadPoolScheduler
     Scheduler.impl = {
-      val s = new ResizableThreadPoolScheduler(false);
+      val s = new ResizableThreadPoolScheduler(false)
       s.start()
       s
     }

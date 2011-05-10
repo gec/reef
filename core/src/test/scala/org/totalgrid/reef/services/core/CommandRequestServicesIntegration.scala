@@ -26,10 +26,6 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
-import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.messaging.mock.MockConnection
-import org.totalgrid.reef.messaging.SessionPool
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
@@ -41,9 +37,9 @@ import org.totalgrid.reef.util.EmptySyncVar
 import CommandAccess._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.messaging.SessionPool
 import org.totalgrid.reef.api.{ RequestEnv, ServiceTypes, Envelope, AddressableService }
+import org.totalgrid.reef.api.auth.NullAuthService
 
 import ServiceTypes.Response
 
@@ -58,7 +54,7 @@ class CommandRequestServicesIntegration
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
 
     val command = new CommandService(modelFac.cmds)
-    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection))
+    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection), NullAuthService)
     val endpointService = new CommunicationEndpointService(modelFac.endpoints)
     val access = new CommandAccessService(modelFac.accesses)
 
@@ -78,56 +74,6 @@ class CommandRequestServicesIntegration
     }
 
   }
-
-  /*
-  class TestRig {
-    val events = mutable.Queue[(Envelope.Event, GeneratedMessage)]()
-    val rawRequests = mutable.Queue[CommandRequest]()
-
-    val subHandler = new CallbackServiceSubscriptionHandler((event, msg) => events.enqueue((event, msg)))
-    val pub = new SingleEventPublisher(subHandler)
-    val modelFac = new core.ModelFactories(pub)
-
-    val endpointService = new CommunicationEndpointService(modelFac.endpoints)
-
-    val access = new CommandAccessService(modelFac.accesses)
-
-    val mock = new MockConnection {}
-    val pool = new SessionPool(mock)
-
-    val userReqs = new UserCommandRequestService(modelFac.userRequests, pool)
-
-    val command = new CommandService(modelFac.cmds)
-
-    def addCommands(commands: List[String]) {
-
-      val owns = EndpointOwnership.newBuilder
-      commands.foreach { c => owns.addCommands(c) }
-
-      val send = CommunicationEndpointConfig.newBuilder()
-        .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
-      one(endpointService.put(send))
-
-      /*
-      // Seed with command point
-      val device = transaction {
-        EQ.findOrCreateEntity("dev1", "LogicalNode")
-      }
-      commands.foreach { cmdName =>
-        val cmd = one(command.put(FepCommand.newBuilder.setName(cmdName).build))
-        //println(cmd)
-        transaction {
-          val cmd_entity = EQ.findEntity(cmd.getEntity).get
-          EQ.addEdge(device, cmd_entity, "source")
-        }
-      }
-      */
-
-      many(commands.size, command.get(FepCommand.newBuilder.setName("*").build))
-      events.clear()
-    }
-  }
-  */
 
   def commandAccessSearch(names: String*) = CommandAccess.newBuilder.addAllCommands(names).build
   def commandAccess(

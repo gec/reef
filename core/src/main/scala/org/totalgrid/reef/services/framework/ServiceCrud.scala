@@ -20,18 +20,18 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.{ RequestEnv, Envelope }
 
 trait HasCreate extends HasAllTypes {
 
-  protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status]
+  protected def create(model: ServiceModelType, req: ServiceType, headers: RequestEnv): Tuple2[ServiceType, Envelope.Status]
 
   /**
    * Called before create. Default implementation does nothing.
    * @param proto  Create request message
    * @return Verified/modified create request message
    */
-  protected def preCreate(proto: ServiceType): ServiceType = proto
+  protected def preCreate(proto: ServiceType, headers: RequestEnv): ServiceType = proto
 
   /**
    * Called after successful create. Default implementation does nothing.
@@ -43,8 +43,8 @@ trait HasCreate extends HasAllTypes {
 
 trait DefinesCreate extends HasCreate {
 
-  override protected def create(model: ServiceModelType, req: ServiceType): Tuple2[ServiceType, Envelope.Status] = {
-    val proto = preCreate(req)
+  override protected def create(model: ServiceModelType, req: ServiceType, headers: RequestEnv): Tuple2[ServiceType, Envelope.Status] = {
+    val proto = preCreate(req, headers)
     val sql = model.createFromProto(proto)
     postCreate(sql, req)
     (model.convertToProto(sql), Envelope.Status.CREATED)
@@ -83,13 +83,13 @@ trait HasUpdate extends HasAllTypes {
    * @param existing   Existing model entry
    * @return Verified/modified update request message
    */
-  protected def preUpdate(proto: ServiceType, existing: ModelType): ServiceType = proto
+  protected def preUpdate(request: ServiceType, existing: ModelType): ServiceType = request
 
   /**
    * Called after successful update. Default implementation does nothing.
    * @param proto Updated response message
    */
-  protected def postUpdate(updated: ModelType, request: ServiceType): Unit = {}
+  protected def postUpdate(updated: ModelType, request: ServiceType) = {}
 
   /**
    * Performs an update operation first calling preUpdate, then updating, then calling postUpdate.
@@ -99,10 +99,10 @@ trait HasUpdate extends HasAllTypes {
 
 trait DefinesUpdate extends HasUpdate {
 
-  override protected def update(model: ServiceModelType, req: ServiceType, existing: ModelType): Tuple2[ServiceType, Envelope.Status] = {
-    val proto = preUpdate(req, existing)
-    val (sql, updated) = model.updateFromProto(proto, existing)
-    postUpdate(sql, req)
+  override protected def update(model: ServiceModelType, request: ServiceType, existing: ModelType): Tuple2[ServiceType, Envelope.Status] = {
+    val validated = preUpdate(request, existing)
+    val (sql, updated) = model.updateFromProto(validated, existing)
+    postUpdate(sql, validated)
     val status = if (updated) Envelope.Status.UPDATED else Envelope.Status.NOT_MODIFIED
     (model.convertToProto(sql), status)
   }
@@ -116,22 +116,23 @@ trait HasDelete extends HasAllTypes {
    * Called before delete. Default implementation does nothing.
    *  @param proto    Delete request message
    */
-  protected def preDelete(proto: ServiceType): Unit = {}
+  protected def preDelete(request: ServiceType): ServiceType = request
 
   /**
    * Called after successful delete. Default implementation does nothing.
    *  @param proto    Deleted objects
    */
-  protected def postDelete(proto: List[ServiceType]): Unit = {}
+  protected def postDelete(results: List[ServiceType]): List[ServiceType] = results
 }
 
 trait DefinesDelete extends HasDelete {
 
-  protected def doDelete(model: ServiceModelType, req: ServiceType): List[ServiceType] = {
+  protected def doDelete(model: ServiceModelType, request: ServiceType): List[ServiceType] = {
     // TODO: consider stripping off everything but UID if UID set on delete
-    val existing = model.findRecords(req)
+    val validated = preDelete(request)
+    val existing = model.findRecords(validated)
     existing.foreach(model.delete(_))
-    existing.map(model.convertToProto(_))
+    postDelete(existing.map(model.convertToProto(_)))
   }
 
 }

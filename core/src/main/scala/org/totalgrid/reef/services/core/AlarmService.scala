@@ -33,8 +33,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException }
 
 // implicit proto properties
 import SquerylModel.makeAsParam
@@ -47,7 +46,7 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
   override val descriptor = Descriptors.alarm
 
   // Alarms are created by events. No create via an Alarm proto.
-  override def preCreate(req: Alarm) = {
+  override def preCreate(req: Alarm, headers: RequestEnv) = {
     throw new BadRequestException("Create on alarms not allowed via this service.")
   }
 

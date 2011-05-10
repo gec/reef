@@ -31,10 +31,12 @@ import org.totalgrid.reef.messaging.SessionPool
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
+import org.totalgrid.reef.api.auth.IAuthService
+
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions) {
+class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, auth: IAuthService) {
 
   val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   val summaries = new SummaryPointPublisher(components.amqp)
@@ -58,7 +60,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
     new CommandAccessService(modelFac.accesses),
 
-    new UserCommandRequestService(modelFac.userRequests, sessionPool),
+    new UserCommandRequestService(modelFac.userRequests, sessionPool, auth),
 
     new CommandService(modelFac.cmds),
     new CommunicationEndpointService(modelFac.endpoints),

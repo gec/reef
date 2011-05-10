@@ -20,13 +20,9 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.models.ApplicationSchema
-
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
+import org.totalgrid.reef.api.auth.AuthDenied
 import org.totalgrid.reef.metrics.MetricsHooks
 
 /// the metrics collected on any single service request
@@ -43,16 +39,14 @@ class AuthTokenMetrics(baseName: String = "") extends MetricsHooks {
  * wraps the request to the service with a function that looks up the permissions for the agent
  * based on the auth_tokens in the envelope and allows/denies based on the permissions the agent has
  */
-class AuthTokenVerifier[A](service: IServiceAsync[A], exchange: String, metrics: AuthTokenMetrics) extends IServiceAsync[A] {
+class AuthTokenVerifier[A](service: IServiceAsync[A], exchange: String, metrics: AuthTokenMetrics) extends IServiceAsync[A] with AuthService {
 
   override val descriptor = service.descriptor
 
   def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
     metrics.countHook(1)
     metrics.timerHook {
-      transaction {
-        checkAuth(req, env)
-      }
+      checkAuth(req, env)
     } match {
       case Some(rsp) => callback.onResponse(rsp) //callback immediately with the failure
       case None => service.respond(req, env, callback) // invoke normally
@@ -61,45 +55,13 @@ class AuthTokenVerifier[A](service: IServiceAsync[A], exchange: String, metrics:
 
   /// we either return a failure response or None if it passed all of the auth checks 
   private def checkAuth(req: Envelope.ServiceRequest, env: RequestEnv): Option[Envelope.ServiceResponse] = {
-
-    val authTokens = env.authTokens
-
-    if (authTokens.size == 0) {
-      return failMessage(req, Envelope.Status.BAD_REQUEST, "No auth tokens in envelope header")
+    isAuthorized(exchange, req.getVerb.toString.toLowerCase, env) match {
+      case Some(AuthDenied(reason, status)) =>
+        val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)
+        rsp.setStatus(status)
+        rsp.setErrorMessage(reason)
+        Some(rsp.build)
+      case None => None
     }
-
-    // lookup the tokens that are not expired
-    val now = System.currentTimeMillis
-
-    val tokens = ApplicationSchema.authTokens.where(t => t.token in authTokens and t.expirationTime.~ > now).toList
-    if (tokens.size == 0) {
-      return failMessage(req, Envelope.Status.UNAUTHORIZED, "All tokens unknown or expired")
-    }
-
-    val verb = req.getVerb.toString.toLowerCase
-    val permissions = tokens.map(token => token.permissionSets.value.toList.map(ps => ps.permissions.value).flatten).flatten.distinct
-    // select only the permissions that either say this resource + verb exactly or are wildcarded
-    val relevant = permissions.filter(p => (p.resource == "*" || p.resource == exchange) && (p.verb == "*" || p.verb == verb))
-
-    val userName = tokens.head.agent.value.name
-
-    if (relevant.size == 0) {
-      return failMessage(req, Envelope.Status.UNAUTHORIZED, "Access to resource: " + req.getVerb + ":" + exchange + " by agent: " + userName + " not allowed.")
-    }
-
-    val denied = relevant.find(p => p.allow == false)
-    if (denied.isDefined) {
-      return failMessage(req, Envelope.Status.UNAUTHORIZED, "Access to resource: " + req.getVerb + ":" + exchange + " explictly denied by permission: " + denied.get)
-    }
-    env.setUserName(userName)
-    // passed all checks, therefore its an authorized request
-    None
-  }
-
-  private def failMessage(req: Envelope.ServiceRequest, status: Envelope.Status, msg: String) = {
-    val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)
-    rsp.setStatus(status)
-    rsp.setErrorMessage(msg)
-    Some(rsp.build)
   }
 }

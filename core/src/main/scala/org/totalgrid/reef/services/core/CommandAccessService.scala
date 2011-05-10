@@ -29,7 +29,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Descriptors
 
 import ServiceBehaviors._
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException }
 
 class CommandAccessService(protected val modelTrans: ServiceTransactable[CommandAccessServiceModel])
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]
@@ -46,7 +46,7 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
 
   def deserialize(bytes: Array[Byte]) = AccessProto.parseFrom(bytes)
 
-  override protected def preCreate(proto: AccessProto): AccessProto = {
+  override protected def preCreate(proto: AccessProto, headers: RequestEnv): AccessProto = {
     // Simple proto validity check
     if (proto.getCommandsList.length == 0)
       throw new BadRequestException("Must specify at least one command")

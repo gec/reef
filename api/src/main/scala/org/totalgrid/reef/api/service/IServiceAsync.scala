@@ -49,5 +49,6 @@ class NoOpService extends IServiceAsync[Any] {
     def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
     def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
     def getKlass: Class[Any] = throw new Exception("unimplemented")
+    def id = "Any"
   }
 }

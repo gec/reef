@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.reactor.Lifecycle
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.api.auth.NullAuthService
 import org.totalgrid.reef.api.service.{ NoOpService, IServiceAsync }
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
@@ -62,7 +62,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val serviceOptions = ServiceOptions.loadInfo
 
-      val provider = new ServiceProviders(components, measStore, serviceOptions)
+      val provider = new ServiceProviders(components, measStore, serviceOptions, NullAuthService)
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

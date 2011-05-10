@@ -214,9 +214,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
 
   test("Get w/ AuthToken => OK") {
     val fix = new AuthFixture
-
     val authToken = fix.login("guest", "guest")
-
     fix.testRequest(Status.OK, Verb.GET, List(authToken.getToken))
   }
 
