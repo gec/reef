@@ -21,8 +21,17 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.api.{ RequestEnv, Envelope }
+import org.totalgrid.reef.api.service.HasServiceType
 
-trait HasCreate extends HasAllTypes {
+trait CanAuthorizeCreate extends HasServiceType {
+
+  /**
+   * @throws UnauthorizedException if authorization is rejected
+   */
+  protected def authorizeCreate(request: ServiceType, headers: RequestEnv): ServiceType
+}
+
+trait HasCreate extends CanAuthorizeCreate with HasAllTypes {
 
   /**
    * Called before create. Default implementation does nothing.
@@ -36,7 +45,7 @@ trait HasCreate extends HasAllTypes {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeCreate(request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeCreate(request: ServiceType, headers: RequestEnv): ServiceType = request
 
   protected def performCreate(model: ServiceModelType, request: ServiceType): ModelType = {
     model.createFromProto(request)
@@ -57,7 +66,16 @@ trait HasCreate extends HasAllTypes {
   }
 }
 
-trait HasRead extends HasAllTypes {
+trait CanAuthorizeRead extends HasServiceType {
+
+  /**
+   *
+   * @throws UnauthorizedException if authorization is rejected
+   */
+  protected def authorizeRead(request: ServiceType, headers: RequestEnv): ServiceType
+}
+
+trait HasRead extends CanAuthorizeRead with HasAllTypes {
 
   /**
    * Called before read. Default implementation does nothing.
@@ -69,7 +87,7 @@ trait HasRead extends HasAllTypes {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeRead(request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeRead(request: ServiceType, headers: RequestEnv): ServiceType = request
 
   /**
    * Called after read with results. Default implementation does nothing.
@@ -88,14 +106,23 @@ trait HasRead extends HasAllTypes {
   }
 }
 
-trait HasUpdate extends HasAllTypes {
+trait CanAuthorizeUpdate extends HasServiceType {
+
+  /**
+   *
+   * @throws UnauthorizedException if authorization is rejected
+   */
+  protected def authorizeUpdate(request: ServiceType, headers: RequestEnv): ServiceType
+}
+
+trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
 
   /**
    * Called after preUpdate validation step. Default does no authorization
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeUpdate(request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeUpdate(request: ServiceType, headers: RequestEnv): ServiceType = request
 
   /**
    * Called before update. Default implementation does nothing.
@@ -128,7 +155,16 @@ trait HasUpdate extends HasAllTypes {
   }
 }
 
-trait HasDelete extends HasAllTypes {
+trait CanAuthorizeDelete extends HasServiceType {
+
+  /**
+   *
+   * @throws UnauthorizedException if authorization is rejected
+   */
+  protected def authorizeDelete(request: ServiceType, headers: RequestEnv): ServiceType
+}
+
+trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
 
   /**
    * Called before delete. Default implementation does nothing.
@@ -141,7 +177,7 @@ trait HasDelete extends HasAllTypes {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeDelete(request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeDelete(request: ServiceType, headers: RequestEnv): ServiceType = request
 
   /**
    * Called after successful delete. Default implementation does nothing.

@@ -36,22 +36,56 @@ trait HasAuthService {
   protected val authService: IAuthService
 }
 
-trait AuthorizesCreate extends HasCreate with HasAuthActions with HasComponentId with HasAuthService {
+trait AuthTranslator extends HasAuthActions with HasComponentId with HasAuthService {
+
+  protected def authorize(componentId: String, action: String, headers: RequestEnv): Unit = {
+    authService.isAuthorized(componentId, action, headers) match {
+      case Some(AuthDenied(reason, _)) => throw new UnauthorizedException(reason)
+      case None =>
+    }
+  }
+}
+
+trait AuthorizesCreate extends CanAuthorizeCreate with AuthTranslator {
 
   override def actions = actionForCreate :: super.actions
-
-  /**
-   * this is overridable, I.E. controls could use the action "EXECUTE"
-   */
-  protected val actionForCreate = "CREATE"
+  protected val actionForCreate = "create"
 
   final override def authorizeCreate(request: ServiceType, headers: RequestEnv): ServiceType = {
-
-    authService.isAuthorized(componentId, actionForCreate, headers) match {
-      case Some(AuthDenied(reason, _)) => throw new UnauthorizedException(reason)
-      case None => request
-    }
-
+    authorize(componentId, actionForCreate, headers)
+    request
   }
+}
 
+trait AuthorizesRead extends CanAuthorizeRead with AuthTranslator {
+
+  override def actions = actionForRead :: super.actions
+  protected val actionForRead = "read"
+
+  final override def authorizeRead(request: ServiceType, headers: RequestEnv): ServiceType = {
+    authorize(componentId, actionForRead, headers)
+    request
+  }
+}
+
+trait AuthorizesUpdate extends CanAuthorizeUpdate with AuthTranslator {
+
+  override def actions = actionForUpdate :: super.actions
+  protected val actionForUpdate = "update"
+
+  final override def authorizeUpdate(request: ServiceType, headers: RequestEnv): ServiceType = {
+    authorize(componentId, actionForUpdate, headers)
+    request
+  }
+}
+
+trait AuthorizesDelete extends CanAuthorizeDelete with AuthTranslator {
+
+  override def actions = actionForDelete :: super.actions
+  protected val actionForDelete = "delete"
+
+  final override def authorizeDelete(request: ServiceType, headers: RequestEnv): ServiceType = {
+    authorize(componentId, actionForDelete, headers)
+    request
+  }
 }
