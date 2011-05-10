@@ -4,11 +4,11 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.2.3-RC3</version>
+        <version>0.2.3-RC4</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-processing</artifactId>
-    <version>0.2.3-RC3</version>
+    <version>0.2.3-RC4</version>
     <packaging>bundle</packaging>
 
      <licenses>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-core</artifactId>
-            <version>0.2.3-RC3</version>
+            <version>0.2.3-RC4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

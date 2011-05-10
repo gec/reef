@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
-        <version>0.2.3-RC3</version>
+        <version>0.2.3-RC4</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -102,7 +102,7 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-branding</artifactId>
-            <version>0.2.3-RC3</version>
+            <version>0.2.3-RC4</version>
         </dependency>
     </dependencies>
 
