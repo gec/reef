@@ -67,12 +67,14 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
     } else {
       Nil
     }
-    val updated = measurements.map(m => {
-      val q = m._2.getQuality.toBuilder
-      q.setValidity(Measurements.Quality.Validity.QUESTIONABLE)
-      q.mergeDetailQual(Measurements.DetailQual.newBuilder.setOldData(true).build)
-      m._2.toBuilder.setQuality(q).build
-    }).toList
+    val updated = measurements.map {
+      case (_, meas) =>
+        val q = meas.getQuality.toBuilder
+        q.setValidity(Measurements.Quality.Validity.QUESTIONABLE)
+        q.mergeDetailQual(Measurements.DetailQual.newBuilder.setOldData(true).build)
+        meas.toBuilder.setQuality(q).build
+    }.toList
+
     measurementStore.set(updated ::: missing)
   }
 
