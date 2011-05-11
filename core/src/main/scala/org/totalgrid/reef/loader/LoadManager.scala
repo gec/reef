@@ -35,7 +35,7 @@ import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
-import java.io.{ File, FileReader }
+import java.io.File
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.ReefServicesList
 
@@ -49,10 +49,9 @@ object LoadManager extends Logging {
     info("Loading configuration file '" + filename + "'")
 
     val file = new File(filename)
-    val reader = new FileReader(file)
     try {
 
-      val xml = XMLHelper.read(reader, classOf[Configuration])
+      val xml = XMLHelper.read(file, classOf[Configuration])
 
       val loader = new CachingModelLoader(None)
 
@@ -74,9 +73,6 @@ object LoadManager extends Logging {
       case ex =>
         println("Error loading configuration file '" + filename + "' " + ex.getMessage)
         throw ex
-    }
-    finally {
-      reader.close
     }
 
   }
