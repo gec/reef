@@ -23,10 +23,10 @@
 <configuration debug='false'>
 
 	<appender name='FILE' class='ch.qos.logback.core.FileAppender'>
-		<file>integration-test.log</file>
+		<file>test.log</file>
 
 		<encoder>
-			<pattern>%date{HH:mm:ss.SSS} %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+			<pattern>%date{HH:mm:ss.SSS} %level [%thread] %logger [%file:%line] %msg%n</pattern>
 		</encoder>
 	</appender>
 

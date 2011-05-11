@@ -32,6 +32,8 @@ import org.totalgrid.reef.util.Conversion.convertIntToTimes
 class ReactActorTest extends ReactableTestBase {
   override val maxActorPowerOf2 = 6 // 64
   def _getActor = new TestActorBase with ReactActor
+
+	override def toString = "ReactActorTest"
 }
 
 @RunWith(classOf[JUnitRunner])

@@ -43,7 +43,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       case None =>
         val conn = new Connection
         conn.addConnectionListener(this)
-        info { "Connecting to " + config.toString }
+        info { "Connecting to " + config }
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
     }
   }

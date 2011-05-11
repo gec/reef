@@ -20,29 +20,37 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
+import org.totalgrid.reef.api.javaclient.{ISession, ISessionPool}
 
-abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
-  def authToken = _authToken
-  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource
+{
+	def authToken = _authToken
+	def sessionPool = _sessionPool.getUnderlyingClientSessionPool
 }
 
-abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
-  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource
+{
+	def sessionPool = _sessionPool.getUnderlyingClientSessionPool
 }
 
-abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {
-  def session = _session.getUnderlyingClient
+abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource
+{
+	def session = _session.getUnderlyingClient
 }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class AllScadaServicePooledWrapper(sessionPool: ISessionPool, authToken: String) extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
+class AllScadaServicePooledWrapper(sessionPool: ISessionPool, authToken: String)
+		extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
+
 class AllScadaServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AllScadaService with AllScadaServiceImpl
 
-class AuthTokenServicePooledWrapper(sessionPool: ISessionPool) extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
+class AuthTokenServicePooledWrapper(sessionPool: ISessionPool)
+		extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
+
 class AuthTokenServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl
 

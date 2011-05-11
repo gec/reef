@@ -27,7 +27,7 @@ import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
 trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
 
   def createNewAuthorizationToken(user: String, password: String): String = {
-    val resp = ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)) }
+    val resp = ops { (x) => x.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)) }
     resp.getToken
   }
 

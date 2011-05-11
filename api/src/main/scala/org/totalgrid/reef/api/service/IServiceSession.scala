@@ -18,6 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.totalgrid.reef.api.service
 
 import org.totalgrid.reef.api.{ IDestination, AnyNode }
@@ -33,5 +34,6 @@ trait ServerSession {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit
+  def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false,
+    reactor: Option[Reactable] = None): Unit
 }
