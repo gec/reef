@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
@@ -200,8 +200,22 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
     resp.getAlarms(0).getEvent.getEventType should equal(Scada.ControlExe.toString)
     resp.getAlarms(0).getEvent.getUserId should equal(USER1)
     resp.getAlarms(0).getEvent.getEntity.getName should equal(ENTITY1)
-
   }
+
+  test("Negative limit") {
+    val req = AlarmList.newBuilder.setSelect(
+      AlarmSelect.newBuilder
+        .addAllState(STATE_ACK)
+        .setEventSelect(EventSelect.newBuilder.setLimit(-1))).build
+
+    val fixture = getFixture()
+    import fixture._
+
+    intercept[BadRequestException] {
+      service.get(req)
+    }
+  }
+
   /*
   def testQueriesWithSets(fixture: Fixture) {
     import fixture._
