@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.xml.dnp3.{ Master, Stack, AppLayer, LinkLayer }
-import java.io.File
+import java.io.{ FileWriter, File }
 
 @RunWith(classOf[JUnitRunner])
 class XMLHelperTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
