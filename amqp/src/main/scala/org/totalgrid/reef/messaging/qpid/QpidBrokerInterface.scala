@@ -116,7 +116,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     session.exchangeUnbind(queue, exchange, key)
-	 reefLogger.debug("Removed Binding: {} to {} key: {}", Array[Object](queue, exchange, key))
+    reefLogger.debug("Removed Binding: {} to {} key: {}", Array[Object](queue, exchange, key))
   }
 
   def listen(queue: String, mc: MessageConsumer) = {

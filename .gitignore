@@ -6,3 +6,4 @@ org.totalgrid.reef.test.cfg
 out
 reef-karaf-*
 Thumbs.db
+*/test.log
