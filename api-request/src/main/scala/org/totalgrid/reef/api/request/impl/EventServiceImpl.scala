@@ -38,24 +38,19 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
   }
 
   def getRecentEvents(limit: Int) = {
-    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit)) }
-    ret.getEventsList
+    ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit)).getEventsList }
   }
   def getRecentEvents(limit: Int, sub: ISubscription[Event]) = {
-    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub) }
-    ret.getEventsList
+    ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub).getEventsList }
   }
   def getRecentEvents(types: java.util.List[String], limit: Int) = {
-    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit)) }
-    ret.getEventsList
+    ops { _.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit)).getEventsList }
   }
   def getEvents(selector: EventSelect) = {
-    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector)) }
-    ret.getEventsList
+    ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector)).getEventsList }
   }
   def getEvents(selector: EventSelect, sub: ISubscription[Event]) = {
-    val ret = ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub) }
-    ret.getEventsList
+    ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub).getEventsList }
   }
   def publishEvent(event: Event) = {
     ops { _.putOneOrThrow(event) }

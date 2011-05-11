@@ -38,17 +38,14 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   }
 
   def getActiveAlarms(limit: Int) = {
-    val ret = ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)) }
-    ret.getAlarmsList
+    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)).getAlarmsList }
   }
   def getActiveAlarms(limit: Int, sub: ISubscription[Alarm]) = {
-    val ret = ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub) }
-    ret.getAlarmsList
+    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub).getAlarmsList }
   }
 
   def getActiveAlarms(types: java.util.List[String], limit: Int) = {
-    val ret = ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)) }
-    ret.getAlarmsList
+    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).getAlarmsList }
   }
 
   def removeAlarm(alarm: Alarm) = {
