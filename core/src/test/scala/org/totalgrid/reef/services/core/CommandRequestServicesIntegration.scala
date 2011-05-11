@@ -54,7 +54,7 @@ class CommandRequestServicesIntegration
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
 
     val command = new CommandService(modelFac.cmds)
-    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection), NullAuthService)
+    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection))
     val endpointService = new CommunicationEndpointService(modelFac.endpoints)
     val access = new CommandAccessService(modelFac.accesses)
 

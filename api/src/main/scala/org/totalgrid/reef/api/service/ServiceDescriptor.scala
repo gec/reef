@@ -24,5 +24,4 @@ import org.totalgrid.reef.api.ITypeDescriptor
 
 trait ServiceDescriptor[A] {
   val descriptor: ITypeDescriptor[A]
-  val useAuth = true
 }

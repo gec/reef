@@ -21,12 +21,13 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.auth.IAuthService
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 import org.totalgrid.reef.api.auth.AuthDenied
 import org.totalgrid.reef.metrics.MetricsHooks
 
 /// the metrics collected on any single service request
-class AuthTokenMetrics(baseName: String = "") extends MetricsHooks {
+class RestAuthzMetrics(baseName: String = "") extends MetricsHooks {
   /// how many requests handled
   lazy val countHook = counterHook(baseName + "Auths")
   /// errors counted
@@ -39,7 +40,7 @@ class AuthTokenMetrics(baseName: String = "") extends MetricsHooks {
  * wraps the request to the service with a function that looks up the permissions for the agent
  * based on the auth_tokens in the envelope and allows/denies based on the permissions the agent has
  */
-class AuthTokenVerifier[A](service: IServiceAsync[A], exchange: String, metrics: AuthTokenMetrics) extends IServiceAsync[A] with AuthService {
+class RestAuthzWrapper[A](service: IServiceAsync[A], metrics: RestAuthzMetrics, auth: IAuthService) extends IServiceAsync[A] {
 
   override val descriptor = service.descriptor
 
@@ -55,7 +56,7 @@ class AuthTokenVerifier[A](service: IServiceAsync[A], exchange: String, metrics:
 
   /// we either return a failure response or None if it passed all of the auth checks 
   private def checkAuth(req: Envelope.ServiceRequest, env: RequestEnv): Option[Envelope.ServiceResponse] = {
-    isAuthorized(exchange, req.getVerb.toString.toLowerCase, env) match {
+    auth.isAuthorized(service.descriptor.id, req.getVerb.toString.toLowerCase, env) match {
       case Some(AuthDenied(reason, status)) =>
         val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)
         rsp.setStatus(status)

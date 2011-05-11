@@ -38,7 +38,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfiguration: ServiceOptions, auth: IAuthService) extends LifecycleManager with ServiceContainer with Logging {
 
   private val components = ServiceBootstrap.bootstrapComponents(amqp)
-  private val container = new AuthAndMetricsServiceWrapper(components, serviceConfiguration)
+  private val metrics = new MetricsServiceWrapper(components, serviceConfiguration)
 
   // default lifecycles to add
   this.add(List(amqp, components.heartbeatActor))
@@ -59,8 +59,8 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   }
 
   def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
-    val exchange = ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass).exchange
-    val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint)
+
+    val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
 
     // each service gets its own actor so a slow service can't block a fast service but
     // a slow query will block the next query to that service
@@ -68,7 +68,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     this.add(serviceReactor)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    components.amqp.bindService(exchange, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
+    components.amqp.bindService(endpoint.descriptor.id, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
     instrumentedEndpoint
   }
 

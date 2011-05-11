@@ -59,7 +59,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
 
       val info = ReefServicesList.getServiceInfo(classOf[MeasurementSnapshot])
 
-      amqp.bindService(info.exchange, service.respond)
+      amqp.bindService(info.descriptor.id, service.respond)
 
       val client = amqp.getProtoClientSession(ReefServicesList, 500000)
 

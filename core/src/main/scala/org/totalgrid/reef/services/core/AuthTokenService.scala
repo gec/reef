@@ -222,6 +222,6 @@ class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenSe
     with GetEnabled
     with PutOnlyCreates
     with DeleteEnabled {
-  override val useAuth = false
+
   override val descriptor = Descriptors.authToken
 }

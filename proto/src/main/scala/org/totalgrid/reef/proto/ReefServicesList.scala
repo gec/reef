@@ -25,47 +25,45 @@ import org.totalgrid.reef.api.{ ServiceListOnMap, ServiceInfo, ITypeDescriptor, 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(
 
-    getEntry(Descriptors.commChannel, "front_end_port"),
-    getEntry(Descriptors.frontEndProcessor, "front_end_processor"),
-    getEntry(Descriptors.commEndpointConfig, "comm_endpoint"),
-    getEntry(Descriptors.commEndpointConnection, "front_end_assignment"),
-    getEntry(Descriptors.measurementProcessingConnection, "meas_proc_assignment"),
+    getEntry(Descriptors.commChannel),
+    getEntry(Descriptors.frontEndProcessor),
+    getEntry(Descriptors.commEndpointConfig),
+    getEntry(Descriptors.commEndpointConnection),
+    getEntry(Descriptors.measurementProcessingConnection),
 
-    getEntry(Descriptors.measurementBatch, "measurement_batch"),
-    getEntry(Descriptors.measurementHistory, "measurement_history", Some(Descriptors.measurement), Some("measurement")),
-    getEntry(Descriptors.measurementSnapshot, "measurement_snapshot", Some(Descriptors.measurement), Some("measurement")),
-    getEntry(Descriptors.measOverride, "meas_override"),
-    getEntry(Descriptors.triggerSet, "trigger_set"),
-    getEntry(Descriptors.statusSnapshot, "process_status"),
+    getEntry(Descriptors.measurementBatch),
+    getEntry(Descriptors.measurementHistory, Some(Descriptors.measurement)),
+    getEntry(Descriptors.measurementSnapshot, Some(Descriptors.measurement)),
+    getEntry(Descriptors.measOverride),
+    getEntry(Descriptors.triggerSet),
+    getEntry(Descriptors.statusSnapshot),
 
-    getEntry(Descriptors.event, "event"),
-    getEntry(Descriptors.eventList, "event_list"),
-    getEntry(Descriptors.eventConfig, "event_config"),
-    getEntry(Descriptors.alarm, "alarm"),
-    getEntry(Descriptors.alarmList, "alarm_list"),
-    getEntry(Descriptors.authToken, "auth_token"),
-    getEntry(Descriptors.agent, "agent"),
-    getEntry(Descriptors.permissionSet, "permission_set"),
+    getEntry(Descriptors.event),
+    getEntry(Descriptors.eventList),
+    getEntry(Descriptors.eventConfig),
+    getEntry(Descriptors.alarm),
+    getEntry(Descriptors.alarmList),
+    getEntry(Descriptors.authToken),
+    getEntry(Descriptors.agent),
+    getEntry(Descriptors.permissionSet),
 
-    getEntry(Descriptors.userCommandRequest, "user_command_request"),
-    getEntry(Descriptors.commandAccess, "command_access"),
+    getEntry(Descriptors.userCommandRequest),
+    getEntry(Descriptors.commandAccess),
 
-    getEntry(Descriptors.applicationConfig, "app_config"),
+    getEntry(Descriptors.applicationConfig),
 
-    getEntry(Descriptors.configFile, "config_file"),
-    getEntry(Descriptors.command, "command"),
-    getEntry(Descriptors.point, "point"),
-    getEntry(Descriptors.entity, "entity"),
-    getEntry(Descriptors.entityEdge, "entity_edge"),
-    getEntry(Descriptors.entityAttributes, "entity_attributes"))
+    getEntry(Descriptors.configFile),
+    getEntry(Descriptors.command),
+    getEntry(Descriptors.point),
+    getEntry(Descriptors.entity),
+    getEntry(Descriptors.entityEdge),
+    getEntry(Descriptors.entityAttributes))
 
-  private def getEntry[A, B](descriptor: ITypeDescriptor[A], exchange: String, subClass: Option[ITypeDescriptor[B]] = None, subExchange: Option[String] = None): ServiceList.ServiceTuple = {
-    (descriptor.getKlass -> ServiceInfo(
-      exchange,
-      descriptor,
-      subClass.isDefined,
-      subClass.getOrElse(descriptor),
-      subExchange.getOrElse(exchange + "_events")))
+  private def getEntry[A, B](descriptor: ITypeDescriptor[A], subClass: Option[ITypeDescriptor[B]] = None): ServiceList.ServiceTuple = {
+    subClass match {
+      case Some(subDescriptor) => descriptor.getKlass -> ServiceInfo.get(descriptor, subDescriptor)
+      case None => descriptor.getKlass -> ServiceInfo.get(descriptor)
+    }
   }
 }
 

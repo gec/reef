@@ -28,30 +28,23 @@ import org.totalgrid.reef.app.CoreApplicationComponents
  *  - auth wrapper that does high level access granting based on resource and verb
  *  - metrics collectors that monitor how many and how long the requests are taking
  */
-class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, serviceConfiguration: ServiceOptions) {
+class MetricsServiceWrapper(components: CoreApplicationComponents, serviceConfiguration: ServiceOptions) {
 
   /// creates a shared hook to hand to all of the services so they all update the same
   /// statistic #s.
-  def generateHooks(exch: String) = {
-    val allServiceHolder = components.metricsPublisher.getStore(exch)
+  private def generateHooks(id: String) = {
+    val allServiceHolder = components.metricsPublisher.getStore(id)
     ProtoServicableMetrics.generateMetricsHooks(allServiceHolder, serviceConfiguration.metricsSplitByVerb)
   }
-  def getAuthMetrics() = {
-    val hooks = new AuthTokenMetrics("")
-    if (serviceConfiguration.metrics) {
-      hooks.setHookSource(components.metricsPublisher.getStore("all"))
-    }
-    hooks
-  }
+
   lazy val allHooks = generateHooks("all") /// lazy since we dont allways use the allHooks object
-  lazy val allAuthMetrics = getAuthMetrics()
 
   /// takes an endpoint and either returns that endpoint unaltered or wraps it metrics
   /// collecting code
-  def getInstrumentedRespondFunction(endpoint: IServiceAsync[_], exch: String): IServiceAsync[_] = {
+  private def getInstrumentedRespondFunction(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
     if (serviceConfiguration.metrics) {
       val hooks = if (serviceConfiguration.metricsSplitByService) {
-        generateHooks(exch) // make a new hook object for each service
+        generateHooks(endpoint.descriptor.id) // make a new hook object for each service
       } else {
         allHooks // use the same hook object for all of the services
       }
@@ -63,10 +56,11 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
-  def instrumentCallback(exchange: String, endpoint: IServiceAsync[_]): IServiceAsync[_] = {
+  def instrumentCallback(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
 
-    val responder = getInstrumentedRespondFunction(endpoint, exchange)
+    getInstrumentedRespondFunction(endpoint)
 
+    /*
     val authWrappedResponder = if (serviceConfiguration.auth && endpoint.useAuth) {
       new AuthTokenVerifier(responder, exchange, allAuthMetrics)
     } else {
@@ -74,5 +68,6 @@ class AuthAndMetricsServiceWrapper(components: CoreApplicationComponents, servic
     }
 
     authWrappedResponder
+    */
   }
 }

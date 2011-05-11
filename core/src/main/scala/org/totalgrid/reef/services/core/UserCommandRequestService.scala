@@ -40,16 +40,14 @@ import ServiceBehaviors._
 import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool, auth: IAuthService)
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled
-    with AsyncPutCreatesOrUpdates with AuthorizesCreate
+    with AsyncPutCreatesOrUpdates
     with SubscribeEnabled {
 
-  override val authService = auth
   override val descriptor = Descriptors.userCommandRequest
-  override val componentId = descriptor.id
 
   override def doAsyncPutPost(rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
 

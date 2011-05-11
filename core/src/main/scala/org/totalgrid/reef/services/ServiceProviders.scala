@@ -31,36 +31,45 @@ import org.totalgrid.reef.messaging.SessionPool
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
+import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.api.auth.IAuthService
 
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, auth: IAuthService) {
+class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: IAuthService) {
 
-  val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
-  val summaries = new SummaryPointPublisher(components.amqp)
-  val modelFac = new ModelFactories(pubs, summaries, cm)
+  private val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
+  private val summaries = new SummaryPointPublisher(components.amqp)
+  private val modelFac = new ModelFactories(pubs, summaries, cm)
 
-  val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
-  val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
+  private val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
+  private val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
 
-  val sessionPool = new SessionPool(components.registry)
+  private val sessionPool = new SessionPool(components.registry)
 
-  val services = List(
+  private val authzMetrics = {
+    val hooks = new RestAuthzMetrics("")
+    if (serviceConfiguration.metrics) {
+      hooks.setHookSource(components.metricsPublisher.getStore("all"))
+    }
+    hooks
+  }
+
+  private val unauthorizedServices: List[IServiceAsync[_]] = new AuthTokenService(modelFac.authTokens) :: Nil
+
+  private val authorizedServices: List[IServiceAsync[_]] = List(
 
     new EntityService,
     new EntityEdgeService,
     new EntityAttributesService,
 
-    // we do not lock out people without auth tokens from the authtoken service, otherwise we couldn't bootstrap
-    new AuthTokenService(modelFac.authTokens),
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
 
     new CommandAccessService(modelFac.accesses),
 
-    new UserCommandRequestService(modelFac.userRequests, sessionPool, auth),
+    new UserCommandRequestService(modelFac.userRequests, sessionPool),
 
     new CommandService(modelFac.cmds),
     new CommunicationEndpointService(modelFac.endpoints),
@@ -83,7 +92,9 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new EventQueryService(modelFac.events, pubs),
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms),
-    new AlarmQueryService(pubs))
+    new AlarmQueryService(pubs)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
+
+  val services = unauthorizedServices ::: authorizedServices
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),

@@ -70,7 +70,7 @@ class ProtoClient(
       callback(result)
     }
 
-    correlator.send(request, info.exchange, dest.key, handleResponse)
+    correlator.send(request, info.descriptor.id, dest.key, handleResponse)
   }
 
   def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription[A] = {

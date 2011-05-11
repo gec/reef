@@ -36,9 +36,9 @@ import service.SyncServiceBase
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
-  val exchange = "ProtoSubscriptionTest"
+  val exchange = TestDescriptors.requestHeader.id
   val exchangeMap: ServiceList.ServiceMap = Map(
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, TestDescriptors.requestHeader))
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {

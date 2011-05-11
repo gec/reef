@@ -28,7 +28,9 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.squeryl.PrimitiveTypeMode._
 
-trait AuthService extends IAuthService {
+object SqlAuthzService extends SqlAuthzService
+
+trait SqlAuthzService extends IAuthService {
 
   private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) =
     Some(AuthDenied(msg, status))

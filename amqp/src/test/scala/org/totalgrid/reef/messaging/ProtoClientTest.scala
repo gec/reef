@@ -68,12 +68,12 @@ class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
 @RunWith(classOf[JUnitRunner])
 class ProtoClientTest extends FunSuite with ShouldMatchers {
 
-  val exchangeA = "test.protoClient.A"
-  val exchangeB = "test.protoClient.B"
+  val exchangeA = TestDescriptors.serviceNotification.id
+  val exchangeB = TestDescriptors.requestHeader.id
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Envelope.ServiceNotification] -> ServiceInfo.get(exchangeA, TestDescriptors.serviceNotification),
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, TestDescriptors.requestHeader)))
+    classOf[Envelope.ServiceNotification] -> ServiceInfo.get(TestDescriptors.serviceNotification),
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
 
   def setupTest(addServices: Boolean)(test: (ProtoClient, AMQPProtoFactory) => Unit) {
     val connection = new MockBrokerInterface
