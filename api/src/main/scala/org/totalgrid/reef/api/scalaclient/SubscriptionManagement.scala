@@ -21,8 +21,7 @@
 package org.totalgrid.reef.api.scalaclient
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.{ ISubscription, Envelope }
-import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.Subscription
 
 /**
  * thick interface for creating subscriptions objects.
@@ -30,21 +29,8 @@ import org.totalgrid.reef.api.ServiceTypes.Event
 trait SubscriptionManagement {
 
   /**
-   * clients
+   * creates a subscription suitable for consuming a single type of measurement
    */
-  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription[A]
-
-  /**
-   * alternative interface for simple situations when we can figure out the subscription type we want
-   * by inspecting the callback we are passing in.
-   */
-  def addSubscription[A <: GeneratedMessage](ea: (Envelope.Event, A) => Unit): ISubscription[A] = {
-    val applyMethod = ea.getClass.getDeclaredMethods.find { x => x.getName.equals("apply") }.get
-    val klass = applyMethod.getParameterTypes.apply(1).asInstanceOf[Class[A]]
-
-    val proxy = { (evt: Event[A]) => ea(evt.event, evt.result) }
-
-    addSubscription(klass, proxy)
-  }
+  def addSubscription[A <: GeneratedMessage](klass: Class[_]): Subscription[A]
 
 }

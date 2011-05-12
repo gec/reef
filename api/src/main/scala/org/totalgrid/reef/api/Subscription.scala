@@ -18,28 +18,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.api
 
-import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.api.ServiceTypes.Event
 
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, Subscription }
-import ServiceTypes.Event
+trait Subscription[SubscriptionMessageType] {
+  def cancel()
 
-/**
- * factory trait that defines what we need to construct ClientSessions and subscriptions
- */
-trait ClientSessionFactory {
+  def start(callback: Event[SubscriptionMessageType] => Unit): Unit
 
+  def start(callback: (Envelope.Event, SubscriptionMessageType) => Unit): Unit = {
+    val proxy = { (evt: Event[SubscriptionMessageType]) => callback(evt.event, evt.result) }
+    start(proxy)
+  }
+
+  def id(): String
+}
+
+object Subscription {
   /**
-   * the factory must create and start a ServiceResponseCorrelator that will be shared by all clients
+   * convert a Subscription to the RequestEnv used in scala SyncOps
+   * TODO: rationalize RequestEnv and Subscription interfaces
    */
-  def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
-
-  def getProtoClientSession(lookup: ServiceList, timeoutms: Long) = new ProtoClient(this, lookup, timeoutms)
-
-  /**
-   * the factory must create subscription objects of the appropriate type even if its a "stream type"
-   */
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A]
-
+  implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): RequestEnv = {
+    val serviceHeaders = new ServiceHandlerHeaders()
+    serviceHeaders.setSubscribeQueue(sub.id)
+    serviceHeaders.env
+  }
 }

@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.javaclient
  */
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ Envelope, ServiceHandlerHeaders, ReefServiceException, ServiceIOException, ISubscription, IHeaderInfo, ITypeDescriptor }
+import org.totalgrid.reef.api.{ Envelope, ServiceHandlerHeaders, ReefServiceException, ServiceIOException, IHeaderInfo, ITypeDescriptor }
 import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**
@@ -45,13 +45,13 @@ trait ISession {
   def put[A <: AnyRef](payload: A): java.util.List[A]
 
   @throws(classOf[ReefServiceException])
-  def get[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def get[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A]
   @throws(classOf[ReefServiceException])
-  def delete[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def delete[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A]
   @throws(classOf[ReefServiceException])
-  def post[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def post[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A]
   @throws(classOf[ReefServiceException])
-  def put[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A]
+  def put[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A]
 
   @throws(classOf[ReefServiceException])
   def getOne[A <: AnyRef](payload: A): A
@@ -63,13 +63,13 @@ trait ISession {
   def putOne[A <: AnyRef](payload: A): A
 
   @throws(classOf[ReefServiceException])
-  def getOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def getOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A
   @throws(classOf[ReefServiceException])
-  def deleteOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def deleteOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A
   @throws(classOf[ReefServiceException])
-  def postOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def postOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A
   @throws(classOf[ReefServiceException])
-  def putOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A
+  def putOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A
 
   /* -------- Future API ------------ */
   @throws(classOf[ServiceIOException])
@@ -82,13 +82,13 @@ trait ISession {
   def putFuture[A <: AnyRef](payload: A): IFuture[A]
 
   @throws(classOf[ServiceIOException])
-  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def getFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A]
   @throws(classOf[ServiceIOException])
-  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def deleteFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A]
   @throws(classOf[ServiceIOException])
-  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def postFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A]
   @throws(classOf[ServiceIOException])
-  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def putFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A]
 
   /* -------- Asynchronous API ------ */
   @throws(classOf[ServiceIOException])
@@ -102,7 +102,7 @@ trait ISession {
 
   /* --- Misc --- */
   @throws(classOf[ServiceIOException])
-  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], callback: IEventAcceptor[A]): ISubscription[A]
+  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A]): ISubscription[A]
 
   def getDefaultEnv(): ServiceHandlerHeaders
 

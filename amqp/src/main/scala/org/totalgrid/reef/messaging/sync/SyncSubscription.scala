@@ -18,28 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.sync
 
-import com.google.protobuf.GeneratedMessage
-
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, Subscription }
-import ServiceTypes.Event
+import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.messaging.{ QueuePatterns, MessageConsumer, BrokerChannel }
 
 /**
- * factory trait that defines what we need to construct ClientSessions and subscriptions
+ * synchronous subscription object, allows canceling and a delayed starting
  */
-trait ClientSessionFactory {
+class SyncSubscription[A](channel: BrokerChannel, consumerCreator: (Event[A] => Unit) => MessageConsumer) extends Subscription[A] {
 
-  /**
-   * the factory must create and start a ServiceResponseCorrelator that will be shared by all clients
-   */
-  def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
+  private val queueName = QueuePatterns.getLateBoundPrivateUnboundQueue(channel)
 
-  def getProtoClientSession(lookup: ServiceList, timeoutms: Long) = new ProtoClient(this, lookup, timeoutms)
+  override def id() = queueName
+  override def cancel() = channel.close()
 
-  /**
-   * the factory must create subscription objects of the appropriate type even if its a "stream type"
-   */
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A]
+  def start(callback: Event[A] => Unit): Unit = {
+
+    channel.listen(queueName, consumerCreator(callback))
+
+    channel.start()
+  }
 
 }

@@ -20,14 +20,13 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.ISubscription
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.request.{ EventService }
 import org.totalgrid.reef.api.request.builders.{ EventRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.proto.Events.{ EventSelect, Event }
-import org.totalgrid.reef.proto.Model.ReefUUID
+
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
@@ -40,8 +39,12 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
   def getRecentEvents(limit: Int) = {
     ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit)).getEventsList }
   }
-  def getRecentEvents(limit: Int, sub: ISubscription[Event]) = {
-    ops { _.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub).getEventsList }
+  def subscribeToRecentEvents(limit: Int) = {
+    ops { session =>
+      useSubscription(session, Descriptors.event.getKlass) { sub =>
+        session.getOneOrThrow(EventListRequestBuilders.getAll(limit), sub).getEventsList
+      }
+    }
   }
   def getRecentEvents(types: java.util.List[String], limit: Int) = {
     ops { _.getOneOrThrow(EventListRequestBuilders.getAllByEventTypes(types, limit)).getEventsList }
@@ -49,15 +52,15 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
   def getEvents(selector: EventSelect) = {
     ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector)).getEventsList }
   }
-  def getEvents(selector: EventSelect, sub: ISubscription[Event]) = {
-    ops { _.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub).getEventsList }
+  def subscribeToEvents(selector: EventSelect) = {
+    ops { session =>
+      useSubscription(session, Descriptors.event.getKlass) { sub =>
+        session.getOneOrThrow(EventListRequestBuilders.getByEventSelect(selector), sub).getEventsList
+      }
+    }
   }
   def publishEvent(event: Event) = {
     ops { _.putOneOrThrow(event) }
-  }
-
-  def createEventSubscription(callback: IEventAcceptor[Event]) = {
-    ops { _.addSubscription(Descriptors.event.getKlass, callback.onEvent) }
   }
 
 }

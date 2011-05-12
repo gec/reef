@@ -18,28 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
-
-import com.google.protobuf.GeneratedMessage
-
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, Subscription }
-import ServiceTypes.Event
+package org.totalgrid.reef.api.javaclient
 
 /**
- * factory trait that defines what we need to construct ClientSessions and subscriptions
+ * A subscription object provides header info and can also be canceled. It carries the message type
+ * primarily to make message signatures more expressive.
+ * TODO: add ISubscriptions to scala apis
  */
-trait ClientSessionFactory {
+trait ISubscription[SubscriptionMessageType] {
 
-  /**
-   * the factory must create and start a ServiceResponseCorrelator that will be shared by all clients
-   */
-  def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
+  def cancel(): Unit
 
-  def getProtoClientSession(lookup: ServiceList, timeoutms: Long) = new ProtoClient(this, lookup, timeoutms)
+  def getId(): String
 
-  /**
-   * the factory must create subscription objects of the appropriate type even if its a "stream type"
-   */
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A]
+  def start(callback: IEventAcceptor[SubscriptionMessageType]): Unit
 
+}
+
+trait ISubscriptionResult[ResultType, SubType] {
+  def getResult: ResultType
+  def getSubscription: ISubscription[SubType]
 }

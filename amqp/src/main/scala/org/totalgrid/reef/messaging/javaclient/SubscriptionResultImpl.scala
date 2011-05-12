@@ -18,27 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.messaging.javaclient
 
-/**
- * A subscription object provides header info and can also be canceled. It carries the message type
- * primarily to make message signatures more expressive.
- * TODO: add ISubscriptions to scala apis
- */
-trait ISubscription[SubscriptionMessageType] extends IHeaderInfo {
-  def cancel()
+import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, ISubscriptionResult, ISubscription }
 
-  def start()
+class SubscriptionWrapper[A](sub: Subscription[A]) extends ISubscription[A] {
+  def start(callback: IEventAcceptor[A]) = sub.start(callback.onEvent _)
+
+  def getId() = sub.id
+
+  def cancel() = sub.cancel
 }
 
-object ISubscription {
-  /**
-   * convert a ISubscription to the RequestEnv used in scala SyncOps
-   * TODO: rationalize RequestEnv and ISubscription interfaces
-   */
-  implicit def convertISubToRequestEnv(sub: ISubscription[_]): RequestEnv = {
-    val serviceHeaders = new ServiceHandlerHeaders()
-    sub.setHeaders(serviceHeaders)
-    serviceHeaders.env
-  }
+class SubscriptionResult[A, B](result: A, sub: Subscription[B]) extends ISubscriptionResult[A, B] {
+  override def getResult = result
+  override def getSubscription = new SubscriptionWrapper(sub)
 }
