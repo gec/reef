@@ -28,11 +28,12 @@ import org.totalgrid.reef.api.{ ServiceHandlerHeaders, ISubscription }
 import org.totalgrid.reef.api.ServiceTypes.Event
 
 /**
- * syncronous subscription object, allows canceling
+ * synchronous subscription object, allows canceling
  */
 class SyncSubscription[A](channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription[A] {
   private val queue = QueuePatterns.getPrivateUnboundQueue(channel, consumer)
   channel.start()
+
   override def setHeaders(headers: ServiceHandlerHeaders) =
     headers.setSubscribeQueue(queue)
   override def cancel() = channel.close()

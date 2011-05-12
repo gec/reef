@@ -202,8 +202,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
   /**
    * Get a point attribute in the point or the referenced pointProfile.
-   * For this function, profiles can be nested and it will get the first on it
-   * finds.
+   * For this function, profiles can be nested and it will get the first one it finds.
    * Throw exception if no attribute found.
    */
   def getAttribute[A](

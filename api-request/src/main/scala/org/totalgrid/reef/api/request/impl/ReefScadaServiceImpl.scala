@@ -22,22 +22,20 @@ package org.totalgrid.reef.api.request.impl
  */
 
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.javaclient.{ISession, ISessionPool}
+import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
+import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 
-abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource
-{
-	def authToken = _authToken
-	def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
+  def authToken = _authToken
+  def sessionPool: ClientSessionPool = _sessionPool.getUnderlyingClientSessionPool
 }
 
-abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource
-{
-	def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
+  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
 }
 
-abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource
-{
-	def session = _session.getUnderlyingClient
+abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {
+  def session = _session.getUnderlyingClient
 }
 
 /**
@@ -45,12 +43,12 @@ abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionCli
  * into smaller functionality based sections or not created at all.
  */
 class AllScadaServicePooledWrapper(sessionPool: ISessionPool, authToken: String)
-		extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
+  extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
 
 class AllScadaServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AllScadaService with AllScadaServiceImpl
 
 class AuthTokenServicePooledWrapper(sessionPool: ISessionPool)
-		extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
+  extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
 
 class AuthTokenServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl
 
