@@ -26,11 +26,11 @@ import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
 
 abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
   def authToken = _authToken
-  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+  def sessionPool = _sessionPool
 }
 
 abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
-  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+  def sessionPool = _sessionPool
 }
 
 abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {

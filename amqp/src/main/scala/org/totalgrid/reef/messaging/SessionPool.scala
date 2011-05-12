@@ -48,7 +48,7 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
     available.add(session)
   }
 
-  def borrow[A](fun: ClientSession => A): A = {
+  override def borrow[A](fun: ClientSession => A): A = {
 
     val session = acquire()
 
@@ -60,7 +60,7 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
 
   }
 
-  def borrow[A](authToken: String)(fun: ClientSession => A): A = {
+  override def borrow[A](authToken: String)(fun: ClientSession => A): A = {
 
     borrow { session =>
       try {
@@ -74,9 +74,12 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
 
   }
 
-  def borrow[A](consumer: ISessionConsumer[A]): A = borrow(client => consumer.apply(new Session(client)))
+  // implement ISession
+  override def borrow[A](consumer: ISessionConsumer[A]): A = {
+    borrow(client => consumer.apply(new Session(client)))
+  }
 
-  def borrow[A](consumer: ISessionConsumer[A], authToken: String): A = borrow(authToken)(client => consumer.apply(new Session(client)))
-
-  def getUnderlyingClientSessionPool: ClientSessionPool = this
+  override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A = {
+    borrow(authToken)(client => consumer.apply(new Session(client)))
+  }
 }

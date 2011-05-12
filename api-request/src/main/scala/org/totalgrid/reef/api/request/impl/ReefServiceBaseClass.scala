@@ -22,6 +22,7 @@ package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ClientSessionPool, SubscriptionManagement, SyncOperations }
 import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException, ExpectationException }
+import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
 
 trait ReefServiceBaseClass extends ClientSource {
 
@@ -89,10 +90,13 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
  */
 trait PooledClientSource extends ClientSource {
 
-  def sessionPool: ClientSessionPool
+  // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
+  def sessionPool: ISessionPool
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(block)
+    sessionPool.borrow(new ISessionConsumer[A] {
+      def apply(session: ISession) = block(session.getUnderlyingClient)
+    })
   }
 }
 
@@ -102,11 +106,13 @@ trait PooledClientSource extends ClientSource {
  */
 trait AuthorizedAndPooledClientSource extends ClientSource {
 
-  def sessionPool: ClientSessionPool
+  def sessionPool: ISessionPool
   def authToken: String
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken)(block)
+    sessionPool.borrow(authToken, new ISessionConsumer[A] {
+      def apply(session: ISession) = block(session.getUnderlyingClient)
+    })
   }
 }
 
