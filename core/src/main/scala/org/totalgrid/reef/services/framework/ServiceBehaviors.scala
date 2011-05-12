@@ -33,7 +33,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
-  trait GetEnabled extends HasRead with HasSubscribe with HasServiceTransactable with HasSyncRestGet {
+  trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasServiceTransactable with HasSyncRestGet {
     override def get(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
@@ -57,7 +57,7 @@ object ServiceBehaviors {
    * POSTs create a new entry, there are no updates
    */
 
-  trait PutOnlyCreates extends HasCreate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
+  trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
 
     override def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { model: ServiceModelType =>
@@ -70,7 +70,7 @@ object ServiceBehaviors {
 
   }
 
-  trait PostPartialUpdate extends HasUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPost {
+  trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPost {
 
     override def post(req: ServiceType, env: RequestEnv): Response[ServiceType] = modelTrans.transaction { model =>
       model.setEnv(env)
@@ -91,7 +91,12 @@ object ServiceBehaviors {
   /**
    * Default REST "Put" behavior updates or creates
    */
-  trait PutCreatesOrUpdates extends HasCreate with HasUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
+  trait PutCreatesOrUpdates
+      extends HasCreate with AuthorizesCreate
+      with HasUpdate with AuthorizesUpdate
+      with HasSubscribe
+      with HasServiceTransactable
+      with HasSyncRestPut {
 
     protected def doPut(req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
       model.setEnv(env)
@@ -126,7 +131,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Delete" behavior
    */
-  trait DeleteEnabled extends HasDelete with HasSubscribe with HasServiceTransactable with HasSyncRestDelete {
+  trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasServiceTransactable with HasSyncRestDelete {
 
     override def delete(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
       modelTrans.transaction { model: ServiceModelType =>

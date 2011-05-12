@@ -58,11 +58,17 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   private val unauthorizedServices: List[IServiceAsync[_]] = new AuthTokenService(modelFac.authTokens) :: Nil
 
-  private val authorizedServices: List[IServiceAsync[_]] = List(
-
+  private val restAuthorizedServices: List[IServiceAsync[_]] = List(
     new EntityService,
     new EntityEdgeService,
     new EntityAttributesService,
+    new MeasurementBatchService(sessionPool),
+    new MeasurementSnapshotService(wrappedDb, pubs),
+    new MeasurementHistoryService(wrappedHistorian, pubs),
+    new EventQueryService(modelFac.events, pubs),
+    new AlarmQueryService(pubs)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
+
+  private val crudAuthorizedServices = List(
 
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
@@ -85,16 +91,14 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new OverrideConfigService(modelFac.overrides),
     new TriggerSetService(modelFac.triggerSets),
 
-    new MeasurementBatchService(sessionPool),
-    new MeasurementHistoryService(wrappedHistorian, pubs),
-    new MeasurementSnapshotService(wrappedDb, pubs),
     new EventConfigService(modelFac.eventConfig),
-    new EventQueryService(modelFac.events, pubs),
-    new EventService(modelFac.events),
-    new AlarmService(modelFac.alarms),
-    new AlarmQueryService(pubs)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
 
-  val services = unauthorizedServices ::: authorizedServices
+    new EventService(modelFac.events),
+    new AlarmService(modelFac.alarms))
+
+  crudAuthorizedServices.foreach(s => s.authService = authzService)
+
+  val services = unauthorizedServices ::: restAuthorizedServices ::: crudAuthorizedServices
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),
