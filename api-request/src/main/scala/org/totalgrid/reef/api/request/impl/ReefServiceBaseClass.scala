@@ -20,8 +20,9 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.ExpectationException
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ClientSessionPool, SubscriptionManagement, SyncOperations }
+import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException, ExpectationException }
+import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
 
 trait ReefServiceBaseClass extends ClientSource {
 
@@ -39,7 +40,20 @@ trait ReefServiceBaseClass extends ClientSource {
  * if we are using a pooled or not implementation
  */
 trait ClientSource {
-  protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A
+  protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    try {
+      _ops(block)
+    } catch {
+      case rse: ReefServiceException =>
+        // we are just trying to verify that only ReefService derived Execeptions bubble out of the
+        // calls, if its already a ReefServiceException we have nothing to do
+        throw rse
+      case e: Exception =>
+        throw new InternalClientError("Unexpected error: " + e.getMessage, e)
+    }
+  }
+
+  protected def _ops[A](block: SyncOperations with SubscriptionManagement => A): A
 }
 
 /**
@@ -49,7 +63,7 @@ trait ClientSource {
 trait SingleSessionClientSource extends ClientSource {
   def session: SyncOperations with SubscriptionManagement
 
-  override def ops[A](block: SyncOperations with SubscriptionManagement => A): A = block(session)
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = block(session)
 }
 
 /**
@@ -60,7 +74,7 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 
   def authToken: String
 
-  override def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
     try {
       import org.totalgrid.reef.api.ServiceHandlerHeaders._
       session.getDefaultHeaders.setAuthToken(authToken)
@@ -76,10 +90,13 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
  */
 trait PooledClientSource extends ClientSource {
 
-  def sessionPool: ClientSessionPool
+  // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
+  def sessionPool: ISessionPool
 
-  override def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(block)
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    sessionPool.borrow(new ISessionConsumer[A] {
+      def apply(session: ISession) = block(session.getUnderlyingClient)
+    })
   }
 }
 
@@ -89,11 +106,13 @@ trait PooledClientSource extends ClientSource {
  */
 trait AuthorizedAndPooledClientSource extends ClientSource {
 
-  def sessionPool: ClientSessionPool
+  def sessionPool: ISessionPool
   def authToken: String
 
-  override def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken)(block)
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    sessionPool.borrow(authToken, new ISessionConsumer[A] {
+      def apply(session: ISession) = block(session.getUnderlyingClient)
+    })
   }
 }
 

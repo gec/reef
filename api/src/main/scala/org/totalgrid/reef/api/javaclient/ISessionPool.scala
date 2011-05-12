@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.api.javaclient
 
-import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 import org.totalgrid.reef.api.ReefServiceException
 
 trait ISessionPool {
@@ -36,14 +35,12 @@ trait ISessionPool {
 
   /**
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
-   * @param consumer a block of code to execute using the acquired ISession
    * @param authToken an authtoken to attach before calling consumer.apply
+   * @param consumer a block of code to execute using the acquired ISession
    * @return the return value from consumer.apply
    * @throws ServiceIOException if a session cannot be acquired we will throw an error
    * @throws ReefServiceException
    */
   @throws(classOf[ReefServiceException])
-  def borrow[A](consumer: ISessionConsumer[A], authToken: String): A
-
-  def getUnderlyingClientSessionPool: ClientSessionPool
+  def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A
 }

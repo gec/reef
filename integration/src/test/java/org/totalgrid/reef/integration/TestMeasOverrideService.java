@@ -68,6 +68,7 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
             // subscribe to updates for this point
             List<Measurement> rsp = helpers.getMeasurementsByPoints(ps, sub);
             assertEquals(rsp.size(), 1);
+            sub.start();
 		}
 
         long now = System.currentTimeMillis();

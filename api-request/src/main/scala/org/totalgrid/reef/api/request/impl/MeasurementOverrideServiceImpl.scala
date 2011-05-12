@@ -24,7 +24,6 @@ import org.totalgrid.reef.api.request.MeasurementOverrideService
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.MeasOverride
 import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.api.ReefServiceException
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders
 
 trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with MeasurementOverrideService {

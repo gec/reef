@@ -27,6 +27,8 @@ package org.totalgrid.reef.api
  */
 trait ISubscription[SubscriptionMessageType] extends IHeaderInfo {
   def cancel()
+
+  def start()
 }
 
 object ISubscription {

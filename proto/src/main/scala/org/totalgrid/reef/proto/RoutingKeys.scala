@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.proto
 
+// TODO: get rid of routing keys
 object RoutingKeys {
 
   def measurement(m: Measurements.Measurement): String = m.getName

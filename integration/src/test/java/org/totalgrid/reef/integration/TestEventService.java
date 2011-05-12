@@ -73,6 +73,8 @@ public class TestEventService extends JavaBridgeTestBase {
 
         es.publishEvent(EventRequestBuilders.makeNewEventForEntityByName("Test.Event", "StaticSubstation.Line02.Current"));
 
+        sub.start();
+
         mock.pop(1000);
 
 
@@ -106,6 +108,7 @@ public class TestEventService extends JavaBridgeTestBase {
 
         es.publishEvent(EventRequestBuilders.makeNewEventForEntityByName("Test.Alarm", "StaticSubstation.Line02.Current"));
 
+        sub.start();
         mock.pop(1000);
     }
 

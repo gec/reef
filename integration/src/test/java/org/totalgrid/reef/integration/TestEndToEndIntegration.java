@@ -73,6 +73,8 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
 
         assertEquals(Commands.CommandStatus.SUCCESS, result.getStatus());
 
+        sub.start();
+
 		// We get 2 events here. Since the subscription is bound before the request is made,
 		// we see the ADDED/EXECUTING and then the MODIFIED/SUCCESS
 		{
@@ -109,6 +111,8 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
         List<Measurements.Measurement> response = helpers.getMeasurementsByPoints(points, sub);
 
         assertEquals(response.size(), points.size());
+
+        sub.start();
 
 		// check that at least one measurement has been updated in the queue
 		ServiceTypes.Event<Measurements.Measurement> m = mock.pop(10000);

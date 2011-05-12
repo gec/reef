@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.api.request
 
-import builders.PointRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -64,6 +63,8 @@ class EndpointManagementTest
 
     // pick one endpoint to test enabling/disabling
     val endpointUuid = endpoints.head.getUuid
+
+    sub.start
 
     def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
       syncVar.waitFor(x => x.getEnabled == enabled &&

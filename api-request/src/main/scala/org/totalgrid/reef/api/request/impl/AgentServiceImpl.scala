@@ -51,9 +51,11 @@ trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
   }
 
   def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = {
-    val agent = Agent.newBuilder.setName(name).setPassword(password)
-    permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
-    ops { _.putOneOrThrow(agent.build) }
+    ops { session =>
+      val agent = Agent.newBuilder.setName(name).setPassword(password)
+      permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
+      session.putOneOrThrow(agent.build)
+    }
   }
 
   def deleteAgent(agent: Agent) = {

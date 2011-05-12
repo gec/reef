@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.xml.dnp3.{ Master, Stack, AppLayer, LinkLayer }
-import java.io.{ File, FileWriter, FileReader }
+import java.io.{ FileWriter, File }
 
 @RunWith(classOf[JUnitRunner])
 class XMLHelperTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
@@ -88,9 +88,7 @@ class XMLHelperTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll
   }
 
   test("XMLDeserialization") {
-    val fr = new FileReader(fname)
-    val master: Master = XMLHelper.read(fr, classOf[Master])
-    fr.close
+    val master: Master = XMLHelper.read(new File(fname), classOf[Master])
 
     //selectively read some parts of the above configuration
     master.getMasterSettings.getIntegrityPeriodMS should equal(60000)

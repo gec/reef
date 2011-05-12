@@ -101,6 +101,9 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToS
 
       // default all queries to max of 1000 events.
       val limit = select.eventSelect.limit getOrElse 1000
+      if (limit < 0) {
+        throw new BadRequestException("Limit must be non-negative")
+      }
 
       val results =
         from(alarms, events)((alarm, event) =>

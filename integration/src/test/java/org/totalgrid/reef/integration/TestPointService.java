@@ -68,7 +68,6 @@ public class TestPointService extends JavaBridgeTestBase
 
     /** Given a command, find the feedback point using the point service's entity query. */
     @Test
-    @Ignore
     public void pointFeedback() throws ReefServiceException
     {
         // Get a command from the command service

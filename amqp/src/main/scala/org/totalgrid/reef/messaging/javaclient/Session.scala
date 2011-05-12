@@ -92,13 +92,7 @@ class Session(client: ClientSession) extends ISession {
     client.addSubscription(pd.getKlass, ea.onEvent)
   }
 
-  // we create a defaultEnv here and pass it to the underlying ClientSession so we keep a reference to a request
-  // env that we control and can update, the underlying client will see any updates
-  // TODO: make defaultEnv immutable
-  private val defaultEnv = new ServiceHandlerHeaders(new RequestEnv)
-  client.setDefaultHeaders(defaultEnv.env)
-
-  override def getDefaultEnv = defaultEnv
+  override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)
 
   def close() = client.close()
 

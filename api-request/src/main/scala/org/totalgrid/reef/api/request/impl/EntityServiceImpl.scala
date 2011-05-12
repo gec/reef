@@ -49,10 +49,12 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   }
 
   def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = {
-    val result = ops { _.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ)) }
+    ops { session =>
+      val result = session.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ))
 
-    val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
-    allEntitiesList
+      val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
+      allEntitiesList
+    }
   }
   def getEntityTree(entityTree: Entity): Entity = {
     ops { _.getOneOrThrow(entityTree) }
@@ -87,10 +89,11 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   }
 
   def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = {
-    val prev = getEntityAttributes(uid)
-    val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
-
-    ops { _.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set)) }
+    ops { session =>
+      val prev = getEntityAttributes(uid)
+      val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
+      session.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set))
+    }
   }
 
   def clearEntityAttributes(uid: ReefUUID): EntityAttributes = {
@@ -98,14 +101,16 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   }
 
   protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = {
-    val prev = getEntityAttributes(uid)
-    val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
+    ops { session =>
+      val prev = getEntityAttributes(uid)
+      val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
 
-    val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
-    prevSet.foreach(req.addAttributes(_))
-    req.addAttributes(attr)
+      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
+      prevSet.foreach(req.addAttributes(_))
+      req.addAttributes(attr)
 
-    ops { _.putOneOrThrow(req.build) }
+      session.putOneOrThrow(req.build)
+    }
   }
 }
 

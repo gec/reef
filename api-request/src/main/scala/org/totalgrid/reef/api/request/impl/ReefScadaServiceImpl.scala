@@ -23,15 +23,14 @@ package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.request._
 import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
-import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 
 abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
   def authToken = _authToken
-  def sessionPool: ClientSessionPool = _sessionPool.getUnderlyingClientSessionPool
+  def sessionPool = _sessionPool
 }
 
 abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
-  def sessionPool = _sessionPool.getUnderlyingClientSessionPool
+  def sessionPool = _sessionPool
 }
 
 abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {

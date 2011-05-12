@@ -23,11 +23,15 @@ package org.totalgrid.reef.api
 /**
  * Base class for all exceptions thrown directly by services
  */
-abstract class ReefServiceException(val msg: String) extends Exception(msg) {
+abstract class ReefServiceException(msg: String, cause: Exception = null) extends Exception(msg, cause) {
 
   val status: Envelope.Status
 
   def getStatus = status
+}
+
+class InternalClientError(msg: String, cause: Exception) extends ReefServiceException(msg, cause) {
+  val status = Envelope.Status.LOCAL_ERROR
 }
 
 class UnknownServiceException(msg: String) extends ReefServiceException(msg) {

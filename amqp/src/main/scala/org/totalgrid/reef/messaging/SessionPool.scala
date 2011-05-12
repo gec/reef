@@ -26,8 +26,10 @@ import org.totalgrid.reef.api.scalaclient.{ClientSessionPool, ClientSession}
 import scala.collection.mutable._
 import org.totalgrid.reef.api.javaclient.{ISessionConsumer, ISessionPool}
 
-class SessionPool[A <:{def getClientSession() : ClientSession}](conn: A) extends ClientSessionPool with ISessionPool
+class SessionPool[A <:
+{def getClientSession() : ClientSession}](conn: A) extends ClientSessionPool with ISessionPool
 {
+
 	private val available = Set.empty[ClientSession]
 	private val unavailable = Set.empty[ClientSession]
 
@@ -52,33 +54,27 @@ class SessionPool[A <:{def getClientSession() : ClientSession}](conn: A) extends
 		available.add(session)
 	}
 
-	def borrow[A](consumer: ISessionConsumer[A]): A = borrow(client => consumer.apply(new Session(client)))
-
-	def borrow[A](consumer: ISessionConsumer[A], authToken: String): A = borrow(authToken)(client => consumer.apply(new Session(client)))
-
-	def borrow[A](function: ClientSession => A): A =
+	override def borrow[A](fun: ClientSession => A): A =
 	{
 		val session = acquire()
-		execute(function, session)
+		execute(fun, session)
 	}
 
-	def borrow[A](authToken: String)(function: ClientSession => A): A =
+	override def borrow[A](authToken: String)(fun: ClientSession => A): A =
 	{
-		borrow(execute(authToken, function))
+		borrow(execute(authToken, fun))
 	}
 
-	def getUnderlyingClientSessionPool: ClientSessionPool = this
+	// implementation of ISessionPool
 
-	private def execute[A](function: (ClientSession) => A, session: ClientSession): A =
+	override def borrow[A](consumer: ISessionConsumer[A]): A =
 	{
-		try
-		{
-			function(session)
-		}
-		finally
-		{
-			release(session)
-		}
+		borrow(client => consumer.apply(new Session(client)))
+	}
+
+	override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A =
+	{
+		borrow(authToken)(client => consumer.apply(new Session(client)))
 	}
 
 	private def execute[A](authToken: String, function: (ClientSession) => A): (ClientSession) => A =
@@ -94,6 +90,18 @@ class SessionPool[A <:{def getClientSession() : ClientSession}](conn: A) extends
 			{
 				session.getDefaultHeaders.reset
 			}
+	}
+
+	private def execute[A](function: (ClientSession) => A, session: ClientSession): A =
+	{
+		try
+		{
+			function(session)
+		}
+		finally
+		{
+			release(session)
+		}
 	}
 
 }
