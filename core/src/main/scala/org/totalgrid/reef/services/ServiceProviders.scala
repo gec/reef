@@ -85,7 +85,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new OverrideConfigService(modelFac.overrides),
     new TriggerSetService(modelFac.triggerSets),
 
-    new MeasurementBatchService(components.amqp),
+    new MeasurementBatchService(sessionPool),
     new MeasurementHistoryService(wrappedHistorian, pubs),
     new MeasurementSnapshotService(wrappedDb, pubs),
     new EventConfigService(modelFac.eventConfig),

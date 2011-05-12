@@ -35,7 +35,9 @@ import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDest
 import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure }
 import org.totalgrid.reef.api.service.AsyncServiceBase
 
-class MeasurementBatchService(amqp: AMQPProtoFactory)
+import org.totalgrid.reef.api.scalaclient.ISessionPool
+
+class MeasurementBatchService(pool: ISessionPool)
     extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
@@ -61,7 +63,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
 
     }
 
-    borrow { client =>
+    pool.borrow { client =>
       client.requestAsyncScatterGather(requests) { results =>
         val failures = results.flatMap {
           _ match {
@@ -78,24 +80,6 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
       }
     }
 
-  }
-
-  private def borrow[A](fun: ProtoClient => A): A = {
-
-    var client: Option[ProtoClient] = None
-
-    try {
-      val client = Some(amqp.getProtoClientSession(ReefServicesList, 5000))
-      fun(client.get)
-    } finally {
-      try {
-        client.foreach {
-          _.close()
-        }
-      } catch {
-        case ex: ReefServiceException => error(ex)
-      }
-    }
   }
 
   private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {
