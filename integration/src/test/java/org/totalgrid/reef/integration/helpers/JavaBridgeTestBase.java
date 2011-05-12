@@ -46,8 +46,8 @@ public class JavaBridgeTestBase {
 	 * connector to the bus, restarted for every test connected for
 	 */
 	protected IConnection connection = new Connection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
-	protected ISession client = null;
-    protected AtollService helpers = null;
+	protected ISession client;
+    protected AtollService helpers;
 
 	/**
 	 * Baseclass for junit integration tests, provides a Connection that is started and stopped with
