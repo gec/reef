@@ -90,6 +90,13 @@ class Session(client: ClientSession) extends ISession {
     new SubscriptionWrapper(sub)
   }
 
+  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
+    val sub = client.addSubscription[A](pd.getKlass)
+    val wrapped = new SubscriptionWrapper(sub)
+    wrapped.start(ea)
+    wrapped
+  }
+
   override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)
 
   def close() = client.close()

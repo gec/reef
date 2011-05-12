@@ -102,7 +102,12 @@ trait ISession {
 
   /* --- Misc --- */
   @throws(classOf[ServiceIOException])
+  @deprecated
   def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A]): ISubscription[A]
+
+  @throws(classOf[ServiceIOException])
+  @deprecated
+  def addSubscription[A <: GeneratedMessage](descriptor: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A]
 
   def getDefaultEnv(): ServiceHandlerHeaders
 
