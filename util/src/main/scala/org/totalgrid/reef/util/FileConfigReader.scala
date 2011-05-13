@@ -27,15 +27,12 @@ class FileConfigReader(file: String) extends ConfigReader {
   val fis = new FileInputStream(file)
   val props = new Properties
 
-	try
-	{
-		props.load(fis)
-	}
-	finally
-	{
-		fis.close
-	}
+  try {
+    props.load(fis)
+  } finally {
+    fis.close
+  }
 
-	def getProp(key: String): Option[String] = Option(props.getProperty(key))
+  def getProp(key: String): Option[String] = Option(props.getProperty(key))
 }
 
