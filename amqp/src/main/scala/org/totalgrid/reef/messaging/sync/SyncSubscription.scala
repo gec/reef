@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,18 +18,27 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.messaging.sync
 
-import org.totalgrid.reef.api.request.AuthTokenService
-import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
+import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.messaging.{ QueuePatterns, MessageConsumer, BrokerChannel }
 
-trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
+/**
+ * synchronous subscription object, allows canceling and a delayed starting
+ */
+class SyncSubscription[A](channel: BrokerChannel, consumerCreator: (Event[A] => Unit) => MessageConsumer) extends Subscription[A] {
 
-  def createNewAuthorizationToken(user: String, password: String): String = {
-    ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)).getToken }
+  private val queueName = QueuePatterns.getLateBoundPrivateUnboundQueue(channel)
+
+  override def id() = queueName
+  override def cancel() = channel.close()
+
+  def start(callback: Event[A] => Unit): Unit = {
+
+    channel.listen(queueName, consumerCreator(callback))
+
+    channel.start()
   }
 
-  def deleteAuthorizationToken(token: String) = {
-    ops { _.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token)) }
-  }
 }
-

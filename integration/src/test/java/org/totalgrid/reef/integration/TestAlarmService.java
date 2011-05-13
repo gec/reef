@@ -23,16 +23,12 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.api.request.builders.EntityRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.proto.Alarms.*;
-import org.totalgrid.reef.proto.Alarms;
-import org.totalgrid.reef.proto.Events;
 import org.totalgrid.reef.proto.Model.Entity;
-import org.totalgrid.reef.proto.Model.Relationship;
 
 import java.util.List;
 

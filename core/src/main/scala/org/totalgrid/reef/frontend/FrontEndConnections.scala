@@ -87,7 +87,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
       val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
       try {
         val result = session.postOneOrThrow(update)
-        debug { "Updated connection state: " + result }
+        info { "Updated connection state: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
       }
@@ -102,7 +102,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
       val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
       try {
         val result = session.postOneOrThrow(update)
-        debug { "Updated channel: " + result }
+        info { "Updated channel: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
       }

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,18 +18,13 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api;
 
-import org.totalgrid.reef.api.request.AuthTokenService
-import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
 
-trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
+public class InternalClientError extends ReefServiceException {
 
-  def createNewAuthorizationToken(user: String, password: String): String = {
-    ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)).getToken }
+  public InternalClientError(String msg, Exception cause) {
+      super(msg, Envelope.Status.LOCAL_ERROR, cause);
   }
 
-  def deleteAuthorizationToken(token: String) = {
-    ops { _.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token)) }
-  }
 }
-

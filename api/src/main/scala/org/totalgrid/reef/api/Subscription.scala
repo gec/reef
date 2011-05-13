@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,18 +18,31 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api
 
-import org.totalgrid.reef.api.request.AuthTokenService
-import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
+import org.totalgrid.reef.api.ServiceTypes.Event
 
-trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
+trait Subscription[SubscriptionMessageType] {
+  def cancel()
 
-  def createNewAuthorizationToken(user: String, password: String): String = {
-    ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)).getToken }
+  def start(callback: Event[SubscriptionMessageType] => Unit): Unit
+
+  def start(callback: (Envelope.Event, SubscriptionMessageType) => Unit): Unit = {
+    val proxy = { (evt: Event[SubscriptionMessageType]) => callback(evt.event, evt.result) }
+    start(proxy)
   }
 
-  def deleteAuthorizationToken(token: String) = {
-    ops { _.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token)) }
-  }
+  def id(): String
 }
 
+object Subscription {
+  /**
+   * convert a Subscription to the RequestEnv used in scala SyncOps
+   * TODO: rationalize RequestEnv and Subscription interfaces
+   */
+  implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): RequestEnv = {
+    val serviceHeaders = new ServiceHandlerHeaders()
+    serviceHeaders.setSubscribeQueue(sub.id)
+    serviceHeaders.env
+  }
+}

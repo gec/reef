@@ -28,6 +28,13 @@ public abstract class ReefServiceException extends Exception {
   final public Envelope.Status status;
   final public String msg;
 
+  public ReefServiceException(String msg, Envelope.Status status, Exception cause)
+  {
+    super(msg, cause);
+    this.msg = msg;
+    this.status = status;
+  }
+
   public ReefServiceException(String msg, Envelope.Status status)
   {
     super(msg);

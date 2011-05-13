@@ -23,8 +23,7 @@ package org.totalgrid.reef.api.request.impl
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.request.{ PointService }
-import org.totalgrid.reef.proto.Model.{ Point, Entity, ReefUUID }
-import org.totalgrid.reef.api.ISubscription
+import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.api.request.builders.PointRequestBuilders
 
 trait PointServiceImpl extends ReefServiceBaseClass with PointService {

@@ -22,15 +22,12 @@ package org.totalgrid.reef.messaging.javaclient
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv, ITypeDescriptor, ISubscription, ServiceTypes }
-import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IPromise, IResult, IResultAcceptor }
-
+import org.totalgrid.reef.api.{ ServiceTypes }
 import ServiceTypes._
-
-import org.totalgrid.reef.messaging.ProtoClient
 
 import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api._
+import javaclient._
 import scalaclient.ClientSession
 
 /**
@@ -45,26 +42,26 @@ class Session(client: ClientSession) extends ISession {
   def post[A <: AnyRef](payload: A): java.util.List[A] = client.postOrThrow(payload)
   def put[A <: AnyRef](payload: A): java.util.List[A] = client.putOrThrow(payload)
 
-  private implicit def convertEnv(hdr: IHeaderInfo): RequestEnv = {
+  private implicit def convertEnv[A](sub: ISubscription[A]): RequestEnv = {
     val headers = new ServiceHandlerHeaders(new RequestEnv)
-    hdr.setHeaders(headers)
+    headers.setSubscribeQueue(sub.getId)
     headers.env
   }
 
-  def get[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.getOrThrow(payload, hdr)
-  def delete[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.deleteOrThrow(payload, hdr)
-  def put[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.putOrThrow(payload, hdr)
-  def post[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.postOrThrow(payload, hdr)
+  def get[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.getOrThrow(payload, hdr)
+  def delete[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.deleteOrThrow(payload, hdr)
+  def put[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.putOrThrow(payload, hdr)
+  def post[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.postOrThrow(payload, hdr)
 
   def getOne[A <: AnyRef](payload: A): A = client.getOneOrThrow(payload)
   def deleteOne[A <: AnyRef](payload: A): A = client.deleteOneOrThrow(payload)
   def putOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
   def postOne[A <: AnyRef](payload: A): A = client.postOneOrThrow(payload)
 
-  def getOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.getOneOrThrow(payload, hdr)
-  def deleteOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.deleteOneOrThrow(payload, hdr)
-  def putOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.putOneOrThrow(payload, hdr)
-  def postOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.postOneOrThrow(payload, hdr)
+  def getOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.getOneOrThrow(payload, hdr)
+  def deleteOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.deleteOneOrThrow(payload, hdr)
+  def putOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.putOneOrThrow(payload, hdr)
+  def postOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.postOneOrThrow(payload, hdr)
 
   implicit def convert[A](fun: () => MultiResult[A]): IPromise[IResult[A]] = new Promise(fun)
 
@@ -73,10 +70,10 @@ class Session(client: ClientSession) extends ISession {
   def postFuture[A <: AnyRef](payload: A): IPromise[IResult[A]] = client.postWithFuture(payload)
   def putFuture[A <: AnyRef](payload: A): IPromise[IResult[A]] = client.putWithFuture(payload)
 
-  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.getWithFuture(payload, hdr)
-  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.deleteWithFuture(payload, hdr)
-  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.postWithFuture(payload, hdr)
-  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.putWithFuture(payload, hdr)
+  def getFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IPromise[IResult[A]] = client.getWithFuture(payload, hdr)
+  def deleteFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IPromise[IResult[A]] = client.deleteWithFuture(payload, hdr)
+  def postFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IPromise[IResult[A]] = client.postWithFuture(payload, hdr)
+  def putFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IPromise[IResult[A]] = client.putWithFuture(payload, hdr)
 
   /* -------- Asynchronous API ------ */
 
@@ -88,17 +85,19 @@ class Session(client: ClientSession) extends ISession {
   def postAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPost(payload)(callback)
   def putAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPut(payload)(callback)
 
-  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
-    client.addSubscription(pd.getKlass, ea.onEvent)
+  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A]): ISubscription[A] = {
+    val sub = client.addSubscription[A](pd.getKlass)
+    new SubscriptionWrapper(sub)
   }
 
-  // we create a defaultEnv here and pass it to the underlying ClientSession so we keep a reference to a request
-  // env that we control and can update, the underlying client will see any updates
-  // TODO: make defaultEnv immutable
-  private val defaultEnv = new ServiceHandlerHeaders(new RequestEnv)
-  client.setDefaultHeaders(defaultEnv.env)
+  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
+    val sub = client.addSubscription[A](pd.getKlass)
+    val wrapped = new SubscriptionWrapper(sub)
+    wrapped.start(ea)
+    wrapped
+  }
 
-  override def getDefaultEnv = defaultEnv
+  override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)
 
   def close() = client.close()
 

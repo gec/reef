@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.api.request
 
-import builders.PointRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -48,10 +47,11 @@ class EndpointManagementTest
     endpoints.isEmpty should equal(false)
 
     val syncVar = new EmptySyncVar[CommEndpointConnection]()
-    val sub = client.creatEndpointConnectionSubscription(new IEventAcceptorShim(ea => syncVar.update(ea.result)))
 
     client.addExplanation("Get all endpoint connections", "")
-    val connections = client.getAllEndpointConnections(sub)
+    val result = client.subscribeToAllEndpointConnections()
+    val connections = result.getResult
+    val sub = result.getSubscription
 
     val connectionEndpointUuids = connections.map { _.getEndpoint.getUuid.getUuid }.sorted
     val endpointUuids = endpoints.map { _.getUuid.getUuid }.sorted
@@ -64,6 +64,8 @@ class EndpointManagementTest
 
     // pick one endpoint to test enabling/disabling
     val endpointUuid = endpoints.head.getUuid
+
+    sub.start(new IEventAcceptorShim(ea => syncVar.update(ea.result)))
 
     def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
       syncVar.waitFor(x => x.getEnabled == enabled &&

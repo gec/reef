@@ -21,8 +21,8 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
 import org.totalgrid.reef.api.request.AlarmService;
 import org.totalgrid.reef.api.request.EventService;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
@@ -30,7 +30,6 @@ import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Alarms.Alarm;
-import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.proto.Events;
 
 import java.util.List;
@@ -67,11 +66,12 @@ public class TestEventService extends JavaBridgeTestBase {
 
         EventService es = helpers;
 
-        ISubscription<Events.Event> sub = es.createEventSubscription(mock);
-		List<Events.Event> events = es.getRecentEvents(10, sub);
-        assertEquals(events.size(), 10);
+		ISubscriptionResult<List<Events.Event>, Events.Event> events = es.subscribeToRecentEvents(10);
+        assertEquals(events.getResult().size(), 10);
 
         es.publishEvent(EventRequestBuilders.makeNewEventForEntityByName("Test.Event", "StaticSubstation.Line02.Current"));
+
+        events.getSubscription().start(mock);
 
         mock.pop(1000);
 
@@ -100,12 +100,13 @@ public class TestEventService extends JavaBridgeTestBase {
         EventService es = helpers;
         AlarmService as = helpers;
 
-        ISubscription<Alarm> sub = as.createAlarmSubscription(mock);
-		List<Alarm> events = as.getActiveAlarms(2, sub);
+        ISubscriptionResult<List<Alarm>, Alarm> result = as.subscribeToActiveAlarms(2);
+		List<Alarm> events = result.getResult();
         assertEquals(events.size(), 2);
 
         es.publishEvent(EventRequestBuilders.makeNewEventForEntityByName("Test.Alarm", "StaticSubstation.Line02.Current"));
 
+        result.getSubscription().start(mock);
         mock.pop(1000);
     }
 

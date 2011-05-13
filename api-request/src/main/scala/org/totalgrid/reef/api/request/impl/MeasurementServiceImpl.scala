@@ -20,41 +20,58 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import scala.collection.JavaConversions._
+
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.api.{ ExpectationException, ISubscription }
-import org.totalgrid.reef.api.ISubscription.convertISubToRequestEnv
+import org.totalgrid.reef.api.ExpectationException
+
 import org.totalgrid.reef.proto.Measurements.{ Measurement }
 import org.totalgrid.reef.api.request.MeasurementService
 import org.totalgrid.reef.api.request.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
+
 import org.totalgrid.reef.proto.Descriptors
+
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 
   def getMeasurementByName(name: String): Measurement = {
-    val measSnapshot = ops { _.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(name)) }
-    val meas = checkAndReturnByNames(name :: Nil, measSnapshot.getMeasurementsList)
-    meas.get(0)
+    ops { session =>
+      val measSnapshot = session.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByName(name))
+      val meas = checkAndReturnByNames(name :: Nil, measSnapshot.getMeasurementsList)
+      meas.get(0)
+    }
   }
   def getMeasurementByPoint(point: Point): Measurement = getMeasurementByName(point.getName)
 
   def getMeasurementsByNames(names: java.util.List[String]): java.util.List[Measurement] = {
-    val measSnapshot = ops { _.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names)) }
-    checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
+    ops { session =>
+      val measSnapshot = session.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names))
+      checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
+    }
   }
   def getMeasurementsByPoints(points: java.util.List[Point]): java.util.List[Measurement] = {
-    val measSnapshot = ops { _.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByPoints(points)) }
-    checkAndReturn(points, measSnapshot.getMeasurementsList)
+    ops { session =>
+      val measSnapshot = session.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByPoints(points))
+      checkAndReturn(points, measSnapshot.getMeasurementsList)
+    }
   }
 
-  def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription[Measurement]): java.util.List[Measurement] = {
-    val measSnapshot = ops { _.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names), subscription) }
-    checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
+  def subscribeToMeasurementsByNames(names: java.util.List[String]) = {
+    ops { session =>
+      useSubscription(session, Descriptors.measurementSnapshot.getKlass) { sub =>
+        val measSnapshot = session.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByNames(names), sub)
+        checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
+      }
+    }
   }
-  def getMeasurementsByPoints(points: java.util.List[Point], subscription: ISubscription[Measurement]): java.util.List[Measurement] = {
-    val measSnapshot = ops { _.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByPoints(points), subscription) }
-    checkAndReturn(points, measSnapshot.getMeasurementsList)
+  def subscribeToMeasurementsByPoints(points: java.util.List[Point]) = {
+    ops { session =>
+      useSubscription(session, Descriptors.measurementSnapshot.getKlass) { sub =>
+        val measSnapshot = session.getOneOrThrow(MeasurementSnapshotRequestBuilders.getByPoints(points), sub)
+        checkAndReturn(points, measSnapshot.getMeasurementsList)
+      }
+    }
   }
 
   def publishMeasurements(meases: java.util.List[Measurement]) {
@@ -76,32 +93,31 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
   }
 
   def getMeasurementHistory(point: Point, limit: Int): java.util.List[Measurement] = {
-    val history = ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit)) }
-    history.getMeasurementsList
+    ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit)).getMeasurementsList }
   }
 
   def getMeasurementHistory(point: Point, since: Long, limit: Int): java.util.List[Measurement] = {
-    val history = ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit)) }
-    history.getMeasurementsList
+    ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit)).getMeasurementsList }
   }
 
   def getMeasurementHistory(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int): java.util.List[Measurement] = {
-    val history = ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, returnNewest, limit)) }
-    history.getMeasurementsList
+    ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, returnNewest, limit)).getMeasurementsList }
   }
 
-  def getMeasurementHistory(point: Point, limit: Int, sub: ISubscription[Measurement]): java.util.List[Measurement] = {
-    val history = ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub) }
-    history.getMeasurementsList
+  def subscribeToMeasurementHistory(point: Point, limit: Int) = {
+    ops { session =>
+      useSubscription(session, Descriptors.measurementHistory.getKlass) { sub =>
+        session.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub).getMeasurementsList
+      }
+    }
   }
 
-  def getMeasurementHistory(point: Point, since: Long, limit: Int, sub: ISubscription[Measurement]) = {
-    val history = ops { _.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub) }
-    history.getMeasurementsList
-  }
-
-  def createMeasurementSubscription(callback: IEventAcceptor[Measurement]): ISubscription[Measurement] = {
-    ops { _.addSubscription(Descriptors.measurementSnapshot().getKlass, callback.onEvent) }
+  def subscribeToMeasurementHistory(point: Point, since: Long, limit: Int) = {
+    ops { session =>
+      useSubscription(session, Descriptors.measurementHistory.getKlass) { sub =>
+        session.getOneOrThrow(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub).getMeasurementsList
+      }
+    }
   }
 }
 

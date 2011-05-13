@@ -24,11 +24,10 @@ import org.totalgrid.reef.api.request.EndpointManagementService
 
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
-import org.totalgrid.reef.api.{ ISubscription }
+import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
   def getAllEndpoints() = {
@@ -56,15 +55,16 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
     ops { _.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build) }
   }
 
-  def getAllEndpointConnections(sub: ISubscription[CommEndpointConnection]) = {
-    ops { _.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build, sub) }
+  def subscribeToAllEndpointConnections() = {
+    ops { session =>
+      useSubscription(session, Descriptors.commEndpointConnection.getKlass) { sub =>
+        session.getOrThrow(CommEndpointConnection.newBuilder.setUid("*").build, sub)
+      }
+    }
   }
 
   def getEndpointConnection(endpointUuid: ReefUUID) = {
     ops { _.getOneOrThrow(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build) }
   }
 
-  def creatEndpointConnectionSubscription(callback: IEventAcceptor[CommEndpointConnection]): ISubscription[CommEndpointConnection] = {
-    ops { _.addSubscription(Descriptors.commEndpointConnection.getKlass, callback.onEvent) }
-  }
 }

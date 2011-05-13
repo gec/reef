@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,18 +18,20 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.request.AuthTokenService
-import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
+import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, ISubscriptionResult, ISubscription }
 
-trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
+class SubscriptionWrapper[A](sub: Subscription[A]) extends ISubscription[A] {
+  def start(callback: IEventAcceptor[A]) = sub.start(callback.onEvent _)
 
-  def createNewAuthorizationToken(user: String, password: String): String = {
-    ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)).getToken }
-  }
+  def getId() = sub.id
 
-  def deleteAuthorizationToken(token: String) = {
-    ops { _.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token)) }
-  }
+  def cancel() = sub.cancel
 }
 
+class SubscriptionResult[A, B](result: A, sub: Subscription[B]) extends ISubscriptionResult[A, B] {
+  override def getResult = result
+  override def getSubscription = new SubscriptionWrapper(sub)
+}

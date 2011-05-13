@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,18 +18,24 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.javaclient
 
-import org.totalgrid.reef.api.request.AuthTokenService
-import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
+/**
+ * A subscription object provides header info and can also be canceled. It carries the message type
+ * primarily to make message signatures more expressive.
+ * TODO: add ISubscriptions to scala apis
+ */
+trait ISubscription[SubscriptionMessageType] {
 
-trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
+  def cancel(): Unit
 
-  def createNewAuthorizationToken(user: String, password: String): String = {
-    ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)).getToken }
-  }
+  def getId(): String
 
-  def deleteAuthorizationToken(token: String) = {
-    ops { _.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token)) }
-  }
+  def start(callback: IEventAcceptor[SubscriptionMessageType]): Unit
+
 }
 
+trait ISubscriptionResult[ResultType, SubType] {
+  def getResult: ResultType
+  def getSubscription: ISubscription[SubType]
+}
