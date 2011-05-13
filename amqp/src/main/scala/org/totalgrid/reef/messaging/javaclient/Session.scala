@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging.javaclient
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv, ITypeDescriptor, ISubscription, ServiceTypes }
-import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IFuture, IResult, IResultAcceptor }
+import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IPromise, IResult, IResultAcceptor }
 
 import ServiceTypes._
 
@@ -66,17 +66,17 @@ class Session(client: ClientSession) extends ISession {
   def putOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.putOneOrThrow(payload, hdr)
   def postOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.postOneOrThrow(payload, hdr)
 
-  implicit def convert[A](fun: () => MultiResult[A]): IFuture[A] = new Future(fun)
+  implicit def convert[A](fun: () => MultiResult[A]): IPromise[IResult[A]] = new Promise(fun)
 
-  def getFuture[A <: AnyRef](payload: A): IFuture[A] = client.getWithFuture(payload)
-  def deleteFuture[A <: AnyRef](payload: A): IFuture[A] = client.deleteWithFuture(payload)
-  def postFuture[A <: AnyRef](payload: A): IFuture[A] = client.postWithFuture(payload)
-  def putFuture[A <: AnyRef](payload: A): IFuture[A] = client.putWithFuture(payload)
+  def getFuture[A <: AnyRef](payload: A): IPromise[IResult[A]] = client.getWithFuture(payload)
+  def deleteFuture[A <: AnyRef](payload: A): IPromise[IResult[A]] = client.deleteWithFuture(payload)
+  def postFuture[A <: AnyRef](payload: A): IPromise[IResult[A]] = client.postWithFuture(payload)
+  def putFuture[A <: AnyRef](payload: A): IPromise[IResult[A]] = client.putWithFuture(payload)
 
-  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.getWithFuture(payload, hdr)
-  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.deleteWithFuture(payload, hdr)
-  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.postWithFuture(payload, hdr)
-  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.putWithFuture(payload, hdr)
+  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.getWithFuture(payload, hdr)
+  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.deleteWithFuture(payload, hdr)
+  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.postWithFuture(payload, hdr)
+  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]] = client.putWithFuture(payload, hdr)
 
   /* -------- Asynchronous API ------ */
 

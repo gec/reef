@@ -18,16 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.ServiceTypes.Failure
+import org.totalgrid.reef.api.ExpectationException;
 
-trait IResult[A] {
 
-  def isSuccess: Boolean
+public interface IResult<A> {
 
-  def getResult: java.util.List[A]
+  boolean isSuccess();
 
-  def getFailure: Failure
+  java.util.List<A> expectMany() throws ExpectationException;
+
+  A expectOne() throws ExpectationException;
 
 }

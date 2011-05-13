@@ -73,22 +73,22 @@ trait ISession {
 
   /* -------- Future API ------------ */
   @throws(classOf[ServiceIOException])
-  def getFuture[A <: AnyRef](payload: A): IFuture[A]
+  def getFuture[A <: AnyRef](payload: A): IPromise[IResult[A]]
   @throws(classOf[ServiceIOException])
-  def deleteFuture[A <: AnyRef](payload: A): IFuture[A]
+  def deleteFuture[A <: AnyRef](payload: A): IPromise[IResult[A]]
   @throws(classOf[ServiceIOException])
-  def postFuture[A <: AnyRef](payload: A): IFuture[A]
+  def postFuture[A <: AnyRef](payload: A): IPromise[IResult[A]]
   @throws(classOf[ServiceIOException])
-  def putFuture[A <: AnyRef](payload: A): IFuture[A]
+  def putFuture[A <: AnyRef](payload: A): IPromise[IResult[A]]
 
   @throws(classOf[ServiceIOException])
-  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]]
   @throws(classOf[ServiceIOException])
-  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]]
   @throws(classOf[ServiceIOException])
-  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]]
   @throws(classOf[ServiceIOException])
-  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A]
+  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IPromise[IResult[A]]
 
   /* -------- Asynchronous API ------ */
   @throws(classOf[ServiceIOException])

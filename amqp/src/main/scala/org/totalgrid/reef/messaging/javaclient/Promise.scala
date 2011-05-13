@@ -18,8 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.messaging.javaclient
 
-trait IFuture[A] {
-  def get: IResult[A]
+import org.totalgrid.reef.api.javaclient.{ IPromise, IResult }
+import org.totalgrid.reef.api.ServiceTypes._
+
+class Promise[A](fun: () => MultiResult[A]) extends IPromise[IResult[A]] {
+  final override def await(): IResult[A] = new Result(fun())
 }

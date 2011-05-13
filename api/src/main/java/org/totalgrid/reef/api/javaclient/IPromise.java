@@ -18,11 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
+package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.javaclient.{ IFuture, IResult }
-import org.totalgrid.reef.api.ServiceTypes._
+/**
+ *  A guaranteed deferred value.
+ */
+public interface IPromise<A> {
 
-class Future[A](fun: () => MultiResult[A]) extends IFuture[A] {
-  override def get: IResult[A] = new Result(fun())
+   /**
+     * Synchronously blocks for some un-specified period of time for the value. Returns immediately if the promise is complete.
+     *
+     * @return The value-type of the IPromise
+     */
+    A await();
 }

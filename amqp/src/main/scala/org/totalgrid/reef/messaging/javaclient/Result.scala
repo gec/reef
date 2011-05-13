@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
+import org.totalgrid.reef.api.ExpectationException
 import org.totalgrid.reef.api.javaclient.IResult
 import org.totalgrid.reef.api.ServiceTypes._
 import scala.collection.JavaConversions._
@@ -29,6 +30,20 @@ class Result[A](result: MultiResult[A]) extends IResult[A] {
   def isSuccess = result match {
     case MultiSuccess(status, x) => true
     case _ => false
+  }
+
+  final override def expectOne(): A = expectSuccess match {
+    case List(x) => x
+    case x: List[A] =>
+      throw new ExpectationException("Expected a single result, but got list of size: " + x.size)
+  }
+
+  final override def expectMany() = expectSuccess
+
+  private def expectSuccess: List[A] = result match {
+    case MultiSuccess(_, x) => x
+    case Failure(status, msg) =>
+      throw new ExpectationException("Expected a successfully response, but got failure with status: " + status)
   }
 
   def getResult: java.util.List[A] = result match {
