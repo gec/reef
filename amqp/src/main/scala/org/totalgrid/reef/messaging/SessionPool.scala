@@ -22,86 +22,76 @@
 package org.totalgrid.reef.messaging
 
 import javaclient.Session
-import org.totalgrid.reef.api.scalaclient.{ClientSessionPool, ClientSession}
+import org.totalgrid.reef.api.scalaclient.{ ClientSessionPool, ClientSession }
 import scala.collection.mutable._
-import org.totalgrid.reef.api.javaclient.{ISessionConsumer, ISessionPool}
+import org.totalgrid.reef.api.javaclient.{ ISessionConsumer, ISessionPool }
 
-class SessionPool[A <:
-{def getClientSession() : ClientSession}](conn: A) extends ClientSessionPool with ISessionPool
-{
+class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ClientSessionPool with ISessionPool {
 
-	private val available = Set.empty[ClientSession]
-	private val unavailable = Set.empty[ClientSession]
+  private val available = Set.empty[ClientSession]
+  private val unavailable = Set.empty[ClientSession]
 
-	private def acquire(): ClientSession = available.synchronized
-	{
-		available.lastOption match
-		{
-			case Some(s) =>
-				available.remove(s)
-				unavailable.add(s)
-				s
-			case None =>
-				val s = conn.getClientSession()
-				unavailable.add(s)
-				s
-		}
-	}
+  private def acquire(): ClientSession = available.synchronized {
+    available.lastOption match {
+      case Some(s) =>
+        available.remove(s)
+        unavailable.add(s)
+        s
+      case None =>
+        val s = conn.getClientSession()
+        unavailable.add(s)
+        s
+    }
+  }
 
-	private def release(session: ClientSession) = available.synchronized
-	{
-		unavailable.remove(session)
-		available.add(session)
-	}
+  private def release(session: ClientSession) = available.synchronized {
+    unavailable.remove(session)
+    available.add(session)
+  }
 
-	override def borrow[A](fun: ClientSession => A): A =
-	{
-		val session = acquire()
-		execute(fun, session)
-	}
+  override def borrow[A](fun: ClientSession => A): A =
+    {
+      val session = acquire()
+      execute(fun, session)
+    }
 
-	override def borrow[A](authToken: String)(fun: ClientSession => A): A =
-	{
-		borrow(execute(authToken, fun))
-	}
+  override def borrow[A](authToken: String)(fun: ClientSession => A): A =
+    {
+      borrow(execute(authToken, fun))
+    }
 
-	// implementation of ISessionPool
+  // implementation of ISessionPool
 
-	override def borrow[A](consumer: ISessionConsumer[A]): A =
-	{
-		borrow(client => consumer.apply(new Session(client)))
-	}
+  override def borrow[A](consumer: ISessionConsumer[A]): A =
+    {
+      borrow(client => consumer.apply(new Session(client)))
+    }
 
-	override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A =
-	{
-		borrow(authToken)(client => consumer.apply(new Session(client)))
-	}
+  override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A =
+    {
+      borrow(authToken)(client => consumer.apply(new Session(client)))
+    }
 
-	private def execute[A](authToken: String, function: (ClientSession) => A): (ClientSession) => A =
-	{
-		session =>
-			try
-			{
-				import org.totalgrid.reef.api.ServiceHandlerHeaders._
-				session.getDefaultHeaders.setAuthToken(authToken)
-				function(session)
-			}
-			finally
-			{
-				session.getDefaultHeaders.reset
-			}
-	}
+  def shutdown() {}
 
-	private def execute[A](function: (ClientSession) => A, session: ClientSession): A =
-	{
-		try
-		{
-			function(session)
-		}
-		finally
-		{
-			release(session)
-		}
-	}
+  private def execute[A](authToken: String, function: (ClientSession) => A): (ClientSession) => A =
+    { session =>
+      try {
+        import org.totalgrid.reef.api.ServiceHandlerHeaders._
+        session.getDefaultHeaders.setAuthToken(authToken)
+        function(session)
+      } finally {
+        session.getDefaultHeaders.reset
+      }
+    }
+
+  private def execute[A](function: (ClientSession) => A, session: ClientSession): A =
+    {
+      try {
+        function(session)
+      } finally {
+        release(session)
+      }
+    }
 
 }

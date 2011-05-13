@@ -26,9 +26,9 @@ trait ISessionPool {
 
   /**
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
-   * @consumer a block of code to execute using the acquired ISession
-   * @return the return value from consumer.apply
-   * @throws ServiceIOException if a session cannot be acquired we will throw an error
+   * @param consumer a block of code to execute using the acquired ISession
+   * @return the return value from consumer.apply()
+   * @throws ServiceIOException if a session cannot be acquired an exception will be thrown
    */
   @throws(classOf[ReefServiceException])
   def borrow[A](consumer: ISessionConsumer[A]): A
@@ -37,10 +37,12 @@ trait ISessionPool {
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
    * @param authToken an authtoken to attach before calling consumer.apply
    * @param consumer a block of code to execute using the acquired ISession
-   * @return the return value from consumer.apply
-   * @throws ServiceIOException if a session cannot be acquired we will throw an error
+   * @return the return value from consumer.apply()
+   * @throws ServiceIOException if a session cannot be acquired an exception will be thrown
    * @throws ReefServiceException
    */
   @throws(classOf[ReefServiceException])
   def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A
+
+  def shutdown()
 }
