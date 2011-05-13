@@ -154,7 +154,6 @@ class MeasurementStreamCoordinator(
         assignedTime = assignedTime,
         offlineTime = Some(now),
         onlineTime = None,
-        state = initialConnectionState,
         serviceRoutingKey = serviceRoutingKey)
       Some(newAssign)
     } else {
@@ -184,9 +183,8 @@ class MeasurementStreamCoordinator(
         markOnline(endpoint)
       }
     } else {
-      if (existing.offlineTime == None && sql.offlineTime != None) {
-        markOffline(endpoint)
-      }
+      // Workaround: can't check offlineTime because assignment may have reset it. Just do it twice.
+      markOffline(endpoint)
     }
     if (sql.enabled != existing.enabled) {
       checkFepAssignment(sql, endpoint)
