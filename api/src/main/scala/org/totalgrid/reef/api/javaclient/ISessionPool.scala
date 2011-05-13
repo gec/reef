@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.api.javaclient
 
-import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 import org.totalgrid.reef.api.ReefServiceException
 
 trait ISessionPool {

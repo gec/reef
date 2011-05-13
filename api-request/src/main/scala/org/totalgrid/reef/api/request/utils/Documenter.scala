@@ -29,13 +29,14 @@ import java.io.File
 import xml.{ Node, XML, NodeSeq }
 
 import org.totalgrid.reef.util.BuildEnv
-import org.totalgrid.reef.api.{ ServiceTypes, Envelope }
+import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.scalaclient._
 
 object Documenter {
 
   case class CaseExplanation(title: String, desc: Node)
 
-  case class RequestWithExplanation[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: ServiceTypes.MultiResult[A])
+  case class RequestWithExplanation[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: MultiResult[A])
 
   def document[A](title: String, verb: String, desc: Node, request: A, responses: List[A]) = {
     <case>
@@ -64,7 +65,7 @@ object Documenter {
     getExplainedCase(req.explanation, req.verb, req.request, req.results)
   }
 
-  def getExplainedCase[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: ServiceTypes.MultiResult[A]): Node = {
+  def getExplainedCase[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: MultiResult[A]): Node = {
     <case>
       <title>{ explanation.title }</title>
       <desc>{ explanation.desc }</desc>
@@ -73,9 +74,9 @@ object Documenter {
       </request>
       {
         results match {
-          case ServiceTypes.Failure(code, string) =>
+          case Failure(code, string) =>
             getErrorResponse(string, code)
-          case ServiceTypes.MultiSuccess(status, responses) =>
+          case MultiSuccess(status, responses) =>
             getResponse(status, responses)
         }
       }

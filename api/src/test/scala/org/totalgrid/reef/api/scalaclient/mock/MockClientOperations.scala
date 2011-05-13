@@ -20,9 +20,8 @@
  */
 package org.totalgrid.reef.api.scalaclient.mock
 
-import org.totalgrid.reef.api.scalaclient.ClientOperations
+import org.totalgrid.reef.api.scalaclient.{ ClientOperations, MultiResult }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
-import org.totalgrid.reef.api.ServiceTypes.MultiResult
 
 import scala.collection.mutable.Queue
 

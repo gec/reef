@@ -21,10 +21,10 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest, CommandStatus, CommandAccess }
-import org.totalgrid.reef.proto.Model.{ Command, ReefUUID }
+import org.totalgrid.reef.proto.Model.Command
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
-import org.totalgrid.reef.api.ServiceTypes
+import org.totalgrid.reef.api.scalaclient.{ SingleSuccess, Failure }
 import org.totalgrid.reef.api.request.{ CommandService }
 
 trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
@@ -75,8 +75,8 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
   def getCommandLockOnCommand(id: Command): CommandAccess = {
     ops {
       _.getOne(CommandAccessRequestBuilders.getByCommand(id)) match {
-        case ServiceTypes.SingleSuccess(status, lock) => lock
-        case ServiceTypes.Failure(status, str) => null
+        case SingleSuccess(status, lock) => lock
+        case Failure(status, str) => null
       }
     }
   }

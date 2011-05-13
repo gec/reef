@@ -18,24 +18,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.api.scalaclient
 
-/**
- * Contains types/case classes used in the proto service interfaces
- */
-object ServiceTypes {
+import org.totalgrid.reef.api._
 
-  /* ---- Case classes that make the service api easier to use ---- */
+trait MultiResult[+A]
 
-  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
+trait SingleResult[+A]
 
-  case class Response[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, result: List[A] = Nil, error: String = "")
+case class SingleSuccess[A](status: Envelope.Status, result: A) extends SingleResult[A]
 
-  case class Event[A](event: Envelope.Event, result: A) {
-    // accessors for java client
-    def getEvent() = event
+case class MultiSuccess[A](status: Envelope.Status, result: List[A]) extends MultiResult[A]
 
-    def getResult() = result
+case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
+  override def toString: String = super.toString + " " + status + " message: " + error
+
+  def toException: ReefServiceException = status match {
+    case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
+    case Envelope.Status.UNAUTHORIZED => new UnauthorizedException(error)
+    case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
+    case _ => new BadRequestException(error, status)
   }
-
 }

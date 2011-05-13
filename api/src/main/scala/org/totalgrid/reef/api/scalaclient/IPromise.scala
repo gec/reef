@@ -18,18 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
 
-/**
- *  A guaranteed deferred value.
- */
-public interface IPromise<A> {
+package org.totalgrid.reef.api.scalaclient;
 
-   /**
-     * Synchronously blocks for some un-specified period of time for the value. Returns immediately if the promise is complete.
-     *
-     * @return The value-type of the IPromise
-     */
-    A await();
+trait IPromise[A] {
+
+  def await: A
 
 }

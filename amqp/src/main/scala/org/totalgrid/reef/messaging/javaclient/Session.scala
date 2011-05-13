@@ -22,11 +22,9 @@ package org.totalgrid.reef.messaging.javaclient
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ ServiceTypes }
-import ServiceTypes._
-
-import _root_.scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.scalaclient.MultiResult
 import javaclient._
 import scalaclient.ClientSession
 

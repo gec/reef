@@ -27,16 +27,17 @@ import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback 
 import org.totalgrid.reef.api.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
 import org.osgi.framework.BundleContext
-import com.weiglewilczek.scalamodules._
 
 import scala.annotation.tailrec
 
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.scalaclient.{ SyncClientSession, SyncOperations, DefaultHeaders, MultiResult, Failure }
+import org.totalgrid.reef.api.ServiceTypes.Response
+
+import com.weiglewilczek.scalamodules._
 import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.totalgrid.reef.api._
-import scalaclient.{ SyncClientSession, SyncOperations, DefaultHeaders }
-import org.totalgrid.reef.api.ServiceTypes.{ Event, Response, MultiResult, Failure }
 
 class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
 

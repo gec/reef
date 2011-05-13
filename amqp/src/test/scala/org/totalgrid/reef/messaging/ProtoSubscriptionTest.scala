@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.scalaclient.MultiSuccess
 import service.AsyncToSyncServiceAdapter
 
 @RunWith(classOf[JUnitRunner])
@@ -122,7 +122,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
       import Subscription.convertSubscriptionToRequestEnv
       val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, headerSub) match {
-        case ServiceTypes.MultiSuccess(status, Nil) =>
+        case MultiSuccess(status, Nil) =>
         case _ => false should equal(true)
       }
 

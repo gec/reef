@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.api.ExpectationException
 import org.totalgrid.reef.api.javaclient.IResult
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.{ MultiResult, MultiSuccess, Failure }
 import scala.collection.JavaConversions._
 
 class Result[A](result: MultiResult[A]) extends IResult[A] {

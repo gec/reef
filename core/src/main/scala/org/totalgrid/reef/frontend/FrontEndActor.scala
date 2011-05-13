@@ -27,7 +27,7 @@ import org.totalgrid.reef.app.ServiceContext
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.api.ServiceTypes.{ SingleSuccess, Failure }
+import org.totalgrid.reef.api.scalaclient.{ SingleSuccess, Failure }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 

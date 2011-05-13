@@ -27,7 +27,8 @@ import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.messaging.Connection
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
-import org.totalgrid.reef.api.ServiceTypes.{ Failure, MultiSuccess, Event }
+import org.totalgrid.reef.api.scalaclient.{ Failure, MultiSuccess }
+import org.totalgrid.reef.api.ServiceTypes.Event
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 //implicit

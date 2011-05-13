@@ -22,7 +22,6 @@ package org.totalgrid.reef.api.scalaclient
  */
 import ProtoConversions._
 import org.totalgrid.reef.api._
-import ServiceTypes._
 import Envelope.Verb._
 
 //implicits

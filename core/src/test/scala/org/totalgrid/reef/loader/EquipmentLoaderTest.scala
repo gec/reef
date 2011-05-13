@@ -32,8 +32,7 @@ import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.scalaclient.MockSyncOperations
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, MultiSuccess }
 import org.totalgrid.reef.api.Envelope
 
 class NullExceptionCollector extends ExceptionCollector {

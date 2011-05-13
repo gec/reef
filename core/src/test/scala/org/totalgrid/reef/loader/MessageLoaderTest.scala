@@ -33,8 +33,7 @@ import java.util.{ Date, Calendar }
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.api.scalaclient.MockSyncOperations
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, MultiSuccess }
 import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])

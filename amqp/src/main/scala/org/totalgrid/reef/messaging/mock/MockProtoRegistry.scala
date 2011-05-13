@@ -35,6 +35,7 @@ import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.{ MultiResult, Failure }
 
 //implicits for massaging service return types
 import org.totalgrid.reef.api.scalaclient.ProtoConversions._

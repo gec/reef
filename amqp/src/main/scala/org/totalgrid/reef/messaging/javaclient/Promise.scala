@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
+import org.totalgrid.reef.api.scalaclient.MultiResult
 import org.totalgrid.reef.api.javaclient.{ IPromise, IResult }
-import org.totalgrid.reef.api.ServiceTypes._
 
 class Promise[A](fun: () => MultiResult[A]) extends IPromise[IResult[A]] {
   final override def await(): IResult[A] = new Result(fun())

@@ -23,7 +23,6 @@ package org.totalgrid.reef.api.scalaclient
 
 import org.totalgrid.reef.api.{ RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.Envelope.Verb
-import org.totalgrid.reef.api.ServiceTypes.MultiResult
 
 trait FutureOperations {
 

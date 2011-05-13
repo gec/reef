@@ -28,11 +28,12 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
+import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure, MultiResult }
+import org.totalgrid.reef.api.scalaclient.{ Failure, MultiResult }
+import org.totalgrid.reef.api.ServiceTypes.{ Response, Request }
 import org.totalgrid.reef.api.service.AsyncServiceBase
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._

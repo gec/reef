@@ -24,7 +24,7 @@ import xml.Node
 import scala.collection.mutable.Queue
 
 import org.totalgrid.reef.api.{ RequestEnv, Envelope, IDestination, AnyNode }
-import org.totalgrid.reef.api.ServiceTypes.MultiResult
+import org.totalgrid.reef.api.scalaclient.MultiResult
 import org.totalgrid.reef.api.scalaclient.{ DefaultHeaders, SyncOperations }
 
 /**

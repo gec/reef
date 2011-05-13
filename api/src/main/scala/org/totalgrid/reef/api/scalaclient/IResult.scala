@@ -20,15 +20,10 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.ReefServiceException
-import org.totalgrid.reef.api.ServiceTypes.MultiResult
+trait IResult[A] {
 
-trait IFuture[A <: AnyRef] {
+  def expectMany: MultiResult[A]
 
-  @throws(classOf[ReefServiceException])
-  def apply(): List[A]
-
-  @throws(classOf[ReefServiceException])
-  def async(callback: MultiResult[A] => Unit): Unit
+  def expectOne: A
 
 }

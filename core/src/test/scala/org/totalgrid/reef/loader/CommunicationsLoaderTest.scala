@@ -25,20 +25,17 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import java.util.{ Date, Calendar }
 
 import org.totalgrid.reef.loader.sx.communications._
-import java.io.File
-import collection.mutable.{ Queue, HashMap }
+
+import collection.mutable.HashMap
 import org.totalgrid.reef.util.BuildEnv
 
 // scala XML classes
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.api.scalaclient.MockSyncOperations
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, MultiSuccess }
 import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])
