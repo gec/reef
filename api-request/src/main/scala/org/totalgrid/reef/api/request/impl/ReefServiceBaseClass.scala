@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, ClientSessionPool, SubscriptionManagement, SyncOperations }
+import org.totalgrid.reef.api.scalaclient._
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
+import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException, ExpectationException }
 import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
 import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
 

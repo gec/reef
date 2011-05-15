@@ -21,7 +21,6 @@ package org.totalgrid.reef.api.scalaclient
  * under the License.
  */
 import org.totalgrid.reef.api.{ Envelope, StatusCodes }
-import org.totalgrid.reef.api.ServiceTypes._
 
 /**
  *

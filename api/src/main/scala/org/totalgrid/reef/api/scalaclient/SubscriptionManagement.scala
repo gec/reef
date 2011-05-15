@@ -21,7 +21,6 @@
 package org.totalgrid.reef.api.scalaclient
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.Subscription
 
 /**
  * thick interface for creating subscriptions objects.

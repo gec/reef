@@ -21,7 +21,6 @@ package org.totalgrid.reef.api.scalaclient
  * under the License.
  */
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
-import org.totalgrid.reef.api.ServiceTypes._
 
 /**
  * scala analog to the java ISession

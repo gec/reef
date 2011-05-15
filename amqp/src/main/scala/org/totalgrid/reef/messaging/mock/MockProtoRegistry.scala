@@ -29,13 +29,12 @@ import scala.collection.immutable
 
 import org.totalgrid.reef.messaging.Connection
 
-import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.api.service.IServiceAsync
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
-import org.totalgrid.reef.api.ServiceTypes._
-import org.totalgrid.reef.api.scalaclient.{ MultiResult, Failure }
+
+import org.totalgrid.reef.api.scalaclient._
 
 //implicits for massaging service return types
 import org.totalgrid.reef.api.scalaclient.ProtoConversions._

@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.api.ReefServiceException
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.util.EmptySyncVar
 
 import org.scalatest.junit.JUnitRunner

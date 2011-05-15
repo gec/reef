@@ -21,10 +21,6 @@ package org.totalgrid.reef.api.scalaclient
  * under the License.
  */
 
-import org.totalgrid.reef.api.ServiceTypes._
-
-//import ProtoConversions._
-
 trait AsyncScatterGatherOperations {
 
   self: AsyncOperations with DefaultHeaders =>

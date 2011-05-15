@@ -20,8 +20,7 @@
  */
 package org.totalgrid.reef.messaging.sync
 
-import org.totalgrid.reef.api.ServiceTypes.Event
-import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.api.scalaclient.{ Subscription, Event }
 import org.totalgrid.reef.messaging.{ QueuePatterns, MessageConsumer, BrokerChannel }
 
 /**

@@ -31,7 +31,7 @@ import org.totalgrid.reef.util.SyncVar
 
 import org.totalgrid.reef.api._
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import ServiceTypes.{ Response, Event }
+import scalaclient.{ Response, Event }
 
 object ServiceResponseTestingHelpers extends ShouldMatchers {
   implicit def checkResponse[A](resp: Response[A]): List[A] = {
@@ -58,7 +58,7 @@ object ServiceResponseTestingHelpers extends ShouldMatchers {
   def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], RequestEnv) = {
 
     val updates = new BlockingQueue[A]
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt.result) })
+    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt.value) })
 
     (updates, env)
   }

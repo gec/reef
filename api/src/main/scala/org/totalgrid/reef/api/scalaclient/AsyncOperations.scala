@@ -20,7 +20,6 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.ServiceTypes._
 
 import ProtoConversions._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }

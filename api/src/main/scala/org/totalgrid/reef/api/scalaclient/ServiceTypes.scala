@@ -18,24 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.api.scalaclient
 
-/**
- * Contains types/case classes used in the proto service interfaces
- */
-object ServiceTypes {
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
 
-  /* ---- Case classes that make the service api easier to use ---- */
+import org.totalgrid.reef.api.javaclient.IEvent
 
-  case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
+/* ---- Case classes that make the service api easier to use ---- */
 
-  case class Response[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, result: List[A] = Nil, error: String = "")
+case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
 
-  case class Event[A](event: Envelope.Event, result: A) {
-    // accessors for java client
-    def getEvent() = event
+case class Response[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, result: List[A] = Nil, error: String = "")
 
-    def getResult() = result
-  }
+case class Event[A](event: Envelope.Event, value: A) extends IEvent[A] {
+
+  final override def getEventType() = event
+  final override def getValue() = value
 
 }
+

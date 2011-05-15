@@ -27,7 +27,6 @@ import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
   def getAllEndpoints() = {

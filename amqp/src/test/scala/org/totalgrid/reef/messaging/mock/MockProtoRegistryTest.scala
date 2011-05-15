@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.Timer
 
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Request }
+import org.totalgrid.reef.api.scalaclient._
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 @RunWith(classOf[JUnitRunner])

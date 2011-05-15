@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,10 +18,18 @@ package org.totalgrid.reef.api.javaclient
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.javaclient;
+
+import org.totalgrid.reef.api.Envelope;
 
 /**
- *  Adapts raw events functions to a Java interface
+ * Created by IntelliJ IDEA.
+ * User: adam
+ * Date: 5/13/11
+ * Time: 12:31 PM
+ * To change this template use File | Settings | File Templates.
  */
-trait IEventAcceptor[A] {
-  def onEvent(event: IEvent[A]): Unit
+public interface IEvent<T> {
+    T getValue();
+    Envelope.Event getEventType();
 }

@@ -28,7 +28,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.api.service.{ IServiceResponseCallback, AsyncToSyncServiceAdapter }
 
 object TestDescriptors {

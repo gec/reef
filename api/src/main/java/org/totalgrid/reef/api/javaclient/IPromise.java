@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.javaclient;
 
 /**
- *  A guaranteed deferred value.
+ *  Interface defining a guaranteed, deferred value.  Value can be retrieved synchronously or asynchronously.
  */
 public interface IPromise<A> {
 

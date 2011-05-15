@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.api.scalaclient.Response
 
 trait AsyncToSyncServiceAdapter[A] extends AsyncServiceBase[A] {
 

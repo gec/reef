@@ -65,7 +65,7 @@ class EndpointManagementTest
     // pick one endpoint to test enabling/disabling
     val endpointUuid = endpoints.head.getUuid
 
-    sub.start(new IEventAcceptorShim(ea => syncVar.update(ea.result)))
+    sub.start(new IEventAcceptorShim(ea => syncVar.update(ea.getValue())))
 
     def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
       syncVar.waitFor(x => x.getEnabled == enabled &&

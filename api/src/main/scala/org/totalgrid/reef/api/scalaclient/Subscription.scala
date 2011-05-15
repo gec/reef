@@ -18,9 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceHandlerHeaders }
 
 trait Subscription[SubscriptionMessageType] {
   def cancel()
@@ -28,7 +28,7 @@ trait Subscription[SubscriptionMessageType] {
   def start(callback: Event[SubscriptionMessageType] => Unit): Unit
 
   def start(callback: (Envelope.Event, SubscriptionMessageType) => Unit): Unit = {
-    val proxy = { (evt: Event[SubscriptionMessageType]) => callback(evt.event, evt.result) }
+    val proxy = { (evt: Event[SubscriptionMessageType]) => callback(evt.event, evt.value) }
     start(proxy)
   }
 

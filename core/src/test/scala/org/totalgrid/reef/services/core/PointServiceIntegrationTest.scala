@@ -30,8 +30,8 @@ import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.util.BlockingQueue
 
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
-import ServiceTypes.Event
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, scalaclient }
+import scalaclient.Event
 import org.totalgrid.reef.proto.ReefServicesList
 
 //implicits
@@ -78,7 +78,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     def subscribePoints(req: PointProto) = {
       val eventQueueName = new SyncVar("")
-      val pointSource = amqp.getEventQueue(PointProto.parseFrom, { evt: Event[PointProto] => changedPoints.push(evt.result) }, { q => eventQueueName.update(q) })
+      val pointSource = amqp.getEventQueue(PointProto.parseFrom, { evt: Event[PointProto] => changedPoints.push(evt.value) }, { q => eventQueueName.update(q) })
 
       // wait for the queue name to get populated (actor startup delay)
       eventQueueName.waitWhile("")

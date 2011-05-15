@@ -20,11 +20,10 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, RequestEnv, IDestination, AnyNode }
+import org.totalgrid.reef.api.scalaclient.{ ClientSession, Event }
+import org.totalgrid.reef.api.{ ServiceList, RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.reactor.Reactable
-import ServiceTypes.Event
 
 /** Combines the various registry traits into a single interface */
 trait Connection {
@@ -70,15 +69,5 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
     val exchange = lookup.getServiceInfo(service.descriptor.getKlass).exchange
     factory.bindService(exchange, service.respond, destination, competing, reactor)
   }
-
-  /*
-  def listen[A](deserialize: (Array[Byte]) => A, queueName: String)(accept: A => Unit): Unit = {
-    factory.listen(queueName, deserialize, accept)
-  }
-
-  def broadcast[A <: GeneratedMessage](exchangeName: String, keygen: A => String): A => Unit = {
-    factory.publish(exchangeName, keygen)
-  }
-  */
 
 }

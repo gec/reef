@@ -28,7 +28,7 @@ import org.totalgrid.reef.messaging.Connection
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 import org.totalgrid.reef.api.scalaclient.{ Failure, MultiSuccess }
-import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.scalaclient.Event
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 //implicit
@@ -91,7 +91,7 @@ trait ServiceHandler extends Logging {
 
     // function to call when events occur
     val evtFun = { evt: Event[A] =>
-      execute(evtHandler(evt.event, evt.result))
+      execute(evtHandler(evt.event, evt.value))
     }
 
     // function to call when a new queue arrives

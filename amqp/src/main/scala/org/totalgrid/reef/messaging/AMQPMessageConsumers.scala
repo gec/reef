@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
 object AMQPMessageConsumers extends Logging {
@@ -44,7 +44,7 @@ object AMQPMessageConsumers extends Logging {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
           val evt = Envelope.ServiceNotification.parseFrom(data)
-          accept(Event(evt.getEvent, convert(evt.getPayload.toByteArray)))
+          accept(new Event(evt.getEvent, convert(evt.getPayload.toByteArray)))
         }
       }
     }
@@ -54,7 +54,7 @@ object AMQPMessageConsumers extends Logging {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
-          accept(Event(Envelope.Event.MODIFIED, deserialize(data)))
+          accept(new Event(Envelope.Event.MODIFIED, deserialize(data)))
         }
       }
     }

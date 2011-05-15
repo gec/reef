@@ -31,7 +31,6 @@ import org.totalgrid.reef.api.request.builders.{ MeasurementHistoryRequestBuilde
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 

@@ -43,9 +43,9 @@ import CommandAccess._
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.messaging.SessionPool
-import org.totalgrid.reef.api.{ RequestEnv, ServiceTypes, Envelope, AddressableService }
+import org.totalgrid.reef.api.{ RequestEnv, scalaclient, Envelope, AddressableService }
 
-import ServiceTypes.Response
+import scalaclient.Response
 
 import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 import org.totalgrid.reef.proto.Model.ReefUUID

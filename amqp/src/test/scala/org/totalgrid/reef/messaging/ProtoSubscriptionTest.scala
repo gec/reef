@@ -30,7 +30,8 @@ import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient.MultiSuccess
+import org.totalgrid.reef.api.scalaclient._
+
 import service.AsyncToSyncServiceAdapter
 
 @RunWith(classOf[JUnitRunner])
@@ -83,7 +84,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
         case s => entries.find(_.getKey == s).toList
       }
 
-      ServiceTypes.Response(Envelope.Status.OK, response)
+      Response(Envelope.Status.OK, response)
     }
     def post(req: Envelope.RequestHeader, env: RequestEnv) = put(req, env)
     def put(req: Envelope.RequestHeader, env: RequestEnv) = {
@@ -99,7 +100,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       }
       entries = entries.filterNot(_.getKey == req.getKey) ::: List(req)
 
-      ServiceTypes.Response(status, List(req))
+      Response(status, List(req))
     }
     def delete(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)
@@ -107,7 +108,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       entries = _entries._2
       publish(Envelope.Event.REMOVED, _entries._1)
 
-      ServiceTypes.Response(Envelope.Status.DELETED, _entries._1)
+      Response(Envelope.Status.DELETED, _entries._1)
     }
   }
 

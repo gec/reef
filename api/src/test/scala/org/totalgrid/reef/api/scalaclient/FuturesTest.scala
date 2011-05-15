@@ -21,7 +21,6 @@
 package org.totalgrid.reef.api.scalaclient
 
 import org.totalgrid.reef.api.scalaclient.mock._
-import org.totalgrid.reef.api.ServiceTypes._
 import org.totalgrid.reef.api.Envelope
 
 import org.scalatest.matchers.ShouldMatchers

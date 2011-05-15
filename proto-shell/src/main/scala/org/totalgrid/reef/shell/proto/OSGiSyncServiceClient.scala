@@ -31,8 +31,7 @@ import org.osgi.framework.BundleContext
 import scala.annotation.tailrec
 
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient.{ SyncClientSession, SyncOperations, DefaultHeaders, MultiResult, Failure }
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient._
 
 import com.weiglewilczek.scalamodules._
 import _root_.scala.collection.JavaConversions._

@@ -26,17 +26,18 @@ import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, IConnectionListener }
+import org.totalgrid.reef.api.ServiceHandlerHeaders
+import org.totalgrid.reef.api.scalaclient.Event
 import org.totalgrid.reef.proto.ReefServicesList
 import utils.InteractionRecorder
 import xml.Node
-import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
+import org.totalgrid.reef.util.SystemPropertyConfigReader
 import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
 
-import org.totalgrid.reef.api.ServiceTypes.Event
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
-class IEventAcceptorShim[T](fun: Event[T] => _) extends IEventAcceptor[T] {
-  def onEvent(event: Event[T]) = fun(event)
+import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, IEvent }
+
+class IEventAcceptorShim[T](fun: IEvent[T] => _) extends IEventAcceptor[T] {
+  def onEvent(event: IEvent[T]) = fun(event)
 }
 
 abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {

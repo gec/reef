@@ -23,7 +23,7 @@ package org.totalgrid.reef.api.scalaclient
 import com.google.protobuf.GeneratedMessage
 import scala.collection.mutable.Queue
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
-import org.totalgrid.reef.api.ServiceTypes._
+
 /**
  * Mock the ISyncClientSession to collect all puts, posts, and deletes. A 'get' function
  * is specified upon construction.

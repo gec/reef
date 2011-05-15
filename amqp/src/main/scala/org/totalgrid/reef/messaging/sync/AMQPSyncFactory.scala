@@ -24,8 +24,7 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging._
 
-import org.totalgrid.reef.api.ServiceTypes.Event
-import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.api.scalaclient.{ Subscription, Event }
 
 trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
 

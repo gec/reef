@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.UserCommandModel
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
 
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.api.scalaclient.{ Failure, SingleSuccess }
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command }

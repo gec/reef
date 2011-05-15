@@ -25,10 +25,9 @@ import org.totalgrid.reef.util.Logging
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
-import _root_.scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, MultiResult }
+import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api._
 
 /**

@@ -29,8 +29,8 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
-import ServiceTypes.Event
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, scalaclient }
+import scalaclient.Event
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
@@ -79,7 +79,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
 
     private def subscribeSnapshotStatus() {
       val eventQueueName = new SyncVar("")
-      val hbeatSource = amqp.getEventQueue(StatusSnapshot.parseFrom, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.result)) }, { q => eventQueueName.update(q) })
+      val hbeatSource = amqp.getEventQueue(StatusSnapshot.parseFrom, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.value)) }, { q => eventQueueName.update(q) })
 
       // wait for the queue name to get populated (actor startup delay)
       eventQueueName.waitWhile("")
