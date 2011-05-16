@@ -78,7 +78,7 @@
     </profiles>
 
     <properties>
-        <karafVers>2.2.0</karafVers>
+        <karafVers>2.2.1</karafVers>
         <karafName>apache-karaf-${karafVers}</karafName>
         <distName>dist</distName>
         <outputName>${project.artifactId}-${project.version}-${distName}</outputName>
