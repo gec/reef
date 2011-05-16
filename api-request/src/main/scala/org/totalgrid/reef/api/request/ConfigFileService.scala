@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
 import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile }
 
 /**
  * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.
@@ -37,6 +37,13 @@ import org.totalgrid.reef.api.ReefServiceException
  * helpful is name is unknown.
  */
 trait ConfigFileService {
+
+  /**
+   * Get all config files
+   */
+  @throws(classOf[ReefServiceException])
+  def getAllConfigFiles(): java.util.List[ConfigFile]
+
   /**
    * retrieve a config file by its UID
    */
@@ -52,34 +59,13 @@ trait ConfigFileService {
    * search for all config files "used" by an entity
    */
   @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntity(entity: Entity): java.util.List[ConfigFile]
-  /**
-   * search for all config files "used" by an entity
-   */
-  @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntityUid(entityUid: ReefUUID): java.util.List[ConfigFile]
-  /**
-   * search for all config files "used" by an entity
-   */
-  @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntityName(entityName: String): java.util.List[ConfigFile]
+  def getConfigFilesUsedByEntity(entityUid: ReefUUID): java.util.List[ConfigFile]
 
   /**
    * search for all config files "used" by an entity, only returns files with matching mimeType
    */
   @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntity(entity: Entity, mimeType: String): java.util.List[ConfigFile]
-
-  /**
-   * search for all config files "used" by an entity, only returns files with matching mimeType
-   */
-  @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntityUid(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile]
-  /**
-   * search for all config files "used" by an entity, only returns files with matching mimeType
-   */
-  @throws(classOf[ReefServiceException])
-  def getConfigFilesUsedByEntityName(entityName: String, mimeType: String): java.util.List[ConfigFile]
+  def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile]
 
   /**
    * create a "free-floating" ConfigFile that isnt "used" by any entities. This means is only retrievable
@@ -87,11 +73,7 @@ trait ConfigFileService {
    */
   @throws(classOf[ReefServiceException])
   def createConfigFile(name: String, mimeType: String, data: Array[Byte]): ConfigFile
-  /**
-   * create a ConfigFile that is "used" by an Entity, it is now queryable by name, mimeType and entity.
-   */
-  @throws(classOf[ReefServiceException])
-  def createConfigFile(name: String, mimeType: String, data: Array[Byte], entity: Entity): ConfigFile
+
   /**
    * create a ConfigFile that is "used" by an Entity, it is now queryable by name, mimeType and entity.
    */
@@ -108,7 +90,7 @@ trait ConfigFileService {
    * adds another Entity as a "user" of the ConfigFile
    */
   @throws(classOf[ReefServiceException])
-  def addConfigFileUserByEntity(configFile: ConfigFile, entity: Entity): ConfigFile
+  def addConfigFileUserByEntity(configFile: ConfigFile, entityUid: ReefUUID): ConfigFile
 
   /**
    * delete the passed in config file and all "using" relationships to Entities

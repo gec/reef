@@ -38,14 +38,15 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
   var queueName: ScalaOption[String] = None
 
   session.setSessionListener(this)
+  session.setAutoSync(true)
 
   def closed(s: Session) {
-    info("Qpid session closed")
+    reefLogger.info("Qpid session closed")
     onClose(userClosed)
   }
 
   def exception(s: Session, e: SessionException) {
-    warn("Qpid Exception: " + e)
+    reefLogger.warn("Qpid Exception: " + queueName, e)
     onClose(userClosed)
   }
 
@@ -55,10 +56,11 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
   case class RecievedData(data: Array[Byte], reply: ScalaOption[Destination])
 
-  def message(s: Session, msg: MessageTransfer) = {
+  def message(s: Session, msg: MessageTransfer): Unit = {
     val replyTo = msg.getHeader.get(classOf[MessageProperties]).getReplyTo
     val dest = if (replyTo == null) None else Some(new Destination(replyTo.getExchange, replyTo.getRoutingKey))
     messageConsumer.foreach { mc => mc.receive(msg.getBodyBytes, dest) }
+    s.processed(msg)
   }
 
   /* -- Implement BrokerChannel -- */
@@ -67,7 +69,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     userClosed = true
     // qpid just does a 60 second timeout if close is called more than once
     if (!session.isClosing()) {
-      debug("closing session")
+      reefLogger.debug("Closing session: {}", queueName)
       session.close()
       onClose(userClosed)
     }
@@ -83,7 +85,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     if (autoDelete) l ::= Option.AUTO_DELETE
     if (exclusive) l ::= Option.EXCLUSIVE
     session.queueDeclare(queue, null, null, l: _*)
-    debug("Declared Queue: " + queue)
+    reefLogger.debug("Declared Queue: {}", queue)
     queue //return the unique queue name
   }
 
@@ -94,7 +96,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     if (!exchange.startsWith("amq.")) {
       // Qpid quietly kills your session if you try to declare a built in queue, reevaluate if we switch to rabbit
       session.exchangeDeclare(exchange, exchangeType, null, null)
-      debug("Declared Exchange: " + exchange)
+      reefLogger.debug("Declared Exchange: {}", exchange)
     }
   }
 
@@ -106,7 +108,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
       unbindQueue(queue, exchange, key)
     }
     session.exchangeBind(queue, exchange, key, null)
-    debug("Bound: " + queue + " to " + exchange + " key: " + key)
+    reefLogger.debug("Bound: {} to {} key: {}", Array[Object](queue, exchange, key))
   }
 
   def unbindQueue(queue: String, exchange: String, key: String): Unit = {
@@ -114,14 +116,14 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     session.exchangeUnbind(queue, exchange, key)
-    debug("Removed Binding: " + queue + " to " + exchange + " key: " + key)
+    reefLogger.debug("Removed Binding: {} to {} key: {}", Array[Object](queue, exchange, key))
   }
 
   def listen(queue: String, mc: MessageConsumer) = {
 
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
-    debug("Listening: " + queue + " to " + mc)
+    reefLogger.debug("Listening: queue: {}, consumer: {}", queue, mc)
     messageConsumer = Some(mc)
     queueName = Some(queue)
 
@@ -132,7 +134,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
 
     val queue = queueName.get
 
-    debug("starting: " + queue)
+    reefLogger.debug("Starting: {}", queue)
 
     session.messageSubscribe(queue, queue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null)
     session.messageFlow(queue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT)
@@ -154,7 +156,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
       case None =>
     }
     val hdr = new Header(dev_props, msg_props)
-    session.messageTransfer(exchange, MessageAcceptMode.EXPLICIT, MessageAcquireMode.PRE_ACQUIRED, hdr, b)
+    session.messageTransfer(exchange, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, hdr, b)
   }
 
   def unlink() {
@@ -163,6 +165,8 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
   }
 
   def stop() {
+    reefLogger.debug("Stopping: " + queueName.get)
+
     unlink()
     close
   }

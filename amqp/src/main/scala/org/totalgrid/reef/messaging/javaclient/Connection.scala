@@ -29,7 +29,8 @@ import org.totalgrid.reef.api.ServiceList
 import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.api.IConnectionListener
-import org.totalgrid.reef.api.javaclient.{ IConnection, ISession }
+import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.javaclient.{ ISessionPool, IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
@@ -39,6 +40,9 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
   /// Scala factory class we're wrapping to simplify access to java clients
   private val factory = new AMQPSyncFactory with ReactActor {
     val broker = new QpidBrokerConnection(config)
+
+    // shim to get SessionPool structural typing happy
+    def getClientSession(): ClientSession = new ProtoClient(this, servicesList, timeoutms)
   }
 
   override def addConnectionListener(listener: IConnectionListener) =
@@ -57,6 +61,10 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
 
   def newSession(): ISession = {
     new Session(new ProtoClient(factory, servicesList, timeoutms))
+  }
+
+  def newSessionPool(): ISessionPool = {
+    new SessionPool(factory)
   }
 }
 

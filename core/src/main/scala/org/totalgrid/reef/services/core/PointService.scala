@@ -83,7 +83,7 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler)
       update(p, p)
     })
 
-    val newPoints = points.diff(allreadyExistingPoints.map(_.name).toList)
+    val newPoints = points.diff(allreadyExistingPoints.map(_.entityName).toList)
     newPoints.foreach(pname => {
       create(makePointEntry(pname, false, Some(dataSource)))
     })
@@ -102,9 +102,9 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
    * this is the subscription routingKey
    */
   def getRoutingKey(req: PointProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.uuid.uuid ::
       req.name ::
-      req.entity.uid ::
+      req.entity.uuid.uuid ::
       req.abnormal :: // this subscribes the users to all points that have their abnormal field changed
       Nil
   }
@@ -113,18 +113,18 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
    * this is the service event notifaction routingKey
    */
   def getRoutingKey(req: PointProto, entry: Point) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.uuid.uuid ::
       req.name ::
-      req.entity.uid ::
+      req.entity.uuid.uuid ::
       Some(entry.abnormalUpdated) :: // we actually publish the key to intrested parties on change, not on current state
       Nil
   }
 
   def uniqueQuery(proto: PointProto, sql: Point) = {
+
+    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Point")))
     List(
-      proto.uid.asParam(sql.id === _.toLong),
-      proto.name.asParam(sql.name === _),
-      //proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
       proto.entity.map(ent => sql.entityId in EQ.typeIdsFromProtoQuery(ent, "Point")),
       proto.logicalNode.map(logicalNode => sql.entityId in EQ.findIdsOfChildren(logicalNode, "source", "Point")))
   }
@@ -138,10 +138,10 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
   def convertToProto(sql: Point): PointProto = {
     val b = PointProto.newBuilder()
 
-    b.setUid(sql.id.toString)
-    b.setName(sql.name)
+    b.setUuid(makeUuid(sql))
+    b.setName(sql.entityName)
     sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
-    sql.logicalNode.asOption.foreach(_.foreach(ln => b.setLogicalNode(EntityProto.newBuilder.setUid(ln.id.toString).setName(ln.name))))
+    sql.logicalNode.asOption.foreach(_.foreach(ln => b.setLogicalNode(EntityProto.newBuilder.setUuid(makeUuid(ln)).setName(ln.name))))
     b.setAbnormal(sql.abnormal)
     b.build
   }
@@ -151,11 +151,7 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
   }
 
   def makePointEntry(pname: String, abnormal: Boolean, dataSource: Option[Entity]) = {
-    val ent = EQ.findOrCreateEntity(pname, "Point")
-    val p = new Point(pname, ent.id, false)
-    dataSource.foreach(ln => { EQ.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
-    p.entity.value = ent
-    p
+    Point.newInstance(pname, abnormal, dataSource)
   }
 }
 
@@ -167,7 +163,7 @@ object PointServiceConversion extends PointServiceConversion
  */
 object PointTiedModel {
   def lookupPoint(proto: PointProto): Point = {
-    ApplicationSchema.points.where(p => p.name === proto.getName).single
+    Point.findByName(proto.getName).single
   }
 
   /**
@@ -175,7 +171,7 @@ object PointTiedModel {
    */
   def populatedPointProto(point: Point): PointProto.Builder = {
     val pb = PointProto.newBuilder
-    pb.setName(point.name).setUid(point.id.toString)
+    pb.setName(point.entityName).setUuid(makeUuid(point))
     pb.setEntity(EQ.entityToProto(point.entity.value))
     point.logicalNode.value.foreach(p => pb.setLogicalNode(EQ.entityToProto(p)))
     pb
@@ -201,7 +197,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
     // TODO: assign abnormal thunkers to communication streams
     reactor.execute {
       transaction {
-        ApplicationSchema.points.where(p => true === true).toList.foreach { p: Point => pointMap.put(p.name, p) }
+        ApplicationSchema.points.where(p => true === true).toList.foreach { p: Point => pointMap.put(p.entityName, p) }
       }
       val startedAbnormal = pointMap.values.foldLeft(0) { case (sum, p) => if (p.abnormal) sum + 1 else sum }
       summary.setSummary("summary.abnormals", startedAbnormal)
@@ -215,7 +211,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
       case Some(p) => p
       case None =>
         val p = transaction {
-          ApplicationSchema.points.where(p => p.name === m.getName).headOption
+          Point.findByName(m.getName).headOption
         }
         if (p.isEmpty) {
           error { "Got measurement for unknown point: " + m.getName }

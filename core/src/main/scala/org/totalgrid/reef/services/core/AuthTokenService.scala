@@ -59,10 +59,10 @@ object AuthTokenService {
 
         val timeout = 18144000000L // one month
 
-        val read_set = ApplicationSchema.permissionSets.insert(new PermissionSet("read_only", timeout))
+        val read_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("read_only", timeout))
         ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
 
-        val all_set = ApplicationSchema.permissionSets.insert(new PermissionSet("all", timeout))
+        val all_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("all", timeout))
         ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
 
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))
@@ -127,7 +127,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
     val agent: AgentModel = AgentConversions.findRecord(req.getAgent).getOrElse(postLoginException("", currentTime, Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
     if (!agent.checkPassword(req.getAgent.getPassword)) {
-      postLoginException(agent.name, currentTime, Status.UNAUTHORIZED, "Invalid agent or password")
+      postLoginException(agent.entityName, currentTime, Status.UNAUTHORIZED, "Invalid agent or password")
     }
 
     val availableSets = agent.permissionSets.value.toList // permissions we can have
@@ -138,7 +138,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     val permissionSets = if (setQuerySize > 0) {
       val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(ps)).flatten.distinct
       val unavailableSets = askedForSets.diff(availableSets)
-      if (unavailableSets.size > 0) postLoginException(agent.name, currentTime, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+      if (unavailableSets.size > 0) postLoginException(agent.entityName, currentTime, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
       askedForSets
     } else {
       availableSets
@@ -148,7 +148,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // most restrictive permissionset 
     val expirationTime = if (req.hasExpirationTime) {
       val time = req.getExpirationTime
-      if (time <= currentTime) postLoginException(agent.name, currentTime, Status.BAD_REQUEST, "Expiration time cannot be in the past")
+      if (time <= currentTime) postLoginException(agent.entityName, currentTime, Status.BAD_REQUEST, "Expiration time cannot be in the past")
       time
     } else {
       currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
@@ -162,7 +162,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // link the token to all of the permisisonsSet they have checked out access to
     permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, authToken.id)))
 
-    postLoginEvent(agent.name, currentTime)
+    postLoginEvent(agent.entityName, currentTime)
     authToken
   }
 
@@ -201,7 +201,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
       .setTime(java.lang.System.currentTimeMillis)
       .setEventType(System.UserLogout)
       .setSubsystem("Core") // TODO: Should access a constant somewhere for this.
-      .setUserId(entry.agent.value.name)
+      .setUserId(entry.agent.value.entityName)
       .build)
     onUpdated(entry)
     postDelete(entry)

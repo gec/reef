@@ -94,8 +94,8 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getConfigFilesCount should equal(1)
     returned.hasChannel should equal(true)
 
-    returned.getChannel.getUid should equal(port.getUid)
-    returned.getConfigFiles(0).getUid should equal(cf.getUid)
+    returned.getChannel.getUuid should equal(port.getUuid)
+    returned.getConfigFiles(0).getUuid should equal(cf.getUuid)
 
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
@@ -112,8 +112,8 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getConfigFilesCount should equal(1)
     returned.hasChannel should equal(true)
 
-    returned.getChannel.hasUid should equal(true)
-    returned.getConfigFiles(0).hasUid should equal(true)
+    returned.getChannel.hasUuid should equal(true)
+    returned.getConfigFiles(0).hasUuid should equal(true)
 
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
@@ -130,7 +130,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.hasChannel should equal(false)
 
     returned.getConfigFilesCount should equal(1)
-    returned.getConfigFiles(0).hasUid should equal(true)
+    returned.getConfigFiles(0).hasUuid should equal(true)
 
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
@@ -164,7 +164,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned1.getConfigFilesCount should equal(1)
     returned2.getConfigFilesCount should equal(1)
 
-    returned1.getConfigFiles(0).getUid should equal(returned2.getConfigFiles(0).getUid)
+    returned1.getConfigFiles(0).getUuid should equal(returned2.getConfigFiles(0).getUuid)
   }
 
   test("Endpoint with no ownerships blows up") {

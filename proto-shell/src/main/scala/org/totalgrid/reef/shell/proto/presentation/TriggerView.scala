@@ -32,7 +32,7 @@ object TriggerView {
   }
 
   def row(a: TriggerSet) = {
-    "[" + a.getPoint.getUid + "]" :: a.getPoint.getName :: a.getTriggersCount.toString :: Nil
+    "[" + a.getPoint.getUuid.getUuid + "]" :: a.getPoint.getName :: a.getTriggersCount.toString :: Nil
   }
 
   def inspectTrigger(a: TriggerSet) = {

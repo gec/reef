@@ -119,9 +119,11 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
       val updates = new SyncVar[List[(Envelope.Event, Envelope.RequestHeader)]](Nil)
       val headerSubFunc = (evt: Envelope.Event, header: Envelope.RequestHeader) => updates.atomic(l => l ::: List((evt, header)))
-      val headerSub = client.addSubscription(headerSubFunc)
+      val headerSub = client.addSubscription(TestDescriptors.requestHeader.getKlass)
 
-      import ISubscription.convertISubToRequestEnv
+      headerSub.start(headerSubFunc)
+
+      import Subscription.convertSubscriptionToRequestEnv
       val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, headerSub) match {
         case ServiceTypes.MultiSuccess(status, Nil) =>
         case _ => false should equal(true)

@@ -37,4 +37,5 @@ trait AllScadaServiceImpl
   with PointServiceImpl
   with AlarmServiceImpl
   with AgentServiceImpl
+  with EndpointManagementServiceImpl
 

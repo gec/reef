@@ -46,7 +46,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
 
   def seedPoints {
     EQ.findEntitiesByType(List("Point")).foreach { ent =>
-      ApplicationSchema.points.insert(new Point(ent.name, ent.id, false))
+      ApplicationSchema.points.insert(new Point(ent.id, false))
     }
   }
 
@@ -74,9 +74,9 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
                       .addTypes("Point"))))).build
 
     val req = PointProto.newBuilder.setEntity(entReq).build
-    val specIds = ApplicationSchema.points.where(t => t.name === "Pittsboro.B12.Kv" or t.name === "Pittsboro.B24.Kv").map(_.id).toList
+    val specIds = Point.findByNames(List("Pittsboro.B12.Kv", "Pittsboro.B24.Kv")).map(_.entityId).toList
     val resp = service.get(req)
-    val resultIds = resp.map(_.getUid.toLong)
+    val resultIds = resp.map(x => java.util.UUID.fromString(x.getUuid.getUuid))
 
     specIds.foldLeft(resultIds) { (left, id) =>
       left.contains(id) should equal(true)

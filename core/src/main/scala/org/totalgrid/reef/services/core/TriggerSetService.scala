@@ -58,7 +58,7 @@ trait TriggerSetConversion
   val table = ApplicationSchema.triggerSets
 
   def getRoutingKey(req: TriggerProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.point.logicalNode.uid :: req.point.name :: Nil
+    req.point.logicalNode.uuid.uuid :: req.point.name :: Nil
   }
 
   def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {

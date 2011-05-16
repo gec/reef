@@ -22,6 +22,8 @@ package org.totalgrid.reef.models
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
+import java.util.UUID
+import org.totalgrid.reef.services.core.EQ
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
@@ -62,15 +64,18 @@ object Agent {
 
   def createAgentWithPassword(name: String, password: String): Agent = {
     val (digest, saltText) = makeDigestAndSalt(password)
-    new Agent(name, enc64(digest), enc64(saltText))
+    val ent = EQ.findOrCreateEntity(name, "Agent")
+    val a = new Agent(ent.id, enc64(digest), enc64(saltText))
+    a.entity.value = ent
+    a
   }
 }
 
 // not a case class because we dont want to accidentally print the digest+salt in the logs
 class Agent(
-    val name: String,
+    _entityId: UUID,
     val digest: String,
-    val salt: String) extends ModelWithId {
+    val salt: String) extends EntityBasedModel(_entityId) {
 
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
 
@@ -82,8 +87,11 @@ class Agent(
   }
 
   def copyWithUpdatedPassword(password: String): Agent = {
-    val agent = Agent.createAgentWithPassword(name, password)
+    import SaltedPasswordHelper._
+    val (digest, saltText) = makeDigestAndSalt(password)
+    val agent = new Agent(entity.value.id, enc64(digest), enc64(saltText))
     agent.id = id
+    agent.entity.value = entity.value
     agent
   }
 }
@@ -93,9 +101,19 @@ case class AuthPermission(
     val verb: String) extends ModelWithId {
 
 }
+
+object PermissionSet {
+  def newInstance(name: String, defaultExpirationTime: Long) = {
+    val ent = EQ.findOrCreateEntity(name, "PermissionSet")
+    val a = new PermissionSet(ent.id, defaultExpirationTime)
+    a.entity.value = ent
+    a
+  }
+}
+
 case class PermissionSet(
-    val name: String,
-    val defaultExpirationTime: Long) extends ModelWithId {
+    _entityId: UUID,
+    val defaultExpirationTime: Long) extends EntityBasedModel(_entityId) {
 
   val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionSetId === id) select (&(p.permissionId)))))
 }

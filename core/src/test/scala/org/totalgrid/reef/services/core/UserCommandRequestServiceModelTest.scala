@@ -45,7 +45,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   class TestRig extends UserCommandTestRig with AccessTestRig {
     val model = userCommands
     val cmd = transaction {
-      seed(new FepCommandModel("cmd01", "", 0, false, None, None))
+      seed("cmd01")
     }
 
     def scenario(mode: AccessMode, time: Long, user: String) {

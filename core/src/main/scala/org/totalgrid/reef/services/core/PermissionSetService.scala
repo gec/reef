@@ -63,7 +63,7 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     } else {
       18144000000L // one month
     }
-    val permissionSet = create(new PermissionSet(req.getName, expirationTime))
+    val permissionSet = create(PermissionSet.newInstance(req.getName, expirationTime))
 
     createPermissions(req, permissionSet)
 
@@ -115,9 +115,9 @@ trait PermissionSetConversions
   val table = ApplicationSchema.permissionSets
 
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
+    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("PermissionSet")))
     List(
-      proto.uid.asParam(sql.id === _.toInt),
-      proto.name.asParam(sql.name === _))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 
   def searchQuery(proto: PermissionSetProto, sql: PermissionSet) = Nil
@@ -130,8 +130,8 @@ trait PermissionSetConversions
     existing.defaultExpirationTime != updated.defaultExpirationTime
 
   def convertToProto(entry: PermissionSet): PermissionSetProto = {
-    val b = PermissionSetProto.newBuilder.setUid(entry.id.toString)
-    b.setName(entry.name)
+    val b = PermissionSetProto.newBuilder.setUuid(makeUuid(entry))
+    b.setName(entry.entityName)
     b.setDefaultExpirationTime(entry.defaultExpirationTime)
     entry.permissions.value.foreach(p => b.addPermissions(PermissionConversions.convertToProto(p)))
     b.build
@@ -147,7 +147,7 @@ trait PermissionConversions
   val table = ApplicationSchema.permissions
 
   def convertToProto(entry: AuthPermission): Permission = {
-    val b = Permission.newBuilder.setUid(entry.id.toString)
+    val b = Permission.newBuilder.setUid(makeUid(entry))
     b.setAllow(entry.allow)
     b.setResource(entry.resource)
     b.setVerb(entry.verb)
@@ -155,6 +155,7 @@ trait PermissionConversions
   }
 
   def uniqueQuery(proto: Permission, sql: AuthPermission) = {
+    // should be uid
     List(
       proto.uid.asParam(sql.id === _.toInt))
   }

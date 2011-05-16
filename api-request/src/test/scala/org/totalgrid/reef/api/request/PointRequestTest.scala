@@ -50,7 +50,7 @@ class PointRequestTest
     val allResp = client.getAllPoints
 
     client.addExplanation("Get by UID", "Get point that matches a certain UID.")
-    client.getPointByUid(new ReefUUID(allResp.head.getUid))
+    client.getPointByUid(allResp.head.getUuid)
 
     client.addExplanation("Get by name", "Get point that matches a certain name.")
     client.getPointByName(allResp.head.getName)

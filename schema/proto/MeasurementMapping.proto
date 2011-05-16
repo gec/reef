@@ -38,7 +38,7 @@ message CommandMap {
 }
 
 message IndexMapping {
-    optional string           uid          = 1;
+    //optional string           uid          = 1;
     optional string           device_uid   = 2;
     repeated MeasMap          measmap      = 3;
     repeated CommandMap       commandmap   = 4;

@@ -58,14 +58,14 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
     tryWrap("Error adding connProto: " + c) {
       // the coordinator assigns FEPs when available but meas procs may not be online yet
       // re sends with routing information when meas_proc is online
-      if (c.hasRouting) connections.add(c)
+      if (c.hasRouting && c.hasEnabled && c.getEnabled) connections.add(c)
       else connections.remove(c)
     }
   }
 
   def modify(ep: ConnProto) = retrieve(ep) { c =>
     tryWrap("Error modifying connProto: " + c) {
-      if (c.hasRouting) connections.modify(c)
+      if (c.hasRouting && c.hasEnabled && c.getEnabled) connections.modify(c)
       else connections.remove(c)
     }
   }
@@ -118,7 +118,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
         case SingleSuccess(status, fem) =>
           eventLog.event(EventType.System.SubsystemStarted)
           info {
-            "Got uid: " + fem.getUid
+            "Got uid: " + fem.getUuid.getUuid
           }
           val query = ConnProto.newBuilder.setFrontEnd(fem).build
           // this is where we actually bind up the service calls

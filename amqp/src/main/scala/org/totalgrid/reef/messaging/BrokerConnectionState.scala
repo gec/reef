@@ -34,13 +34,13 @@ class BrokerConnectionState extends IConnectionListener {
    * @param exceptionMessage Text to put into exception on failure
    */
   def waitUntilStarted(timeout: Long, exceptionMessage: => String) =
-    connected.waitUntil(true, timeout, true, Some(new ServiceIOException(exceptionMessage)))
+    connected.waitUntil(true, timeout, true, Some((b: Boolean) => new ServiceIOException(exceptionMessage)))
 
   /**
    * @param timeout how long to wait in milliseconds before failing
    * @param exceptionMessage Text to put into exception on failure
    */
   def waitUntilStopped(timeout: Long, exceptionMessage: => String) =
-    connected.waitUntil(false, timeout, true, Some(new ServiceIOException(exceptionMessage)))
+    connected.waitUntil(false, timeout, true, Some((b: Boolean) => new ServiceIOException(exceptionMessage)))
 }
 

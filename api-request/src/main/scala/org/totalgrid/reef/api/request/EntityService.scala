@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.api.ReefServiceException
-import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
 
 /**
  * The EntityService provides a view into the "model" of the system. The model can be thought of as a large pool of

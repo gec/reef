@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.api.request
 
-import org.totalgrid.reef.proto.Model.{ Entity, Point }
-import org.totalgrid.reef.api.{ ISubscription, ReefServiceException }
+import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, Point }
 
 /**
  * A Point represents a configured input point for data acquisition. Measurements associated with this
@@ -59,26 +59,17 @@ trait PointService {
   /**
    * retrieve all points that are have the relationship "owns" to the parent entity
    * @param parentEntity parent we are looking for children of
-   * @return the point object with matching name
+   * @return points owned by parentEntity
    */
   @throws(classOf[ReefServiceException])
   def getPointsOwnedByEntity(parentEntity: Entity): java.util.List[Point]
 
   /**
-   * @return all points that are currently marked as abnormal (last measurement had abnormal
-   * flag set)
+   * retrieve all points that are have the relationship "source" to the endpoint
+   * @param endpointUuid uuid of endpoint
+   * @return all points that are related to endpoint
    */
   @throws(classOf[ReefServiceException])
-  def getAbnormalPoints(): java.util.List[Point]
-
-  /**
-   *
-   * @param sub a subscriber to recieve all future abnormal updates. Updates will all have event code
-   * MODIFIED and an event will be recieved for every transition to or from the abnormal state.
-   * @return all points that are currently marked as abnormal (last measurement had abnormal
-   * flag set)
-   */
-  @throws(classOf[ReefServiceException])
-  def getAbnormalPoints(sub: ISubscription[Point]): java.util.List[Point]
+  def getPointsBelongingToEndpoint(endpointUuid: ReefUUID): java.util.List[Point]
 
 }

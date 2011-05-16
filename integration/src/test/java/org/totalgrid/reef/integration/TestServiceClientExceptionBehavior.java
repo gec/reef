@@ -35,7 +35,7 @@ public class TestServiceClientExceptionBehavior extends JavaBridgeTestBase {
 		client.close();
 
 		try {
-			client.get(Entity.newBuilder().setUid("*").build());
+			client.get(Entity.newBuilder().build());
 			fail("Closed client should throw exception");
 		} catch (ReefServiceException ex) {
 		}

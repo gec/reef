@@ -22,8 +22,7 @@ package org.totalgrid.reef.api.request.builders
  */
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.Model.Entity
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity }
 
 object AlarmRequestBuilders {
   // state != REMOVED by default
@@ -37,7 +36,7 @@ object AlarmRequestBuilders {
     Alarm.newBuilder.setUid(alarm.getUid).setState(state).build
   }
 
-  def getByUUID(uuid: ReefUUID) = {
-    Alarm.newBuilder.setUid(uuid.getUuid).build
+  def getByUID(uid: String) = {
+    Alarm.newBuilder.setUid(uid).build
   }
 }

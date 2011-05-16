@@ -20,22 +20,22 @@
  */
 package org.totalgrid.reef.api.request.builders
 
-import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 import org.totalgrid.reef.proto.Utils.Attribute
 import com.google.protobuf.ByteString
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
 
 object EntityAttributesBuilders {
 
-  def getForEntityUid(uid: String) = {
-    EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(uid)).build
+  def getForEntityUid(uuid: ReefUUID) = {
+    EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uuid)).build
   }
 
   def getForEntityName(name: String) = {
     EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setName(name)).build
   }
 
-  def putAttributesToEntityUid(uid: String, attributes: java.util.List[Attribute]) = {
-    EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(uid)).addAllAttributes(attributes).build
+  def putAttributesToEntityUid(uuid: ReefUUID, attributes: java.util.List[Attribute]) = {
+    EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uuid)).addAllAttributes(attributes).build
   }
 
   def putAttributesToEntityName(name: String, attributes: java.util.List[Attribute]) = {

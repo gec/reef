@@ -119,7 +119,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 
   def findRequestedPermissionSets(req: Agent) = {
     val requestedPermissions = req.getPermissionSetsList.toList
-    if (requestedPermissions.exists { p => p.getName == "*" || p.getUid == "*" }) {
+    if (requestedPermissions.exists { p => p.getName == "*" || p.getUuid == "*" }) {
       throw new BadRequestException("Cannot use wildcard in PermissionSet specifiers, must use UUIDs or names: " + requestedPermissions)
     }
     val permissionSets = requestedPermissions.map(PermissionSetConversions.findRecords(_)).flatten
@@ -137,9 +137,9 @@ trait AgentConversions
   val table = ApplicationSchema.agents
 
   def uniqueQuery(proto: Agent, sql: AgentModel) = {
+    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Agent")))
     List(
-      proto.uid.asParam(sql.id === _.toInt),
-      proto.name.asParam(sql.name === _))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 
   def searchQuery(proto: Agent, sql: AgentModel) = Nil
@@ -152,7 +152,7 @@ trait AgentConversions
     existing.digest != updated.digest || existing.salt != updated.salt
 
   def convertToProto(entry: AgentModel): Agent = {
-    val b = Agent.newBuilder.setUid(entry.id.toString).setName(entry.name)
+    val b = Agent.newBuilder.setUuid(makeUuid(entry)).setName(entry.entityName)
 
     entry.permissionSets.value.foreach { p => b.addPermissionSets(PermissionSetConversions.convertToProto(p)) }
 

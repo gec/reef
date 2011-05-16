@@ -65,8 +65,8 @@ object EventQueryService {
       select.getUserIdList.asParam { row.userId in _ },
       select.getEntityList.asParam { row.entityId in _.map(EQ.idsFromProtoQuery(_)).flatten.distinct },
       select.timeFrom.asParam(row.time gte _),
-      select.timeTo.asParam(row.time lte _),
-      select.uidAfter.asParam(row.id gt _.toLong))
+      select.timeTo.asParam(row.time lte _))
+    //select.uuid.uuidAfter.asParam(row.id gt _.toLong))
   }
 
   def makeSubscriptionKeyParts(select: EventSelect): List[List[String]] = {

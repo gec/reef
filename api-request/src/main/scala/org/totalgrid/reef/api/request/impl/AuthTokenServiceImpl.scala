@@ -27,12 +27,11 @@ import org.totalgrid.reef.api.request.builders.AuthTokenRequestBuilders
 trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
 
   def createNewAuthorizationToken(user: String, password: String): String = {
-    val resp = ops.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password))
-    resp.getToken
+    ops { _.putOneOrThrow(AuthTokenRequestBuilders.requestAuthToken(user, password)).getToken }
   }
 
   def deleteAuthorizationToken(token: String) = {
-    ops.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token))
+    ops { _.deleteOneOrThrow(AuthTokenRequestBuilders.deleteAuthToken(token)) }
   }
 }
 

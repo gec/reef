@@ -31,21 +31,23 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore }
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 
-trait CommunicationEndpointOfflineBehaviors {
+trait CommunicationEndpointOfflineBehaviors extends Logging {
 
   def measurementStore: MeasurementStore
 
   def markOffline(ce: CommunicationEndpoint) {
     markPointsOffline(ce.points.value)
     markCommandsOffline(ce.commands.value)
+    info("Marked: " + ce.entityName + " offline. Points: " + ce.points.value.size + " Commands: " + ce.commands.value.size)
   }
 
   def markOnline(ce: CommunicationEndpoint) {
     markCommandsOnline(ce.commands.value)
+    info("Marked: " + ce.entityName + " online. Commands: " + ce.commands.value.size)
   }
 
   private def markPointsOffline(points: List[Point]) {
-    val names = points.map(_.name)
+    val names = points.map(_.entityName)
     val measurements = measurementStore.get(names)
     val missing = if (measurements.size != names.size) {
       val returnedNames = measurements.keys.toList
@@ -65,12 +67,14 @@ trait CommunicationEndpointOfflineBehaviors {
     } else {
       Nil
     }
-    val updated = measurements.map(m => {
-      val q = m._2.getQuality.toBuilder
-      q.setValidity(Measurements.Quality.Validity.QUESTIONABLE)
-      q.mergeDetailQual(Measurements.DetailQual.newBuilder.setOldData(true).build)
-      m._2.toBuilder.setQuality(q).build
-    }).toList
+    val updated = measurements.map {
+      case (_, meas) =>
+        val q = meas.getQuality.toBuilder
+        q.setValidity(Measurements.Quality.Validity.QUESTIONABLE)
+        q.mergeDetailQual(Measurements.DetailQual.newBuilder.setOldData(true).build)
+        meas.toBuilder.setQuality(q).build
+    }.toList
+
     measurementStore.set(updated ::: missing)
   }
 

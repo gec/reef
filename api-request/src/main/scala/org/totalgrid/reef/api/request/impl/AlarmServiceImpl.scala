@@ -20,49 +20,46 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.ISubscription
-import org.totalgrid.reef.api.request.{ AlarmService, ReefUUID }
+import org.totalgrid.reef.api.request.{ AlarmService }
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.request.builders.{ AlarmListRequestBuilders, AlarmRequestBuilders }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
-  def getAlarm(uuid: ReefUUID) = {
-    reThrowExpectationException("Alarm with UUID: " + uuid.getUuid + " not found") {
-      ops.getOneOrThrow(AlarmRequestBuilders.getByUUID(uuid))
+  def getAlarm(uid: String) = {
+    reThrowExpectationException("Alarm with UID: " + uid + " not found") {
+      ops { _.getOneOrThrow(AlarmRequestBuilders.getByUID(uid)) }
     }
   }
 
   def getActiveAlarms(limit: Int) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit))
-    ret.getAlarmsList
+    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)).getAlarmsList }
   }
-  def getActiveAlarms(limit: Int, sub: ISubscription[Alarm]) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub)
-    ret.getAlarmsList
+  def subscribeToActiveAlarms(limit: Int) = {
+    ops { session =>
+      useSubscription(session, Descriptors.alarm.getKlass) { sub =>
+        session.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub).getAlarmsList
+      }
+    }
   }
 
   def getActiveAlarms(types: java.util.List[String], limit: Int) = {
-    val ret = ops.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit))
-    ret.getAlarmsList
+    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).getAlarmsList }
   }
 
   def removeAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build)
+    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build) }
   }
 
   def acknowledgeAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build)
+    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build) }
   }
 
   def silenceAlarm(alarm: Alarm) = {
-    ops.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build)
+    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build) }
   }
 
-  def createAlarmSubscription(callback: IEventAcceptor[Alarm]) = {
-    ops.addSubscription(Descriptors.alarm.getKlass, callback.onEvent)
-  }
 }

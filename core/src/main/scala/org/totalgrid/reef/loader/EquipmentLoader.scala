@@ -142,7 +142,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     client.putOrThrow(commandEntity)
     client.putOrThrow(command)
-    client.putOrThrow(toEntityEdge(equipmentEntity, commandEntity, "feedback"))
+    client.putOrThrow(toEntityEdge(equipmentEntity, commandEntity, "owns"))
 
     commandEntity
   }
@@ -175,6 +175,9 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     val controls = getElements[Control](name, pointT, _.getControl.toList)
     controls.map(c => client.putOrThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
+
+    val setpoint = getElements[Setpoint](name, pointT, _.getSetpoint.toList)
+    setpoint.map(c => client.putOrThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
 
     loadCache.addPoint(name, unit)
     // Insert range triggers to the existing trigger set in the system. Overwrite any triggers with the same name.

@@ -18,13 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+package org.totalgrid.reef.messaging.javaclient
 
-/**
- * All objects (future) will have a UUID field that is a specific type not just a string
- *
- * TODO: When UUIDs added across board in protos, ReefUUID becomes proto class
- */
-case class ReefUUID(protected val uuid: String) {
-  def getUuid = uuid
+import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, ISubscriptionResult, ISubscription }
+
+class SubscriptionWrapper[A](sub: Subscription[A]) extends ISubscription[A] {
+  def start(callback: IEventAcceptor[A]) = sub.start(callback.onEvent _)
+
+  def getId() = sub.id
+
+  def cancel() = sub.cancel
+}
+
+class SubscriptionResult[A, B](result: A, sub: Subscription[B]) extends ISubscriptionResult[A, B] {
+  override def getResult = result
+  override def getSubscription = new SubscriptionWrapper(sub)
 }

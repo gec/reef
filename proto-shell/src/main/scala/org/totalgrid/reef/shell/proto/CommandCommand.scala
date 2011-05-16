@@ -24,7 +24,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import presentation.{ CommandView }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.util.Conversion
 
@@ -74,7 +74,7 @@ class AccessCommand extends ReefCommandSupport {
   def doCommand() = {
     Option(id) match {
       case Some(uid) =>
-        CommandView.accessInspect(services.getCommandLock(new ReefUUID(id)))
+        CommandView.accessInspect(services.getCommandLock(id))
       case None =>
         CommandView.printAccessTable(services.getCommandLocks().toList)
     }
@@ -84,7 +84,7 @@ class AccessCommand extends ReefCommandSupport {
 @Command(scope = "access", name = "block", description = "Block specified commands.")
 class AccessBlockCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "id", description = "Name of commands to block.", required = false, multiValued = true)
+  @Argument(index = 0, name = "id", description = "Names of commands to block.", required = true, multiValued = true)
   private var commandNames: java.util.List[String] = null
 
   def doCommand(): Unit = {
@@ -103,7 +103,7 @@ class AccessRemoveCommand extends ReefCommandSupport {
 
   def doCommand(): Unit = {
 
-    val access = services.deleteCommandLock(new ReefUUID(id))
+    val access = services.deleteCommandLock(id)
     CommandView.removeBlockResponse(access :: Nil)
   }
 }

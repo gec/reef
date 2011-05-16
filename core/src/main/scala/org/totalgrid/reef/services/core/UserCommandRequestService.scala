@@ -20,27 +20,24 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.scalaclient.ISessionPool
+import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 
 import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
-
-import org.totalgrid.reef.models.UserCommandModel
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
 import org.totalgrid.reef.api.service.ServiceTypeIs
 import org.totalgrid.reef.api.auth.IAuthService
 
-import org.totalgrid.reef.models.ApplicationSchema
-
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
 import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
+import org.totalgrid.reef.models.{ Command, UserCommandModel, ApplicationSchema }
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled
@@ -53,13 +50,13 @@ class UserCommandRequestService(
 
     val request = rsp.result.head
 
-    val command = ApplicationSchema.commands.where(cmd => cmd.name === request.getCommandRequest.getName).single
+    val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
     val address = command.endpoint.value match {
       case Some(ep) =>
         ep.frontEndAssignment.value.serviceRoutingKey match {
           case Some(key) => AddressableService(key)
-          case None => throw new BadRequestException("No routing info for endpoint: " + ep.name.value)
+          case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
         }
       case None => throw new BadRequestException("Command has no endpoint set " + request)
     }

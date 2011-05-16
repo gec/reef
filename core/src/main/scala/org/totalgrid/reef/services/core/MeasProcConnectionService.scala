@@ -28,12 +28,14 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.BadRequestException
 
+import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFactory
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -48,62 +50,26 @@ class MeasurementProcessingConnectionService(protected val modelTrans: ServiceTr
 
 class MeasurementProcessingConnectionModelFactory(
   pub: ServiceEventPublishers,
-  fepModelFac: ModelFactory[CommunicationEndpointConnectionServiceModel])
+  coordinatorFac: MeasurementStreamCoordinatorFactory)
     extends BasicModelFactory[ConnProto, MeasurementProcessingConnectionServiceModel](pub, classOf[ConnProto]) {
 
-  def model = new MeasurementProcessingConnectionServiceModel(subHandler, fepModelFac.model)
+  def model = {
+    val csm = new MeasurementProcessingConnectionServiceModel(subHandler)
+    csm.setCoordinator(coordinatorFac.model)
+    csm
+  }
 }
-import org.totalgrid.reef.services.coordinators._
+
 class MeasurementProcessingConnectionServiceModel(
-  protected val subHandler: ServiceSubscriptionHandler,
-  fepModel: CommunicationEndpointConnectionServiceModel)
+  protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[ConnProto, MeasProcAssignment]
     with EventedServiceModel[ConnProto, MeasProcAssignment]
-    with MeasurementProcessingConnectionConversion
-    with MeasurementCoordinationQueries {
+    with MeasurementProcessingConnectionConversion {
 
-  link(fepModel)
-
-  def onEndpointCreated(ce: CommunicationEndpoint) {
-
-    val now = System.currentTimeMillis
-
-    val applicationId = getMeasProc().map { _.id }
-    val assignedTime = applicationId.map { x => now }
-    val serviceRoutingKey = applicationId.map { x => "meas_batch_" + ce.name.value }
-
-    create(new MeasProcAssignment(ce.id, serviceRoutingKey, applicationId, assignedTime, None))
-  }
-
-  def onEndpointUpdated(ce: CommunicationEndpoint) {
-    val assign = table.where(measProc => measProc.endpointId === ce.id).single
-    checkAssignment(assign)
-  }
-
-  def onEndpointDeleted(ce: CommunicationEndpoint) {
-    val assign = table.where(measProc => measProc.endpointId === ce.id).single
-    delete(assign)
-  }
-
-  def onAppChanged(app: ApplicationInstance, added: Boolean) {
-    val rechecks = if (added) {
-      table.where(measProc => measProc.applicationId.isNull).toList
-    } else {
-      table.where(measProc => measProc.applicationId === app.id).toList
-    }
-    info { "Meas Proc: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.name.value } }
-    rechecks.foreach { checkAssignment(_) }
-  }
-
-  private def checkAssignment(assign: MeasProcAssignment) {
-    val applicationId = getMeasProc().map { _.id }
-    info { assign.endpoint.value.get.name.value + " assigned MeasProc: " + applicationId }
-    val assignedTime = applicationId.map { x => System.currentTimeMillis }
-    val serviceRoutingKey = applicationId.map { x => "meas_batch_" + assign.endpoint.value.get.name.value }
-    if (assign.applicationId != applicationId) {
-      val newAssign = assign.copy(applicationId = applicationId, assignedTime = assignedTime, serviceRoutingKey = serviceRoutingKey, readyTime = None)
-      update(newAssign, assign)
-    }
+  var coordinator: MeasurementStreamCoordinator = null
+  def setCoordinator(cr: MeasurementStreamCoordinator, linkModels: Boolean = true) = {
+    coordinator = cr
+    if (linkModels) link(coordinator)
   }
 
   override def updateFromProto(proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
@@ -119,13 +85,13 @@ class MeasurementProcessingConnectionServiceModel(
   }
 
   override def postCreate(sql: MeasProcAssignment) {
-    fepModel.onMeasProcAssignmentChanged(sql, sql.assignedTime.isDefined && sql.readyTime.isDefined)
+    coordinator.onMeasProcAssignmentChanged(sql)
   }
   override def postUpdate(sql: MeasProcAssignment, existing: MeasProcAssignment) {
-    fepModel.onMeasProcAssignmentChanged(sql, sql.assignedTime.isDefined && sql.readyTime.isDefined)
+    coordinator.onMeasProcAssignmentChanged(sql)
   }
   override def postDelete(sql: MeasProcAssignment) {
-    fepModel.onMeasProcAssignmentChanged(sql, false)
+    coordinator.onMeasProcAssignmentChanged(sql)
   }
 
 }
@@ -137,9 +103,7 @@ trait MeasurementProcessingConnectionConversion
   val table = ApplicationSchema.measProcAssignments
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.measProc.uid ::
-      req.uid ::
-      Nil
+    req.measProc.uuid.uuid :: req.uid :: Nil
   }
 
   def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {
@@ -162,10 +126,10 @@ trait MeasurementProcessingConnectionConversion
 
   def convertToProto(entry: MeasProcAssignment): ConnProto = {
 
-    val b = ConnProto.newBuilder.setUid(entry.id.toString)
+    val b = ConnProto.newBuilder.setUid(makeUid(entry))
 
     entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EQ.entityToProto(endpoint.entity.value)))
-    entry.applicationId.foreach(appId => b.setMeasProc(ApplicationConfig.newBuilder.setUid(appId.toString)))
+    entry.application.value.map(app => b.setMeasProc(ApplicationConfig.newBuilder.setUuid(makeUuid(app))))
     entry.serviceRoutingKey.foreach(k => {
       val r = MeasurementProcessingRouting.newBuilder
         .setServiceRoutingKey(k)

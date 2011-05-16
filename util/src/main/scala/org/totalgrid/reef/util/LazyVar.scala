@@ -24,7 +24,7 @@ package org.totalgrid.reef.util
  * Provides a flexible "lazy var" implementation that allows code to specify
  * lazy attributes (which lazy val provides) but also allow us to set the value
  * manually and "weakly" read the value ("weakly" means that we wont force it
- * to evaluate if it hasn't allready be read).
+ * to evaluate if it hasn't already been read).
  *
  * Lossley based on code from:
  * http://scala-programming-language.1934581.n4.nabble.com/lazy-var-td1943810.html

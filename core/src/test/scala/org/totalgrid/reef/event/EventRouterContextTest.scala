@@ -106,7 +106,7 @@ class EventRouterContextTest extends FixtureSuite with ShouldMatchers {
       .setEventType(event)
       .setSubsystem("FEP")
       .setUserId("flint")
-      .setEntity(Entity.newBuilder.setUid("42").build)
+      .setEntity(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("42")).build)
       .setArgs(alist.toProto)
       .build
   }

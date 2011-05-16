@@ -66,6 +66,7 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
 
+    // TODO: make heartbeating a capability
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
     procStatusModel.addApplication(sql, time, req.getProcessId, caps)
 
@@ -103,8 +104,7 @@ trait ApplicationConfigConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(proto.hasUid, proto.getUid) ::
-      hasGet(proto.hasInstanceName, proto.getInstanceName) :: Nil
+    proto.uuid.uuid :: proto.instanceName :: Nil
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
@@ -114,8 +114,8 @@ trait ApplicationConfigConversion
   }
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    List(proto.uid.asParam(sql.id === _.toInt),
-      proto.instanceName.asParam(sql.instanceName === _))
+    val eSearch = EntitySearch(proto.uuid.uuid, proto.instanceName, proto.instanceName.map(x => List("Application")))
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
@@ -123,7 +123,7 @@ trait ApplicationConfigConversion
   }
 
   def createModelEntry(proto: ApplicationConfig): ApplicationInstance = {
-    new ApplicationInstance(
+    ApplicationInstance.newInstance(
       proto.getInstanceName,
       proto.getUserName,
       proto.getLocation,
@@ -137,17 +137,18 @@ trait ApplicationConfigConversion
     val h = HeartbeatConfig.newBuilder
       .setDest("proc_status")
       .setPeriodMs(hbeat.value.periodMS)
-      .setUid(hbeat.value.processId)
+      .setProcessId(hbeat.value.processId)
       .setRoutingKey(entry.instanceName)
       .setInstanceName(entry.instanceName)
 
+    // TODO: delete stream services config when we remove event stream
     val s = StreamServicesConfig.newBuilder
       .setLogsDest("raw_logs")
       .setEventsDest("raw_events")
       .setNonopDest("raw_meas")
 
     val b = ApplicationConfig.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setUserName(entry.userName)
       .setInstanceName(entry.instanceName)
       .setNetwork(entry.network)

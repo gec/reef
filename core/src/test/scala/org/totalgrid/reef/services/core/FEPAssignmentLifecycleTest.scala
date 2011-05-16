@@ -69,11 +69,10 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
       val dnp = coord.addFep("dnp3", List("dnp3"))
       val dnpEvents = coord.subscribeFepAssignements(0, dnp)
       val benchmark = coord.addFep("benchmark", List("benchmark"))
-      val benchmarkEvents = coord.subscribeFepAssignements(0, dnp)
+      val benchmarkEvents = coord.subscribeFepAssignements(0, benchmark)
 
       val device1 = coord.addDnp3Device("dev1")
 
-      dnpEvents.pop(5000).event should equal(Event.ADDED)
       dnpEvents.pop(5000).event should equal(Event.MODIFIED)
 
       coord.checkAssignments(1, Some(dnp), Some(meas))
@@ -102,7 +101,6 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
       val fepEvents = coord.subscribeFepAssignements(0, fep)
       val device1 = coord.addDnp3Device("dev1")
 
-      fepEvents.pop(5000).event should equal(Event.ADDED)
       fepEvents.pop(5000).event should equal(Event.MODIFIED)
 
       coord.checkAssignments(1, Some(fep), Some(meas))

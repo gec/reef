@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.request.builders
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,15 +18,16 @@ package org.totalgrid.reef.api.request.builders
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Model.{ Entity, Point }
+
+package org.totalgrid.reef.api.request.builders
+
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, Point }
 
 object PointRequestBuilders {
-  def getAll = Point.newBuilder.setUid("*").build
+  def getAll = Point.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
 
-  def getAbnormal(): Point = Point.newBuilder.setAbnormal(true).build
-
-  def getByUid(uid: String): Point = Point.newBuilder.setUid(uid).build
-  def getByUid(point: Point): Point = getByUid(point.getUid)
+  def getByUid(uuid: ReefUUID): Point = Point.newBuilder.setUuid(uuid).build
+  def getByUid(point: Point): Point = getByUid(point.getUuid)
 
   def getByName(name: String) = Point.newBuilder.setName(name).build
 
@@ -39,5 +38,8 @@ object PointRequestBuilders {
   }
   def getOwnedByEntityWithName(name: String) = {
     getOwnedByEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(name, "Point"))
+  }
+  def getSourcedByEndpoint(entityUuid: ReefUUID) = {
+    Point.newBuilder.setLogicalNode(EntityRequestBuilders.getByUid(entityUuid)).build
   }
 }

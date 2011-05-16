@@ -37,7 +37,7 @@ public class TestConfigFile extends JavaBridgeTestBase {
 
         Model.Entity ent = helpers.getEntityByName("StaticSubstation");
 
-        Model.ConfigFile created = helpers.createConfigFile("test-config-file", "text", new byte[]{0,0,0}, ent);
+        Model.ConfigFile created = helpers.createConfigFile("test-config-file", "text", new byte[]{0,0,0}, ent.getUuid());
 
         helpers.deleteConfigFile(created);
 

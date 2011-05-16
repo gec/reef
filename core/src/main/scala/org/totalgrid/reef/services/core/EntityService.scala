@@ -64,8 +64,9 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {
     val b = EntityEdgeProto.newBuilder()
-    b.setParent(EntityProto.newBuilder.setUid(entry.parentId.toString))
-    b.setChild(EntityProto.newBuilder.setUid(entry.childId.toString))
+    import org.totalgrid.reef.services.framework.SquerylModel._
+    b.setParent(EntityProto.newBuilder.setUuid(makeUuid(entry.parentId)))
+    b.setChild(EntityProto.newBuilder.setUuid(makeUuid(entry.childId)))
     b.setRelationship(entry.relationship)
     b.build
   }

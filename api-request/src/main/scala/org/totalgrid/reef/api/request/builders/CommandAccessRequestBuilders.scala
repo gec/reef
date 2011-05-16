@@ -22,8 +22,7 @@ package org.totalgrid.reef.api.request.builders
  */
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.CommandAccess
-import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object CommandAccessRequestBuilders {
 
@@ -65,10 +64,10 @@ object CommandAccessRequestBuilders {
   def getByCommandName(command: String) = CommandAccess.newBuilder.addCommands(command).build
   def getByCommandNames(commands: java.util.List[String]) = CommandAccess.newBuilder.addAllCommands(commands).build
 
-  def getForUid(uid: ReefUUID) = CommandAccess.newBuilder.setUid(uid.getUuid).build
+  def getForUid(uid: String) = CommandAccess.newBuilder.setUid(uid).build
 
   def getForUser(user: String) = CommandAccess.newBuilder.setUser(user).build
 
-  def deleteByUid(uid: ReefUUID) = CommandAccess.newBuilder.setUid(uid.getUuid).build
+  def deleteByUid(uid: String) = CommandAccess.newBuilder.setUid(uid).build
   def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setUid(cmd.getUid).build
 }

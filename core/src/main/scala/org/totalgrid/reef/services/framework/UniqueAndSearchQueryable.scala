@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.framework
 
 import org.squeryl._
 import dsl.ast.LogicalBoolean
-import dsl.fsm.{ SelectState, WhereState }
+import dsl.fsm.{ Conditioned, SelectState, WhereState }
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.QueryYield
 
@@ -132,10 +132,10 @@ trait UniqueAndSearchQueryable[MessageType, T] {
 
   /// internal (for now) functions that minimize code duplication but aren't needed externally yet
   /// though as the system grows that may change
-  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState) => SelectState[R]): Query[R] = {
+  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R]): Query[R] = {
     from(table)(sql => selectFun(sql, where(uniqueParams(req, sql)))).page(0, getResultLimit)
   }
-  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState) => SelectState[R]): Query[R] = {
+  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R]): Query[R] = {
     from(table)(sql => getOrdering(selectFun(sql, where(searchParams(req, sql))), sql)).page(0, getResultLimit)
   }
   def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {

@@ -75,7 +75,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val gotten = one(s.get(Trigger.newBuilder.setTriggerName("trigname1").setPoint(makePoint("meas01")).build))
     // make sure the object has had all of the point and node fields filled out
     gotten.getPoint.getName should equal("meas01")
-    gotten.getPoint.getNode.getUid should equal(node.getUid)
+    gotten.getPoint.getNode.getUuid should equal(node.getUuid)
 
     many(2, s.get(Trigger.newBuilder.setTriggerName("trigname1").build))
 
@@ -83,7 +83,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     none(s.get(Trigger.newBuilder.setTriggerName("trigname1").setPoint(makePoint("meas03")).build))
 
     many(3, s.get(Trigger.newBuilder.setPoint(makePoint("meas01")).build))
-    many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeUid(node.getUid)).build))
+    many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build))
     many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeName(node.getName)).build))
 
     many(4, s.get(Trigger.newBuilder.setPoint(makePoint("*")).build))
@@ -105,11 +105,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val gotten = one(s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build))
     // make sure the object has had all of the point and node fields filled out
     gotten.getPoint.getName should equal("meas01")
-    //gotten.getPoint.getLogicalNode.getUid should equal(node.getUid)
+    //gotten.getPoint.getLogicalNode.getUuid should equal(node.getUuid)
     gotten.getMeas.getIntVal should equal(999)
 
     one(s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build))
-    one(s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid(node.getUid)).build))
+    one(s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build))
     one(s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName(node.getName)).build))
 
     many(2, s.get(MeasOverride.newBuilder.setPoint(makePoint("*")).build))

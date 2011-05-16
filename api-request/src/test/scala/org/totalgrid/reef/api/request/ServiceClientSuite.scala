@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request
 
-import impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
@@ -32,6 +32,12 @@ import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
 import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
+
+import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.javaclient.IEventAcceptor
+class IEventAcceptorShim[T](fun: Event[T] => _) extends IEventAcceptor[T] {
+  def onEvent(event: Event[T]) = fun(event)
+}
 
 abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -59,8 +65,8 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   lazy val client = connect
 
   def connect = {
-    val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder {
-      val ops = this
+    val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
+      def session = this
     }
 
     val agent = Agent.newBuilder.setName("core").setPassword("core").build

@@ -22,14 +22,12 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.{ Envelope, BadRequestException }
 
 import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
@@ -41,6 +39,7 @@ import org.totalgrid.reef.event.SilentEventLogPublisher
 import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -201,8 +200,22 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
     resp.getAlarms(0).getEvent.getEventType should equal(Scada.ControlExe.toString)
     resp.getAlarms(0).getEvent.getUserId should equal(USER1)
     resp.getAlarms(0).getEvent.getEntity.getName should equal(ENTITY1)
-
   }
+
+  test("Negative limit") {
+    val req = AlarmList.newBuilder.setSelect(
+      AlarmSelect.newBuilder
+        .addAllState(STATE_ACK)
+        .setEventSelect(EventSelect.newBuilder.setLimit(-1))).build
+
+    val fixture = getFixture()
+    import fixture._
+
+    intercept[BadRequestException] {
+      service.get(req)
+    }
+  }
+
   /*
   def testQueriesWithSets(fixture: Fixture) {
     import fixture._
@@ -273,7 +286,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
     var resp = one(service.get(makeAL(0, 0, None, USER_ANY, ENTITY_ANY)))
     resp.getAlarmsCount should equal(9)
-    var lastUid = resp.getAlarmList.head.getUid // The latest UID in the database
+    var lastUid = resp.getAlarmList.head.getUuid // The latest UID in the database
 
     val events = List[EventStore](
       // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
@@ -302,14 +315,14 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
     resp2.getAlarmsCount should equal(9)
     resp2.getAlarmList.toIterable.foreach(e => {
       e.getTime should be >= (NOW)
-      e.getEntity.getUid should equal(ENTITY42)
+      e.getEntity.getUuid should equal(ENTITY42)
     })
 
     resp2 = one(service.get(makeAL_UidAfter(STATE_ANY, lastUid, USER1)))
     resp2.getAlarmsCount should equal(3)
     resp2.getAlarmList.toIterable.foreach(e => {
       e.getTime should be >= (NOW)
-      e.getEntity.getUid should equal(ENTITY42)
+      e.getEntity.getUuid should equal(ENTITY42)
       e.getUserId should equal(USER1)
     })
 
@@ -333,7 +346,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
       .setSubsystem("FEP")
       .setUserId(userId)
       .setArgs(alist.toProto)
-    entityId.foreach(x => b.setEntity(EntityProto.newBuilder.setUid(x).build))
+    entityId.foreach(x => b.setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(x)).build))
     b.build
   }
 
@@ -386,10 +399,10 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
   /**
    * Make an AlarmList proto for selecting events after the specified UID.
    */
-  def makeAL_UidAfter(states: List[Alarm.State], uid: String, userId: String) = {
+  /*def makeAL_UidAfter(states: List[Alarm.State], uid: String, userId: String) = {
 
     val es = EventSelect.newBuilder
-    es.setUidAfter(uid)
+    es.setUuidAfter(uid)
     if (userId != "") es.addUserId(userId)
 
     val as = AlarmSelect.newBuilder
@@ -399,5 +412,5 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
     AlarmList.newBuilder
       .setSelect(as)
       .build
-  }
+  } */
 }

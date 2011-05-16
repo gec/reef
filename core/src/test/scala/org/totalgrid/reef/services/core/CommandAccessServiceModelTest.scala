@@ -44,8 +44,8 @@ trait AccessTestRig extends CommandTestRig {
   def seed(sql: CommandAccessModel): CommandAccessModel = {
     ApplicationSchema.commandAccess.insert(sql)
   }
-  def seed(name: String) {
-    seed(new Command(name, name, 0, false, None, None))
+  def seed(name: String): Command = {
+    seed(Command.newInstance(name, name))
   }
 }
 
@@ -59,7 +59,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
   }
 
   def lastSelectFor(cmd: String) = {
-    ApplicationSchema.commands.where(t => t.name === cmd).head.lastSelectId
+    Command.findByNames(cmd :: Nil).head.lastSelectId
   }
 
   def checkCmds(cmds: List[Command], size: Int, accessId: Long) = {
@@ -93,8 +93,8 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   test("Block") {
     val r = new TestRig
-    r.seed(new Command("cmd01", "", 0, false, None, None))
-    r.seed(new Command("cmd02", "", 0, false, None, None))
+    r.seed("cmd01")
+    r.seed("cmd02")
 
     // Do the block
     val inserted = r.model.blockCommands("user01", List("cmd01"))
@@ -103,7 +103,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     val entry = checkAccess(AccessMode.BLOCKED.getNumber, None, Some("user01"))
 
     // Check for command in sql
-    val cmds = r.commandModel.table.where(t => t.name === "cmd01").toList
+    val cmds = Command.findByNames("cmd01" :: Nil).toList
     val cmd = cmds.head
     cmd.lastSelectId should equal(Some(inserted.id))
 
@@ -130,8 +130,8 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   test("Multi-Block") {
     val r = new TestRig
-    val cmd1 = r.seed(new Command("cmd01", "", 0, false, None, None))
-    r.seed(new Command("cmd02", "", 0, false, None, None))
+    val cmd1 = r.seed("cmd01")
+    r.seed("cmd02")
 
     // Do the block
     val block1 = r.model.blockCommands("user01", List("cmd01", "cmd02"))
@@ -183,8 +183,8 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     val r = new TestRig
     transaction {
       r.seed("cmd01")
-      r.seed(new Command("cmd02", "", 0, false, None, None))
-      r.seed(new Command("cmd03", "", 0, false, None, None))
+      r.seed("cmd02")
+      r.seed("cmd03")
     }
 
     val blockedCmds = List("cmd01", "cmd02", "cmd03")
@@ -206,7 +206,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   test("Select") {
     val r = new TestRig
-    r.seed(new Command("cmd01", "", 0, false, None, None))
+    r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
     val inserted = r.model.selectCommands("user01", Some(expireTime), List("cmd01"))
@@ -232,7 +232,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   test("Select twice") {
     val r = new TestRig
-    val cmd = r.seed(new Command("cmd01", "", 0, false, None, None))
+    val cmd = r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
     val inserted = r.model.selectCommands("user01", Some(expireTime), List("cmd01"))

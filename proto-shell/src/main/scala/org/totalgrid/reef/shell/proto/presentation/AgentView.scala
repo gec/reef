@@ -34,7 +34,7 @@ object AgentView {
   }
 
   def agentRow(a: Agent) = {
-    a.getUid :: a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",") :: Nil
+    a.getUuid.getUuid :: a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",") :: Nil
   }
 
   def printPermissionSets(permissions: List[PermissionSet]) = {
@@ -49,6 +49,6 @@ object AgentView {
     val permissions = a.getPermissionsList.toList
     val allows = permissions.filter(_.getAllow == true).map { p => p.getVerb + "," + p.getResource }
     val denies = permissions.filter(_.getAllow == false).map { p => p.getVerb + "," + p.getResource }
-    a.getUid :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
+    a.getUuid.getUuid :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
   }
 }

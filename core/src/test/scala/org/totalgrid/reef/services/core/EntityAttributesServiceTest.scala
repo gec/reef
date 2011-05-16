@@ -35,12 +35,14 @@ import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, ApplicationSchema, EntityAttribute }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
+import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def seedEntity(name: String, typ: String) = {
-    EQ.addEntity(name, typ).id.toString
+    ReefUUID.newBuilder.setUuid(EQ.addEntity(name, typ).id.toString).build
   }
 
   protected val service = new EntityAttributesService
@@ -50,7 +52,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       seedEntity("ent01", "entType")
     }
 
-    val entity = Entity.newBuilder.setUid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -65,13 +67,13 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   /*test("Bad put - no attributes") {
-    val entity = Entity.newBuilder.setUid("fake").build
+    val entity = Entity.newBuilder.setUuid("fake").build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).build))
   }*/
 
   test("Bad put - entity doesn't exist") {
-    val entity = Entity.newBuilder.setUid("0").build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(new UUID(0, 0).toString)).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build))
@@ -82,7 +84,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       seedEntity("ent01", "entType")
     }
 
-    val entity = Entity.newBuilder.setUid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -95,12 +97,12 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       EQ.addEntity("ent02", "entType2")
 
       ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
-      id.toString
+      ReefUUID.newBuilder.setUuid(id.toString).build
     }
   }
 
-  def attrReq(entityUid: String, attributes: List[Attribute]) = {
-    val entity = Entity.newBuilder.setUid(entityUid).build
+  def attrReq(entityUid: ReefUUID, attributes: List[Attribute]) = {
+    val entity = Entity.newBuilder.setUuid(entityUid).build
     EntityAttributes.newBuilder.setEntity(entity).addAllAttributes(attributes.toList).build
   }
 
@@ -109,7 +111,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       seedEntity("ent01", "entType")
     }
 
-    val entity = Entity.newBuilder.setUid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -158,7 +160,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Get all") {
     simpleGetScenario
 
-    val entity = Entity.newBuilder.setUid("*").build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = many(2, service.get(entAttr))
@@ -179,7 +181,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Get by uid") {
     val entUid = simpleGetScenario
 
-    val entity = Entity.newBuilder.setUid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entUid).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     checkSimpleGetScenario(entAttr)
@@ -206,7 +208,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr04", Some("again"), None, None, None, None))
     }
 
-    val entity = Entity.newBuilder.setUid("*").build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = many(2, service.get(entAttr))
@@ -220,14 +222,14 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       seedEntity("ent01", "entType")
     }
 
-    val entity = Entity.newBuilder.setUid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(typ)
     setup(attribute, v)
 
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
     one(Status.OK, service.put(entAttr))
 
-    val result = one(Status.OK, service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(entUid)).build))
+    val result = one(Status.OK, service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entUid)).build))
 
     result.getAttributesCount should equal(1)
     val attr = result.getAttributesList.get(0)
@@ -258,7 +260,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Delete") {
     val entId = deleteScenario
 
-    val resp = one(Status.OK, service.delete(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(entId.toString)).build))
+    val resp = one(Status.OK, service.delete(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build))
     resp.getAttributesCount should equal(0)
 
     noneForEntity(entId)
@@ -267,7 +269,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Put no attributes is delete") {
     val entId = deleteScenario
 
-    val resp = one(Status.OK, service.put(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(entId.toString)).build))
+    val resp = one(Status.OK, service.put(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build))
     resp.getAttributesCount should equal(0)
 
     noneForEntity(entId)
@@ -278,13 +280,13 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
       val entId1 = EQ.addEntity("ent01", "entType1").id
       ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
       ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
-      entId1
+      ReefUUID.newBuilder.setUuid(entId1.toString).build
     }
   }
 
-  def noneForEntity(entId: Long) = {
+  def noneForEntity(entId: ReefUUID) = {
     transaction {
-      ApplicationSchema.entityAttributes.where(t => t.entityId === entId).toList should equal(Nil)
+      ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getUuid)).toList should equal(Nil)
     }
   }
 

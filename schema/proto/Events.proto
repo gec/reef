@@ -95,7 +95,7 @@ message EventSelect {
   repeated org.totalgrid.reef.proto.Model.Entity entity =  8;   // List of devices or points (ex: southeast.substationAlpha.bay42.breaker23)
   optional uint32   limit              =  9 ;  // Max number of rows for select result
   optional bool     ascending          = 10 ;  // Time sort order. If not present, order is descending.
-  optional string   uid_after          = 11 ;  // Get events after this UID (not including this uid). Used for getting new events since last select.
+  //optional string   uid_after          = 11 ;  // Get events after this UID (not including this uid). Used for getting new events since last select.
 }
 
 

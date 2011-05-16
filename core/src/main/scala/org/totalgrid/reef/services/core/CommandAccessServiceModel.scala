@@ -26,13 +26,13 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, UnauthorizedException }
+import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 
 class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])
     extends BasicModelFactory[AccessProto, CommandAccessServiceModel](pub, classOf[AccessProto]) {
@@ -86,9 +86,9 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
   }
 
   def areAnyBlocked(commands: List[String]): Boolean = {
-    areAnyBlocked(from(commandModel.table)(t => where(t.name in commands) select (t.id)))
+    areAnyBlockedById(CommandModel.findByNames(commands).map { _.id }.toList)
   }
-  def areAnyBlocked(ids: Query[Long]): Boolean = {
+  def areAnyBlockedById(ids: List[Long]): Boolean = {
     val joinTable = ApplicationSchema.commandToBlocks
     val blockInt = AccessProto.AccessMode.BLOCKED.getNumber
 
@@ -119,7 +119,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
   }
 
   def blockCommands(user: String, commands: List[String]): AccessModel = {
-    val cmds = commandModel.getCommands(commands)
+    val cmds = CommandModel.findByNames(commands)
     if (cmds.size != commands.size)
       throw new BadRequestException("Commands not found")
 
@@ -129,13 +129,13 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
   }
 
   def selectCommands(user: String, expireTime: Option[Long], commands: List[String]): AccessModel = {
-    val cmds = commandModel.getCommands(commands)
+    val cmds = CommandModel.findByNames(commands)
 
     if (cmds.size != commands.size)
       throw new BadRequestException("Commands not found")
 
     val cmdIds = from(cmds)(t => select(t.id))
-    if (areAnyBlocked(cmdIds))
+    if (areAnyBlockedById(cmdIds.toList))
       throw new UnauthorizedException("One or more commands are blocked")
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))
@@ -178,7 +178,7 @@ trait CommandAccessConversion
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
     List(
-      proto.uid.asParam(uid => sql.id === uid.toInt))
+      proto.uid.asParam(uid => sql.id === uid.toLong))
   }
 
   def searchQuery(proto: AccessProto, sql: AccessModel) = {
@@ -191,7 +191,7 @@ trait CommandAccessConversion
 
   private def findAccessesByCommandNames(names: List[String]) = {
     from(ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((selectJoin, cmd) =>
-      where(selectJoin.commandId === cmd.id and (cmd.name in names))
+      where(selectJoin.commandId === cmd.id and (cmd.id in CommandModel.findIdsByNames(names)))
         select (selectJoin.accessId)).distinct
   }
 
@@ -208,8 +208,8 @@ trait CommandAccessConversion
 
   def convertToProto(entry: AccessModel): AccessProto = {
     val b = AccessProto.newBuilder
-      .setUid(entry.id.toString)
-      .addAllCommands(entry.commands.map(cmd => cmd.name))
+      .setUid(makeUid(entry))
+      .addAllCommands(entry.commands.map(cmd => cmd.entityName))
       .setAccess(AccessMode.valueOf(entry.access))
 
     // optional sql fields

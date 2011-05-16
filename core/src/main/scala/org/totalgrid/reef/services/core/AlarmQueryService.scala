@@ -97,6 +97,9 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServ
 
       // default all queries to max of 1000 events.
       val limit = select.eventSelect.limit getOrElse 1000
+      if (limit < 0) {
+        throw new BadRequestException("Limit must be non-negative")
+      }
 
       val results =
         from(alarms, events)((alarm, event) =>
@@ -111,7 +114,7 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServ
         join(entities, entityTypes.leftOuter)((e, t) =>
           where(e.id in entIds)
             select (e, t.map(_.entType))
-            on (e.id === t.map(_.entityId))).toList
+            on (Some(e.id) === t.map(_.entityId))).toList
 
       val typMap = AlarmQueryService.tupleGroup(entToTypes)
 

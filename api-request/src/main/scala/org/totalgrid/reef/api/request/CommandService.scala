@@ -21,8 +21,8 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.proto.Model.Command
 import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 /**
  * To affect changes in the field devices SCADA systems use commands. Commands are usually executed in the field
@@ -74,7 +74,7 @@ trait CommandService {
    * same as deleteCommandLock
    */
   @throws(classOf[ReefServiceException])
-  def deleteCommandLock(uuid: ReefUUID): CommandAccess
+  def deleteCommandLock(uid: String): CommandAccess
 
   /**
    * Clear all of the command locks in the system. This is a dangerous operation that should only be preformed in test
@@ -146,7 +146,7 @@ trait CommandService {
    * get a command locks by UUID
    */
   @throws(classOf[ReefServiceException])
-  def getCommandLock(uuid: ReefUUID): CommandAccess
+  def getCommandLock(uid: String): CommandAccess
 
   /**
    * get the command lock (if it exists) for a Command

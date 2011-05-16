@@ -21,8 +21,8 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Alarms.Alarm
-import org.totalgrid.reef.api.{ ISubscription, ReefServiceException }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
+import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.api.javaclient.{ ISubscriptionResult }
 
 /**
  *
@@ -42,10 +42,10 @@ trait AlarmService {
 
   /**
    * get a single alarm
-   * @param uuid UUID of event
+   * @param uid uid of alarm
    */
   @throws(classOf[ReefServiceException])
-  def getAlarm(uuid: ReefUUID): Alarm
+  def getAlarm(uid: String): Alarm
 
   /**
    * get the most recent alarms
@@ -60,7 +60,7 @@ trait AlarmService {
    * @param sub a subscription object that consumes the new Alarms coming in
    */
   @throws(classOf[ReefServiceException])
-  def getActiveAlarms(limit: Int, sub: ISubscription[Alarm]): java.util.List[Alarm]
+  def subscribeToActiveAlarms(limit: Int): ISubscriptionResult[java.util.List[Alarm], Alarm]
 
   /**
    * get the most recent alarms
@@ -88,9 +88,4 @@ trait AlarmService {
   @throws(classOf[ReefServiceException])
   def removeAlarm(alarm: Alarm): Alarm
 
-  /**
-   * Create a subscription object that can receive Alarms.
-   * @return "blank" subscription object, needs to have the subscription configured by passing it with another request
-   */
-  def createAlarmSubscription(callback: IEventAcceptor[Alarm]): ISubscription[Alarm]
 }

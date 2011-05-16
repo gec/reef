@@ -21,12 +21,11 @@ package org.totalgrid.reef.api.request.builders
  * under the License.
  */
 import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.api.request.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object UserCommandRequestBuilders {
 
-  def getForUid(uid: ReefUUID) = UserCommandRequest.newBuilder.setUid(uid.getUuid).build
+  def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(uid).build
 
   def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
 

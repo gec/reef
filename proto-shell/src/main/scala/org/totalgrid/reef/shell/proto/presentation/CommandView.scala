@@ -28,7 +28,7 @@ object CommandView {
 
   def commandList(list: List[Command]) = {
     val rows = list.map { cmd =>
-      ("[" + cmd.getUid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
+      ("[" + cmd.getUuid.getUuid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
     }
     Table.justifyColumns(rows).foreach { line => println(line mkString " ") }
   }
@@ -83,7 +83,7 @@ object CommandView {
   def accessRow(acc: CommandAccess): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
-    acc.getUid :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
+    "[" + acc.getUid + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
   }
 
   def commandsEllipsis(names: List[String]) = {

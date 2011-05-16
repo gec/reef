@@ -21,12 +21,12 @@
 package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.models.{ ModelWithId }
 import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId }
 
 /**
  * Supertype for Proto/Squeryl models
@@ -167,6 +167,23 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 }
 
 object SquerylModel {
+  import org.totalgrid.reef.proto.Model.ReefUUID
+  def makeUid(entry: ModelWithId) = {
+    entry.id.toString
+  }
+  def makeUuid(entry: EntityBasedModel) = {
+    ReefUUID.newBuilder.setUuid(entry.entityId.toString)
+  }
+  def makeUuid(entry: ModelWithUUID) = {
+    ReefUUID.newBuilder.setUuid(entry.id.toString)
+  }
+  def makeUuid(id: Long) = {
+    ReefUUID.newBuilder.setUuid(id.toString)
+  }
+  def makeUuid(id: java.util.UUID) = {
+    ReefUUID.newBuilder.setUuid(id.toString)
+  }
+
   import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
 
   class NoSearchTermsException(msg: String) extends BadRequestException(msg)

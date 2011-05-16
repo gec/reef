@@ -45,13 +45,13 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
 
   override def addEntry(ep: ConnProto) = {
     val entry = fun(ep)
-    map += ep.getUid -> entry
+    map += getKey(ep) -> entry
     entry.start
   }
 
   override def removeEntry(ep: ConnProto) = {
-    map.get(ep.getUid).get.stop
-    map -= ep.getUid
+    map.get(getKey(ep)).get.stop
+    map -= getKey(ep)
   }
 
   override def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {

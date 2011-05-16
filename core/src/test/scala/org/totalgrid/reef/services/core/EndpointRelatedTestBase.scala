@@ -218,14 +218,14 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean) {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
       //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
-      feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUid == f.getFrontEnd.getUid) } should equal(true)
+      feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
       //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
     }
 
     def checkMeasProcs(procs: List[MeasurementProcessingConnection], measProcUid: Option[ApplicationConfig], serviceRouting: Boolean) {
       procs.forall { f => f.hasLogicalNode == true } should equal(true)
-      procs.forall { f => f.hasMeasProc == measProcUid.isDefined && (measProcUid.isEmpty || measProcUid.get.getUid == f.getMeasProc.getUid) } should equal(true)
+      procs.forall { f => f.hasMeasProc == measProcUid.isDefined && (measProcUid.isEmpty || measProcUid.get.getUuid == f.getMeasProc.getUuid) } should equal(true)
       procs.forall { f => f.hasRouting == serviceRouting } should equal(true)
     }
 

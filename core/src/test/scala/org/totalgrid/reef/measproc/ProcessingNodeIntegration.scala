@@ -76,7 +76,7 @@ class ProcessingNodeIntegration extends Suite with ShouldMatchers {
 
     val proc = ProcessingNode(
       measQueue.enqueue(_),
-      Entity.newBuilder.setUid(endpointUid).build,
+      Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(endpointUid)).build,
       provider,
       measCache,
       overCache,

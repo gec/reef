@@ -33,6 +33,7 @@ import org.squeryl.{ Table, Query }
 import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import java.util.UUID
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -54,7 +55,7 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 
   val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
-    table.where(_.name in names)
+    Command.findByNames(names)
   }
   def createAndSetOwningNode(commands: List[String], dataSource: Entity): Unit = {
     if (commands.size == 0) return
@@ -67,14 +68,12 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
       update(p, p)
     })
 
-    val newCommands = commands.diff(allreadyExistingCommands.map(_.name).toList)
+    val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
     newCommands.foreach(c => {
       val ent = EQ.findOrCreateEntity(c, "Command")
       EQ.addEdge(dataSource, ent, "source")
       // TODO: cleaner way of doing entity bound models
-      val cmd = new Command(c, ent.id)
-      cmd.entity.value = ent
-      create(cmd)
+      create(Command.newInstance(ent))
     })
   }
 }
@@ -82,27 +81,20 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 trait CommandServiceConversion extends MessageModelConversion[CommandProto, Command] with UniqueAndSearchQueryable[CommandProto, Command] {
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
-    hasGet(req.hasUid, req.getUid) ::
-      hasGet(req.hasName, req.getName) ::
-      hasGet(req.hasEntity, req.getEntity.getUid) :: Nil
+    req.uuid.uuid :: req.name :: req.entity.uuid.uuid :: Nil
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
+
+    val esearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Command")))
     List(
-      proto.entity.map(entity => sql.entityId in EntitySearches.searchQueryForId(entity, { _.id })),
-      proto.name.asParam(name => sql.name === name),
-      proto.uid.asParam(sql.entityId === _.toLong))
+      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
+      proto.entity.map(ent => sql.entityId in EQ.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
 
-  def createModelEntry(proto: CommandProto): Command = {
-    val ent = EQ.findOrCreateEntity(proto.getName, "Command")
-
-    val cmd = new Command(proto.getName, proto.getDisplayName, ent.id)
-    cmd.entity.value = ent
-    cmd
-  }
+  def createModelEntry(proto: CommandProto): Command = Command.newInstance(proto.getName, proto.getDisplayName)
 
   def isModified(entry: Command, existing: Command) = {
     entry.lastSelectId != existing.lastSelectId
@@ -111,14 +103,14 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
   def convertToProto(sql: Command): CommandProto = {
     // TODO: fill out connected and selected parts of proto
     val b = CommandProto.newBuilder
-      .setUid(sql.entityId.toString)
-      .setName(sql.name)
+      .setUuid(makeUuid(sql.entityId))
+      .setName(sql.entityName)
       .setDisplayName(sql.displayName)
 
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
       case Some(e) => b.setEntity(EQ.entityToProto(e))
-      case None => b.setEntity(EntityProto.newBuilder.setUid(sql.entityId.toString))
+      case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
     sql.logicalNode.asOption.foreach(_.foreach(ln => EQ.entityToProto(ln)))

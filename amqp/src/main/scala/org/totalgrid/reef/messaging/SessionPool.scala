@@ -20,10 +20,12 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.scalaclient.{ ISessionPool, ClientSession }
+import javaclient.Session
+import org.totalgrid.reef.api.scalaclient.{ ClientSessionPool, ClientSession }
 import scala.collection.mutable._
+import org.totalgrid.reef.api.javaclient.{ ISessionConsumer, ISessionPool }
 
-class SessionPool(conn: Connection) extends ISessionPool {
+class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ClientSessionPool with ISessionPool {
 
   private val available = Set.empty[ClientSession]
   private val unavailable = Set.empty[ClientSession]
@@ -46,7 +48,7 @@ class SessionPool(conn: Connection) extends ISessionPool {
     available.add(session)
   }
 
-  def borrow[A](fun: ClientSession => A): A = {
+  override def borrow[A](fun: ClientSession => A): A = {
 
     val session = acquire()
 
@@ -58,4 +60,26 @@ class SessionPool(conn: Connection) extends ISessionPool {
 
   }
 
+  override def borrow[A](authToken: String)(fun: ClientSession => A): A = {
+
+    borrow { session =>
+      try {
+        import org.totalgrid.reef.api.ServiceHandlerHeaders._
+        session.getDefaultHeaders.setAuthToken(authToken)
+        fun(session)
+      } finally {
+        session.getDefaultHeaders.reset
+      }
+    }
+
+  }
+
+  // implement ISession
+  override def borrow[A](consumer: ISessionConsumer[A]): A = {
+    borrow(client => consumer.apply(new Session(client)))
+  }
+
+  override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A = {
+    borrow(authToken)(client => consumer.apply(new Session(client)))
+  }
 }

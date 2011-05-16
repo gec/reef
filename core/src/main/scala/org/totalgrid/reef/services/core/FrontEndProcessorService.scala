@@ -29,6 +29,8 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.totalgrid.reef.services
+import java.util.UUID
+import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator, MeasurementStreamCoordinatorFactory }
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
@@ -47,26 +49,26 @@ class FrontEndProcessorService(protected val modelTrans: ServiceTransactable[Fro
 
 class FrontEndProcessorModelFactory(
   pub: ServiceEventPublishers,
-  fepModelFac: ModelFactory[CommunicationEndpointConnectionServiceModel])
+  coordinatorFac: MeasurementStreamCoordinatorFactory)
     extends BasicModelFactory[FrontEndProcessor, FrontEndProcessorServiceModel](pub, classOf[FrontEndProcessor]) {
 
-  def model = new FrontEndProcessorServiceModel(subHandler, fepModelFac.model)
+  def model = new FrontEndProcessorServiceModel(subHandler, coordinatorFac.model)
 }
 
 class FrontEndProcessorServiceModel(
   protected val subHandler: ServiceSubscriptionHandler,
-  fepModel: CommunicationEndpointConnectionServiceModel)
+  coordinator: MeasurementStreamCoordinator)
     extends SquerylServiceModel[FrontEndProcessor, ApplicationInstance]
     with EventedServiceModel[FrontEndProcessor, ApplicationInstance]
     with FrontEndProcessorConversion {
 
-  link(fepModel)
+  link(coordinator)
 
   override def createFromProto(req: FrontEndProcessor): ApplicationInstance = {
-    val appInstance = table.where(a => a.id === req.getAppConfig.getUid.toLong).single
+    val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getUuid)).single
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, appInstance.id)))
     info { "Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList }
-    fepModel.onAppChanged(appInstance, true)
+    coordinator.onFepAppChanged(appInstance, true)
     appInstance
   }
 
@@ -74,12 +76,12 @@ class FrontEndProcessorServiceModel(
     ApplicationSchema.protocols.delete(ApplicationSchema.protocols.where(p => p.applicationId === existing.id))
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, existing.id)))
     info { "Updated FEP: " + existing.instanceName + " protocols: " + req.getProtocolsList.toList }
-    fepModel.onAppChanged(existing, true)
+    coordinator.onFepAppChanged(existing, true)
     (existing, true)
   }
 
   override def preDelete(sql: ApplicationInstance) {
-    fepModel.onAppChanged(sql, false)
+    coordinator.onFepAppChanged(sql, false)
   }
 
 }
@@ -91,7 +93,7 @@ trait FrontEndProcessorConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(req: FrontEndProcessor) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid :: Nil
+    req.uuid.uuid :: Nil
   }
 
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
@@ -101,7 +103,7 @@ trait FrontEndProcessorConversion
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    proto.uid.asParam(sql.id === _.toLong) ::
+    proto.uuid.uuid.asParam(sql.id === _.toLong) ::
       proto.appConfig.instanceName.asParam(sql.instanceName === _) ::
       Nil
   }
@@ -118,7 +120,7 @@ trait FrontEndProcessorConversion
     val protocols = ApplicationSchema.protocols.where(i => i.applicationId === entry.id).map(_.protocol)
 
     val b = FrontEndProcessor.newBuilder
-      .setUid(entry.id.toString)
+      .setUuid(makeUuid(entry))
       .setAppConfig(ApplicationConfigConversion.convertToProto(entry))
 
     protocols.foreach(b.addProtocols(_))

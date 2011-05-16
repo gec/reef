@@ -36,7 +36,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException }
 
 // implicit proto properties
-import SquerylModel.makeAsParam
+import SquerylModel._
 import org.totalgrid.reef.util.Optional._
 
 class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceModel])

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.2.3-SNAPSHOT</version>
+        <version>0.3.0-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -50,51 +50,52 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.squeryl</groupId>
-            <artifactId>squeryl_2.8.0</artifactId>
-            <version>0.9.4-RC2</version>
-        </dependency>
-        <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
+            <version>0.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-api</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
+            <version>0.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
-            <scope>runtime</scope>
+            <version>0.3.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-api</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
+            <version>0.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-squeryl</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
+            <version>0.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-amqp</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
+            <version>0.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto</artifactId>
-            <version>0.2.3-SNAPSHOT</version>
+            <version>0.3.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- used only for the base64 implementation -->
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.3</version>
         </dependency>
     </dependencies>
 </project>

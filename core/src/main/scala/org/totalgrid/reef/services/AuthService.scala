@@ -53,7 +53,7 @@ trait SqlAuthzService extends IAuthService {
         // select only the permissions that either say this resource + verb exactly or are wildcarded
         val relevant = permissions.filter(p => (p.resource == "*" || p.resource == componentId) && (p.verb == "*" || p.verb == actionId))
 
-        val userName = tokens.head.agent.value.name
+        val userName = tokens.head.agent.value.entityName
 
         if (relevant.size == 0) {
           deny("No authorization found for access to resource: " + componentId + ":" + actionId + " by agent: " + userName)

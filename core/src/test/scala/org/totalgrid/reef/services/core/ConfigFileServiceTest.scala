@@ -23,14 +23,13 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.Model.ConfigFile
-import org.totalgrid.reef.proto.Model.Entity
 import org.totalgrid.reef.api.Envelope.Status
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase {
@@ -51,15 +50,15 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val result = one(Status.CREATED, s.put(configFile))
 
-    one(Status.NOT_MODIFIED, s.put(configFile)).getUid should equal(result.getUid)
+    one(Status.NOT_MODIFIED, s.put(configFile)).getUuid should equal(result.getUuid)
 
     val configFileMod = makeConfigFile("testFile1", "text", "im different!")
-    one(Status.UPDATED, s.put(configFileMod)).getUid should equal(result.getUid)
+    one(Status.UPDATED, s.put(configFileMod)).getUuid should equal(result.getUuid)
 
     val configFileMod2 = makeConfigFile("testFile1", "mimediff", "im different!")
     val finalObject = one(Status.UPDATED, s.put(configFileMod2))
 
-    one(Status.DELETED, s.delete(finalObject)).getUid should equal(result.getUid)
+    one(Status.DELETED, s.delete(finalObject)).getUuid should equal(result.getUuid)
   }
 
   test("Test Searching") {
@@ -77,7 +76,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     one(Status.CREATED, s.put(configFile3))
     one(Status.CREATED, s.put(configFile4))
 
-    many(4, s.get(ConfigFile.newBuilder.setUid("*").build))
+    many(4, s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
     many(2, s.get(ConfigFile.newBuilder.setMimeType("text").build))
     many(2, s.get(ConfigFile.newBuilder.setMimeType("html").build))
     many(0, s.get(ConfigFile.newBuilder.setMimeType("xml").build))

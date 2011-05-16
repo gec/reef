@@ -31,6 +31,5 @@ abstract class DatabaseUsingTestBase extends FunSuite with ShouldMatchers with B
   }
   override def beforeEach() {
     ServiceBootstrap.resetDb
-    ServiceBootstrap.seed
   }
 }

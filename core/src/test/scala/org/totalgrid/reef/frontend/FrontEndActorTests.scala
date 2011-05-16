@@ -18,6 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. Green Energy Corp licenses this file
+ * to you under the GNU Affero General Public License Version 3.0
+ * (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.FEP.{ CommChannel, FrontEndProcessor, CommEndpointRouting }
@@ -39,9 +59,15 @@ import org.junit.runner.RunWith
 
 import MockProtocol._
 import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
+
+  private def makeUuid(str: String) = {
+    ReefUUID.newBuilder.setUuid(str).build
+  }
+  implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
 
   case class Fixture(conn: MockConnection, protocol: MockProtocol, a: FrontEndActor) {
     val client = conn.getMockClient
@@ -54,7 +80,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     val conn = new MockConnection {}
     val mp = new MockProtocol
     val eventLog = SilentEventLogPublisher // publishers for events and logs
-    val appConfig = ApplicationConfig.newBuilder.setUid("0").build
+    val appConfig = ApplicationConfig.newBuilder.setUuid("0").build
 
     //immediately retry for testing purposes
     val a = new FrontEndActor(conn, List(mp), eventLog, appConfig, 0) with ReactActor
@@ -86,7 +112,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     conn.getMockClient.respond[FrontEndProcessor] { request =>
       ret = Some(request.payload)
       request.verb should equal(Envelope.Verb.PUT)
-      val rsp = FrontEndProcessor.newBuilder(request.payload).setUid("someuid")
+      val rsp = FrontEndProcessor.newBuilder(request.payload).setUuid("someuid")
       Some(Response(status, List(rsp.build)))
     }
 
@@ -97,7 +123,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
 
     conn.getMockClient.respond[FrontEndProcessor] { request =>
       request.verb should equal(Envelope.Verb.PUT)
-      val rsp = FrontEndProcessor.newBuilder(request.payload).setUid("someuid").build
+      val rsp = FrontEndProcessor.newBuilder(request.payload).setUuid("someuid").build
       Some(Response(Envelope.Status.OK, List(rsp)))
     }
   }
@@ -113,7 +139,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
 
   def respondToConnectionSubscribe(conn: MockConnection, list: List[ConnProto]) = {
     respondToSubscribe(conn, "connqueue") { (x: ConnProto) =>
-      x.getFrontEnd.getUid should equal("someuid")
+      x.getFrontEnd.getUuid should equal(makeUuid("someuid"))
       list
     }
   }
@@ -135,7 +161,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
   def respondToConnectionQueries(fix: Fixture, portname: String) {
     fix.client.respond[ConfigProto] { request =>
       request.verb should equal(Envelope.Verb.GET)
-      val port = CommChannel.newBuilder.setUid(portname).setName(portname).build
+      val port = CommChannel.newBuilder.setUuid(portname).setName(portname).build
       val rsp = ConfigProto.newBuilder(request.payload).setProtocol("mock").setChannel(port).build
       Some(Response(Envelope.Status.OK, List(rsp)))
     }
@@ -165,11 +191,11 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
   def testProtocolAddViaSubscribe(fix: Fixture) {
     val fep = respondToAnnounce(fix.conn, Envelope.Status.OK)
     sendEventQueueNotifications(fix.conn)
-    val pt = CommChannel.newBuilder.setUid("port")
-    val cfg = ConfigProto.newBuilder.setUid("config").setChannel(pt).setName("connection")
+    val pt = CommChannel.newBuilder.setUuid("port")
+    val cfg = ConfigProto.newBuilder.setUuid("config").setChannel(pt).setName("connection")
     val rt = CommEndpointRouting.newBuilder
-    val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
-    respondToConnectionSubscribe(fix.conn, List(conn)) //return 1 subscription     
+    val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).setEnabled(true).build
+    respondToConnectionSubscribe(fix.conn, List(conn)) //return 1 subscription
     respondToConnectionQueries(fix, "port") //respond to the request to read the config/port
 
     //at this point the fep should have all of things it needs to add a device,
@@ -184,10 +210,10 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     sendEventQueueNotifications(fix.conn)
     respondToConnectionSubscribe(fix.conn, Nil) //return 0 subscriptions
 
-    val pt = CommChannel.newBuilder.setUid("port")
-    val cfg = ConfigProto.newBuilder.setUid("config").setChannel(pt).setName("connection")
+    val pt = CommChannel.newBuilder.setUuid("port")
+    val cfg = ConfigProto.newBuilder.setUuid("config").setChannel(pt).setName("connection")
     val rt = CommEndpointRouting.newBuilder
-    val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).build
+    val conn = ConnProto.newBuilder.setUid("connection").setFrontEnd(fep).setEndpoint(cfg).setRouting(rt).setEnabled(true).build
 
     fix.conn.getEvent(classOf[ConnProto]).accept(Event(Envelope.Event.ADDED, conn))
 

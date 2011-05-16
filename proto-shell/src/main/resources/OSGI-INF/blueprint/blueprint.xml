@@ -26,6 +26,9 @@
         <command name="point/list">
             <action class="org.totalgrid.reef.shell.proto.PointListCommand"/>
         </command>
+        <command name="point/commands">
+            <action class="org.totalgrid.reef.shell.proto.PointCommandsCommand"/>
+        </command>
         <command name="command/list">
             <action class="org.totalgrid.reef.shell.proto.CommandListCommand"/>
         </command>
@@ -64,6 +67,9 @@
         </command>
         <command name="meas/from">
             <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
+        </command>
+        <command name="meas/endpoint">
+            <action class="org.totalgrid.reef.shell.proto.MeasFromEndpointCommand"/>
         </command>
         <command name="meas/hist">
             <action class="org.totalgrid.reef.shell.proto.MeasHistCommand"/>
@@ -107,19 +113,34 @@
         <command name="endpoint/list">
             <action class="org.totalgrid.reef.shell.proto.EndpointListCommand"/>
         </command>
+        <command name="endpoint/enable">
+            <action class="org.totalgrid.reef.shell.proto.EndpointEnableCommand"/>
+        </command>
+        <command name="endpoint/disable">
+            <action class="org.totalgrid.reef.shell.proto.EndpointDisableCommand"/>
+        </command>
+        <command name="application/list">
+            <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
+        </command>
+        <command name="configfile/list">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileListCommand"/>
+        </command>
+        <command name="configfile/view">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileViewCommand"/>
+        </command>
         <command name="agent/password">
             <action class="org.totalgrid.reef.shell.proto.AgentSetPasswordCommand"/>
         </command>
         <command name="agent/list">
             <action class="org.totalgrid.reef.shell.proto.AgentListCommand"/>
         </command>
-        <command name="agent/permissions:list">
+        <command name="agent-permissions/list">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsListCommand"/>
         </command>
-        <command name="agent/permissions:create">
+        <command name="agent-permissions/create">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand"/>
         </command>
-        <command name="agent/permissions:delete">
+        <command name="agent-permissions/delete">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand"/>
         </command>
         <command name="agent/create">

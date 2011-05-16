@@ -5,6 +5,11 @@ option java_outer_classname = "Model";
 
 import "Utils.proto";
 
+
+message ReefUUID {
+  required string uuid = 1;
+}
+
 /*
   Entity
 
@@ -20,7 +25,7 @@ import "Utils.proto";
 */
 message Entity {
 
-  optional string uid = 1;
+  optional ReefUUID uuid = 1;
   repeated string types = 2;
   optional string name = 3;
 
@@ -54,7 +59,7 @@ message Relationship {
 
 */
 message EntityEdge {
-  optional string uid = 1;
+  optional ReefUUID uuid = 1;
   optional Entity parent = 2;
   optional Entity child = 3;
   optional string relationship = 4;
@@ -78,7 +83,7 @@ message EntityAttributes {
 
 */
 message Point {
-  optional string  uid = 1;
+  optional ReefUUID uuid = 1;
   optional string  name = 2;
   optional Entity logicalNode = 5; // live state
   optional Entity entity   = 7;    // The point entity
@@ -98,7 +103,7 @@ message Point {
 
 */
 message Command {
-  optional string  uid = 1;
+  optional ReefUUID uuid = 1;
   optional string  name = 2;
   optional string display_name = 3;
   optional Entity logicalNode = 5;
@@ -117,7 +122,7 @@ message Command {
 
 */
 message ConfigFile{
-    optional string uid       = 1;
+    optional ReefUUID uuid    = 1;
     optional string name      = 2;
     optional string mime_type = 3;
     optional bytes  file      = 4;

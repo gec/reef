@@ -34,10 +34,9 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
 import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure }
 import org.totalgrid.reef.api.service.AsyncServiceBase
+import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 
-import org.totalgrid.reef.api.scalaclient.ISessionPool
-
-class MeasurementBatchService(pool: ISessionPool)
+class MeasurementBatchService(pool: ClientSessionPool)
     extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
@@ -47,7 +46,7 @@ class MeasurementBatchService(pool: ISessionPool)
     val requests: List[Request[MeasurementBatch]] = transaction {
       // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName)
-      val points = ApplicationSchema.points.where(p => p.name in names).toList
+      val points = Point.findByNames(names).toList
 
       if (!points.forall(_.endpoint.value.isDefined))
         throw new BadRequestException("Not all points have endpoints set.")
@@ -84,7 +83,7 @@ class MeasurementBatchService(pool: ISessionPool)
 
   private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {
     case Some(key) => AddressableService(key)
-    case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.name.value)
+    case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }
 
   private def getRequests(req: MeasurementBatch, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
@@ -97,7 +96,7 @@ class MeasurementBatchService(pool: ISessionPool)
         val batch = MeasurementBatch.newBuilder
         batch.setWallTime(req.getWallTime)
         points.foreach { p =>
-          batch.addMeas(measList.find(_.getName == p.name).get)
+          batch.addMeas(measList.find(_.getName == p.entityName).get)
         }
         Request(Envelope.Verb.PUT, batch.build, destination = convertEndpointToDestination(ce)) :: sum
     }

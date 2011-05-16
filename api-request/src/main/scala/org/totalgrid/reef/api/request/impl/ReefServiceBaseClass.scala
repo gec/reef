@@ -20,11 +20,28 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, SyncOperations }
-import org.totalgrid.reef.api.ExpectationException
+import org.totalgrid.reef.api.scalaclient.{ ClientSession, ClientSessionPool, SubscriptionManagement, SyncOperations }
+import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
+import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
+import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
 
-trait ReefServiceBaseClass {
-  protected val ops: SyncOperations with SubscriptionManagement
+trait ReefServiceBaseClass extends ClientSource {
+
+  def useSubscription[A, B <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
+    val sub = session.addSubscription[B](klass)
+    try {
+
+      val result = block(sub)
+      val ret = new SubscriptionResult(result, sub)
+      //onSubscriptionCreated(sub)
+      ret
+    } catch {
+      case x =>
+        sub.cancel
+        throw x
+    }
+  }
 
   def reThrowExpectationException[R](why: => String)(f: => R): R = {
     try {
@@ -34,3 +51,85 @@ trait ReefServiceBaseClass {
     }
   }
 }
+
+/**
+ * base trait for implementations that need a ClientSession and don't want to specify
+ * if we are using a pooled or not implementation
+ */
+trait ClientSource {
+  protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    try {
+      _ops(block)
+    } catch {
+      case rse: ReefServiceException =>
+        // we are just trying to verify that only ReefService derived Execeptions bubble out of the
+        // calls, if its already a ReefServiceException we have nothing to do
+        throw rse
+      case e: Exception =>
+        throw new InternalClientError("Unexpected error: " + e.getMessage, e)
+    }
+  }
+
+  protected def _ops[A](block: SyncOperations with SubscriptionManagement => A): A
+}
+
+/**
+ * simplest implementation of ClientSource, just hands the same session for every request
+ * without attaching any extra information
+ */
+trait SingleSessionClientSource extends ClientSource {
+  def session: SyncOperations with SubscriptionManagement
+
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = block(session)
+}
+
+/**
+ * takes a single session and sets the authToken before each call and removes it afterwards
+ */
+trait AuthorizedSingleSessionClientSource extends ClientSource {
+  def session: ClientSession
+
+  def authToken: String
+
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    try {
+      import org.totalgrid.reef.api.ServiceHandlerHeaders._
+      session.getDefaultHeaders.setAuthToken(authToken)
+      block(session)
+    } finally {
+      session.getDefaultHeaders.reset
+    }
+  }
+}
+
+/**
+ * uses a sessionpool to acquire a session out of a pool for each call
+ */
+trait PooledClientSource extends ClientSource {
+
+  // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
+  def sessionPool: ISessionPool
+
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    sessionPool.borrow(new ISessionConsumer[A] {
+      def apply(session: ISession) = block(session.getUnderlyingClient)
+    })
+  }
+}
+
+/**
+ * uses a sessionpool to acquire a session out of a pool for each call and also attaches an
+ * authtoken before every call
+ */
+trait AuthorizedAndPooledClientSource extends ClientSource {
+
+  def sessionPool: ISessionPool
+  def authToken: String
+
+  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+    sessionPool.borrow(authToken, new ISessionConsumer[A] {
+      def apply(session: ISession) = block(session.getUnderlyingClient)
+    })
+  }
+}
+

@@ -22,38 +22,33 @@ package org.totalgrid.reef.api.request.impl
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.request.{ ReefUUID, PointService }
-import org.totalgrid.reef.proto.Model.{ Point, Entity }
-import org.totalgrid.reef.api.ISubscription
+import org.totalgrid.reef.api.request.{ PointService }
+import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.api.request.builders.PointRequestBuilders
 
 trait PointServiceImpl extends ReefServiceBaseClass with PointService {
 
   def getAllPoints() = {
-    ops.getOrThrow(PointRequestBuilders.getAll)
+    ops { _.getOrThrow(PointRequestBuilders.getAll) }
   }
 
   def getPointByName(name: String) = {
     reThrowExpectationException("Point not found.") {
-      ops.getOneOrThrow(PointRequestBuilders.getByName(name))
+      ops { _.getOneOrThrow(PointRequestBuilders.getByName(name)) }
     }
   }
 
   def getPointByUid(uuid: ReefUUID) = {
     reThrowExpectationException("Point not found.") {
-      ops.getOneOrThrow(PointRequestBuilders.getByUid(uuid.getUuid))
+      ops { _.getOneOrThrow(PointRequestBuilders.getByUid(uuid)) }
     }
   }
 
   def getPointsOwnedByEntity(parentEntity: Entity) = {
-    ops.getOrThrow(PointRequestBuilders.getOwnedByEntity(parentEntity))
+    ops { _.getOrThrow(PointRequestBuilders.getOwnedByEntity(parentEntity)) }
   }
 
-  def getAbnormalPoints() = {
-    ops.getOrThrow(PointRequestBuilders.getAbnormal)
-  }
-
-  def getAbnormalPoints(sub: ISubscription[Point]) = {
-    ops.getOrThrow(PointRequestBuilders.getAbnormal, sub)
+  def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = {
+    ops { _.getOrThrow(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)) }
   }
 }

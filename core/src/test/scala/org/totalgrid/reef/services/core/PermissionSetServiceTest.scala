@@ -27,6 +27,7 @@ import org.totalgrid.reef.proto.Auth._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])
 class PermissionSetServiceTest extends AuthSystemTestBase {
@@ -79,14 +80,14 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
     one(fix.permissionSetService.put(makePermissionSet("set3")))
 
     many(3, fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build))
-    many(3, fix.permissionSetService.get(PermissionSet.newBuilder.setUid("*").build))
+    many(3, fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
 
     one(fix.permissionSetService.delete(makePermissionSet("all")))
     one(fix.permissionSetService.delete(makePermissionSet("read_only")))
     one(fix.permissionSetService.delete(makePermissionSet("set3")))
 
     many(0, fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build))
-    many(0, fix.permissionSetService.get(PermissionSet.newBuilder.setUid("*").build))
+    many(0, fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
 
     import org.squeryl.PrimitiveTypeMode._
     import org.totalgrid.reef.models.ApplicationSchema

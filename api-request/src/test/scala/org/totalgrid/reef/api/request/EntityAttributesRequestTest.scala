@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.api.request
 
-import impl.EntityServiceWrapper
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -47,7 +46,7 @@ class EntityAttributesRequestTest
     client.addExplanation("Put by entity uid", "Creates or replaces an attribute for the specified entity (selected by uid).")
     val resp1 = client.putOneOrThrow(
       EntityAttributesBuilders.putAttributesToEntityUid(
-        ent.getUid,
+        ent.getUuid,
         List(Attribute.newBuilder.setName("subName").setVtype(Attribute.Type.STRING).setValueString("Apex").build)))
 
     resp1.getAttributesCount should equal(1)
@@ -63,7 +62,7 @@ class EntityAttributesRequestTest
 
     {
       client.addExplanation("Get by entity uid", "Finds the attributes associated with a particular entity.")
-      val resp = client.getOneOrThrow(getForEntityUid(ent.getUid))
+      val resp = client.getOneOrThrow(getForEntityUid(ent.getUuid))
       resp.getAttributesCount should equal(2)
     }
     {
@@ -74,7 +73,7 @@ class EntityAttributesRequestTest
 
     {
       client.addExplanation("Delete by entity uid", "Deletes the attributes associated with a particular entity.")
-      val resp = client.deleteOneOrThrow(getForEntityUid(ent.getUid))
+      val resp = client.deleteOneOrThrow(getForEntityUid(ent.getUuid))
       resp.getAttributesCount should equal(0)
     }
 
@@ -94,7 +93,7 @@ class EntityAttributesRequestTest
   test("API") {
     val ent = client.getEntityByName("StaticSubstation")
 
-    val uid = ReefUUID(ent.getUid)
+    val uid = ent.getUuid
 
     {
       val attr = client.getEntityAttributes(uid)
@@ -129,7 +128,7 @@ class EntityAttributesRequestTest
 
   test("Set types") {
     val ent = client.getEntityByName("StaticSubstation")
-    val uid = ReefUUID(ent.getUid)
+    val uid = ent.getUuid
 
     {
       val attr = client.setEntityAttribute(uid, "test01", true)

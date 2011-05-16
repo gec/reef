@@ -24,42 +24,45 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.request.AgentService
 import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
   def getAgent(name: String) = {
-    ops.getOneOrThrow(Agent.newBuilder.setName(name).build)
+    ops { _.getOneOrThrow(Agent.newBuilder.setName(name).build) }
   }
 
   def getAgents() = {
-    ops.getOrThrow(Agent.newBuilder.setUid("*").build)
+    ops { _.getOrThrow(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build) }
   }
 
   def getPermissionSets() = {
-    ops.getOrThrow(PermissionSet.newBuilder.setUid("*").build)
+    ops { _.getOrThrow(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build) }
   }
   def getPermissionSet(name: String) = {
-    ops.getOneOrThrow(PermissionSet.newBuilder.setName(name).build)
+    ops { _.getOneOrThrow(PermissionSet.newBuilder.setName(name).build) }
   }
 
   def createPermissionSet(name: String, permissions: java.util.List[Permission]) = {
-    ops.putOneOrThrow(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build)
+    ops { _.putOneOrThrow(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build) }
   }
 
   def deletePermissionSet(permissionSet: PermissionSet) = {
-    ops.deleteOneOrThrow(permissionSet)
+    ops { _.deleteOneOrThrow(permissionSet) }
   }
 
   def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = {
-    val agent = Agent.newBuilder.setName(name).setPassword(password)
-    permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
-    ops.putOneOrThrow(agent.build)
+    ops { session =>
+      val agent = Agent.newBuilder.setName(name).setPassword(password)
+      permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
+      session.putOneOrThrow(agent.build)
+    }
   }
 
   def deleteAgent(agent: Agent) = {
-    ops.deleteOneOrThrow(agent)
+    ops { _.deleteOneOrThrow(agent) }
   }
 
   def setAgentPassword(agent: Agent, newPassword: String) = {
-    ops.putOneOrThrow(agent.toBuilder.setPassword(newPassword).build)
+    ops { _.putOneOrThrow(agent.toBuilder.setPassword(newPassword).build) }
   }
 }

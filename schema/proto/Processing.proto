@@ -78,6 +78,7 @@ message Trigger {
 // previous TriggerSet for said point.
 //
 message TriggerSet {
+  optional org.totalgrid.reef.proto.Model.ReefUUID       uuid = 3;
   optional org.totalgrid.reef.proto.Model.Point point = 1;
   repeated Trigger triggers = 2;
 }

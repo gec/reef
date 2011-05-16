@@ -20,50 +20,52 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.request.{ ReefUUID, EntityService }
+import org.totalgrid.reef.api.request.{ EntityService }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity }
+import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity, ReefUUID }
 import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, EntityRequestBuilders }
 
 trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
   def getAllEntities(): java.util.List[Entity] = {
-    ops.getOrThrow(EntityRequestBuilders.getAll)
+    ops { _.getOrThrow(EntityRequestBuilders.getAll) }
   }
 
   def getEntityByUid(uid: ReefUUID): Entity = {
-    ops.getOneOrThrow(EntityRequestBuilders.getByUid(uid))
+    ops { _.getOneOrThrow(EntityRequestBuilders.getByUid(uid)) }
   }
 
   def getEntityByName(name: String): Entity = {
-    ops.getOneOrThrow(EntityRequestBuilders.getByName(name))
+    ops { _.getOneOrThrow(EntityRequestBuilders.getByName(name)) }
   }
   def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
-    if (typ == "*") ops.getOrThrow(EntityRequestBuilders.getAll)
-    else ops.getOrThrow(EntityRequestBuilders.getByType(typ))
+    if (typ == "*") ops { _.getOrThrow(EntityRequestBuilders.getAll) }
+    else ops { _.getOrThrow(EntityRequestBuilders.getByType(typ)) }
   }
 
   def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity] = {
-    ops.getOrThrow(EntityRequestBuilders.getByTypes(typ.toList))
+    ops { _.getOrThrow(EntityRequestBuilders.getByTypes(typ.toList)) }
   }
 
   def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = {
-    val result = ops.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ))
+    ops { session =>
+      val result = session.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ))
 
-    val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
-    allEntitiesList
+      val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
+      allEntitiesList
+    }
   }
   def getEntityTree(entityTree: Entity): Entity = {
-    ops.getOneOrThrow(entityTree)
+    ops { _.getOneOrThrow(entityTree) }
   }
 
   def getEntities(entityTree: Entity): java.util.List[Entity] = {
-    ops.getOrThrow(entityTree)
+    ops { _.getOrThrow(entityTree) }
   }
 
   def getEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid.getUuid))
+    ops { _.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid)) }
   }
 
   def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
@@ -87,25 +89,28 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
   }
 
   def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = {
-    val prev = getEntityAttributes(uid)
-    val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
-
-    ops.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid.getUuid, set))
+    ops { session =>
+      val prev = getEntityAttributes(uid)
+      val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
+      session.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set))
+    }
   }
 
   def clearEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid.getUuid))
+    ops { _.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid)) }
   }
 
   protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = {
-    val prev = getEntityAttributes(uid)
-    val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
+    ops { session =>
+      val prev = getEntityAttributes(uid)
+      val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
 
-    val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUid(uid.getUuid))
-    prevSet.foreach(req.addAttributes(_))
-    req.addAttributes(attr)
+      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
+      prevSet.foreach(req.addAttributes(_))
+      req.addAttributes(attr)
 
-    ops.putOneOrThrow(req.build)
+      session.putOneOrThrow(req.build)
+    }
   }
 }
 
