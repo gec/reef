@@ -64,12 +64,15 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   lazy val client = connect
 
+  val username = "core"
+  val password = "core"
+
   def connect = {
     val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
       def session = this
     }
 
-    val agent = Agent.newBuilder.setName("core").setPassword("core").build
+    val agent = Agent.newBuilder.setName(username).setPassword(password).build
     val request = AuthToken.newBuilder.setAgent(agent).build
     val response = client.putOneOrThrow(request)
 

@@ -46,8 +46,8 @@ object ApplicationEnroller extends Logging {
     }
   }
 
-  lazy val defaultUserName = getSysProperty("reef.user", "core")
-  lazy val defaultUserPassword = getSysProperty("reef.user.password", defaultUserName)
+  lazy val defaultUserName = getSysProperty("reef.user", "system")
+  lazy val defaultUserPassword = getSysProperty("reef.user.password", "-system-")
   lazy val defaultNodeName = getSysProperty("reef.node", "node01")
   lazy val defaultLocation = getSysProperty("reef.network", "any")
   lazy val defaultNetwork = getSysProperty("reef.location", "any")

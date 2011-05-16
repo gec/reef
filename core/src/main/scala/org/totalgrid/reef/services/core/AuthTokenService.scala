@@ -50,17 +50,24 @@ object AuthTokenService {
     transaction {
       if (ApplicationSchema.agents.Count.head == 0) {
 
+        val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", "-system-"))
+
         val core = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("core", "core"))
         val op = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("operator", "operator"))
         val guest = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("guest", "guest"))
 
-        val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
+        val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
+        val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
+        val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
+
         val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
 
         val timeout = 18144000000L // one month
 
         val read_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("read_only", timeout))
         ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
+        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
+        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
 
         val all_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("all", timeout))
         ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
@@ -69,6 +76,8 @@ object AuthTokenService {
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, core.id))
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
+        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
+
       }
     }
   }

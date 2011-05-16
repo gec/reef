@@ -93,10 +93,10 @@ class AgentPermissionsCreateCommand extends AgentCommandBase {
   @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
   var permissionSetName: String = null
 
-  @GogoOption(name = "-a", description = "Allowed Permisson qualifiers of form [VERB],[RESOURCE]. Ex: GET,measurements", required = false, multiValued = true)
+  @GogoOption(name = "-a", description = "Allowed Permisson qualifiers of form [OPERATION],[RESOURCE]. Ex: Read,measurements", required = false, multiValued = true)
   var allowed: java.util.List[String] = null
 
-  @GogoOption(name = "-d", description = "Denied Permisson qualifiers of form [VERB],[RESOURCE]. Ex: GET,measurements", required = false, multiValued = true)
+  @GogoOption(name = "-d", description = "Denied Permisson qualifiers of form [OPERATION],[RESOURCE]. Ex: Read,measurements", required = false, multiValued = true)
   var denied: java.util.List[String] = null
 
   def doCommand() = {
@@ -113,7 +113,7 @@ class AgentPermissionsCreateCommand extends AgentCommandBase {
   private def createPermissions(allow: Boolean, qualifiers: java.util.List[String]) = {
     Option(qualifiers).map { _.toList }.getOrElse(Nil).map { qualifier =>
       val parts = qualifier.split(',')
-      if (parts.size != 2) throw new Exception("Qualifer should be of form \"[VERB],[RESOURCE]\". " + qualifier + " not valid.")
+      if (parts.size != 2) throw new Exception("Qualifer should be of form \"[OPERATION],[RESOURCE]\". " + qualifier + " not valid.")
       Permission.newBuilder.setAllow(allow).setVerb(parts(0)).setResource(parts(1)).build
     }
   }
