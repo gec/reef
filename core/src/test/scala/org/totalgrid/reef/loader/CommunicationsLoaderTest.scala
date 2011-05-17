@@ -33,8 +33,6 @@ import org.totalgrid.reef.util.BuildEnv
 
 // scala XML classes
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
 import org.totalgrid.reef.api.Envelope
 
@@ -57,7 +55,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((GeneratedMessage) => Success(Envelope.Status.OK, List[GeneratedMessage]()))
+    val client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
     val ex = new NullExceptionCollector
@@ -271,7 +269,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
 
   }
 
-  def protoPrintln(proto: com.google.protobuf.GeneratedMessage) = println("\nPROTO: " + className(proto.getClass.toString) + "\n" + proto.toString + "\n")
+  def protoPrintln(value: AnyRef) = println("\nPROTO: " + className(value.getClass.toString) + "\n" + value.toString + "\n")
   def className(c: String) = c.substring(c.lastIndexOf('.') + 1, c.length - 1).replace('$', '.')
 
   def makeEquipment(

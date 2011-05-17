@@ -24,7 +24,6 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 trait ModelLoader {
@@ -43,7 +42,7 @@ trait ModelLoader {
 
 class CachingModelLoader(client: Option[SyncOperations]) extends ModelLoader {
 
-  private var puts = List.empty[GeneratedMessage]
+  private var puts = List.empty[AnyRef]
 
   def putOrThrow(e: Entity) = { puts ::= e; autoFlush }
   def putOrThrow(e: EntityEdge) = { puts ::= e; autoFlush }

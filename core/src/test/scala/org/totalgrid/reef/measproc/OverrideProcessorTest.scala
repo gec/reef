@@ -23,7 +23,7 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.measproc.processing._
 
 import scala.collection.mutable.Queue
-import com.google.protobuf.GeneratedMessage
+
 import org.totalgrid.reef.proto.{ Measurements, Processing }
 import org.totalgrid.reef.api.Envelope
 import org.totalgrid.reef.proto.Model.Point

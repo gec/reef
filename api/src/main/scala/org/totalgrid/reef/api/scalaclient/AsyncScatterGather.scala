@@ -21,16 +21,19 @@ package org.totalgrid.reef.api.scalaclient
  * under the License.
  */
 
+import scala.collection.mutable.Map
+
 object AsyncScatterGather {
 
   def collect[A <: AnyRef](promises: List[IPromise[Response[A]]])(callback: List[Response[A]] => Unit) {
 
     // the results we're collecting and a counter
-    var map = Map.empty[Int, Response[A]]
+    val map = Map.empty[Int, Response[A]]
+    val size = promises.size
 
-    def gather(idx: Int)(rsp: Response[A]) {
+    def gather(idx: Int)(rsp: Response[A]) = map.synchronized {
       map += idx -> rsp
-      if (map.size == promises.size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
+      if (map.size == size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
     }
 
     promises.zipWithIndex.foreach {
