@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCo
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel }
 import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.messaging.mock.MockConnection
-import org.totalgrid.reef.messaging.SessionPool
+import org.totalgrid.reef.messaging.SessionExecutionPoolImpl
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
@@ -42,7 +42,7 @@ import CommandAccess._
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.messaging.SessionPool
+import org.totalgrid.reef.messaging.SessionExecutionPoolImpl
 import org.totalgrid.reef.api.{ RequestEnv, ServiceTypes, Envelope, AddressableService }
 
 import ServiceTypes.Response
@@ -59,7 +59,7 @@ class CommandRequestServicesIntegration
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
 
     val command = new CommandService(modelFac.cmds)
-    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection))
+    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionExecutionPoolImpl(connection))
     val endpointService = new CommunicationEndpointService(modelFac.endpoints)
     val access = new CommandAccessService(modelFac.accesses)
 

@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.javaclient
 
 import org.totalgrid.reef.api.ReefServiceException
 
-trait ISessionPool {
+trait SessionExecutionPool {
 
   /**
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
@@ -31,7 +31,7 @@ trait ISessionPool {
    * @throws ServiceIOException if a session cannot be acquired an exception will be thrown
    */
   @throws(classOf[ReefServiceException])
-  def borrow[A](consumer: ISessionConsumer[A]): A
+  def execute[A](consumer: ISessionConsumer[A]): A
 
   /**
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
@@ -42,7 +42,7 @@ trait ISessionPool {
    * @throws ReefServiceException
    */
   @throws(classOf[ReefServiceException])
-  def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A
+  def execute[A](authToken: String, consumer: ISessionConsumer[A]): A
 
   def shutdown()
 }

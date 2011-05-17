@@ -27,7 +27,7 @@ trait DefaultHeaders {
   /** The default request headers */
   private var defaultEnv: Option[RequestEnv] = None
 
-  /** */
+  /** retrieve the default request headers */
   def getDefaultHeaders: RequestEnv = defaultEnv match {
     case Some(x) => x
     case None =>

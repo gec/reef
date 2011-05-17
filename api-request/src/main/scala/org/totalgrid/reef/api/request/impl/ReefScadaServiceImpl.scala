@@ -22,14 +22,14 @@ package org.totalgrid.reef.api.request.impl
  */
 
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
+import org.totalgrid.reef.api.javaclient.{ ISession, SessionExecutionPool }
 
-abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
+abstract class AuthorizedSessionWrapper(_sessionPool: SessionExecutionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
   def authToken = _authToken
   def sessionPool = _sessionPool
 }
 
-abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
+abstract class PooledSessionWrapper(_sessionPool: SessionExecutionPool) extends PooledClientSource {
   def sessionPool = _sessionPool
 }
 
@@ -41,12 +41,12 @@ abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionCli
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class AllScadaServicePooledWrapper(sessionPool: ISessionPool, authToken: String)
+class AllScadaServicePooledWrapper(sessionPool: SessionExecutionPool, authToken: String)
   extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
 
 class AllScadaServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AllScadaService with AllScadaServiceImpl
 
-class AuthTokenServicePooledWrapper(sessionPool: ISessionPool)
+class AuthTokenServicePooledWrapper(sessionPool: SessionExecutionPool)
   extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
 
 class AuthTokenServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl

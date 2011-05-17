@@ -82,5 +82,5 @@ trait IConnection {
    * get a session pool that manages a group of ISessions and automatically handles monitoring the connection
    * state and threading concerns.
    */
-  def newSessionPool(): ISessionPool
+  def newSessionPool(): SessionExecutionPool
 }

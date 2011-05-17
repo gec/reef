@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.*;
 
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.ISessionPool;
+import org.totalgrid.reef.api.javaclient.SessionExecutionPool;
 import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.messaging.javaclient.Connection;
@@ -91,7 +91,7 @@ public class JavaBridgeTestBase {
 	public void startBridge() throws InterruptedException, ReefServiceException {
 		connection.connect(5000);
 		client = connection.newSession();
-        ISessionPool pool = connection.newSessionPool();
+        SessionExecutionPool pool = connection.newSessionPool();
         String authToken = new AuthTokenServicePooledWrapper(pool).createNewAuthorizationToken("core","core");
         if (autoLogon) client.getDefaultEnv().setAuthToken(authToken);
         helpers = new AtollService(pool, authToken);

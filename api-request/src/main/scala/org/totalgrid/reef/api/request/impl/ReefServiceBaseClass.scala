@@ -20,21 +20,27 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, ClientSessionPool, SubscriptionManagement, SyncOperations }
+import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagement, SyncOperations }
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
-import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
 import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
+import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, SessionExecutionPool }
+import scala.Some
 
 trait ReefServiceBaseClass extends ClientSource {
 
+  def subscriptionListener: Option[SubscriptionListener] = None
+
   def useSubscription[A, B <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
-    val subscription = session.addSubscription[B](klass)
+    val subscription: Subscription[B] = session.addSubscription[B](klass)
     try {
       val result = block(subscription)
-      val ret = new SubscriptionResult(result, subscription)
-      //      onSubscriptionCreated(sub)
-      ret
+      val subscriptionResult = new SubscriptionResult(result, subscription)
+      subscriptionListener match {
+        case Some(listener) => listener.onNewSubscription(subscription)
+        case None => {}
+      }
+      subscriptionResult
     } catch {
       case x =>
         subscription.cancel
@@ -49,6 +55,10 @@ trait ReefServiceBaseClass extends ClientSource {
       case e: ExpectationException => throw new ExpectationException(why)
     }
   }
+}
+
+trait SubscriptionListener {
+  def onNewSubscription[T <: GeneratedMessage](subscription: Subscription[T]): Unit
 }
 
 /**
@@ -107,10 +117,10 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 trait PooledClientSource extends ClientSource {
 
   // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
-  def sessionPool: ISessionPool
+  def sessionPool: SessionExecutionPool
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(new ISessionConsumer[A] {
+    sessionPool.execute(new ISessionConsumer[A] {
       def apply(session: ISession) = block(session.getUnderlyingClient)
     })
   }
@@ -122,11 +132,11 @@ trait PooledClientSource extends ClientSource {
  */
 trait AuthorizedAndPooledClientSource extends ClientSource {
 
-  def sessionPool: ISessionPool
+  def sessionPool: SessionExecutionPool
   def authToken: String
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken, new ISessionConsumer[A] {
+    sessionPool.execute(authToken, new ISessionConsumer[A] {
       def apply(session: ISession) = block(session.getUnderlyingClient)
     })
   }

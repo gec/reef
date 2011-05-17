@@ -22,11 +22,11 @@
 package org.totalgrid.reef.messaging
 
 import javaclient.Session
-import org.totalgrid.reef.api.scalaclient.{ ClientSessionPool, ClientSession }
+import org.totalgrid.reef.api.scalaclient.{ ClientSessionExecutionPool, ClientSession }
 import scala.collection.mutable._
-import org.totalgrid.reef.api.javaclient.{ ISessionConsumer, ISessionPool }
+import org.totalgrid.reef.api.javaclient.{ ISessionConsumer, SessionExecutionPool }
 
-class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ClientSessionPool with ISessionPool {
+class SessionExecutionPoolImpl[A <: { def getClientSession(): ClientSession }](conn: A) extends ClientSessionExecutionPool with SessionExecutionPool {
 
   private val available = Set.empty[ClientSession]
   private val unavailable = Set.empty[ClientSession]
@@ -49,32 +49,32 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
     available.add(session)
   }
 
-  override def borrow[A](fun: ClientSession => A): A =
+  override def execute[A](fun: ClientSession => A): A =
     {
       val session = acquire()
-      execute(fun, session)
+      doExecute(fun, session)
     }
 
-  override def borrow[A](authToken: String)(fun: ClientSession => A): A =
+  override def execute[A](authToken: String)(fun: ClientSession => A): A =
     {
-      borrow(execute(authToken, fun))
+      execute(doExecute(authToken, fun))
     }
 
-  // implementation of ISessionPool
+  // implementation of SessionExecutionPool
 
-  override def borrow[A](consumer: ISessionConsumer[A]): A =
+  override def execute[A](consumer: ISessionConsumer[A]): A =
     {
-      borrow(client => consumer.apply(new Session(client)))
+      execute(client => consumer.apply(new Session(client)))
     }
 
-  override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A =
+  override def execute[A](authToken: String, consumer: ISessionConsumer[A]): A =
     {
-      borrow(authToken)(client => consumer.apply(new Session(client)))
+      execute(authToken)(client => consumer.apply(new Session(client)))
     }
 
   def shutdown() {}
 
-  private def execute[A](authToken: String, function: (ClientSession) => A): (ClientSession) => A =
+  private def doExecute[A](authToken: String, function: (ClientSession) => A): (ClientSession) => A =
     { session =>
       try {
         import org.totalgrid.reef.api.ServiceHandlerHeaders._
@@ -85,7 +85,7 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
       }
     }
 
-  private def execute[A](function: (ClientSession) => A, session: ClientSession): A =
+  private def doExecute[A](function: (ClientSession) => A, session: ClientSession): A =
     {
       try {
         function(session)

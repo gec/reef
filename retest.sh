@@ -1,6 +1,6 @@
 set -ex
 
-mvn clean install -P karaf
+mvn install -P karaf
 
 ./redeploy.sh
 

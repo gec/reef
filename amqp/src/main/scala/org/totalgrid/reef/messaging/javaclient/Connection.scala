@@ -30,7 +30,7 @@ import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.api.IConnectionListener
 import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.api.javaclient.{ ISessionPool, IConnection, ISession }
+import org.totalgrid.reef.api.javaclient.{ SessionExecutionPool, IConnection, ISession }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
@@ -63,8 +63,8 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
     new Session(new ProtoClient(factory, servicesList, timeoutms))
   }
 
-  def newSessionPool(): ISessionPool = {
-    new SessionPool(factory)
+  def newSessionPool(): SessionExecutionPool = {
+    new SessionExecutionPoolImpl(factory)
   }
 }
 

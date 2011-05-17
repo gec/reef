@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.scalaclient.ClientSessionPool
+import org.totalgrid.reef.api.scalaclient.ClientSessionExecutionPool
 
 import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
@@ -39,7 +39,7 @@ import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionPool)
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionExecutionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with AsyncGetEnabled
     with AsyncPutEnabled
@@ -64,7 +64,7 @@ class UserCommandRequestService(
       case None => throw new BadRequestException("Command has no endpoint set " + request)
     }
 
-    pool.borrow { session =>
+    pool.execute { session =>
       session.asyncPutOne(request, dest = address) { result =>
         val response: Response[UserCommandRequest] = result match {
           case SingleSuccess(status, cmd) => Response(status, UserCommandRequest.newBuilder(request).setStatus(cmd.getStatus).build :: Nil)
