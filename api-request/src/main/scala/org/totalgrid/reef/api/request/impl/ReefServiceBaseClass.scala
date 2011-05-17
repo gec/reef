@@ -22,9 +22,9 @@ package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.scalaclient._
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException, ExpectationException }
-import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
-import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
+import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException }
+import org.totalgrid.reef.api.javaclient._
+import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResult, Session }
 
 trait ReefServiceBaseClass extends ClientSource {
 
@@ -43,13 +43,6 @@ trait ReefServiceBaseClass extends ClientSource {
     }
   }
 
-  def reThrowExpectationException[R](why: => String)(f: => R): R = {
-    try {
-      f
-    } catch {
-      case e: ExpectationException => throw new ExpectationException(why)
-    }
-  }
 }
 
 /**
@@ -57,6 +50,10 @@ trait ReefServiceBaseClass extends ClientSource {
  * if we are using a pooled or not implementation
  */
 trait ClientSource {
+
+  // TODO - find a type-safe replacement
+  def convertByCasting(session: ISession): SyncOperations with SubscriptionManagement = session.asInstanceOf[Session].client
+
   protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
     try {
       _ops(block)
@@ -111,8 +108,8 @@ trait PooledClientSource extends ClientSource {
   def sessionPool: ISessionPool
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(new ISessionConsumer[A] {
-      def apply(session: ISession) = block(session.getUnderlyingClient)
+    sessionPool.borrow(new ISessionFunction[A] {
+      def apply(session: ISession) = block(convertByCasting(session))
     })
   }
 }
@@ -127,8 +124,8 @@ trait AuthorizedAndPooledClientSource extends ClientSource {
   def authToken: String
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken, new ISessionConsumer[A] {
-      def apply(session: ISession) = block(session.getUnderlyingClient)
+    sessionPool.borrow(authToken, new ISessionFunction[A] {
+      def apply(session: ISession) = block(convertByCasting(session))
     })
   }
 }

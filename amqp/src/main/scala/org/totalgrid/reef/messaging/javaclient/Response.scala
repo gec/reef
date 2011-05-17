@@ -18,17 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.ExpectationException;
+import org.totalgrid.reef.api.javaclient.IResponse
+import org.totalgrid.reef.api.scalaclient.{ Response => ScalaResponse }
 
+import scala.collection.JavaConversions._
 
-public interface IResult<A> {
+class Response[A](rsp: ScalaResponse[A]) extends IResponse[A] {
 
-  boolean isSuccess();
+  final override def isSuccess = rsp.success
 
-  java.util.List<A> expectMany() throws ExpectationException;
+  final override def expectOne(): A = rsp.expectOne()
 
-  A expectOne() throws ExpectationException;
+  final override def expectMany(): java.util.List[A] = rsp.expectMany()
 
 }

@@ -72,7 +72,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
     val agent = Agent.newBuilder.setName("core").setPassword("core").build
     val request = AuthToken.newBuilder.setAgent(agent).build
-    val response = client.putOneOrThrow(request)
+    val response = client.put(request).await().expectOne
 
     client.getDefaultHeaders.addAuthToken(response.getToken)
 

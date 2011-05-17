@@ -106,10 +106,9 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
   test("MockProtoConsumerRequestTimeout") {
     val reg = new MockClientSession(1)
-    val exc = intercept[ReefServiceException] {
-      reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build)
-    }
-    exc.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
+    val rsp = reg.put(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build).await
+    intercept[ResponseTimeoutException] { rsp.expectMany() }
+    rsp.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
 
   // Do a full request/respond
@@ -118,14 +117,14 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
 
     //fire off a read on an actor
     Timer.now {
-      reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("4").build)
+      reg.put(Envelope.RequestHeader.newBuilder.setKey("").setValue("4").build)
     }
 
     reg.respond[Envelope.RequestHeader] { request: Request[Envelope.RequestHeader] =>
       request.verb should equal(Envelope.Verb.PUT)
       request.env.subQueue should equal(None)
       request.payload.getValue should equal("4")
-      Some(Response(Envelope.Status.OK, List(request.payload)))
+      Some(Success(Envelope.Status.OK, List(request.payload)))
     }
   }
 

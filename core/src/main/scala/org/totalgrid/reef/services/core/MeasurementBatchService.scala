@@ -32,8 +32,7 @@ import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
-import org.totalgrid.reef.api.scalaclient.{ Failure, MultiResult }
-import org.totalgrid.reef.api.scalaclient.{ Response, Request }
+import org.totalgrid.reef.api.scalaclient.{ Response, Request, AsyncScatterGather }
 import org.totalgrid.reef.api.service.AsyncServiceBase
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
@@ -68,23 +67,18 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
 
     }
 
-    borrow { client =>
-      client.requestAsyncScatterGather(requests) { results =>
-        val failures = results.flatMap {
-          _ match {
-            case x: Failure => Some(x)
-            case _ => None
-          }
-        }
-
-        if (failures.size == 0) callback(Response(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build())))
-        else {
-          val msg = failures.mkString(",")
-          callback(Response(Envelope.Status.INTERNAL_ERROR, error = msg))
-        }
-      }
+    val promises = borrow { client =>
+      requests.map { r => client.request(r.verb, r.payload, r.env, r.destination) }
     }
 
+    AsyncScatterGather.collect[MeasurementBatch](promises) { results =>
+      val failures = results.filterNot(_.success)
+      if (failures.size == 0) callback(Response(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build())))
+      else {
+        val msg = failures.mkString(",")
+        callback(Response(Envelope.Status.INTERNAL_ERROR, error = msg))
+      }
+    }
   }
 
   private def borrow[A](fun: ProtoClient => A): A = {

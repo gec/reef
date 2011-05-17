@@ -36,12 +36,12 @@ import scalaclient.{ Response, Event }
 object ServiceResponseTestingHelpers extends ShouldMatchers {
   implicit def checkResponse[A](resp: Response[A]): List[A] = {
     StatusCodes.isSuccess(resp.status) should equal(true)
-    resp.result
+    resp.list
   }
 
   def one[A](status: Status, resp: Response[A]): A = {
     resp.status should equal(status)
-    many(1, resp.result).head
+    many(1, resp.list).head
   }
 
   def one[A](list: List[A]): A = many(1, list).head

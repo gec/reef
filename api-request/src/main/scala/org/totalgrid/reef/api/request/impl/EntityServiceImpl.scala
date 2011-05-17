@@ -28,44 +28,44 @@ import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, Entit
 
 trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
-  def getAllEntities(): java.util.List[Entity] = {
-    ops { _.getOrThrow(EntityRequestBuilders.getAll) }
+  def getAllEntities(): java.util.List[Entity] = ops {
+    _.get(EntityRequestBuilders.getAll).await().expectMany()
   }
 
-  def getEntityByUid(uid: ReefUUID): Entity = {
-    ops { _.getOneOrThrow(EntityRequestBuilders.getByUid(uid)) }
+  def getEntityByUid(uid: ReefUUID): Entity = ops {
+    _.get(EntityRequestBuilders.getByUid(uid)).await().expectOne
   }
 
-  def getEntityByName(name: String): Entity = {
-    ops { _.getOneOrThrow(EntityRequestBuilders.getByName(name)) }
+  def getEntityByName(name: String): Entity = ops {
+    _.get(EntityRequestBuilders.getByName(name)).await().expectOne
   }
   def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
-    if (typ == "*") ops { _.getOrThrow(EntityRequestBuilders.getAll) }
-    else ops { _.getOrThrow(EntityRequestBuilders.getByType(typ)) }
+    val request = if (typ == "*") EntityRequestBuilders.getAll else EntityRequestBuilders.getByType(typ)
+    ops { _.get(request).await().expectMany() }
   }
 
-  def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity] = {
-    ops { _.getOrThrow(EntityRequestBuilders.getByTypes(typ.toList)) }
+  def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity] = ops {
+    _.get(EntityRequestBuilders.getByTypes(typ.toList)).await().expectMany()
   }
 
-  def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = {
-    ops { session =>
-      val result = session.getOneOrThrow(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ))
+  def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = ops { session =>
 
-      val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
-      allEntitiesList
-    }
-  }
-  def getEntityTree(entityTree: Entity): Entity = {
-    ops { _.getOneOrThrow(entityTree) }
+    val result = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ)).await().expectOne
+
+    val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
+    allEntitiesList
   }
 
-  def getEntities(entityTree: Entity): java.util.List[Entity] = {
-    ops { _.getOrThrow(entityTree) }
+  def getEntityTree(entityTree: Entity): Entity = ops {
+    _.get(entityTree).await().expectOne
   }
 
-  def getEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops { _.getOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid)) }
+  def getEntities(entityTree: Entity): java.util.List[Entity] = ops {
+    _.get(entityTree).await().expectMany()
+  }
+
+  def getEntityAttributes(uid: ReefUUID): EntityAttributes = ops {
+    _.get(EntityAttributesBuilders.getForEntityUid(uid)).await().expectOne
   }
 
   def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
@@ -88,29 +88,25 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     addSingleAttribute(uid, EntityAttributesBuilders.byteArrayAttribute(name, value))
   }
 
-  def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = {
-    ops { session =>
-      val prev = getEntityAttributes(uid)
-      val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
-      session.putOneOrThrow(EntityAttributesBuilders.putAttributesToEntityUid(uid, set))
-    }
+  def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = ops { session =>
+    val prev = getEntityAttributes(uid)
+    val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
+    session.put(EntityAttributesBuilders.putAttributesToEntityUid(uid, set)).await().expectOne
   }
 
-  def clearEntityAttributes(uid: ReefUUID): EntityAttributes = {
-    ops { _.deleteOneOrThrow(EntityAttributesBuilders.getForEntityUid(uid)) }
+  def clearEntityAttributes(uid: ReefUUID): EntityAttributes = ops {
+    _.delete(EntityAttributesBuilders.getForEntityUid(uid)).await().expectOne
   }
 
-  protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = {
-    ops { session =>
-      val prev = getEntityAttributes(uid)
-      val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
+  protected def addSingleAttribute(uid: ReefUUID, attr: Attribute): EntityAttributes = ops { session =>
+    val prev = getEntityAttributes(uid)
+    val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
 
-      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
-      prevSet.foreach(req.addAttributes(_))
-      req.addAttributes(attr)
+    val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
+    prevSet.foreach(req.addAttributes(_))
+    req.addAttributes(attr)
 
-      session.putOneOrThrow(req.build)
-    }
+    session.put(req.build).await().expectOne
   }
 }
 

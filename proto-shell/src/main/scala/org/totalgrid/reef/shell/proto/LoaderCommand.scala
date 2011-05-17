@@ -38,12 +38,12 @@ class TriggerCommand extends ReefCommandSupport {
       case Some(entId) =>
         val point = services.getPointByName(pointName)
         val trigger = interpretAs("Trigger set not found.") {
-          reefSession.getOneOrThrow(TriggerSet.newBuilder.setPoint(point).build)
+          reefSession.get(TriggerSet.newBuilder.setPoint(point).build).await().expectOne
         }
         TriggerView.inspectTrigger(trigger)
       case None =>
         val triggers = interpretAs("No trigger sets found.") {
-          reefSession.getOrThrow(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build)
+          reefSession.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build).await().expectMany()
         }
         TriggerView.printTable(triggers)
     }

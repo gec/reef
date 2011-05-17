@@ -35,9 +35,9 @@ import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 
 import org.totalgrid.reef.api.scalaclient._
+import java.lang.Override
 
 //implicits for massaging service return types
-import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 
 object MockProtoRegistry {
   val timeout = 5000
@@ -47,7 +47,7 @@ class MockRegistry extends MockProtoPublisherRegistry with MockProtoSubscriberRe
 
 class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends ClientSession {
 
-  private case class Req[A](callback: MultiResult[A] => Unit, req: Request[A])
+  private case class Req[A](callback: Response[A] => Unit, req: Request[A])
 
   private val in = new MailBox
 
@@ -56,23 +56,23 @@ class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends Clien
   def respondWithTimeout[A](timeout: Long)(f: Request[A] => Option[Response[A]]): Unit = {
     in.receiveWithin(timeout) {
       case Req(callback, request) =>
-        callback(f(request.asInstanceOf[Request[A]]))
+        callback(Response.convert(f(request.asInstanceOf[Request[A]])))
     }
   }
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) = {
+  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: Response[A] => Unit) = {
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
-        case Req(callback, request) => callback(Failure(Envelope.Status.RESPONSE_TIMEOUT))
+        case Req(callback, request) => callback(ResponseTimeout)
         case _ =>
       }
     }
   }
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_]) = {
+  final override def addSubscription[A](klass: Class[_]) = {
     throw new IllegalArgumentException("Subscriptions not implemented for MockRegistry.")
   }
 }

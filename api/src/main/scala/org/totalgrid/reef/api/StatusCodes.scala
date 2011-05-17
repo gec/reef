@@ -33,4 +33,11 @@ object StatusCodes {
     }
   }
 
+  def toException(status: Envelope.Status, error: String): ReefServiceException = status match {
+    case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
+    case Envelope.Status.UNAUTHORIZED => new UnauthorizedException(error)
+    case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
+    case _ => new BadRequestException(error, status)
+  }
+
 }

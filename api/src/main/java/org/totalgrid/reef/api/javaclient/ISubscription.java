@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.javaclient;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,24 +20,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
 
 /**
  * A subscription object provides header info and can also be canceled. It carries the message type
  * primarily to make message signatures more expressive.
  * TODO: add ISubscriptions to scala apis
  */
-trait ISubscription[SubscriptionMessageType] {
+public interface ISubscription<A> {
 
-  def cancel(): Unit
+  void cancel();
 
-  def getId(): String
+  String getId();
 
-  def start(callback: IEventAcceptor[SubscriptionMessageType]): Unit
+  void start(IEventAcceptor<A> acceptor);
 
 }
 
-trait ISubscriptionResult[ResultType, SubType] {
-  def getResult: ResultType
-  def getSubscription: ISubscription[SubType]
-}

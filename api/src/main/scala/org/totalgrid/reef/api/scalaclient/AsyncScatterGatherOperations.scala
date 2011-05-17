@@ -21,21 +21,21 @@ package org.totalgrid.reef.api.scalaclient
  * under the License.
  */
 
-trait AsyncScatterGatherOperations {
+object AsyncScatterGather {
 
-  self: AsyncOperations with DefaultHeaders =>
-
-  def requestAsyncScatterGather[A <: AnyRef](requests: List[Request[A]])(callback: List[MultiResult[A]] => Unit) {
+  def collect[A <: AnyRef](promises: List[IPromise[Response[A]]])(callback: List[Response[A]] => Unit) {
 
     // the results we're collecting and a counter
-    var map = Map.empty[Int, MultiResult[A]]
+    var map = Map.empty[Int, Response[A]]
 
-    def gather(idx: Int)(rsp: MultiResult[A]) {
+    def gather(idx: Int)(rsp: Response[A]) {
       map += idx -> rsp
-      if (map.size == requests.size) callback(requests.indices.map(i => map(i)).toList) //last callback orders and calls the callback
+      if (map.size == promises.size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
     }
 
-    requests.zipWithIndex.foreach { case (request, i) => asyncRequest(request.verb, request.payload, request.env, request.destination)(gather(i)) }
+    promises.zipWithIndex.foreach {
+      case (promise, i) => promise.listen(gather(i))
+    }
   }
 
 }

@@ -18,12 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.scalaclient
+package org.totalgrid.reef.api.javaclient;
 
-trait IResult[A] {
-
-  def expectMany: MultiResult[A]
-
-  def expectOne: A
-
+/**
+ * Interface called back asynchronously with an IResult
+ * @param <A> Type of the result
+ */
+public interface IResultAcceptor<A> {
+  void onResult(IResponse<A> result);
 }

@@ -32,7 +32,7 @@ import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, MultiSuccess }
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
 import org.totalgrid.reef.api.Envelope
 
 class NullExceptionCollector extends ExceptionCollector {
@@ -52,7 +52,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val client = new MockSyncOperations((GeneratedMessage) => Success(Envelope.Status.OK, List[GeneratedMessage]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
     val ex = new NullExceptionCollector

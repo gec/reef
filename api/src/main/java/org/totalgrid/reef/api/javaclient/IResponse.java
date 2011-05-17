@@ -18,15 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.javaclient;
 
-package org.totalgrid.reef.api.scalaclient;
+import org.totalgrid.reef.api.ExpectationException;
 
-trait IPromise[A] {
 
-  def await(): A
+public interface IResponse<A> {
 
-  def listen(fun: A => Unit): Unit
+  boolean isSuccess();
 
-  def isComplete: Boolean
+  java.util.List<A> expectMany() throws ExpectationException;
+
+  A expectOne() throws ExpectationException;
 
 }

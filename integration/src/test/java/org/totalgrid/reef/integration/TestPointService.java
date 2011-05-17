@@ -56,7 +56,7 @@ public class TestPointService extends JavaBridgeTestBase
 
         // Build the point service request using the entity descriptor
         Point p = Point.newBuilder().setEntity(eqRequest).build();
-        List<Point> list = client.get(p);
+        List<Point> list = client.get(p).await().expectMany();
 
         assertNotNull(list);
         assertTrue("expected at least one point: " + list.size(), list.size() > 0);
@@ -82,7 +82,7 @@ public class TestPointService extends JavaBridgeTestBase
 
         // Build the point service request using the entity descriptor
         Point p = Point.newBuilder().setEntity(eqRequest).build();
-        List<Point> list = client.get(p);
+        List<Point> list = client.get(p).await().expectMany();
 
         assertNotNull(list);
         assertEquals(1, list.size());

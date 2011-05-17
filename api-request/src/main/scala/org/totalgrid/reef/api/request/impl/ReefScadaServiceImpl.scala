@@ -34,7 +34,7 @@ abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledCl
 }
 
 abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {
-  def session = _session.getUnderlyingClient
+  def session = convertByCasting(_session)
 }
 
 /**

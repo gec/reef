@@ -28,27 +28,23 @@ import org.totalgrid.reef.api.request.builders.PointRequestBuilders
 
 trait PointServiceImpl extends ReefServiceBaseClass with PointService {
 
-  def getAllPoints() = {
-    ops { _.getOrThrow(PointRequestBuilders.getAll) }
+  def getAllPoints() = ops {
+    _.get(PointRequestBuilders.getAll).await().expectMany()
   }
 
-  def getPointByName(name: String) = {
-    reThrowExpectationException("Point not found.") {
-      ops { _.getOneOrThrow(PointRequestBuilders.getByName(name)) }
-    }
+  def getPointByName(name: String) = ops {
+    _.get(PointRequestBuilders.getByName(name)).await().expectOne("Point not found with name: " + name)
   }
 
-  def getPointByUid(uuid: ReefUUID) = {
-    reThrowExpectationException("Point not found.") {
-      ops { _.getOneOrThrow(PointRequestBuilders.getByUid(uuid)) }
-    }
+  def getPointByUid(uuid: ReefUUID) = ops {
+    _.get(PointRequestBuilders.getByUid(uuid)).await().expectOne("Point not found with uuid: " + uuid)
   }
 
-  def getPointsOwnedByEntity(parentEntity: Entity) = {
-    ops { _.getOrThrow(PointRequestBuilders.getOwnedByEntity(parentEntity)) }
+  def getPointsOwnedByEntity(parentEntity: Entity) = ops {
+    _.get(PointRequestBuilders.getOwnedByEntity(parentEntity)).await().expectMany()
   }
 
-  def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = {
-    ops { _.getOrThrow(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)) }
+  def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = ops {
+    _.get(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)).await().expectMany()
   }
 }

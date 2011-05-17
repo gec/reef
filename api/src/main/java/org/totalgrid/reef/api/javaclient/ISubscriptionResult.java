@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.api.javaclient;
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -21,9 +21,9 @@ package org.totalgrid.reef.api.javaclient
  * under the License.
  */
 
-/**
- *  Adapts raw events functions to a Java interface
- */
-trait IEventAcceptor[A] {
-  def onEvent(event: IEvent[A]): Unit
+public interface ISubscriptionResult<T,U> {
+
+  T getResult();
+  ISubscription<U> getSubscription();
+
 }

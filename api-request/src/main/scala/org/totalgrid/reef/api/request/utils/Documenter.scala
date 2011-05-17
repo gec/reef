@@ -36,7 +36,7 @@ object Documenter {
 
   case class CaseExplanation(title: String, desc: Node)
 
-  case class RequestWithExplanation[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: MultiResult[A])
+  case class RequestWithExplanation[A](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: Response[A])
 
   def document[A](title: String, verb: String, desc: Node, request: A, responses: List[A]) = {
     <case>
@@ -61,11 +61,16 @@ object Documenter {
     </response>
   }
 
-  def getExplainedCase[A <: AnyRef](req: RequestWithExplanation[A]): Node = {
+  def getResponse[A](rsp: Response[A]): Node = rsp match {
+    case Success(status, list) => getResponse(status, list)
+    case Failure(status, error) => getErrorResponse(error, status)
+  }
+
+  def getExplainedCase[A](req: RequestWithExplanation[A]): Node = {
     getExplainedCase(req.explanation, req.verb, req.request, req.results)
   }
 
-  def getExplainedCase[A <: AnyRef](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: MultiResult[A]): Node = {
+  def getExplainedCase[A](explanation: CaseExplanation, verb: Envelope.Verb, request: A, results: Response[A]): Node = {
     <case>
       <title>{ explanation.title }</title>
       <desc>{ explanation.desc }</desc>
@@ -73,12 +78,7 @@ object Documenter {
         { messageToXml(request.asInstanceOf[GeneratedMessage]) }
       </request>
       {
-        results match {
-          case Failure(code, string) =>
-            getErrorResponse(string, code)
-          case MultiSuccess(status, responses) =>
-            getResponse(status, responses)
-        }
+        getResponse(results)
       }
     </case>
   }

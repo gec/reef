@@ -20,12 +20,11 @@
  */
 package org.totalgrid.reef.loader
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import java.util.{ Date, Calendar }
 
 //import org.totalgrid.reef.loader.configuration
 //import org.totalgrid.reef.loader.sx
@@ -33,7 +32,7 @@ import java.util.{ Date, Calendar }
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, MultiSuccess }
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Response }
 import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])
@@ -48,7 +47,7 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
    */
   def withFixture(test: OneArgTest) = {
 
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val client = new MockSyncOperations((GeneratedMessage) => Response(Envelope.Status.OK, List[GeneratedMessage]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val config = new sx.Configuration("1.0")
 

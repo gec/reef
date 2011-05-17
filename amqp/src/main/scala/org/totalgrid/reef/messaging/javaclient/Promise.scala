@@ -20,9 +20,12 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.scalaclient.MultiResult
-import org.totalgrid.reef.api.javaclient.{ IPromise, IResult }
+import org.totalgrid.reef.api.scalaclient.{ IPromise => IScalaPromise, Response => ScalaResponse }
+import org.totalgrid.reef.api.javaclient.{ IPromise, IResponse }
 
-class Promise[A](fun: () => MultiResult[A]) extends IPromise[IResult[A]] {
-  final override def await(): IResult[A] = new Result(fun())
+class Promise[A](promise: IScalaPromise[ScalaResponse[A]]) extends IPromise[IResponse[A]] {
+
+  private lazy val response = new Response(promise.await())
+
+  final override def await(): IResponse[A] = response
 }

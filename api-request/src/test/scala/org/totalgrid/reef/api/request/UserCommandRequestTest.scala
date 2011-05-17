@@ -44,15 +44,15 @@ class UserCommandRequestTest
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
     val acc = CommandAccessRequestBuilders.allowAccessForCommandName(cmdName)
-    val accResp = client.putOneOrThrow(acc)
+    val accResp = client.put(acc).await().expectOne
 
     client.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
-    val executingCommand = client.putOneOrThrow(UserCommandRequestBuilders.executeControl(cmdName))
+    val executingCommand = client.put(UserCommandRequestBuilders.executeControl(cmdName)).await().expectOne
 
     client.addExplanation("Current status of request", "Get the status of a already-issued command request.")
-    client.getOneOrThrow(UserCommandRequestBuilders.getStatus(executingCommand))
+    client.get(UserCommandRequestBuilders.getStatus(executingCommand)).await().expectOne
 
-    client.deleteOneOrThrow(accResp)
+    client.delete(accResp).await().expectOne
   }
 
 }

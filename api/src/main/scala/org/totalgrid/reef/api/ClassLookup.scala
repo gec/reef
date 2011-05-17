@@ -18,25 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.scalaclient
+package org.totalgrid.reef.api
 
-import org.totalgrid.reef.api._
+object ClassLookup {
 
-trait MultiResult[+A]
-
-trait SingleResult[+A]
-
-case class SingleSuccess[A](status: Envelope.Status, result: A) extends SingleResult[A]
-
-case class MultiSuccess[A](status: Envelope.Status, result: List[A]) extends MultiResult[A]
-
-case class Failure(status: Envelope.Status, error: String = "") extends Throwable with SingleResult[Nothing] with MultiResult[Nothing] {
-  override def toString: String = super.toString + " " + status + " message: " + error
-
-  def toException: ReefServiceException = status match {
-    case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
-    case Envelope.Status.UNAUTHORIZED => new UnauthorizedException(error)
-    case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
-    case _ => new BadRequestException(error, status)
+  def apply[A](value: Any): Class[A] = value match {
+    case x: AnyRef => x.getClass.asInstanceOf[Class[A]]
+    case _ => throw new BadRequestException("Request is not of type AnyRef: " + value.toString)
   }
+
 }

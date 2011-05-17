@@ -52,7 +52,7 @@ class UserCommandRequestService(
 
   override def doAsyncPutPost(rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
 
-    val request = rsp.result.head
+    val request = rsp.expectOne
 
     val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
@@ -66,11 +66,7 @@ class UserCommandRequestService(
     }
 
     pool.borrow { session =>
-      session.asyncPutOne(request, dest = address) { result =>
-        val response: Response[UserCommandRequest] = result match {
-          case SingleSuccess(status, cmd) => Response(status, UserCommandRequest.newBuilder(request).setStatus(cmd.getStatus).build :: Nil)
-          case Failure(status, msg) => Response(status, error = msg)
-        }
+      session.put(request, destination = address).listen { response =>
         callback(response)
       }
     }

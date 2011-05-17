@@ -27,7 +27,7 @@ import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.messaging.Connection
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
-import org.totalgrid.reef.api.scalaclient.{ Failure, MultiSuccess }
+import org.totalgrid.reef.api.scalaclient.{ Success, Failure }
 import org.totalgrid.reef.api.scalaclient.Event
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
@@ -51,15 +51,15 @@ trait ServiceHandler extends Logging {
   private def subscribe[A <: AnyRef](client: ClientSession, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
     val env = new RequestEnv
     env.setSubscribeQueue(queue)
-    client.asyncGet(searchObj, env) {
-      _ match {
-        case x: Failure =>
-          error("Error getting subscription for " + x.toString)
+    client.get(searchObj, env).listen { rsp =>
+      rsp match {
+        case Success(_, list) => execute(subHandler(list))
+        case Failure(status, msg) =>
+          // TODO - replace deprecated usage
+          error("Error getting subscription for " + searchObj)
           Timer.delay(retryMS) {
             subscribe(client, queue, searchObj, retryMS, subHandler) //defined recursively
           }
-        case MultiSuccess(status, list) =>
-          execute(subHandler(list))
       }
     }
   }

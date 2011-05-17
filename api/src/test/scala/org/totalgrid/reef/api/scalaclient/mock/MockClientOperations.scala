@@ -20,22 +20,22 @@
  */
 package org.totalgrid.reef.api.scalaclient.mock
 
-import org.totalgrid.reef.api.scalaclient.{ ClientOperations, MultiResult }
+import org.totalgrid.reef.api.scalaclient.{ ClientOperations, Response }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 
 import scala.collection.mutable.Queue
 
-case class RequestRecord[A](verb: Envelope.Verb, payload: A, env: RequestEnv, callback: MultiResult[A] => Unit)
+case class RequestRecord[A](verb: Envelope.Verb, payload: A, env: RequestEnv, callback: Response[A] => Unit)
 
 class MockClientOperations extends ClientOperations {
 
   private val queue = new Queue[RequestRecord[_]]
 
-  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
+  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: Response[A] => Unit) {
     queue += RequestRecord(verb, payload, env, callback)
   }
 
   def next(): AnyRef = queue.dequeue
-  def callback[A <: AnyRef](result: MultiResult[A]) = queue.front.callback.asInstanceOf[MultiResult[A] => Unit](result)
+  def callback[A <: AnyRef](result: Response[A]) = queue.front.callback.asInstanceOf[Response[A] => Unit](result)
 
 }

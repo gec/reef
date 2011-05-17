@@ -18,9 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
 
-trait IResultAcceptor[A] {
-  def onResult(result: IResult[A])
+package org.totalgrid.reef.api.javaclient;
+
+/**
+ *  Interface that accepts events on some unspecified thread
+ */
+public interface IEventAcceptor<A> {
+
+  void onEvent(IEvent<A> event);
+
 }
-

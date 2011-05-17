@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.messaging.sync
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.messaging._
 
 import org.totalgrid.reef.api.scalaclient.{ Subscription, Event }
@@ -38,7 +36,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
     new ServiceResponseCorrelator(timeoutms, reqReply)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
+  def prepareSubscription[A](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
     val channel = getChannel()
 
     val consumer = { a: (Event[A] => Unit) =>

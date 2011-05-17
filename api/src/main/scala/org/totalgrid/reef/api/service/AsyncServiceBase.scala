@@ -21,7 +21,7 @@ package org.totalgrid.reef.api.service
  * under the License.
  */
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, ReefServiceException }
-import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.api.scalaclient.{ Response, Failure }
 
 import org.totalgrid.reef.util.Logging
 
@@ -66,7 +66,7 @@ trait AsyncServiceBase[A] extends IServiceAsync[A] with ServiceHelpers[A] with L
   }
 
   /** by default, unimplemented verbs return this response */
-  protected def noVerb(verb: Envelope.Verb) = Response[A](Envelope.Status.NOT_ALLOWED, error = "Unimplemented verb: " + verb)
+  protected def noVerb(verb: Envelope.Verb) = Failure(Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb)
 
   protected def noPut = noVerb(Envelope.Verb.PUT)
   protected def noGet = noVerb(Envelope.Verb.GET)

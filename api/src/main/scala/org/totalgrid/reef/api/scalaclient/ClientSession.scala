@@ -48,14 +48,15 @@ trait Closeable {
 trait ClientOperations
     extends SyncOperations
     with AsyncOperations
-    with FutureOperations
-    with AsyncScatterGatherOperations
-    with SyncScatterGatherOperations
     with DefaultHeaders {
 
   /**
-   *    Implements a synchronous request in terms of a future
+   *    Return a promise.
    */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): MultiResult[A] = requestFuture(verb, payload, env, dest)()
+  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): IPromise[Response[A]] = {
+    val promise = new Promise[Response[A]]
+    this.asyncRequest(verb, payload, env, dest)(promise.onResponse(_))
+    promise
+  }
 
 }

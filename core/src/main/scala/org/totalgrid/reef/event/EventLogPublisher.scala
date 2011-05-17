@@ -23,7 +23,7 @@ package org.totalgrid.reef.event
 import EventType.eventTypeToString
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.services.core.util.AttributeList
-import org.totalgrid.reef.proto.{ RoutingKeys, Events }
+import org.totalgrid.reef.proto.{ Descriptors, RoutingKeys, Events }
 
 /**
  * thick interface for the creation and publishing of logs and events.
@@ -145,8 +145,8 @@ class BusTiedEventLogPublisher(amqp: AMQPProtoFactory,
   logExchange: String)
     extends EventLogPublisher {
   val subsystem = subSystem
-  val publishEvent = amqp.publish(eventExchange, RoutingKeys.event) // Events.Event => Unit
-  val publishLog = amqp.publish(logExchange, RoutingKeys.log) // Events.Log => Unit
+  val publishEvent = amqp.publish(eventExchange, RoutingKeys.event, Descriptors.event.serialize)
+  val publishLog = amqp.publish(logExchange, RoutingKeys.log, Descriptors.log.serialize)
 }
 
 /**

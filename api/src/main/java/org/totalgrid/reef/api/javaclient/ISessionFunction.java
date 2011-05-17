@@ -18,19 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.api.ReefServiceException;
 
 /**
  * a helper class that encapsulates a block of code we want to execute using a single
  * session. Typed to allow the pool borrow functions to return the same type as apply
  */
-trait ISessionConsumer[A] {
+public interface ISessionFunction<A> {
 
   /**
    * called with a session from the pool
    */
-  @throws(classOf[ReefServiceException])
-  def apply(session: ISession): A
+  A apply(ISession session) throws ReefServiceException;
 }

@@ -24,8 +24,7 @@ import xml.Node
 import scala.collection.mutable.Queue
 
 import org.totalgrid.reef.api.{ RequestEnv, Envelope, IDestination, AnyNode }
-import org.totalgrid.reef.api.scalaclient.MultiResult
-import org.totalgrid.reef.api.scalaclient.{ DefaultHeaders, SyncOperations }
+import org.totalgrid.reef.api.scalaclient._
 
 /**
  * the interaction recorder is a wrapper we can add around a SyncOperations client to collect a set of
@@ -38,7 +37,7 @@ trait InteractionRecorder extends SyncOperations { self: DefaultHeaders =>
   // list of explanations for the upcoming requests
   private val explanations = new Queue[Documenter.CaseExplanation]
   // explanations joined with the actual request/response and verb to complete the description
-  private var explainedRequests: List[Documenter.RequestWithExplanation[_ <: AnyRef]] = Nil
+  private var explainedRequests: List[Documenter.RequestWithExplanation[_]] = Nil
 
   /**
    * add an explanation for the next request we are going to do with the client. Multiple operations
@@ -65,14 +64,14 @@ trait InteractionRecorder extends SyncOperations { self: DefaultHeaders =>
    * implementation of SyncOperations base function that uses the passed in "real" client to create collect interactions
    * for later formatting to file
    */
-  abstract override def request[A <: AnyRef](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode): MultiResult[A] = {
+  abstract override def request[A](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode): IPromise[Response[A]] = {
 
-    val results = super.request(verb, request, env, destination)
+    val promise = super.request(verb, request, env, destination)
 
     if (explanations.nonEmpty) {
-      explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, results)
+      explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, promise.await)
     }
 
-    results
+    new Promise(promise.await)
   }
 }

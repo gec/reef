@@ -20,16 +20,16 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import com.google.protobuf.GeneratedMessage
-
 /**
  * thick interface for creating subscriptions objects.
  */
 trait SubscriptionManagement {
 
+  //TODO - make this function type safe?
+
   /**
    * creates a subscription suitable for consuming a single type of measurement
    */
-  def addSubscription[A <: GeneratedMessage](klass: Class[_]): Subscription[A]
+  def addSubscription[A](klass: Class[_]): Subscription[A]
 
 }

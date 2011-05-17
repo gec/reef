@@ -43,16 +43,14 @@ public class SampleRequests {
 	 * Asks for all points regardless of who owns them.
 	 */
 	public static List<Point> getAllPoints(ISession client) throws ReefServiceException {
-		List<Point> list = client.get(PointRequestBuilders.getAll());
-		return list;
+		return client.get(PointRequestBuilders.getAll()).await().expectMany();
 	}
 
 	/**
 	 * Requests the current values (most recent measurement) for points
 	 */
 	public static List<Measurement> getCurrentValues(ISession client, List<Point> points) throws ReefServiceException  {
-		MeasurementSnapshot ms = client.getOne(MeasurementSnapshotRequestBuilders.getByPoints(points));
-		return ms.getMeasurementsList();
+		return client.get(MeasurementSnapshotRequestBuilders.getByPoints(points)).await().expectOne().getMeasurementsList();
 	}
 
 	/**
@@ -65,7 +63,7 @@ public class SampleRequests {
 	 * @return The AuthToken proto returned by the server, .getToken has the magic string.
 	 */
 	public static void logonAs(ISession client, String user, String password, boolean addAuthTokenForAllClients) throws ReefServiceException {
-		AuthToken t = client.putOne(AuthTokenRequestBuilders.requestAuthToken(user, password));
+		AuthToken t = client.put(AuthTokenRequestBuilders.requestAuthToken(user, password)).await().expectOne();
 		if (addAuthTokenForAllClients) {
 			// add the auth token to the list of auth tokens we send with every request
 			client.getDefaultEnv().setAuthToken(t.getToken());
@@ -76,8 +74,7 @@ public class SampleRequests {
 	 * Return a list of the most recent alarms (not in the REMOVED state).
 	 */
 	public static List<Alarm> getUnRemovedAlarms(ISession client, String eventType)  throws ReefServiceException {
-		List<Alarm> list = client.get(AlarmRequestBuilders.getAllByType(eventType));
-		return list;
+		return client.get(AlarmRequestBuilders.getAllByType(eventType)).await().expectMany();
 	}
 
 	/**
@@ -86,23 +83,21 @@ public class SampleRequests {
 	 * the alarms on the substation entity and all alarms on devices under the substation.
 	 */
 	public static List<Alarm> getAlarmsForEntity(ISession client, Entity entity, String eventType) throws ReefServiceException  {
-		List<Alarm> list = client.get(AlarmRequestBuilders.getByTypeForEntity(eventType, entity));
-		return list;
+		return client.get(AlarmRequestBuilders.getByTypeForEntity(eventType, entity)).await().expectMany();
 	}
 
 	/**
 	 * Update the state of an existing alarm.
 	 */
 	public static Alarm updateAlarm(ISession client, Alarm alarm, Alarm.State newState)  throws ReefServiceException {
-		Alarm result = client.putOne(AlarmRequestBuilders.updateAlarmState(alarm, newState));
-		return result;
+		return client.put(AlarmRequestBuilders.updateAlarmState(alarm, newState)).await().expectOne();
 	}
 
 	/**
 	 * Randomly choose a substation or fail test if there are no substations
 	 */
 	public static Entity getRandomSubstation(ISession client)  throws ReefServiceException {
-		List<Entity> substations = client.get(EntityRequestBuilders.getByType("Substation"));
+		List<Entity> substations = client.get(EntityRequestBuilders.getByType("Substation")).await().expectMany();
 		if (substations.size() == 0) throw new RuntimeException("No Substations");
 		Random r = new Random();
 		Entity substation = substations.get(r.nextInt(substations.size()));
@@ -114,7 +109,7 @@ public class SampleRequests {
      * Examples: all "Points" under "Apex" or all "Commands" under "Breaker2"
      */
     public static List<Entity> getChildrenOfType(ISession client, String parent, String type)  throws ReefServiceException {
-        Entity sub = client.getOne(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(parent, type));
+        Entity sub = client.get(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(parent, type)).await().expectOne();
 
 		List<Entity> entities = new LinkedList<Entity>();
 

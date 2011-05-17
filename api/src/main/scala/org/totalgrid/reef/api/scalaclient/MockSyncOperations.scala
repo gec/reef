@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import com.google.protobuf.GeneratedMessage
+
 import scala.collection.mutable.Queue
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
 
@@ -34,7 +34,7 @@ import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
  *
  */
 class MockSyncOperations(
-    doGet: (AnyRef) => MultiResult[AnyRef],
+    doGet: (AnyRef) => Response[AnyRef],
     putQueue: Queue[AnyRef] = Queue[AnyRef](),
     delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends SyncOperations with DefaultHeaders {
 
@@ -61,7 +61,7 @@ class MockSyncOperations(
    * the elements in the specified putQ.
    * TODO: report which element is not equal (report the index, proto class diff, etc.).
    */
-  def assertPuts(putQ: Queue[GeneratedMessage]): Boolean = {
+  def assertPuts(putQ: Queue[AnyRef]): Boolean = {
     putQueue == putQ
     //putQueue.corresponds( putQ)(_==_)
   }
@@ -69,14 +69,14 @@ class MockSyncOperations(
   /**
    * Override request to define all of the verb helpers
    */
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode): MultiResult[A] = verb match {
-    case Envelope.Verb.GET => doGet(payload).asInstanceOf[MultiResult[A]]
+  final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode): IPromise[Response[A]] = verb match {
+    case Envelope.Verb.GET => new Promise(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]])
     case Envelope.Verb.DELETE =>
-      delQueue.enqueue(payload)
-      MultiSuccess(Envelope.Status.OK, List[A](payload))
+      delQueue.enqueue(payload.asInstanceOf[AnyRef])
+      new Promise(Success(Envelope.Status.OK, List[A](payload)))
     case Envelope.Verb.PUT =>
-      putQueue.enqueue(payload)
-      MultiSuccess(Envelope.Status.OK, List[A](payload))
+      putQueue.enqueue(payload.asInstanceOf[AnyRef])
+      new Promise(Success(Envelope.Status.OK, List[A](payload)))
     case Envelope.Verb.POST => throw new Exception("unimplemented")
   }
 

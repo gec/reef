@@ -197,8 +197,8 @@ class CommandRequestServicesIntegration
 
     result.waitFor { rsp =>
       rsp.status == Envelope.Status.OK &&
-        rsp.result.size == 1 &&
-        rsp.result.head.getStatus == CommandStatus.SUCCESS
+        rsp.list.size == 1 &&
+        rsp.list.head.getStatus == CommandStatus.SUCCESS
     }
 
     one(fixture.access.delete(selectResult))

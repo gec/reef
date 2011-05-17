@@ -45,26 +45,24 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
     def getClientSession(): ClientSession = new ProtoClient(this, servicesList, timeoutms)
   }
 
-  override def addConnectionListener(listener: IConnectionListener) =
+  final override def addConnectionListener(listener: IConnectionListener) =
     factory.addConnectionListener(listener)
 
-  override def removeConnectionListener(listener: IConnectionListener) =
+  final override def removeConnectionListener(listener: IConnectionListener) =
     factory.removeConnectionListener(listener)
 
-  override def connect(timeoutMs: Long) = factory.connect(timeoutMs)
+  final override def connect(timeoutMs: Long) = factory.connect(timeoutMs)
 
-  override def start() = factory.start()
+  final override def start() = factory.start()
 
-  override def disconnect(timeoutMs: Long) = factory.disconnect(timeoutMs)
+  final override def disconnect(timeoutMs: Long) = factory.disconnect(timeoutMs)
 
-  override def stop() = factory.stop()
+  final override def stop() = factory.stop()
 
-  def newSession(): ISession = {
+  final override def newSession(): ISession =
     new Session(new ProtoClient(factory, servicesList, timeoutms))
-  }
 
-  def newSessionPool(): ISessionPool = {
-    new SessionPool(factory)
-  }
+  final override def newSessionPool(): ISessionPool = new SessionPool(factory)
+
 }
 
