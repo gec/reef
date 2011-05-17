@@ -144,7 +144,6 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
         }
         breaker
           .add(new Type("Breaker"))
-          .add(new Type("Equipment"))
           .add(new Control("trip"))
           .add(new Control("close"))
           .add(status)
@@ -152,7 +151,6 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     new Equipment(substationName)
       .add(new Type("Substation"))
-      .add(new Type("EquipmentGroup"))
       .add(breaker)
   }
 
@@ -160,7 +158,6 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     new EquipmentProfile(profileName)
       .add(new Type("Breaker"))
-      .add(new Type("Equipment"))
       .add(new Control("trip"))
       .add(new Control("close"))
       .add(new Status("Bkr", "status", pointProfile))
