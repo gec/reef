@@ -35,7 +35,7 @@ import org.totalgrid.reef.api.BadRequestException
 import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 
 class PermissionSetService(protected val modelTrans: ServiceTransactable[PermissionSetServiceModel])
-    extends BasicSyncModeledService[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
+    extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.permissionSet
@@ -171,8 +171,8 @@ trait PermissionConversions
     if (!proto.hasAllow || !proto.hasResource || !proto.hasVerb) throw new BadRequestException("Permissions must have allow, resource and verb specified.")
     val normalizedVerb = proto.getVerb.toString.toLowerCase
     normalizedVerb match {
-      case "*" | "get" | "put" | "post" | "delete" => new AuthPermission(proto.getAllow, proto.getResource, normalizedVerb)
-      case _ => throw new BadRequestException(proto.getVerb + " is not one of the valid verbs: get,put,post,delete,*")
+      case "*" | "get" | "put" | "post" | "delete" | "read" | "create" | "update" => new AuthPermission(proto.getAllow, proto.getResource, normalizedVerb)
+      case _ => throw new BadRequestException(proto.getVerb + " is not one of the valid operations: read,create,update,delete,*")
     }
   }
 }

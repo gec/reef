@@ -30,7 +30,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ BadRequestException, RequestEnv, Envelope }
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 
@@ -39,7 +39,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
 
-class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
+class EntityAttributesService extends SyncServiceBase[AttrProto] {
   import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes
@@ -74,8 +74,6 @@ class EntityAttributesService extends AsyncToSyncServiceAdapter[AttrProto] {
       Response(Envelope.Status.OK, protoFromEntity(entEntry, Nil) :: Nil)
     }
   }
-
-  override def post(req: AttrProto, env: RequestEnv): Response[AttrProto] = noPost
 
   override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
     if (!req.hasEntity)

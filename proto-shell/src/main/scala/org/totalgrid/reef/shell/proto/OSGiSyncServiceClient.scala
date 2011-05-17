@@ -91,7 +91,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
   override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
     case Some(info) =>
-      val rsp = new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env.merge(new RequestEnv))
+      val rsp = new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
       Some(rsp)
     case None =>
       Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)

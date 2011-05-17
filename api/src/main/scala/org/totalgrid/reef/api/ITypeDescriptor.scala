@@ -28,4 +28,6 @@ trait ITypeDescriptor[A] {
   def serialize(typ: A): Array[Byte]
   def deserialize(data: Array[Byte]): A
   def getKlass: Class[A]
+  def id: String
+
 }

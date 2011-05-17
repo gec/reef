@@ -32,7 +32,7 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
@@ -75,15 +75,11 @@ object AlarmQueryService {
   }
 }
 
-class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[AlarmList] {
+class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[AlarmList] {
 
   def this(pubs: ServiceEventPublishers) = this(pubs.getEventSink(classOf[Alarm]))
 
   override val descriptor = Descriptors.alarmList
-
-  override def put(req: AlarmList, env: RequestEnv): Response[AlarmList] = noPut
-  override def delete(req: AlarmList, env: RequestEnv): Response[AlarmList] = noDelete
-  override def post(req: AlarmList, env: RequestEnv): Response[AlarmList] = noPost
 
   override def get(req: AlarmList, env: RequestEnv): Response[AlarmList] = {
     import ApplicationSchema._

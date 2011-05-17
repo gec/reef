@@ -22,7 +22,11 @@ package org.totalgrid.reef.api.service
 
 import org.totalgrid.reef.api.ITypeDescriptor
 
-trait ServiceDescriptor[A] {
+trait HasComponentId {
+  def componentId: String
+}
+
+trait ServiceDescriptor[A] extends HasComponentId {
   val descriptor: ITypeDescriptor[A]
-  val useAuth = true
+  final override def componentId = descriptor.id
 }

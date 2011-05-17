@@ -28,7 +28,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.services
 import java.util.UUID
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator, MeasurementStreamCoordinatorFactory }
 
@@ -41,7 +41,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
 class FrontEndProcessorService(protected val modelTrans: ServiceTransactable[FrontEndProcessorServiceModel])
-    extends BasicSyncModeledService[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel]
+    extends SyncModeledServiceBase[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.frontEndProcessor
@@ -103,7 +103,6 @@ trait FrontEndProcessorConversion
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    // TODO: should be uid
     proto.uuid.uuid.asParam(sql.id === _.toLong) ::
       proto.appConfig.instanceName.asParam(sql.instanceName === _) ::
       Nil

@@ -29,14 +29,13 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Descriptors
 
 import ServiceBehaviors._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException }
 
 class CommandAccessService(protected val modelTrans: ServiceTransactable[CommandAccessServiceModel])
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]
     with GetEnabled
     with SubscribeEnabled
     with PutOnlyCreates
-    with PostDisabled
     with DeleteEnabled {
 
   import AccessProto._
@@ -47,7 +46,7 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
 
   def deserialize(bytes: Array[Byte]) = AccessProto.parseFrom(bytes)
 
-  override protected def preCreate(proto: AccessProto): AccessProto = {
+  override protected def preCreate(proto: AccessProto, headers: RequestEnv): AccessProto = {
     // Simple proto validity check
     if (proto.getCommandsList.length == 0)
       throw new BadRequestException("Must specify at least one command")
@@ -66,9 +65,10 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
     } else proto
   }
 
-  override protected def doDelete(model: CommandAccessServiceModel, req: AccessProto): List[AccessProto] = {
-    val existing = model.findRecords(req)
+  final override protected def performDelete(model: ServiceModelType, request: ServiceType): List[AccessModel] = {
+    val existing = model.findRecords(request)
     existing.foreach(model.removeAccess(_))
-    existing.map(model.convertToProto(_))
+    existing
   }
+
 }

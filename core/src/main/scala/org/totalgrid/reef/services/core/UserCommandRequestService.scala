@@ -25,26 +25,23 @@ import org.totalgrid.reef.api.scalaclient.ClientSessionExecutionPool
 import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
 
-import org.totalgrid.reef.models.UserCommandModel
-
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
-
 import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
-
-import org.totalgrid.reef.models.{ ApplicationSchema, Command }
+import org.totalgrid.reef.api.service.ServiceTypeIs
+import org.totalgrid.reef.api.auth.IAuthService
 
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
+import org.totalgrid.reef.models.{ Command, UserCommandModel, ApplicationSchema }
 
 class UserCommandRequestService(
   protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionExecutionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
+    with UserCommandRequestValidation
     with AsyncGetEnabled
-    with AsyncPutEnabled
-    with AsyncPostDisabled
-    with AsyncDeleteDisabled
+    with AsyncPutCreatesOrUpdates
     with SubscribeEnabled {
 
   override val descriptor = Descriptors.userCommandRequest
@@ -75,6 +72,12 @@ class UserCommandRequestService(
     }
   }
 
+}
+
+trait UserCommandRequestValidation extends HasCreate with HasUpdate {
+
+  self: ServiceTypeIs[UserCommandRequest] with ModelTypeIs[UserCommandModel] =>
+
   private def doCommonValidation(proto: UserCommandRequest) = {
 
     if (!proto.hasCommandRequest)
@@ -83,7 +86,7 @@ class UserCommandRequestService(
     proto
   }
 
-  override protected def preCreate(proto: UserCommandRequest) = {
+  override protected def preCreate(proto: UserCommandRequest, headers: RequestEnv) = {
 
     if (!proto.getCommandRequest.hasName)
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
@@ -91,7 +94,7 @@ class UserCommandRequestService(
     if (proto.hasStatus)
       throw new BadRequestException("Update must not specify status", Envelope.Status.BAD_REQUEST)
 
-    this.doCommonValidation(proto)
+    super.preCreate(this.doCommonValidation(proto), headers)
   }
 
   override protected def preUpdate(proto: UserCommandRequest, existing: UserCommandModel) = {
@@ -99,9 +102,8 @@ class UserCommandRequestService(
     if (!proto.hasStatus)
       throw new BadRequestException("Update must specify status", Envelope.Status.BAD_REQUEST)
 
-    doCommonValidation(proto)
+    super.preUpdate(doCommonValidation(proto), existing)
   }
-
 }
 
 object UserCommandRequestService {

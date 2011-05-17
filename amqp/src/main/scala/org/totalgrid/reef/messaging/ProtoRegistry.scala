@@ -67,8 +67,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
   }
 
   override def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
-    val exchange = lookup.getServiceInfo(service.descriptor.getKlass).exchange
-    factory.bindService(exchange, service.respond, destination, competing, reactor)
+    factory.bindService(service.descriptor.id, service.respond, destination, competing, reactor)
   }
 
   /*

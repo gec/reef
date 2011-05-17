@@ -39,7 +39,7 @@ object ServiceOptions {
     val maxMeas = cr.getLong("org.totalgrid.reef.services.maxMeasurements", 2 * 1024 * 1024)
     val trimPeriod = cr.getInt("org.totalgrid.reef.services.trimPeriodMinutes", 15)
 
-    ServiceOptions(metrics, metricsSplitByVerb, metricsSplitByService, useAuth, slowQueryThresholdMs, maxMeas, trimPeriod)
+    ServiceOptions(metrics, metricsSplitByVerb, metricsSplitByService /*, useAuth*/ , slowQueryThresholdMs, maxMeas, trimPeriod)
   }
 
 }
@@ -51,8 +51,10 @@ case class ServiceOptions(
   val metricsSplitByVerb: Boolean,
   /// track services separately (true => N verbs * M service; or N verbs * 1)  
   val metricsSplitByService: Boolean,
+
   /// whether we are turning on "auth checking" for all services, only optional during transitory phase
-  val auth: Boolean,
+  // val auth: Boolean,
+
   /// threshold for when a request took too long and should be logged
   val slowQueryThreshold: Long,
   /// maximum # of measurements to allow in the history table

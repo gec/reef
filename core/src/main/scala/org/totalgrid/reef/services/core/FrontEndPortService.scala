@@ -41,14 +41,14 @@ import org.totalgrid.reef.util.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
-    extends BasicSyncModeledService[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
+    extends SyncModeledServiceBase[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
     with GetEnabled
-    with PutEnabled
+    with PutCreatesOrUpdates
     with DeleteEnabled
     with PostPartialUpdate
     with SubscribeEnabled {
 
-  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+  override def merge(req: ServiceType, current: ModelType): ServiceType = {
 
     import org.totalgrid.reef.proto.OptionalProtos._
 

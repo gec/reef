@@ -29,53 +29,51 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.{ IServiceResponseCallback, AsyncToSyncServiceAdapter }
+import org.totalgrid.reef.api.service.{ IServiceResponseCallback, SyncServiceBase }
 
 object TestDescriptors {
   def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
     def serialize(typ: Envelope.RequestHeader): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
     def getKlass = classOf[Envelope.RequestHeader]
+    def id = getKlass.toString
   }
 
   def serviceNotification() = new ITypeDescriptor[Envelope.ServiceNotification] {
     def serialize(typ: Envelope.ServiceNotification): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.ServiceNotification.parseFrom(bytes)
     def getKlass = classOf[Envelope.ServiceNotification]
+    def id = getKlass.toString
   }
 }
 
-class ServiceNotificationServiceX3 extends AsyncToSyncServiceAdapter[Envelope.ServiceNotification] {
+class ServiceNotificationServiceX3 extends SyncServiceBase[Envelope.ServiceNotification] {
 
   val descriptor = TestDescriptors.serviceNotification
 
-  def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
-  def put(req: Envelope.ServiceNotification, env: RequestEnv) = noPut
-  def delete(req: Envelope.ServiceNotification, env: RequestEnv) = noDelete
-  def post(req: Envelope.ServiceNotification, env: RequestEnv) = noPost
+  override def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
+
 }
 
-class HeadersX2 extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
+class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
 
   val descriptor = TestDescriptors.requestHeader
 
   def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
 
-  def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
-  def put(req: Envelope.RequestHeader, env: RequestEnv) = noPut
-  def delete(req: Envelope.RequestHeader, env: RequestEnv) = noDelete
-  def post(req: Envelope.RequestHeader, env: RequestEnv) = noPost
+  override def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
+
 }
 
 @RunWith(classOf[JUnitRunner])
 class ProtoClientTest extends FunSuite with ShouldMatchers {
 
-  val exchangeA = "test.protoClient.A"
-  val exchangeB = "test.protoClient.B"
+  val exchangeA = TestDescriptors.serviceNotification.id
+  val exchangeB = TestDescriptors.requestHeader.id
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Envelope.ServiceNotification] -> ServiceInfo.get(exchangeA, TestDescriptors.serviceNotification),
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchangeB, TestDescriptors.requestHeader)))
+    classOf[Envelope.ServiceNotification] -> ServiceInfo.get(TestDescriptors.serviceNotification),
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
 
   def setupTest(addServices: Boolean)(test: (ProtoClient, AMQPProtoFactory) => Unit) {
     val connection = new MockBrokerInterface

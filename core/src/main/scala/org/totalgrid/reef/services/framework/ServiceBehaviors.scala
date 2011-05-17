@@ -24,230 +24,133 @@ import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
 import org.totalgrid.reef.api.ServiceTypes.Response
 
 import org.totalgrid.reef.api.{ RequestEnv, BadRequestException, Envelope }
-import org.totalgrid.reef.api.service.AsyncServiceBase
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
+
+import org.totalgrid.reef.api.service._
 
 object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
-  trait GetEnabled { self: ModeledService =>
-    def get(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
-      modelTrans.transaction { (model: ServiceModelType) =>
+  trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasServiceTransactable with HasSyncRestGet {
+    override def get(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
+        val results = read(model, req, env)
         env.subQueue.foreach(subscribe(model, req, _))
-        val proto = model.findRecords(req).map(model.convertToProto(_))
-        Response(Envelope.Status.OK, proto)
+        Response(Envelope.Status.OK, results)
       }
     }
   }
 
-  trait AsyncGetEnabled extends GetEnabled { self: ModeledService =>
-    def getAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = {
+  trait AsyncGetEnabled extends GetEnabled with HasServiceTransactable with HasAsyncRestGet {
+
+    override def getAsync(req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = {
       doAsyncGet(get(req, env), callback)
     }
 
-    protected def doAsyncGet(rsp: Response[ProtoType], callback: Response[ProtoType] => Unit) = callback(rsp)
+    protected def doAsyncGet(rsp: Response[ServiceType], callback: Response[ServiceType] => Unit) = callback(rsp)
   }
 
   /**
-   * PUTs and POSTs always create a new entry, there are no updates
+   * POSTs create a new entry, there are no updates
    */
-  trait PutOnlyCreates { self: ModeledService =>
 
-    def put(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
-      modelTrans.transaction { (model: ServiceModelType) =>
+  trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasServiceTransactable with HasSyncRestPut {
+
+    override def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
-        val proto = create(model, req)
-        env.subQueue.foreach(subscribe(model, proto, _))
-        Response(Envelope.Status.CREATED, proto :: Nil)
+        val (value, status) = create(model, req, env)
+        env.subQueue.foreach(subscribe(model, value, _))
+        Response(status, value :: Nil)
       }
     }
 
-    // Create and update implementations
-    protected def create(model: ServiceModelType, req: ProtoType): ProtoType = {
-      val proto = preCreate(req)
-      val sql = model.createFromProto(proto)
-      postCreate(sql, proto)
-      model.convertToProto(sql)
-    }
   }
 
-  trait PostPartialUpdate extends HasUpdate { self: ModeledService =>
+  trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasServiceTransactable with HasSyncRestPost {
 
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = modelTrans.transaction { model =>
+    override def post(req: ServiceType, env: RequestEnv): Response[ServiceType] = modelTrans.transaction { model =>
       model.setEnv(env)
-      val (proto, status) = model.findRecord(req) match {
-        case Some(x) => update(model, req, x)
+      val (value, status) = model.findRecord(req) match {
+        case Some(x) => update(model, req, x, env)
         case None => throw new BadRequestException("Record not found: " + req)
       }
-      env.subQueue.foreach(subscribe(model, proto, _))
-      Response(status, proto :: Nil)
+      env.subQueue.foreach(subscribe(model, value, _))
+      Response(status, value :: Nil)
     }
 
-    override def preUpdate(proto: ProtoType, existing: ModelType): ProtoType = merge(proto, existing)
+    override def preUpdate(proto: ServiceType, existing: ModelType): ServiceType = merge(proto, existing)
 
-    protected def merge(req: ProtoType, current: ModelType): ProtoType
+    protected def merge(req: ServiceType, current: ModelType): ServiceType
 
   }
 
   /**
-   * Default REST "Put" behavior, currently accessed through both put and post verbs
+   * Default REST "Put" behavior updates or creates
    */
-  trait PutEnabled extends HasCreate with HasUpdate { self: ModeledService =>
+  trait PutCreatesOrUpdates
+      extends HasCreate with AuthorizesCreate
+      with HasUpdate with AuthorizesUpdate
+      with HasSubscribe
+      with HasServiceTransactable
+      with HasSyncRestPut {
 
-    protected def doPut(req: ProtoType, env: RequestEnv, model: ServiceModelType): Response[ProtoType] = {
+    protected def doPut(req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
       model.setEnv(env)
       val (proto, status) = try {
         model.findRecord(req) match {
-          case None => create(model, req)
-          case Some(x) => update(model, req, x)
+          case None => create(model, req, env)
+          case Some(x) => update(model, req, x, env)
         }
       } catch {
         // some items can be created without having uniquely identifying fields
         // so may have no search terms to look for
         // TODO: evaluate replacing NoSearchTermsException with flags
-        case e: NoSearchTermsException => create(model, req)
+        case e: NoSearchTermsException => create(model, req, env)
       }
       env.subQueue.foreach(subscribe(model, proto, _))
       Response(status, proto :: Nil)
     }
 
-    def put(req: ProtoType, env: RequestEnv): Response[ProtoType] =
+    override def put(req: ServiceType, env: RequestEnv): Response[ServiceType] =
       modelTrans.transaction { doPut(req, env, _) }
 
   }
 
-  trait HasCreate { self: ModeledService =>
+  trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasServiceTransactable with HasAsyncRestPut {
 
-    protected def create(model: ServiceModelType, req: ProtoType): Tuple2[ProtoType, Envelope.Status] = {
-      val proto = preCreate(req)
-      // TODO: fix this bug, check tests
-      val sql = model.createFromProto(req)
-      postCreate(sql, req)
-      (model.convertToProto(sql), Envelope.Status.CREATED)
-    }
-
-  }
-
-  trait HasUpdate { self: ModeledService =>
-
-    // Found an existing record. Update it.
-    protected def update(model: ServiceModelType, req: ProtoType, existing: ModelType): Tuple2[ProtoType, Envelope.Status] = {
-      val proto = preUpdate(req, existing)
-      val (sql, updated) = model.updateFromProto(proto, existing)
-      postUpdate(sql, req)
-      val status = if (updated) Envelope.Status.UPDATED else Envelope.Status.NOT_MODIFIED
-      (model.convertToProto(sql), status)
-    }
-  }
-
-  trait AsyncPutEnabled extends PutEnabled { self: ModeledService =>
-
-    def putAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit =
+    override def putAsync(req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       modelTrans.transaction { model => doAsyncPutPost(doPut(req, env, model), callback) }
 
-    protected def doAsyncPutPost(rsp: Response[ProtoType], callback: Response[ProtoType] => Unit) = callback(rsp)
+    protected def doAsyncPutPost(rsp: Response[ServiceType], callback: Response[ServiceType] => Unit) = callback(rsp)
   }
 
   /**
    * Default REST "Delete" behavior
    */
-  trait DeleteEnabled { self: ModeledService =>
+  trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasServiceTransactable with HasSyncRestDelete {
 
-    def delete(req: ProtoType, env: RequestEnv): Response[ProtoType] = {
-      modelTrans.transaction { (model: ServiceModelType) =>
+    override def delete(req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      modelTrans.transaction { model: ServiceModelType =>
         model.setEnv(env)
         env.subQueue.foreach(subscribe(model, req, _))
-        preDelete(req)
-        val deleted = doDelete(model, req)
-        postDelete(deleted)
+        val deleted = doDelete(model, req, env)
         Response(Envelope.Status.DELETED, deleted)
       }
     }
 
-    protected def doDelete(model: ServiceModelType, req: ProtoType): List[ProtoType] = {
-      // TODO: consider stripping off everything but UID if UID set on delete
-      val existing = model.findRecords(req)
-      existing.foreach(model.delete(_))
-      existing.map(model.convertToProto(_))
-    }
-  }
-
-  def noVerb(verb: Envelope.Verb) = throw new BadRequestException("Verb not implemented: " + verb)
-
-  /**
-   * Default service "Subscribe" behavior, must mix in GetEnabled
-   */
-  trait SubscribeEnabled { self: ModeledService =>
-    def subscribe(model: ServiceModelType, req: ProtoType, queue: String) = model.subscribe(req, queue)
   }
 
   /**
-   * REST "Get" disabled, throws an exception
+   * Basic subscribe implementation
    */
-  trait GetDisabled { self: ModeledService =>
-    def get(req: ProtoType, env: RequestEnv): Response[ProtoType] = noVerb(Envelope.Verb.GET)
-  }
+  trait SubscribeEnabled extends HasAllTypes with HasSubscribe {
 
-  /**
-   * REST "Post" disabled, throws an exception
-   */
-  trait PostDisabled { self: ModeledService =>
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = noVerb(Envelope.Verb.POST)
-  }
-
-  /**
-   * REST "Put" disabled, throws an exception
-   */
-  trait PutDisabled { self: ModeledService =>
-    def post(req: ProtoType, env: RequestEnv): Response[ProtoType] = noVerb(Envelope.Verb.POST)
-    def put(req: ProtoType, env: RequestEnv): Response[ProtoType] = noVerb(Envelope.Verb.PUT)
-  }
-
-  /**
-   * REST "Delete" disabled, throws an exception
-   */
-  trait DeleteDisabled { self: ModeledService =>
-    def delete(req: ProtoType, env: RequestEnv): Response[ProtoType] = noVerb(Envelope.Verb.DELETE)
-    throw new BadRequestException("Delete not allowed")
-  }
-
-  /**
-   * REST "Delete" disabled, throws an exception
-   */
-  trait AsyncDeleteDisabled { self: ModeledService =>
-    def deleteAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = noVerb(Envelope.Verb.DELETE)
-  }
-
-  /**
-   * REST "Delete" disabled, throws an exception
-   */
-  trait AsyncGetDisabled { self: ModeledService =>
-    def getAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = noVerb(Envelope.Verb.GET)
-  }
-
-  /**
-   * REST "Delete" disabled, throws an exception
-   */
-  trait AsyncPutDisabled { self: ModeledService =>
-    def putAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = noVerb(Envelope.Verb.PUT)
-  }
-
-  /**
-   * REST "Delete" disabled, throws an exception
-   */
-  trait AsyncPostDisabled { self: ModeledService =>
-    def postAsync(req: ProtoType, env: RequestEnv)(callback: Response[ProtoType] => Unit): Unit = noVerb(Envelope.Verb.POST)
-  }
-
-  /**
-   * REST "Subscribe" disabled, throws an exception
-   */
-  trait SubscribeDisabled { self: ModeledService =>
-    def subscribe(model: ServiceModelType, req: ProtoType, queue: String) =
-      throw new BadRequestException("Subscribe not allowed")
+    override def subscribe(model: ServiceModelType, req: ServiceType, queue: String) = model.subscribe(req, queue)
   }
 
 }
+

@@ -38,21 +38,23 @@ import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
 
+import org.totalgrid.reef.api.service.SyncServiceBase
+
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
 class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
-    extends BasicSyncModeledService[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
+    extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
     with GetEnabled
-    with PutEnabled
+    with PutCreatesOrUpdates
     with DeleteEnabled
     with PostPartialUpdate
     with SubscribeEnabled {
 
   override val descriptor = Descriptors.commEndpointConnection
 
-  override def merge(req: ProtoType, current: ModelType): ProtoType = {
+  override def merge(req: ServiceType, current: ModelType): ServiceType = {
     import org.totalgrid.reef.proto.OptionalProtos._
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder

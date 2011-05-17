@@ -21,6 +21,7 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.api.auth.IAuthService
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
@@ -34,10 +35,10 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 /**
  * sets up the "production" ServiceContainer for the service providers
  */
-class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfiguration: ServiceOptions) extends LifecycleManager with ServiceContainer with Logging {
+class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfiguration: ServiceOptions, auth: IAuthService) extends LifecycleManager with ServiceContainer with Logging {
 
   private val components = ServiceBootstrap.bootstrapComponents(amqp)
-  private val container = new AuthAndMetricsServiceWrapper(components, serviceConfiguration)
+  private val metrics = new MetricsServiceWrapper(components, serviceConfiguration)
 
   // default lifecycles to add
   this.add(List(amqp, components.heartbeatActor))
@@ -45,7 +46,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   private val measStore = MeasurementStoreFinder.getInstance(measInfo, this.add)
 
   // all the actual services are created here
-  private val providers = new ServiceProviders(components, measStore, serviceConfiguration)
+  private val providers = new ServiceProviders(components, measStore, serviceConfiguration, auth)
 
   val services = this.attachServices(providers.services)
 
@@ -58,8 +59,8 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   }
 
   def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
-    val exchange = ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass).exchange
-    val instrumentedEndpoint = container.instrumentCallback(exchange, endpoint)
+
+    val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
 
     // each service gets its own actor so a slow service can't block a fast service but
     // a slow query will block the next query to that service
@@ -67,7 +68,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     this.add(serviceReactor)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    components.amqp.bindService(exchange, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
+    components.amqp.bindService(endpoint.descriptor.id, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
     instrumentedEndpoint
   }
 

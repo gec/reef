@@ -20,13 +20,20 @@
  */
 package org.totalgrid.reef.services.framework
 
-import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.api.service.{ HasServiceType, ServiceTypeIs }
 
-/**
- * Defines abstract types that someone mixing in this trait must provide
- */
-trait ServiceTypes {
+trait HasModelType {
   type ModelType
-  type ProtoType <: GeneratedMessage
-  type ServiceModelType <: ServiceModel[ProtoType, ModelType]
+}
+
+trait ModelTypeIs[A] extends HasModelType {
+  type ModelType = A
+}
+
+trait HasAllTypes extends HasServiceType with HasModelType {
+  type ServiceModelType <: ServiceModel[ServiceType, ModelType]
+}
+
+trait AllTypesAre[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends HasAllTypes with ModelTypeIs[MT] with ServiceTypeIs[ST] {
+  final override type ServiceModelType = SMT
 }

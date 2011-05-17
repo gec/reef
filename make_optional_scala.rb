@@ -1,5 +1,5 @@
 
-def capitalizeAferUnderScore(s)
+def capitalizeAfterUnderScore(s)
   if s.match(/_/)
     parts = s.split('_')
     [
@@ -12,18 +12,28 @@ def capitalizeAferUnderScore(s)
 end
 
 def CamelCase(s)
-  first = capitalizeAferUnderScore(s).dup
+  first = capitalizeAfterUnderScore(s).dup
   first[0] = first[0].chr.capitalize
   first
 end
 def camelCase(s)
-  first = capitalizeAferUnderScore(s).dup
+  first = capitalizeAfterUnderScore(s).dup
   first[0] = first[0].chr.downcase
   first
 end
 def starts_with?(str, prefix)
   prefix = prefix.to_s
   str[0, prefix.length] == prefix
+end
+
+class String
+   def underscore
+       self.gsub(/::/, '/').
+       gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+       gsub(/([a-z\d])([A-Z])/,'\1_\2').
+       tr("-", "_").
+       downcase
+   end
 end
 
 def add_deserializer(file, name, fullName)
@@ -34,6 +44,7 @@ def add_deserializer(file, name, fullName)
     def serialize(typ : #{fullName}) : Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = #{fullName}.parseFrom(bytes)
     def getKlass = classOf[#{fullName}]
+    def id = "#{fullName.split('.').last.underscore}"
   }
 EOF
 end

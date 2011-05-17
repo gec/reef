@@ -18,15 +18,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.api.service
 
-object ServiceInfo {
-  def get[A](descriptor: ITypeDescriptor[A]) =
-    ServiceInfo[A, A](descriptor, false, descriptor, descriptor.id + "_events")
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.api.ServiceTypes.Response
 
-  def get[A, B](descriptor: ITypeDescriptor[A], subDescriptor: ITypeDescriptor[B]) =
-    ServiceInfo[A, B](descriptor, true, subDescriptor, subDescriptor.id)
+trait HasSyncRestGet extends HasServiceType {
+  def get(req: ServiceType, env: RequestEnv): Response[ServiceType] = RestResponses.noGet[ServiceType]
 }
 
-case class ServiceInfo[A, B](descriptor: ITypeDescriptor[A], subIsStreamType: Boolean, subType: ITypeDescriptor[B], subExchange: String)
+trait HasSyncRestPut extends HasServiceType {
+  def put(req: ServiceType, env: RequestEnv): Response[ServiceType] = RestResponses.noPut[ServiceType]
+}
 
+trait HasSyncRestDelete extends HasServiceType {
+  def delete(req: ServiceType, env: RequestEnv): Response[ServiceType] = RestResponses.noDelete[ServiceType]
+}
+
+trait HasSyncRestPost extends HasServiceType {
+  def post(req: ServiceType, env: RequestEnv): Response[ServiceType] = RestResponses.noGet[ServiceType]
+}
+
+trait SyncRestService extends HasSyncRestGet with HasSyncRestPut with HasSyncRestDelete with HasSyncRestPost

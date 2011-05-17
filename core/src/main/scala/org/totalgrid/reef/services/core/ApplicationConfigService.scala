@@ -27,7 +27,6 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 
@@ -41,7 +40,7 @@ import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
 class ApplicationConfigService(protected val modelTrans: ServiceTransactable[ApplicationConfigServiceModel])
-    extends BasicSyncModeledService[ApplicationConfig, ApplicationInstance, ApplicationConfigServiceModel]
+    extends SyncModeledServiceBase[ApplicationConfig, ApplicationInstance, ApplicationConfigServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.applicationConfig

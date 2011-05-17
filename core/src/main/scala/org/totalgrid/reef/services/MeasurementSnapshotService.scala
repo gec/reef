@@ -32,17 +32,13 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 
-class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[MeasurementSnapshot] {
+class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementSnapshot] {
 
   def this(cm: RTDatabase, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementSnapshot]))
 
   override val descriptor = Descriptors.measurementSnapshot
-
-  override def put(req: MeasurementSnapshot, env: RequestEnv) = noPut
-  override def delete(req: MeasurementSnapshot, env: RequestEnv) = noDelete
-  override def post(req: MeasurementSnapshot, env: RequestEnv) = noPost
 
   override def get(req: MeasurementSnapshot, env: RequestEnv): Response[MeasurementSnapshot] = {
 

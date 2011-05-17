@@ -32,10 +32,6 @@ class SingleEndpointCommandService(handler: ICommandHandler) extends AsyncServic
 
   val descriptor = Descriptors.userCommandRequest
 
-  override def getAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = noGet
-  override def deleteAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = noDelete
-  override def postAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = noPost
-
   override def putAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = {
 
     val rspHandler = new IResponseHandler {

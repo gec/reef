@@ -76,7 +76,7 @@ class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with Be
       val service = new MeasurementHistoryService(historian, new SilentServiceSubscriptionHandler)
       val info = ReefServicesList.getServiceInfo(classOf[MeasurementHistory])
 
-      amqp.bindService(info.exchange, service.respond)
+      amqp.bindService(info.descriptor.id, service.respond)
 
       val client = amqp.getProtoClientSession(ReefServicesList, 500000)
 

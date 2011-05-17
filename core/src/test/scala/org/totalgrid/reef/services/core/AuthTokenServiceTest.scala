@@ -30,7 +30,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.services.{ AuthTokenVerifier, AuthTokenMetrics }
+import org.totalgrid.reef.services.{ RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
@@ -182,7 +182,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 @RunWith(classOf[JUnitRunner])
 class AuthTokenVerifierTest extends AuthSystemTestBase {
   class AuthFixture extends Fixture {
-    val wrappedService = new AuthTokenVerifier(new NoOpService, "test", new AuthTokenMetrics)
+    val wrappedService = new RestAuthzWrapper(new NoOpService, new RestAuthzMetrics, SqlAuthzService)
 
     /// make a request with the set verb and auth_tokens
     def makeRequest(verb: Verb, authTokens: List[String]) = {
@@ -219,9 +219,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
 
   test("Get w/ AuthToken => OK") {
     val fix = new AuthFixture
-
     val authToken = fix.login("guest", "guest")
-
     fix.testRequest(Status.OK, Verb.GET, List(authToken.getToken))
   }
 

@@ -31,8 +31,8 @@ import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId 
 /**
  * Supertype for Proto/Squeryl models
  */
-trait SquerylServiceModel[ProtoType <: GeneratedMessage, SqlType <: ModelWithId]
-    extends ServiceModel[ProtoType, SqlType]
+trait SquerylServiceModel[ServiceType <: GeneratedMessage, SqlType <: ModelWithId]
+    extends ServiceModel[ServiceType, SqlType]
     with BasicSquerylModel[SqlType] { self: ModelObserver[SqlType] =>
 }
 

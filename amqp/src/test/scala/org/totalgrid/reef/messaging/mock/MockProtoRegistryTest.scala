@@ -109,7 +109,7 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
     val exc = intercept[ReefServiceException] {
       reg.putOrThrow(Envelope.RequestHeader.newBuilder.setKey("").setValue("").build)
     }
-    exc.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
+    exc.getStatus should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
 
   // Do a full request/respond

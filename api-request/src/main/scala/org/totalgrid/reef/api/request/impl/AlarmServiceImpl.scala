@@ -38,6 +38,7 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   def getActiveAlarms(limit: Int) = {
     ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)).getAlarmsList }
   }
+
   def subscribeToActiveAlarms(limit: Int) = {
     ops { session =>
       useSubscription(session, Descriptors.alarm.getKlass) { sub =>

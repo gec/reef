@@ -24,9 +24,10 @@ import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagemen
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
 import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
-import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, SessionExecutionPool }
 import scala.Some
+import org.totalgrid.reef.api.javaclient.{ISubscription, ISession, ISessionConsumer, SessionExecutionPool}
 
+// TODO rename BaseReefService or similar, class is redundant.
 trait ReefServiceBaseClass extends ClientSource {
 
   def subscriptionListener: Option[SubscriptionListener] = None
@@ -37,7 +38,7 @@ trait ReefServiceBaseClass extends ClientSource {
       val result = block(subscription)
       val subscriptionResult = new SubscriptionResult(result, subscription)
       subscriptionListener match {
-        case Some(listener) => listener.onNewSubscription(subscription)
+        case Some(listener) => listener.onNewSubscription(subscriptionResult.getSubscription)
         case None => {}
       }
       subscriptionResult
@@ -58,7 +59,7 @@ trait ReefServiceBaseClass extends ClientSource {
 }
 
 trait SubscriptionListener {
-  def onNewSubscription[T <: GeneratedMessage](subscription: Subscription[T]): Unit
+  def onNewSubscription[T <: GeneratedMessage](subscription: ISubscription[T]): Unit
 }
 
 /**

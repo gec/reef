@@ -20,21 +20,10 @@
  */
 package org.totalgrid.reef.services.framework
 
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.services.framework.ServiceBehaviors._
 
-import ServiceBehaviors._
-
-/**
- * Common super type for fully RESTful proto services
- */
-trait BasicSyncModeledService[ProtoType <: GeneratedMessage, ModelType, ServiceModelType <: ServiceModel[ProtoType, ModelType]]
-  extends ModeledServiceBase[ProtoType, ModelType, ServiceModelType] with AsyncToSyncServiceAdapter[ProtoType]
-
-trait DefaultSyncBehaviors extends GetEnabled
-    with PutEnabled
-    with DeleteEnabled
-    with PostDisabled
-    with SubscribeEnabled { self: ModeledService =>
-
-}
+trait DefaultSyncBehaviors
+  extends GetEnabled
+  with PutCreatesOrUpdates
+  with DeleteEnabled
+  with SubscribeEnabled

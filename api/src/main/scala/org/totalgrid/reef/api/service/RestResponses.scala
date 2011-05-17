@@ -18,15 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.api.service
 
-object ServiceInfo {
-  def get[A](descriptor: ITypeDescriptor[A]) =
-    ServiceInfo[A, A](descriptor, false, descriptor, descriptor.id + "_events")
+import org.totalgrid.reef.api.{ Envelope }
+import org.totalgrid.reef.api.ServiceTypes.Response
 
-  def get[A, B](descriptor: ITypeDescriptor[A], subDescriptor: ITypeDescriptor[B]) =
-    ServiceInfo[A, B](descriptor, true, subDescriptor, subDescriptor.id)
+object RestResponses {
+
+  def noVerb[A](verb: Envelope.Verb) = Response[A](Envelope.Status.NOT_ALLOWED, error = "Unimplemented verb: " + verb)
+
+  def noPut[A] = noVerb[A](Envelope.Verb.PUT)
+  def noGet[A] = noVerb[A](Envelope.Verb.GET)
+  def noPost[A] = noVerb[A](Envelope.Verb.POST)
+  def noDelete[A] = noVerb[A](Envelope.Verb.DELETE)
 }
-
-case class ServiceInfo[A, B](descriptor: ITypeDescriptor[A], subIsStreamType: Boolean, subType: ITypeDescriptor[B], subExchange: String)
-

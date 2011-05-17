@@ -69,7 +69,7 @@ object EventConfigService {
 }
 
 class EventConfigService(protected val modelTrans: ServiceTransactable[EventConfigServiceModel])
-    extends BasicSyncModeledService[EventConfig, EventConfigStore, EventConfigServiceModel]
+    extends SyncModeledServiceBase[EventConfig, EventConfigStore, EventConfigServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.eventConfig

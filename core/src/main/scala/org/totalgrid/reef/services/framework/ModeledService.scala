@@ -20,33 +20,27 @@
  */
 package org.totalgrid.reef.services.framework
 
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.service.{ AsyncToSyncServiceAdapter, AsyncServiceBase }
+import org.totalgrid.reef.api.service.{ SyncServiceBase, AsyncServiceBase }
+import org.totalgrid.reef.api.BadRequestException
 
 /**
  * Shared dependencies for generic service implementations
  */
-trait ModeledService extends ServiceTypes with ServiceHooks {
+trait HasServiceTransactable extends HasAllTypes {
 
   protected val modelTrans: ServiceTransactable[ServiceModelType]
 
-  def subscribe(model: ServiceModelType, req: ProtoType, queue: String)
 }
 
-/**
- * Base class for services which handle protobuf messages and act on service models.
- *
- * Implements SyncServiceBase/ProtoSyncServiceBase interfaces to the messaging system
- * and provides shared types/resource definitions for mixed-in service behavior.
- */
-trait ModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledService {
+trait HasSubscribe extends HasAllTypes {
 
-  type ProtoType = PT
-  type ModelType = MT
-  type ServiceModelType = SMT
+  /* default behavior is disabled */
+  def subscribe(model: ServiceModelType, req: ServiceType, queue: String): Unit =
+    throw new BadRequestException("Subscribe not allowed")
+
 }
 
-trait AsyncModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledServiceBase[PT, MT, SMT] with AsyncServiceBase[PT]
+trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with AsyncServiceBase[ST]
 
-trait SyncModeledServiceBase[PT <: GeneratedMessage, MT, SMT <: ServiceModel[PT, MT]] extends ModeledServiceBase[PT, MT, SMT] with AsyncToSyncServiceAdapter[PT]
+trait SyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with SyncServiceBase[ST]
 

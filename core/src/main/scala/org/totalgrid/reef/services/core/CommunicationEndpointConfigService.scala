@@ -35,7 +35,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
-    extends BasicSyncModeledService[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
+    extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.commEndpointConfig

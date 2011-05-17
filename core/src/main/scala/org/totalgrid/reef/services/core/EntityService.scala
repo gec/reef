@@ -30,10 +30,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
-import org.totalgrid.reef.services.framework.SquerylModel
+import org.totalgrid.reef.api.service.SyncServiceBase
 
-class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
+class EntityService extends SyncServiceBase[EntityProto] {
 
   override val descriptor = Descriptors.entity
 
@@ -45,8 +44,6 @@ class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
       Response(Envelope.Status.OK, EQ.entityToProto(ent).build :: Nil)
     }
   }
-  override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = noDelete
-  override def post(req: EntityProto, env: RequestEnv): Response[EntityProto] = noPost
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     transaction {
@@ -61,7 +58,7 @@ class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
 import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
-class EntityEdgeService extends AsyncToSyncServiceAdapter[EntityEdgeProto] {
+class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
 
   override val descriptor = Descriptors.entityEdge
 
@@ -89,8 +86,6 @@ class EntityEdgeService extends AsyncToSyncServiceAdapter[EntityEdgeProto] {
       Response(status, proto :: Nil)
     }
   }
-  override def delete(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noDelete
-  override def post(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = noPost
 
   override def get(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
     transaction {

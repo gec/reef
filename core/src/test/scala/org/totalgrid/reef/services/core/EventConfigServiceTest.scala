@@ -44,9 +44,9 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
     AMQPFixture.mock(true) { amqp =>
       val fac = new EventConfigServiceModelFactory(new SilentEventPublishers)
       val service = new EventConfigService(fac)
-      val exchange = "test"
+      val exchange = Descriptors.eventConfig.id
       amqp.bindService(exchange, service.respond) // listen for service requests with the echo service
-      val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(exchange, Descriptors.eventConfig)))
+      val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(Descriptors.eventConfig)))
 
       val client = amqp.getProtoClientSession(servicelist, 5000)
 

@@ -47,7 +47,7 @@ public class TestAuthService extends JavaBridgeTestBase {
 			SampleRequests.getAllPoints(client);
 			assertTrue(false);
 		} catch (ReefServiceException pse) {
-			assertEquals(pse.getStatus(), Envelope.Status.BAD_REQUEST);
+			assertEquals(Envelope.Status.UNAUTHORIZED, pse.getStatus());
 		}
 		// logon as all permission user
 		SampleRequests.logonAs(client, "core", "core", true);

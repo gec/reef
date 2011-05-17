@@ -29,19 +29,15 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException }
 import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 
-class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[MeasurementHistory] {
+class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementHistory] {
 
   def this(cm: Historian, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementHistory]))
 
   val HISTORY_LIMIT = 10000
 
   override val descriptor = Descriptors.measurementHistory
-
-  override def put(req: MeasurementHistory, env: RequestEnv) = noPut
-  override def delete(req: MeasurementHistory, env: RequestEnv) = noDelete
-  override def post(req: MeasurementHistory, env: RequestEnv) = noPost
 
   override def get(req: MeasurementHistory, env: RequestEnv): Response[MeasurementHistory] = {
 

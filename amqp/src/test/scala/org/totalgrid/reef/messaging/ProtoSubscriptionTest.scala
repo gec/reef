@@ -30,15 +30,15 @@ import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
-import service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
+import service.SyncServiceBase
 
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
-  val exchange = "ProtoSubscriptionTest"
+  val exchange = TestDescriptors.requestHeader.id
   val exchangeMap: ServiceList.ServiceMap = Map(
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(exchange, TestDescriptors.requestHeader))
+    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {
@@ -60,7 +60,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends AsyncToSyncServiceAdapter[Envelope.RequestHeader] {
+  class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[Envelope.RequestHeader] {
 
     // list of entries
     private var entries = List.empty[Envelope.RequestHeader]
@@ -75,7 +75,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
     val descriptor = TestDescriptors.requestHeader
 
-    def get(req: Envelope.RequestHeader, env: RequestEnv) = {
+    override def get(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)
 
       val response = req.getKey match {
@@ -85,8 +85,10 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
       ServiceTypes.Response(Envelope.Status.OK, response)
     }
-    def post(req: Envelope.RequestHeader, env: RequestEnv) = put(req, env)
-    def put(req: Envelope.RequestHeader, env: RequestEnv) = {
+
+    override def post(req: Envelope.RequestHeader, env: RequestEnv) = put(req, env)
+
+    override def put(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)
 
       val status = entries.find(_.getKey == req.getKey) match {
@@ -101,7 +103,8 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
       ServiceTypes.Response(status, List(req))
     }
-    def delete(req: Envelope.RequestHeader, env: RequestEnv) = {
+
+    override def delete(req: Envelope.RequestHeader, env: RequestEnv) = {
       handleSub(req, env)
       val _entries = entries.partition(_.getKey == req.getKey)
       entries = _entries._2

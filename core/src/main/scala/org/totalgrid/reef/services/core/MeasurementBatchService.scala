@@ -20,31 +20,23 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, ProtoClient }
-
-import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
+import org.totalgrid.reef.proto.{ Descriptors }
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
+import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure, MultiResult }
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService }
+import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure }
 import org.totalgrid.reef.api.service.AsyncServiceBase
+import org.totalgrid.reef.api.scalaclient.ClientSessionExecutionPool
 
-import org.totalgrid.reef.services.framework.ServiceBehaviors._
-
-class MeasurementBatchService(amqp: AMQPProtoFactory)
-    extends AsyncServiceBase[MeasurementBatch] {
+class MeasurementBatchService(pool: ClientSessionExecutionPool) extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
-
-  override def deleteAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noDelete
-  override def getAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noGet
-  override def postAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = noPost
 
   override def putAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = {
 
@@ -67,7 +59,7 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
 
     }
 
-    borrow { client =>
+    pool.execute { client =>
       client.requestAsyncScatterGather(requests) { results =>
         val failures = results.flatMap {
           _ match {
@@ -84,24 +76,6 @@ class MeasurementBatchService(amqp: AMQPProtoFactory)
       }
     }
 
-  }
-
-  private def borrow[A](fun: ProtoClient => A): A = {
-
-    var client: Option[ProtoClient] = None
-
-    try {
-      val client = Some(amqp.getProtoClientSession(ReefServicesList, 5000))
-      fun(client.get)
-    } finally {
-      try {
-        client.foreach {
-          _.close()
-        }
-      } catch {
-        case ex: ReefServiceException => error(ex)
-      }
-    }
   }
 
   private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {

@@ -28,8 +28,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 
 class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long) extends ProtoServiceCoordinator with Logging {
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable) {
-    if (!ms.supportsTrim) return
-    reactor.repeat(period) {
+    if (ms.supportsTrim) reactor.repeat(period) {
       val trimmed = ms.trim(totalMeasurements)
       if (trimmed > 0) {
         reefLogger.debug("trimmed: {} measurements", trimmed)

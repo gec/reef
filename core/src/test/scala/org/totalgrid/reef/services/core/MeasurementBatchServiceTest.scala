@@ -21,23 +21,27 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.api.ReefServiceException
 import org.totalgrid.reef.api.ServiceTypes.Response
 import org.totalgrid.reef.util.EmptySyncVar
 
+import org.totalgrid.reef.proto.ReefServicesList
+
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.messaging.{ SessionExecutionPoolImpl, AMQPProtoFactory, AMQPProtoRegistry }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
+  import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
   class BatchFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
-    val batchService = new MeasurementBatchService(amqp)
+    val conn = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
+
+    val batchService = new MeasurementBatchService(new SessionExecutionPoolImpl(conn))
 
     def addFepAndMeasProc() {
       addFep("fep", List("benchmark"))

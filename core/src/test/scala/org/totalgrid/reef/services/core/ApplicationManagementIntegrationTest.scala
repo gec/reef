@@ -53,8 +53,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
 
     val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus)
 
-    amqp.bindService("app_config", applicationConfigService.respond)
-    amqp.bindService("process_status", processStatusService.respond)
+    amqp.bindService(applicationConfigService.descriptor.id, applicationConfigService.respond)
+    amqp.bindService(processStatusService.descriptor.id, processStatusService.respond)
 
     val client = amqp.getProtoClientSession(ReefServicesList, 5000)
 

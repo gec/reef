@@ -36,7 +36,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import java.util.UUID
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
-    extends BasicSyncModeledService[CommandProto, Command, CommandServiceModel]
+    extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.command
