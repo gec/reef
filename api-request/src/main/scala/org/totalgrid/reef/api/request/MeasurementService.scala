@@ -22,8 +22,8 @@ package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.api.{ ReefServiceException, ISubscription }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
+import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.api.javaclient.ISubscriptionResult
 
 /**
  * Non-exhaustive API for using the reef Measurement services. This API allows the client code to read current measurement
@@ -64,13 +64,14 @@ trait MeasurementService {
    * measurement change
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementsByPoints(points: java.util.List[Point], subscription: ISubscription[Measurement]): java.util.List[Measurement]
+  def subscribeToMeasurementsByPoints(points: java.util.List[Point]): ISubscriptionResult[java.util.List[Measurement], Measurement]
+
   /**
    * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
    * measurement change
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementsByNames(names: java.util.List[String], subscription: ISubscription[Measurement]): java.util.List[Measurement]
+  def subscribeToMeasurementsByNames(points: java.util.List[String]): ISubscriptionResult[java.util.List[Measurement], Measurement]
 
   /**
    * get a subset of the recent measurements for a point
@@ -104,7 +105,7 @@ trait MeasurementService {
    * @param limit - max number of measurements returned
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementHistory(point: Point, limit: Int, subscription: ISubscription[Measurement]): java.util.List[Measurement]
+  def subscribeToMeasurementHistory(point: Point, limit: Int): ISubscriptionResult[java.util.List[Measurement], Measurement]
 
   /**
    * get the most recent measurements for a point and setup a subscription for new measurements
@@ -112,7 +113,7 @@ trait MeasurementService {
    * @param limit - max number of measurements returned
    */
   @throws(classOf[ReefServiceException])
-  def getMeasurementHistory(point: Point, since: Long, limit: Int, subscription: ISubscription[Measurement]): java.util.List[Measurement]
+  def subscribeToMeasurementHistory(point: Point, since: Long, limit: Int): ISubscriptionResult[java.util.List[Measurement], Measurement]
 
   /**
    * publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -125,11 +126,4 @@ trait MeasurementService {
    */
   @throws(classOf[ReefServiceException])
   def publishMeasurements(measurements: java.util.List[Measurement])
-
-  /**
-   * Create a subscription object that can receive Measurements.
-   * @return "blank" subscription object, needs to have the subscription configured by passing it with another request
-   */
-  @throws(classOf[ReefServiceException])
-  def createMeasurementSubscription(callback: IEventAcceptor[Measurement]): ISubscription[Measurement]
 }

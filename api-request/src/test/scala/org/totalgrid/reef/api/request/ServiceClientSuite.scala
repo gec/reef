@@ -50,7 +50,6 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
   override def afterAll() {
     factory.disconnect(5000)
-
     client.save(file, title, desc)
   }
 

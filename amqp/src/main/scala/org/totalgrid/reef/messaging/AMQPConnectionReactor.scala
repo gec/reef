@@ -50,7 +50,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     listeners = listeners.enqueue(listener)
   }
 
-  def removeConnectionListener(listener: IConnectionListener) = this.synchronized {
+  def removeConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
     listeners = listeners.filterNot(_ == listener)
   }
 
@@ -68,10 +68,10 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     super.start()
 
     try {
-      connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
+      connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker)
     } catch {
       case se: ServiceIOException =>
-        info("Syncronous start failed, stopping actor")
+        reefLogger.error("Syncronous start failed, stopping actor", se)
         super.stop()
         throw se
     }
@@ -103,8 +103,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   // helper for starting a new connection chain
   private def reconnect() = execute { attemptConnection(1000) }
 
-  /// Makes a connection attempt. Retries if with exponential backoff
-  /// if the attempt fails
+  /// Makes a connection attempt. Retries if with exponential backoff if the attempt fails
   private def attemptConnection(retryms: Long): Unit = {
     try {
       broker.connect()
@@ -112,7 +111,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
       //listeners.foreach { _.opened() }
     } catch {
       case t: Throwable =>
-        error(t)
+        reefLogger.error("connection attempt failed: " + t.getMessage, t)
         // if we fail, retry, use exponential backoff
         delay(retryms) { attemptConnection(2 * retryms) }
     }
@@ -122,22 +121,22 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   private def createChannel(co: ChannelObserver) = {
     try {
       co.online(broker.newBrokerChannel())
-      debug("Added channel for type: " + co.getClass)
+      reefLogger.debug("Added channel for type: {}", co)
     } catch {
-      case ex: Exception => error("error configuring sessions: ", ex)
+      case ex: Exception => reefLogger.error("error configuring sessions: " + co, ex)
     }
   }
 
   /* --- Implement Broker Connection Listener --- */
 
   override def closed() {
-    info(" Connection closed. reconnecting:" + reconnectOnClose)
+    reefLogger.info("Connection closed. reconnecting: {}", reconnectOnClose)
     if (reconnectOnClose) this.delay(1000) { reconnect() }
     this.synchronized { listeners.foreach { _.closed() } }
   }
 
   override def opened() = {
-    info("Connection opened")
+    reefLogger.info("Connection opened")
     this.synchronized { listeners.foreach { _.opened() } }
   }
 

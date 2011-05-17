@@ -25,12 +25,11 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 
 import org.totalgrid.reef.api.ServiceTypes._
-import org.totalgrid.reef.api.{ Envelope, ISubscription, IRoutingKey, IDestination, AnyNode, AllMessages }
 import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.api._
 
 /**
  * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
- *
  */
 trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
@@ -138,7 +137,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
     add(sub)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A] = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }

@@ -50,9 +50,9 @@ class EntityService extends AsyncToSyncServiceAdapter[EntityProto] {
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     transaction {
-      info("Query: " + req)
+      reefLogger.info("Query: {}", req)
       val result = EQ.fullQuery(req);
-      info("Result: " + result)
+      reefLogger.info("Result: {}", result)
       Response(Envelope.Status.OK, result)
     }
   }

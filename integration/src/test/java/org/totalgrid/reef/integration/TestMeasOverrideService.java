@@ -24,11 +24,11 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
+import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
+import org.totalgrid.reef.api.request.MeasurementService;
 import org.totalgrid.reef.api.request.builders.MeasurementBatchRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementRequestBuilders;
-import org.totalgrid.reef.api.request.builders.MeasurementSnapshotRequestBuilders;
-import org.totalgrid.reef.proto.Events;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
@@ -36,10 +36,8 @@ import org.totalgrid.reef.proto.Processing.MeasOverride;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.totalgrid.reef.api.ISubscription;
 import org.totalgrid.reef.api.ReefServiceException;
 
-import org.totalgrid.reef.proto.Descriptors;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
@@ -55,21 +53,21 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         List<Point> ps = new LinkedList<Point>();
         ps.add(p);
 
-        Measurement originalValue = helpers.getMeasurementByPoint(p);
+        MeasurementService ms = helpers;
+
+        Measurement originalValue = ms.getMeasurementByPoint(p);
 
 		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>(true);
-		ISubscription<Measurement> sub = client.addSubscription(Descriptors.measurementSnapshot(), mock);
-		{
-			// delete override by point
-			client.delete(MeasurementOverrideRequestBuilders.getByPoint(p));
-		}
 
-		{
-            // subscribe to updates for this point
-            List<Measurement> rsp = helpers.getMeasurementsByPoints(ps, sub);
-            assertEquals(rsp.size(), 1);
-            sub.start();
-		}
+        // delete override by point
+        client.delete(MeasurementOverrideRequestBuilders.getByPoint(p));
+
+        // subscribe to updates for this point
+        ISubscriptionResult<List<Measurement>,Measurement> result = ms.subscribeToMeasurementsByPoints(ps);
+
+        assertEquals(result.getResult().size(), 1);
+        result.getSubscription().start(mock);
+
 
         long now = System.currentTimeMillis();
 

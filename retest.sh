@@ -1,6 +1,6 @@
 set -ex
 
-mvn install -DskipTests -P karaf
+mvn clean install -P karaf
 
 ./redeploy.sh
 

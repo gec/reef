@@ -21,10 +21,26 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ClientSessionPool, SubscriptionManagement, SyncOperations }
-import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException, ExpectationException }
+import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
 import org.totalgrid.reef.api.javaclient.{ ISession, ISessionConsumer, ISessionPool }
+import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
 
 trait ReefServiceBaseClass extends ClientSource {
+
+  def useSubscription[A, B <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
+    val subscription = session.addSubscription[B](klass)
+    try {
+      val result = block(subscription)
+      val ret = new SubscriptionResult(result, subscription)
+      //      onSubscriptionCreated(sub)
+      ret
+    } catch {
+      case x =>
+        subscription.cancel
+        throw x
+    }
+  }
 
   def reThrowExpectationException[R](why: => String)(f: => R): R = {
     try {

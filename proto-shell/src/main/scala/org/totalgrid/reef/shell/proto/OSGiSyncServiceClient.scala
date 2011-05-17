@@ -114,7 +114,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with SyncClientSession {
   def getBundleContext: BundleContext = bundleContext
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: (Event[A]) => Unit) = {
+  def addSubscription[A <: GeneratedMessage](klass: Class[_]) = {
     throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
   }
 

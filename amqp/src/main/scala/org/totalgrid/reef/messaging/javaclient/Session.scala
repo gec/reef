@@ -22,16 +22,11 @@ package org.totalgrid.reef.messaging.javaclient
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv, ITypeDescriptor, ISubscription, ServiceTypes }
-import org.totalgrid.reef.api.javaclient.{ ISession, IEventAcceptor, IFuture, IResult, IResultAcceptor }
-
-import ServiceTypes._
-
-import org.totalgrid.reef.messaging.ProtoClient
-
 import _root_.scala.collection.JavaConversions._
-import org.totalgrid.reef.api._
-import scalaclient.ClientSession
+import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.ServiceTypes.MultiResult
+import org.totalgrid.reef.api.javaclient._
+import org.totalgrid.reef.api.{ ITypeDescriptor, RequestEnv, ServiceHandlerHeaders, Envelope }
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists
@@ -45,26 +40,26 @@ class Session(client: ClientSession) extends ISession {
   def post[A <: AnyRef](payload: A): java.util.List[A] = client.postOrThrow(payload)
   def put[A <: AnyRef](payload: A): java.util.List[A] = client.putOrThrow(payload)
 
-  private implicit def convertEnv(hdr: IHeaderInfo): RequestEnv = {
+  private implicit def convertEnv[A](sub: ISubscription[A]): RequestEnv = {
     val headers = new ServiceHandlerHeaders(new RequestEnv)
-    hdr.setHeaders(headers)
+    headers.setSubscribeQueue(sub.getId)
     headers.env
   }
 
-  def get[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.getOrThrow(payload, hdr)
-  def delete[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.deleteOrThrow(payload, hdr)
-  def put[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.putOrThrow(payload, hdr)
-  def post[A <: AnyRef](payload: A, hdr: IHeaderInfo): java.util.List[A] = client.postOrThrow(payload, hdr)
+  def get[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.getOrThrow(payload, hdr)
+  def delete[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.deleteOrThrow(payload, hdr)
+  def put[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.putOrThrow(payload, hdr)
+  def post[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.postOrThrow(payload, hdr)
 
   def getOne[A <: AnyRef](payload: A): A = client.getOneOrThrow(payload)
   def deleteOne[A <: AnyRef](payload: A): A = client.deleteOneOrThrow(payload)
   def putOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
   def postOne[A <: AnyRef](payload: A): A = client.postOneOrThrow(payload)
 
-  def getOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.getOneOrThrow(payload, hdr)
-  def deleteOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.deleteOneOrThrow(payload, hdr)
-  def putOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.putOneOrThrow(payload, hdr)
-  def postOne[A <: AnyRef](payload: A, hdr: IHeaderInfo): A = client.postOneOrThrow(payload, hdr)
+  def getOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.getOneOrThrow(payload, hdr)
+  def deleteOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.deleteOneOrThrow(payload, hdr)
+  def putOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.putOneOrThrow(payload, hdr)
+  def postOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.postOneOrThrow(payload, hdr)
 
   implicit def convert[A](fun: () => MultiResult[A]): IFuture[A] = new Future(fun)
 
@@ -73,10 +68,10 @@ class Session(client: ClientSession) extends ISession {
   def postFuture[A <: AnyRef](payload: A): IFuture[A] = client.postWithFuture(payload)
   def putFuture[A <: AnyRef](payload: A): IFuture[A] = client.putWithFuture(payload)
 
-  def getFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.getWithFuture(payload, hdr)
-  def deleteFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.deleteWithFuture(payload, hdr)
-  def postFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.postWithFuture(payload, hdr)
-  def putFuture[A <: AnyRef](payload: A, hdr: IHeaderInfo): IFuture[A] = client.putWithFuture(payload, hdr)
+  def getFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.getWithFuture(payload, hdr)
+  def deleteFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.deleteWithFuture(payload, hdr)
+  def postFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.postWithFuture(payload, hdr)
+  def putFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.putWithFuture(payload, hdr)
 
   /* -------- Asynchronous API ------ */
 
@@ -88,8 +83,16 @@ class Session(client: ClientSession) extends ISession {
   def postAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPost(payload)(callback)
   def putAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPut(payload)(callback)
 
+  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A]): ISubscription[A] = {
+    val sub = client.addSubscription[A](pd.getKlass)
+    new SubscriptionWrapper(sub)
+  }
+
   def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
-    client.addSubscription(pd.getKlass, ea.onEvent)
+    val sub = client.addSubscription[A](pd.getKlass)
+    val wrapped = new SubscriptionWrapper(sub)
+    wrapped.start(ea)
+    wrapped
   }
 
   override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)

@@ -22,9 +22,7 @@ package org.totalgrid.reef.api.request.builders
  */
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.api.{ ExpectationException, ISubscription }
-import org.totalgrid.reef.api.ISubscription.convertISubToRequestEnv
-import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, Measurement, MeasurementSnapshot }
+import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 
 object MeasurementSnapshotRequestBuilders {
   def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build

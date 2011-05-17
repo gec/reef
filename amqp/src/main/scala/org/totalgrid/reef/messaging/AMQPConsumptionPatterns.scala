@@ -78,11 +78,19 @@ object QueuePatterns {
   }
 
   /**
-   * Create an exculsive private queue on the message broker, it will need to be bound later.
+   * Create an exclusive private queue on the message broker, that has a pre-configured event acceptor
    */
   def getPrivateUnboundQueue(broker: BrokerChannel, mc: MessageConsumer): String = {
     val queue = broker.declareQueue("*", true, true)
     broker.listen(queue, mc)
+    queue
+  }
+
+  /**
+   * Create an exclusive private queue on the message broker with no event acceptor
+   */
+  def getLateBoundPrivateUnboundQueue(broker: BrokerChannel): String = {
+    val queue = broker.declareQueue("*", true, true)
     queue
   }
 

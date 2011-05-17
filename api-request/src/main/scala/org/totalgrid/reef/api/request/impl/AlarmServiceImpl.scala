@@ -20,15 +20,13 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.ISubscription
 import org.totalgrid.reef.api.request.{ AlarmService }
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.request.builders.{ AlarmListRequestBuilders, AlarmRequestBuilders }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   def getAlarm(uid: String) = {
@@ -40,8 +38,12 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   def getActiveAlarms(limit: Int) = {
     ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)).getAlarmsList }
   }
-  def getActiveAlarms(limit: Int, sub: ISubscription[Alarm]) = {
-    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub).getAlarmsList }
+  def subscribeToActiveAlarms(limit: Int) = {
+    ops { session =>
+      useSubscription(session, Descriptors.alarm.getKlass) { sub =>
+        session.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub).getAlarmsList
+      }
+    }
   }
 
   def getActiveAlarms(types: java.util.List[String], limit: Int) = {
@@ -60,7 +62,4 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
     ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build) }
   }
 
-  def createAlarmSubscription(callback: IEventAcceptor[Alarm]) = {
-    ops { _.addSubscription(Descriptors.alarm.getKlass, callback.onEvent) }
-  }
 }

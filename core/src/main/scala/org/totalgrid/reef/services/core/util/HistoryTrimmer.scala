@@ -31,7 +31,9 @@ class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long
     if (!ms.supportsTrim) return
     reactor.repeat(period) {
       val trimmed = ms.trim(totalMeasurements)
-      info("Trimmed: " + trimmed + " measurements.")
+      if (trimmed > 0) {
+        reefLogger.debug("trimmed: {} measurements", trimmed)
+      }
     }
   }
 }

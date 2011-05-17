@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, ISubscription }
+import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, Subscription }
 import ServiceTypes.Event
 
 /**
@@ -40,6 +40,6 @@ trait ClientSessionFactory {
   /**
    * the factory must create subscription objects of the appropriate type even if its a "stream type"
    */
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A]
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A]
 
 }

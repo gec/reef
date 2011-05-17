@@ -21,16 +21,13 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.api.ISubscription;
+import org.totalgrid.reef.api.javaclient.ISubscription;
 import org.totalgrid.reef.api.ServiceTypes;
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.request.CommandService;
-import org.totalgrid.reef.api.request.builders.MeasurementSnapshotRequestBuilders;
-import org.totalgrid.reef.api.request.builders.UserCommandRequestBuilders;
+import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
+import org.totalgrid.reef.api.request.MeasurementService;
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
-import org.totalgrid.reef.proto.Descriptors;
-import org.totalgrid.reef.proto.Commands;
 import org.totalgrid.reef.api.Envelope;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
@@ -38,7 +35,6 @@ import org.totalgrid.reef.proto.Model;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -48,71 +44,27 @@ import static org.junit.Assert.fail;
 public class TestEndToEndIntegration extends JavaBridgeTestBase {
 
     /**
-	 * The "EXECUTING" status just tells us that the command was received and allowed The response
-	 * from the field device / endpoint comes back via an asynchronous subscription
-	 */
-	@Test
-	public void testSimulatorHandlingCommands() throws InterruptedException, ReefServiceException {
-
-        CommandService cs = helpers;
-
-		Model.Command cmd = cs.getCommands().get(0);
-        cs.clearCommandLocks();
-
-		Commands.CommandAccess accessResponse = cs.createCommandExecutionLock(cmd);
-		assertTrue(accessResponse.getExpireTime() > 0);
-
-		// create infrastructure to execute a control with subscription to
-		// result
-
-        MockEventAcceptor<Commands.UserCommandRequest> mock = new MockEventAcceptor<Commands.UserCommandRequest>();
-		Commands.UserCommandRequest request = UserCommandRequestBuilders.executeControl(cmd);
-		ISubscription sub = client.addSubscription(Descriptors.userCommandRequest(), mock);
-		Commands.UserCommandRequest result = client.putOne(request, sub);
-        cs.deleteCommandLock(accessResponse);
-
-        assertEquals(Commands.CommandStatus.SUCCESS, result.getStatus());
-
-        sub.start();
-
-		// We get 2 events here. Since the subscription is bound before the request is made,
-		// we see the ADDED/EXECUTING and then the MODIFIED/SUCCESS
-		{
-			ServiceTypes.Event<Commands.UserCommandRequest> rsp = mock.pop(5000);
-			assertEquals(Envelope.Event.ADDED, rsp.getEvent());
-			assertEquals(Commands.CommandStatus.EXECUTING, rsp.getResult().getStatus());
-		}
-
-        /*
-        {
-			ServiceTypes.Event<Commands.UserCommandRequest> rsp = mock.pop(5000);
-			assertEquals(Envelope.Event.MODIFIED, rsp.getEvent());
-			assertEquals(Commands.CommandStatus.SUCCESS, rsp.getResult().getStatus());
-		}
-		*/
-
-		// cancel the subscription
-		sub.cancel();
-	}
-
-    /**
 	 * Tests subscribing to the measurement snapshot service via a get operation
 	 */
 	@Test
 	public void testSimulatorProducingMeasurements() throws java.lang.InterruptedException, ReefServiceException {
 
+        MeasurementService ms = helpers;
+
 		// mock object that will receive queue and measurement subscription
 		MockEventAcceptor<Measurements.Measurement> mock = new MockEventAcceptor<Measurements.Measurement>();
 
-		ISubscription sub = helpers.createMeasurementSubscription(mock);
 
         List<Model.Point> points = SampleRequests.getAllPoints(client);
 
-        List<Measurements.Measurement> response = helpers.getMeasurementsByPoints(points, sub);
+        ISubscriptionResult<List<Measurements.Measurement>, Measurements.Measurement> result = ms.subscribeToMeasurementsByPoints(points);
+
+        List<Measurements.Measurement> response = result.getResult();
+        ISubscription<Measurements.Measurement> sub = result.getSubscription();
 
         assertEquals(response.size(), points.size());
 
-        sub.start();
+        sub.start(mock);
 
 		// check that at least one measurement has been updated in the queue
 		ServiceTypes.Event<Measurements.Measurement> m = mock.pop(10000);

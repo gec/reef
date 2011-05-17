@@ -27,9 +27,9 @@ import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import _root_.scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.{ ServiceList, IDestination, Envelope, RequestEnv, ISubscription }
-import org.totalgrid.reef.api.ServiceTypes.{ Event, MultiResult, Response }
+import org.totalgrid.reef.api.ServiceTypes.{ MultiResult, Response }
 import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api._
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
@@ -73,14 +73,14 @@ class ProtoClient(
     correlator.send(request, info.exchange, dest.key, handleResponse)
   }
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_], ea: Event[A] => Unit): ISubscription[A] = {
+  def addSubscription[A <: GeneratedMessage](klass: Class[_]): Subscription[A] = {
 
     // TODO: lookup by subscription klass instead of serviceKlass
     val info = lookup.getServiceInfo(klass)
     val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => A]
     val subIsStreamType = info.subIsStreamType
 
-    factory.prepareSubscription(deser, subIsStreamType, ea)
+    factory.prepareSubscription(deser, subIsStreamType)
   }
 
   def close() = correlator.close

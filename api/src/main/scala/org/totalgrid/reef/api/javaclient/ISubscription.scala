@@ -18,19 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.scalaclient
-
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.Subscription
+package org.totalgrid.reef.api.javaclient
 
 /**
- * thick interface for creating subscriptions objects.
+ * A subscription object provides header info and can also be canceled. It carries the message type
+ * primarily to make message signatures more expressive.
+ * TODO: add ISubscriptions to scala apis
  */
-trait SubscriptionManagement {
+trait ISubscription[SubscriptionMessageType] {
 
-  /**
-   * creates a subscription suitable for consuming a single type of measurement
-   */
-  def addSubscription[A <: GeneratedMessage](klass: Class[_]): Subscription[A]
+  def cancel(): Unit
 
+  def getId(): String
+
+  def start(callback: IEventAcceptor[SubscriptionMessageType]): Unit
+
+}
+
+trait ISubscriptionResult[ResultType, SubscriptionType] {
+  def getResult: ResultType
+  def getSubscription: ISubscription[SubscriptionType]
 }

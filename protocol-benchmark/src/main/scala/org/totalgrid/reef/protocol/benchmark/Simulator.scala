@@ -80,8 +80,9 @@ class Simulator(name: String, publisher: IPublisher, config: SimMapping.Simulato
       }
     }
     if (batch.getMeasCount > 0) {
-      debug { name + " publishing batch of size: " + batch.getMeasCount }
+      info { name + " publishing batch of size: " + batch.getMeasCount }
       publisher.publish(batch.build)
+      info { name + " published batch" }
     }
   }
 

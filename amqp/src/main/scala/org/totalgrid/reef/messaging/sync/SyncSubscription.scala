@@ -18,27 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+package org.totalgrid.reef.messaging.sync
+
+import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.messaging.{ QueuePatterns, MessageConsumer, BrokerChannel }
 
 /**
- * A subscription object provides header info and can also be canceled. It carries the message type
- * primarily to make message signatures more expressive.
- * TODO: add ISubscriptions to scala apis
+ * synchronous subscription object, allows canceling and a delayed starting
  */
-trait ISubscription[SubscriptionMessageType] extends IHeaderInfo {
-  def cancel()
+class SyncSubscription[A](channel: BrokerChannel, consumerCreator: (Event[A] => Unit) => MessageConsumer) extends Subscription[A] {
 
-  def start()
-}
+  private val queueName = QueuePatterns.getLateBoundPrivateUnboundQueue(channel)
 
-object ISubscription {
-  /**
-   * convert a ISubscription to the RequestEnv used in scala SyncOps
-   * TODO: rationalize RequestEnv and ISubscription interfaces
-   */
-  implicit def convertISubToRequestEnv(sub: ISubscription[_]): RequestEnv = {
-    val serviceHeaders = new ServiceHandlerHeaders()
-    sub.setHeaders(serviceHeaders)
-    serviceHeaders.env
+  override def id() = queueName
+  override def cancel() = channel.close()
+
+  def start(callback: Event[A] => Unit): Unit = {
+
+    channel.listen(queueName, consumerCreator(callback))
+
+    channel.start()
   }
+
 }

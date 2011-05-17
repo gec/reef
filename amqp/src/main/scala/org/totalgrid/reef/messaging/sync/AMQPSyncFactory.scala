@@ -24,20 +24,8 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging._
 
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, ISubscription }
 import org.totalgrid.reef.api.ServiceTypes.Event
-
-/**
- * synchronous subscription object, allows canceling
- */
-class SyncSubscription[A](channel: BrokerChannel, consumer: MessageConsumer) extends ISubscription[A] {
-  private val queue = QueuePatterns.getPrivateUnboundQueue(channel, consumer)
-
-  override def setHeaders(headers: ServiceHandlerHeaders) =
-    headers.setSubscribeQueue(queue)
-  override def cancel() = channel.close()
-  override def start() = channel.start()
-}
+import org.totalgrid.reef.api.Subscription
 
 trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
@@ -51,14 +39,15 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
     new ServiceResponseCorrelator(timeoutms, reqReply)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean, callback: Event[A] => Unit): ISubscription[A] = {
+  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
     val channel = getChannel()
 
-    val consumer = if (subIsStreamType)
-      AMQPMessageConsumers.makeConvertingEventStreamConsumer(deserialize, callback)
-    else
-      AMQPMessageConsumers.makeEventConsumer(deserialize, callback)
-
+    val consumer = { a: (Event[A] => Unit) =>
+      if (subIsStreamType)
+        AMQPMessageConsumers.makeConvertingEventStreamConsumer(deserialize, a)
+      else
+        AMQPMessageConsumers.makeEventConsumer(deserialize, a)
+    }
     new SyncSubscription[A](channel, consumer)
   }
 }

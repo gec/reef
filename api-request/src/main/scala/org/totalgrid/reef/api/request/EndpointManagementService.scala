@@ -22,8 +22,8 @@ package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
-import org.totalgrid.reef.api.{ ISubscription, ReefServiceException }
+import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.api.javaclient.ISubscriptionResult
 
 /**
  * Communication Endpoints are the "field devices" that reef communicates with using legacy protocols
@@ -93,7 +93,7 @@ trait EndpointManagementService {
    * @return list of all endpoint connection objects
    */
   @throws(classOf[ReefServiceException])
-  def getAllEndpointConnections(sub: ISubscription[CommEndpointConnection]): java.util.List[CommEndpointConnection]
+  def subscribeToAllEndpointConnections(): ISubscriptionResult[java.util.List[CommEndpointConnection], CommEndpointConnection]
 
   /**
    * Get current endpoint connection state for an endpoint
@@ -103,10 +103,4 @@ trait EndpointManagementService {
   @throws(classOf[ReefServiceException])
   def getEndpointConnection(endpointUuid: ReefUUID): CommEndpointConnection
 
-  /**
-   * Create a subscription object that can receive CommEndpointConnection.
-   * @return "blank" subscription object, needs to have the subscription configured by passing it with another request
-   */
-  @throws(classOf[ReefServiceException])
-  def creatEndpointConnectionSubscription(callback: IEventAcceptor[CommEndpointConnection]): ISubscription[CommEndpointConnection]
 }

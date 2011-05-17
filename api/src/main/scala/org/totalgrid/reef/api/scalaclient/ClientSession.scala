@@ -55,7 +55,7 @@ trait ClientOperations
     with DefaultHeaders {
 
   /**
-   *    Implements a synchronous request in terms of a future
+   * Implements a synchronous request in terms of a future
    */
   override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): MultiResult[A] = requestFuture(verb, payload, env, dest)()
 

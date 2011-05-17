@@ -112,21 +112,6 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
       }
     }
   }
-  test("Subscribe class inference") {
-    setupTest(true) { (client, amqp) =>
-
-      val fooSubFunc = (evt: Envelope.Event, foo: Envelope.ServiceNotification) => {}
-      val fooSub = client.addSubscription(fooSubFunc)
-
-      val headerSubFunc = (evt: Envelope.Event, header: Envelope.RequestHeader) => {}
-      val headerSub = client.addSubscription(headerSubFunc)
-
-      intercept[UnknownServiceException] {
-        val notificationFunc = (evt: Envelope.Event, header: Envelope.ServiceResponse) => {}
-        client.addSubscription(notificationFunc)
-      }
-    }
-  }
 
   test("Client throws exception when closed") {
     setupTest(true) { (client, amqp) =>
