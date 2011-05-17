@@ -175,9 +175,16 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
+    val types = "Point" :: (pointT match {
+      case c: equipment.Analog => "Analog"
+      case c: equipment.Status => "Status"
+      case c: equipment.Counter => "Counter"
+      case _ => throw new LoadingException("Bad point type")
+    }) :: getTypeList(pointT.getType)
+
     val name = childPrefix + pointT.getName
     trace("processPointType: " + name)
-    val pointEntity = toEntityType(name, "Point" :: getTypeList(pointT.getType))
+    val pointEntity = toEntityType(name, types)
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)
     client.putOrThrow(point)
