@@ -23,9 +23,6 @@ package org.totalgrid.reef.api.scalaclient
 import org.totalgrid.reef.api.{ Envelope, StatusCodes }
 import org.totalgrid.reef.api.ServiceTypes._
 
-/**
- *
- */
 object ProtoConversions {
 
   implicit def convertResponseToResult[A](response: Option[Response[A]]): MultiResult[A] = response match {

@@ -52,7 +52,7 @@ object ServiceTypes {
     override def toString: String = super.toString + " " + status + " message: " + error
 
     def toException: ReefServiceException = status match {
-      case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
+      case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException(error)
       case Envelope.Status.UNAUTHORIZED => new UnauthorizedException(error)
       case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
       case _ => new BadRequestException(error, status)

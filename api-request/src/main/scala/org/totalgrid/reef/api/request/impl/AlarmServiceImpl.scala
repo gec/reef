@@ -26,7 +26,6 @@ import org.totalgrid.reef.api.request.builders.{ AlarmListRequestBuilders, Alarm
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.Subscription.convertSubscriptionToRequestEnv
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   def getAlarm(uid: String) = {

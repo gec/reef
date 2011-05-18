@@ -120,8 +120,7 @@ object AMQPMessageConsumers extends Logging {
       fun
     } catch {
       case e: Exception =>
-        error(e)
-        error(e.getStackTraceString)
+        reefLogger.error("safe execute failed: " + e.getMessage, e)
     }
   }
 }

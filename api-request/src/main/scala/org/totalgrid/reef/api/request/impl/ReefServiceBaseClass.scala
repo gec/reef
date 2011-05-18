@@ -24,23 +24,26 @@ import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagemen
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
 import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
-import scala.Some
-import org.totalgrid.reef.api.javaclient.{ISubscription, ISession, ISessionConsumer, SessionExecutionPool}
+import org.totalgrid.reef.api.javaclient.{ ISubscription, ISession, ISessionConsumer, SessionExecutionPool }
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.{ NoSuchElementException, Iterator }
 
 // TODO rename BaseReefService or similar, class is redundant.
 trait ReefServiceBaseClass extends ClientSource {
 
-  def subscriptionListener: Option[SubscriptionListener] = None
+  private val listeners: CopyOnWriteArrayList[SubscriptionListener] = new CopyOnWriteArrayList[SubscriptionListener]()
 
-  def useSubscription[A, B <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
-    val subscription: Subscription[B] = session.addSubscription[B](klass)
+  def addListener(listener: SubscriptionListener): Boolean =
+    {
+      listeners.add(listener)
+    }
+
+  def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S) = {
+    val subscription: Subscription[R] = session.addSubscription[R](klass)
     try {
       val result = block(subscription)
       val subscriptionResult = new SubscriptionResult(result, subscription)
-      subscriptionListener match {
-        case Some(listener) => listener.onNewSubscription(subscriptionResult.getSubscription)
-        case None => {}
-      }
+      notifyListeners(subscriptionResult)
       subscriptionResult
     } catch {
       case x =>
@@ -49,11 +52,25 @@ trait ReefServiceBaseClass extends ClientSource {
     }
   }
 
-  def reThrowExpectationException[R](why: => String)(f: => R): R = {
+  protected def reThrowExpectationException[R](why: => String)(f: => R): R = {
     try {
       f
     } catch {
       case e: ExpectationException => throw new ExpectationException(why)
+    }
+  }
+
+  private def notifyListeners[S, R <: GeneratedMessage](subscriptionResult: SubscriptionResult[S, R]) {
+    val iterator: Iterator[SubscriptionListener] = listeners.iterator()
+    while (iterator.hasNext) {
+      try {
+        val listener: SubscriptionListener = iterator.next()
+        if (listener != null) {
+          listener.onNewSubscription(subscriptionResult.getSubscription)
+        }
+      } catch {
+        case e: NoSuchElementException => {}
+      }
     }
   }
 }

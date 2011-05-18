@@ -41,7 +41,7 @@ class UnknownServiceException(msg: String) extends ReefServiceException(msg, Env
 class ServiceIOException(msg: String) extends ReefServiceException(msg, Envelope.Status.LOCAL_ERROR) {
 }
 
-class ResponseTimeoutException extends ReefServiceException("Response timed out", Envelope.Status.RESPONSE_TIMEOUT) {
+class ResponseTimeoutException(msg: String) extends ReefServiceException("Response timed out: " + msg, Envelope.Status.RESPONSE_TIMEOUT) {
 }
 
 abstract class ReplyException(msg: String, status: Envelope.Status) extends ReefServiceException(msg, status)

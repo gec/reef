@@ -22,8 +22,7 @@ package org.totalgrid.reef.messaging
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.{ ServiceList, ServiceTypes, Subscription }
-import ServiceTypes.Event
+import org.totalgrid.reef.api.{ ServiceList, Subscription }
 
 /**
  * factory trait that defines what we need to construct ClientSessions and subscriptions
