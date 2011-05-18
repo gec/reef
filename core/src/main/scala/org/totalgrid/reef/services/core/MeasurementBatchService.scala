@@ -62,14 +62,11 @@ class MeasurementBatchService(pool: ClientSessionPool)
 
     }
 
-    borrow { client =>
-      client.requestAsyncScatterGather(requests) { results =>
-        val failures = results.flatMap {
-          _ match {
-            case x: Failure => Some(x)
-            case _ => None
-          }
-        }
+    val promises = pool.borrow { client =>
+      requests.map { req =>
+        client.request(req.verb, req.payload, req.env, req.destination)
+      }
+    }
 
     AsyncScatterGather.collect[MeasurementBatch](promises) { results =>
       val failures = results.filterNot(_.success)

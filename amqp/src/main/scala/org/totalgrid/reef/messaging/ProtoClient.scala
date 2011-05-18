@@ -69,7 +69,7 @@ class ProtoClient(
       callback(Response.convert(response))
     }
 
-    correlator.send(serviceRequest, info.exchange, dest.key, handleResponse)
+    correlator.send(serviceRequest, info.descriptor.id, dest.key, handleResponse)
   }
 
   final override def addSubscription[A](klass: Class[_]): Subscription[A] = {

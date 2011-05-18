@@ -92,7 +92,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
     val rsp = ReefServicesList.getServiceOption(klass) match {
       case Some(info) =>
-        new ServiceDispatcher[A](getService[A](info.exchange)).request(verb, payload, env.merge(new RequestEnv))
+        new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
       case None =>
         Response(Envelope.Status.LOCAL_ERROR, error = "Proto not registered: " + klass)
     }

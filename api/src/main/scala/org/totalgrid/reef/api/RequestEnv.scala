@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.api
 
+import javaclient.IServiceHeaders
+
 /**
  * This class wraps the headers we send/receive in the service envelope with helper
  * functions to make them look like a map. It is not intended that the user code directly
@@ -81,11 +83,11 @@ class RequestEnv(var headers: Map[String, List[String]]) {
 /**
  * helper to get/set headers on a request
  */
-class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
+class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) extends IServiceHeaders {
 
   import org.totalgrid.reef.util.JavaInterop.notNull
 
-  def subQueue = env.getString("SUB_QUEUE_NAME")
+  def subQueue: Option[String] = env.getString("SUB_QUEUE_NAME")
   def authTokens: List[String] = env.getList("AUTH_TOKEN")
 
   def setSubscribeQueue(queueName: String) {
@@ -94,9 +96,11 @@ class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) {
   def addAuthToken(token: String) {
     env.addHeader("AUTH_TOKEN", notNull(token, "token"))
   }
-  def setAuthToken(token: String) {
+
+  final override def setAuthToken(token: String) {
     env.setHeader("AUTH_TOKEN", notNull(token, "token"))
   }
+
   def setAuthTokens(ss: List[String]) {
     env.clearHeader("AUTH_TOKEN")
     ss.foreach(env.addHeader("AUTH_TOKEN", _))

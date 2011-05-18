@@ -47,7 +47,7 @@ public interface ISession {
 
   <A> ISubscription<A> addSubscription(ITypeDescriptor<A> descriptor, IEventAcceptor<A> acceptor) throws ServiceIOException;
 
-  ServiceHandlerHeaders getDefaultEnv();
+  IServiceHeaders getDefaultHeaders();
 
   void close();
 

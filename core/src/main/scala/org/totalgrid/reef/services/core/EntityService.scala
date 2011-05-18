@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }
 
 import org.totalgrid.reef.api.scalaclient.Response
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.services.framework.SquerylModel
 
 class EntityService extends SyncServiceBase[EntityProto] {

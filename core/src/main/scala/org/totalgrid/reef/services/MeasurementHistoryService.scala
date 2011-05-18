@@ -29,7 +29,7 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException }
 import org.totalgrid.reef.api.scalaclient.Response
-import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.service.SyncServiceBase
 
 class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementHistory] {
 

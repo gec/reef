@@ -93,7 +93,7 @@ public class JavaBridgeTestBase {
 		client = connection.newSession();
         ISessionPool pool = connection.newSessionPool();
         String authToken = new AuthTokenServicePooledWrapper(pool).createNewAuthorizationToken("core","core");
-        if (autoLogon) client.getDefaultEnv().setAuthToken(authToken);
+        if (autoLogon) client.getDefaultHeaders().setAuthToken(authToken);
         helpers = new AtollService(pool, authToken);
 	}
 

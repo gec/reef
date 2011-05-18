@@ -66,7 +66,7 @@ public class SampleRequests {
 		AuthToken t = client.put(AuthTokenRequestBuilders.requestAuthToken(user, password)).await().expectOne();
 		if (addAuthTokenForAllClients) {
 			// add the auth token to the list of auth tokens we send with every request
-			client.getDefaultEnv().setAuthToken(t.getToken());
+			client.getDefaultHeaders().setAuthToken(t.getToken());
 		}
 	}
 

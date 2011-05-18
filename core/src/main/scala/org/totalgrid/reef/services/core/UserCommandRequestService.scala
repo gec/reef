@@ -26,16 +26,14 @@ import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
-
+import org.totalgrid.reef.api.service.ServiceTypeIs
 import org.totalgrid.reef.api.scalaclient.Response
-import org.totalgrid.reef.api.scalaclient.{ Failure, SingleSuccess }
+import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
 
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
-import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
-import org.totalgrid.reef.models.{ Command, UserCommandModel, ApplicationSchema }
+import org.totalgrid.reef.models.{ Command, UserCommandModel }
 
 class UserCommandRequestService(
   protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionPool)

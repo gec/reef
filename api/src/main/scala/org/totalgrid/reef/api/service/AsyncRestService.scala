@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.service
 
 import org.totalgrid.reef.api.RequestEnv
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 
 trait HasAsyncRestGet extends HasServiceType {
   def getAsync(req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])

@@ -59,7 +59,7 @@ class Session(val client: ClientSession) extends ISession {
     wrapped
   }
 
-  final override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)
+  final override def getDefaultHeaders = new ServiceHandlerHeaders(client.getDefaultHeaders)
 
   final override def close() = client.close()
 }

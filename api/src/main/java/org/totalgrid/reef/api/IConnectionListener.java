@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,20 +18,23 @@ package org.totalgrid.reef.api
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package org.totalgrid.reef.api;
+
 /**
  * It is important to use an IConnectionListener to be informed of disconnections from the message broker (expected
  * or otherwise). Callbacks come in from the messaging thread so it is important not to block the callbacks.
  */
-trait IConectionListener {
+public interface IConnectionListener {
   /**
    * called when we lose connection to the broker. This means all subscriptions spawned from the IConnection during
    * this time are invalid and need to be thrown away.
    */
-  def closed()
+  void closed();
   /**
    * called when we have established a connection to the message broker, we can now provide ISessions
    */
-  def opened()
+  void opened();
 
   // TODO: write tests to figure out what can and can't be done inside IConnectionListener callbacks reef_techdebt-7
   // TODO: add exception callback for ISubscription and possibly ISession

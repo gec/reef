@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api;
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,15 +18,10 @@ package org.totalgrid.reef.api;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.javaclient;
 
-/**
- * Describes how to (de)serialize a type and it's class
- */
-public interface ITypeDescriptor<A> {
+public interface IServiceHeaders {
 
-  byte[] serialize(A value);
-  A deserialize(byte[] bytes);
-  Class<A> getKlass();
-  String id();
+  void setAuthToken(String token);
 
 }
