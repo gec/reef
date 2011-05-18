@@ -68,6 +68,8 @@ Primarily a stability and usability release, very limited new functionality.
 * Other bugs mentioned in previous sections: REEF-43, REEF-10
 * Alarm retrievals and updates by UID work as expected now
 * Better loader warnings and behavior when config files are missing (includes REEF-46)
+* Fixed "Content not allowed in prolog" XML loading issue REEF-61
+* Multiple Controls with same index but different dnp3Options can be loaded by loader REEF-65
 
 Version 0.2.3-dev
 ==============
