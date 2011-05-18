@@ -77,8 +77,8 @@ class LoadCache {
 
       info("POINTS SUMMARY:  ")
       info("   Points found in equipmentModel and communicationsModel: " + pComplete.length)
-      warnIf("   Points found in equipmentModel only:      " + pComOnly.length, pComOnly.length > 0)
-      warnIf("   Points found in communicationsModel only: " + pEquOnly.length, pComOnly.length > 0)
+      warnIf("   Points found in equipmentModel only:      " + pEquOnly.length, pEquOnly.nonEmpty)
+      warnIf("   Points found in communicationsModel only: " + pComOnly.length, pComOnly.nonEmpty)
       if (pMultiple.length > 0)
         warn("   Points found in both models more than once: " + pMultiple.length)
       if (pNone.length > 0)
@@ -109,8 +109,8 @@ class LoadCache {
 
       info("CONTROLS SUMMARY:  ")
       info("   Controls found in equipmentModel and communicationsModel: " + cComplete.length)
-      info("   Controls found in equipmentModel only:      " + cEquOnly.length)
-      info("   Controls found in communicationsModel only: " + cComOnly.length)
+      warnIf("   Controls found in equipmentModel only:      " + cEquOnly.length, cEquOnly.nonEmpty)
+      warnIf("   Controls found in communicationsModel only: " + cComOnly.length, cComOnly.nonEmpty)
       if (cMultiple.length > 0)
         warn("   Controls found in one model more than once: " + cMultiple.length)
       if (cNone.length > 0)

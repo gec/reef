@@ -20,9 +20,8 @@
  */
 package org.totalgrid.reef.util
 
-import java.io.ByteArrayInputStream
 import javax.xml.bind.{ JAXBContext, Marshaller }
-import java.io.{ FileWriter, FileReader, StringWriter }
+import java.io._
 
 object XMLHelper {
 
@@ -35,10 +34,10 @@ object XMLHelper {
     um.unmarshal(is).asInstanceOf[A]
   }
 
-  def read[A](reader: FileReader, klass: Class[A]): A = {
+  def read[A](file: File, klass: Class[A]): A = {
     val ctx = JAXBContext.newInstance(klass)
     val um = ctx.createUnmarshaller
-    um.unmarshal(reader).asInstanceOf[A]
+    um.unmarshal(file).asInstanceOf[A]
   }
 
   def writeToFile[A](value: A, klass: Class[A], filewriter: FileWriter): Unit = {
