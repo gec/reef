@@ -20,7 +20,10 @@
  */
 package org.totalgrid.reef.api;
 
-
+/**
+ *  A blanket exception that gets rethrown when an internal exception happens
+ *  (i.e. an exception in the particular messaging binding we're using)
+ */
 public class InternalClientError extends ReefServiceException {
 
   public InternalClientError(String msg, Exception cause) {

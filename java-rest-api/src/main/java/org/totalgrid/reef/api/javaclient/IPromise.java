@@ -30,6 +30,21 @@ public interface IPromise<A> {
      *
      * @return The value-type of the IPromise
      */
-    A await();
+   A await();
 
+   /**
+     *  Asynchronously calls an IResponseListener when the promise is complete from
+     *  some unknown thread. Calls back immediately from the calling thread if the
+     *  promise is complete.
+     *
+     * @param listener
+     */
+   void addListener(IListener<A> listener);
+
+   /**
+     * Inquires about the completion state of the promise.
+     *
+     * @return True if the promise is complete, false otherwise
+     */
+   boolean isComplete();
 }

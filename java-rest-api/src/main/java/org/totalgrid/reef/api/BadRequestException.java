@@ -20,6 +20,9 @@
  */
 package org.totalgrid.reef.api;
 
+/**
+ * An exception that represents a mal-formed request to a service
+ */
 public class BadRequestException extends ReplyException {
 
   public BadRequestException(String msg)

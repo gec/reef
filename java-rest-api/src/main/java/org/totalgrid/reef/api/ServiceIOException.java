@@ -20,6 +20,9 @@
  */
 package org.totalgrid.reef.api;
 
+/**
+ * Thrown because some abnormal IO condition exists with the connection/broker
+ */
 public class ServiceIOException extends ReefServiceException {
 
   public ServiceIOException(String msg)

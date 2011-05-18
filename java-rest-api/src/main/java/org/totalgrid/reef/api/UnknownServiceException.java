@@ -20,6 +20,9 @@
  */
 package org.totalgrid.reef.api;
 
+/**
+ * Thrown when the client tries to make a request to an unknown service.
+ */
 public class UnknownServiceException extends ReefServiceException {
 
   public UnknownServiceException(String msg)

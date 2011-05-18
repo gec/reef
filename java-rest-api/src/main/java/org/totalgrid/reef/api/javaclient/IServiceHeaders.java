@@ -20,8 +20,15 @@
  */
 package org.totalgrid.reef.api.javaclient;
 
+/**
+ * Interface that defines what operations can be done to service header
+ */
 public interface IServiceHeaders {
 
+   /**
+     * Sets or clears the AuthToken field in the header
+     * @param token A string representing the auth token or null to clear it
+     */
   void setAuthToken(String token);
 
 }

@@ -21,9 +21,22 @@ package org.totalgrid.reef.api.javaclient;
  * under the License.
  */
 
-public interface ISubscriptionResult<T,U> {
+/**
+ * A container class that wraps the response to a subscription request and the subscription interface itself
+ *
+ * @param <T> The type of result
+ * @param <U> The type of the subscription
+ */
+public interface ISubscriptionResult<T, U> {
 
-  T getResult();
-  ISubscription<U> getSubscription();
+   /**
+     * @return The value of response
+     */
+   T getResult();
+
+   /**
+     * @return The interface used for starting/stopping the actual subscription
+     */
+   ISubscription<U> getSubscription();
 
 }

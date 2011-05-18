@@ -22,6 +22,9 @@ package org.totalgrid.reef.api.javaclient;
 
 import org.totalgrid.reef.api.ReefServiceException;
 
+/**
+ * A thread-safe interface for executing arbitrary blocks of code on against of pool of ISession's
+ */
 public interface ISessionPool {
 
   /**

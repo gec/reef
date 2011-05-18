@@ -21,11 +21,17 @@
 package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.api.scalaclient.{ IPromise => IScalaPromise, Response => ScalaResponse }
-import org.totalgrid.reef.api.javaclient.{ IPromise, IResponse }
+import org.totalgrid.reef.api.javaclient.{ IListener, IPromise, IResponse }
 
 class Promise[A](promise: IScalaPromise[ScalaResponse[A]]) extends IPromise[IResponse[A]] {
 
   private lazy val response = new Response(promise.await())
 
   final override def await(): IResponse[A] = response
+
+  final override def addListener(listener: IListener[IResponse[A]]): Unit = promise.listen { rsp =>
+    listener.onCompletion(new Response[A](rsp))
+  }
+
+  final override def isComplete = promise.isComplete
 }

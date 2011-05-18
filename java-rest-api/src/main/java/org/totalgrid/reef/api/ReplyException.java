@@ -20,6 +20,9 @@
  */
 package org.totalgrid.reef.api;
 
+/**
+ * Base class for all exceptions that represent non-successful replies from the server
+ */
 public class ReplyException extends ReefServiceException {
 
   public ReplyException(String msg, Envelope.Status status)

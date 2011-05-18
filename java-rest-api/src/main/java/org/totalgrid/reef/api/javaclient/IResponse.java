@@ -22,13 +22,29 @@ package org.totalgrid.reef.api.javaclient;
 
 import org.totalgrid.reef.api.ExpectationException;
 
-
+/**
+ * Interfaces that defines a response to service request
+ * @param <A> The return type of the service request
+ */
 public interface IResponse<A> {
 
+   /**
+     * @return True if the service request was successful, false otherwise
+     */
   boolean isSuccess();
 
+   /**
+     * Interprets the result as a successful request with 0 or more return values
+     * @return A list of return values
+     * @throws ExpectationException if the response is not a success
+     */
   java.util.List<A> expectMany() throws ExpectationException;
 
+   /**
+     * Interprets the result as a successful request with exactly 1 return value
+     * @return A single value
+     * @throws ExpectationException if the response or some number of return values other than 1
+     */
   A expectOne() throws ExpectationException;
 
 }

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api;
 
 /**
- * Base class for all exceptions thrown directly by services
+ * Base class for all exceptions thrown by the api
  */
 public abstract class ReefServiceException extends Exception {
 

@@ -21,9 +21,15 @@
 package org.totalgrid.reef.api.javaclient;
 
 /**
- * Interface called back asynchronously with an IResult
- * @param <A> Type of the result
+ * Interface that defines a simple callback from a request
+ * @param <A> Type of the value returned from a request
  */
-public interface IResultAcceptor<A> {
-  void onResult(IResponse<A> result);
+public interface IListener<A> {
+
+   /**
+     *
+     * @param value The asynchronous return value from a request
+     */
+    void onCompletion(A value);
+
 }
