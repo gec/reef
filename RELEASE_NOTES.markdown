@@ -9,7 +9,7 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.2.3-RC4
+Version 0.2.3-RC5
 ==============
 
 Primarily a stability and usability release, very limited new functionality.

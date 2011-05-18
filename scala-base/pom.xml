@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
-        <version>0.2.3-RC4</version>
+        <version>0.2.3-RC5</version>
         <relativePath>../</relativePath>
     </parent>
 
