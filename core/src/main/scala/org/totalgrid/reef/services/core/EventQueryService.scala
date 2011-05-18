@@ -23,8 +23,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.service.SyncServiceBase
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
+import org.totalgrid.reef.api.scalaclient.Response
 
 import org.totalgrid.reef.services.framework._
 
@@ -33,7 +33,7 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api._
-import service.SyncServiceBase
+import service.AsyncToSyncServiceAdapter
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, ServiceEventPublishers }
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
@@ -95,13 +95,17 @@ object EventQueryService {
 }
 
 class EventQueryService(protected val modelTrans: ServiceTransactable[EventServiceModel], subHandler: ServiceSubscriptionHandler)
-    extends SyncServiceBase[EventList] {
+    extends AsyncToSyncServiceAdapter[EventList] {
 
   def this(cm: ServiceTransactable[EventServiceModel], pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[Event]))
 
   import EventQueryService._
 
   override val descriptor = Descriptors.eventList
+
+  override def put(req: EventList, env: RequestEnv): Response[EventList] = noPut
+  override def delete(req: EventList, env: RequestEnv): Response[EventList] = noDelete
+  override def post(req: EventList, env: RequestEnv): Response[EventList] = noPost
 
   override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 

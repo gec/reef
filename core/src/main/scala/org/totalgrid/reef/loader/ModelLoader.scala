@@ -24,7 +24,6 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.scalaclient.SyncOperations
 
 trait ModelLoader {
@@ -43,7 +42,7 @@ trait ModelLoader {
 
 class CachingModelLoader(client: Option[SyncOperations]) extends ModelLoader {
 
-  private var puts = List.empty[GeneratedMessage]
+  private var puts = List.empty[AnyRef]
 
   def putOrThrow(e: Entity) = { puts ::= e; autoFlush }
   def putOrThrow(e: EntityEdge) = { puts ::= e; autoFlush }
@@ -58,7 +57,9 @@ class CachingModelLoader(client: Option[SyncOperations]) extends ModelLoader {
 
   def putOrThrow(e: TriggerSet) = { triggers.put(e.getPoint.getName, e); autoFlush }
   def getOrThrow(e: TriggerSet): List[TriggerSet] = {
-    client.map { _.getOrThrow(e) }.getOrElse(
+    client.map {
+      _.get(e).await().expectMany()
+    }.getOrElse(
       triggers.get(e.getPoint.getName).map { _ :: Nil }.getOrElse(Nil))
   }
 
@@ -67,8 +68,8 @@ class CachingModelLoader(client: Option[SyncOperations]) extends ModelLoader {
   }
 
   def flush(client: SyncOperations) = {
-    puts.reverse.foreach { client.putOrThrow(_) }
-    triggers.foreach { case (name, tset) => client.putOrThrow(tset) }
+    puts.reverse.foreach { x => client.put(x).await().expectMany() }
+    triggers.foreach { case (name, tset) => client.put(tset).await().expectMany() }
     puts = Nil
     triggers.clear
   }

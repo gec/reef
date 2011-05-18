@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.{ BadRequestException, RequestEnv, Envelope }
 import org.totalgrid.reef.api.service.SyncServiceBase

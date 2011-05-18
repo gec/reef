@@ -110,7 +110,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     }
   }
 
-  def validatePassword(password: String) {
+  private def validatePassword(password: String) {
     // TODO: password settings?
     if (password.length < 4) {
       throw new BadRequestException("Password must be atleast 4 characters")

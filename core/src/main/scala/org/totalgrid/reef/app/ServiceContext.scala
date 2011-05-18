@@ -22,7 +22,6 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Observable
 
-import com.google.protobuf.{ GeneratedMessage => Protobuf }
 import org.totalgrid.reef.api.Envelope
 
 /**
@@ -33,7 +32,7 @@ import org.totalgrid.reef.api.Envelope
  * with ServiceHandler
  *
  */
-trait ServiceContext[A <: AnyRef] extends Observable {
+trait ServiceContext[A] extends Observable {
 
   // Define these functions
   def add(obj: A)

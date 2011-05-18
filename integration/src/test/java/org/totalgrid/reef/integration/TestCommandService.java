@@ -78,8 +78,8 @@ public class TestCommandService extends JavaBridgeTestBase {
         try {
             cs.executeCommandAsControl(c);
             fail("should throw exception");
-        } catch (ReefServiceException pse) {
-            assertEquals(Envelope.Status.BAD_REQUEST, pse.getStatus());
+        } catch (ReefServiceException rse) {
+            assertEquals(Envelope.Status.BAD_REQUEST, rse.getStatus());
         }
     }
 

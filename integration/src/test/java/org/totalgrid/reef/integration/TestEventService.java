@@ -42,7 +42,7 @@ public class TestEventService extends JavaBridgeTestBase {
     public void prepareEvents()  throws ReefServiceException {
 
         // make an event type for our test events
-        client.putOne(EventConfigRequestBuilders.makeEvent("Test.Event", "Event", 1));
+        client.put(EventConfigRequestBuilders.makeEvent("Test.Event", "Event", 1)).await().expectOne();
 
         EventService es = helpers;
 
@@ -82,7 +82,7 @@ public class TestEventService extends JavaBridgeTestBase {
     public void prepareAlarms()  throws ReefServiceException {
 
         // make an event type for our test alarms
-        client.putOne(EventConfigRequestBuilders.makeAudibleAlarm("Test.Alarm", "Alarm", 1));
+        client.put(EventConfigRequestBuilders.makeAudibleAlarm("Test.Alarm", "Alarm", 1)).await().expectOne();
 
         EventService es = helpers;
 

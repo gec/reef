@@ -21,8 +21,8 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.api.service.AsyncToSyncServiceAdapter
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.api.{ Envelope, RequestEnv }

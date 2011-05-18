@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 
 import org.totalgrid.reef.api.{ RequestEnv, BadRequestException, Envelope }
 

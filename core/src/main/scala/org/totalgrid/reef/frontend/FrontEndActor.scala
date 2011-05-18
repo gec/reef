@@ -27,7 +27,7 @@ import org.totalgrid.reef.app.ServiceContext
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.api.ServiceTypes.{ SingleSuccess, Failure }
+import org.totalgrid.reef.api.scalaclient.{ SingleSuccess }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
@@ -78,12 +78,12 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
 
     val cp = ConnProto.newBuilder(conn)
 
-    val ep = client.getOneOrThrow(conn.getEndpoint)
+    val ep = client.get(conn.getEndpoint).await().expectOne
     val endpoint = ConfigProto.newBuilder(ep)
 
-    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getOneOrThrow(cf)))
+    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.get(cf).await().expectOne))
 
-    if (ep.hasChannel) endpoint.setChannel(client.getOneOrThrow(ep.getChannel))
+    if (ep.hasChannel) endpoint.setChannel(client.get(ep.getChannel).await().expectOne)
     cp.setEndpoint(endpoint).build()
   }
 
@@ -113,18 +113,18 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
       msg.addProtocols(p.name)
     }.setAppConfig(appConfig).build
 
-    session.asyncPutOne(msg) {
-      _ match {
-        case SingleSuccess(status, fem) =>
+    session.put(msg).listen { rsp =>
+      rsp match {
+        case SingleSuccess(_, fep) =>
           eventLog.event(EventType.System.SubsystemStarted)
           info {
-            "Got uid: " + fem.getUuid.getUuid
+            "Got uid: " + fep.getUuid.getUuid
           }
-          val query = ConnProto.newBuilder.setFrontEnd(fem).build
+          val query = ConnProto.newBuilder.setFrontEnd(fep).build
           // this is where we actually bind up the service calls
           this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
-        case x: Failure =>
-          warn(x)
+        case _ =>
+          warn("Unexpected response: " + rsp.toString)
           delay(retryms) {
             annouce
           }

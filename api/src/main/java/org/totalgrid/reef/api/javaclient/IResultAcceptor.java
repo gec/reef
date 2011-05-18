@@ -18,9 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.api.javaclient;
 
-trait IResultAcceptor[A] {
-  def onResult(result: IResult[A])
+/**
+ * Interface called back asynchronously with an IResult
+ * @param <A> Type of the result
+ */
+public interface IResultAcceptor<A> {
+  void onResult(IResponse<A> result);
 }
-

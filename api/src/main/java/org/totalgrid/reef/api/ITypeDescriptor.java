@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,16 +20,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+/**
+ * Describes how to (de)serialize a type and it's class
+ */
+trait ITyeDescriptor[A] {
 
-import org.totalgrid.reef.api.ServiceTypes.Failure
-
-trait IResult[A] {
-
-  def isSuccess: Boolean
-
-  def getResult: java.util.List[A]
-
-  def getFailure: Failure
+  def serialize(typ: A): Array[Byte]
+  def deserialize(data: Array[Byte]): A
+  def getKlass: Class[A]
+  def id: String
 
 }

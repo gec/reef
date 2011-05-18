@@ -29,8 +29,8 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
-import ServiceTypes.Event
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, scalaclient }
+import scalaclient.Event
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
@@ -74,19 +74,19 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
       val b = ApplicationConfig.newBuilder()
       b.setUserName("proc").setInstanceName("proc01").setNetwork("any").setLocation("farm1").addCapabilites("Processing")
       b.setHeartbeatCfg(HeartbeatConfig.newBuilder.setPeriodMs(100)) // override the default period
-      client.putOneOrThrow(b.build)
+      client.put(b.build).await().expectOne()
     }
 
     private def subscribeSnapshotStatus() {
       val eventQueueName = new SyncVar("")
-      val hbeatSource = amqp.getEventQueue(StatusSnapshot.parseFrom, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.result)) }, { q => eventQueueName.update(q) })
+      val hbeatSource = amqp.getEventQueue(StatusSnapshot.parseFrom, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.value)) }, { q => eventQueueName.update(q) })
 
       // wait for the queue name to get populated (actor startup delay)
       eventQueueName.waitWhile("")
 
       val env = new RequestEnv
       env.setSubscribeQueue(eventQueueName.current)
-      val config = client.getOneOrThrow(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env)
+      val config = client.get(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env).await().expectOne()
       // do some basic checks to make sure we got the correct initial state
       config.getInstanceName should equal(appConfig.getInstanceName)
       config.getOnline should equal(true)

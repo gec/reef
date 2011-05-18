@@ -18,24 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.api;
 
-/**
- * A subscription object provides header info and can also be canceled. It carries the message type
- * primarily to make message signatures more expressive.
- * TODO: add ISubscriptions to scala apis
- */
-trait ISubscription[SubscriptionMessageType] {
+public class UnauthorizedException extends BadRequestException {
 
-  def cancel(): Unit
-
-  def getId(): String
-
-  def start(callback: IEventAcceptor[SubscriptionMessageType]): Unit
+  public UnauthorizedException(String msg)
+  {
+    super(msg, Envelope.Status.UNAUTHORIZED);
+  }
 
 }
 
-trait ISubscriptionResult[ResultType, SubType] {
-  def getResult: ResultType
-  def getSubscription: ISubscription[SubType]
-}

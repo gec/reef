@@ -18,16 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api
+
+package org.totalgrid.reef.api.javaclient;
 
 /**
- * Describes how to (de)serialize a type and it's class
+ *  Interface that accepts events on some unspecified thread
  */
-trait ITypeDescriptor[A] {
+public interface IEventAcceptor<A> {
 
-  def serialize(typ: A): Array[Byte]
-  def deserialize(data: Array[Byte]): A
-  def getKlass: Class[A]
-  def id: String
+  void onEvent(IEvent<A> event);
 
 }

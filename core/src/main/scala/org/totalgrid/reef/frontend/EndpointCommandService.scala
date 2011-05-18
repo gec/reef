@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.api.{ RequestEnv, Envelope }
 import org.totalgrid.reef.api.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }

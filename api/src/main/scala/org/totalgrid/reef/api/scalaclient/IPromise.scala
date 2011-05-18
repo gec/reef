@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,11 +18,15 @@ package org.totalgrid.reef.api.javaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.ServiceTypes.Event
 
-/**
- *  Adapts raw events functions to a Java interface
- */
-trait IEventAcceptor[A] {
-  def onEvent(event: Event[A]): Unit
+package org.totalgrid.reef.api.scalaclient;
+
+trait IPromise[A] {
+
+  def await(): A
+
+  def listen(fun: A => Unit): Unit
+
+  def isComplete: Boolean
+
 }

@@ -86,7 +86,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     override def onStateChange(state: ConnProto.State) = {
       val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
       try {
-        val result = session.postOneOrThrow(update)
+        val result = session.post(update).await().expectOne
         info { "Updated connection state: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
@@ -101,7 +101,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     override def onStateChange(state: CommChannel.State) = {
       val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
       try {
-        val result = session.postOneOrThrow(update)
+        val result = session.post(update).await().expectOne
         info { "Updated channel: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
@@ -115,7 +115,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
    */
   private def batchPublish(client: ClientSession, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
     try {
-      client.putOrThrow(x, destination = dest)
+      client.put(x, destination = dest).await().expectOne
     } catch {
       case a: ResponseTimeoutException =>
         if (attempts >= maxAttemptsToRetryMeasurements) {

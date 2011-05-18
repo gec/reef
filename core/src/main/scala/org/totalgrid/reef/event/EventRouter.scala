@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.messaging.{ Connection, AMQPProtoFactory }
 import org.totalgrid.reef.app.ServiceHandler
-import org.totalgrid.reef.proto.RoutingKeys
+import org.totalgrid.reef.proto.{ Descriptors, RoutingKeys }
 
 /**
  *  Process and route raw events based on the EventConfiguration.
@@ -53,8 +53,8 @@ abstract class EventRouter(
   logger: EventLogPublisher)
     extends Reactable with ServiceHandler with Localizer {
 
-  private val publishEvent = amqp.publish(processedEventExchange, RoutingKeys.event) // Events.Event => Unit
-  private val publishLog = amqp.publish(processedLogExchange, RoutingKeys.log) // Events.Log => Unit
+  private val publishEvent = amqp.publish(processedEventExchange, RoutingKeys.event, Descriptors.event.serialize)
+  private val publishLog = amqp.publish(processedLogExchange, RoutingKeys.log, Descriptors.log.serialize)
 
   val context = new EventRouterContext(publishEvent, publishLog, storeEvent)
 

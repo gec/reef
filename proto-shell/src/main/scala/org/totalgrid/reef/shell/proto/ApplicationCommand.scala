@@ -29,7 +29,7 @@ import presentation.ApplicationView
 class ApplicationListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = reefSession.getOrThrow(ApplicationConfig.newBuilder.setInstanceName("*").build)
+    val results = reefSession.get(ApplicationConfig.newBuilder.setInstanceName("*").build).await().expectMany()
     ApplicationView.printTable(results)
   }
 }

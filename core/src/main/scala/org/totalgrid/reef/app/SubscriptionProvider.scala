@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.app
 
-import com.google.protobuf.{ GeneratedMessage => Protobuf }
-
 import org.totalgrid.reef.app.ServiceHandler._
 
 // Trait allows type to be negotiated between user and provider, and hidden from factory steps in between

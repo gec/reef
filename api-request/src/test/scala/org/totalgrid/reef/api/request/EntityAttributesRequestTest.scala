@@ -41,51 +41,51 @@ class EntityAttributesRequestTest
   import EntityAttributesBuilders._
 
   test("Puts") {
-    val ent = client.getOneOrThrow(Entity.newBuilder.setName("StaticSubstation").build)
+    val ent = client.get(Entity.newBuilder.setName("StaticSubstation").build).await().expectOne
 
     client.addExplanation("Put by entity uid", "Creates or replaces an attribute for the specified entity (selected by uid).")
-    val resp1 = client.putOneOrThrow(
+    val resp1 = client.put(
       EntityAttributesBuilders.putAttributesToEntityUid(
         ent.getUuid,
-        List(Attribute.newBuilder.setName("subName").setVtype(Attribute.Type.STRING).setValueString("Apex").build)))
+        List(Attribute.newBuilder.setName("subName").setVtype(Attribute.Type.STRING).setValueString("Apex").build))).await().expectOne
 
     resp1.getAttributesCount should equal(1)
 
     client.addExplanation("Put by entity name", "Creates or replaces two attributes for the specified entity (selected by name).")
-    val resp2 = client.putOneOrThrow(
+    val resp2 = client.put(
       EntityAttributesBuilders.putAttributesToEntityName(
         "StaticSubstation",
         List(Attribute.newBuilder.setName("gisLat").setVtype(Attribute.Type.DOUBLE).setValueDouble(41.663).build,
-          Attribute.newBuilder.setName("gisLong").setVtype(Attribute.Type.DOUBLE).setValueDouble(84.99).build)))
+          Attribute.newBuilder.setName("gisLong").setVtype(Attribute.Type.DOUBLE).setValueDouble(84.99).build))).await().expectOne
 
     resp2.getAttributesCount should equal(2)
 
     {
       client.addExplanation("Get by entity uid", "Finds the attributes associated with a particular entity.")
-      val resp = client.getOneOrThrow(getForEntityUid(ent.getUuid))
+      val resp = client.get(getForEntityUid(ent.getUuid)).await().expectOne
       resp.getAttributesCount should equal(2)
     }
     {
       client.addExplanation("Get by entity name", "Finds the attributes associated with a particular entity.")
-      val resp = client.getOneOrThrow(getForEntityName("StaticSubstation"))
+      val resp = client.get(getForEntityName("StaticSubstation")).await().expectOne
       resp.getAttributesCount should equal(2)
     }
 
     {
       client.addExplanation("Delete by entity uid", "Deletes the attributes associated with a particular entity.")
-      val resp = client.deleteOneOrThrow(getForEntityUid(ent.getUuid))
+      val resp = client.delete(getForEntityUid(ent.getUuid)).await().expectOne
       resp.getAttributesCount should equal(0)
     }
 
     {
-      client.putOneOrThrow(
+      client.put(
         EntityAttributesBuilders.putAttributesToEntityName(
           "StaticSubstation",
           List(Attribute.newBuilder.setName("gisLat").setVtype(Attribute.Type.DOUBLE).setValueDouble(41.663).build,
-            Attribute.newBuilder.setName("gisLong").setVtype(Attribute.Type.DOUBLE).setValueDouble(84.99).build)))
+            Attribute.newBuilder.setName("gisLong").setVtype(Attribute.Type.DOUBLE).setValueDouble(84.99).build))).await().expectOne
 
       client.addExplanation("Delete by entity name", "Deletes the attributes associated with a particular entity.")
-      val resp = client.deleteOneOrThrow(getForEntityName(ent.getName))
+      val resp = client.delete(getForEntityName(ent.getName)).await().expectOne
       resp.getAttributesCount should equal(0)
     }
   }

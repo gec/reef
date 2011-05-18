@@ -60,7 +60,7 @@ class MeasurementSnapshotTest
 
     intercept[ExpectationException] {
       client.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")
-      client.getOneOrThrow(PointRequestBuilders.getByName("UnknownPoint"))
+      client.get(PointRequestBuilders.getByName("UnknownPoint")).await().expectOne
     }
   }
 }

@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.measproc
 
-import com.google.protobuf.GeneratedMessage
 import scala.collection.mutable
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Processing._

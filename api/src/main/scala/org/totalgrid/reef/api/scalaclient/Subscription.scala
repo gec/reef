@@ -18,19 +18,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
+package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceHandlerHeaders }
 
-/**
- * a helper class that encapsulates a block of code we want to execute using a single
- * session. Typed to allow the pool borrow functions to return the same type as apply
- */
-trait ISessionConsumer[A] {
+trait Subscription[A] {
+  def cancel()
 
+  def start(callback: Event[A] => Unit): Unit
+
+  def start(callback: (Envelope.Event, A) => Unit): Unit = {
+    val proxy = { (evt: Event[A]) => callback(evt.event, evt.value) }
+    start(proxy)
+  }
+
+  def id(): String
+}
+
+object Subscription {
   /**
-   * called with a session from the pool
+   * convert a Subscription to the RequestEnv used in scala SyncOps
+   * TODO: rationalize RequestEnv and Subscription interfaces
    */
-  @throws(classOf[ReefServiceException])
-  def apply(session: ISession): A
+  implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): RequestEnv = {
+    val serviceHeaders = new ServiceHandlerHeaders()
+    serviceHeaders.setSubscribeQueue(sub.id)
+    serviceHeaders.env
+  }
 }

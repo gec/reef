@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.scalaclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,27 +20,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.javaclient.IResult
-import org.totalgrid.reef.api.ServiceTypes._
-import scala.collection.JavaConversions._
+import scala.collection.mutable.Map
 
-class Result[A](result: MultiResult[A]) extends IResult[A] {
+object AsyncScatterGather {
 
-  def isSuccess = result match {
-    case MultiSuccess(status, x) => true
-    case _ => false
-  }
+  def collect[A <: AnyRef](promises: List[IPromise[Response[A]]])(callback: List[Response[A]] => Unit) {
 
-  def getResult: java.util.List[A] = result match {
-    case MultiSuccess(status, x) => x
-    case x: Failure => throw x.toException
-  }
+    // the results we're collecting and a counter
+    val map = Map.empty[Int, Response[A]]
+    val size = promises.size
 
-  def getFailure: Failure = result match {
-    case x: Failure => x
-    case _ => throw new Exception("Success cannot be interpreted as failure")
+    def gather(idx: Int)(rsp: Response[A]) = map.synchronized {
+      map += idx -> rsp
+      if (map.size == size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
+    }
+
+    promises.zipWithIndex.foreach {
+      case (promise, i) => promise.listen(gather(i))
+    }
   }
 
 }
+

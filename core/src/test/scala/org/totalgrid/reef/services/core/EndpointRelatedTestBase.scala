@@ -44,7 +44,7 @@ import org.totalgrid.reef.proto.{ ReefServicesList }
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.service.IServiceAsync
 
-import ServiceTypes.Event
+import scalaclient.Event
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction }
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
@@ -66,7 +66,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
 
-      val measProcAssign = event.result
+      val measProcAssign = event.value
       if (event.event != Envelope.Event.ADDED) return
 
       val measProc = new org.totalgrid.reef.measproc.ProcessingNode {

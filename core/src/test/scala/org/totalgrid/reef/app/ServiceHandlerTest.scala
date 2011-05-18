@@ -21,7 +21,7 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Event }
+import org.totalgrid.reef.api.scalaclient.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.MockConnection
 import org.totalgrid.reef.proto.{ Processing }
 import org.totalgrid.reef.proto.Model.Point

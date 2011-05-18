@@ -21,7 +21,8 @@ package org.totalgrid.reef.api.service
  * under the License.
  */
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.{ Response, Failure }
+
 import org.totalgrid.reef.util.Logging
 
 trait AsyncServiceBase[A <: AnyRef] extends IServiceAsync[A]

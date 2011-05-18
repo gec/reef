@@ -151,9 +151,7 @@ trait CommandService {
   /**
    * get the command lock (if it exists) for a Command
    *
-   * TODO: figure out how to handle null return values in scala
-   *
-   * @return either the command lock or null
+   * @return the command lock
    */
   @throws(classOf[ReefServiceException])
   def getCommandLockOnCommand(cmd: Command): CommandAccess

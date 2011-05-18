@@ -21,14 +21,14 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.api.javaclient.ISubscription;
-import org.totalgrid.reef.api.ServiceTypes;
-import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
-import org.totalgrid.reef.api.request.MeasurementService;
+
 import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
-import org.totalgrid.reef.api.Envelope;
+
+import org.totalgrid.reef.api.*;
+import org.totalgrid.reef.api.javaclient.*;
+import org.totalgrid.reef.api.request.MeasurementService;
+
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
 
@@ -67,8 +67,8 @@ public class TestEndToEndIntegration extends JavaBridgeTestBase {
         sub.start(mock);
 
 		// check that at least one measurement has been updated in the queue
-		ServiceTypes.Event<Measurements.Measurement> m = mock.pop(10000);
-		assertEquals(m.getEvent(), Envelope.Event.MODIFIED);
+		IEvent<Measurements.Measurement> m = mock.pop(10000);
+		assertEquals(m.getEventType(), Envelope.Event.MODIFIED);
 
 		// now cancel the subscription
 		sub.cancel();

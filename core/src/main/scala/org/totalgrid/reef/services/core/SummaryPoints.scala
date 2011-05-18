@@ -214,6 +214,8 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
    */
   case class LastAttempt(var nextTime: Long, var success: Boolean)
 
+  // TODO - refactor this code to be more functional
+
   private def publishMeasurement(client: ClientSession, lastAttempt: LastAttempt, dest: IDestination)(mb: Measurements.MeasurementBatch) {
     val now = System.currentTimeMillis
     if (!lastAttempt.success && now < lastAttempt.nextTime) {
@@ -222,7 +224,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
     }
     try {
       lastAttempt.nextTime = now + 5000
-      client.putOrThrow(mb, destination = dest)
+      client.put(mb, destination = dest).await().expectMany()
       lastAttempt.success = true
     } catch {
       case e: Exception =>

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.scalaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,27 +18,18 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.ServiceTypes._
+/**
+ *  Interface defining a guaranteed, deferred value.  Value can be retrieved synchronously or asynchronously.
+ */
+public interface IPromise<A> {
 
-//import ProtoConversions._
-
-trait AsyncScatterGatherOperations {
-
-  self: AsyncOperations with DefaultHeaders =>
-
-  def requestAsyncScatterGather[A <: AnyRef](requests: List[Request[A]])(callback: List[MultiResult[A]] => Unit) {
-
-    // the results we're collecting and a counter
-    var map = Map.empty[Int, MultiResult[A]]
-
-    def gather(idx: Int)(rsp: MultiResult[A]) {
-      map += idx -> rsp
-      if (map.size == requests.size) callback(requests.indices.map(i => map(i)).toList) //last callback orders and calls the callback
-    }
-
-    requests.zipWithIndex.foreach { case (request, i) => asyncRequest(request.verb, request.payload, request.env, request.destination)(gather(i)) }
-  }
+   /**
+     * Synchronously blocks for some un-specified period of time for the value. Returns immediately if the promise is complete.
+     *
+     * @return The value-type of the IPromise
+     */
+    A await();
 
 }
-

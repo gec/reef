@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.javaclient;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,69 +20,65 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
-
-import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
+import org.totalgrid.reef.api.*;
 
 /**
  * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
  * of the connection and provides a factory to create service clients.
  */
-trait IConnection {
+public interface IConnection {
 
   /**
    * register a listener for open/close events
    *
    * @param listener Interace to call back with open/close events
    */
-  def addConnectionListener(listener: IConnectionListener)
+  void addConnectionListener(IConnectionListener listener);
 
   /**
    * remove a listener for open/close events
    *
    * @param listener Interace to call back with open/close events
    */
-  def removeConnectionListener(listener: IConnectionListener)
+  void removeConnectionListener(IConnectionListener listener);
 
   /**
    * Starts execution of the messaging connection. Once the service has been started the connection to
    * the broker may be lost so it is important to use an IConnectionListener to be informed of those
    * non-client initiated disconnection events.
    * @param timeoutMs how long to wait (milliseconds) for the first good connection before throwing ServiceIOException.
-   *    values of 0 or less will throw illegal argument exception
+   * values of 0 or less will throw illegal argument exception
    */
-  @throws(classOf[ServiceIOException])
-  def connect(timeoutMs: Long)
+  void connect(long timeoutMs) throws ServiceIOException;
 
   /**
    * Starts execution of the messaging connection. Once the service has been started the connection to
    * the broker may be lost so it is important to use an IConnectionListener to be informed of those
    * non-client initiated disconnection events.
    */
-  def start()
+  void start();
 
   /**
    * Halts the messaging connection and waits for a closed callback
    * @param timeoutMs how long to wait (milliseconds) for stop before throwing ServiceIOException.
    *    values of 0 or less will throw illegal argument exception
    */
-  @throws(classOf[ServiceIOException])
-  def disconnect(timeoutMs: Long)
+  void disconnect(long timeoutMs) throws ServiceIOException;
 
   /**
    * Begins halting execution of the messaging connection
    */
-  def stop()
+  void stop();
 
   /**
    * creates a non thread-safe (use from single thread only) client
    * TODO: have newSession throw exception if not open
    */
-  def newSession(): ISession
+  ISession newSession();
 
   /**
    * get a session pool that manages a group of ISessions and automatically handles monitoring the connection
    * state and threading concerns.
    */
-  def newSessionPool(): ISessionPool
+  ISessionPool newSessionPool();
 }

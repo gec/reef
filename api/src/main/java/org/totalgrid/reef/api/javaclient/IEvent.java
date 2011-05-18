@@ -18,17 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.scalaclient
+package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.ReefServiceException
-import org.totalgrid.reef.api.ServiceTypes.MultiResult
+import org.totalgrid.reef.api.Envelope;
 
-trait IFuture[A <: AnyRef] {
-
-  @throws(classOf[ReefServiceException])
-  def apply(): List[A]
-
-  @throws(classOf[ReefServiceException])
-  def async(callback: MultiResult[A] => Unit): Unit
-
+/**
+ * Created by IntelliJ IDEA.
+ * User: adam
+ * Date: 5/13/11
+ * Time: 12:31 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public interface IEvent<T> {
+    T getValue();
+    Envelope.Event getEventType();
 }

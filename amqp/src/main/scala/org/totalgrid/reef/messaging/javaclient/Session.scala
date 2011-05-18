@@ -20,87 +20,47 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import com.google.protobuf.GeneratedMessage
-
-import org.totalgrid.reef.api.{ ServiceTypes }
-import ServiceTypes._
-
-import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.api._
-import javaclient._
-import scalaclient.ClientSession
+import org.totalgrid.reef.api.javaclient.{ IPromise, IResponse, ISubscription, ISession, IEventAcceptor }
+import scalaclient.{ ClientSession, IPromise => IScalaPromise, Response => ScalaResponse }
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists
  */
-class Session(client: ClientSession) extends ISession {
+class Session(val client: ClientSession) extends ISession {
 
-  def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: ServiceHandlerHeaders): java.util.List[A] = client.requestThrow(verb, payload, env.env)
+  private implicit def convert[A](promise: IScalaPromise[ScalaResponse[A]]): IPromise[IResponse[A]] = new Promise[A](promise)
 
-  def get[A <: AnyRef](payload: A): java.util.List[A] = client.getOrThrow(payload)
-  def delete[A <: AnyRef](payload: A): java.util.List[A] = client.deleteOrThrow(payload)
-  def post[A <: AnyRef](payload: A): java.util.List[A] = client.postOrThrow(payload)
-  def put[A <: AnyRef](payload: A): java.util.List[A] = client.putOrThrow(payload)
+  final override def get[A](request: A): IPromise[IResponse[A]] = client.get(request)
+  final override def delete[A](request: A): IPromise[IResponse[A]] = client.delete(request)
+  final override def post[A](request: A): IPromise[IResponse[A]] = client.post(request)
+  final override def put[A](request: A): IPromise[IResponse[A]] = client.put(request)
 
-  private implicit def convertEnv[A](sub: ISubscription[A]): RequestEnv = {
+  private implicit def convert[A](sub: ISubscription[A]): RequestEnv = {
     val headers = new ServiceHandlerHeaders(new RequestEnv)
     headers.setSubscribeQueue(sub.getId)
     headers.env
   }
 
-  def get[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.getOrThrow(payload, hdr)
-  def delete[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.deleteOrThrow(payload, hdr)
-  def put[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.putOrThrow(payload, hdr)
-  def post[A <: AnyRef](payload: A, hdr: ISubscription[A]): java.util.List[A] = client.postOrThrow(payload, hdr)
+  final override def get[A](request: A, hdr: ISubscription[A]): IPromise[IResponse[A]] = client.get(request, hdr)
+  final override def delete[A](request: A, hdr: ISubscription[A]): IPromise[IResponse[A]] = client.delete(request, hdr)
+  final override def put[A](request: A, hdr: ISubscription[A]): IPromise[IResponse[A]] = client.put(request, hdr)
+  final override def post[A](request: A, hdr: ISubscription[A]): IPromise[IResponse[A]] = client.post(request, hdr)
 
-  def getOne[A <: AnyRef](payload: A): A = client.getOneOrThrow(payload)
-  def deleteOne[A <: AnyRef](payload: A): A = client.deleteOneOrThrow(payload)
-  def putOne[A <: AnyRef](payload: A): A = client.putOneOrThrow(payload)
-  def postOne[A <: AnyRef](payload: A): A = client.postOneOrThrow(payload)
-
-  def getOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.getOneOrThrow(payload, hdr)
-  def deleteOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.deleteOneOrThrow(payload, hdr)
-  def putOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.putOneOrThrow(payload, hdr)
-  def postOne[A <: AnyRef](payload: A, hdr: ISubscription[A]): A = client.postOneOrThrow(payload, hdr)
-
-  implicit def convert[A](fun: () => MultiResult[A]): IFuture[A] = new Future(fun)
-
-  def getFuture[A <: AnyRef](payload: A): IFuture[A] = client.getWithFuture(payload)
-  def deleteFuture[A <: AnyRef](payload: A): IFuture[A] = client.deleteWithFuture(payload)
-  def postFuture[A <: AnyRef](payload: A): IFuture[A] = client.postWithFuture(payload)
-  def putFuture[A <: AnyRef](payload: A): IFuture[A] = client.putWithFuture(payload)
-
-  def getFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.getWithFuture(payload, hdr)
-  def deleteFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.deleteWithFuture(payload, hdr)
-  def postFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.postWithFuture(payload, hdr)
-  def putFuture[A <: AnyRef](payload: A, hdr: ISubscription[A]): IFuture[A] = client.putWithFuture(payload, hdr)
-
-  /* -------- Asynchronous API ------ */
-
-  implicit def convert[A](callback: IResultAcceptor[A]): MultiResult[A] => Unit =
-    (result: MultiResult[A]) => callback.onResult(new Result(result))
-
-  def getAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncGet(payload)(callback)
-  def deleteAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncDelete(payload)(callback)
-  def postAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPost(payload)(callback)
-  def putAsync[A <: AnyRef](payload: A, callback: IResultAcceptor[A]) = client.asyncPut(payload)(callback)
-
-  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A]): ISubscription[A] = {
+  final override def addSubscription[A](pd: ITypeDescriptor[A]): ISubscription[A] = {
     val sub = client.addSubscription[A](pd.getKlass)
     new SubscriptionWrapper(sub)
   }
 
-  def addSubscription[A <: GeneratedMessage](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
+  final override def addSubscription[A](pd: ITypeDescriptor[A], ea: IEventAcceptor[A]): ISubscription[A] = {
     val sub = client.addSubscription[A](pd.getKlass)
     val wrapped = new SubscriptionWrapper(sub)
     wrapped.start(ea)
     wrapped
   }
 
-  override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)
+  final override def getDefaultEnv = new ServiceHandlerHeaders(client.getDefaultHeaders)
 
-  def close() = client.close()
-
-  def getUnderlyingClient() = client
+  final override def close() = client.close()
 }
 

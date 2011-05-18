@@ -20,9 +20,8 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.totalgrid.reef.api.Envelope;
-import org.totalgrid.reef.api.javaclient.IEventAcceptor;
-import org.totalgrid.reef.api.ServiceTypes.*;
+import org.totalgrid.reef.api.*;
+import org.totalgrid.reef.api.javaclient.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +29,8 @@ import java.util.List;
 public class MockEventAcceptor<T> implements IEventAcceptor<T> {
 
     private boolean storeResults;
-    private BlockingQueue<Event<T>> queue = new BlockingQueue<Event<T>>();
-    private List<Event<T>> results = new LinkedList<Event<T>>();
+    private BlockingQueue<IEvent<T>> queue = new BlockingQueue<IEvent<T>>();
+    private List<IEvent<T>> results = new LinkedList<IEvent<T>>();
 
     /**
      *
@@ -47,7 +46,8 @@ public class MockEventAcceptor<T> implements IEventAcceptor<T> {
         this(false);
     }
 
-    public void onEvent(Event<T> event) {
+    @Override
+    public void onEvent(IEvent<T> event) {
         queue.push(event);
     }
 
@@ -55,8 +55,8 @@ public class MockEventAcceptor<T> implements IEventAcceptor<T> {
         queue.clear();
     }
 
-    public Event<T> pop(long timeoutms) throws InterruptedException {
-        Event<T> ret = queue.pop(timeoutms);
+    public IEvent<T> pop(long timeoutms) throws InterruptedException {
+        IEvent<T> ret = queue.pop(timeoutms);
         if (storeResults) results.add(ret);
         return ret;
     }
@@ -65,9 +65,9 @@ public class MockEventAcceptor<T> implements IEventAcceptor<T> {
         long start = System.currentTimeMillis();
         do {
             try {
-                Event<T> ret = queue.pop(timeoutms);
+                IEvent<T> ret = queue.pop(timeoutms);
                 if (storeResults) results.add(ret);
-                if (ret.getResult().equals(value)) return true;
+                if (ret.getValue().equals(value)) return true;
             } catch (Exception ex) {
                 System.out.println(ex);
                 return false;
@@ -80,8 +80,8 @@ public class MockEventAcceptor<T> implements IEventAcceptor<T> {
     public List<T> getPayloads() {
         if (!storeResults) throw new RuntimeException("Not storing results");
         List<T> list = new LinkedList<T>();
-        for (Event<T> p : results) {
-            list.add(p.getResult());
+        for (IEvent<T> p : results) {
+            list.add(p.getValue());
         }
         return list;
     }
@@ -89,13 +89,13 @@ public class MockEventAcceptor<T> implements IEventAcceptor<T> {
     public List<Envelope.Event> getEventCodes() {
         if (!storeResults) throw new RuntimeException("Not storing results");
         List<Envelope.Event> list = new LinkedList<Envelope.Event>();
-        for (Event<T> p : results) {
-            list.add(p.getEvent());
+        for (IEvent<T> p : results) {
+            list.add(p.getEventType());
         }
         return list;
     }
 
     public void clearResults() {
-        results = new LinkedList<Event<T>>();
+        results = new LinkedList<IEvent<T>>();
     }
 }

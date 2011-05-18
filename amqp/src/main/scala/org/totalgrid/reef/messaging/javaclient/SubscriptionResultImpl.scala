@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.Subscription
+import org.totalgrid.reef.api.scalaclient.Subscription
 import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, ISubscriptionResult, ISubscription }
 
 class SubscriptionWrapper[A](sub: Subscription[A]) extends ISubscription[A] {

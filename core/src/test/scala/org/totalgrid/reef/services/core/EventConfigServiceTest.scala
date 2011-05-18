@@ -51,8 +51,8 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
       val client = amqp.getProtoClientSession(servicelist, 5000)
 
       val sent = makeEC(Scada.ControlExe, 1, Designation.ALARM)
-      val created = client.putOneOrThrow(sent)
-      val gotten = client.getOneOrThrow(makeEC(Scada.ControlExe))
+      val created = client.put(sent).await().expectOne
+      val gotten = client.get(makeEC(Scada.ControlExe)).await().expectOne
 
       gotten should equal(created)
     }

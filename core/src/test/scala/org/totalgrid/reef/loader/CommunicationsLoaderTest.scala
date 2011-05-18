@@ -25,20 +25,15 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import java.util.{ Date, Calendar }
 
 import org.totalgrid.reef.loader.sx.communications._
-import java.io.File
-import collection.mutable.{ Queue, HashMap }
+
+import collection.mutable.HashMap
 import org.totalgrid.reef.util.BuildEnv
 
 // scala XML classes
 
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.proto.Alarms._
-
-import org.totalgrid.reef.api.scalaclient.MockSyncOperations
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
 import org.totalgrid.reef.api.Envelope
 
 @RunWith(classOf[JUnitRunner])
@@ -60,7 +55,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
     val ex = new NullExceptionCollector
@@ -274,7 +269,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
 
   }
 
-  def protoPrintln(proto: com.google.protobuf.GeneratedMessage) = println("\nPROTO: " + className(proto.getClass.toString) + "\n" + proto.toString + "\n")
+  def protoPrintln(value: AnyRef) = println("\nPROTO: " + className(value.getClass.toString) + "\n" + value.toString + "\n")
   def className(c: String) = c.substring(c.lastIndexOf('.') + 1, c.length - 1).replace('$', '.')
 
   def makeEquipment(

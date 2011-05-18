@@ -58,14 +58,14 @@ class AlarmQueryTest
     val desc = "Get all alarms by specifying a wildcard AlarmSelect (except a limit of 2 records returned)."
 
     client.addExplanation("Get all alarms", desc)
-    client.getOneOrThrow(AlarmListRequestBuilders.getAll(2))
+    client.get(AlarmListRequestBuilders.getAll(2)).await().expectOne
   }
 
   test("Get all unacknowledged alarms") {
     val desc = "Get unacknowledged alarms (limit 2). Need to specify the two unacknowledged states."
 
     client.addExplanation("Get unacknowledged alarms", desc)
-    client.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(2))
+    client.get(AlarmListRequestBuilders.getUnacknowledged(2)).await().expectOne
   }
 
   test("Get alarms with multiple selects") {
@@ -73,7 +73,7 @@ class AlarmQueryTest
     val desc = "Get unacknowledged alarms with type 'Scada.OutOfNominal' (limit 2)"
 
     client.addExplanation("Get alarms with multiple selects", desc)
-    client.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithType("Scada.OutOfNominal", 2))
+    client.get(AlarmListRequestBuilders.getUnacknowledgedWithType("Scada.OutOfNominal", 2)).await().expectOne
   }
 
 }

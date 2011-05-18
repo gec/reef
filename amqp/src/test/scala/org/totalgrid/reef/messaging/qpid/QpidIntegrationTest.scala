@@ -48,7 +48,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
       val client = amqp.getProtoClientSession(servicelist, 1000)
       intercept[ReefServiceException] {
-        client.getOrThrow(payload)
+        client.get(payload).await().expectMany()
       }
     }
   }
@@ -76,8 +76,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
       // invoke the service future, and check that
       // response payload matches the request
-      val payloads = serviceSend.getOrThrow(payload)
-      payloads.size should equal(3)
+      val payloads = serviceSend.get(payload).await().expectMany(3)
     }
   }
 
@@ -92,8 +91,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
       // invoke the service future, and check that
       // response payload matches the request
-      val payloads = client.getOrThrow(request)
-      payloads.size should equal(2)
+      val payloads = client.get(request).await().expectMany(2)
       payloads.foreach { _.getKey should equal(request.getKey) }
     }
   }
@@ -145,7 +143,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
       val serviceSend = amqp.getProtoClientSession(servicelist, 10000)
 
       for (i <- 1 to runs) yield {
-        val payloads = serviceSend.getOrThrow(payload)
+        val payloads = serviceSend.get(payload).await().expectMany()
         payloads.size should equal(1)
         // collect the server names for later analysis
         counts(payloads.head.getValue.toInt) += 1

@@ -20,13 +20,12 @@
  */
 package org.totalgrid.reef.messaging
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 
-import org.totalgrid.reef.api.ServiceTypes._
 import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.scalaclient._
+import com.google.protobuf.GeneratedMessage
 
 /**
  * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
@@ -87,26 +86,26 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
    * get a publisher that sends messages to a fixed exchange and generates the routing key
    * based off the content of that message
    */
-  def publish[A <: GeneratedMessage](exchange: String, keygen: A => String): A => Unit = {
-    AMQPConvertingProtoPublisher.wrapSend[A](publish(exchange), keygen)
+  def publish[A](exchange: String, keygen: A => String, serialize: A => Array[Byte]): A => Unit = {
+    AMQPConvertingProtoPublisher.wrapSend[A](publish(exchange), keygen, serialize)
   }
 
   /**
    * get a publisher that sends messages to a fixed exchange but allow us to manually set the routing_key
    */
-  def send[A <: GeneratedMessage](exchange: String): (A, String) => Unit = {
-    AMQPConvertingProtoPublisher.wrapSendWithKey[A](publish(exchange))
+  def send[A](exchange: String, serialize: A => Array[Byte]): (A, String) => Unit = {
+    AMQPConvertingProtoPublisher.wrapSendWithKey[A](publish(exchange), serialize)
   }
 
   /**
    * get a publisher that allow us to send proto messages to an arbitrary exchange with arbitrary key
    */
 
-  def broadcast[A <: GeneratedMessage](): (A, String, String) => Unit = {
+  def broadcast[A](serialize: A => Array[Byte]): (A, String, String) => Unit = {
     val pub = new AMQPPublisher with ReactActor
     add(pub)
     addReactor(pub)
-    AMQPConvertingProtoPublisher.wrapSendToExchange[A](pub.send(_, _, _))
+    AMQPConvertingProtoPublisher.wrapSendToExchange[A](pub.send(_, _, _), serialize)
   }
 
   /* ---- Service related functions ---- */
@@ -138,7 +137,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
     add(sub)
   }
 
-  def prepareSubscription[A <: GeneratedMessage](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
+  final override def prepareSubscription[A](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }
@@ -154,7 +153,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
   def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
-    val pub = broadcast[Envelope.ServiceResponse]()
+    val pub = broadcast[Envelope.ServiceResponse]((x: Envelope.ServiceResponse) => x.toByteArray)
     val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
 
     if (competing) add(new AMQPCompetingConsumer(exchange, exchange + "_server", destination, binding))

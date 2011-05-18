@@ -26,9 +26,10 @@ import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
-import org.totalgrid.reef.api.service.ServiceTypeIs
-import org.totalgrid.reef.api.auth.IAuthService
+import org.totalgrid.reef.api.{ Envelope, BadRequestException, AddressableService }
+
+import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.api.scalaclient.{ Failure, SingleSuccess }
 
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
@@ -48,7 +49,7 @@ class UserCommandRequestService(
 
   override def doAsyncPutPost(rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
 
-    val request = rsp.result.head
+    val request = rsp.expectOne
 
     val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
@@ -62,11 +63,7 @@ class UserCommandRequestService(
     }
 
     pool.borrow { session =>
-      session.asyncPutOne(request, dest = address) { result =>
-        val response: Response[UserCommandRequest] = result match {
-          case SingleSuccess(status, cmd) => Response(status, UserCommandRequest.newBuilder(request).setStatus(cmd.getStatus).build :: Nil)
-          case Failure(status, msg) => Response(status, error = msg)
-        }
+      session.put(request, destination = address).listen { response =>
         callback(response)
       }
     }

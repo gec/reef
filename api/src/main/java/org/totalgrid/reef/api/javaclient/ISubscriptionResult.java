@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.javaclient;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient
 
-trait IFuture[A] {
-  def get: IResult[A]
+public interface ISubscriptionResult<T,U> {
+
+  T getResult();
+  ISubscription<U> getSubscription();
+
 }

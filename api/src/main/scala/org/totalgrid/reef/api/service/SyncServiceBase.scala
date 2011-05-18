@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.service
 
 import org.totalgrid.reef.api.RequestEnv
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 
 trait SyncServiceBase[A <: AnyRef] extends AsyncServiceBase[A] with SyncRestService {
 

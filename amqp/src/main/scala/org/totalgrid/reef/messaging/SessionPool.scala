@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging
 import javaclient.Session
 import org.totalgrid.reef.api.scalaclient.{ ClientSessionPool, ClientSession }
 import scala.collection.mutable._
-import org.totalgrid.reef.api.javaclient.{ ISessionConsumer, ISessionPool }
+import org.totalgrid.reef.api.javaclient.{ ISessionFunction, ISessionPool }
 
 class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ClientSessionPool with ISessionPool {
 
@@ -75,11 +75,11 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
   }
 
   // implement ISession
-  override def borrow[A](consumer: ISessionConsumer[A]): A = {
-    borrow(client => consumer.apply(new Session(client)))
+  override def borrow[A](function: ISessionFunction[A]): A = {
+    borrow(client => function.apply(new Session(client)))
   }
 
-  override def borrow[A](authToken: String, consumer: ISessionConsumer[A]): A = {
-    borrow(authToken)(client => consumer.apply(new Session(client)))
+  override def borrow[A](authToken: String, function: ISessionFunction[A]): A = {
+    borrow(authToken)(client => function.apply(new Session(client)))
   }
 }

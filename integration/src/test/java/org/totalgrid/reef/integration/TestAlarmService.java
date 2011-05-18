@@ -41,10 +41,10 @@ public class TestAlarmService extends JavaBridgeTestBase {
      */
     @Test
     public void prepareAlarms()  throws ReefServiceException {
-        client.putOne(EventConfigRequestBuilders.makeAudibleAlarm("Test.Alarm", "Alarm", 1));
+        client.put(EventConfigRequestBuilders.makeAudibleAlarm("Test.Alarm", "Alarm", 1)).await().expectOne();
 
         // add an alarm for a point we know is not changing
-        client.putOne(EventRequestBuilders.makeNewEventForEntityByName("Test.Alarm", "StaticSubstation.Line02.Current"));
+        client.put(EventRequestBuilders.makeNewEventForEntityByName("Test.Alarm", "StaticSubstation.Line02.Current")).await().expectOne();
     }
 
 	/** Test that some alarms are returned from the AlarmQuery service */
@@ -62,7 +62,7 @@ public class TestAlarmService extends JavaBridgeTestBase {
 	public void entityQueries()  throws ReefServiceException {
 
 		// Get the first substation
-		Entity substation = client.getOne(EntityRequestBuilders.getByName("StaticSubstation"));
+		Entity substation = client.get(EntityRequestBuilders.getByName("StaticSubstation")).await().expectOne();
 
 		// Get all the points in the substation. Alarms are associated with individual points.
 		Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(substation, "Point");

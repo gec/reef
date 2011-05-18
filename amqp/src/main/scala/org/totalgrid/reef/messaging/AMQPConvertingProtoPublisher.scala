@@ -20,26 +20,18 @@
  */
 package org.totalgrid.reef.messaging
 
-import com.google.protobuf.GeneratedMessage
-import ProtoSerializer._
-
 object AMQPConvertingProtoPublisher {
 
-  def wrapSend[A <: GeneratedMessage](sendFun: (Array[Byte], String) => Unit, keygen: A => String): A => Unit = { (value: A) =>
-    {
-      sendFun(value, keygen(value))
-    }
-  }
-  def wrapSendWithKey[A <: GeneratedMessage](sendFun: (Array[Byte], String) => Unit): (A, String) => Unit = { (value: A, key: String) =>
-    {
-      sendFun(value, key)
-    }
+  def wrapSend[A](sendFun: (Array[Byte], String) => Unit, keygen: A => String, serialize: A => Array[Byte]): A => Unit = { (value: A) =>
+    sendFun(serialize(value), keygen(value))
   }
 
-  def wrapSendToExchange[A <: GeneratedMessage](sendFun: (Array[Byte], String, String) => Unit): (A, String, String) => Unit = { (value: A, exchange: String, key: String) =>
-    {
-      sendFun(value, exchange, key)
-    }
+  def wrapSendWithKey[A](sendFun: (Array[Byte], String) => Unit, serialize: A => Array[Byte]): (A, String) => Unit = { (value: A, key: String) =>
+    sendFun(serialize(value), key)
+  }
+
+  def wrapSendToExchange[A](sendFun: (Array[Byte], String, String) => Unit, serialize: A => Array[Byte]): (A, String, String) => Unit = { (value: A, exchange: String, key: String) =>
+    sendFun(serialize(value), exchange, key)
   }
 
 }

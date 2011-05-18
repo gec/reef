@@ -28,11 +28,11 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.models.{ ApplicationSchema, CommunicationEndpoint, Point }
+import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure }
+import org.totalgrid.reef.api.scalaclient.{ Response, Request, AsyncScatterGather }
 import org.totalgrid.reef.api.service.AsyncServiceBase
 import org.totalgrid.reef.api.scalaclient.ClientSessionPool
 
@@ -62,7 +62,7 @@ class MeasurementBatchService(pool: ClientSessionPool)
 
     }
 
-    pool.borrow { client =>
+    borrow { client =>
       client.requestAsyncScatterGather(requests) { results =>
         val failures = results.flatMap {
           _ match {
@@ -71,14 +71,14 @@ class MeasurementBatchService(pool: ClientSessionPool)
           }
         }
 
-        if (failures.size == 0) callback(Response(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build())))
-        else {
-          val msg = failures.mkString(",")
-          callback(Response(Envelope.Status.INTERNAL_ERROR, error = msg))
-        }
+    AsyncScatterGather.collect[MeasurementBatch](promises) { results =>
+      val failures = results.filterNot(_.success)
+      if (failures.size == 0) callback(Response(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build())))
+      else {
+        val msg = failures.mkString(",")
+        callback(Response(Envelope.Status.INTERNAL_ERROR, error = msg))
       }
     }
-
   }
 
   private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {
