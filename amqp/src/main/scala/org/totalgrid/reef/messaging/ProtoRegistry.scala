@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, Event }
+import org.totalgrid.reef.api.scalaclient.{ ClientSession, Event, ISessionPool }
 import org.totalgrid.reef.api.{ ServiceList, RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.reactor.Reactable
@@ -28,7 +28,7 @@ import org.totalgrid.reef.reactor.Reactable
 /** Combines the various registry traits into a single interface */
 trait Connection {
 
-  def getClientSession(): ClientSession
+  def getSessionPool(): ISessionPool
 
   /** Creates an event queue of type A that can be monitored using an ObservableSubscription */
   def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit
@@ -51,21 +51,25 @@ trait Connection {
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
 class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection {
 
-  override def getClientSession(): ClientSession = {
+  private lazy val pool = new SessionPool(this)
+
+  def getClientSession(): ClientSession = {
     val client = new ProtoClient(factory, lookup, timeoutms)
     defaultEnv.foreach(client.setDefaultHeaders)
     client
   }
 
-  override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
+  final override def getSessionPool(): ISessionPool = pool
+
+  final override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     factory.getEventQueue(deserialize, accept)
   }
 
-  override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
+  final override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
     factory.getEventQueue(deserialize, accept, notify)
   }
 
-  override def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  final override def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     factory.bindService(service.descriptor.id, service.respond, destination, competing, reactor)
   }
 

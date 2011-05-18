@@ -85,8 +85,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   }
 
   override def _removeEndpoint(endpoint: String) = {
-    // close the publisher
-    map(endpoint)._2.close
+
     debug { "Not removing stack " + endpoint + " as per workaround" }
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll
     times out.

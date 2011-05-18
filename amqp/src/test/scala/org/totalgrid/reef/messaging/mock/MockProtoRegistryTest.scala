@@ -128,18 +128,16 @@ class MockProtoRegistryTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  // mock objects are not available until they are created
-  test("MockServiceRegistryException") {
+  test("MockIsUnavailableUntilPoolIsRequested") {
     val reg = new MockConnection {}
     intercept[NoSuchElementException] {
       reg.getMockClient
     }
   }
 
-  // tests that once the consumer is requested, the mock will be available
-  test("MockServiceRegistryLookupDefaultstoREQUEST") {
+  test("OncePoolIsRequestedMockIsAvailable") {
     val reg = new MockConnection {}
-    reg.getClientSession()
+    reg.getSessionPool()
     reg.getMockClient
   }
 

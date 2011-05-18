@@ -33,7 +33,6 @@ object IProtocol {
 
 trait IPublisher {
   def publish(batch: Measurements.MeasurementBatch): Unit
-  def close()
 }
 
 trait IResponseHandler {
@@ -54,7 +53,6 @@ trait IChannelListener {
 
 case object NullPublisher extends IPublisher {
   def publish(batch: Measurements.MeasurementBatch): Unit = {}
-  def close() {}
 }
 
 case object NullEndpointListener extends IEndpointListener {

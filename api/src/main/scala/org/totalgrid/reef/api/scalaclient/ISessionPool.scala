@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.scalaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,26 +18,12 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.scalaclient
 
-import scala.collection.mutable.Map
+/** A class that implements a borrow function */
+trait ISessionPool {
 
-object AsyncScatterGather {
+  def borrow[A](fun: ClientSession => A): A
 
-  def collect[A <: AnyRef](promises: List[IPromise[Response[A]]])(callback: List[Response[A]] => Unit) {
-
-    // the results we're collecting and a counter
-    val map = Map.empty[Int, Response[A]]
-    val size = promises.size
-
-    def gather(idx: Int)(rsp: Response[A]) = map.synchronized {
-      map += idx -> rsp
-      if (map.size == size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
-    }
-
-    promises.zipWithIndex.foreach {
-      case (promise, i) => promise.listen(gather(i))
-    }
-  }
-
+  def borrow[A](authToken: String)(fun: ClientSession => A): A
 }
-

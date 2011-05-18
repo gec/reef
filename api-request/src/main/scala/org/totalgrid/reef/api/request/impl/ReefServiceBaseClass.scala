@@ -20,15 +20,15 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.scalaclient._
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException }
-import org.totalgrid.reef.api.javaclient._
 import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResult, Session }
+
+import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, Subscription, ClientSession, SyncOperations }
+import org.totalgrid.reef.api.javaclient._
 
 trait ReefServiceBaseClass extends ClientSource {
 
-  def useSubscription[A, B <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
+  def useSubscription[A, B](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
     val sub = session.addSubscription[B](klass)
     try {
 

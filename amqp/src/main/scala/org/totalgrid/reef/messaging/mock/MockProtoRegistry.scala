@@ -27,15 +27,13 @@ import com.google.protobuf.GeneratedMessage
 import scala.concurrent.MailBox
 import scala.collection.immutable
 
-import org.totalgrid.reef.messaging.Connection
-
 import org.totalgrid.reef.api.service.IServiceAsync
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 
 import org.totalgrid.reef.api.scalaclient._
-import java.lang.Override
+import org.totalgrid.reef.messaging.{ SessionPool, Connection }
 
 //implicits for massaging service return types
 
@@ -169,6 +167,7 @@ trait MockConnection extends Connection {
 
   // map classes to protoserviceconsumers
   var mockclient: Option[MockClientSession] = None
+
   var eventqueues = immutable.Map.empty[Class[_], Any]
 
   def getMockClient: MockClientSession = mockclient.get
@@ -185,13 +184,13 @@ trait MockConnection extends Connection {
     }
   }
 
-  override def getClientSession(): ClientSession = mockclient match {
-    case Some(x) => x
-    case None =>
-      val ret = new MockClientSession
-      mockclient = Some(ret)
-      ret
+  private lazy val pool = {
+    val session = new MockClientSession
+    mockclient = Some(session)
+    new MockSessionPool(session)
   }
+
+  final override def getSessionPool() = pool
 
   override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, None))
