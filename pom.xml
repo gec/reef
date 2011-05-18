@@ -19,6 +19,7 @@
         <module>proto</module>
         <module>api</module>
         <module>api-request</module>
+        <module>java-rest-api</module>
         <module>xml</module>
         <module>util</module>
         <module>metrics</module>
