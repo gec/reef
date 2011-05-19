@@ -32,19 +32,14 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
-  def getMockChannelListener = new IChannelListener {
-    var queue = Queue.empty[CommChannel.State]
-    def onStateChange(state: CommChannel.State) = queue += state
-  }
-
-  def getMockEndpointListener = new IEndpointListener {
-    var queue = Queue.empty[CommEndpointConnection.State]
-    def onStateChange(state: CommEndpointConnection.State) = queue += state
+  class MockListener[A] extends IListener[A] {
+    var queue = Queue.empty[A]
+    def onUpdate(state: A) = queue += state
   }
 
   test("Channel callbacks") {
     val mp = new MockProtocol with ChannelAlwaysOnline
-    val listener = getMockChannelListener
+    val listener = new MockListener[CommChannel.State]
 
     mp.addChannel(CommChannel.newBuilder.setName("channel1").build, listener)
     mp.removeChannel("channel1")
@@ -54,7 +49,7 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
   test("Endpoint callbacks") {
     val mp = new MockProtocol(false) with EndpointAlwaysOnline
-    val listener = getMockEndpointListener
+    val listener = new MockListener[CommEndpointConnection.State]
 
     mp.addEndpoint("endpoint1", "", Nil, NullPublisher, listener)
     listener.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))

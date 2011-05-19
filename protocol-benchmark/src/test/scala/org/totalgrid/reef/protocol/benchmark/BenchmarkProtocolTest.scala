@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.protocol.benchmark
 
-import org.totalgrid.reef.protocol.api.{ IPublisher, IResponseHandler, NullEndpointListener }
+import org.totalgrid.reef.protocol.api.{ IListener, NullEndpointListener }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -28,6 +28,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.SyncVar
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.proto.Commands.CommandResponse
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
@@ -63,15 +65,17 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     Commands.CommandRequest.newBuilder.setName(name).build
   }
 
-  class Callbacks extends IPublisher with IResponseHandler {
+  class MeasCallbacks extends IListener[MeasurementBatch] {
+
+    val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
+    def onUpdate(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)
+
+  }
+
+  class CommandCallbacks extends IListener[CommandResponse] {
 
     val cmdResponses = new SyncVar[Option[Commands.CommandResponse]](None: Option[Commands.CommandResponse])
-    val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
-
-    def publish(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)
-    def close() {}
-
-    def onResponse(c: Commands.CommandResponse) = cmdResponses.update(Some(c))
+    def onUpdate(c: Commands.CommandResponse) = cmdResponses.update(Some(c))
 
   }
 
@@ -79,42 +83,43 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
 
   test("add remove") {
     val protocol = new BenchmarkProtocol
-    val cb = new Callbacks
-    protocol.addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
+    val measCB = new MeasCallbacks
+    protocol.addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointListener)
 
-    cb.measurements.waitFor(_.size > 0)
+    measCB.measurements.waitFor(_.size > 0)
 
     protocol.removeEndpoint(endpointName)
 
-    val atStop = cb.measurements.lastValueAfter(50).size
+    val atStop = measCB.measurements.lastValueAfter(50).size
 
     def check(l: List[Measurements.MeasurementBatch]): Boolean = l.size != atStop
-    cb.measurements.waitFor(check _, 100, false) should equal(false)
+    measCB.measurements.waitFor(check _, 100, false) should equal(false)
   }
 
   test("command responded to") {
     val protocol = new BenchmarkProtocol
-    val cb = new Callbacks
-    val cmdHandler = protocol.addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
+    val measCB = new MeasCallbacks
+    val cmdBC = new CommandCallbacks
+    val cmdHandler = protocol.addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointListener)
 
-    cmdHandler.issue(getCmdRequest("success"), cb)
+    cmdHandler.issue(getCmdRequest("success"), cmdBC)
 
-    cb.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.SUCCESS }.getOrElse(false))
+    cmdBC.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.SUCCESS }.getOrElse(false))
 
-    cmdHandler.issue(getCmdRequest("fail"), cb)
+    cmdHandler.issue(getCmdRequest("fail"), cmdBC)
 
-    cb.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.HARDWARE_ERROR }.getOrElse(false))
+    cmdBC.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.HARDWARE_ERROR }.getOrElse(false))
 
     protocol.removeEndpoint(endpointName)
   }
 
-  test("Readding causes exception") {
+  test("Adding twice causes exception") {
     val protocol = new BenchmarkProtocol
-    val cb = new Callbacks
+    val measCB = new MeasCallbacks
     // need to call the NVII functions or else we are only testing the BaseProtocol code
-    protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
+    protocol._addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointListener)
     intercept[IllegalArgumentException] {
-      protocol._addEndpoint(endpointName, "", getConfigFiles(), cb, NullEndpointListener)
+      protocol._addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointListener)
     }
   }
 

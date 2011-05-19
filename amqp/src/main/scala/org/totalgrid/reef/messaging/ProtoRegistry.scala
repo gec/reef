@@ -25,6 +25,12 @@ import org.totalgrid.reef.api.{ ServiceList, RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.reactor.Reactable
 
+trait PoolableConnection {
+
+  def getClientSession(): ClientSession
+
+}
+
 /** Combines the various registry traits into a single interface */
 trait Connection {
 

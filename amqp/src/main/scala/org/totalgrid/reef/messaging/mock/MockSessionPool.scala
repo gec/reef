@@ -21,17 +21,16 @@
 package org.totalgrid.reef.messaging.mock
 
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool }
+import org.totalgrid.reef.api.IConnectionListener
 
-/*
- * Created by IntelliJ IDEA.
- * User: adam
- * Date: 5/18/11
- * Time: 4:21 PM
- */
 class MockSessionPool(session: ClientSession) extends ISessionPool {
 
-  def borrow[A](fun: ClientSession => A): A = fun(session)
+  final override def borrow[A](fun: ClientSession => A): A = fun(session)
 
-  def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow(fun)
+  final override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow(fun)
+
+  //final override def addListener(listener: IConnectionListener) = listener.opened()
+
+  //final override def removeListener(listener: IConnectionListener) = {}
 
 }

@@ -28,13 +28,13 @@ import java.util.Random
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
-import Measurements.{ Measurement => Meas }
-
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.{ IPublisher, ICommandHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api.{ ICommandHandler, IListener }
+import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
+import org.totalgrid.reef.proto.Commands.CommandResponse
 
-class Simulator(name: String, publisher: IPublisher, config: SimMapping.SimulatorMapping, reactor: Reactable) extends Lifecycle with ICommandHandler with ControllableSimulator with Logging {
+class Simulator(name: String, publisher: IListener[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Reactable) extends Lifecycle with ICommandHandler with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -80,7 +80,7 @@ class Simulator(name: String, publisher: IPublisher, config: SimMapping.Simulato
     }
     if (batch.getMeasCount > 0) {
       info { name + " publishing batch of size: " + batch.getMeasCount }
-      publisher.publish(batch.build)
+      publisher.onUpdate(batch.build)
       info { name + " published batch" }
     }
   }
@@ -96,12 +96,12 @@ class Simulator(name: String, publisher: IPublisher, config: SimMapping.Simulato
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest, rspHandler: IResponseHandler) = cmdMap.get(cr.getName) match {
+  def issue(cr: Commands.CommandRequest, rspHandler: IListener[CommandResponse]) = cmdMap.get(cr.getName) match {
     case Some(x) =>
       info { "handled command:" + cr }
       val rsp = Commands.CommandResponse.newBuilder
       rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
-      rspHandler.onResponse(rsp.build)
+      rspHandler.onUpdate(rsp.build)
     case None =>
   }
 

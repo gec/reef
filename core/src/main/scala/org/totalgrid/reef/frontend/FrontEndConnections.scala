@@ -32,6 +32,7 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
@@ -81,9 +82,9 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
-  private def newEndpointListener(connectionUid: String) = new IEndpointListener {
+  private def newEndpointListener(connectionUid: String) = new IListener[ConnProto.State] {
 
-    override def onStateChange(state: ConnProto.State) = {
+    override def onUpdate(state: ConnProto.State) = {
       val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
       try {
         val result = pool.borrow { _.post(update).await().expectOne }
@@ -94,9 +95,9 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newChannelListener(channelUid: ReefUUID) = new IChannelListener {
+  private def newChannelListener(channelUid: ReefUUID) = new IListener[CommChannel.State] {
 
-    override def onStateChange(state: CommChannel.State) = {
+    override def onUpdate(state: CommChannel.State) = {
       val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
       try {
         val result = pool.borrow { _.post(update).await().expectOne }
@@ -131,9 +132,9 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newPublisher(routingKey: String) = new IPublisher {
+  private def newPublisher(routingKey: String) = new IListener[MeasurementBatch] {
 
-    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableService(routingKey))(batch)
+    override def onUpdate(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableService(routingKey))(batch)
 
   }
 }

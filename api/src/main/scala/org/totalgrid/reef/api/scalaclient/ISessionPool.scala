@@ -20,10 +20,16 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
+import org.totalgrid.reef.api.IConnectionListener
+
 /** A class that implements a borrow function */
 trait ISessionPool {
 
   def borrow[A](fun: ClientSession => A): A
 
   def borrow[A](authToken: String)(fun: ClientSession => A): A
+
+  //def addListener(listener: IConnectionListener) : Unit
+
+  //def removeListener(listener: IConnectionListener) : Unit
 }

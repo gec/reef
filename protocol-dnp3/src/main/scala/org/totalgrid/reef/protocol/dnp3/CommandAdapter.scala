@@ -26,7 +26,7 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
-import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHandler, IListener }
 
 /**
  * Command adapter acts as a command response acceptor, forwarding translated responses to an actor
@@ -38,7 +38,7 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHand
 class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     extends IResponseAcceptor with IProtocolCommandHandler with Logging {
 
-  case class ResponseInfo(id: String, handler: IResponseHandler)
+  case class ResponseInfo(id: String, handler: IListener[Commands.CommandResponse])
 
   private val map = MapGenerator.getCommandMap(cfg)
   private var sequence = 0
@@ -49,11 +49,11 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     case Some(ResponseInfo(id, handler)) =>
       info("Got command response: " + rsp.toString + " seq: " + seq)
       idMap -= seq //remove from the map
-      handler.onResponse(DNPTranslator.translate(rsp, id)) //send the response to the sender
+      handler.onUpdate(DNPTranslator.translate(rsp, id)) //send the response to the sender
     case None => warn("Unknown command response with sequence " + seq)
   }
 
-  def issue(cr: Commands.CommandRequest, rspHandler: IResponseHandler): Unit = map.get(cr.getName) match {
+  def issue(cr: Commands.CommandRequest, rspHandler: IListener[Commands.CommandResponse]): Unit = map.get(cr.getName) match {
     case Some(x) =>
       info("Sending command request: " + x.toString)
       if (x.getType == Mapping.CommandType.SETPOINT)
@@ -64,7 +64,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     case None => warn("Unregisterd command request: " + cr.toString)
   }
 
-  private def nextSeq(id: String, handler: IResponseHandler): Int = {
+  private def nextSeq(id: String, handler: IListener[Commands.CommandResponse]): Int = {
     sequence += 1
     idMap.put(sequence, ResponseInfo(id, handler))
     sequence
