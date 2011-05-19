@@ -56,7 +56,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
-    val result = one(Status.OK, service.put(entAttr))
+    val result = service.put(entAttr).expectOne(Status.OK)
     result.getAttributesCount should equal(1)
   }
 
@@ -115,12 +115,12 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
-    val result = one(Status.OK, service.put(entAttr))
+    val result = service.put(entAttr).expectOne(Status.OK)
     result.getAttributesCount should equal(1)
     val attr = result.getAttributesList.get(0)
     attr.getValueSint64 should equal(56)
 
-    val result2 = one(Status.OK, service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute.toBuilder.setValueSint64(23)).build))
+    val result2 = service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute.toBuilder.setValueSint64(23)).build).expectOne(Status.OK)
 
     result2.getAttributesCount should equal(1)
     result2.getAttributesList.get(0).getValueSint64 should equal(23)
@@ -137,18 +137,18 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
     val entAttr = attrReq(entUid, initial)
 
-    val result = one(Status.OK, service.put(entAttr))
+    val result = service.put(entAttr).expectOne(Status.OK)
     result.getAttributesCount should equal(2)
 
     val req2 = attrReq(entUid, List(Attribute.newBuilder.setName("testAttr03").setVtype(Attribute.Type.SINT64).setValueSint64(400).build))
-    val result2 = one(Status.OK, service.put(req2))
+    val result2 = service.put(req2).expectOne(Status.OK)
 
     result2.getAttributesCount should equal(1)
     result2.getAttributesList.get(0).getName should equal("testAttr03")
   }
 
   def checkSimpleGetScenario(request: EntityAttributes) = {
-    val result = one(Status.OK, service.get(request))
+    val result = service.get(request).expectOne(Status.OK)
     result.getEntity.getName should equal("ent01")
     result.getAttributesCount should equal(1)
     result.getAttributesList.get(0).getName should equal("attr01")
@@ -163,7 +163,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
-    val results = many(2, service.get(entAttr))
+    val results = service.get(entAttr).expectMany(2)
 
     results.foreach { result =>
       if (result.getEntity.getName == "ent01") {
@@ -211,7 +211,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
-    val results = many(2, service.get(entAttr))
+    val results = service.get(entAttr).expectMany(2)
     results.foreach { ent =>
       ent.getAttributesCount should equal(2)
     }
@@ -227,9 +227,9 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     setup(attribute, v)
 
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
-    one(Status.OK, service.put(entAttr))
+    service.put(entAttr).expectOne(Status.OK)
 
-    val result = one(Status.OK, service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entUid)).build))
+    val result = service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entUid)).build).expectOne(Status.OK)
 
     result.getAttributesCount should equal(1)
     val attr = result.getAttributesList.get(0)
@@ -260,7 +260,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Delete") {
     val entId = deleteScenario
 
-    val resp = one(Status.OK, service.delete(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build))
+    val resp = service.delete(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build).expectOne(Status.OK)
     resp.getAttributesCount should equal(0)
 
     noneForEntity(entId)
@@ -269,7 +269,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Put no attributes is delete") {
     val entId = deleteScenario
 
-    val resp = one(Status.OK, service.put(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build))
+    val resp = service.put(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build).expectOne(Status.OK)
     resp.getAttributesCount should equal(0)
 
     noneForEntity(entId)

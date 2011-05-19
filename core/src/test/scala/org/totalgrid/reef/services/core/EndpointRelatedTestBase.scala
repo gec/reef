@@ -46,6 +46,7 @@ import org.totalgrid.reef.api.service.IServiceAsync
 
 import scalaclient.Event
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction }
+import org.totalgrid.reef.measproc.processing.Triggers.UnitCondition
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 
@@ -133,7 +134,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       caps.foreach(b.addCapabilites)
       b.setUserName(name).setInstanceName(name).setNetwork(network)
         .setLocation(location)
-      val cfg = one(appService.put(b.build))
+      val cfg = appService.put(b.build).expectOne()
       if (caps.find(_ == "Processing").isDefined) setupMockMeasProc(name, cfg)
       cfg
     }
@@ -143,7 +144,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       protocols.foreach(b.addProtocols(_))
       b.setAppConfig(app)
 
-      one(frontendService.put(b.build))
+      frontendService.put(b.build).expectOne()
     }
 
     def addFep(name: String, protocols: List[String] = List("dnp3", "benchmark")): FrontEndProcessor = {
@@ -166,7 +167,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       val env = new ServiceHandlerHeaders(new RequestEnv)
       env.setSubscribeQueue(queueName.current)
 
-      val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env.env)
+      val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env.env).expectMany()
 
       conns.foreach(c => mockMeas.onMeasProcAssign(new Event(Envelope.Event.ADDED, c)))
 
@@ -179,21 +180,21 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       val owns = EndpointOwnership.newBuilder.addPoints(name + "." + pname).addCommands(name + ".test_commands")
       val send = CommEndpointConfig.newBuilder()
         .setName(name).setProtocol("benchmark").setOwnerships(owns).build
-      one(commEndpointService.put(send))
+      commEndpointService.put(send).expectOne()
     }
 
     def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None): CommEndpointConfig = {
       val netPort = network.map { net => CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
       val locPort = location.map { loc => CommChannel.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
-      val port = one(portService.put(netPort.getOrElse(locPort.get)))
+      val port = portService.put(netPort.getOrElse(locPort.get)).expectOne()
       val owns = EndpointOwnership.newBuilder.addPoints(name + ".test_point").addCommands(name + ".test_commands")
       val send = CommEndpointConfig.newBuilder()
         .setName(name).setProtocol("dnp3").setChannel(port).setOwnerships(owns).build
-      one(commEndpointService.put(send))
+      commEndpointService.put(send).expectOne()
     }
 
     def getPoint(device: String): Point =
-      one(pointService.get(Point.newBuilder.setName(device + ".test_point").build))
+      pointService.get(Point.newBuilder.setName(device + ".test_point").build).expectOne()
 
     def getValue(pname: String): Long = rtDb.get(pname).map(_.getIntVal).getOrElse(0)
 
@@ -215,7 +216,10 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def listenForMeasurements(measProcName: String) = measProcMap.get(measProcName).get.mb
 
-    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean) {
+    def checkFeps(fep: CommEndpointConnection, online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
+      checkFeps(List(fep), online, frontEndUid, hasServiceRouting)
+
+    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
       //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
       feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
@@ -230,8 +234,8 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
 
     def checkAssignments(num: Int, fepFrontEndUid: Option[FrontEndProcessor], measProcUid: Option[ApplicationConfig]) {
-      val feps = many(num, frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
-      val procs = many(num, measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build))
+      val feps = frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectMany(num)
+      val procs = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build).expectMany(num)
 
       checkFeps(feps, false, fepFrontEndUid, measProcUid.isDefined)
       checkMeasProcs(procs, measProcUid, measProcUid.isDefined)
@@ -239,7 +243,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {
       val (updates, env) = getEventQueueWithCode[CommEndpointConnection](amqp, CommEndpointConnection.parseFrom)
-      many(expected, frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env))
+      frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
       updates.size should equal(0)
       updates
     }

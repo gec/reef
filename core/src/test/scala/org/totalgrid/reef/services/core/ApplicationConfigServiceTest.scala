@@ -24,9 +24,6 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
-
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
@@ -48,24 +45,20 @@ class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
       .setLocation("farm1")
       .addCapabilites("FEP")
 
-    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).size should equal(0)
+    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectNone()
 
-    one(Status.CREATED, service.put(b.build))
+    service.put(b.build).expectOne(Status.CREATED)
 
-    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).size should equal(1)
-    val list = service.get(ApplicationConfig.newBuilder().setInstanceName("fep01").build)
-    list.size should equal(1)
-    val updated = one(Status.UPDATED, service.put(list.head.toBuilder.setLocation("farm2").build))
+    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectOne()
+    val config1 = service.get(ApplicationConfig.newBuilder().setInstanceName("fep01").build).expectOne()
+    val updated = service.put(config1.toBuilder.setLocation("farm2").build).expectOne(Status.UPDATED)
     updated.getLocation should equal("farm2")
 
-    one(Status.NOT_MODIFIED, service.put(updated))
-    val list2 = service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build)
-    list2.size should equal(1)
+    service.put(updated).expectOne(Status.NOT_MODIFIED)
+    val config2 = service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectOne()
+    config2.getLocation should equal("farm2")
 
-    val config = list2.head
-    config.getLocation should equal("farm2")
-
-    one(Status.DELETED, service.delete(config))
-    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).size should equal(0)
+    service.delete(config2).expectOne(Status.DELETED)
+    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectNone()
   }
 }

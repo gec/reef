@@ -50,6 +50,8 @@ trait Expectations[+A] {
 
   final def expectNone(status: Envelope.Status): Unit = expectNone(Some(status))
 
+  final def expectNone(): Unit = expectNone(None)
+
   final def expectMany(): List[A] = expectMany(None, None, None)
 
   final def expectMany(status: Envelope.Status): List[A] = expectMany(None, Some(status), None)

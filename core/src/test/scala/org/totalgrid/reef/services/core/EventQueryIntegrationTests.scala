@@ -55,7 +55,7 @@ class EventQueryIntegrationTests extends EventIntegrationTestsBase {
       val expected = expected1 :: expected2 :: expected3 :: expected4 :: expected5 :: expected6 :: Nil
       val not = not1 :: not2 :: not3 :: not4 :: not5 :: Nil
 
-      val event = one(fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")))
+      val event = fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")).expectOne()
 
       expected.foreach(_.pop(500) should equal(event))
       not.foreach(_.size should equal(0))

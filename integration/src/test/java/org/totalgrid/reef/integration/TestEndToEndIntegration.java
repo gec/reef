@@ -22,7 +22,7 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 
-import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
+import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 
 import org.totalgrid.reef.api.*;
@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
  * tests to prove that the simulator is up and measurements are being processed correctly.
  */
 @SuppressWarnings("unchecked")
-public class TestEndToEndIntegration extends JavaBridgeTestBase {
+public class TestEndToEndIntegration extends ReefConnectionTestBase {
 
     /**
 	 * Tests subscribing to the measurement snapshot service via a get operation

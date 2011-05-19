@@ -152,36 +152,36 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     // Select EventType only.
     //
 
-    var resp = one(service.get(makeEL(0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY)))
+    var resp = service.get(makeEL(0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(3)
     resp.getEventsList.toIterable.foreach(e => e.getEventType should equal(Scada.ControlExe.toString))
 
-    resp = one(service.get(makeEL(0, 0, Some(System.UserLogin), USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(0, 0, Some(System.UserLogin), USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(3)
     resp.getEventsList.toIterable.foreach(e => e.getEventType should equal(System.UserLogin.toString))
 
     // Select EventType and user
     //
 
-    resp = one(service.get(makeEL(0, 0, Some(System.UserLogout), USER1, ENTITY_ANY)))
+    resp = service.get(makeEL(0, 0, Some(System.UserLogout), USER1, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(1)
     resp.getEvents(0).getEventType should equal(System.UserLogout.toString)
 
-    resp = one(service.get(makeEL(0, 0, None, USER1, ENTITY_ANY)))
+    resp = service.get(makeEL(0, 0, None, USER1, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(3)
     resp.getEventsList.toIterable.foreach(e => e.getUserId should equal(USER1))
 
     // Select EventType and entity
     //
 
-    resp = one(service.get(makeEL(0, 0, None, "", ENTITY2)))
+    resp = service.get(makeEL(0, 0, None, "", ENTITY2)).expectOne()
     resp.getEventsCount should equal(2)
     resp.getEventsList.toIterable.foreach(e => e.getEntity.getName should equal(ENTITY2))
 
     // Select EventType, user, and entity
     //
 
-    resp = one(service.get(makeEL(0, 0, Some(Scada.ControlExe), USER1, ENTITY1)))
+    resp = service.get(makeEL(0, 0, Some(Scada.ControlExe), USER1, ENTITY1)).expectOne()
     resp.getEventsCount should equal(1)
     resp.getEvents(0).getEventType should equal(Scada.ControlExe.toString)
     resp.getEvents(0).getUserId should equal(USER1)
@@ -196,19 +196,19 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     val empty = List[String]()
     val anyEventType = List[EventType]()
 
-    var resp = one(service.get(makeEL(0, 0, List(Scada.ControlExe, System.UserLogin), empty, empty)))
+    var resp = service.get(makeEL(0, 0, List(Scada.ControlExe, System.UserLogin), empty, empty)).expectOne()
     resp.getEventsCount should equal(6)
 
-    resp = one(service.get(makeEL(0, 0, anyEventType, List(USER1, USER2), empty)))
+    resp = service.get(makeEL(0, 0, anyEventType, List(USER1, USER2), empty)).expectOne()
     resp.getEventsCount should equal(6)
 
-    resp = one(service.get(makeEL(0, 0, anyEventType, List(USER1, USER2, USER3), empty)))
+    resp = service.get(makeEL(0, 0, anyEventType, List(USER1, USER2, USER3), empty)).expectOne()
     resp.getEventsCount should equal(9)
 
-    resp = one(service.get(makeEL(0, 0, anyEventType, empty, List(ENTITY1, ENTITY2))))
+    resp = service.get(makeEL(0, 0, anyEventType, empty, List(ENTITY1, ENTITY2))).expectOne()
     resp.getEventsCount should equal(3)
 
-    resp = one(service.get(makeEL(0, 0, List(System.UserLogin, System.UserLogout), List(USER1, USER2, USER3), empty)))
+    resp = service.get(makeEL(0, 0, List(System.UserLogin, System.UserLogout), List(USER1, USER2, USER3), empty)).expectOne()
     resp.getEventsCount should equal(6)
 
   }
@@ -217,27 +217,27 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     val fixture = getFixture
     import fixture._
 
-    var resp = one(service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)))
+    var resp = service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(9)
 
-    resp = one(service.get(makeEL(HOURS_AGO_1, 0, None, USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(HOURS_AGO_1, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(4)
     //resp.getEventsList.toIterable.foreach(e => e.getResourceId should equal(ENTITY2))
 
-    resp = one(service.get(makeEL(HOURS_AGO_1, 0, Some(System.UserLogout), USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(HOURS_AGO_1, 0, Some(System.UserLogout), USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(2)
     resp.getEventsList.toIterable.foreach(e => e.getEventType should equal(System.UserLogout.toString))
 
-    resp = one(service.get(makeEL(DAYS_AGO_2, HOURS_AGO_2 + 9000, None, USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(DAYS_AGO_2, HOURS_AGO_2 + 9000, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(5)
 
-    resp = one(service.get(makeEL(DAYS_AGO_2, HOURS_AGO_1 + 9000, None, USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(DAYS_AGO_2, HOURS_AGO_1 + 9000, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(8)
 
     // Just timeFrom
-    resp = one(service.get(makeEL(DAYS_AGO_2, 0, None, USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(DAYS_AGO_2, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(9)
-    resp = one(service.get(makeEL(HOURS_AGO_2, 0, None, USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeEL(HOURS_AGO_2, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(7)
 
   }
@@ -257,7 +257,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
 
     val ENTITY42 = "Entity42" // Make the entity for updated entries unique.
 
-    var resp = one(service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)))
+    var resp = service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(9)
     var lastUid = resp.getEventsList.head.getUid // The latest UID in the database
 

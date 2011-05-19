@@ -27,7 +27,7 @@ import org.totalgrid.reef.api.request.AlarmService;
 import org.totalgrid.reef.api.request.EventService;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
-import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
+import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 import org.totalgrid.reef.proto.Events;
@@ -36,7 +36,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestEventService extends JavaBridgeTestBase {
+public class TestEventService extends ReefConnectionTestBase {
 
     @Test
     public void prepareEvents()  throws ReefServiceException {

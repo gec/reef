@@ -24,7 +24,7 @@ import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.api.ReefServiceException
 import org.totalgrid.reef.api.scalaclient.Response
-import org.totalgrid.reef.util.EmptySyncVar
+import org.totalgrid.reef.util.AsyncValue
 
 import org.totalgrid.reef.messaging.SessionPool
 import org.totalgrid.reef.proto.ReefServicesList
@@ -75,11 +75,11 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
       var mb = coord.listenForMeasurements("meas")
 
-      val result = new EmptySyncVar[Response[MeasurementBatch]]
+      val result = new AsyncValue[Response[MeasurementBatch]]
 
-      coord.batchService.putAsync(makeBatch(makeInt("dev1.test_point", 10))) { x => result.update(x) }
+      coord.batchService.putAsync(makeBatch(makeInt("dev1.test_point", 10)))(result.set)
 
-      result.waitFor { rsp => one(rsp); true }
+      result.await().expectOne()
 
       mb.waitFor({ _.size == 1 }, 1000)
 
@@ -110,9 +110,9 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
       val batch = makeBatch(makeInt("dev1.test_point", 10) :: makeInt("dev2.test_point", 10) :: Nil)
 
-      val result = new EmptySyncVar[Response[MeasurementBatch]]
-      coord.batchService.putAsync(batch) { x => result.update(x) }
-      result.waitFor { rsp => one(rsp); true }
+      val result = new AsyncValue[Response[MeasurementBatch]]
+      coord.batchService.putAsync(batch)(result.set)
+      result.await().expectOne()
 
       mb.waitFor({ _.size == 2 }, 1000)
 

@@ -33,7 +33,7 @@ import java.util.List;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestPointService extends JavaBridgeTestBase
+public class TestPointService extends ReefConnectionTestBase
 {
     /** Test that some points names are returns from the Point service */
     @Test

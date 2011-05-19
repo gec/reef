@@ -39,7 +39,7 @@ import java.util.Arrays;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestEntityService extends JavaBridgeTestBase {
+public class TestEntityService extends ReefConnectionTestBase {
 
 	private interface IKeyGen<T> {
 		public String getKey(T value);

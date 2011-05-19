@@ -91,7 +91,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
       val b = ApplicationConfig.newBuilder
       b.setUserName("fep").setInstanceName("fep01").setNetwork("any")
       b.setLocation("any").addCapabilites("FEP").setProcessId(processId)
-      one(appService.put(b.build))
+      appService.put(b.build).expectOne()
     }
 
     def coord = processStatusCoordinator
@@ -100,7 +100,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
   test("Add Heartbeats") {
 
     val fix = new ProcessStatusFixture
-    val ss = one(fix.service.get(fix.namedProto.build))
+    val ss = fix.service.get(fix.namedProto.build).expectOne()
     ss.getOnline should equal(true)
 
     fix.eventSink.waitForNEvents(1)
@@ -115,7 +115,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     fix.coord.handleRawStatus(beat)
 
-    none(fix.service.get(StatusSnapshot.newBuilder().setProcessId("11111").build))
+    fix.service.get(StatusSnapshot.newBuilder().setProcessId("11111").build).expectNone()
   }
 
   test("Raw messages are correctly handled") {
@@ -125,7 +125,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     fix.eventSink.waitForNEvents(1)
     fix.eventSink.lastEvent should equal(Some(Envelope.Event.ADDED))
 
-    val ss = one(fix.service.get(fix.namedProto.build))
+    val ss = fix.service.get(fix.namedProto.build).expectOne()
     ss.getOnline should equal(true)
     val failsAt = ss.getTime
 
@@ -133,7 +133,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     val beat = fix.namedProto.setProcessId(fix.app.getHeartbeatCfg.getProcessId).setOnline(true).setTime(failsAt - 1).build
     fix.coord.handleRawStatus(beat)
 
-    val ss2 = one(fix.service.get(fix.namedProto.build))
+    val ss2 = fix.service.get(fix.namedProto.build).expectOne()
     ss2.getOnline should equal(true)
     ss2.getTime should equal(failsAt - 1 + fix.app.getHeartbeatCfg.getPeriodMs * 2)
 
@@ -146,7 +146,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     fix.eventSink.waitForNEvents(2)
     fix.eventSink.lastEvent should equal(Some(Envelope.Event.MODIFIED))
 
-    val ss3 = one(fix.service.get(fix.namedProto.build))
+    val ss3 = fix.service.get(fix.namedProto.build).expectOne()
     ss3.getOnline should equal(false)
     ss3.getTime should equal(failTime)
   }
@@ -155,7 +155,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val fix = new ProcessStatusFixture
 
-    val ss = one(fix.service.get(fix.namedProto.build))
+    val ss = fix.service.get(fix.namedProto.build).expectOne()
     ss.getOnline should equal(true)
     val failsAt = ss.getTime
 
@@ -171,7 +171,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     fix.eventSink.waitForNEvents(2)
     fix.eventSink.lastEvent should equal(Some(Envelope.Event.MODIFIED))
 
-    val ss2 = one(fix.service.get(fix.namedProto.build))
+    val ss2 = fix.service.get(fix.namedProto.build).expectOne()
     ss2.getOnline should equal(false)
     ss2.getTime should equal(failsAt + 10)
   }
@@ -180,7 +180,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val fix = new ProcessStatusFixture
 
-    val ss = one(fix.service.get(fix.namedProto.build))
+    val ss = fix.service.get(fix.namedProto.build).expectOne()
     ss.getOnline should equal(true)
     val failsAt = ss.getTime
 
@@ -189,7 +189,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     val offlineHeartBeat = fix.namedProto.setProcessId("processId1").setOnline(false).setTime(failsAt).build
     fix.coord.handleRawStatus(offlineHeartBeat)
 
-    val ss2 = one(fix.service.get(fix.namedProto.build))
+    val ss2 = fix.service.get(fix.namedProto.build).expectOne()
     ss2.getOnline should equal(true)
   }
 }

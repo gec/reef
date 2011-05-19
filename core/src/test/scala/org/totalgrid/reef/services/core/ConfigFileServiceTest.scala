@@ -48,17 +48,17 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val configFile = makeConfigFile("testFile1", "text", "blah")
 
-    val result = one(Status.CREATED, s.put(configFile))
+    val result = s.put(configFile).expectOne(Status.CREATED)
 
-    one(Status.NOT_MODIFIED, s.put(configFile)).getUuid should equal(result.getUuid)
+    s.put(configFile).expectOne(Status.NOT_MODIFIED).getUuid should equal(result.getUuid)
 
     val configFileMod = makeConfigFile("testFile1", "text", "im different!")
-    one(Status.UPDATED, s.put(configFileMod)).getUuid should equal(result.getUuid)
+    s.put(configFileMod).expectOne(Status.UPDATED).getUuid should equal(result.getUuid)
 
     val configFileMod2 = makeConfigFile("testFile1", "mimediff", "im different!")
-    val finalObject = one(Status.UPDATED, s.put(configFileMod2))
+    val finalObject = s.put(configFileMod2).expectOne(Status.UPDATED)
 
-    one(Status.DELETED, s.delete(finalObject)).getUuid should equal(result.getUuid)
+    s.delete(finalObject).expectOne(Status.DELETED).getUuid should equal(result.getUuid)
   }
 
   test("Test Searching") {
@@ -71,17 +71,17 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     val configFile3 = makeConfigFile("testFile3", "html", "blah")
     val configFile4 = makeConfigFile("testFile4", "html", "blah")
 
-    one(Status.CREATED, s.put(configFile1))
-    one(Status.CREATED, s.put(configFile2))
-    one(Status.CREATED, s.put(configFile3))
-    one(Status.CREATED, s.put(configFile4))
+    s.put(configFile1).expectOne(Status.CREATED)
+    s.put(configFile2).expectOne(Status.CREATED)
+    s.put(configFile3).expectOne(Status.CREATED)
+    s.put(configFile4).expectOne(Status.CREATED)
 
-    many(4, s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
-    many(2, s.get(ConfigFile.newBuilder.setMimeType("text").build))
-    many(2, s.get(ConfigFile.newBuilder.setMimeType("html").build))
-    many(0, s.get(ConfigFile.newBuilder.setMimeType("xml").build))
+    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectMany(4)
+    s.get(ConfigFile.newBuilder.setMimeType("text").build).expectMany(2)
+    s.get(ConfigFile.newBuilder.setMimeType("html").build).expectMany(2)
+    s.get(ConfigFile.newBuilder.setMimeType("xml").build).expectNone()
 
-    many(1, s.get(ConfigFile.newBuilder.setName("testFile3").build))
+    s.get(ConfigFile.newBuilder.setName("testFile3").build).expectOne()
   }
 
   test("Test EntityOwnerShip") {
@@ -91,16 +91,16 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
 
-    val node1 = one(es.put(Entity.newBuilder.setName("node1").addTypes("magic").build))
-    val node2 = one(es.put(Entity.newBuilder.setName("node2").addTypes("magic").build))
+    val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
+    val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
 
-    one(Status.CREATED, s.put(makeConfigFile("testFile1", "text", "blah", Some(node1))))
-    one(Status.CREATED, s.put(makeConfigFile("testFile2", "text", "blah", Some(node1))))
-    one(Status.CREATED, s.put(makeConfigFile("testFile3", "html", "blah", Some(node1))))
-    one(Status.CREATED, s.put(makeConfigFile("testFile4", "html", "blah", Some(node2))))
+    s.put(makeConfigFile("testFile1", "text", "blah", Some(node1))).expectOne(Status.CREATED)
+    s.put(makeConfigFile("testFile2", "text", "blah", Some(node1))).expectOne(Status.CREATED)
+    s.put(makeConfigFile("testFile3", "html", "blah", Some(node1))).expectOne(Status.CREATED)
+    s.put(makeConfigFile("testFile4", "html", "blah", Some(node2))).expectOne(Status.CREATED)
 
-    many(3, s.get(ConfigFile.newBuilder.addEntities(node1).build))
-    many(1, s.get(ConfigFile.newBuilder.addEntities(node2).build))
+    s.get(ConfigFile.newBuilder.addEntities(node1).build).expectMany(3)
+    s.get(ConfigFile.newBuilder.addEntities(node2).build).expectOne()
   }
 
   test("Shared Entity Ownership") {
@@ -110,22 +110,22 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
 
-    val node1 = one(es.put(Entity.newBuilder.setName("node1").addTypes("magic").build))
-    val node2 = one(es.put(Entity.newBuilder.setName("node2").addTypes("magic").build))
-    val node3 = one(es.put(Entity.newBuilder.setName("node3").addTypes("magic").build))
+    val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
+    val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
+    val node3 = es.put(Entity.newBuilder.setName("node3").addTypes("magic").build).expectOne()
 
-    one(Status.CREATED, s.put(makeConfigFile("sharedFile", "text", "blah", Some(node1))))
-    one(Status.UPDATED, s.put(makeConfigFile("sharedFile", "text", "blah", Some(node2))))
-    one(Status.CREATED, s.put(makeConfigFile("testFile1", "html", "blah", Some(node1))))
-    one(Status.CREATED, s.put(makeConfigFile("testFile2", "html", "blah", Some(node2))))
+    s.put(makeConfigFile("sharedFile", "text", "blah", Some(node1))).expectOne(Status.CREATED)
+    s.put(makeConfigFile("sharedFile", "text", "blah", Some(node2))).expectOne(Status.UPDATED)
+    s.put(makeConfigFile("testFile1", "html", "blah", Some(node1))).expectOne(Status.CREATED)
+    s.put(makeConfigFile("testFile2", "html", "blah", Some(node2))).expectOne(Status.CREATED)
 
-    many(2, s.get(ConfigFile.newBuilder.addEntities(node1).build))
-    many(2, s.get(ConfigFile.newBuilder.addEntities(node2).build))
+    s.get(ConfigFile.newBuilder.addEntities(node1).build).expectMany(2)
+    s.get(ConfigFile.newBuilder.addEntities(node2).build).expectMany(2)
 
     // if we ask for multiple entities we get the union of their config files
-    many(3, s.get(ConfigFile.newBuilder.addEntities(node1).addEntities(node2).build))
+    s.get(ConfigFile.newBuilder.addEntities(node1).addEntities(node2).build).expectMany(3)
 
-    many(0, s.get(ConfigFile.newBuilder.addEntities(node3).build))
+    s.get(ConfigFile.newBuilder.addEntities(node3).build).expectNone()
   }
 
 }

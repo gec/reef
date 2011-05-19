@@ -22,8 +22,6 @@ package org.totalgrid.reef.services
 
 import org.scalatest.matchers.ShouldMatchers
 
-import org.totalgrid.reef.api.Envelope.Status
-
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
 
@@ -34,26 +32,6 @@ import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import scalaclient.{ Response, Event }
 
 object ServiceResponseTestingHelpers extends ShouldMatchers {
-  implicit def checkResponse[A](resp: Response[A]): List[A] = {
-    StatusCodes.isSuccess(resp.status) should equal(true)
-    resp.list
-  }
-
-  def one[A](status: Status, resp: Response[A]): A = {
-    resp.status should equal(status)
-    many(1, resp.list).head
-  }
-
-  def one[A](list: List[A]): A = many(1, list).head
-
-  def none[A](list: List[A]) = many(0, list)
-
-  def many[A](len: Int, list: List[A]): List[A] = {
-    if (len != list.size) throw new Exception("list wrong size: " + list.size + " instead of: " + len + "\n" + list)
-    list
-  }
-
-  def some[A](list: List[A]): List[A] = list
 
   def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], RequestEnv) = {
 

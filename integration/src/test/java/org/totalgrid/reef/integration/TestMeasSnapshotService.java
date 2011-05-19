@@ -32,7 +32,7 @@ import java.util.List;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestMeasSnapshotService extends JavaBridgeTestBase {
+public class TestMeasSnapshotService extends ReefConnectionTestBase {
 
 	/**
 	 * Test that the number of measurements retrieved from the measurement Snapshot service by name

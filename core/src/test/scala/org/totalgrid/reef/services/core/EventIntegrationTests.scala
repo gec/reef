@@ -81,20 +81,20 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
 
     def subscribeEvents(expected: Int, req: EventProto) = {
       val (updates, env) = getEventQueue[EventProto](amqp, EventProto.parseFrom)
-      val result = many(expected, events.get(req, env))
+      val result = events.get(req, env).expectMany(expected)
       updates.size should equal(0)
       (result, updates)
     }
 
     def subscribeAlarms(expected: Int, req: AlarmProto) = {
       val (updates, env) = getEventQueue[AlarmProto](amqp, AlarmProto.parseFrom)
-      val result = many(expected, alarms.get(req, env))
+      val result = alarms.get(req, env).expectMany(expected)
       (result, updates)
     }
 
     def subscribeEvents(expected: Int, req: EventListProto) = {
       val (updates, env) = getEventQueue[EventProto](amqp, EventProto.parseFrom)
-      val result = one(eventQuery.get(req, env))
+      val result = eventQuery.get(req, env).expectOne()
       updates.size should equal(0)
       result.getEventsCount should equal(expected)
       (result.getEventsList.toList, updates)
@@ -102,7 +102,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
 
     def subscribeAlarms(expected: Int, req: AlarmListProto) = {
       val (updates, env) = getEventQueue[AlarmProto](amqp, AlarmProto.parseFrom)
-      val result = one(alarmQuery.get(req, env))
+      val result = alarmQuery.get(req, env).expectOne()
       result.getAlarmsCount should equal(expected)
       (result.getAlarmsList.toList, updates)
     }
@@ -204,8 +204,10 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
         allEvents.size should equal(0)
       }
 
+      // TODO - Make 5000 a default somewhere and then hide it with an overload - JAC
+
       // should get event1 on all 4 levels of subscriber
-      val event1 = one(fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA")))
+      val event1 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA")).expectOne()
       allEvents.pop(5000) should equal(event1)
       subAll.pop(5000) should equal(event1)
       subA.pop(5000) should equal(event1)
@@ -214,7 +216,7 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
       allEmpty()
 
       // should get event2 for device and substation subscriptions
-      val event2 = one(fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointB")))
+      val event2 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointB")).expectOne()
       allEvents.pop(5000) should equal(event2)
       subAll.pop(5000) should equal(event2)
       subA.pop(5000) should equal(event2)
@@ -222,20 +224,20 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
       allEmpty()
 
       // should get event3 for substation only
-      val event3 = one(fix.events.put(makeEvent("Test.Event", "SubA-DeviceB-PointB")))
+      val event3 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceB-PointB")).expectOne()
       allEvents.pop(5000) should equal(event3)
       subAll.pop(5000) should equal(event3)
       subA.pop(5000) should equal(event3)
       allEmpty()
 
       // should get event4 on the substation subscriptions
-      val event4 = one(fix.events.put(makeEvent("Test.Event", "SubB-DeviceB-PointB")))
+      val event4 = fix.events.put(makeEvent("Test.Event", "SubB-DeviceB-PointB")).expectOne()
       allEvents.pop(5000) should equal(event4)
       subAll.pop(5000) should equal(event4)
       allEmpty()
 
       // since its not in our "device tree" we wont see any alarms not associated with our devices
-      val event5 = one(fix.events.put(makeEvent("Test.Event", "Orphan")))
+      val event5 = fix.events.put(makeEvent("Test.Event", "Orphan")).expectOne()
       allEvents.pop(5000) should equal(event5)
       allEmpty()
     }
@@ -256,17 +258,17 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
         allEvents.size should equal(0)
       }
 
-      val event1 = one(fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")))
+      val event1 = fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")).expectOne()
       allEvents.pop(5000) should equal(event1)
       allAlarms.pop(5000).getEvent should equal(event1)
       deviceAlarms.pop(5000).getEvent should equal(event1)
       allEmpty()
 
-      val event2 = one(fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA")))
+      val event2 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA")).expectOne()
       allEvents.pop(5000) should equal(event2)
       allEmpty()
 
-      val event3 = one(fix.events.put(makeEvent("Test.Alarm", "SubA")))
+      val event3 = fix.events.put(makeEvent("Test.Alarm", "SubA")).expectOne()
       allEvents.pop(5000) should equal(event3)
       allAlarms.pop(5000).getEvent should equal(event3)
       allEmpty()
@@ -282,38 +284,38 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
 
       def allEmpty() = allAlarms.size should equal(0)
 
-      val rootEvent = one(fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")))
+      val rootEvent = fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")).expectOne()
       val freshAlarm = allAlarms.pop(5000)
       freshAlarm.getEvent should equal(rootEvent)
       freshAlarm.getState should equal(AlarmProto.State.UNACK_AUDIBLE)
       allEmpty()
 
-      many(1, fix.alarms.get(allAlarmRequest))
+      fix.alarms.get(allAlarmRequest).expectOne()
 
-      val silenced = one(fix.alarms.put(freshAlarm.toBuilder.setState(AlarmProto.State.UNACK_SILENT).build))
+      val silenced = fix.alarms.put(freshAlarm.toBuilder.setState(AlarmProto.State.UNACK_SILENT).build).expectOne()
       silenced.getState should equal(AlarmProto.State.UNACK_SILENT)
       allAlarms.pop(5000) should equal(silenced)
       allEmpty()
 
-      many(1, fix.alarms.get(allAlarmRequest))
+      fix.alarms.get(allAlarmRequest).expectOne()
 
-      val acked = one(fix.alarms.put(silenced.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build))
+      val acked = fix.alarms.put(silenced.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
       acked.getState should equal(AlarmProto.State.ACKNOWLEDGED)
       allAlarms.pop(5000) should equal(acked)
       allEmpty()
 
-      many(1, fix.alarms.get(allAlarmRequest))
+      fix.alarms.get(allAlarmRequest).expectOne()
 
-      val removed = one(fix.alarms.put(acked.toBuilder.setState(AlarmProto.State.REMOVED).build))
+      val removed = fix.alarms.put(acked.toBuilder.setState(AlarmProto.State.REMOVED).build).expectOne()
       removed.getState should equal(AlarmProto.State.REMOVED)
       allAlarms.pop(5000) should equal(removed)
       allEmpty()
 
       // we dont return REMOVED alarms by default
-      many(0, fix.alarms.get(allAlarmRequest))
+      fix.alarms.get(allAlarmRequest).expectNone()
 
       // but we can get them if asked for explictly
-      many(1, fix.alarms.get(AlarmProto.newBuilder.setState(AlarmProto.State.REMOVED).setEvent(makeAllEvent).build))
+      fix.alarms.get(AlarmProto.newBuilder.setState(AlarmProto.State.REMOVED).setEvent(makeAllEvent).build).expectOne()
     }
   }
 
@@ -326,10 +328,10 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
 
       //fix.checkAllSummariesZero(7)
 
-      val event1 = one(fix.events.put(makeEvent("Test.Alarm1", "SubA-DeviceA-PointA", "FEP")))
-      val event2 = one(fix.events.put(makeEvent("Test.Alarm2", "SubA-DeviceA-PointA", "FEP")))
-      val event3 = one(fix.events.put(makeEvent("Test.Alarm2", "SubA-DeviceA-PointA", "Processing")))
-      val event4 = one(fix.events.put(makeEvent("Test.Alarm3", "SubB-DeviceA-PointA", "FEP")))
+      val event1 = fix.events.put(makeEvent("Test.Alarm1", "SubA-DeviceA-PointA", "FEP")).expectOne()
+      val event2 = fix.events.put(makeEvent("Test.Alarm2", "SubA-DeviceA-PointA", "FEP")).expectOne()
+      val event3 = fix.events.put(makeEvent("Test.Alarm2", "SubA-DeviceA-PointA", "Processing")).expectOne()
+      val event4 = fix.events.put(makeEvent("Test.Alarm3", "SubB-DeviceA-PointA", "FEP")).expectOne()
 
       val expectedValues = fix.checkSummaries(Map(
         "summary.unacked_alarms_severity_1" -> 1,
@@ -341,21 +343,21 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
         "summary.unacked_alarms_equipment_group_SubB" -> 1))
 
       // grab alarms so we can acknowledge them
-      val alarm1 = one(fix.alarms.get(AlarmProto.newBuilder.setEvent(event1).build))
-      val alarm2 = one(fix.alarms.get(AlarmProto.newBuilder.setEvent(event2).build))
-      val alarm3 = one(fix.alarms.get(AlarmProto.newBuilder.setEvent(event3).build))
-      val alarm4 = one(fix.alarms.get(AlarmProto.newBuilder.setEvent(event4).build))
+      val alarm1 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event1).build).expectOne()
+      val alarm2 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event2).build).expectOne()
+      val alarm3 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event3).build).expectOne()
+      val alarm4 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event4).build).expectOne()
       alarm1.getState should equal(AlarmProto.State.UNACK_AUDIBLE)
       alarm3.getState should equal(AlarmProto.State.UNACK_AUDIBLE)
 
       // mark an alarm as silent (this is not the same as acknlowdeged)
-      one(fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.UNACK_SILENT).build))
+      fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.UNACK_SILENT).build).expectOne()
       // since the unacked state didnt change neigther should the counts
       fix.checkSummaries(expectedValues)
 
       // acknowledge 2 of the alarms
-      one(fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build))
-      one(fix.alarms.put(alarm3.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build))
+      fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
+      fix.alarms.put(alarm3.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
 
       fix.checkSummaries(Map(
         "summary.unacked_alarms_severity_1" -> 0,
@@ -367,8 +369,8 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
         "summary.unacked_alarms_equipment_group_SubB" -> 1))
 
       // acknowledge other alarms
-      one(fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build))
-      one(fix.alarms.put(alarm3.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build))
+      fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
+      fix.alarms.put(alarm3.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
 
       fix.checkAllSummariesZero(7)
     }

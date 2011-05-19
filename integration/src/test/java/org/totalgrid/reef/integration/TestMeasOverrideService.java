@@ -41,7 +41,7 @@ import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestMeasOverrideService extends JavaBridgeTestBase {
+public class TestMeasOverrideService extends ReefConnectionTestBase {
 
 	/** Test that the measurement overrides work correctly */
 	@Test

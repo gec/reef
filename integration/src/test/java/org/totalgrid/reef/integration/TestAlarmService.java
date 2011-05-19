@@ -34,7 +34,7 @@ import java.util.List;
 
 import org.totalgrid.reef.integration.helpers.*;
 
-public class TestAlarmService extends JavaBridgeTestBase {
+public class TestAlarmService extends ReefConnectionTestBase {
 
     /**
      * insert an event config and post an event of that type to generate the alarm

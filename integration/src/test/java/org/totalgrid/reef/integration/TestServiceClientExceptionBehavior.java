@@ -28,7 +28,7 @@ import org.totalgrid.reef.api.ReefServiceException;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestServiceClientExceptionBehavior extends JavaBridgeTestBase {
+public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase {
 
 	@Test
 	public void getAllEntities() {

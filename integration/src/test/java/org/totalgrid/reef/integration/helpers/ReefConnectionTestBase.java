@@ -38,7 +38,7 @@ import org.totalgrid.reef.api.javaclient.ISession;
 /**
  * Base class for JUnit based integration tests run against the "live" system
  */
-public class JavaBridgeTestBase {
+public class ReefConnectionTestBase {
 
 	private boolean autoLogon;
 
@@ -57,14 +57,14 @@ public class JavaBridgeTestBase {
 	 *            If set we automatically acquire and set auth tokens for the client on every
 	 *            request
 	 */
-	public JavaBridgeTestBase(boolean autoLogon) {
+	public ReefConnectionTestBase(boolean autoLogon) {
 		this.autoLogon = autoLogon;
 	}
 
 	/**
 	 * defaults autoLogon to true
 	 */
-	public JavaBridgeTestBase() {
+	public ReefConnectionTestBase() {
 		this(true);
 	}
 

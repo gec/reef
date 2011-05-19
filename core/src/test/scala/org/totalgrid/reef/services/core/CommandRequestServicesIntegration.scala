@@ -69,7 +69,7 @@ class CommandRequestServicesIntegration
 
       val send = CommEndpointConfig.newBuilder()
         .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
-      one(endpointService.put(send))
+      endpointService.put(send).expectOne()
     }
 
   }
@@ -157,7 +157,7 @@ class CommandRequestServicesIntegration
 
     // Send a select (access request)
     val select = commandAccess()
-    val selectResult = one(fixture.access.put(select, reqEnv))
+    val selectResult = fixture.access.put(select, reqEnv).expectOne()
     val selectId = selectResult.getUid
 
     // the 'remote' service that will handle the call
@@ -169,7 +169,7 @@ class CommandRequestServicesIntegration
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 
-    val conn = one(fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build))
+    val conn = fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectOne()
 
     println(conn.getRouting.getServiceRoutingKey)
 
@@ -191,7 +191,7 @@ class CommandRequestServicesIntegration
         rsp.list.head.getStatus == CommandStatus.SUCCESS
     }
 
-    one(fixture.access.delete(selectResult))
+    fixture.access.delete(selectResult).expectOne()
   }
 
   test("Full") {
