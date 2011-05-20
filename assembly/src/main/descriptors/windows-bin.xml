@@ -60,6 +60,9 @@
         </fileSet>
         <fileSet>
             <directory>target/classes/install</directory>
+            <includes>
+                <include>*.bat</include>
+            </includes>
             <outputDirectory>.</outputDirectory>
             <lineEnding>dos</lineEnding>
             <fileMode>0644</fileMode>

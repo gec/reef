@@ -1,5 +1,7 @@
 set -e
 
+config_file=
+
 load() {
     echo "Stopping running instances..."
     bin/stop > /dev/null 2>&1 || true
@@ -12,8 +14,9 @@ load() {
     bin/client   "reef:resetdb; start-level 91"
 
     echo "Loading configuration..."
-    bin/client   "reef:login -p core core; reef:load $1"
+    bin/client   "reef:login -p core core; reef:load $config_file"
     bin/client   "start-level 100"
+    # bin/stop
 }
 
 if [ -z $1 ]
@@ -22,7 +25,7 @@ echo "Usage: ./install_reef.sh (config file)"
 else
 if [ -f $1 ]
 then
-
+config_file=$1
 load
 
 else

@@ -42,6 +42,7 @@
         <module>proto-shell</module>
         <module>admin-shell</module>
         <module>branding</module>
+        <module>assembly</module>
     </modules>
 
     <repositories>

@@ -146,7 +146,7 @@
                                     <descriptors>
                                         <descriptor>src/main/descriptors/unix-bin.xml</descriptor>
                                     </descriptors>
-                                    <finalName>${project.artifactId}-${project.version}</finalName>
+                                    <finalName>totalgrid-reef-${project.version}</finalName>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
@@ -160,7 +160,7 @@
                                     <descriptors>
                                         <descriptor>src/main/descriptors/windows-bin.xml</descriptor>
                                     </descriptors>
-                                    <finalName>${project.artifactId}-${project.version}</finalName>
+                                    <finalName>totalgrid-reef-${project.version}</finalName>
                                 </configuration>
                             </execution>
                         </executions>
