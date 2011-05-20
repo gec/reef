@@ -19,63 +19,89 @@
     <id></id> <!-- intentionally left blank -> http://jira.codehaus.org/browse/MASSEMBLY-301 -->
     <formats>
         <!--<format>jar</format>-->
-        <format>tar.gz</format>
+        <format>dir</format>
     </formats>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/lib</outputDirectory>
+            <includes>
+                <include>org.totalgrid.reef:reef-branding</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
     <fileSets>
 
-    <fileSet>
-          <directory>target/dependencies/unix/apache-servicemix-${servicemix.version}</directory>
-          <outputDirectory>/</outputDirectory>
-          <excludes>
-              <exclude>bin/**</exclude>
+        <fileSet>
+            <directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
+            <outputDirectory>.</outputDirectory>
+            <excludes>
+             <exclude>etc/custom.properties</exclude>
              <exclude>etc/org.apache.karaf.features.cfg</exclude>
              <exclude>etc/org.ops4j.pax.logging.cfg</exclude>
              <exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
-          </excludes>
-      </fileSet>
-
-        <!-- Copy over bin/* scripts separately to get the correct file mode -->
+             <exclude>bin/*</exclude>
+            </excludes>
+        </fileSet>
         <fileSet>
-            <directory>target/dependencies/unix/apache-servicemix-${servicemix.version}</directory>
-            <outputDirectory>/</outputDirectory>
+            <directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
+            <outputDirectory>.</outputDirectory>
             <includes>
               <include>bin/*</include>
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
 
-      <fileSet>
-        <directory>target/system-repo</directory>
-        <outputDirectory>system</outputDirectory>
-      </fileSet>
+        <fileSet>
+            <directory>target/reef-repo</directory>
+            <outputDirectory>${reef.default.repository}</outputDirectory>
+        </fileSet>
 
-      <fileSet>
-        <directory>target/features-repo</directory>
-        <outputDirectory>greenbus</outputDirectory>
-      </fileSet>
-
-
-      <fileSet>
-          <directory>target/classes/etc</directory>
-          <outputDirectory>/etc/</outputDirectory>
+        <fileSet>
+            <directory>target/classes/etc</directory>
+            <outputDirectory>/etc/</outputDirectory>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
-      </fileSet>
+        </fileSet>
+        <fileSet>
+            <directory>target/classes/samples</directory>
+            <outputDirectory>/samples/</outputDirectory>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>../</directory>
+            <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>INSTALL.markdown</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>../cfg-templates</directory>
+            <outputDirectory>/etc/</outputDirectory>
+            <includes>
+                <include>*.cfg</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0644</fileMode>
+        </fileSet>
     </fileSets>
 
     <files>
         <file>
-            <source>${basedir}/target/classes/features.xml</source>
-            <outputDirectory>/greenbus/com/greenenergycorp/pemc/greenbus-pemc/0.0.1-SNAPSHOT/</outputDirectory>
-            <destName>greenbus-pemc-0.0.1-SNAPSHOT-features.xml</destName>
+            <source>${basedir}/target/classes/reef-feature.xml</source>
+            <outputDirectory>/${reef.default.repository}/org/totalgrid/reef/reef-assembly/${reef.version}/</outputDirectory>
+            <destName>reef-assembly-${reef.version}-features.xml</destName>
             <fileMode>0644</fileMode>
             <lineEnding>unix</lineEnding>
         </file>
 
         <file>
-            <source>${basedir}/target/dependencies/unix/apache-servicemix-${servicemix.version}/bin/servicemix</source>
+            <source>${basedir}/target/dependencies/unix/apache-karaf-${karaf.version}/bin/karaf</source>
             <outputDirectory>/bin/</outputDirectory>
-            <destName>greenbus</destName>
+            <destName>reef</destName>
             <fileMode>0755</fileMode>
             <lineEnding>unix</lineEnding>
         </file>

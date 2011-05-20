@@ -136,7 +136,7 @@
                         <artifactId>maven-assembly-plugin</artifactId>
                         <version>${maven-assembly-plugin.version}</version>
                         <executions>
-                            <!--<execution>
+                            <execution>
                                 <id>unix-bin</id>
                                 <phase>package</phase>
                                 <goals>
@@ -149,7 +149,7 @@
                                     <finalName>${project.artifactId}-${project.version}</finalName>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
-                            </execution>-->
+                            </execution>
                             <execution>
                                 <id>windows-bin</id>
                                 <phase>package</phase>
