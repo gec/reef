@@ -18,13 +18,21 @@
 <assembly>
     <id></id> <!-- intentionally left blank -> http://jira.codehaus.org/browse/MASSEMBLY-301 -->
     <formats>
-        <format>dir</format>
+        <format>zip</format>
     </formats>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/lib</outputDirectory>
+            <includes>
+                <include>org.totalgrid.reef:reef-branding</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
     <fileSets>
 
         <fileSet>
             <directory>target/dependencies/win/apache-karaf-${karaf.version}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>.</outputDirectory>
             <excludes>
              <exclude>custom.properties</exclude>
              <exclude>etc/org.apache.karaf.features.cfg</exclude>
@@ -47,6 +55,12 @@
         <fileSet>
             <directory>target/classes/samples</directory>
             <outputDirectory>/samples/</outputDirectory>
+            <lineEnding>dos</lineEnding>
+            <fileMode>0644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>target/classes/install</directory>
+            <outputDirectory>.</outputDirectory>
             <lineEnding>dos</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
