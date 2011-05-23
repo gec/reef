@@ -46,6 +46,8 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
   private var channel: Option[BrokerChannel] = None
   private var closedPermenantly = false
 
+  if(exchangeList.find(_.trim.length > 0).isDefined) throw new Exception("Bad exchange name +" + exchangeList)
+
   // implement ChannelObserver
   override def online(b: BrokerChannel) = this.execute {
     channel = Some(b)
