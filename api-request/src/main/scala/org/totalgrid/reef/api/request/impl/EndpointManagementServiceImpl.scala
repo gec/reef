@@ -30,21 +30,21 @@ import scala.collection.JavaConversions._
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
 
-  def getAllEndpoints() = ops {
+  override def getAllEndpoints() = ops {
     _.get(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany()
   }
 
-  def getEndpointByName(name: String) = ops {
+  override def getEndpointByName(name: String) = ops {
     _.get(CommEndpointConfig.newBuilder.setName(name).build).await().expectOne
   }
 
-  def getEndpoint(endpointUuid: ReefUUID) = ops {
+  override def getEndpoint(endpointUuid: ReefUUID) = ops {
     _.get(CommEndpointConfig.newBuilder.setUuid(endpointUuid).build).await().expectOne
   }
 
-  def disableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, false)
+  override def disableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, false)
 
-  def enableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, true)
+  override def enableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, true)
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean) = {
     val connection = getEndpointConnection(endpointUuid)
@@ -53,17 +53,17 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
     }
   }
 
-  def getAllEndpointConnections() = ops {
+  override def getAllEndpointConnections() = ops {
     _.get(CommEndpointConnection.newBuilder.setUid("*").build).await().expectMany()
   }
 
-  def subscribeToAllEndpointConnections() = ops { session =>
+  override def subscribeToAllEndpointConnections() = ops { session =>
     useSubscription(session, Descriptors.commEndpointConnection.getKlass) { sub =>
       session.get(CommEndpointConnection.newBuilder.setUid("*").build, sub).await().expectMany()
     }
   }
 
-  def getEndpointConnection(endpointUuid: ReefUUID) = ops {
+  override def getEndpointConnection(endpointUuid: ReefUUID) = ops {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).await().expectOne
   }
 

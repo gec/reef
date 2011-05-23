@@ -29,29 +29,29 @@ import scala.collection.JavaConversions._
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
 
-  def getAlarm(uid: String) = ops {
+  override def getAlarm(uid: String) = ops {
     _.get(AlarmRequestBuilders.getByUID(uid)).await().expectOne("Alarm with UID: " + uid + " not found")
   }
 
-  def getActiveAlarms(limit: Int) = ops {
+  override def getActiveAlarms(limit: Int) = ops {
     _.get(AlarmListRequestBuilders.getUnacknowledged(limit)).await().expectOne.getAlarmsList
   }
 
-  def subscribeToActiveAlarms(limit: Int) = ops { session =>
+  override def subscribeToActiveAlarms(limit: Int) = ops { session =>
     useSubscription(session, Descriptors.alarm.getKlass) { sub =>
       session.get(AlarmListRequestBuilders.getUnacknowledged(limit), sub).await().expectOne.getAlarmsList
     }
   }
 
-  def getActiveAlarms(types: java.util.List[String], limit: Int) = ops {
+  override def getActiveAlarms(types: java.util.List[String], limit: Int) = ops {
     _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).await().expectOne.getAlarmsList
   }
 
-  def removeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.REMOVED)
+  override def removeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.REMOVED)
 
-  def acknowledgeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.ACKNOWLEDGED)
+  override def acknowledgeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.ACKNOWLEDGED)
 
-  def silenceAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.UNACK_SILENT)
+  override def silenceAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.UNACK_SILENT)
 
   private def changeAlarmState(alarm: Alarm, state: Alarm.State) = ops {
     _.put(alarm.toBuilder.setState(state).build).await().expectOne

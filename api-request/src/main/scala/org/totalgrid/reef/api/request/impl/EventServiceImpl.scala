@@ -29,15 +29,15 @@ import scala.collection.JavaConversions._
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
-  def getEvent(uid: String) = ops {
+  override def getEvent(uid: String) = ops {
     _.get(EventRequestBuilders.getByUID(uid)).await().expectOne("Event with UID: " + uid + " not found")
   }
 
-  def getRecentEvents(limit: Int) = ops {
+  override def getRecentEvents(limit: Int) = ops {
     _.get(EventListRequestBuilders.getAll(limit)).await().expectOne.getEventsList
   }
 
-  def subscribeToRecentEvents(limit: Int) = {
+  override def subscribeToRecentEvents(limit: Int) = {
     ops { session =>
       useSubscription(session, Descriptors.event.getKlass) { sub =>
         session.get(EventListRequestBuilders.getAll(limit), sub).await().expectOne.getEventsList
@@ -45,21 +45,21 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
     }
   }
 
-  def getRecentEvents(types: java.util.List[String], limit: Int) = ops {
+  override def getRecentEvents(types: java.util.List[String], limit: Int) = ops {
     _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).await().expectOne.getEventsList
   }
 
-  def getEvents(selector: EventSelect) = ops {
+  override def getEvents(selector: EventSelect) = ops {
     _.get(EventListRequestBuilders.getByEventSelect(selector)).await().expectOne.getEventsList
   }
 
-  def subscribeToEvents(selector: EventSelect) = ops { session =>
+  override def subscribeToEvents(selector: EventSelect) = ops { session =>
     useSubscription(session, Descriptors.event.getKlass) { sub =>
       session.get(EventListRequestBuilders.getByEventSelect(selector), sub).await().expectOne.getEventsList
     }
   }
 
-  def publishEvent(event: Event) = ops {
+  override def publishEvent(event: Event) = ops {
     _.put(event).await().expectOne
   }
 

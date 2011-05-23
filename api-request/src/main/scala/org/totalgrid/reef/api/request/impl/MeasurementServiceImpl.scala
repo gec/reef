@@ -34,29 +34,29 @@ import scala.collection.JavaConversions._
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 
-  def getMeasurementByName(name: String): Measurement = {
+  override def getMeasurementByName(name: String): Measurement = {
     ops { session =>
       val measSnapshot = session.get(MeasurementSnapshotRequestBuilders.getByName(name)).await().expectOne
       val meas = checkAndReturnByNames(name :: Nil, measSnapshot.getMeasurementsList)
       meas.get(0)
     }
   }
-  def getMeasurementByPoint(point: Point): Measurement = getMeasurementByName(point.getName)
+  override def getMeasurementByPoint(point: Point): Measurement = getMeasurementByName(point.getName)
 
-  def getMeasurementsByNames(names: java.util.List[String]): java.util.List[Measurement] = {
+  override def getMeasurementsByNames(names: java.util.List[String]): java.util.List[Measurement] = {
     ops { session =>
       val measSnapshot = session.get(MeasurementSnapshotRequestBuilders.getByNames(names)).await().expectOne
       checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
     }
   }
-  def getMeasurementsByPoints(points: java.util.List[Point]): java.util.List[Measurement] = {
+  override def getMeasurementsByPoints(points: java.util.List[Point]): java.util.List[Measurement] = {
     ops { session =>
       val measSnapshot = session.get(MeasurementSnapshotRequestBuilders.getByPoints(points)).await().expectOne
       checkAndReturn(points, measSnapshot.getMeasurementsList)
     }
   }
 
-  def subscribeToMeasurementsByNames(names: java.util.List[String]) = {
+  override def subscribeToMeasurementsByNames(names: java.util.List[String]) = {
     ops { session =>
       useSubscription(session, Descriptors.measurementSnapshot.getKlass) { sub =>
         val measSnapshot = session.get(MeasurementSnapshotRequestBuilders.getByNames(names), sub).await().expectOne
@@ -64,7 +64,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
       }
     }
   }
-  def subscribeToMeasurementsByPoints(points: java.util.List[Point]) = {
+  override def subscribeToMeasurementsByPoints(points: java.util.List[Point]) = {
     ops { session =>
       useSubscription(session, Descriptors.measurementSnapshot.getKlass) { sub =>
         val measSnapshot = session.get(MeasurementSnapshotRequestBuilders.getByPoints(points), sub).await().expectOne
@@ -73,7 +73,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     }
   }
 
-  def publishMeasurements(measurements: java.util.List[Measurement]) {
+  override def publishMeasurements(measurements: java.util.List[Measurement]) {
     ops { _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).await().expectOne }
   }
 
@@ -91,19 +91,19 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     retrievedMeas
   }
 
-  def getMeasurementHistory(point: Point, limit: Int): java.util.List[Measurement] = {
+  override def getMeasurementHistory(point: Point, limit: Int): java.util.List[Measurement] = {
     ops { _.get(MeasurementHistoryRequestBuilders.getByPoint(point, limit)).await().expectOne.getMeasurementsList }
   }
 
-  def getMeasurementHistory(point: Point, since: Long, limit: Int): java.util.List[Measurement] = {
+  override def getMeasurementHistory(point: Point, since: Long, limit: Int): java.util.List[Measurement] = {
     ops { _.get(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit)).await().expectOne.getMeasurementsList }
   }
 
-  def getMeasurementHistory(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int): java.util.List[Measurement] = {
+  override def getMeasurementHistory(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int): java.util.List[Measurement] = {
     ops { _.get(MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, returnNewest, limit)).await().expectOne.getMeasurementsList }
   }
 
-  def subscribeToMeasurementHistory(point: Point, limit: Int) = {
+  override def subscribeToMeasurementHistory(point: Point, limit: Int) = {
     ops { session =>
       useSubscription(session, Descriptors.measurementHistory.getKlass) { sub =>
         session.get(MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub).await().expectOne.getMeasurementsList
@@ -111,7 +111,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     }
   }
 
-  def subscribeToMeasurementHistory(point: Point, since: Long, limit: Int) = {
+  override def subscribeToMeasurementHistory(point: Point, since: Long, limit: Int) = {
     ops { session =>
       useSubscription(session, Descriptors.measurementHistory.getKlass) { sub =>
         session.get(MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub).await().expectOne.getMeasurementsList
