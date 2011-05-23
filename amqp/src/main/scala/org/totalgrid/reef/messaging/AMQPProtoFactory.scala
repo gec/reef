@@ -156,8 +156,6 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
     val pub = broadcast[Envelope.ServiceResponse]((x: Envelope.ServiceResponse) => x.toByteArray)
     val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
 
-    println("Adding consumer: " + competing)
-
     if (competing) add(new AMQPCompetingConsumer(exchange, exchange + "_server", destination, binding))
     else add(new AMQPExclusiveConsumer(exchange, destination, binding))
   }

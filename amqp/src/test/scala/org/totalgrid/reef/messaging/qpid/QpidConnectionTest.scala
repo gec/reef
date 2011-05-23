@@ -35,27 +35,20 @@ import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
-  class MockConnectionListener extends IConnectionListener {
-    val connected = new SyncVar(false)
-
-    override def opened() = connected.update(true)
-    override def closed() = connected.update(false)
-  }
-
   test("Qpid connect/disconnect events") {
     val default = BrokerConnectionInfo.loadInfo("test")
     val amqp = new AMQPConnectionReactor with ReactActor {
       val broker = new QpidBrokerConnection(default)
     }
 
-    val listener = new MockConnectionListener
+    val listener = new BrokerConnectionState
     amqp.addConnectionListener(listener)
 
     10.times {
       amqp.start()
-      listener.connected.waitUntil(true)
+      listener.waitUntilConnected()
       amqp.stop()
-      listener.connected.waitUntil(false)
+      listener.waitUntilDisconnected()
     }
 
   }

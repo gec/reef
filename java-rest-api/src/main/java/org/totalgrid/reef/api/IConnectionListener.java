@@ -26,15 +26,17 @@ package org.totalgrid.reef.api;
  * or otherwise). Callbacks come in from the messaging thread so it is important not to block the callbacks.
  */
 public interface IConnectionListener {
+
   /**
    * called when we lose connection to the broker. This means all subscriptions spawned from the IConnection during
    * this time are invalid and need to be thrown away.
    */
-  void closed();
+  void onConnectionClose();
+
   /**
    * called when we have established a connection to the message broker, we can now provide ISessions
    */
-  void opened();
+  void onConnectionOpen();
 
   // TODO: write tests to figure out what can and can't be done inside IConnectionListener callbacks reef_techdebt-7
   // TODO: add exception callback for ISubscription and possibly ISession

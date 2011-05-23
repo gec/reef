@@ -21,7 +21,6 @@
 package org.totalgrid.reef.messaging.mock
 
 import scala.collection.immutable
-import scala.util.Random
 
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.api.ServiceIOException
@@ -111,30 +110,29 @@ class MockBrokerChannel(parent: MockBrokerInterface) extends BrokerChannel {
 class MockBrokerInterface(connectCorrectly: Boolean = true, reportCorrectClosure: Boolean = true) extends BrokerConnection {
   import MockBrokerInterface._
 
-  private var connected = false
   private var channels = List.empty[MockBrokerChannel]
 
-  def isConnected = connected
-
   def newBrokerChannel(): BrokerChannel = {
-    if (!connected) throw new Exception("Mock broker not connected")
+    if (!isConnected) throw new Exception("Mock broker not connected")
     val c = new MockBrokerChannel(this)
     channels = c :: channels
     c
   }
 
-  def connect() = {
-    if (!connectCorrectly) throw new Exception("Fake bad connect")
-    connected = true
-    listeners.foreach(_.opened())
+  final override def doConnect(): Boolean = {
+    if (!connectCorrectly) false
+    else {
+      this.setOpen()
+      true
+    }
   }
 
   /// nothing special is needed to shut down the mock broker, there are no circular
   /// dependencies or listeners to unravel
-  def close {
-    connected = false
+  final override def doDisconnect(): Boolean = {
+    this.setClosed()
     channels.foreach(_.close())
-    listeners.foreach(_.closed())
+    true
   }
 
   case class ExchangeBinding(key: String, queue: String)

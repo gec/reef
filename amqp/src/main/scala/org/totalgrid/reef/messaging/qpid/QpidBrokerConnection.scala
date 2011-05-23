@@ -33,29 +33,32 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
 
   private var connection: ScalaOption[Connection] = None
 
-  def isConnected: Boolean = connection.isDefined
-
   override def toString() = config.toString
 
-  def connect() {
-    connection match {
-      case Some(c) =>
-      case None =>
-        val conn = new Connection
-        conn.addConnectionListener(this)
-        info { "Connecting to " + config }
+  final override def doConnect() = connection match {
+    case Some(c) => true
+    case None =>
+      val conn = new Connection
+      conn.addConnectionListener(this)
+      info("Connecting to " + config)
+      try {
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
-    }
+        true
+      } catch {
+        case ex: Exception =>
+          error(ex)
+          false
+      }
   }
 
-  override def close() {
-    connection match {
-      case Some(c) =>
-        unlinkChannels()
-        c.close()
-        connection = None
-      case None =>
-    }
+  final override def doDisconnect(): Boolean = connection match {
+    case Some(c) =>
+      unlinkChannels()
+      c.close()
+      connection = None
+      true
+    case None =>
+      true
   }
 
   private def unlinkChannels() = {
@@ -68,14 +71,14 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   def closed(conn: Connection) {
     info("Qpid Connection closed")
     connection = None
+    this.setClosed()
     unlinkChannels()
-    listeners.foreach(_.closed())
   }
 
   def opened(conn: Connection) {
     info("Qpid Connection opened")
     connection = Some(conn)
-    listeners.foreach(_.opened())
+    this.setOpen()
   }
 
   def exception(conn: Connection, ex: ConnectionException) {
@@ -84,17 +87,15 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
 
   /* -- End Qpid Connection Listener -- */
 
-  var channels = List.empty[QpidBrokerInterface]
+  private var channels = List.empty[QpidBrokerInterface]
 
-  override def newBrokerChannel(): BrokerChannel = {
-    connection match {
-      case Some(c) =>
-        val channel = new QpidBrokerInterface(c.createSession(0))
-        channels = channel :: channels
-        channel
-      case None =>
-        throw new Exception("Connection is closed, cannot create channel")
-    }
+  final override def newBrokerChannel(): BrokerChannel = connection match {
+    case Some(c) =>
+      val channel = new QpidBrokerInterface(c.createSession(0))
+      channels = channel :: channels
+      channel
+    case None =>
+      throw new Exception("Connection is closed, cannot create channel")
   }
 
 }

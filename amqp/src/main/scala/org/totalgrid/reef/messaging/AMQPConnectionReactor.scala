@@ -68,8 +68,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     super.start()
 
     try {
-      connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
-      println("Connected")
+      connectedState.waitUntilConnected(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
     } catch {
       case se: ServiceIOException =>
         info("Syncronous start failed, stopping actor")
@@ -81,12 +80,11 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   def disconnect(timeoutMs: Long) {
     if (timeoutMs <= 0) throw new IllegalArgumentException("Stop timeout must be greater than 0.")
     super.stop()
-    connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
-    println("Disconnected")
+    connectedState.waitUntilDisconnected(timeoutMs, "Connection to reef not stopped.")
   }
 
   override def afterStart() = {
-    broker.addConnectionListener(this)
+    broker.addListener(this)
     reconnectOnClose = true
     this.reconnect()
   }
@@ -94,7 +92,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /// overriders base class. Terminates all the connections and machinery
   override def beforeStop() = {
     reconnectOnClose = false
-    broker.close()
+    broker.disconnect()
   }
 
   private def addChannelObserver(handler: ChannelObserver) {
@@ -132,15 +130,15 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
 
   /* --- Implement Broker Connection Listener --- */
 
-  override def closed() {
+  final override def onConnectionClose() {
     info(" Connection closed. reconnecting:" + reconnectOnClose)
     if (reconnectOnClose) this.delay(1000) { reconnect() }
-    this.synchronized { listeners.foreach { _.closed() } }
+    this.synchronized { listeners.foreach(_.onConnectionClose()) }
   }
 
-  override def opened() = {
+  final override def onConnectionOpen() = {
     info("Connection opened")
-    this.synchronized { listeners.foreach { _.opened() } }
+    this.synchronized { listeners.foreach(_.onConnectionOpen()) }
   }
 
 }

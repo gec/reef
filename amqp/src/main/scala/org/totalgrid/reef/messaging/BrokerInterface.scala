@@ -21,6 +21,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.api.IConnectionListener
+import scala.collection.mutable.Set
 
 /**
  * helper to package up ReplyTo address
@@ -91,22 +92,62 @@ trait BrokerChannelCloseProvider { self: BrokerChannel =>
 
 trait BrokerConnection {
 
-  // query the state of the connection
-  def isConnected: Boolean
+  private var connected = false
 
-  // connects to broker, throws an exception if unsuccessful
-  def connect()
+  /// Set of connection listeners, also used as a mutex
+  private val listeners = Set.empty[IConnectionListener]
 
-  /// cleanup and stop all channels on this connection, block until completed
-  def close(): Unit
+  /**
+   * Concrete implementation of connect
+   */
+  protected def doConnect(): Boolean
+
+  /**
+   * Concrete implementation of disconnect
+   */
+  protected def doDisconnect(): Boolean
+
+  /**
+   * query the state of the connection
+   *  @return True if connected, false otherwise
+   */
+
+  final def isConnected: Boolean = connected
+
+  /**
+   * Idempotent, blocking connect function
+   *
+   * @return True if the attempt was successful, false otherwise
+   */
+  final def connect(): Boolean = listeners.synchronized { doConnect() }
+
+  /**
+   * Idempotent, blocking disconnect function. All created channels are invalidated and closed.
+   *
+   * @return True if the attempt was successful, false otherwise
+   */
+  final def disconnect(): Boolean = listeners.synchronized { doDisconnect() }
 
   /// create a new single-thread only interface object that provides low level access to the amqp broker
   def newBrokerChannel(): BrokerChannel
 
   /// sets the connection listener
-  def addConnectionListener(l: IConnectionListener) = { listeners = l :: listeners }
+  final def addListener(listener: IConnectionListener) = listeners.synchronized {
+    listeners += listener
+  }
 
-  /// option to hold the connection listener
-  protected var listeners: List[IConnectionListener] = Nil
+  final def removeListener(listener: IConnectionListener) = listeners.synchronized {
+    listeners -= listener
+  }
+
+  final protected def setOpen() = listeners.synchronized {
+    connected = true
+    listeners.foreach(_.onConnectionOpen())
+  }
+
+  final protected def setClosed() = listeners.synchronized {
+    connected = false
+    listeners.foreach(_.onConnectionClose())
+  }
 
 }
