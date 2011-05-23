@@ -26,8 +26,8 @@ import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 class BrokerConnectionState extends IConnectionListener {
   private val connected = new SyncVar(false)
 
-  final override def onConnectionOpen() = connected.update(true)
-  final override def onConnectionClose() = connected.update(false)
+  final override def onConnectionOpened() = connected.update(true)
+  final override def onConnectionClosed(expected: Boolean) = connected.update(false)
 
   /**
    * @param timeout how long to wait in milliseconds before failing

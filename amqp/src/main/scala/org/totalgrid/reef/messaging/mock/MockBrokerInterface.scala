@@ -119,7 +119,7 @@ class MockBrokerInterface(connectCorrectly: Boolean = true, reportCorrectClosure
     c
   }
 
-  final override def doConnect(): Boolean = {
+  final override def connect(): Boolean = {
     if (!connectCorrectly) false
     else {
       this.setOpen()
@@ -129,8 +129,8 @@ class MockBrokerInterface(connectCorrectly: Boolean = true, reportCorrectClosure
 
   /// nothing special is needed to shut down the mock broker, there are no circular
   /// dependencies or listeners to unravel
-  final override def doDisconnect(): Boolean = {
-    this.setClosed()
+  final override def disconnect(): Boolean = {
+    this.setClosed(true)
     channels.foreach(_.close())
     true
   }

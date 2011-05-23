@@ -98,16 +98,6 @@ trait BrokerConnection {
   private val listeners = Set.empty[IConnectionListener]
 
   /**
-   * Concrete implementation of connect
-   */
-  protected def doConnect(): Boolean
-
-  /**
-   * Concrete implementation of disconnect
-   */
-  protected def doDisconnect(): Boolean
-
-  /**
    * query the state of the connection
    *  @return True if connected, false otherwise
    */
@@ -119,14 +109,14 @@ trait BrokerConnection {
    *
    * @return True if the attempt was successful, false otherwise
    */
-  final def connect(): Boolean = listeners.synchronized { doConnect() }
+  def connect(): Boolean
 
   /**
    * Idempotent, blocking disconnect function. All created channels are invalidated and closed.
    *
    * @return True if the attempt was successful, false otherwise
    */
-  final def disconnect(): Boolean = listeners.synchronized { doDisconnect() }
+  def disconnect(): Boolean
 
   /// create a new single-thread only interface object that provides low level access to the amqp broker
   def newBrokerChannel(): BrokerChannel
@@ -142,12 +132,12 @@ trait BrokerConnection {
 
   final protected def setOpen() = listeners.synchronized {
     connected = true
-    listeners.foreach(_.onConnectionOpen())
+    listeners.foreach(_.onConnectionOpened())
   }
 
-  final protected def setClosed() = listeners.synchronized {
+  final protected def setClosed(expected: Boolean) = listeners.synchronized {
     connected = false
-    listeners.foreach(_.onConnectionClose())
+    listeners.foreach(_.onConnectionClosed(expected))
   }
 
 }

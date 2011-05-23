@@ -20,29 +20,47 @@
  */
 package org.totalgrid.reef.messaging.qpid
 
-import scala.{ Option => ScalaOption }
-
-import org.apache.qpid.transport.{ Connection }
-import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
+import org.apache.qpid.transport.{Connection}
+import org.apache.qpid.transport.{ConnectionListener, ConnectionException}
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, BrokerConnection, BrokerChannel }
+import org.totalgrid.reef.messaging.{BrokerConnectionInfo, BrokerConnection, BrokerChannel}
+import scala.{Some, Option => ScalaOption}
 
-class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnection with ConnectionListener with Logging {
+class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnection with Logging {
 
-  private var connection: ScalaOption[Connection] = None
+  case class ConnectionRecord(connection: Connection, listener: Listener)
+
+  private var connection: ScalaOption[ConnectionRecord] = None
+
+  class Listener(qpid: QpidBrokerConnection) extends ConnectionListener {
+
+    private var valid = true
+
+    def invalidate() = valid = false
+
+    def closed(conn: Connection) = if(valid) qpid.onClosed()
+
+    def opened(conn: Connection) = if(valid) qpid.onOpened(conn)
+
+    def exception(conn: Connection, ex: ConnectionException) = if(valid) qpid.onException(conn, ex)
+
+  }
 
   override def toString() = config.toString
 
-  final override def doConnect() = connection match {
+  final override def connect(): Boolean = connection match {
     case Some(c) => true
     case None =>
       val conn = new Connection
-      conn.addConnectionListener(this)
+      val listener = new Listener(this)
+      conn.addConnectionListener(listener)
       info("Connecting to " + config)
       try {
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
+        connection = Some(ConnectionRecord(conn, listener))
+        this.setOpen()
         true
       } catch {
         case ex: Exception =>
@@ -51,11 +69,11 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       }
   }
 
-  final override def doDisconnect(): Boolean = connection match {
-    case Some(c) =>
-      unlinkChannels()
+  final override def disconnect(): Boolean = connection match {
+    case Some(ConnectionRecord(c, l)) =>
+      l.invalidate()
       c.close()
-      connection = None
+      cleanupAfterClose(true)
       true
     case None =>
       true
@@ -66,32 +84,34 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
     channels = Nil
   }
 
-  /* -- Implement Qpid Connection Listener -- */
 
-  def closed(conn: Connection) {
-    info("Qpid Connection closed")
+  def onClosed() {
+    info("Qpid connection unexpectedly closed")
+    cleanupAfterClose(false)
+  }
+
+  private def cleanupAfterClose(expected: Boolean) = {
     connection = None
-    this.setClosed()
+    this.setClosed(expected)
     unlinkChannels()
   }
 
-  def opened(conn: Connection) {
+  def onOpened(conn: Connection) {
     info("Qpid Connection opened")
-    connection = Some(conn)
-    this.setOpen()
   }
 
-  def exception(conn: Connection, ex: ConnectionException) {
+  def onException(conn: Connection, ex: ConnectionException) {
     error("Connection Exception: ", ex)
   }
 
   /* -- End Qpid Connection Listener -- */
 
-  private var channels = List.empty[QpidBrokerInterface]
+  // TODO - Looks like this list of channels never shrinks as sessions die? - JAC
+  private var channels = List.empty[QpidBrokerChannel]
 
   final override def newBrokerChannel(): BrokerChannel = connection match {
-    case Some(c) =>
-      val channel = new QpidBrokerInterface(c.createSession(0))
+    case Some(ConnectionRecord(c,_)) =>
+      val channel = new QpidBrokerChannel(c.createSession(0))
       channels = channel :: channels
       channel
     case None =>

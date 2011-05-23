@@ -32,7 +32,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging.{ BrokerChannel, MessageConsumer, Destination }
 import org.totalgrid.reef.api.ServiceIOException
 
-class QpidBrokerInterface(session: Session) extends SessionListener with BrokerChannel with Logging {
+class QpidBrokerChannel(session: Session) extends SessionListener with BrokerChannel with Logging {
   var messageConsumer: ScalaOption[MessageConsumer] = None
   var userClosed = false
   var queueName: ScalaOption[String] = None

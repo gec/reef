@@ -29,14 +29,16 @@ public interface IConnectionListener {
 
   /**
    * called when we lose connection to the broker. This means all subscriptions spawned from the IConnection during
-   * this time are invalid and need to be thrown away.
+   * this time are invalid and need to be thrown away
+   *
+   * @param expected True if the close was user initiated, false otherwise
    */
-  void onConnectionClose();
+  void onConnectionClosed(boolean expected);
 
   /**
    * called when we have established a connection to the message broker, we can now provide ISessions
    */
-  void onConnectionOpen();
+  void onConnectionOpened();
 
   // TODO: write tests to figure out what can and can't be done inside IConnectionListener callbacks reef_techdebt-7
   // TODO: add exception callback for ISubscription and possibly ISession

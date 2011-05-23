@@ -59,7 +59,6 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /// mutable state
   private var listeners = Queue.empty[IConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
-  private var reconnectOnClose = true
   private var connectedState = new BrokerConnectionState
   addConnectionListener(connectedState)
 
@@ -85,13 +84,11 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
 
   override def afterStart() = {
     broker.addListener(this)
-    reconnectOnClose = true
     this.reconnect()
   }
 
   /// overriders base class. Terminates all the connections and machinery
   override def beforeStop() = {
-    reconnectOnClose = false
     broker.disconnect()
   }
 
@@ -130,15 +127,15 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
 
   /* --- Implement Broker Connection Listener --- */
 
-  final override def onConnectionClose() {
-    info(" Connection closed. reconnecting:" + reconnectOnClose)
-    if (reconnectOnClose) this.delay(1000) { reconnect() }
-    this.synchronized { listeners.foreach(_.onConnectionClose()) }
+  final override def onConnectionClosed(expected: Boolean) {
+    info(" Connection closed, expected:" + expected)
+    if (!expected) this.delay(1000) { reconnect() }
+    this.synchronized { listeners.foreach(_.onConnectionClosed(expected)) }
   }
 
-  final override def onConnectionOpen() = {
+  final override def onConnectionOpened() = {
     info("Connection opened")
-    this.synchronized { listeners.foreach(_.onConnectionOpen()) }
+    this.synchronized { listeners.foreach(_.onConnectionOpened()) }
   }
 
 }
