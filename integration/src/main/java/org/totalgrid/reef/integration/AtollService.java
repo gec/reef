@@ -20,13 +20,11 @@
  */
 package org.totalgrid.reef.integration;
 
-import org.totalgrid.reef.api.javaclient.ISession;
-
 import org.totalgrid.reef.api.javaclient.ISessionPool;
 import org.totalgrid.reef.api.request.AllScadaService;
 import org.totalgrid.reef.api.request.impl.AllScadaServicePooledWrapper;
 
-public class AtollService extends AllScadaServicePooledWrapper implements AllScadaService {
+public class AtollService extends AllScadaServicePooledWrapper {
     public AtollService(ISessionPool sessionPool, String authToken) {
         super(sessionPool, authToken);
     }

@@ -26,8 +26,7 @@ import org.totalgrid.reef.api.request.AllScadaService
  * "Super" implementation of all of the service interfaces
  */
 trait AllScadaServiceImpl
-  extends AllScadaService
-  with AuthTokenServiceImpl
+  extends AuthTokenServiceImpl
   with EntityServiceImpl
   with ConfigFileServiceImpl
   with MeasurementServiceImpl

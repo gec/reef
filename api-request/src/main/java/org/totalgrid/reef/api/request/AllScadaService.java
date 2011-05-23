@@ -18,22 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+package org.totalgrid.reef.api.request;
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-trait AllScadaService
-  extends AuthTokenService
-  with EntityService
-  with ConfigFileService
-  with MeasurementService
-  with MeasurementOverrideService
-  with EventService
-  with CommandService
-  with PointService
-  with AlarmService
-  with AgentService
-  with EndpointManagementService
+public abstract class AllScadaService
+        implements AuthTokenService, EntityService, ConfigFileService, MeasurementService, MeasurementOverrideService, EventService, CommandService, PointService, AlarmService, AgentService, EndpointManagementService {
+
+}
 

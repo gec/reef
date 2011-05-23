@@ -18,9 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request
+package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.api.ReefServiceException;
 
 /**
  * All requests (except for authorization token requests) require that the agent has acquired an
@@ -29,25 +29,26 @@ import org.totalgrid.reef.api.ReefServiceException
  * that is an unguessable, unforgeable and must be kept secret by the client. Anyone with access to
  * that token will have the full capabilities of that user until it expires or is revoked. When a user
  * is finished using an auth token it should be deleted to minimize this danger.
- *
+ * <p/>
  * Every request to the services needs to have an auth token in the headers. They can be sent with each
  * client request, the ISession interface has overloads to attach headers to each request. It is easiest
  * to attach the auth token to the underlying session using the setAuthToken function.
- *
- * TODO: add setAuthToken function on ISession
+ * <p/>
+ * add TODO setAuthToken function on ISession
  */
-trait AuthTokenService {
-  /**
-   * create an authorization token for the user with all available permissions "checked out". If the password
-   * or username is wrong this method will throw an exception without indicating which was wrong.
-   * @return authToken string
-   */
-  @throws(classOf[ReefServiceException])
-  def createNewAuthorizationToken(user: String, password: String): String
+public interface AuthTokenService {
+    /**
+     * create an authorization token for the user with all available permissions "checked out". If the password
+     * or username is wrong this method will throw an exception without indicating which was wrong.
+     *
+     * @return authToken string
+     */
 
-  /**
-   * revoke the authToken string. This means all future requests using this auth token will fail.
-   */
-  @throws(classOf[ReefServiceException])
-  def deleteAuthorizationToken(token: String)
+    public String createNewAuthorizationToken(String user, String password) throws ReefServiceException;
+
+    /**
+     * revoke the authToken string. This means all future requests using this auth token will fail.
+     */
+
+    public void deleteAuthorizationToken(String token) throws ReefServiceException;
 }
