@@ -38,7 +38,7 @@ import java.lang.Override
  */
 class ProtoClient(
     factory: ClientSessionFactory,
-    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging {
+    lookup: ServiceList, timeoutms: Long) extends ClientSession with AsyncRestAdapter with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ClientSession]

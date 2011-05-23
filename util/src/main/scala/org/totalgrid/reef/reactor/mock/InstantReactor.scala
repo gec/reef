@@ -23,17 +23,14 @@ package org.totalgrid.reef.reactor.mock
 import org.totalgrid.reef.reactor._
 import org.totalgrid.reef.util.Timer
 
-class StubHandler extends Timer {
-  def cancel = {}
-  def now = {}
-}
 /**
  * Mock reactor for use in testing that runs all commands instantly, no delays, no repetition,
  * all on the calling thread. A check is done to ensure that an infinite loop is not entered. This
  * class is not appropriate for testing class with with complex timing requirements
  */
 
-trait InstantReactor extends Reactable with Lifecycle {
+class InstantReactor extends Reactable with Lifecycle {
+
   private var count = 0
 
   private def checkDepth[A](fun: => A): A = {
@@ -46,9 +43,17 @@ trait InstantReactor extends Reactable with Lifecycle {
     }
   }
 
+  object NullTimer extends Timer {
+    def cancel = {}
+    def now = {}
+  }
+
   override def execute(fun: => Unit): Unit = checkDepth(fun)
-  override def delay(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
-  override def repeat(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); new StubHandler }
+
+  override def delay(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); NullTimer }
+
+  override def repeat(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); NullTimer }
+
   override def request[A](fun: => A): A = checkDepth(fun)
 
 }

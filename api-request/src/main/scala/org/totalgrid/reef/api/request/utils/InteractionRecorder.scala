@@ -32,7 +32,7 @@ import org.totalgrid.reef.api.scalaclient._
  * the lowest level operation in this class (request) we get to see the result before any exception throwing would
  * occur therefore the output is just as useful in the failure cases (expected and unexpected)
  */
-trait InteractionRecorder extends SyncOperations { self: DefaultHeaders =>
+trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
 
   // list of explanations for the upcoming requests
   private val explanations = new Queue[Documenter.CaseExplanation]

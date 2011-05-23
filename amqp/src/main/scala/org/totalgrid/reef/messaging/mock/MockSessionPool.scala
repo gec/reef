@@ -21,7 +21,6 @@
 package org.totalgrid.reef.messaging.mock
 
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool }
-import org.totalgrid.reef.api.IConnectionListener
 
 class MockSessionPool(session: ClientSession) extends ISessionPool {
 

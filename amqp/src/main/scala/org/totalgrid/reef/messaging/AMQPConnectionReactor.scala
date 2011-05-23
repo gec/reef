@@ -69,6 +69,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
 
     try {
       connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
+      println("Connected")
     } catch {
       case se: ServiceIOException =>
         info("Syncronous start failed, stopping actor")
@@ -81,6 +82,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     if (timeoutMs <= 0) throw new IllegalArgumentException("Stop timeout must be greater than 0.")
     super.stop()
     connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
+    println("Disconnected")
   }
 
   override def afterStart() = {

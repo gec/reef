@@ -32,7 +32,7 @@ import org.totalgrid.reef.loader.configuration._
 
 import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.api.scalaclient.SyncOperations
+import org.totalgrid.reef.api.scalaclient.RestOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.File
@@ -44,7 +44,7 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: => SyncOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
+  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
 
     info("Loading configuration file '" + filename + "'")
 

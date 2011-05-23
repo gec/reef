@@ -42,17 +42,18 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {
-    val connection = new MockBrokerInterface
 
     // TODO: fix setupTest to use all async and all sync
 
-    AMQPFixture.run(connection, true) { amqp =>
+    val mock = new MockBrokerInterface
+
+    AMQPFixture.using(mock) { amqp =>
 
       val pub = new PublishingSubscriptionActor(exchange + "_events", new InstantReactor {})
       amqp.add(pub)
       amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, competing = true)
 
-      AMQPFixture.sync(connection, true) { syncAmqp =>
+      AMQPFixture.sync(mock, true) { syncAmqp =>
         val client = new ProtoClient(syncAmqp, servicelist, 10000)
 
         test(client)

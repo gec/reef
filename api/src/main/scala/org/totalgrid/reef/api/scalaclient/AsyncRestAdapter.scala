@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.scalaclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,16 +18,18 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
+import org.totalgrid.reef.api._
 
-trait AsyncOperations {
+trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 
-  self: DefaultHeaders =>
+  protected def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode)(callback: Response[A] => Unit)
 
-  /**
-   * All other async functions can be reduced to this
-   */
-  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination = AnyNode)(callback: Response[A] => Unit)
-
+  // Implement request in terms of an abstract asynchronous request
+  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): IPromise[Response[A]] = {
+    val promise = new Promise[Response[A]]
+    this.asyncRequest(verb, payload, env, dest)(promise.onResponse(_))
+    promise
+  }
 }

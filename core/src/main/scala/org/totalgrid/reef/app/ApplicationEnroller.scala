@@ -36,21 +36,11 @@ import org.totalgrid.reef.proto.ReefServicesList
 
 object ApplicationEnroller extends Logging {
 
-  def getSysProperty(prop: String, default: String): String = {
-    val propVal = System.getProperty(prop)
-    if (propVal == null) {
-      info(prop + " not defined, defaulting to :" + default)
-      default
-    } else {
-      propVal
-    }
-  }
-
-  lazy val defaultUserName = getSysProperty("reef.user", "system")
-  lazy val defaultUserPassword = getSysProperty("reef.user.password", "-system-")
-  lazy val defaultNodeName = getSysProperty("reef.node", "node01")
-  lazy val defaultLocation = getSysProperty("reef.network", "any")
-  lazy val defaultNetwork = getSysProperty("reef.location", "any")
+  def defaultUserName = SystemProperty.get("reef.user", "system")
+  def defaultUserPassword = SystemProperty.get("reef.user.password", "-system-")
+  def defaultNodeName = SystemProperty.get("reef.node", "node01")
+  def defaultLocation = SystemProperty.get("reef.network", "any")
+  def defaultNetwork = SystemProperty.get("reef.location", "any")
 
   def buildLogin(userName: Option[String] = None, userPassword: Option[String] = None) = {
     val agent = Agent.newBuilder

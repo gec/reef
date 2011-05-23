@@ -20,11 +20,6 @@
  */
 package org.totalgrid.reef.messaging.mock
 
-import scala.actors.TIMEOUT
-
-import java.io.IOException
-import scala.concurrent.MailBox
-
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
 
@@ -35,23 +30,15 @@ object AMQPFixture {
 
   val default = BrokerConnectionInfo.loadInfo("test")
 
-  def run(test: AMQPProtoFactory => Unit): Unit = {
-    run(default, false) { test }
+  def run(config: BrokerConnectionInfo = default, requireConn: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
+    using(new QpidBrokerConnection(config), requireConn)(test)
   }
 
-  def run(requireConn: Boolean)(test: AMQPProtoFactory => Unit): Unit = {
-    run(default, requireConn) { test }
+  def mock(requireConn: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
+    using(new MockBrokerInterface, requireConn)(test)
   }
 
-  def run(config: BrokerConnectionInfo, requireConn: Boolean)(test: AMQPProtoFactory => Unit): Unit = {
-    run(new QpidBrokerConnection(config), requireConn) { test }
-  }
-
-  def mock(requireConn: Boolean)(test: AMQPProtoFactory => Unit): Unit = {
-    run(new MockBrokerInterface, requireConn) { test }
-  }
-
-  def run(connection: BrokerConnection, requireConnection: Boolean)(test: AMQPProtoFactory => Unit): Unit = {
+  def using(connection: BrokerConnection, requireConnection: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
 
     val amqp = new AMQPProtoFactory with ReactActor {
       val broker = connection

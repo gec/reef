@@ -47,7 +47,7 @@ trait Reactable {
   def repeat(msec: Long)(fun: => Unit): Timer
 
   /**
-   * dispatches a unit of work synchronously with a specific evaluation type T
+   * dispatches a unit of work synchronously with a specific evaluation type A
    */
   def request[A](fun: => A): A
 }

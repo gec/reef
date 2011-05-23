@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.api.scalaclient.SyncOperations
+import org.totalgrid.reef.api.scalaclient.RestOperations
 
 trait ModelLoader {
   def putOrThrow(e: Entity)
@@ -40,7 +40,7 @@ trait ModelLoader {
   def getOrThrow(e: TriggerSet): List[TriggerSet]
 }
 
-class CachingModelLoader(client: Option[SyncOperations]) extends ModelLoader {
+class CachingModelLoader(client: Option[RestOperations]) extends ModelLoader {
 
   private var puts = List.empty[AnyRef]
 
@@ -67,7 +67,7 @@ class CachingModelLoader(client: Option[SyncOperations]) extends ModelLoader {
     client.foreach(flush(_))
   }
 
-  def flush(client: SyncOperations) = {
+  def flush(client: RestOperations) = {
     puts.reverse.foreach { x => client.put(x).await().expectMany() }
     triggers.foreach { case (name, tset) => client.put(tset).await().expectMany() }
     puts = Nil

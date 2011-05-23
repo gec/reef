@@ -24,6 +24,8 @@ package org.totalgrid.reef.api.scalaclient
 import scala.collection.mutable.Queue
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
 
+/* TODO - rename this class, it's really a "queueing" SyncOperations */
+
 /**
  * Mock the ISyncClientSession to collect all puts, posts, and deletes. A 'get' function
  * is specified upon construction.
@@ -36,7 +38,7 @@ import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
 class MockSyncOperations(
     doGet: (AnyRef) => Response[AnyRef],
     putQueue: Queue[AnyRef] = Queue[AnyRef](),
-    delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends SyncOperations with DefaultHeaders {
+    delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends RestOperations with DefaultHeaders {
 
   /**
    * Reset all queues.

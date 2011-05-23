@@ -23,8 +23,8 @@ package org.totalgrid.reef.api.request.impl
 import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException }
 import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResult, Session }
 
-import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, Subscription, ClientSession, SyncOperations }
 import org.totalgrid.reef.api.javaclient._
+import org.totalgrid.reef.api.scalaclient.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
 
 trait ReefServiceBaseClass extends ClientSource {
 
@@ -52,9 +52,9 @@ trait ReefServiceBaseClass extends ClientSource {
 trait ClientSource {
 
   // TODO - find a type-safe replacement
-  def convertByCasting(session: ISession): SyncOperations with SubscriptionManagement = session.asInstanceOf[Session].client
+  def convertByCasting(session: ISession): RestOperations with SubscriptionManagement = session.asInstanceOf[Session].client
 
-  protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+  protected def ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     try {
       _ops(block)
     } catch {
@@ -67,7 +67,7 @@ trait ClientSource {
     }
   }
 
-  protected def _ops[A](block: SyncOperations with SubscriptionManagement => A): A
+  protected def _ops[A](block: RestOperations with SubscriptionManagement => A): A
 }
 
 /**
@@ -75,9 +75,9 @@ trait ClientSource {
  * without attaching any extra information
  */
 trait SingleSessionClientSource extends ClientSource {
-  def session: SyncOperations with SubscriptionManagement
+  def session: RestOperations with SubscriptionManagement
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = block(session)
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = block(session)
 }
 
 /**
@@ -88,7 +88,7 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 
   def authToken: String
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     try {
       import org.totalgrid.reef.api.ServiceHandlerHeaders._
       session.getDefaultHeaders.setAuthToken(authToken)
@@ -107,7 +107,7 @@ trait PooledClientSource extends ClientSource {
   // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
   def sessionPool: ISessionPool
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     sessionPool.borrow(new ISessionFunction[A] {
       def apply(session: ISession) = block(convertByCasting(session))
     })
@@ -123,7 +123,7 @@ trait AuthorizedAndPooledClientSource extends ClientSource {
   def sessionPool: ISessionPool
   def authToken: String
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     sessionPool.borrow(authToken, new ISessionFunction[A] {
       def apply(session: ISession) = block(convertByCasting(session))
     })

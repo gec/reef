@@ -21,9 +21,8 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
-import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import java.io.{ BufferedReader, InputStreamReader }
-import org.totalgrid.reef.api.scalaclient.SyncClientSession
+import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to
@@ -67,7 +66,7 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
     }
   }
 
-  def setupReefSession(): (SyncClientSession, String)
+  def setupReefSession(): (ClientSession, String)
 }
 
 @Command(scope = "reef", name = "login", description = "Authorizes a user with the local Reef node, asks for password interactively")

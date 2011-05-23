@@ -68,11 +68,11 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
 
   test("SimpleServiceEchoSuccess") {
-    AMQPFixture.run { amqp =>
+    AMQPFixture.run() { amqp =>
 
       amqp.bindService(exchange, x3Service) // listen for service requests with the echo service
 
-      val serviceSend = amqp.getProtoClientSession(servicelist, 1000)
+      val serviceSend = amqp.getProtoClientSession(servicelist, 5000)
 
       // invoke the service future, and check that
       // response payload matches the request
@@ -84,7 +84,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     val request = Envelope.RequestHeader.newBuilder.setKey("test").setValue("test").build
     val service = new HeadersX2
 
-    AMQPFixture.run { amqp =>
+    AMQPFixture.run() { amqp =>
 
       amqp.bindService(exchange, service.respond _) // this service just multplies the payload by 3	    	    	    
       val client = amqp.getProtoClientSession(servicelist, 10000)
@@ -98,7 +98,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
 
   test("ObservableSubscription") {
 
-    AMQPFixture.run { amqp =>
+    AMQPFixture.run() { amqp =>
 
       val mail = new MailBox
 
@@ -129,7 +129,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("Competing Consumers") {
-    AMQPFixture.run { amqp =>
+    AMQPFixture.run() { amqp =>
 
       val services = 5
       val runs = 50

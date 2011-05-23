@@ -24,14 +24,11 @@ package org.totalgrid.reef.api.scalaclient
 import org.totalgrid.reef.api._
 import Envelope.Verb._
 
-trait SyncOperations {
+trait RestOperations {
 
   self: DefaultHeaders =>
 
-  /**
-   *  Implement this function to widen the interface
-   */
-  def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode): IPromise[Response[A]]
+  def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): IPromise[Response[A]]
 
   final def get[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(GET, payload, env, destination)
   final def delete[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(DELETE, payload, env, destination)

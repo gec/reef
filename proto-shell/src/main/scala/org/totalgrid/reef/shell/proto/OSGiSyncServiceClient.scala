@@ -82,7 +82,7 @@ class ServiceDispatcher[A](rh: IServiceAsync[A]) {
 
 }
 
-trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
+trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
@@ -113,7 +113,7 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
 }
 
-class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with SyncClientSession {
+class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with ClientSession {
   def getBundleContext: BundleContext = bundleContext
 
   def addSubscription[A](klass: Class[_]) = {

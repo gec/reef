@@ -80,7 +80,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
 
     // TODO: fix setupTest to use all async and all sync
 
-    AMQPFixture.run(connection, true) { amqp =>
+    AMQPFixture.using(connection, true) { amqp =>
 
       if (addServices) {
         amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, competing = true)

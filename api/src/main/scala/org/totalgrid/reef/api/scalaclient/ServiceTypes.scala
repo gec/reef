@@ -25,7 +25,7 @@ import org.totalgrid.reef.api._
 
 /* ---- Case classes that make the service api easier to use ---- */
 
-case class Request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
+case class Request[+A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: IDestination = AnyNode)
 
 object Response {
 

@@ -33,7 +33,7 @@ import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 
 import org.totalgrid.reef.api.scalaclient._
-import org.totalgrid.reef.messaging.{ SessionPool, Connection }
+import org.totalgrid.reef.messaging.Connection
 
 //implicits for massaging service return types
 
@@ -41,9 +41,9 @@ object MockProtoRegistry {
   val timeout = 5000
 }
 
-class MockRegistry extends MockProtoPublisherRegistry with MockProtoSubscriberRegistry with MockConnection
+class MockRegistry extends MockConnection with MockProtoPublisherRegistry with MockProtoSubscriberRegistry
 
-class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends ClientSession {
+class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends ClientSession with AsyncRestAdapter {
 
   private case class Req[A](callback: Response[A] => Unit, req: Request[A])
 
@@ -157,7 +157,7 @@ trait MockProtoSubscriberRegistry {
 
 case class MockEvent[A](accept: Event[A] => Unit, observer: Option[String => Unit])
 
-trait MockConnection extends Connection {
+class MockConnection extends Connection {
 
   val eventmail = new MailBox
   val servicemail = new MailBox

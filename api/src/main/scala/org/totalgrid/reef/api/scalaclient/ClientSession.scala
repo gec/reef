@@ -20,17 +20,11 @@ package org.totalgrid.reef.api.scalaclient
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 
 /**
  * scala analog to the java ISession
  */
-trait ClientSession extends SyncClientSession with ClientOperations
-
-/**
- * Simplest ClientSession that supports only synchronous requests
- */
-trait SyncClientSession extends SyncOperations with SubscriptionManagement with Closeable with DefaultHeaders
+trait ClientSession extends RestOperations with SubscriptionManagement with Closeable with DefaultHeaders
 
 /**
  * all clients should be closeable, this interface makes that explict
@@ -42,21 +36,3 @@ trait Closeable {
   def close()
 }
 
-/**
- * Provides a thick interface full of helper functions via implement of a single abstract request function
- */
-trait ClientOperations
-    extends SyncOperations
-    with AsyncOperations
-    with DefaultHeaders {
-
-  /**
-   *    Return a promise.
-   */
-  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): IPromise[Response[A]] = {
-    val promise = new Promise[Response[A]]
-    this.asyncRequest(verb, payload, env, dest)(promise.onResponse(_))
-    promise
-  }
-
-}
