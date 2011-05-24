@@ -43,7 +43,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       case None =>
         val conn = new Connection
         conn.addConnectionListener(this)
-        info { "Connecting to " + config }
+        reefLogger.info("Connecting to {}", config)
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
     }
   }
@@ -63,23 +63,23 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
     channels = Nil
   }
 
-  /* -- Implement Qpid Connection Listener -- */
+  /* -- Implementation of Qpid Connection Listener -- */
 
   def closed(conn: Connection) {
-    info("Qpid Connection closed")
+    reefLogger.info("Qpid Connection closed")
     connection = None
     unlinkChannels()
     listeners.foreach(_.closed())
   }
 
   def opened(conn: Connection) {
-    info("Qpid Connection opened")
+    reefLogger.info("Qpid Connection opened")
     connection = Some(conn)
     listeners.foreach(_.opened())
   }
 
   def exception(conn: Connection, ex: ConnectionException) {
-    error("Connection Exception: ", ex)
+    reefLogger.error("Connection Exception: {}", ex.getMessage, ex)
   }
 
   /* -- End Qpid Connection Listener -- */

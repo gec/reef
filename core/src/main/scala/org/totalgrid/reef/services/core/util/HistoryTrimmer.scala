@@ -30,7 +30,9 @@ class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable) {
     if (ms.supportsTrim) reactor.repeat(period) {
       val trimmed = ms.trim(totalMeasurements)
-      info("Trimmed: " + trimmed + " measurements.")
+      if (trimmed > 0) {
+        reefLogger.debug("trimmed: {} measurements", trimmed)
+      }
     }
   }
 }

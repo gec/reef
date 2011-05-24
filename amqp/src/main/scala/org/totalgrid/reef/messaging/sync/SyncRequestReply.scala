@@ -67,7 +67,10 @@ class SyncRequestReply[S, R](
     case Some(handle) =>
       try {
         handle.onResponse(deseralize(bytes)) //forward the deserialized response somewhere else
-      } catch { case ex: Exception => error(ex) }
+      } catch {
+        case ex: Exception =>
+          reefLogger.error("failed handling service response with: ", handle, ex)
+      }
     case None => error("Response callback has not been set")
   }
 

@@ -38,8 +38,7 @@ trait ReactorBase extends Actor with Logging {
   override def exceptionHandler: PartialFunction[Exception, Unit] = {
     {
       case e: Exception =>
-        error(e)
-        error(e.getStackTraceString)
+        reefLogger.error("exception encountered in actor: " + e.getMessage, e)
     }
   }
 
@@ -72,7 +71,8 @@ trait ReactorBase extends Actor with Logging {
       running = false
       beforeExit()
     } catch {
-      case t: Throwable => error(t)
+      case t: Throwable =>
+        reefLogger.error("exception encountered in handleStopping(): " + t.getMessage, t)
     }
   }
 
@@ -83,8 +83,7 @@ trait ReactorBase extends Actor with Logging {
         throw new Exception("Actor deadlock detected on stop")
       } catch {
         case e: Exception =>
-          error(e)
-          error(e.getStackTraceString)
+          reefLogger.error("exception encountered during stop: " + e.getMessage, e)
       }
     } else throw new IllegalStateException("Reactable not running")
   }

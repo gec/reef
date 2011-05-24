@@ -80,8 +80,8 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
         try {
           channel.get.publish(exchange, key, bytes, replyTo)
         } catch {
-          case ex: Exception =>
-            error(ex)
+          case e: Exception =>
+            reefLogger.error("failed to publish message: exchange: " + exchange + ", key: " + key + ", error: " + e.getMessage, e)
             delayMessage(bytes, exchange, key)
         }
       } else {
@@ -95,7 +95,7 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
       delayedMsgs = Msg(b, exchange, key) :: delayedMsgs
       bytesDelayed += b.size
     } else {
-      error("Exceeded buffer size")
+      reefLogger.error("unable to queue msg, buffer size exceeded: exchange: " + exchange + ", key: " + key)
     }
   }
 
