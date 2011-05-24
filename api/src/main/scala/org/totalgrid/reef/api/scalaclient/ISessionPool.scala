@@ -20,8 +20,6 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.IConnectionListener
-
 /** A class that implements a borrow function */
 trait ISessionPool {
 

@@ -93,7 +93,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     println("")
     try {
       if (requiresLogin && !isLoggedIn) {
-        println("You must be logged into Reef before you can this command")
+        println("You must be logged into Reef before you can run this command.")
         println("See help reef:login")
       } else doCommand()
     } catch {

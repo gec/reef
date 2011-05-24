@@ -119,12 +119,17 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
   }
 
   def blockCommands(user: String, commands: List[String]): AccessModel = {
-    val cmds = CommandModel.findByNames(commands)
-    if (cmds.size != commands.size)
-      throw new BadRequestException("Commands not found")
+    val foundCommands = CommandModel.findByNames(commands)
+
+    if (foundCommands.size != commands.size) {
+      val notFound: Set[String] = Set.empty[String]
+      notFound.addAll(commands)
+      commands.map(notFound.remove(_))
+      throw new BadRequestException("Commands not found: " + commands)
+    }
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.BLOCKED.getNumber, None, Some(user)))
-    addEntryForAll(accEntry, cmds.toList)
+    addEntryForAll(accEntry, foundCommands.toList)
     accEntry
   }
 

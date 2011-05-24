@@ -34,10 +34,10 @@ import org.totalgrid.reef.util.SystemPropertyConfigReader
 import org.totalgrid.reef.messaging.ProtoClient
 import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
 
-import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, IEvent }
+import org.totalgrid.reef.api.javaclient.{ SubscriptionEventAcceptor, SubscriptionEvent }
 
-class IEventAcceptorShim[T](fun: IEvent[T] => _) extends IEventAcceptor[T] {
-  def onEvent(event: IEvent[T]) = fun(event)
+class SubscriptionEventAcceptorShim[T](fun: SubscriptionEvent[T] => _) extends SubscriptionEventAcceptor[T] {
+  def onEvent(event: SubscriptionEvent[T]) = fun(event)
 }
 
 abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {

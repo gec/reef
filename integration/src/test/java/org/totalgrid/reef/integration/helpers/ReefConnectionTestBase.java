@@ -23,16 +23,16 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.*;
 
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.ISessionPool;
+import org.totalgrid.reef.api.javaclient.Session;
+import org.totalgrid.reef.api.javaclient.SessionExecutionPool;
 import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
-import org.totalgrid.reef.messaging.javaclient.Connection;
+import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
 import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 
-import org.totalgrid.reef.api.javaclient.IConnection;
-import org.totalgrid.reef.api.javaclient.ISession;
+import org.totalgrid.reef.api.javaclient.Connection;
 
 
 /**
@@ -45,9 +45,9 @@ public class ReefConnectionTestBase {
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
-	protected IConnection connection = new Connection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
-	protected ISession client = null;
-    protected AtollService helpers = null;
+	protected Connection connection = new AMQPConnection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
+	protected Session client;
+    protected AtollService helpers;
 
 	/**
 	 * Baseclass for junit integration tests, provides a Connection that is started and stopped with
@@ -91,7 +91,7 @@ public class ReefConnectionTestBase {
 	public void startBridge() throws InterruptedException, ReefServiceException {
 		connection.connect(5000);
 		client = connection.newSession();
-        ISessionPool pool = connection.newSessionPool();
+        SessionExecutionPool pool = connection.newSessionPool();
         String authToken = new AuthTokenServicePooledWrapper(pool).createNewAuthorizationToken("core","core");
         if (autoLogon) client.getDefaultHeaders().setAuthToken(authToken);
         helpers = new AtollService(pool, authToken);

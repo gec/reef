@@ -26,11 +26,11 @@ import org.totalgrid.reef.api.request.builders.{ AuthTokenRequestBuilders => Bui
 
 trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
 
-  def createNewAuthorizationToken(user: String, password: String): String = ops {
+  override def createNewAuthorizationToken(user: String, password: String): String = ops {
     _.put(Builder.requestAuthToken(user, password)).await().expectOne.getToken
   }
 
-  def deleteAuthorizationToken(token: String) = ops {
+  override def deleteAuthorizationToken(token: String) = ops {
     _.delete(Builder.deleteAuthToken(token)).await().expectOne
   }
 }

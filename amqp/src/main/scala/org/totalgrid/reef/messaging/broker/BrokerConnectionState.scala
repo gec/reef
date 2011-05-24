@@ -21,9 +21,10 @@ package org.totalgrid.reef.messaging.broker
  * under the License.
  */
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
+import org.totalgrid.reef.api.javaclient.ConnectionListener
+import org.totalgrid.reef.api.{ ServiceIOException }
 
-class BrokerConnectionState extends IConnectionListener {
+class BrokerConnectionState extends ConnectionListener {
   private val connected = new SyncVar(false)
 
   final override def onConnectionOpened() = connected.update(true)

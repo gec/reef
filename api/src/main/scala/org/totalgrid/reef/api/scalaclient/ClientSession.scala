@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.scalaclient
  */
 
 /**
- * scala analog to the java ISession
+ * scala analog to the java Session
  */
 trait ClientSession extends RestOperations with SubscriptionManagement with Closeable with DefaultHeaders
 

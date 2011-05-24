@@ -93,7 +93,11 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     if (!exchange.startsWith("amq.")) {
+      import java.lang.Exception
       // Qpid quietly kills your session if you try to declare a built in queue, reevaluate if we switch to rabbit
+
+      if (exchange.trim.length < 1) throw new Exception("Bad exchange name: " + exchange)
+
       session.exchangeDeclare(exchange, exchangeType, null, null)
       reefLogger.debug("Declared Exchange: {}", exchange)
     }
@@ -164,7 +168,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   }
 
   def stop() {
-    reefLogger.debug("Stopping: " + queueName.get)
+    reefLogger.debug("Stopping: {}", queueName)
 
     unlink()
     close

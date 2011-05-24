@@ -113,9 +113,9 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
 
   private def reenroll() = delay(2000) { enroll() }
 
-  def putAppConfig(client: ProtoClient, env: RequestEnv, config: ApplicationConfig) = client.put(config).listen {
+  def putAppConfig(client: ProtoClient, env: RequestEnv, configRequest: ApplicationConfig) = client.put(configRequest).listen {
     _ match {
-      case Success(_, list) =>
+      case SingleSuccess(_, config) =>
         val components = new CoreApplicationComponents(amqp, config, env)
         container = Some(setupFun(components))
         container.get.start

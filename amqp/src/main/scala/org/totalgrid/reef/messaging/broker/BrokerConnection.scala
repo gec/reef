@@ -20,14 +20,14 @@
  */
 package org.totalgrid.reef.messaging.broker
 
-import org.totalgrid.reef.api.IConnectionListener
+import org.totalgrid.reef.api.javaclient.ConnectionListener
 
 trait BrokerConnection {
 
   private var connected = false
 
   /// Set of connection listeners, also used as a mutex
-  private val listeners = scala.collection.mutable.Set.empty[IConnectionListener]
+  private val listeners = scala.collection.mutable.Set.empty[ConnectionListener]
 
   /**
    * query the state of the connection
@@ -54,11 +54,11 @@ trait BrokerConnection {
   def newBrokerChannel(): BrokerChannel
 
   /// sets the connection listener
-  final def addListener(listener: IConnectionListener) = listeners.synchronized {
+  final def addListener(listener: ConnectionListener) = listeners.synchronized {
     listeners += listener
   }
 
-  final def removeListener(listener: IConnectionListener) = listeners.synchronized {
+  final def removeListener(listener: ConnectionListener) = listeners.synchronized {
     listeners -= listener
   }
 

@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.messaging.broker
 
+import org.totalgrid.reef.api.javaclient.ConnectionListener
+
 /**
  * helper to package up ReplyTo address
  */

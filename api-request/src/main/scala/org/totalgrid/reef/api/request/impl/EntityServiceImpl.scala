@@ -28,27 +28,28 @@ import org.totalgrid.reef.api.request.builders.{ EntityAttributesBuilders, Entit
 
 trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
-  def getAllEntities(): java.util.List[Entity] = ops {
+  override def getAllEntities(): java.util.List[Entity] = ops {
     _.get(EntityRequestBuilders.getAll).await().expectMany()
   }
 
-  def getEntityByUid(uid: ReefUUID): Entity = ops {
+  override def getEntityByUid(uid: ReefUUID): Entity = ops {
     _.get(EntityRequestBuilders.getByUid(uid)).await().expectOne
   }
 
-  def getEntityByName(name: String): Entity = ops {
+  override def getEntityByName(name: String): Entity = ops {
     _.get(EntityRequestBuilders.getByName(name)).await().expectOne
   }
-  def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
+
+  override def getAllEntitiesWithType(typ: String): java.util.List[Entity] = {
     val request = if (typ == "*") EntityRequestBuilders.getAll else EntityRequestBuilders.getByType(typ)
     ops { _.get(request).await().expectMany() }
   }
 
-  def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity] = ops {
+  override def getAllEntitiesWithTypes(typ: java.util.List[String]): java.util.List[Entity] = ops {
     _.get(EntityRequestBuilders.getByTypes(typ.toList)).await().expectMany()
   }
 
-  def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = ops { session =>
+  override def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String): java.util.List[Entity] = ops { session =>
 
     val result = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ)).await().expectOne
 
@@ -56,45 +57,45 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     allEntitiesList
   }
 
-  def getEntityTree(entityTree: Entity): Entity = ops {
+  override def getEntityTree(entityTree: Entity): Entity = ops {
     _.get(entityTree).await().expectOne
   }
 
-  def getEntities(entityTree: Entity): java.util.List[Entity] = ops {
+  override def getEntities(entityTree: Entity): java.util.List[Entity] = ops {
     _.get(entityTree).await().expectMany()
   }
 
-  def getEntityAttributes(uid: ReefUUID): EntityAttributes = ops {
+  override def getEntityAttributes(uid: ReefUUID): EntityAttributes = ops {
     _.get(EntityAttributesBuilders.getForEntityUid(uid)).await().expectOne
   }
 
-  def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
+  override def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean): EntityAttributes = {
     addSingleAttribute(uid, EntityAttributesBuilders.boolAttribute(name, value))
   }
 
-  def setEntityAttribute(uid: ReefUUID, name: String, value: Long): EntityAttributes = {
+  override def setEntityAttribute(uid: ReefUUID, name: String, value: Long): EntityAttributes = {
     addSingleAttribute(uid, EntityAttributesBuilders.longAttribute(name, value))
   }
 
-  def setEntityAttribute(uid: ReefUUID, name: String, value: Double): EntityAttributes = {
+  override def setEntityAttribute(uid: ReefUUID, name: String, value: Double): EntityAttributes = {
     addSingleAttribute(uid, EntityAttributesBuilders.doubleAttribute(name, value))
   }
 
-  def setEntityAttribute(uid: ReefUUID, name: String, value: String): EntityAttributes = {
+  override def setEntityAttribute(uid: ReefUUID, name: String, value: String): EntityAttributes = {
     addSingleAttribute(uid, EntityAttributesBuilders.stringAttribute(name, value))
   }
 
-  def setEntityAttribute(uid: ReefUUID, name: String, value: Array[Byte]): EntityAttributes = {
+  override def setEntityAttribute(uid: ReefUUID, name: String, value: Array[Byte]): EntityAttributes = {
     addSingleAttribute(uid, EntityAttributesBuilders.byteArrayAttribute(name, value))
   }
 
-  def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = ops { session =>
+  override def removeEntityAttribute(uid: ReefUUID, attrName: String): EntityAttributes = ops { session =>
     val prev = getEntityAttributes(uid)
     val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
     session.put(EntityAttributesBuilders.putAttributesToEntityUid(uid, set)).await().expectOne
   }
 
-  def clearEntityAttributes(uid: ReefUUID): EntityAttributes = ops {
+  override def clearEntityAttributes(uid: ReefUUID): EntityAttributes = ops {
     _.delete(EntityAttributesBuilders.getForEntityUid(uid)).await().expectOne
   }
 

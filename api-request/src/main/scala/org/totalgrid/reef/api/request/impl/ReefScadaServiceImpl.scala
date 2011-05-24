@@ -22,32 +22,27 @@ package org.totalgrid.reef.api.request.impl
  */
 
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.javaclient.{ ISession, ISessionPool }
-
-abstract class AuthorizedSessionWrapper(_sessionPool: ISessionPool, _authToken: String) extends AuthorizedAndPooledClientSource {
-  def authToken = _authToken
-  def sessionPool = _sessionPool
-}
-
-abstract class PooledSessionWrapper(_sessionPool: ISessionPool) extends PooledClientSource {
-  def sessionPool = _sessionPool
-}
-
-abstract class SingleSessionWrapper(_session: ISession) extends SingleSessionClientSource {
-  def session = convertByCasting(_session)
-}
+import org.totalgrid.reef.api.javaclient.{ Session, SessionExecutionPool }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class AllScadaServicePooledWrapper(sessionPool: ISessionPool, authToken: String)
-  extends AuthorizedSessionWrapper(sessionPool, authToken) with AllScadaService with AllScadaServiceImpl
+class AllScadaServicePooledWrapper(_sessionPool: SessionExecutionPool, _authToken: String)
+    extends AllScadaService with AllScadaServiceImpl with AuthorizedAndPooledClientSource {
+  def authToken = _authToken
+  def sessionPool = _sessionPool
+}
 
-class AllScadaServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AllScadaService with AllScadaServiceImpl
+class AllScadaServiceWrapper(_session: Session) extends AllScadaService with AllScadaServiceImpl with SingleSessionClientSource {
+  def session = convertByCasting(_session)
+}
 
-class AuthTokenServicePooledWrapper(sessionPool: ISessionPool)
-  extends PooledSessionWrapper(sessionPool) with AuthTokenService with AuthTokenServiceImpl
+class AuthTokenServicePooledWrapper(_sessionPool: SessionExecutionPool) extends AuthTokenService with AuthTokenServiceImpl with PooledClientSource {
+  def sessionPool = _sessionPool
+}
 
-class AuthTokenServiceWrapper(session: ISession) extends SingleSessionWrapper(session) with AuthTokenService with AuthTokenServiceImpl
+class AuthTokenServiceWrapper(_session: Session) extends AuthTokenService with AuthTokenServiceImpl with SingleSessionClientSource {
+  def session = convertByCasting(_session)
+}
 

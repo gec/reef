@@ -23,7 +23,8 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
-import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
+import org.totalgrid.reef.api.javaclient.ConnectionListener
+import org.totalgrid.reef.api.{ ServiceIOException }
 
 import org.totalgrid.reef.messaging.broker._
 
@@ -31,7 +32,9 @@ import org.totalgrid.reef.messaging.broker._
  * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
  */
 trait AMQPConnectionReactor extends Reactor with Lifecycle
-    with IConnectionListener with Logging {
+    with ConnectionListener with Logging {
+
+  import org.totalgrid.reef.api.javaclient.ConnectionListener
 
   /// must be defined in concrete class
   protected val broker: BrokerConnection
@@ -48,18 +51,18 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     // TODO: need to add a removeChannelObserver function if keeping async around
   }
 
-  def addConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
+  def addConnectionListener(listener: ConnectionListener): Unit = this.synchronized {
     listeners = listeners.enqueue(listener)
   }
 
-  def removeConnectionListener(listener: IConnectionListener) = this.synchronized {
+  def removeConnectionListener(listener: ConnectionListener) = this.synchronized {
     listeners = listeners.filterNot(_ == listener)
   }
 
   def getChannel(): BrokerChannel = broker.newBrokerChannel()
 
   /// mutable state
-  private var listeners = Queue.empty[IConnectionListener]
+  private var listeners = Queue.empty[ConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
   private var connectedState = new BrokerConnectionState
   addConnectionListener(connectedState)

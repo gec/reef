@@ -25,8 +25,9 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
-import org.totalgrid.reef.messaging.javaclient.Connection;
-import org.totalgrid.reef.api.javaclient.IConnection;
+
+import org.totalgrid.reef.api.javaclient.Connection;
+import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
 
 public class TestBridgeExceptionBehaviors {
 
@@ -35,7 +36,7 @@ public class TestBridgeExceptionBehaviors {
 		String reef_ip = System.getProperty("reef_node_ip");
 		if (reef_ip == null) reef_ip = "127.0.0.1";
 
-		IConnection connection = new Connection(new BrokerConnectionInfo(reef_ip, 5672, "guest", "guest", "test"), ReefServicesList.getInstance(), 5000);
+		Connection connection = new AMQPConnection(new BrokerConnectionInfo(reef_ip, 5672, "guest", "guest", "test"), ReefServicesList.getInstance(), 5000);
 
 		try {
 			connection.newSession();

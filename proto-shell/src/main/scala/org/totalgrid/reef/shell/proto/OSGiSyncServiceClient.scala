@@ -57,7 +57,9 @@ class ServiceDispatcher[A](rh: IServiceAsync[A]) {
           if (wait) {
             mutex.wait(timeoutms)
             extract(false)
-          } else throw new ResponseTimeoutException
+          } else {
+            throw new ResponseTimeoutException("timed out during extraction of result")
+          }
       }
       extract(true)
     }

@@ -33,14 +33,14 @@ import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.api.service.{ IServiceResponseCallback, SyncServiceBase }
 
 object TestDescriptors {
-  def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
+  def requestHeader() = new TypeDescriptor[Envelope.RequestHeader] {
     def serialize(typ: Envelope.RequestHeader): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
     def getKlass = classOf[Envelope.RequestHeader]
     def id = getKlass.toString
   }
 
-  def serviceNotification() = new ITypeDescriptor[Envelope.ServiceNotification] {
+  def serviceNotification() = new TypeDescriptor[Envelope.ServiceNotification] {
     def serialize(typ: Envelope.ServiceNotification): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.ServiceNotification.parseFrom(bytes)
     def getKlass = classOf[Envelope.ServiceNotification]
