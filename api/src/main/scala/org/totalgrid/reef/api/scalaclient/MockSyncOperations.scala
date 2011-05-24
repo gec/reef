@@ -22,7 +22,8 @@ package org.totalgrid.reef.api.scalaclient
  */
 
 import scala.collection.mutable.Queue
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination, AnyNode }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.{ RequestEnv, IDestination, AnyNode }
 
 /* TODO - rename this class, it's really a "queueing" SyncOperations */
 

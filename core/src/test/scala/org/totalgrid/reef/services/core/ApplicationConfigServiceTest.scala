@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.Envelope.Status
+import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.ReefUUID
 

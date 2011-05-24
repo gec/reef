@@ -58,7 +58,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import MockProtocol._
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])

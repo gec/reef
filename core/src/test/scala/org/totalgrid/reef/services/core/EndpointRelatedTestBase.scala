@@ -41,12 +41,12 @@ import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.proto.{ ReefServicesList }
 
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.service.IServiceAsync
 
 import scalaclient.Event
-import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction }
-import org.totalgrid.reef.measproc.processing.Triggers.UnitCondition
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 

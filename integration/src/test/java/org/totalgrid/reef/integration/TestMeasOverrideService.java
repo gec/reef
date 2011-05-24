@@ -24,7 +24,8 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.javaclient.SubscriptionResult;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.api.request.MeasurementService;
 import org.totalgrid.reef.api.request.builders.MeasurementBatchRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders;
@@ -35,8 +36,6 @@ import org.totalgrid.reef.proto.Processing.MeasOverride;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import org.totalgrid.reef.api.ReefServiceException;
 
 import org.totalgrid.reef.integration.helpers.*;
 

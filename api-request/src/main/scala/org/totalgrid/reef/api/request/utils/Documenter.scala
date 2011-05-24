@@ -29,7 +29,7 @@ import java.io.File
 import xml.{ Node, XML, NodeSeq }
 
 import org.totalgrid.reef.util.BuildEnv
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.scalaclient._
 
 object Documenter {

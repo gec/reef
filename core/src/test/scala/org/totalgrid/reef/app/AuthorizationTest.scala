@@ -30,7 +30,7 @@ import org.scalatest.{ BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.proto.Auth.AuthToken
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api.scalaclient.{ Response, Failure }
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 import scala.Some
 
 @RunWith(classOf[JUnitRunner])

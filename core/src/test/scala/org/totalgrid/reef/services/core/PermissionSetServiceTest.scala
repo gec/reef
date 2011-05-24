@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.Auth._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])

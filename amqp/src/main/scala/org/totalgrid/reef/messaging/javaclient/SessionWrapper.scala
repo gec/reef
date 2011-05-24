@@ -21,8 +21,9 @@
 package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.javaclient.{ Promise, Response, Subscription, Session, SubscriptionEventAcceptor }
+import org.totalgrid.reef.japi.client._
 import scalaclient.{ ClientSession, IPromise => IScalaPromise, Response => ScalaResponse }
+import org.totalgrid.reef.japi.TypeDescriptor
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists

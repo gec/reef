@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.api.request.builders.EntityRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventRequestBuilders;

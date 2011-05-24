@@ -18,22 +18,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
 /**
- * An exception that represents a mal-formed request to a service
+ * Thrown because some abnormal IO condition exists with the connection/broker
  */
-public class BadRequestException extends ReplyException {
+public class ServiceIOException extends ReefServiceException {
 
-  public BadRequestException(String msg)
+  public ServiceIOException(String msg)
   {
-    super(msg, Envelope.Status.BAD_REQUEST);
+    super(msg, Envelope.Status.LOCAL_ERROR);
   }
-
-  public BadRequestException(String msg, Envelope.Status status)
-  {
-    super(msg, status);
-  }
-
 }
-

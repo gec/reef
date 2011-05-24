@@ -27,7 +27,7 @@ import org.apache.qpid.transport._
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.broker._
-import org.totalgrid.reef.api.ServiceIOException
+import org.totalgrid.reef.japi.ServiceIOException
 
 class QpidBrokerChannel(session: Session) extends SessionListener with BrokerChannel with Logging {
   var messageConsumer: ScalaOption[MessageConsumer] = None

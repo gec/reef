@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.request.impl
  */
 
 import org.totalgrid.reef.api.request._
-import org.totalgrid.reef.api.javaclient.{ Session, SessionExecutionPool }
+import org.totalgrid.reef.japi.client.{ Session, SessionExecutionPool }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down

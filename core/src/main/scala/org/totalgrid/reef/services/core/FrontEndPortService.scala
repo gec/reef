@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.services.framework._
 

@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.japi.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest

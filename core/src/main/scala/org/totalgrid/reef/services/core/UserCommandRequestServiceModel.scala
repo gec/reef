@@ -23,12 +23,11 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.proto.Commands.CommandAccess
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
 
 class UserCommandRequestServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel], accessFac: ModelFactory[CommandAccessServiceModel])

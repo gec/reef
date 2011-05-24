@@ -22,7 +22,7 @@ package org.totalgrid.reef.shell.proto
 
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
-import org.totalgrid.reef.api.Envelope.Verb
+import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
 import org.osgi.framework.BundleContext
 
@@ -30,9 +30,10 @@ import scala.annotation.tailrec
 
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.japi._
 
 import com.weiglewilczek.scalamodules._
-import _root_.scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
 class ServiceDispatcher[A](rh: IServiceAsync[A]) {

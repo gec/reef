@@ -20,11 +20,11 @@ package org.totalgrid.reef.api.request.impl
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile, ReefUUID }
+import org.totalgrid.reef.proto.Model.{ ConfigFile, ReefUUID }
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.ExpectationException
+import org.totalgrid.reef.japi.ExpectationException
 import org.totalgrid.reef.api.request.{ ConfigFileService }
 import org.totalgrid.reef.api.request.builders.{ EntityRequestBuilders, ConfigFileRequestBuilders }
 

@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import scala.collection.mutable._
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool => ISessionPoolScala }
-import org.totalgrid.reef.api.javaclient.{ SessionExecutionPool, SessionFunction }
+import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
 
 class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ISessionPoolScala with SessionExecutionPool {

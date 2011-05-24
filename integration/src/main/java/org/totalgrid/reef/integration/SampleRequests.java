@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.integration;
 
-import org.totalgrid.reef.api.javaclient.Session;
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.client.Session;
+import org.totalgrid.reef.japi.ReefServiceException;
 
 import org.totalgrid.reef.api.request.builders.*;
 import org.totalgrid.reef.proto.Measurements.*;

@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.TypeDescriptor
+import org.totalgrid.reef.japi.TypeDescriptor
 
 trait HasComponentId {
   def componentId: String

@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.broker
 
-import org.totalgrid.reef.api.ConnectionListener
+import org.totalgrid.reef.japi.client.ConnectionListener
 
 trait BrokerConnection {
 

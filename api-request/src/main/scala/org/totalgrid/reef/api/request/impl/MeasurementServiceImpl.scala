@@ -22,8 +22,7 @@ package org.totalgrid.reef.api.request.impl
  */
 
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.api.ExpectationException
-
+import org.totalgrid.reef.japi.ExpectationException
 import org.totalgrid.reef.proto.Measurements.{ Measurement }
 import org.totalgrid.reef.api.request.MeasurementService
 import org.totalgrid.reef.api.request.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }

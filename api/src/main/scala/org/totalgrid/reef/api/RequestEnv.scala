@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api
 
-import org.totalgrid.reef.api.javaclient.ServiceHeaders
+import org.totalgrid.reef.japi.client.ServiceHeaders
 
 /**
  * This class wraps the headers we send/receive in the service envelope with helper

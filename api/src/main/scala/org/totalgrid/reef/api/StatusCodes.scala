@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.api
 
+import org.totalgrid.reef.japi._
+
 object StatusCodes {
 
   def isSuccess(status: Envelope.Status): Boolean = {

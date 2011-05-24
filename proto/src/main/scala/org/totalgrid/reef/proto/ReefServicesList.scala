@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.proto
 
-import org.totalgrid.reef.api.{ ServiceListOnMap, ServiceInfo, TypeDescriptor, ServiceList }
+import org.totalgrid.reef.japi.TypeDescriptor
+import org.totalgrid.reef.api.{ ServiceListOnMap, ServiceInfo, ServiceList }
 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(

@@ -22,17 +22,17 @@ package org.totalgrid.reef.api.scalaclient
  */
 
 import org.totalgrid.reef.api._
-import Envelope.Verb._
+import org.totalgrid.reef.japi.Envelope.Verb
 
 trait RestOperations {
 
   self: DefaultHeaders =>
 
-  def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination): IPromise[Response[A]]
+  def request[A](verb: Verb, payload: A, env: RequestEnv, dest: IDestination): IPromise[Response[A]]
 
-  final def get[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(GET, payload, env, destination)
-  final def delete[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(DELETE, payload, env, destination)
-  final def post[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(POST, payload, env, destination)
-  final def put[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(PUT, payload, env, destination)
+  final def get[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(Verb.GET, payload, env, destination)
+  final def delete[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(Verb.DELETE, payload, env, destination)
+  final def post[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(Verb.POST, payload, env, destination)
+  final def put[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode) = request(Verb.PUT, payload, env, destination)
 
 }

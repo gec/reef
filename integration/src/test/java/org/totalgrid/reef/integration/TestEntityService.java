@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.api.request.EntityService;
 import org.totalgrid.reef.proto.Model.*;
 

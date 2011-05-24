@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.api.scalaclient.{ Subscription => ScalaSubscription }
-import org.totalgrid.reef.api.javaclient.{ SubscriptionEventAcceptor, Subscription }
+import org.totalgrid.reef.japi.client.{ SubscriptionEventAcceptor, Subscription }
 
 // TODO: get rid of SubscriptionWrapper
 class SubscriptionWrapper[A](sub: ScalaSubscription[A]) extends Subscription[A] {

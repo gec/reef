@@ -31,7 +31,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, BadRequestException, UnauthorizedException }
+import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 
 class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])

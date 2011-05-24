@@ -25,7 +25,7 @@ import scala.actors.Actor._
 import scala.collection.mutable
 
 import org.totalgrid.reef.util.{ Logging, Timer }
-import org.totalgrid.reef.api.Envelope._
+import org.totalgrid.reef.japi.Envelope._
 
 /**
  * Synchronizes and correlates the send/receive operations on a ProtoServiceChannel

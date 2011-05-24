@@ -20,8 +20,9 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.javaclient.SubscriptionEvent
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.japi._
+import org.totalgrid.reef.japi.client.SubscriptionEvent
 
 /* ---- Case classes that make the service api easier to use ---- */
 

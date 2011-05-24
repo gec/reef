@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.api
 
+import org.totalgrid.reef.japi.TypeDescriptor
+
 object ServiceInfo {
   def get[A](descriptor: TypeDescriptor[A]) =
     ServiceInfo[A, A](descriptor, false, descriptor, descriptor.id + "_events")

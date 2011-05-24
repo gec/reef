@@ -28,6 +28,7 @@ import org.totalgrid.reef.broker.BrokerConnectionInfo
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
 
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.service.IServiceResponseCallback
 
 import scala.concurrent.MailBox
@@ -36,6 +37,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.japi.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class QpidIntegrationTest extends FunSuite with ShouldMatchers {

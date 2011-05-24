@@ -22,7 +22,8 @@ package org.totalgrid.reef.broker
  */
 import org.totalgrid.reef.util.SyncVar
 
-import org.totalgrid.reef.api.{ ConnectionListener, ServiceIOException }
+import org.totalgrid.reef.japi.client.ConnectionListener
+import org.totalgrid.reef.japi.ServiceIOException
 
 class BrokerConnectionState extends ConnectionListener {
   private val connected = new SyncVar(false)

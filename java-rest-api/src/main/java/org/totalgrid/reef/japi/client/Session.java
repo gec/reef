@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi.client;
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -21,7 +21,9 @@ package org.totalgrid.reef.api.javaclient;
  * under the License.
  */
 
-import org.totalgrid.reef.api.*;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.ServiceIOException;
+import org.totalgrid.reef.japi.TypeDescriptor;
 
 /**
  *  The interface that a concrete service client must provide.

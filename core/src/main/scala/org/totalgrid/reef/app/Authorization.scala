@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.api.scalaclient.{ Response, SingleSuccess, ISessionPool }
-import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv }
+import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.Logging
 
 object Authorization extends Logging {

@@ -20,7 +20,9 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.japi.Envelope
+
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders }
 
 trait Subscription[A] {
   def cancel()

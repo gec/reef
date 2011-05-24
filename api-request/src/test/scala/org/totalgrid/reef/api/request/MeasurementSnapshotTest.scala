@@ -25,9 +25,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
-import org.totalgrid.reef.proto.Measurements.{ MeasurementSnapshot }
-import org.totalgrid.reef.api.ExpectationException
+import org.totalgrid.reef.japi.ExpectationException
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementSnapshotTest

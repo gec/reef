@@ -33,7 +33,8 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException }
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.RequestEnv
 
 // implicit proto properties
 import SquerylModel._

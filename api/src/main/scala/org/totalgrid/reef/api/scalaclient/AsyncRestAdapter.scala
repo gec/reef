@@ -21,6 +21,7 @@
 package org.totalgrid.reef.api.scalaclient
 
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.japi.Envelope
 
 trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 

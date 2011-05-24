@@ -1,3 +1,5 @@
+package org.totalgrid.reef.japi.client;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,17 +20,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
 
 /**
- * Interface that defines what operations can be done to service header
+ * A container class that wraps the response to a subscription request and the subscription interface itself
+ *
+ * @param <T> The type of result
+ * @param <U> The type of the subscription
  */
-public interface ServiceHeaders {
+public interface SubscriptionResult<T, U> {
 
    /**
-     * Sets or clears the AuthToken field in the header
-     * @param token A string representing the auth token or null to clear it
+     * @return The value of response
      */
-  void setAuthToken(String token);
+   T getResult();
+
+   /**
+     * @return The interface used for starting/stopping the actual subscription
+     */
+   Subscription<U> getSubscription();
 
 }

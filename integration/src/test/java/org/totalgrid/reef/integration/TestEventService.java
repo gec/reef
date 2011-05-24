@@ -21,10 +21,8 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.Subscription;
-import org.totalgrid.reef.api.javaclient.SubscriptionCreationListener;
-import org.totalgrid.reef.api.javaclient.SubscriptionResult;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.SubscriptionCreationListener;
 import org.totalgrid.reef.api.request.AlarmService;
 import org.totalgrid.reef.api.request.EventService;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
@@ -32,6 +30,8 @@ import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.integration.helpers.BlockingQueue;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
+import org.totalgrid.reef.japi.client.Subscription;
+import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 import org.totalgrid.reef.proto.Events;
 

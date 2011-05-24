@@ -18,9 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi.client;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 
 /**
  * A thread-safe interface for executing arbitrary blocks of code on against of pool of Session's

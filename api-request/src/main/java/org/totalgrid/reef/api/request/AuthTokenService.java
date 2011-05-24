@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 
 /**
  * All requests (except for authorization token requests) require that the agent has acquired an

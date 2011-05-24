@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.api.scalaclient.{ Subscription => ScalaSubscription }
-import org.totalgrid.reef.api.javaclient.{ Subscription, SubscriptionResult }
+import org.totalgrid.reef.japi.client.SubscriptionResult
 
 class SubscriptionResultWrapper[A, B](result: A, sub: ScalaSubscription[B]) extends SubscriptionResult[A, B] {
 

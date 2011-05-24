@@ -32,7 +32,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import scala.concurrent.MailBox
 
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 class ServiceHandlerMock(conn: Connection, retryMS: Long) {
 

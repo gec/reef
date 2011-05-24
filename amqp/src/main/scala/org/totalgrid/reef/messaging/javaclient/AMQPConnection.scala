@@ -27,8 +27,8 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.api.{ ConnectionListener, ServiceList }
-import org.totalgrid.reef.api.javaclient.{ SessionExecutionPool, Connection, Session }
+import org.totalgrid.reef.japi.client.{ ConnectionListener, Connection, Session, SessionExecutionPool }
+import org.totalgrid.reef.api.ServiceList
 import org.totalgrid.reef.api.scalaclient.ClientSession
 
 /**

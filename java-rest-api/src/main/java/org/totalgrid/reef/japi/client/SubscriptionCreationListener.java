@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient;
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,23 +18,14 @@ package org.totalgrid.reef.api.javaclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.japi.client;
 
 /**
- * A container class that wraps the response to a subscription request and the subscription interface itself
- *
- * @param <T> The type of result
- * @param <U> The type of the subscription
+ * Interface to receive notifications when a subscription is created using a service
+ * wrapper. This makes it much easier to create leak-proof subscription handling, all
+ * subscriptions should be eventually canceled.
  */
-public interface SubscriptionResult<T, U> {
+public interface SubscriptionCreationListener {
 
-   /**
-     * @return The value of response
-     */
-   T getResult();
-
-   /**
-     * @return The interface used for starting/stopping the actual subscription
-     */
-   Subscription<U> getSubscription();
-
+    public void onSubscriptionCreated(Subscription<?> sub);
 }

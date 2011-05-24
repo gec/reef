@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.Envelope;
+package org.totalgrid.reef.japi.client;
 
 /**
- * when a
+ *  Interface that accepts events on some unspecified thread
  */
-public interface SubscriptionEvent<T> {
-    T getValue();
-    Envelope.Event getEventType();
+public interface SubscriptionEventAcceptor<A> {
+
+  void onEvent(SubscriptionEvent<A> event);
+
 }

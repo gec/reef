@@ -18,33 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
-
-import org.totalgrid.reef.api.ExpectationException;
+package org.totalgrid.reef.japi.client;
 
 /**
- * Interfaces that defines a response to service request
- * @param <A> The return type of the service request
+ * Interface that defines a simple callback from a request
+ * @param <A> Type of the value returned from a request
  */
-public interface Response<A> {
+public interface ResponseListener<A> {
 
    /**
-     * @return True if the service request was successful, false otherwise
+     *
+     * @param value The asynchronous return value from a request
      */
-  boolean isSuccess();
-
-   /**
-     * Interprets the result as a successful request with 0 or more return values
-     * @return A list of return values
-     * @throws ExpectationException if the response is not a success
-     */
-  java.util.List<A> expectMany() throws ExpectationException;
-
-   /**
-     * Interprets the result as a successful request with exactly 1 return value
-     * @return A single value
-     * @throws ExpectationException if the response or some number of return values other than 1
-     */
-  A expectOne() throws ExpectationException;
+    void onCompletion(A value);
 
 }

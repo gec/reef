@@ -28,13 +28,12 @@ import org.totalgrid.reef.services.core.util._
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.japi.ReefServiceException
 
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
-import org.totalgrid.reef.event.SilentEventLogPublisher
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

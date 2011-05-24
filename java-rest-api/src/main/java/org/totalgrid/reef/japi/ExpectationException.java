@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient;
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,19 +18,14 @@ package org.totalgrid.reef.api.javaclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.japi;
 
-/**
- * A subscription object provides header info and can also be canceled. It carries the message type
- * primarily to make message signatures more expressive.
- * TODO: add ISubscriptions to scala apis
- */
-public interface Subscription<A> {
+public class ExpectationException extends ReplyException {
 
-  void cancel();
-
-  String getId();
-
-  void start(SubscriptionEventAcceptor<A> acceptor);
+  public ExpectationException(String msg)
+  {
+    super(msg, Envelope.Status.UNEXPECTED_RESPONSE);
+  }
 
 }
 

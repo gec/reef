@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.Envelope._
+import org.totalgrid.reef.japi.Envelope._
 import org.totalgrid.reef.broker._
 
 /**

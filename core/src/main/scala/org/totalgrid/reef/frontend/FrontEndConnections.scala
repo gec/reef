@@ -33,6 +33,7 @@ import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.japi.{ ReefServiceException, ResponseTimeoutException }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {

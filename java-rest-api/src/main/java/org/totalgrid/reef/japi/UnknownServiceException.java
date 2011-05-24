@@ -18,17 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
-public class ResponseTimeoutException extends ReefServiceException {
+/**
+ * Thrown when the client tries to make a request to an unknown service.
+ */
+public class UnknownServiceException extends ReefServiceException {
 
-  public ResponseTimeoutException()
+  public UnknownServiceException(String msg)
   {
-    super("", Envelope.Status.RESPONSE_TIMEOUT);
-  }
-
-  public ResponseTimeoutException(String msg)
-  {
-    super(msg, Envelope.Status.RESPONSE_TIMEOUT);
+    super(msg, Envelope.Status.LOCAL_ERROR);
   }
 }
+

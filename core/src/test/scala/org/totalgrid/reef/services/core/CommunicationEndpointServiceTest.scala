@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.japi.ReefServiceException
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }

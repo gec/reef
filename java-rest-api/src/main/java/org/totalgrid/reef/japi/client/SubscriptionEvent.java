@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi.client;
+
+import org.totalgrid.reef.japi.Envelope;
 
 /**
- * Interface to receive notifications when a subscription is created using a service
- * wrapper. This makes it much easier to create leak-proof subscription handling, all
- * subscriptions should be eventually canceled.
+ * when a
  */
-public interface SubscriptionCreationListener {
-
-    public void onSubscriptionCreated(Subscription<?> sub);
+public interface SubscriptionEvent<T> {
+    T getValue();
+    Envelope.Event getEventType();
 }

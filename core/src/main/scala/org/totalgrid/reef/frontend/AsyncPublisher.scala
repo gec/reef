@@ -20,13 +20,6 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.protocol.api.IListener
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.api.scalaclient.{ Failure, Success, Response, ISessionPool }
-import org.totalgrid.reef.api.{ AnyNode, IDestination, Envelope, ReefServiceException }
-
-import scala.annotation.tailrec
-
 /**
  * Uses asynchronous methods and a queue to publish, blocking only when queue fills up
  */

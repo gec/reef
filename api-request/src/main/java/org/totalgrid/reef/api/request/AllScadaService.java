@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.javaclient.SubscriptionCreator;
+import org.totalgrid.reef.japi.client.SubscriptionCreator;
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down

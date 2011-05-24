@@ -18,18 +18,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi;
 
-import org.totalgrid.reef.api.ReefServiceException;
 
 /**
- * a helper class that encapsulates a block of code we want to execute using a single
- * session. Typed to allow the pool execute functions to return the same type as apply
+ * An exception that represents a mal-formed request to a service
  */
-public interface SessionFunction<A> {
+public class BadRequestException extends ReplyException {
 
-  /**
-   * called with a session from the pool
-   */
-  A apply(Session session) throws ReefServiceException;
+  public BadRequestException(String msg)
+  {
+    super(msg, Envelope.Status.BAD_REQUEST);
+  }
+
+  public BadRequestException(String msg, Envelope.Status status)
+  {
+    super(msg, status);
+  }
+
 }
+

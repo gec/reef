@@ -23,7 +23,7 @@ package org.totalgrid.reef.broker.mock
 import scala.collection.immutable
 
 import org.totalgrid.reef.broker._
-import org.totalgrid.reef.api.ServiceIOException
+import org.totalgrid.reef.japi.ServiceIOException
 
 /**
  * Very simple round robin implementation for mocking purposes

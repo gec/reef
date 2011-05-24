@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.scalaclient.{ Failure, Response }
 import com.google.protobuf.ByteString
 

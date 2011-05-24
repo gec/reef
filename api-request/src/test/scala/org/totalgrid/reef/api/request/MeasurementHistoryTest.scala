@@ -27,8 +27,8 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.BlockingQueue
 import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.api.BadRequestException
-import org.totalgrid.reef.api.javaclient.SubscriptionEvent
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.japi.client.SubscriptionEvent
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryTest

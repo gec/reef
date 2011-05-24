@@ -21,7 +21,8 @@ package org.totalgrid.reef.api.service
  * under the License.
  */
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, TypeDescriptor }
+import org.totalgrid.reef.japi.{ Envelope, TypeDescriptor }
+import org.totalgrid.reef.api.RequestEnv
 
 object IServiceAsync {
   type ServiceFunction = (Envelope.ServiceRequest, RequestEnv, IServiceResponseCallback) => Unit

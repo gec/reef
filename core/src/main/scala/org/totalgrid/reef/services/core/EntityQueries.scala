@@ -30,7 +30,8 @@ import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
+
 import SquerylModel._
 import java.util.UUID
 

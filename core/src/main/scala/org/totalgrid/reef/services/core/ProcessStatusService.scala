@@ -30,7 +30,8 @@ import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
+
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }

@@ -20,12 +20,13 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException }
+import org.totalgrid.reef.japi.{ ReefServiceException, InternalClientError }
+
 import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResultWrapper, SessionWrapper }
 
-import org.totalgrid.reef.api.javaclient._
-import org.totalgrid.reef.api.javaclient.{ Subscription => JavaSubscription }
+import org.totalgrid.reef.japi.client.{ Subscription => JavaSubscription }
 import org.totalgrid.reef.api.scalaclient.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
+import org.totalgrid.reef.japi.client._
 
 trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
 

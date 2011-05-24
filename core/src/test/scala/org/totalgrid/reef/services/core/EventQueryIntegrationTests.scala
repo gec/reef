@@ -24,10 +24,10 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
-import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto, EventSelect }
-import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.proto.Events.{ EventList => EventListProto, EventSelect }
+import org.totalgrid.reef.proto.Alarms.{ EventConfig => EventConfigProto }
+import org.totalgrid.reef.japi.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryIntegrationTests extends EventIntegrationTestsBase {

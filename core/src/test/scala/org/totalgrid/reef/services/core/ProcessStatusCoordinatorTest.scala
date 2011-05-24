@@ -33,7 +33,7 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
-import org.totalgrid.reef.api.{ Envelope }
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 @RunWith(classOf[JUnitRunner])

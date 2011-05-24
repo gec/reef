@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.{ ExpectationException, StatusCodes, Envelope }
-import sun.awt.SunHints.Value
+import org.totalgrid.reef.japi._
+import org.totalgrid.reef.api.StatusCodes
 
 trait Expectations[+A] {
 

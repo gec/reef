@@ -18,13 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
-public class ExpectationException extends ReplyException {
+public class UnauthorizedException extends BadRequestException {
 
-  public ExpectationException(String msg)
+  public UnauthorizedException(String msg)
   {
-    super(msg, Envelope.Status.UNEXPECTED_RESPONSE);
+    super(msg, Envelope.Status.UNAUTHORIZED);
   }
 
 }

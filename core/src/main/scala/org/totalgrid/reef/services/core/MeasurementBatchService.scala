@@ -32,6 +32,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api.service.AsyncServiceBase
+import org.totalgrid.reef.japi._
 
 class MeasurementBatchService(pool: ISessionPool)
     extends AsyncServiceBase[MeasurementBatch] {

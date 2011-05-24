@@ -174,7 +174,7 @@ deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scal
 deseralizers.puts <<EOF
 package org.totalgrid.reef.proto
 
-import org.totalgrid.reef.api.TypeDescriptor
+import org.totalgrid.reef.japi.TypeDescriptor
 
 #{scala_imports}
 

@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.{ RequestEnv, Envelope }
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.service.HasServiceType
 
 trait CanAuthorizeCreate extends HasServiceType {

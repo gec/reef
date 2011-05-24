@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.EntityAttributes;
 import org.totalgrid.reef.proto.Model.ReefUUID;

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.api.service.{ SyncServiceBase, AsyncServiceBase }
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 
 /**
  * Shared dependencies for generic service implementations

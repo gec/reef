@@ -22,11 +22,10 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto, MeasurementProcessingRouting }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment, ApplicationInstance, CommunicationEndpoint }
+import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.services.ProtoRoutingKeys

@@ -30,7 +30,8 @@ import scala.collection.immutable
 import org.totalgrid.reef.api.service.IServiceAsync
 
 import org.totalgrid.reef.reactor.Reactable
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
+import org.totalgrid.reef.api.{ RequestEnv, IDestination }
+import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.messaging.Connection

@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Auth.Agent;
 import org.totalgrid.reef.proto.Auth.Permission;
 import org.totalgrid.reef.proto.Auth.PermissionSet;

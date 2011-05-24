@@ -23,7 +23,8 @@ package org.totalgrid.reef.api.request.utils
 import xml.Node
 import scala.collection.mutable.Queue
 
-import org.totalgrid.reef.api.{ RequestEnv, Envelope, IDestination, AnyNode }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.{ RequestEnv, IDestination, AnyNode }
 import org.totalgrid.reef.api.scalaclient._
 
 /**

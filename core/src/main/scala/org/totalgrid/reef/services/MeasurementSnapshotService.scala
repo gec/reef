@@ -30,7 +30,8 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.api.service.SyncServiceBase
 

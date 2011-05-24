@@ -18,33 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
 /**
- * Base class for all exceptions thrown by the api
+ *  A blanket exception that gets rethrown when an internal exception happens
+ *  (i.e. an exception in the particular messaging binding we're using)
  */
-public abstract class ReefServiceException extends Exception {
+public class InternalClientError extends ReefServiceException {
 
-  final public Envelope.Status status;
-  final public String msg;
-
-  public ReefServiceException(String msg, Envelope.Status status, Throwable cause)
-  {
-    super(msg, cause);
-    this.msg = msg;
-    this.status = status;
+  public InternalClientError(String msg, Throwable cause) {
+      super(msg, Envelope.Status.LOCAL_ERROR, cause);
   }
 
-  public ReefServiceException(String msg, Envelope.Status status)
-  {
-    super(msg);
-    this.msg = msg;
-    this.status = status;
-  }
-
-  public Envelope.Status getStatus()
-  {
-    return status;
-  }
 }
-

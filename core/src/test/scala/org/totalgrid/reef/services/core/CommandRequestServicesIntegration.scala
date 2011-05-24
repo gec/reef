@@ -38,7 +38,8 @@ import CommandAccess._
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.SessionPool
-import org.totalgrid.reef.api.{ RequestEnv, scalaclient, Envelope, AddressableService }
+import org.totalgrid.reef.api.{ RequestEnv, scalaclient, AddressableService }
+import org.totalgrid.reef.japi.Envelope
 
 import scalaclient.Response
 

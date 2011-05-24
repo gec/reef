@@ -22,14 +22,12 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api._
-import java.lang.Override
+import org.totalgrid.reef.japi.Envelope
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer

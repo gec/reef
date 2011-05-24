@@ -18,15 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
-/**
- * Thrown because some abnormal IO condition exists with the connection/broker
- */
-public class ServiceIOException extends ReefServiceException {
+public class ResponseTimeoutException extends ReefServiceException {
 
-  public ServiceIOException(String msg)
+  public ResponseTimeoutException()
   {
-    super(msg, Envelope.Status.LOCAL_ERROR);
+    super("", Envelope.Status.RESPONSE_TIMEOUT);
+  }
+
+  public ResponseTimeoutException(String msg)
+  {
+    super(msg, Envelope.Status.RESPONSE_TIMEOUT);
   }
 }

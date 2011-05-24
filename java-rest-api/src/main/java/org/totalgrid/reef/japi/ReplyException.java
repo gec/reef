@@ -18,16 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
 /**
- *  A blanket exception that gets rethrown when an internal exception happens
- *  (i.e. an exception in the particular messaging binding we're using)
+ * Base class for all exceptions that represent non-successful replies from the server
  */
-public class InternalClientError extends ReefServiceException {
+public class ReplyException extends ReefServiceException {
 
-  public InternalClientError(String msg, Throwable cause) {
-      super(msg, Envelope.Status.LOCAL_ERROR, cause);
+  public ReplyException(String msg, Envelope.Status status)
+  {
+    super(msg, status);
   }
 
 }
+

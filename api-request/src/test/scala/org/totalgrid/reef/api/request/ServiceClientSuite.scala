@@ -34,7 +34,7 @@ import org.totalgrid.reef.util.SystemPropertyConfigReader
 import org.totalgrid.reef.messaging.ProtoClient
 import org.totalgrid.reef.broker.BrokerConnectionInfo
 
-import org.totalgrid.reef.api.javaclient.{ SubscriptionEventAcceptor, SubscriptionEvent }
+import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 class SubscriptionEventAcceptorShim[T](fun: SubscriptionEvent[T] => _) extends SubscriptionEventAcceptor[T] {
   def onEvent(event: SubscriptionEvent[T]) = fun(event)

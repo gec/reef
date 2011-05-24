@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging.serviceprovider
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 class SilentServiceSubscriptionHandler extends ServiceSubscriptionHandler {
 

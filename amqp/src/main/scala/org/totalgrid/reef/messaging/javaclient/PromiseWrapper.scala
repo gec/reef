@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.api.scalaclient.{ IPromise => IScalaPromise, Response => ScalaResponse }
-import org.totalgrid.reef.api.javaclient.{ ResponseListener, Promise, Response }
+import org.totalgrid.reef.japi.client.{ Promise, ResponseListener, Response }
 
 class PromiseWrapper[A](promise: IScalaPromise[ScalaResponse[A]]) extends Promise[Response[A]] {
 

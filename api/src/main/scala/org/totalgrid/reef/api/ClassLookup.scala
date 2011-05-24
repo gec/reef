@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.api
 
+import org.totalgrid.reef.japi.BadRequestException
+
 object ClassLookup {
 
   def apply[A](value: Any): Class[A] = value match {

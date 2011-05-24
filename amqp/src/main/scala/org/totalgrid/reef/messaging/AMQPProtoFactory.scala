@@ -25,6 +25,7 @@ import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.broker.MessageConsumer
 

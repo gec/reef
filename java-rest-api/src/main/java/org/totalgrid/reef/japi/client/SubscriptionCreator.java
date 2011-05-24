@@ -18,18 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi.client;
 
 /**
- * Interface that defines a simple callback from a request
- * @param <A> Type of the value returned from a request
+ * Classes that may internally generate ISubscriptions will implement this interface
+ * so the consuming code can register for a notification when a subscription is generated
+ * so subscription management can be handled in a single location.
  */
-public interface ResponseListener<A> {
+public interface SubscriptionCreator {
 
-   /**
-     *
-     * @param value The asynchronous return value from a request
-     */
-    void onCompletion(A value);
-
+    public void addSubscriptionCreationListener(SubscriptionCreationListener listener);
 }

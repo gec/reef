@@ -29,6 +29,7 @@ import org.totalgrid.reef.proto.Utils.AttributeList
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
+import org.totalgrid.reef.japi.BadRequestException
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
@@ -39,8 +40,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

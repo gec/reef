@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Measurements.Measurement;
 import org.totalgrid.reef.proto.Model.Point;
 import org.totalgrid.reef.proto.Processing.MeasOverride;

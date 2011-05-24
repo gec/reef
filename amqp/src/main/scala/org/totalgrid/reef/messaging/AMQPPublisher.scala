@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.api.ServiceIOException
+import org.totalgrid.reef.japi.ServiceIOException
 
 import org.totalgrid.reef.broker._
 

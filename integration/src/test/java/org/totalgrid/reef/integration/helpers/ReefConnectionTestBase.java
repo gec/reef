@@ -22,17 +22,17 @@ package org.totalgrid.reef.integration.helpers;
 
 import org.junit.*;
 
-import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.Session;
-import org.totalgrid.reef.api.javaclient.SessionExecutionPool;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.Session;
 import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
+import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
 import org.totalgrid.reef.broker.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 
-import org.totalgrid.reef.api.javaclient.Connection;
+import org.totalgrid.reef.japi.client.Connection;
 
 
 /**

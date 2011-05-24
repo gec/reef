@@ -18,16 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi.client;
+
+import org.totalgrid.reef.japi.ReefServiceException;
 
 /**
- * Thrown when the client tries to make a request to an unknown service.
+ * a helper class that encapsulates a block of code we want to execute using a single
+ * session. Typed to allow the pool execute functions to return the same type as apply
  */
-public class UnknownServiceException extends ReefServiceException {
+public interface SessionFunction<A> {
 
-  public UnknownServiceException(String msg)
-  {
-    super(msg, Envelope.Status.LOCAL_ERROR);
-  }
+  /**
+   * called with a session from the pool
+   */
+  A apply(Session session) throws ReefServiceException;
 }
-

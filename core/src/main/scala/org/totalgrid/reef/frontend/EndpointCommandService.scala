@@ -26,7 +26,8 @@ import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, Comman
 import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.protocol.api.{ ICommandHandler, IListener }
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.RequestEnv
 
 class SingleEndpointCommandService(handler: ICommandHandler) extends AsyncServiceBase[Command] {
 

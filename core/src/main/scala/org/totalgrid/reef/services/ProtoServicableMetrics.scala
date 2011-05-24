@@ -22,7 +22,8 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.util._
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, StatusCodes }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.{ RequestEnv, StatusCodes }
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback, CallbackTimer }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }

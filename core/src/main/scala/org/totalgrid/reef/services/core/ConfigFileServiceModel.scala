@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._

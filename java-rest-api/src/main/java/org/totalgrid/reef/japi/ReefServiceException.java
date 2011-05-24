@@ -18,14 +18,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi;
 
-public class UnauthorizedException extends BadRequestException {
+/**
+ * Base class for all exceptions thrown by the api
+ */
+public abstract class ReefServiceException extends Exception {
 
-  public UnauthorizedException(String msg)
+  final public Envelope.Status status;
+  final public String msg;
+
+  public ReefServiceException(String msg, Envelope.Status status, Throwable cause)
   {
-    super(msg, Envelope.Status.UNAUTHORIZED);
+    super(msg, cause);
+    this.msg = msg;
+    this.status = status;
   }
 
+  public ReefServiceException(String msg, Envelope.Status status)
+  {
+    super(msg);
+    this.msg = msg;
+    this.status = status;
+  }
+
+  public Envelope.Status getStatus()
+  {
+    return status;
+  }
 }
 

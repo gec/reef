@@ -1,3 +1,5 @@
+package org.totalgrid.reef.japi;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,14 +20,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
 
 /**
- * Classes that may internally generate ISubscriptions will implement this interface
- * so the consuming code can register for a notification when a subscription is generated
- * so subscription management can be handled in a single location.
+ * Describes how to (de)serialize a type and it's class
  */
-public interface SubscriptionCreator {
+public interface TypeDescriptor<A> {
 
-    public void addSubscriptionCreationListener(SubscriptionCreationListener listener);
+  byte[] serialize(A value);
+  A deserialize(byte[] bytes);
+  Class<A> getKlass();
+  String id();
+
 }

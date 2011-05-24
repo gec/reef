@@ -20,8 +20,9 @@
  */
 package org.totalgrid.reef.messaging.mock.synchronous
 
-import org.totalgrid.reef.api.{ IDestination, RequestEnv, Envelope }
+import org.totalgrid.reef.api.{ IDestination, RequestEnv }
 import java.lang.Exception
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.scalaclient._
 
 class MockSession extends ClientSession with AsyncRestAdapter {

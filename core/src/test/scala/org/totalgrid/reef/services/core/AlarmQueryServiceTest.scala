@@ -27,15 +27,13 @@ import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
-import org.totalgrid.reef.event.SilentEventLogPublisher
 import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }

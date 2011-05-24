@@ -30,7 +30,7 @@ import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
 import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 class NullExceptionCollector extends ExceptionCollector {
   def collect[A](name: => String)(f: => Unit) { f }

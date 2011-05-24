@@ -22,7 +22,7 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Observable
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 /**
  * Implements a single resource service consumer.

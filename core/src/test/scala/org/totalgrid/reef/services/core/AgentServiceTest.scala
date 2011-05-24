@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.proto.Auth.{ PermissionSet, Agent }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.ApplicationSchema
 
 @RunWith(classOf[JUnitRunner])

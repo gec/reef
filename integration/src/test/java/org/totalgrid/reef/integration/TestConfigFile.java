@@ -21,7 +21,7 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.proto.Model;
 

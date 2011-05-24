@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package org.totalgrid.reef.api;
+package org.totalgrid.reef.japi.client;
 
 /**
  * It is important to use an ConnectionListener to be informed of disconnections from the message broker (expected

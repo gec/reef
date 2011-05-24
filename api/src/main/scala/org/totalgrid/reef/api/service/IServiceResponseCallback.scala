@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.service
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 /**
  * Defines how to complete a service call with a ServiceResponse

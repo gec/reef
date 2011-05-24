@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.messaging._
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.broker._
 

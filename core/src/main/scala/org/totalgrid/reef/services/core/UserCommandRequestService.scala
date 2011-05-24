@@ -28,7 +28,8 @@ import Commands.UserCommandRequest
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.api.service.ServiceTypeIs
 import org.totalgrid.reef.api.scalaclient.Response
-import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.{ RequestEnv, AddressableService }
 
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._

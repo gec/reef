@@ -18,14 +18,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi.client;
 
 /**
- *  Interface that accepts events on some unspecified thread
+ *  Interface defining a guaranteed, deferred value.  Value can be retrieved synchronously or asynchronously.
  */
-public interface SubscriptionEventAcceptor<A> {
+public interface Promise<A> {
 
-  void onEvent(SubscriptionEvent<A> event);
+   /**
+     * Synchronously blocks for some un-specified period of time for the value. Returns immediately if the promise is complete.
+     *
+     * @return The value-type of the Promise
+     */
+   A await();
 
+   /**
+     *  Asynchronously calls an IResponseListener when the promise is complete from
+     *  some unknown thread. Calls back immediately from the calling thread if the
+     *  promise is complete.
+     *
+     * @param listener
+     */
+   void addListener(ResponseListener<A> listener);
+
+   /**
+     * Inquires about the completion state of the promise.
+     *
+     * @return True if the promise is complete, false otherwise
+     */
+   boolean isComplete();
 }

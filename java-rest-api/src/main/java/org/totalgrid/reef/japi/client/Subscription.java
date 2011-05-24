@@ -1,3 +1,5 @@
+package org.totalgrid.reef.japi.client;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,17 +20,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api;
 
 /**
- * Base class for all exceptions that represent non-successful replies from the server
+ * A subscription object provides header info and can also be canceled. It carries the message type
+ * primarily to make message signatures more expressive.
+ * TODO: add ISubscriptions to scala apis
  */
-public class ReplyException extends ReefServiceException {
+public interface Subscription<A> {
 
-  public ReplyException(String msg, Envelope.Status status)
-  {
-    super(msg, status);
-  }
+  void cancel();
+
+  String getId();
+
+  void start(SubscriptionEventAcceptor<A> acceptor);
 
 }
 

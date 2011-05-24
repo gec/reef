@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.japi.client;
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.javaclient;
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.*;
+import org.totalgrid.reef.japi.ServiceIOException;
 
 /**
  * Thread safe connection handler to connect to the greenbus, handles the starting and stopping

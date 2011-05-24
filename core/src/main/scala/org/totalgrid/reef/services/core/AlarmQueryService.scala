@@ -31,7 +31,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api.{ Envelope, BadRequestException, RequestEnv }
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }

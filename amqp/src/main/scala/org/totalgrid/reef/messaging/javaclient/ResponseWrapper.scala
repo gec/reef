@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.javaclient.Response
+import org.totalgrid.reef.japi.client.Response
 import org.totalgrid.reef.api.scalaclient.{ Response => ScalaResponse }
 
 import scala.collection.JavaConversions._

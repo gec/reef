@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.SubscriptionCreator;
-import org.totalgrid.reef.api.javaclient.SubscriptionResult;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.SubscriptionCreator;
+import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 
 import java.util.List;

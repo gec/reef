@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.Alarms._
 
 import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Response }
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {

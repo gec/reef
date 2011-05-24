@@ -21,7 +21,8 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.auth.{ IAuthService, AuthDenied }
-import org.totalgrid.reef.api.{ RequestEnv, Envelope }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.RequestEnv
 import org.totalgrid.reef.models.ApplicationSchema
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._

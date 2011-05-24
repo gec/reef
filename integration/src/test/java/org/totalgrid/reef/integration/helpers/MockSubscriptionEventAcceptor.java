@@ -20,8 +20,10 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.totalgrid.reef.api.*;
-import org.totalgrid.reef.api.javaclient.*;
+import org.totalgrid.reef.japi.*;
+import org.totalgrid.reef.japi.client.SubscriptionEvent;
+import org.totalgrid.reef.japi.client.SubscriptionEventAcceptor;
+
 
 import java.util.LinkedList;
 import java.util.List;
