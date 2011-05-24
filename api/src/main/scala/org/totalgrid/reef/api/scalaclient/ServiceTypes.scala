@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-import org.totalgrid.reef.api.javaclient.IEvent
+import org.totalgrid.reef.api.javaclient.SubscriptionEvent
 import org.totalgrid.reef.api._
 
 /* ---- Case classes that make the service api easier to use ---- */
@@ -98,7 +98,7 @@ case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, err
 case class SingleSuccess[A](override val status: Envelope.Status = Envelope.Status.OK, single: A)
   extends Success[A](status, List(single))
 
-case class Event[A](event: Envelope.Event, value: A) extends IEvent[A] {
+case class Event[A](event: Envelope.Event, value: A) extends SubscriptionEvent[A] {
 
   final override def getEventType() = event
 

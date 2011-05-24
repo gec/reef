@@ -23,25 +23,25 @@ package org.totalgrid.reef.api.javaclient;
 import org.totalgrid.reef.api.ReefServiceException;
 
 /**
- * A thread-safe interface for executing arbitrary blocks of code on against of pool of ISession's
+ * A thread-safe interface for executing arbitrary blocks of code on against of pool of Session's
  */
-public interface ISessionPool {
+public interface SessionExecutionPool {
 
   /**
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
-   * @consumer a block of code to execute using the acquired ISession
+   * @consumer a block of code to execute using the acquired Session
    * @return the return value from consumer.apply
    * @throws ReefServiceException if a session cannot be acquired we will throw an error
    */
-  <A> A borrow(ISessionFunction<A> function) throws ReefServiceException;
+  <A> A execute(SessionFunction<A> function) throws ReefServiceException;
 
   /**
    * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
    * @param authToken an authtoken to attach before calling consumer.apply
-   * @param function a block of code to execute using the acquired ISession
+   * @param function a block of code to execute using the acquired Session
    * @return the return value from consumer.apply
    * @throws ReefServiceException if a session cannot be acquired we will throw an error
    */
-  <A> A borrow(String authToken, ISessionFunction<A> function) throws ReefServiceException;
+  <A> A execute(String authToken, SessionFunction<A> function) throws ReefServiceException;
 
 }

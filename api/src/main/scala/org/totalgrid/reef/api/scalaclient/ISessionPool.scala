@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api.scalaclient
 
-/** A class that implements a borrow function */
+/** A class that implements a execute function */
 trait ISessionPool {
 
   def borrow[A](fun: ClientSession => A): A

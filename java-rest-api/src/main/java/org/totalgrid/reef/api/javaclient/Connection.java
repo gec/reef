@@ -26,25 +26,25 @@ import org.totalgrid.reef.api.*;
  * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
  * of the connection and provides a factory to create service clients.
  */
-public interface IConnection {
+public interface Connection {
 
   /**
    * register a listener for open/close events
    *
    * @param listener Interace to call back with open/close events
    */
-  void addConnectionListener(IConnectionListener listener);
+  void addConnectionListener(ConnectionListener listener);
 
   /**
    * remove a listener for open/close events
    *
    * @param listener Interace to call back with open/close events
    */
-  void removeConnectionListener(IConnectionListener listener);
+  void removeConnectionListener(ConnectionListener listener);
 
   /**
    * Starts execution of the messaging connection. Once the service has been started the connection to
-   * the broker may be lost so it is important to use an IConnectionListener to be informed of those
+   * the broker may be lost so it is important to use an ConnectionListener to be informed of those
    * non-client initiated disconnection events.
    * @param timeoutMs how long to wait (milliseconds) for the first good connection before throwing ServiceIOException.
    * values of 0 or less will throw illegal argument exception
@@ -53,7 +53,7 @@ public interface IConnection {
 
   /**
    * Starts execution of the messaging connection. Once the service has been started the connection to
-   * the broker may be lost so it is important to use an IConnectionListener to be informed of those
+   * the broker may be lost so it is important to use an ConnectionListener to be informed of those
    * non-client initiated disconnection events.
    */
   void start();
@@ -74,11 +74,11 @@ public interface IConnection {
    * creates a non thread-safe (use from single thread only) client
    * TODO: have newSession throw exception if not open
    */
-  ISession newSession();
+  Session newSession();
 
   /**
    * get a session pool that manages a group of ISessions and automatically handles monitoring the connection
    * state and threading concerns.
    */
-  ISessionPool newSessionPool();
+  SessionExecutionPool newSessionPool();
 }

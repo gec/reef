@@ -21,8 +21,8 @@
 package org.totalgrid.reef.api.request;
 
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.ISubscriptionCreator;
-import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
+import org.totalgrid.reef.api.javaclient.SubscriptionCreator;
+import org.totalgrid.reef.api.javaclient.SubscriptionResult;
 import org.totalgrid.reef.proto.Measurements.Measurement;
 import org.totalgrid.reef.proto.Model.Point;
 
@@ -31,10 +31,10 @@ import java.util.List;
 /**
  * Non-exhaustive API for using the reef Measurement services. This API allows the client code to read current measurement
  * values for many points at a time, read historical values for a single measuremnt at a time or publish measurements in
- * batches. For current and historical value functions you can also pass in an ISubscription object which will receive
+ * batches. For current and historical value functions you can also pass in an Subscription object which will receive
  * all future measurement changes for those points. Asking for unknown points/ measurements will result in an exception
  */
-public interface MeasurementService extends ISubscriptionCreator {
+public interface MeasurementService extends SubscriptionCreator {
 
     /**
      * gets the most recent measurement for a point
@@ -67,14 +67,14 @@ public interface MeasurementService extends ISubscriptionCreator {
      * measurement change
      */
 
-    public ISubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByPoints(List<Point> points) throws ReefServiceException;
+    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByPoints(List<Point> points) throws ReefServiceException;
 
     /**
      * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
      * measurement change
      */
 
-    public ISubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByNames(List<String> points) throws ReefServiceException;
+    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByNames(List<String> points) throws ReefServiceException;
 
     /**
      * get a subset of the recent measurements for a point
@@ -112,7 +112,7 @@ public interface MeasurementService extends ISubscriptionCreator {
      * @param limit - max number of measurements returned
      */
 
-    public ISubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory(Point point, int limit) throws ReefServiceException;
+    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory(Point point, int limit) throws ReefServiceException;
 
     /**
      * get the most recent measurements for a point and setup a subscription for new measurements
@@ -121,7 +121,7 @@ public interface MeasurementService extends ISubscriptionCreator {
      * @param limit - max number of measurements returned
      */
 
-    public ISubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory(Point point, long since, int limit) throws ReefServiceException;
+    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory(Point point, long since, int limit) throws ReefServiceException;
 
     /**
      * publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients

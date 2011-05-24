@@ -25,7 +25,7 @@ package org.totalgrid.reef.api.javaclient;
  * wrapper. This makes it much easier to create leak-proof subscription handling, all
  * subscriptions should be eventually canceled.
  */
-public interface ISubscriptionCreationListener {
+public interface SubscriptionCreationListener {
 
-    public void onSubscriptionCreated(ISubscription<?> sub);
+    public void onSubscriptionCreated(Subscription<?> sub);
 }

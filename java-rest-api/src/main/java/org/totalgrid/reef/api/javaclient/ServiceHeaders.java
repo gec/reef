@@ -18,19 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
+package org.totalgrid.reef.api.javaclient;
 
-import org.totalgrid.reef.api.javaclient.IResponse
-import org.totalgrid.reef.api.scalaclient.{ Response => ScalaResponse }
+/**
+ * Interface that defines what operations can be done to service header
+ */
+public interface ServiceHeaders {
 
-import scala.collection.JavaConversions._
-
-class Response[A](rsp: ScalaResponse[A]) extends IResponse[A] {
-
-  final override def isSuccess = rsp.success
-
-  final override def expectOne(): A = rsp.expectOne()
-
-  final override def expectMany(): java.util.List[A] = rsp.expectMany()
+   /**
+     * Sets or clears the AuthToken field in the header
+     * @param token A string representing the auth token or null to clear it
+     */
+  void setAuthToken(String token);
 
 }

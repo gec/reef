@@ -20,13 +20,12 @@
  */
 package org.totalgrid.reef.messaging
 
-import javaclient.Session
-
 import scala.collection.mutable._
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool => ISessionPoolScala }
-import org.totalgrid.reef.api.javaclient.{ ISessionFunction, ISessionPool => ISessionPoolJava }
+import org.totalgrid.reef.api.javaclient.{ SessionExecutionPool, SessionFunction }
+import org.totalgrid.reef.messaging.javaclient.SessionWrapper
 
-class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ISessionPoolScala with ISessionPoolJava {
+class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ISessionPoolScala with SessionExecutionPool {
 
   private val available = Set.empty[ClientSession]
   private val unavailable = Set.empty[ClientSession]
@@ -75,12 +74,12 @@ class SessionPool[A <: { def getClientSession(): ClientSession }](conn: A) exten
 
   }
 
-  // implement Java ISessionPool
-  final override def borrow[A](function: ISessionFunction[A]): A = {
-    borrow(client => function.apply(new Session(client)))
+  // implement Java SessionExecutionPool
+  final override def execute[A](function: SessionFunction[A]): A = {
+    borrow(client => function.apply(new SessionWrapper(client)))
   }
 
-  final override def borrow[A](authToken: String, function: ISessionFunction[A]): A = {
-    borrow(authToken)(client => function.apply(new Session(client)))
+  final override def execute[A](authToken: String, function: SessionFunction[A]): A = {
+    borrow(authToken)(client => function.apply(new SessionWrapper(client)))
   }
 }

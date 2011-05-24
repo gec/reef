@@ -23,7 +23,7 @@ package org.totalgrid.reef.api.scalaclient
 import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
 
 /**
- * scala analog to the java ISession
+ * scala analog to the java Session
  */
 trait ClientSession extends SyncClientSession with ClientOperations
 

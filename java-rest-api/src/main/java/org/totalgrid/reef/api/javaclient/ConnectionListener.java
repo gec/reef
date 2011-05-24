@@ -18,26 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request;
 
-import org.totalgrid.reef.api.javaclient.SubscriptionCreator;
+package org.totalgrid.reef.api.javaclient;
 
 /**
- * "Super" interface that includes all of the helpers for the individual services. This could be broken down
- * into smaller functionality based sections or not created at all.
+ * It is important to use an ConnectionListener to be informed of disconnections from the message broker (expected
+ * or otherwise). Callbacks come in from the messaging thread so it is important not to block the callbacks.
  */
-public abstract class AllScadaService
-        implements SubscriptionCreator,
-        AuthTokenService,
-        EntityService,
-        ConfigFileService,
-        MeasurementService,
-        MeasurementOverrideService,
-        EventService,
-        CommandService,
-        PointService,
-        AlarmService,
-        AgentService,
-        EndpointManagementService
-{}
+public interface ConnectionListener {
+  /**
+   * called when we lose connection to the broker. This means all subscriptions spawned from the Connection during
+   * this time are invalid and need to be thrown away.
+   */
+  void closed();
+  /**
+   * called when we have established a connection to the message broker, we can now provide ISessions
+   */
+  void opened();
 
+  // TODO: write tests to figure out what can and can't be done inside ConnectionListener callbacks reef_techdebt-7
+  // TODO: add exception callback for Subscription and possibly Session
+}

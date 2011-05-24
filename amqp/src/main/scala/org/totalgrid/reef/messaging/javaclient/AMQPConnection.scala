@@ -28,14 +28,12 @@ import org.totalgrid.reef.api.ServiceList
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.api.IConnectionListener
+import org.totalgrid.reef.api.javaclient.{ ConnectionListener, SessionExecutionPool, Connection, Session }
 import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.api.javaclient.{ ISessionPool, IConnection, ISession }
-
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
  */
-class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends IConnection {
+class AMQPConnection(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends Connection {
 
   /// Scala factory class we're wrapping to simplify access to java clients
   private val factory = new AMQPSyncFactory with ReactActor {
@@ -45,10 +43,10 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
     def getClientSession(): ClientSession = new ProtoClient(this, servicesList, timeoutms)
   }
 
-  final override def addConnectionListener(listener: IConnectionListener) =
+  final override def addConnectionListener(listener: ConnectionListener) =
     factory.addConnectionListener(listener)
 
-  final override def removeConnectionListener(listener: IConnectionListener) =
+  final override def removeConnectionListener(listener: ConnectionListener) =
     factory.removeConnectionListener(listener)
 
   final override def connect(timeoutMs: Long) = factory.connect(timeoutMs)
@@ -59,10 +57,10 @@ class Connection(config: BrokerConnectionInfo, servicesList: ServiceList, timeou
 
   final override def stop() = factory.stop()
 
-  final override def newSession(): ISession =
-    new Session(new ProtoClient(factory, servicesList, timeoutms))
+  final override def newSession(): Session =
+    new SessionWrapper(new ProtoClient(factory, servicesList, timeoutms))
 
-  final override def newSessionPool(): ISessionPool = new SessionPool(factory)
+  final override def newSessionPool(): SessionExecutionPool = new SessionPool(factory)
 
 }
 

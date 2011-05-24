@@ -18,14 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.totalgrid.reef.api.javaclient;
 
 /**
- *  Interface that accepts events on some unspecified thread
+ * Interface that defines a simple callback from a request
+ * @param <A> Type of the value returned from a request
  */
-public interface IEventAcceptor<A> {
+public interface ResponseListener<A> {
 
-  void onEvent(IEvent<A> event);
+   /**
+     *
+     * @param value The asynchronous return value from a request
+     */
+    void onCompletion(A value);
 
 }

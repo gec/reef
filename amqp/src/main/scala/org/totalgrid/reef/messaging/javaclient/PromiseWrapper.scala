@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api;
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,15 +18,20 @@ package org.totalgrid.reef.api;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.messaging.javaclient
 
-/**
- * Describes how to (de)serialize a type and it's class
- */
-public interface ITypeDescriptor<A> {
+import org.totalgrid.reef.api.scalaclient.{ IPromise => IScalaPromise, Response => ScalaResponse }
+import org.totalgrid.reef.api.javaclient.{ ResponseListener, Promise, Response }
 
-  byte[] serialize(A value);
-  A deserialize(byte[] bytes);
-  Class<A> getKlass();
-  String id();
+class PromiseWrapper[A](promise: IScalaPromise[ScalaResponse[A]]) extends Promise[Response[A]] {
 
+  private lazy val response = new ResponseWrapper(promise.await())
+
+  final override def await(): Response[A] = response
+
+  final override def addListener(listener: ResponseListener[Response[A]]): Unit = promise.listen { rsp =>
+    listener.onCompletion(new ResponseWrapper[A](rsp))
+  }
+
+  final override def isComplete = promise.isComplete
 }

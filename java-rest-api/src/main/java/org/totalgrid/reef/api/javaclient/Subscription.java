@@ -26,13 +26,13 @@ package org.totalgrid.reef.api.javaclient;
  * primarily to make message signatures more expressive.
  * TODO: add ISubscriptions to scala apis
  */
-public interface ISubscription<A> {
+public interface Subscription<A> {
 
   void cancel();
 
   String getId();
 
-  void start(IEventAcceptor<A> acceptor);
+  void start(SubscriptionEventAcceptor<A> acceptor);
 
 }
 

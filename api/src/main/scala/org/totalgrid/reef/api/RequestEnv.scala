@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.api
 
-import javaclient.IServiceHeaders
+import org.totalgrid.reef.api.javaclient.ServiceHeaders
 
 /**
  * This class wraps the headers we send/receive in the service envelope with helper
@@ -83,7 +83,7 @@ class RequestEnv(var headers: Map[String, List[String]]) {
 /**
  * helper to get/set headers on a request
  */
-class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) extends IServiceHeaders {
+class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) extends ServiceHeaders {
 
   import org.totalgrid.reef.util.JavaInterop.notNull
 

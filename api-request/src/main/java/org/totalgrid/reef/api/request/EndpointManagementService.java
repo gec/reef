@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.request;
 
 import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
+import org.totalgrid.reef.api.javaclient.SubscriptionResult;
 import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection;
 import org.totalgrid.reef.proto.Model.ReefUUID;
@@ -99,7 +99,7 @@ public interface EndpointManagementService {
      * @see getAllEndpointConnections
      */
 
-    public ISubscriptionResult<List<CommEndpointConnection>, CommEndpointConnection> subscribeToAllEndpointConnections() throws ReefServiceException;
+    public SubscriptionResult<List<CommEndpointConnection>, CommEndpointConnection> subscribeToAllEndpointConnections() throws ReefServiceException;
 
     /**
      * Get current endpoint connection state for an endpoint

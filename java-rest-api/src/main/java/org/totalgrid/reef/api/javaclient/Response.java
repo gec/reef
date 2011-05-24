@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.javaclient;
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,23 +18,33 @@ package org.totalgrid.reef.api.javaclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.totalgrid.reef.api.javaclient;
+
+import org.totalgrid.reef.api.ExpectationException;
 
 /**
- * A container class that wraps the response to a subscription request and the subscription interface itself
- *
- * @param <T> The type of result
- * @param <U> The type of the subscription
+ * Interfaces that defines a response to service request
+ * @param <A> The return type of the service request
  */
-public interface ISubscriptionResult<T, U> {
+public interface Response<A> {
 
    /**
-     * @return The value of response
+     * @return True if the service request was successful, false otherwise
      */
-   T getResult();
+  boolean isSuccess();
 
    /**
-     * @return The interface used for starting/stopping the actual subscription
+     * Interprets the result as a successful request with 0 or more return values
+     * @return A list of return values
+     * @throws ExpectationException if the response is not a success
      */
-   ISubscription<U> getSubscription();
+  java.util.List<A> expectMany() throws ExpectationException;
+
+   /**
+     * Interprets the result as a successful request with exactly 1 return value
+     * @return A single value
+     * @throws ExpectationException if the response or some number of return values other than 1
+     */
+  A expectOne() throws ExpectationException;
 
 }

@@ -21,14 +21,11 @@
 package org.totalgrid.reef.api.javaclient;
 
 /**
- * Interface that defines what operations can be done to service header
+ * Classes that may internally generate ISubscriptions will implement this interface
+ * so the consuming code can register for a notification when a subscription is generated
+ * so subscription management can be handled in a single location.
  */
-public interface IServiceHeaders {
+public interface SubscriptionCreator {
 
-   /**
-     * Sets or clears the AuthToken field in the header
-     * @param token A string representing the auth token or null to clear it
-     */
-  void setAuthToken(String token);
-
+    public void addSubscriptionCreationListener(SubscriptionCreationListener listener);
 }

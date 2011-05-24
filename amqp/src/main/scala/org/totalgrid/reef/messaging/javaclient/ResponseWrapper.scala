@@ -18,18 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
+package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.Envelope;
+import org.totalgrid.reef.api.javaclient.Response
+import org.totalgrid.reef.api.scalaclient.{ Response => ScalaResponse }
 
-/**
- * Created by IntelliJ IDEA.
- * User: adam
- * Date: 5/13/11
- * Time: 12:31 PM
- * To change this template use File | Settings | File Templates.
- */
-public interface IEvent<T> {
-    T getValue();
-    Envelope.Event getEventType();
+import scala.collection.JavaConversions._
+
+class ResponseWrapper[A](rsp: ScalaResponse[A]) extends Response[A] {
+
+  final override def isSuccess = rsp.success
+
+  final override def expectOne(): A = rsp.expectOne()
+
+  final override def expectMany(): java.util.List[A] = rsp.expectMany()
+
 }

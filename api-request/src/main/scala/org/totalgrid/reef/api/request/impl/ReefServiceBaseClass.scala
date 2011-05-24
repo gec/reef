@@ -21,19 +21,20 @@
 package org.totalgrid.reef.api.request.impl
 
 import org.totalgrid.reef.api.{ InternalClientError, ReefServiceException }
-import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResult, Session }
+import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResultWrapper, SessionWrapper }
 
 import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, Subscription, ClientSession, SyncOperations }
 import org.totalgrid.reef.api.javaclient._
+import org.totalgrid.reef.api.javaclient.{ Subscription => JavaSubscription }
 
-trait ReefServiceBaseClass extends ClientSource with ISubscriptionCreator {
+trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
 
   def useSubscription[A, B](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
     val sub = session.addSubscription[B](klass)
     try {
 
       val result = block(sub)
-      val ret = new SubscriptionResult(result, sub)
+      val ret = new SubscriptionResultWrapper(result, sub)
       onSubscriptionCreated(ret.getSubscription)
       ret
     } catch {
@@ -43,13 +44,13 @@ trait ReefServiceBaseClass extends ClientSource with ISubscriptionCreator {
     }
   }
 
-  private var creationListeners = List.empty[ISubscriptionCreationListener]
+  private var creationListeners = List.empty[SubscriptionCreationListener]
 
-  private def onSubscriptionCreated(sub: ISubscription[_]) {
+  private def onSubscriptionCreated(sub: JavaSubscription[_]) {
     creationListeners.foreach(_.onSubscriptionCreated(sub))
   }
 
-  def addSubscriptionCreationListener(listener: ISubscriptionCreationListener) {
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {
     creationListeners ::= listener
   }
 }
@@ -61,7 +62,7 @@ trait ReefServiceBaseClass extends ClientSource with ISubscriptionCreator {
 trait ClientSource {
 
   // TODO - find a type-safe replacement
-  def convertByCasting(session: ISession): SyncOperations with SubscriptionManagement = session.asInstanceOf[Session].client
+  def convertByCasting(session: Session): SyncOperations with SubscriptionManagement = session.asInstanceOf[SessionWrapper].client
 
   protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
     try {
@@ -114,11 +115,11 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 trait PooledClientSource extends ClientSource {
 
   // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
-  def sessionPool: ISessionPool
+  def sessionPool: SessionExecutionPool
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(new ISessionFunction[A] {
-      def apply(session: ISession) = block(convertByCasting(session))
+    sessionPool.execute(new SessionFunction[A] {
+      def apply(session: Session) = block(convertByCasting(session))
     })
   }
 }
@@ -129,12 +130,12 @@ trait PooledClientSource extends ClientSource {
  */
 trait AuthorizedAndPooledClientSource extends ClientSource {
 
-  def sessionPool: ISessionPool
+  def sessionPool: SessionExecutionPool
   def authToken: String
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken, new ISessionFunction[A] {
-      def apply(session: ISession) = block(convertByCasting(session))
+    sessionPool.execute(authToken, new SessionFunction[A] {
+      def apply(session: Session) = block(convertByCasting(session))
     })
   }
 }

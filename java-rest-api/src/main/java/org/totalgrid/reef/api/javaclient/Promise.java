@@ -21,11 +21,30 @@
 package org.totalgrid.reef.api.javaclient;
 
 /**
- * Classes that may internally generate ISubscriptions will implement this interface
- * so the consuming code can register for a notification when a subscription is generated
- * so subscription management can be handled in a single location.
+ *  Interface defining a guaranteed, deferred value.  Value can be retrieved synchronously or asynchronously.
  */
-public interface ISubscriptionCreator {
+public interface Promise<A> {
 
-    public void addSubscriptionCreationListener(ISubscriptionCreationListener listener);
+   /**
+     * Synchronously blocks for some un-specified period of time for the value. Returns immediately if the promise is complete.
+     *
+     * @return The value-type of the Promise
+     */
+   A await();
+
+   /**
+     *  Asynchronously calls an IResponseListener when the promise is complete from
+     *  some unknown thread. Calls back immediately from the calling thread if the
+     *  promise is complete.
+     *
+     * @param listener
+     */
+   void addListener(ResponseListener<A> listener);
+
+   /**
+     * Inquires about the completion state of the promise.
+     *
+     * @return True if the promise is complete, false otherwise
+     */
+   boolean isComplete();
 }

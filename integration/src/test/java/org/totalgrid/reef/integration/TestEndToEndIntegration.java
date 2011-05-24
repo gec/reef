@@ -22,8 +22,8 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 
+import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
-import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 
 import org.totalgrid.reef.api.*;
 import org.totalgrid.reef.api.javaclient.*;
@@ -52,22 +52,22 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase {
         MeasurementService ms = helpers;
 
 		// mock object that will receive queue and measurement subscription
-		MockEventAcceptor<Measurements.Measurement> mock = new MockEventAcceptor<Measurements.Measurement>();
+		MockSubscriptionEventAcceptor<Measurements.Measurement> mock = new MockSubscriptionEventAcceptor<Measurements.Measurement>();
 
 
         List<Model.Point> points = SampleRequests.getAllPoints(client);
 
-        ISubscriptionResult<List<Measurements.Measurement>, Measurements.Measurement> result = ms.subscribeToMeasurementsByPoints(points);
+        SubscriptionResult<List<Measurements.Measurement>, Measurements.Measurement> result = ms.subscribeToMeasurementsByPoints(points);
 
         List<Measurements.Measurement> response = result.getResult();
-        ISubscription<Measurements.Measurement> sub = result.getSubscription();
+        Subscription<Measurements.Measurement> sub = result.getSubscription();
 
         assertEquals(response.size(), points.size());
 
         sub.start(mock);
 
 		// check that at least one measurement has been updated in the queue
-		IEvent<Measurements.Measurement> m = mock.pop(10000);
+		SubscriptionEvent<Measurements.Measurement> m = mock.pop(10000);
 		assertEquals(m.getEventType(), Envelope.Event.MODIFIED);
 
 		// now cancel the subscription

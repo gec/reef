@@ -26,28 +26,28 @@ import org.totalgrid.reef.api.*;
 /**
  *  The interface that a concrete service client must provide.
  */
-public interface ISession {
+public interface Session {
 
   /* -------- Synchronous API ------------ */
 
-  <A> IPromise<IResponse<A>> get(A payload) throws ReefServiceException;
-  <A> IPromise<IResponse<A>> delete(A payload) throws ReefServiceException;
-  <A> IPromise<IResponse<A>> post(A payload) throws ReefServiceException;
-  <A> IPromise<IResponse<A>> put(A payload) throws ReefServiceException;
+  <A> Promise<Response<A>> get(A payload) throws ReefServiceException;
+  <A> Promise<Response<A>> delete(A payload) throws ReefServiceException;
+  <A> Promise<Response<A>> post(A payload) throws ReefServiceException;
+  <A> Promise<Response<A>> put(A payload) throws ReefServiceException;
 
 
-  <A> IPromise<IResponse<A>> get(A payload, ISubscription<A> subscription) throws ReefServiceException;
-  <A> IPromise<IResponse<A>> delete(A payload, ISubscription<A> subscription) throws ReefServiceException;
-  <A> IPromise<IResponse<A>> post(A payload, ISubscription<A> subscription) throws ReefServiceException;
-  <A> IPromise<IResponse<A>> put(A payload, ISubscription<A> subscription) throws ReefServiceException;
+  <A> Promise<Response<A>> get(A payload, Subscription<A> subscription) throws ReefServiceException;
+  <A> Promise<Response<A>> delete(A payload, Subscription<A> subscription) throws ReefServiceException;
+  <A> Promise<Response<A>> post(A payload, Subscription<A> subscription) throws ReefServiceException;
+  <A> Promise<Response<A>> put(A payload, Subscription<A> subscription) throws ReefServiceException;
 
   /* --- Misc --- */
 
-  <A> ISubscription<A> addSubscription(ITypeDescriptor<A> descriptor) throws ServiceIOException;
+  <A> Subscription<A> addSubscription(TypeDescriptor<A> descriptor) throws ServiceIOException;
 
-  <A> ISubscription<A> addSubscription(ITypeDescriptor<A> descriptor, IEventAcceptor<A> acceptor) throws ServiceIOException;
+  <A> Subscription<A> addSubscription(TypeDescriptor<A> descriptor, SubscriptionEventAcceptor<A> acceptor) throws ServiceIOException;
 
-  IServiceHeaders getDefaultHeaders();
+  ServiceHeaders getDefaultHeaders();
 
   void close();
 

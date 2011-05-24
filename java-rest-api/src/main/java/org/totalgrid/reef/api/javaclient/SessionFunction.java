@@ -24,12 +24,12 @@ import org.totalgrid.reef.api.ReefServiceException;
 
 /**
  * a helper class that encapsulates a block of code we want to execute using a single
- * session. Typed to allow the pool borrow functions to return the same type as apply
+ * session. Typed to allow the pool execute functions to return the same type as apply
  */
-public interface ISessionFunction<A> {
+public interface SessionFunction<A> {
 
   /**
    * called with a session from the pool
    */
-  A apply(ISession session) throws ReefServiceException;
+  A apply(Session session) throws ReefServiceException;
 }

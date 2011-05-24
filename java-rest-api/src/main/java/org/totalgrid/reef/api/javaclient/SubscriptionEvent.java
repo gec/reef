@@ -20,16 +20,12 @@
  */
 package org.totalgrid.reef.api.javaclient;
 
+import org.totalgrid.reef.api.Envelope;
+
 /**
- * Interface that defines a simple callback from a request
- * @param <A> Type of the value returned from a request
+ * when a
  */
-public interface IListener<A> {
-
-   /**
-     *
-     * @param value The asynchronous return value from a request
-     */
-    void onCompletion(A value);
-
+public interface SubscriptionEvent<T> {
+    T getValue();
+    Envelope.Event getEventType();
 }

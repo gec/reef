@@ -20,19 +20,10 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.scalaclient.Subscription
-import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, ISubscriptionResult, ISubscription }
+import org.totalgrid.reef.api.scalaclient.{ Subscription => ScalaSubscription }
+import org.totalgrid.reef.api.javaclient.{ Subscription, SubscriptionResult }
 
-// TODO: get rid of SubscriptionWrapper
-class SubscriptionWrapper[A](sub: Subscription[A]) extends ISubscription[A] {
-  def start(callback: IEventAcceptor[A]) = sub.start(callback.onEvent _)
-
-  def getId() = sub.id
-
-  def cancel() = sub.cancel
-}
-
-class SubscriptionResult[A, B](result: A, sub: Subscription[B]) extends ISubscriptionResult[A, B] {
+class SubscriptionResultWrapper[A, B](result: A, sub: ScalaSubscription[B]) extends SubscriptionResult[A, B] {
 
   private val wrapper = new SubscriptionWrapper(sub)
 

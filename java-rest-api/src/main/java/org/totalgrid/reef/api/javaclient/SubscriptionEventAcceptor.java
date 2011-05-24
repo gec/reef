@@ -18,20 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.api.scalaclient.{ IPromise => IScalaPromise, Response => ScalaResponse }
-import org.totalgrid.reef.api.javaclient.{ IListener, IPromise, IResponse }
+package org.totalgrid.reef.api.javaclient;
 
-class Promise[A](promise: IScalaPromise[ScalaResponse[A]]) extends IPromise[IResponse[A]] {
+/**
+ *  Interface that accepts events on some unspecified thread
+ */
+public interface SubscriptionEventAcceptor<A> {
 
-  private lazy val response = new Response(promise.await())
+  void onEvent(SubscriptionEvent<A> event);
 
-  final override def await(): IResponse[A] = response
-
-  final override def addListener(listener: IListener[IResponse[A]]): Unit = promise.listen { rsp =>
-    listener.onCompletion(new Response[A](rsp))
-  }
-
-  final override def isComplete = promise.isComplete
 }

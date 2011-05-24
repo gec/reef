@@ -24,7 +24,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
+import org.totalgrid.reef.api.javaclient.SubscriptionResult;
 import org.totalgrid.reef.api.request.MeasurementService;
 import org.totalgrid.reef.api.request.builders.MeasurementBatchRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders;
@@ -57,13 +57,13 @@ public class TestMeasOverrideService extends ReefConnectionTestBase {
 
         Measurement originalValue = ms.getMeasurementByPoint(p);
 
-		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>(true);
+		MockSubscriptionEventAcceptor<Measurement> mock = new MockSubscriptionEventAcceptor<Measurement>(true);
 
         // delete override by point
         client.delete(MeasurementOverrideRequestBuilders.getByPoint(p));
 
         // subscribe to updates for this point
-        ISubscriptionResult<List<Measurement>,Measurement> result = ms.subscribeToMeasurementsByPoints(ps);
+        SubscriptionResult<List<Measurement>,Measurement> result = ms.subscribeToMeasurementsByPoints(ps);
 
         assertEquals(result.getResult().size(), 1);
         result.getSubscription().start(mock);

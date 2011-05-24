@@ -31,10 +31,10 @@ import org.totalgrid.reef.api.ReefServiceException;
  * is finished using an auth token it should be deleted to minimize this danger.
  * <p/>
  * Every request to the services needs to have an auth token in the headers. They can be sent with each
- * client request, the ISession interface has overloads to attach headers to each request. It is easiest
+ * client request, the Session interface has overloads to attach headers to each request. It is easiest
  * to attach the auth token to the underlying session using the setAuthToken function.
  * <p/>
- * add TODO setAuthToken function on ISession
+ * add TODO setAuthToken function on Session
  */
 public interface AuthTokenService {
     /**

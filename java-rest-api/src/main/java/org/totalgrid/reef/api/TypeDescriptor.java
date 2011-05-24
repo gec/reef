@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,15 +20,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.TypeDescriptor
+/**
+ * Describes how to (de)serialize a type and it's class
+ */
+public interface TypeDescriptor<A> {
 
-trait HasComponentId {
-  def componentId: String
-}
+  byte[] serialize(A value);
+  A deserialize(byte[] bytes);
+  Class<A> getKlass();
+  String id();
 
-trait ServiceDescriptor[A] extends HasComponentId {
-  val descriptor: TypeDescriptor[A]
-  final override def componentId = descriptor.id
 }

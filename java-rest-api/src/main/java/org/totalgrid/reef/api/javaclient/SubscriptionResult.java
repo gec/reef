@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.javaclient;
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,33 +20,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.javaclient;
 
 /**
- *  Interface defining a guaranteed, deferred value.  Value can be retrieved synchronously or asynchronously.
+ * A container class that wraps the response to a subscription request and the subscription interface itself
+ *
+ * @param <T> The type of result
+ * @param <U> The type of the subscription
  */
-public interface IPromise<A> {
+public interface SubscriptionResult<T, U> {
 
    /**
-     * Synchronously blocks for some un-specified period of time for the value. Returns immediately if the promise is complete.
-     *
-     * @return The value-type of the IPromise
+     * @return The value of response
      */
-   A await();
+   T getResult();
 
    /**
-     *  Asynchronously calls an IResponseListener when the promise is complete from
-     *  some unknown thread. Calls back immediately from the calling thread if the
-     *  promise is complete.
-     *
-     * @param listener
+     * @return The interface used for starting/stopping the actual subscription
      */
-   void addListener(IListener<A> listener);
+   Subscription<U> getSubscription();
 
-   /**
-     * Inquires about the completion state of the promise.
-     *
-     * @return True if the promise is complete, false otherwise
-     */
-   boolean isComplete();
 }

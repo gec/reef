@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.IConnectionListener
+import org.totalgrid.reef.api.javaclient.ConnectionListener
 
 /**
  * helper to package up ReplyTo address
@@ -104,9 +104,9 @@ trait BrokerConnection {
   def newBrokerChannel(): BrokerChannel
 
   /// sets the connection listener
-  def addConnectionListener(l: IConnectionListener) = { listeners = l :: listeners }
+  def addConnectionListener(l: ConnectionListener) = { listeners = l :: listeners }
 
   /// option to hold the connection listener
-  protected var listeners: List[IConnectionListener] = Nil
+  protected var listeners: List[ConnectionListener] = Nil
 
 }
