@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.broker.BrokerConnectionInfo;
+import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
 import org.totalgrid.reef.japi.client.Connection;
 import org.totalgrid.reef.proto.ReefServicesList;
 
@@ -36,7 +36,7 @@ public class TestBridgeExceptionBehaviors {
 		String reef_ip = System.getProperty("reef_node_ip");
 		if (reef_ip == null) reef_ip = "127.0.0.1";
 
-		Connection connection = new AMQPConnection(new BrokerConnectionInfo(reef_ip, 5672, "guest", "guest", "test"), ReefServicesList.getInstance(), 5000);
+		Connection connection = new AMQPConnection(new AMQPConnectionSettings(reef_ip, 5672, "guest", "guest", "test"), ReefServicesList.getInstance(), 5000);
 
 		try {
 			connection.newSession();
