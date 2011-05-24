@@ -47,12 +47,12 @@
 
             <eq:equipmentProfile name="Substation">
                 <eq:type name="Substation"/>
-                <eq:type name="EquipmentGroup"/>
+ 
             </eq:equipmentProfile>
 
             <eq:equipmentProfile name="MockBreaker">
                 <eq:type name="Breaker"/>
-                <eq:type name="Equipment"/>
+  
 
                 <eq:control name="Trip">
                     <eq:type name = "bkrTrip" />
@@ -78,7 +78,7 @@
                 </eq:setpoint>
 
                 <eq:type name="Line"/>
-                <eq:type name="Equipment"/>
+
                  <eq:analog name="Current" unit="A">
                     <eq:range actionSet="Nominal" low="10" high="20" deadband="0.5"/>
                     <eq:setpoint name="VoltageSetpoint"/>

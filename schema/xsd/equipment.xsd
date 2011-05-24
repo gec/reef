@@ -1,206 +1,644 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by Matt Homovich (Green Energy Corp) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="equipment.loader.reef.totalgrid.org"
-  xmlns="equipment.loader.reef.totalgrid.org"
-  elementFormDefault="qualified"
-  xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-  jaxb:version="1.0">
+           targetNamespace="equipment.loader.reef.totalgrid.org"
+           xmlns="equipment.loader.reef.totalgrid.org"
+           elementFormDefault="qualified"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="1.0">
+    <xs:annotation>
+        <xs:documentation>
+            <blockquote>
+                <span class="title">equipmentModel</span>
+            </blockquote>
+            <p class="elementDef">
+                The
+                <span class="elementStyle">equipmentModel</span>
+                section of the REEF configuration xml is the location where all of the SCADA measurements are
+                configured.
+                <span class="elementStyle">equipmentModel</span>
+                is one of the four main elements or “sections” of
+                the overall parent
+                <span class="elementStyle">configuration</span>
+                element.<span class="elementStyle">equipmentModel</span>,<span class="elementStyle">messageModel</span>,
+                <span class="elementStyle">actionModel</span>, and
+                <span class="elementStyle">communicationsModel</span>
+                make up the entire REEF configuration. The following is an example
+                of the configuration xml structure:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;configuration&gt;
+                    &lt;messageModel&gt;
+                    &lt;!--Message model configuration (see messageModel documentation)--&gt;
+                    &lt;/messageModel&gt;
 
-<!--
-  Reef logical equipment model XSD
--->
+                    &lt;actionModel&gt;
+                    &lt;!--Action model configuration (see actionModel documentation)--&gt;
+                    &lt;/actionModel&gt;
 
-  <!-- Meta data for point types (i.e. status, control, analog, counter) -->
-  <xs:element name="valueMap">
-    <xs:complexType>
-      <xs:attribute name="fromValue" type="xs:string" use="required"/>
-      <xs:attribute name="toValue"   type="xs:string" use="required"/>
+                    <span class="nameStyle">&lt;eq:equipmentModel&gt;</span>
+                    &lt;eq:profiles&gt;
+                    &lt;!—Point profile and Equipment profiles defined--&gt;
+                    &lt;/eq:profiles&gt;
+                    &lt;eq:equipment&gt;
+                    &lt;!—Equipment defined--&gt;
+                    &lt;/eq:equipment&gt;
+                    <span class="nameStyle">&lt;/eq:equipmentModel&gt;</span>
+                    &lt;cm:communicationsModel&gt;
+                    &lt;!--Communications model configuration (see communicationsModel documentation)--&gt;
+                    &lt;/cm:communicationsModel&gt;
+                    &lt;/configuration&gt;
+                </p>
+            </pre>
+            <p class="secHeader">Measurement Definition</p>
+            <p class="elementDef">Measurements are defined and then associated with stations and/or field equipment in
+                <span class="elementStyle">equipmentModel</span>. The following describes the typical equipment modeling
+                process. Please refer to the individual element definitions for additional details.
+                <span class="elementStyle">equipmentModel</span>
+                is dedicated to defining actual measurements and associating these measurements to stations and/or
+                equipment. The
+                <span class="elementStyle">equipment</span>
+                element is nested to provide the measurement “tag” in the form “equipment.equipment.point”,
+                where point is analog/status/counter. The following is an example of defining equipment and
+                measurements:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:equipment name="ChapelHill"&gt;
+                    &lt;eq:type name="Substation"/&gt;
+                    &lt;eq:equipment name="CB11001"&gt;
+                    &lt;eq:status name="Bkr" unit="status"&gt;
+                    &lt;eq:control name="Trip"/&gt;
+                    &lt;eq:control name="Close"/&gt;
+                    &lt;/eq:status&gt;
+
+                    &lt;eq:analog name="Mw" unit="Mw"&gt;
+                    &lt;eq:range actionSet=”RLC” low=”10” high=”30”/&gt;
+                    &lt;/eq:analog&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;/eq:equipment&gt;
+                </p>
+            </pre>
+            <p class="elementDef">In this example the following SCADA points where created
+
+                <ul>
+                    <li>ChapelHill CB11001 Bkr (status)</li>
+                    <li>ChapelHill CB11001 Bkr Trip (control)</li>
+                    <li>ChapelHill CB11001 Bkr Close (control)</li>
+                    <li>ChapelHill CB11001 Mw (analog)</li>
+                </ul>
+            </p>
+            <br/>
+            <p class="secHeader">Profile Definition</p>
+            <p class="elementDef">Profiles can be created for measurements and equipment.
+                <span class="elementStyle">pointProfile</span>
+                is used to define measurement types for status, analog, and counter measurements.
+                These point profiles can then be associated with individual measurements. For example, using the
+                information for the measurements defined for the CB11001 Bkr created in the last example,
+                point profiles named CBstatus and CB_Mw can be defined as following:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:pointProfile name=”
+                    <span class="nameStyle">CBStatus"&gt;</span>
+                    &lt;eq:control name="Trip"/&gt;
+                    &lt;eq:control name="Close"/&gt;
+                    &lt;/eq:pointProfile&gt;
+
+                    &lt;eq:pointProfile name="
+                    <span class="nameStyle">CB_Mw&gt;</span>
+                    &lt;eq:range actionSet="RLC" low="10" high=”30”/&gt;
+                    &lt;/eq:pointProfile&gt;
+                </p>
+            </pre>
+            <p class="elementDef">These profiles can then be assigned to measurements throughout the equipment
+                configuration. In the following example the same four points as the first
+                example are created using
+                <span class="elementStyle">pointProfile</span>
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:equipment name="ChapelHill"&gt;
+                    &lt;eq:type name="Substation"/&gt;
+                    &lt;eq:equipment name="CB11001"&gt;
+                    &lt;eq:status name="Bkr" unit="status" pointProfile=”<span class="nameStyle">CBStatus</span>”/&gt;
+                    &lt;eq:analog name="Mw" unit="Mw" pointProfile=”<span class="nameStyle">CB_Mw</span>”/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;/eq:equipment&gt;
+                </p>
+            </pre>
+            <p class="elementDef">The next section of equipment modeling is dedicated to defining actual measurements
+                and associating these measurements to stations and/or equipment. The following is an example of defining
+                equipment and measurements.
+                In this example we expand on our model by adding some additional status points, which use a
+                <span class="elementStyle">pointProfile</span>
+                named “NormallyOpen”. An additional Mvar analog was also added.
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:equipment name="ChapelHill"&gt;
+                    &lt;eq:type name="Substation"/&gt;
+                    &lt;eq:equipment name="CB11001"&gt;
+                    &lt;eq:status name="Bkr" unit="status" pointProfile="<span class="nameStyle">CBStatus</span>"&gt;
+                    &lt;eq:control name="Trip"/&gt;
+                    &lt;eq:control name="Close"/&gt;
+                    &lt;/eq:status&gt;
+                    &lt;eq:status name="APh_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="BPh_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="CPh_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="50_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="51_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:analog name="Mw" unit="Mw" pointProfile="<span class="nameStyle">CB_Mw</span>"/&gt;
+                    &lt;eq:analog name="Mvar" unit="Mvar" pointProfile="<span class="nameStyle">CB_Mw</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;/eq:equipment&gt;
+                </p>
+            </pre>
+            <p class="elementDef">In this example the following SCADA points where created
+                <ul>
+                    <li>ChapelHill CB11001 Bkr (status)</li>
+                    <li>ChapelHill CB11001 Bkr Trip (control)</li>
+                    <li>ChapelHill CB11001 Bkr Close (control)</li>
+                    <li>ChapelHill CB11001 Aph_Trip (status)</li>
+                    <li>ChapelHill CB11001 Bph_Trip (status)</li>
+                    <li>ChapelHill CB11001 Cph_Trip (status)</li>
+                    <li>ChapelHill CB11001 50_Trip (status)</li>
+                    <li>ChapelHill CB11001 51_Trip (status)</li>
+                    <li>ChapelHill CB11001 Mw (analog)</li>
+                    <li>ChapelHill CB11001 Mvar (analog)</li>
+                </ul>
+            </p>
+            <p class="elementDef">Equipment profiles are configured similar to point profiles. The
+                <span class="elementStyle">equipmentProfile</span>
+                element defines profiles for stations, equipment groups, field equipment, or any entity throughout the
+                system that can
+                have multiple measurements or attributes associated with it. For example, an equipment profile named
+                FullBreaker can be defined as following:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"&gt;
+                    &lt;eq:type name="Breaker"/&gt;
+                    &lt;eq:type name="Equipment"/&gt;
+                    &lt;eq:control name="Trip"/&gt;
+                    &lt;eq:control name="Close"/&gt;
+
+                    &lt;eq:status name="Bkr" unit="status" pointProfile="<span class="nameStyle">CBStatus</span>"&gt;
+                    &lt;eq:control name="Trip"/&gt;
+                    &lt;eq:control name="Close"/&gt;
+                    &lt;/eq:status&gt;
+
+                    &lt;eq:status name="APh_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="BPh_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="CPh_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="50_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:status name="51_Trip" unit="status" pointProfile="NormallyOpen"/&gt;
+                    &lt;eq:analog name="Mw" unit="Mw" pointProfile="<span class="nameStyle">CB_Mw</span>"/&gt;
+                    &lt;eq:analog name="Mvar" unit="Mvar" pointProfile="<span class="nameStyle">CB_Mw</span>"/&gt;
+                    &lt;/eq:equipmentProfile&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+
+                This profile can then be attached to all circuit breakers defined throughout the equipment
+                configuration.
+
+                For the previous example the measurements where individually specified under the “CB11001” equipment
+                element. To create multiple breakers with the same points as CB11001, we can use
+                the<span class="elementStyle">equipmentProfile</span>attribute as shown in the following:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:equipment name="ChapelHill"&gt;
+                    &lt;eq:type name="Substation"/&gt;
+                    &lt;eq:equipment name="CB11001"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;eq:equipment name="CB11002"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;eq:equipment name="CB11003"&gt;
+                    &lt;eq:equipmentProfile name=”<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;eq:equipment name="CB11004"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;/eq:equipment&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                This will create the same measurements as the previous step for CB11001, as well as a measurement list
+                for three additional breakers CB11002, CB11003, and CB11004. Individual measurements
+                can also be added to equipment when an
+                <span class="elementStyle">equipmentProfile</span>
+                is specified, as in the following:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;eq:equipment name="ChapelHill"&gt;
+                    &lt;eq:type name="Substation"/&gt;
+                    &lt;eq:equipment name="CB11001"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;eq:equipment name="CB11002"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;eq:equipment name="CB11003"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;eq:equipment name="CB11004"&gt;
+                    &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;eq:analog name="Ia" unit="amps" pointProfile="LineCurrent"/&gt;
+                    &lt;eq:analog name="Ib" unit="amps" pointProfile="LineCurrent"/&gt;
+                    &lt;eq:analog name="Ic" unit="amps" pointProfile="LineCurrent"/&gt;
+                    &lt;/eq:equipment&gt;
+                    &lt;/eq:equipment&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                This will create the same measurements for the four breakers as the previous step, however three
+                additional analogs will also be created for CB11004. Measurements can be modeled under
+                equipment in three different ways. These examples demonstrate the flexibility in modeling measurements:
+                <ul>
+                    <li>Measurement elements (status/analog/counter) under
+                        <span class="elementStyle">equipment</span>
+                    </li>
+                    <li>
+                        <span class="elementStyle">equipmentProfile</span>
+                        elements under
+                        <span class="elementStyle">equipment</span>
+                    </li>
+                    <li>Both measurement elements and
+                        <span class="elementStyle">equipmentProfile</span>
+                        elements under<span class="elementStyle">equipment</span>.
+                    </li>
+                </ul>
+            </p>
+        </xs:documentation>
+    </xs:annotation>
+    <!--
+      Reef logical equipment model XSD
+    -->
+    <!-- Meta data for point types (i.e. status, control, analog, counter) -->
+    <xs:element name="valueMap">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Future
+                    <!--Defines the relationships between the state of a measured point and it's displayed text. "fromValue" relates to the measured value of a point. "toValue" text
+                      displayed for the corresponding fromValue attribute. "Nominal" defines the nominal value for a measurement. Measurements not matching the nominal value will be classified as Abnormal.-->
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="fromValue" type="xs:string" use="required"/>
+            <xs:attribute name="toValue" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+
+    <xs:simpleType name="TransformType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="status"/>
+            <xs:enumeration value="counter"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="transform">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="valueMap" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="fromUnit" type="xs:string"/>
+            <xs:attribute name="toUnit" type="xs:string"/>
+            <xs:attribute name="priority" type="xs:unsignedShort"/>
+            <xs:attribute name="transformationType" type="TransformType" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="unexpected">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines a trigger for Alarm, Event, or, Log messages for a specific state of a measurement (see
+                    <span class="elementStyle">messageModel</span>
+                    for more information). Valid measurement types for unexpected are string, boolean, integer, and
+                    double, with the attributes being stringValue, booleanValue, intValue, and doubleValue respectively.
+                    The value assigned to
+                    <span class="elementStyle">unexpected</span>
+                    will be the state of the measurment that triggers a message. The type of message triggered is
+                    dependant on the
+                    <span class="elementStyle">actionSet</span>
+                    defined for unexpected value(see
+                    <span class="elementStyle">actionSet</span>
+                    modeling). Action Sets define the message type (Alarm, Event, or Log) that will occur when the value
+                    reaches it's unexpected state. The
+                    <span class="elementStyle">actionSet</span>
+                    name must match and
+                    <span class="elementStyle">actionSet</span>
+                    name defined in the actionSet modeling section of the configuration xml.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="stringValue" type="xs:string"/>
+            <xs:attribute name="booleanValue" type="xs:boolean"/>
+            <xs:attribute name="intValue" type="xs:int"/>
+            <xs:attribute name="doubleValue" type="xs:double"/>
+            <xs:attribute name="actionSet" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="range">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines analog limits used for alarming. The following attributes are assigned for<span
+                        class="elementStyle">range</span>:
+                    <blockquote>
+                        <span class="elementStyle">low</span>
+                        - defines the low limit of the range. If the value of the analog is below the low value, the low
+                        limit has been violated.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">high</span>
+                        - defines the high limit of the range. If the value of the analog is above the high value, the
+                        high limit has been violated.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">deadband</span>
+                        - defines the deadband window. This value is used to prevent excessive alarms when the analog
+                        value is close to the limit and crosses back and forth across the limit.
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="actionSet" type="xs:string" use="required"/>
+            <xs:attribute name="low" type="xs:double"/>
+            <xs:attribute name="high" type="xs:double"/>
+            <xs:attribute name="unit" type="xs:string"/>
+            <xs:attribute name="deadband" type="xs:double" default="0"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="type">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Types are tags used for classification of equipment and measurements into groups
+                    or categories.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ___________________ Commands ___________________ -->
+
+    <xs:complexType name="command" abstract="true">
+        <xs:sequence>
+            <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="displayName" type="xs:string"/>
     </xs:complexType>
-  </xs:element>
-  
-  <xs:simpleType name="TransformType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="status" />
-      <xs:enumeration value="counter" />
-    </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:element name="transform">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="valueMap" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence>
-      <xs:attribute name="fromUnit" type="xs:string"/>
-      <xs:attribute name="toUnit" type="xs:string"/>
-      <xs:attribute name="priority" type="xs:unsignedShort"/>
-      <xs:attribute name="transformationType" type="TransformType" use="required"/>
+
+    <xs:element name="control">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines a control. The "name" attribute is the name of the Control. This name will
+                    be displayed in the HMI. Control names should not contain spaces or periods "." and should be
+                    limited to 64 characters. (ex. Breaker100_Open).
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="command"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="setpoint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="command"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ___________________ Point Types ___________________ -->
+    <!-- Meta data for point types that have values (i.e. not controls) -->
+    <xs:complexType name="PointType" abstract="true">
+        <xs:sequence>
+            <xs:element ref="transform" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="range" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="unexpected" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="displayName" type="xs:string"/>
+        <xs:attribute name="unit" type="xs:string" use="required"/>
+        <xs:attribute name="pointProfile" type="xs:string"/>
     </xs:complexType>
-  </xs:element>
-  
-  <xs:element name="unexpected">
-    <xs:complexType>
-      <xs:attribute name="stringValue" type="xs:string" />
-      <xs:attribute name="booleanValue" type="xs:boolean" />
-      <xs:attribute name="intValue" type="xs:int" />
-      <xs:attribute name="doubleValue" type="xs:double" />
-      <xs:attribute name="actionSet" type="xs:string" use="required"/>
+    <xs:element name="pointProfile">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines a set of attributes to a measurement. Once the profile is created, it can
+                    be linked to any number of measurements, all of which will share the profiles attributes.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="status">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines an status measurement. The following are attributes of
+                    <span class="elementStyle">status</span>
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - Name of the status measurement that will be displayed in the HMI. Status names should not
+                        contain spaces or periods "." and should be limited to 64 characters. (ex. CB1001_Status,
+                        Recloser122_status).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - The status unit of measurement.
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="analog">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines an analog measurement. The following are attributes of
+                    <span class="elementStyle">analog</span>
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - Name of the analog measurement that will be displayed in the HMI. Analog names should not
+                        contain spaces or periods "." and should be limited to 64 characters. (ex. Line100_Current,
+                        Bus201_Voltage).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - The analog unit of measurement.
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="counter">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines a counter. The
+                    <span class="elementStyle">name</span>
+                    attribute is the of the Counter Measurement. This name will be displayed in the HMI. Counter names
+                    should not contain spaces or periods "." and should be limited to 64 characters. (ex.
+                    TX300_TotOperations). The
+                    <span class="elementStyle">unit</span>
+                    attribute is the counter unit of measurement.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <!-- ___________________ Profiles  ___________________ -->
+    <xs:element name="profiles">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    The root element of profiles configuration section of the xml config file. It's child elements are
+                    <span class="elementStyle">pointProfile</span>
+                    and
+                    <span class="elementStyle">equipmentProfile</span>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="pointProfile" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      equipment element can specify all contained equipment or reference an equipmentProfile.
+      The only difference between an equipmentProfile and equipment is that equipment has an
+      optional equipmentProfile attribute. Both can specify multiple profiles in descendant
+      elements.
+
+      Multiple equipmentProfile elements can be specified.
+    -->
+    <xs:complexType name="EquipmentType" abstract="true">
+        <xs:sequence>
+            <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
+            <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
-  </xs:element>
-
-  <xs:element name="range">
-    <xs:complexType>
-      <xs:attribute name="actionSet" type="xs:string" use="required"/>
-      <xs:attribute name="low" type="xs:double"/>
-      <xs:attribute name="high" type="xs:double"/>
-      <xs:attribute name="unit" type="xs:string"/>
-      <xs:attribute name="deadband" type="xs:double" default="0"/>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:element name="type">
-    <xs:complexType>
-      <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
-  </xs:element>
-
-  <!-- ___________________ Commands ___________________ -->
-
-  <xs:complexType name="command" abstract="true">
-      <xs:sequence>
-          <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence>
-      <xs:attribute name="name" type="xs:string" use="required"/>
-      <xs:attribute name="displayName" type="xs:string"/>
-  </xs:complexType>
-
-  <xs:element name="control">
-      <xs:complexType>
-          <xs:complexContent>
-              <xs:extension base="command"/>
-          </xs:complexContent>
-      </xs:complexType>
-  </xs:element>
-
-  <xs:element name="setpoint">
-      <xs:complexType>
-          <xs:complexContent>
-              <xs:extension base="command"/>
-          </xs:complexContent>
-      </xs:complexType>
-  </xs:element>
-
-  <!-- ___________________ Point Types ___________________ -->
-
-  <!-- Meta data for point types that have values (i.e. not controls) -->
-  <xs:complexType name="PointType" abstract="true">
-    <xs:sequence>
-      <xs:element ref="transform" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="range" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="unexpected" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="displayName" type="xs:string"/>
-    <xs:attribute name="unit" type="xs:string" use="required"/>
-    <xs:attribute name="pointProfile" type="xs:string"/>
-  </xs:complexType>
-
-  <xs:element name="pointProfile">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="PointType">
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:element name="status">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="PointType">
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:element name="analog">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="PointType">
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:element name="counter">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="PointType">
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-
-
-  <!-- ___________________ Profiles  ___________________ -->
-  <xs:element name="profiles">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="pointProfile" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
-
-  <!--
-    equipment element can specify all contained equipment or reference an equipmentProfile.
-    The only difference between an equipmentProfile and equipment is that equipment has an
-    optional equipmentProfile attribute. Both can specify multiple profiles in descendant
-    elements.
-
-    Multiple equipmentProfile elements can be specified.
-  -->
-  <xs:complexType name="EquipmentType" abstract="true">
-    <xs:sequence>
-      <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
-      <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-  </xs:complexType>
-  <xs:element name="equipmentProfile">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="EquipmentType"/>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="equipment">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="EquipmentType"/>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-  <!-- ___________________ root element  ___________________ -->
-  <xs:element name="equipmentModel">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="profiles" minOccurs="0" maxOccurs="1"/>
-        <xs:element ref="equipment" minOccurs="1" maxOccurs="unbounded"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
-
+    <xs:element name="equipmentProfile">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines an equipment model which can be used multiple times throughout the
+                    <span class="elementStyle">equipmentModel</span>
+                    configuration. Child elements of the equipment profile are the same as the equipment element. When
+                    defining a type of equipment, the user can individually specify the child elements of the
+                    <span class="elementStyle">equipment</span>
+                    element, or an
+                    <span class="elementStyle">equipmentProfile</span>
+                    can be specified. For example, an
+                    <span class="elementStyle">equipmentProfile</span>
+                    can be defined for a circuit breaker (TypicalCB). In the profile all measurements associated with
+                    that circuit breaker can be defined (Volts, Amps, Power, status, open/close, etc...). The TypicalCB
+                    profile can then be attached to all breakers within the system by simply adding the
+                    <span class="elementStyle">equipmentProfile</span>
+                    to each CB equipment element.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="EquipmentType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="equipment">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines entities within the system such as stations, equipment groups, equipment, and devices.
+                    Measurement tags are represented as<span class="elementStyle">
+                    equipment.equipment.measurement-name</span>. The parent-child relationship of any measurement tag is
+                    defined by nesting of equipment elements.
+                    <span class="elementStyle">equipment</span>
+                    elements can specify all contained equipment or reference an<span class="elementStyle">
+                    equipmentProfile</span>. The only difference between an
+                    <span class="elementStyle">equipmentProfile</span>
+                    and
+                    <span class="elementStyle">equipment</span>
+                    is that
+                    <span class="elementStyle">equipment</span>
+                    has an optional
+                    <span class="elementStyle">equipmentProfile</span>
+                    attribute. Both can specify multiple profiles in descendant elements. equipment elements can contain
+                    the following elements (<span class="elementStyle">equipmentProfile</span>,<span
+                        class="elementStyle">type</span>,<span class="elementStyle">control</span>,<span
+                        class="elementStyle">status</span>,<span class="elementStyle">analog</span>,<span
+                        class="elementStyle">counter</span>,<span class="elementStyle">equipment</span>).
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="EquipmentType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <!-- ___________________ root element  ___________________ -->
+    <xs:element name="equipmentModel">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">This is the root element of the equipment modeling section, child elements of
+                    <span class="elementStyle">equipmentModel</span>
+                    are profiles and equipment.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="profiles" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="equipment" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
