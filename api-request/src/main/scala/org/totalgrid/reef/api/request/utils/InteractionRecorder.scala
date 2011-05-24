@@ -24,8 +24,8 @@ import xml.Node
 import scala.collection.mutable.Queue
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.{ RequestEnv, IDestination, AnyNode }
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi.{ RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi.client._
 
 /**
  * the interaction recorder is a wrapper we can add around a SyncOperations client to collect a set of
@@ -65,7 +65,7 @@ trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
    * implementation of SyncOperations base function that uses the passed in "real" client to create collect interactions
    * for later formatting to file
    */
-  abstract override def request[A](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders, destination: IDestination = AnyNode): IPromise[Response[A]] = {
+  abstract override def request[A](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
 
     val promise = super.request(verb, request, env, destination)
 
@@ -73,6 +73,6 @@ trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
       explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, promise.await)
     }
 
-    new Promise(promise.await)
+    new BasicPromise(promise.await)
   }
 }

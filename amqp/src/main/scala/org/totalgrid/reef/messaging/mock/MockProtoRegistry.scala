@@ -27,13 +27,13 @@ import com.google.protobuf.GeneratedMessage
 import scala.concurrent.MailBox
 import scala.collection.immutable
 
-import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.sapi.service.AsyncService
 
 import org.totalgrid.reef.reactor.Reactable
-import org.totalgrid.reef.api.{ RequestEnv, IDestination }
+import org.totalgrid.reef.sapi.{ RequestEnv, Destination }
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.messaging.Connection
 
 //implicits for massaging service return types
@@ -61,7 +61,7 @@ class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends Clien
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: Response[A] => Unit) = {
+  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) = {
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
@@ -164,7 +164,7 @@ class MockConnection extends Connection {
   val servicemail = new MailBox
 
   case class EventSub(val klass: Class[_], val mock: MockEvent[_])
-  case class ServiceBinding(service: IServiceAsync[_], destination: IDestination, competing: Boolean, reactor: Option[Reactable])
+  case class ServiceBinding(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Reactable])
 
   // map classes to protoserviceconsumers
   var mockclient: Option[MockClientSession] = None
@@ -201,7 +201,7 @@ class MockConnection extends Connection {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, Some(notify)))
   }
 
-  override def bindService(service: IServiceAsync[_], destination: IDestination, competing: Boolean, reactor: Option[Reactable]): Unit = {
+  override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Reactable]): Unit = {
     servicemail send ServiceBinding(service, destination, competing, reactor)
   }
 

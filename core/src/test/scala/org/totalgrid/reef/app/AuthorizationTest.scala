@@ -29,7 +29,7 @@ import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.scalatest.{ BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.proto.Auth.AuthToken
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.scalaclient.{ Response, Failure }
+import org.totalgrid.reef.sapi.client.{ Response, Failure }
 import org.totalgrid.reef.japi.Envelope
 import scala.Some
 

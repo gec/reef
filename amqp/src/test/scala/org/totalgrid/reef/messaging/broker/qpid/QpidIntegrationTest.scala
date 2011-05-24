@@ -27,9 +27,9 @@ import org.totalgrid.reef.messaging.{ TestDescriptors, HeadersX2 }
 import org.totalgrid.reef.broker.BrokerConnectionInfo
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
 
-import org.totalgrid.reef.api._
+import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.service.IServiceResponseCallback
+import org.totalgrid.reef.sapi.service.ServiceResponseCallback
 
 import scala.concurrent.MailBox
 
@@ -57,7 +57,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   // This is a functionally defined service that just echos the payload back 3x with an OK status
-  def x3Service(request: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
+  def x3Service(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)
@@ -123,7 +123,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
+  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)

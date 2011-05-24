@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.api.scalaclient.RestOperations
+import org.totalgrid.reef.sapi.client.RestOperations
 
 trait ModelLoader {
   def putOrThrow(e: Entity)

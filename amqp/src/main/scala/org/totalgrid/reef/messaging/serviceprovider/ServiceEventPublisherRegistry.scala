@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging.serviceprovider
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.reactor.ReactActor
-import org.totalgrid.reef.api.ServiceList
+import org.totalgrid.reef.sapi.ServiceList
 
 /**
  * BusTied implementation of the ServiceEventPublishers interface that generates "real" pubslishers that send

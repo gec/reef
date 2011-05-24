@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging.sync
 
-import org.totalgrid.reef.api.scalaclient.{ Subscription, Event }
+import org.totalgrid.reef.sapi.client.{ Subscription, Event }
 import org.totalgrid.reef.messaging.QueuePatterns
 
 import org.totalgrid.reef.broker.{ MessageConsumer, BrokerChannel }

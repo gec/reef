@@ -28,7 +28,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.ReefServicesList
 
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.metrics.{ MetricsSink }
 
 /**

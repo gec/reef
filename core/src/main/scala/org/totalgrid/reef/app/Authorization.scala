@@ -21,9 +21,9 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.totalgrid.reef.sapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.reactor.Reactable
-import org.totalgrid.reef.api.scalaclient.{ Response, SingleSuccess, ISessionPool }
+import org.totalgrid.reef.sapi.client.{ Response, SingleSuccess, SessionPool }
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.Logging
 
@@ -40,7 +40,7 @@ object Authorization extends Logging {
     auth.build
   }
 
-  def login(pool: ISessionPool, executor: Reactable, retryMs: Int)(callback: (AuthToken) => Unit): Unit = {
+  def login(pool: SessionPool, executor: Reactable, retryMs: Int)(callback: (AuthToken) => Unit): Unit = {
 
     def retry = executor.delay(retryMs) {
       login(pool, executor, retryMs)(callback)

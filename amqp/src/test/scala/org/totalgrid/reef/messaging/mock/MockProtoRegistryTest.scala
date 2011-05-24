@@ -27,8 +27,8 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.Timer
 
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.japi.Envelope
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.japi.ResponseTimeoutException

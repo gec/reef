@@ -21,8 +21,8 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.reactor.Lifecycle
-import org.totalgrid.reef.api.auth.NullAuthService
-import org.totalgrid.reef.api.service.{ NoOpService, IServiceAsync }
+import org.totalgrid.reef.sapi.auth.NullAuthService
+import org.totalgrid.reef.sapi.service.{ NoOpService, AsyncService }
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
@@ -46,7 +46,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
     def addLifecycleObject(obj: Lifecycle) {}
 
-    def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
+    def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
       ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass) //call just so an exception will be thrown if it doesn't exist
       new NoOpService
     }

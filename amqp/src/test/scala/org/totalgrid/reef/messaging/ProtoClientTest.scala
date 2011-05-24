@@ -28,10 +28,10 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.service.{ IServiceResponseCallback, SyncServiceBase }
+import org.totalgrid.reef.sapi.service.{ ServiceResponseCallback, SyncServiceBase }
 import org.totalgrid.reef.japi.{ TypeDescriptor, ServiceIOException, UnknownServiceException, ResponseTimeoutException }
 
 object TestDescriptors {
@@ -127,7 +127,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
   test("Client fails quickly when closed") {
     setupTest(false) { (client, amqp) =>
 
-      def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) = {
+      def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
         // kill the client rather than returning any data
         client.close
       }

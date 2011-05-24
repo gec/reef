@@ -24,7 +24,7 @@ package org.totalgrid.reef.frontend
  * Uses asynchronous methods and a queue to publish, blocking only when queue fills up
  */
 /*
-class AsyncQueuePublisher[A](pool: ISessionPool, verb: Envelope.Verb, destination: IDestination = AnyNode, maxSize : Int = 100)
+class AsyncQueuePublisher[A](pool: ISessionPool, verb: Envelope.Verb, destination: Destination = AnyNodeDestination, maxSize : Int = 100)
   extends IListener[A] with Logging {
 
   assert(maxSize > 0)

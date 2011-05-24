@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.Envelope
 
 /**

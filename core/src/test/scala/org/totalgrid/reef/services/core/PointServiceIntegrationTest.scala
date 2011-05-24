@@ -31,8 +31,8 @@ import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityPro
 import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, scalaclient }
-import scalaclient.Event
+import org.totalgrid.reef.sapi.{ RequestEnv, ServiceHandlerHeaders, client }
+import client.Event
 
 //implicits
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders

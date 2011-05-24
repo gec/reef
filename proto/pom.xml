@@ -55,10 +55,9 @@
         </plugins>
     </build>
     <dependencies>
-
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-api</artifactId>
+            <artifactId>reef-scala-api</artifactId>
             <version>0.3.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

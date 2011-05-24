@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.service.{ SyncServiceBase, AsyncServiceBase }
+import org.totalgrid.reef.sapi.service.{ SyncServiceBase, AsyncServiceBase }
 import org.totalgrid.reef.japi.BadRequestException
 
 /**

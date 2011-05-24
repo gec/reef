@@ -20,14 +20,14 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.api.scalaclient.{ Response, Success }
-import org.totalgrid.reef.api.service.AsyncServiceBase
+import org.totalgrid.reef.sapi.client.{ Response, Success }
+import org.totalgrid.reef.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
 import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.protocol.api.{ ICommandHandler, IListener }
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 
 class SingleEndpointCommandService(handler: ICommandHandler) extends AsyncServiceBase[Command] {
 

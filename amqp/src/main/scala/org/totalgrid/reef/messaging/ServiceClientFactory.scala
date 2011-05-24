@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.ServiceList
-import org.totalgrid.reef.api.scalaclient.Subscription
+import org.totalgrid.reef.sapi.ServiceList
+import org.totalgrid.reef.sapi.client.Subscription
 
 /**
  * factory trait that defines what we need to construct ClientSessions and subscriptions

@@ -22,9 +22,10 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.reactor.{ Reactor, ReactActor, Reactable }
 
-import org.totalgrid.reef.api.service.IServiceAsync
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi._
+import client._
+import service.AsyncService
+
 import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.broker.MessageConsumer
@@ -56,7 +57,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
   /* ---- Functions for subscribing  ---- */
 
-  def subscribe[A](exchange: String, routingKey: IRoutingKey, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
+  def subscribe[A](exchange: String, routingKey: RoutingKey, convert: Array[Byte] => A, accept: A => Unit): ObserverableBrokerObject = {
     val consumer = AMQPMessageConsumers.makeStreamConsumer(convert, accept)
     add(new AMQPExclusiveConsumer(exchange, routingKey, consumer))
   }
@@ -150,11 +151,11 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
    * bind a service handler to the bus for a given exchange
    * @param exchange   exchange to bind to
    * @param service handler for the ServiceRequest, must return ServiceReponse
-   * @param destination Optionally overrides the default destination of AnyNode
+   * @param destination Optionally overrides the default destination of AnyNodeDestinationDestination
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(exchange: String, service: IServiceAsync.ServiceFunction, destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  def bindService(exchange: String, service: AsyncService.ServiceFunction, destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     val pub = broadcast[Envelope.ServiceResponse]((x: Envelope.ServiceResponse) => x.toByteArray)
     val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
 

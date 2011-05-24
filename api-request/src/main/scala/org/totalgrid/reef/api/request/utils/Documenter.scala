@@ -30,7 +30,7 @@ import xml.{ Node, XML, NodeSeq }
 
 import org.totalgrid.reef.util.BuildEnv
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi.client._
 
 object Documenter {
 

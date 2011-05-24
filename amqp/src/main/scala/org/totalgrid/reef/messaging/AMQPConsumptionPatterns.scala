@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.IRoutingKey
+import org.totalgrid.reef.sapi.RoutingKey
 
 import org.totalgrid.reef.broker._
 
@@ -124,7 +124,7 @@ object QueuePatterns {
  * Listen to a shared queue so many consumers can service the same requests.  Queues are declared without
  * exclusive and autodelete options.
  */
-class AMQPCompetingConsumer(exchange: String, queueName: String, routingKey: IRoutingKey, mc: MessageConsumer) extends AMQPConsumptionPattern {
+class AMQPCompetingConsumer(exchange: String, queueName: String, routingKey: RoutingKey, mc: MessageConsumer) extends AMQPConsumptionPattern {
   override def getQueue(broker: BrokerChannel): String =
     QueuePatterns.getCompetingConsumer(broker, exchange, queueName, routingKey.key, mc)
 }
@@ -156,7 +156,7 @@ class AMQPPrivateResponseQueueListener(exchange: String, mc: MessageConsumer) ex
 /**
  * Listen to a private queue bound to the exchange, allows duplication of messages, not to be used for big S services.
  */
-class AMQPExclusiveConsumer(exchange: String, routingKey: IRoutingKey, mc: MessageConsumer) extends AMQPConsumptionPattern {
+class AMQPExclusiveConsumer(exchange: String, routingKey: RoutingKey, mc: MessageConsumer) extends AMQPConsumptionPattern {
   override def getQueue(broker: BrokerChannel): String =
     QueuePatterns.getExclusiveQueue(broker, exchange, routingKey.key, mc)
 }

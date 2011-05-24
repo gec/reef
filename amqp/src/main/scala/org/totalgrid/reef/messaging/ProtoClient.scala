@@ -25,8 +25,8 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.scalaclient._
-import org.totalgrid.reef.api._
+import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope
 
 /**
@@ -41,7 +41,7 @@ class ProtoClient(
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ClientSession]
 
-  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: IDestination)(callback: Response[A] => Unit) {
+  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) {
 
     val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
     val serviceRequest = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))

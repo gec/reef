@@ -34,7 +34,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 
 // implicit proto properties
 import SquerylModel._

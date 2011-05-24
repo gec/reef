@@ -26,7 +26,7 @@ import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
-import org.totalgrid.reef.api.AddressableService
+import org.totalgrid.reef.sapi.AddressableDestination
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import org.totalgrid.reef.proto._
 
@@ -90,6 +90,6 @@ object MeasurementStreamProcessingNode extends Logging {
     val measBatchService = new AddressableMeasurementBatchService(processor)
     val exchange = measBatchService.descriptor.id
     info { "Attached " + exchange + " key: " + connection.getRouting.getServiceRoutingKey }
-    amqp.bindService(exchange, measBatchService.respond, AddressableService(connection.getRouting.getServiceRoutingKey), false, Some(reactor))
+    amqp.bindService(exchange, measBatchService.respond, AddressableDestination(connection.getRouting.getServiceRoutingKey), false, Some(reactor))
   }
 }

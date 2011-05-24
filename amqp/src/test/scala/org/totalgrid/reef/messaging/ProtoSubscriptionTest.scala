@@ -31,9 +31,9 @@ import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient._
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.sapi._
+import client._
+import service.SyncServiceBase
 
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {

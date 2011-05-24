@@ -31,13 +31,13 @@ import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 
-import org.totalgrid.reef.api.auth.IAuthService
+import org.totalgrid.reef.sapi.auth.AuthService
 
 object Services {
 
-  def makeContext(auth: IAuthService): ServiceContext = makeContext(BrokerConnectionInfo.loadInfo, DbInfo.loadInfo, MeasurementStoreFinder.getConfig, ServiceOptions.loadInfo, auth)
+  def makeContext(auth: AuthService): ServiceContext = makeContext(BrokerConnectionInfo.loadInfo, DbInfo.loadInfo, MeasurementStoreFinder.getConfig, ServiceOptions.loadInfo, auth)
 
-  def makeContext(bi: BrokerConnectionInfo, di: DbInfo, measInfo: ConnInfo, srvOpt: ServiceOptions, auth: IAuthService): ServiceContext = {
+  def makeContext(bi: BrokerConnectionInfo, di: DbInfo, measInfo: ConnInfo, srvOpt: ServiceOptions, auth: AuthService): ServiceContext = {
     val amqp = new AMQPProtoFactory with ReactActor {
       val broker = new QpidBrokerConnection(bi)
     }

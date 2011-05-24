@@ -23,7 +23,7 @@ package org.totalgrid.reef.procstatus
 import org.totalgrid.reef.proto.{ ProcessStatus }
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.mock._
-import org.totalgrid.reef.api.AllMessages
+import org.totalgrid.reef.sapi.AllMessages
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers

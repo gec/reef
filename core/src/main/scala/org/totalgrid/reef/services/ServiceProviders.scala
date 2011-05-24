@@ -26,18 +26,18 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.messaging.SessionPool
+import org.totalgrid.reef.messaging.BasicSessionPool
 
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.api.service.IServiceAsync
-import org.totalgrid.reef.api.auth.IAuthService
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.sapi.auth.AuthService
 
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: IAuthService) {
+class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: AuthService) {
 
   private val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   private val summaries = new SummaryPointPublisher(components.amqp)
@@ -46,7 +46,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
   private val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
 
-  private val sessionPool = new SessionPool(components.registry)
+  private val sessionPool = new BasicSessionPool(components.registry)
 
   private val authzMetrics = {
     val hooks = new RestAuthzMetrics("")
@@ -56,9 +56,9 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     hooks
   }
 
-  private val unauthorizedServices: List[IServiceAsync[_]] = new AuthTokenService(modelFac.authTokens) :: Nil
+  private val unauthorizedServices: List[AsyncService[_]] = new AuthTokenService(modelFac.authTokens) :: Nil
 
-  private val restAuthorizedServices: List[IServiceAsync[_]] = List(
+  private val restAuthorizedServices: List[AsyncService[_]] = List(
     new EntityService,
     new EntityEdgeService,
     new EntityAttributesService,

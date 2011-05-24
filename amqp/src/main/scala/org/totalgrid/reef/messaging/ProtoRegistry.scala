@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, Event, ISessionPool }
-import org.totalgrid.reef.api.{ ServiceList, RequestEnv, IDestination, AnyNode }
-import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.sapi.client.{ ClientSession, Event, SessionPool }
+import org.totalgrid.reef.sapi.{ ServiceList, RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.reactor.Reactable
 
 trait PoolableConnection {
@@ -34,7 +34,7 @@ trait PoolableConnection {
 /** Combines the various registry traits into a single interface */
 trait Connection {
 
-  def getSessionPool(): ISessionPool
+  def getSessionPool(): SessionPool
 
   /** Creates an event queue of type A that can be monitored using an ObservableSubscription */
   def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit
@@ -46,18 +46,18 @@ trait Connection {
    * bind a service handler to the bus for a given exchange
    * @param exchange   exchange to bind to
    * @param service handler for the ServiceRequest, must return ServiceReponse
-   * @param destination Optionally overrides the default destination of AnyNode
+   * @param destination Optionally overrides the default destination of AnyNodeDestination
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit
+  def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Reactable] = None): Unit
 
 }
 
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
 class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection {
 
-  private lazy val pool = new SessionPool(this)
+  private lazy val pool = new BasicSessionPool(this)
 
   def getClientSession(): ClientSession = {
     val client = new ProtoClient(factory, lookup, timeoutms)
@@ -65,7 +65,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
     client
   }
 
-  final override def getSessionPool(): ISessionPool = pool
+  final override def getSessionPool(): SessionPool = pool
 
   final override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     factory.getEventQueue(deserialize, accept)
@@ -75,7 +75,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
     factory.getEventQueue(deserialize, accept, notify)
   }
 
-  final override def bindService(service: IServiceAsync[_], destination: IDestination = AnyNode, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  final override def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
     factory.bindService(service.descriptor.id, service.respond, destination, competing, reactor)
   }
 

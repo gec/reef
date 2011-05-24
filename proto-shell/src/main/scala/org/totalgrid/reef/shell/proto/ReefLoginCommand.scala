@@ -22,7 +22,7 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
-import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.sapi.client.ClientSession
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to

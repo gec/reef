@@ -23,10 +23,10 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.Reactable
 
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
+import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
 
@@ -69,7 +69,7 @@ object AMQPMessageConsumers extends Logging {
    * @param publish publishes response to return exchange/request
    * @param service Service handler used to get responses
    */
-  def makeServiceBinding(publish: (Envelope.ServiceResponse, String, String) => Unit, service: IServiceAsync.ServiceFunction): MessageConsumer = {
+  def makeServiceBinding(publish: (Envelope.ServiceResponse, String, String) => Unit, service: AsyncService.ServiceFunction): MessageConsumer = {
 
     new MessageConsumer {
       def receive(data: Array[Byte], replyTo: Option[Destination]): Unit = safeExecute {
@@ -89,7 +89,7 @@ object AMQPMessageConsumers extends Logging {
             // convert the headers back into the RequestEnv object
             request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
 
-            val callback = new IServiceResponseCallback {
+            val callback = new ServiceResponseCallback {
               def onResponse(rsp: Envelope.ServiceResponse) = publish(rsp, rspExchange, rspKey)
             }
 

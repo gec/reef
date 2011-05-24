@@ -22,9 +22,9 @@ package org.totalgrid.reef.messaging.mock.synchronous
 
 import org.totalgrid.reef.messaging.mock.MockSessionPool
 import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.api.scalaclient.{ Event, ISessionPool }
-import org.totalgrid.reef.api.service.IServiceAsync
-import org.totalgrid.reef.api.IDestination
+import org.totalgrid.reef.sapi.client.{ Event, SessionPool }
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.sapi.Destination
 import org.totalgrid.reef.reactor.Reactable
 
 class MockConnection extends Connection {
@@ -33,12 +33,12 @@ class MockConnection extends Connection {
 
   private val pool = new MockSessionPool(session)
 
-  def getSessionPool(): ISessionPool = pool
+  def getSessionPool(): SessionPool = pool
 
   def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = throw new Exception("Unimplemented")
 
   def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = throw new Exception("Unimplemented")
 
-  def bindService(service: IServiceAsync[_], destination: IDestination, competing: Boolean, reactor: Option[Reactable]): Unit = throw new Exception("Unimplemented")
+  def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Reactable]): Unit = throw new Exception("Unimplemented")
 
 }

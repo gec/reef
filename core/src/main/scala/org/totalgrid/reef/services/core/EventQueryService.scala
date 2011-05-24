@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.sapi.client.Response
 
 import org.totalgrid.reef.services.framework._
 
@@ -31,9 +31,9 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.api._
+import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, ServiceEventPublishers }
 import org.totalgrid.reef.services.ProtoRoutingKeys
 

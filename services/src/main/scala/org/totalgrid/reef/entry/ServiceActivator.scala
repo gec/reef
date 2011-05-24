@@ -22,7 +22,7 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.sapi.service.AsyncService
 
 import org.totalgrid.reef.services.{ Services, ServiceOptions, SqlAuthzService }
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
@@ -49,7 +49,7 @@ class ServiceActivator extends BundleActivator {
 
     // publish all of the services using the exchange as the filter
     srvContext.services.foreach { x =>
-      context createService (x, "exchange" -> x.descriptor.id, interface[IServiceAsync[_]])
+      context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
     }
 
     services = Some(srvContext)

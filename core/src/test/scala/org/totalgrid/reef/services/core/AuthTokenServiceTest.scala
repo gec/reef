@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.japi.Envelope._
-import org.totalgrid.reef.api.service.NoOpService
+import org.totalgrid.reef.sapi.service.NoOpService
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -36,8 +36,8 @@ import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.api.RequestEnv
-import org.totalgrid.reef.api.service.IServiceResponseCallback
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.service.ServiceResponseCallback
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -197,7 +197,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     def testRequest(status: Status, verb: Verb, authTokens: List[String]) = {
       val env = new RequestEnv
       env.setAuthTokens(authTokens)
-      val callback = new IServiceResponseCallback {
+      val callback = new ServiceResponseCallback {
         var response: Option[ServiceResponse] = None
         def onResponse(rsp: ServiceResponse) = response = Some(rsp)
       }

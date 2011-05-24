@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.app.CoreApplicationComponents
 
 /**
@@ -41,7 +41,7 @@ class MetricsServiceWrapper(components: CoreApplicationComponents, serviceConfig
 
   /// takes an endpoint and either returns that endpoint unaltered or wraps it metrics
   /// collecting code
-  private def getInstrumentedRespondFunction(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
+  private def getInstrumentedRespondFunction(endpoint: AsyncService[_]): AsyncService[_] = {
     if (serviceConfiguration.metrics) {
       val hooks = if (serviceConfiguration.metricsSplitByService) {
         generateHooks(endpoint.descriptor.id) // make a new hook object for each service
@@ -56,7 +56,7 @@ class MetricsServiceWrapper(components: CoreApplicationComponents, serviceConfig
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
-  def instrumentCallback(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
+  def instrumentCallback(endpoint: AsyncService[_]): AsyncService[_] = {
 
     getInstrumentedRespondFunction(endpoint)
 

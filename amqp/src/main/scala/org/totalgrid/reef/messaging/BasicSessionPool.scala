@@ -21,11 +21,11 @@
 package org.totalgrid.reef.messaging
 
 import scala.collection.mutable._
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool => ISessionPoolScala }
+import org.totalgrid.reef.sapi.client.{ ClientSession, SessionPool }
 import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
 
-class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends ISessionPoolScala with SessionExecutionPool {
+class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends SessionPool with SessionExecutionPool {
 
   private val available = Set.empty[ClientSession]
   private val unavailable = Set.empty[ClientSession]
@@ -64,7 +64,7 @@ class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) 
 
     borrow { session =>
       try {
-        import org.totalgrid.reef.api.ServiceHandlerHeaders._
+        import org.totalgrid.reef.sapi.ServiceHandlerHeaders._
         session.getDefaultHeaders.setAuthToken(authToken)
         fun(session)
       } finally {

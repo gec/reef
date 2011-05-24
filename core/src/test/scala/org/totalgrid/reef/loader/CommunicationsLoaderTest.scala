@@ -33,7 +33,7 @@ import org.totalgrid.reef.util.BuildEnv
 
 // scala XML classes
 
-import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
+import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
 import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])

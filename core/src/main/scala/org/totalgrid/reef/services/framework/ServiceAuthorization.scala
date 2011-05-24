@@ -21,17 +21,17 @@
 
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.auth.{ IAuthService, AuthDenied, NullAuthService }
+import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied, NullAuthService }
 import org.totalgrid.reef.japi.UnauthorizedException
-import org.totalgrid.reef.api.RequestEnv
-import org.totalgrid.reef.api.service.HasComponentId
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.service.HasComponentId
 
 trait HasAuthActions {
   def actions: List[String] = Nil
 }
 
 trait HasAuthService {
-  var authService: IAuthService = NullAuthService
+  var authService: AuthService = NullAuthService
 }
 
 trait AuthTranslator extends HasAuthActions with HasComponentId with HasAuthService {

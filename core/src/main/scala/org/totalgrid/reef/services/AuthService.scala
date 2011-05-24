@@ -20,9 +20,9 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.auth.{ IAuthService, AuthDenied }
+import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied }
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.models.ApplicationSchema
 
 import org.totalgrid.reef.services.ServiceProviderHeaders._
@@ -31,7 +31,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 object SqlAuthzService extends SqlAuthzService
 
-trait SqlAuthzService extends IAuthService {
+trait SqlAuthzService extends AuthService {
 
   private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) =
     Some(AuthDenied(msg, status))

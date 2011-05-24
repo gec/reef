@@ -20,16 +20,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.scalaclient.ISessionPool
+import org.totalgrid.reef.sapi.client.SessionPool
 
 import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.service.ServiceTypeIs
-import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.api.{ RequestEnv, AddressableService }
+import org.totalgrid.reef.sapi.{ RequestEnv, AddressableDestination }
 
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
@@ -37,7 +37,7 @@ import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: SessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled
@@ -55,7 +55,7 @@ class UserCommandRequestService(
     val address = command.endpoint.value match {
       case Some(ep) =>
         ep.frontEndAssignment.value.serviceRoutingKey match {
-          case Some(key) => AddressableService(key)
+          case Some(key) => AddressableDestination(key)
           case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
         }
       case None => throw new BadRequestException("Command has no endpoint set " + request)

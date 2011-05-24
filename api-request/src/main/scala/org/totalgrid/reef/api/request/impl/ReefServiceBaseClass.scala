@@ -25,7 +25,7 @@ import org.totalgrid.reef.japi.{ ReefServiceException, InternalClientError }
 import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResultWrapper, SessionWrapper }
 
 import org.totalgrid.reef.japi.client.{ Subscription => JavaSubscription }
-import org.totalgrid.reef.api.scalaclient.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
+import org.totalgrid.reef.sapi.client.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
 import org.totalgrid.reef.japi.client._
 
 trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
@@ -101,7 +101,7 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 
   override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     try {
-      import org.totalgrid.reef.api.ServiceHandlerHeaders._
+      import org.totalgrid.reef.sapi.ServiceHandlerHeaders._
       session.getDefaultHeaders.setAuthToken(authToken)
       block(session)
     } finally {

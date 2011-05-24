@@ -28,8 +28,8 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.japi.client.{ ConnectionListener, Connection, Session, SessionExecutionPool }
-import org.totalgrid.reef.api.ServiceList
-import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.sapi.ServiceList
+import org.totalgrid.reef.sapi.client.ClientSession
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
@@ -61,7 +61,7 @@ class AMQPConnection(config: BrokerConnectionInfo, servicesList: ServiceList, ti
   final override def newSession(): Session =
     new SessionWrapper(new ProtoClient(factory, servicesList, timeoutms))
 
-  final override def newSessionPool(): SessionExecutionPool = new SessionPool(factory)
+  final override def newSessionPool(): SessionExecutionPool = new BasicSessionPool(factory)
 
 }
 

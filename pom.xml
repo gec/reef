@@ -17,7 +17,7 @@
     <modules>
         <module>scala-base</module>
         <module>proto</module>
-        <module>api</module>
+        <module>scala-api</module>
         <module>api-request</module>
         <module>java-rest-api</module>
         <module>xml</module>

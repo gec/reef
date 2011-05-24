@@ -22,9 +22,9 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.api.ServiceHandlerHeaders
+import org.totalgrid.reef.sapi.ServiceHandlerHeaders
 import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
-import org.totalgrid.reef.api.scalaclient.{ ClientSession }
+import org.totalgrid.reef.sapi.client.{ ClientSession }
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 

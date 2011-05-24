@@ -20,11 +20,11 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.auth.IAuthService
-import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
-import org.totalgrid.reef.api.auth.AuthDenied
+import org.totalgrid.reef.sapi.auth.AuthService
+import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
+import org.totalgrid.reef.sapi.auth.AuthDenied
 import org.totalgrid.reef.metrics.MetricsHooks
 
 /// the metrics collected on any single service request
@@ -41,11 +41,11 @@ class RestAuthzMetrics(baseName: String = "") extends MetricsHooks {
  * wraps the request to the service with a function that looks up the permissions for the agent
  * based on the auth_tokens in the envelope and allows/denies based on the permissions the agent has
  */
-class RestAuthzWrapper[A](service: IServiceAsync[A], metrics: RestAuthzMetrics, auth: IAuthService) extends IServiceAsync[A] {
+class RestAuthzWrapper[A](service: AsyncService[A], metrics: RestAuthzMetrics, auth: AuthService) extends AsyncService[A] {
 
   override val descriptor = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
     metrics.countHook(1)
     metrics.timerHook {
       checkAuth(req, env)

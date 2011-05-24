@@ -35,7 +35,7 @@ import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
-import org.totalgrid.reef.api.AllMessages
+import org.totalgrid.reef.sapi.AllMessages
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
-import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
+import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
 import org.totalgrid.reef.japi.Envelope
 
 class NullExceptionCollector extends ExceptionCollector {

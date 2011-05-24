@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
+import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
@@ -28,22 +28,22 @@ import org.osgi.framework.BundleContext
 
 import scala.annotation.tailrec
 
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.japi._
 
 import com.weiglewilczek.scalamodules._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 
-class ServiceDispatcher[A](rh: IServiceAsync[A]) {
+class ServiceDispatcher[A](rh: AsyncService[A]) {
 
   def request(verb: Verb, payload: A, env: RequestEnv, timeoutms: Long = 5000): Response[A] = {
 
     val mutex = new Object
     var ret: Option[Envelope.ServiceResponse] = None
 
-    val callback = new IServiceResponseCallback {
+    val callback = new ServiceResponseCallback {
       def onResponse(rsp: Envelope.ServiceResponse): Unit = mutex.synchronized {
         ret = Some(rsp)
         mutex.notify()
@@ -89,7 +89,7 @@ trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
-  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): IPromise[Response[A]] = {
+  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination = AnyNodeDestination): Promise[Response[A]] = {
 
     val klass = ClassLookup[A](payload)
 
@@ -99,12 +99,12 @@ trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
       case None =>
         Response(Envelope.Status.LOCAL_ERROR, error = "Proto not registered: " + klass)
     }
-    new Promise(rsp)
+    new BasicPromise(rsp)
   }
 
-  private def getService[A](exchange: String): IServiceAsync[A] = {
-    this.getBundleContext findServices withInterface[IServiceAsync[_]] withFilter "exchange" === exchange andApply { x =>
-      x.asInstanceOf[IServiceAsync[A]]
+  private def getService[A](exchange: String): AsyncService[A] = {
+    this.getBundleContext findServices withInterface[AsyncService[_]] withFilter "exchange" === exchange andApply { x =>
+      x.asInstanceOf[AsyncService[A]]
     } match {
       case Seq(p) => p
       case Seq(_, _) =>

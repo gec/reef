@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.messaging._
 
-import org.totalgrid.reef.api.scalaclient.{ Subscription, Event }
+import org.totalgrid.reef.sapi.client.{ Subscription, Event }
 
 trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
 

@@ -42,10 +42,10 @@ import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, Pub
 import org.totalgrid.reef.proto.{ ReefServicesList }
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.service.IServiceAsync
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.sapi.service.AsyncService
 
-import scalaclient.Event
+import client.Event
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
@@ -98,7 +98,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
 
-    def attachServices(endpoints: Seq[IServiceAsync[_]]): Unit = endpoints.foreach { ep =>
+    def attachServices(endpoints: Seq[AsyncService[_]]): Unit = endpoints.foreach { ep =>
       amqp.bindService(ep.descriptor.id, ep.respond, competing = true)
     }
 

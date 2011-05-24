@@ -29,12 +29,12 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.scalaclient._
-import org.totalgrid.reef.api.service.AsyncServiceBase
-import org.totalgrid.reef.japi._
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.sapi.service.AsyncServiceBase
+import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
 
-class MeasurementBatchService(pool: ISessionPool)
+class MeasurementBatchService(pool: SessionPool)
     extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
@@ -78,8 +78,8 @@ class MeasurementBatchService(pool: ISessionPool)
 
   }
 
-  private def convertEndpointToDestination(ce: CommunicationEndpoint): IDestination = ce.frontEndAssignment.value.serviceRoutingKey match {
-    case Some(key) => AddressableService(key)
+  private def convertEndpointToDestination(ce: CommunicationEndpoint): Destination = ce.frontEndAssignment.value.serviceRoutingKey match {
+    case Some(key) => AddressableDestination(key)
     case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }
 

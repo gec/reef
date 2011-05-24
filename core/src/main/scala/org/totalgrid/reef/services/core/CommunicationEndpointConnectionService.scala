@@ -37,8 +37,6 @@ import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
 
-import org.totalgrid.reef.api.service.SyncServiceBase
-
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._

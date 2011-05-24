@@ -20,8 +20,8 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.service.IServiceAsync
-import org.totalgrid.reef.api.auth.IAuthService
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.sapi.auth.AuthService
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
@@ -35,7 +35,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 /**
  * sets up the "production" ServiceContainer for the service providers
  */
-class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfiguration: ServiceOptions, auth: IAuthService) extends LifecycleManager with ServiceContainer with Logging {
+class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfiguration: ServiceOptions, auth: AuthService) extends LifecycleManager with ServiceContainer with Logging {
 
   private val components = ServiceBootstrap.bootstrapComponents(amqp)
   private val metrics = new MetricsServiceWrapper(components, serviceConfiguration)
@@ -58,7 +58,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
     coord.addAMQPConsumers(components.amqp, reactor)
   }
 
-  def attachService(endpoint: IServiceAsync[_]): IServiceAsync[_] = {
+  def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
 
     val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
 

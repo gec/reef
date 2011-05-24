@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.service.{ HasServiceType, ServiceTypeIs }
+import org.totalgrid.reef.sapi.service.{ HasServiceType, ServiceTypeIs }
 
 trait HasModelType {
   type ModelType

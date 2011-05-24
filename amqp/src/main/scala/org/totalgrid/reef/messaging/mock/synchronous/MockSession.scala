@@ -20,16 +20,16 @@
  */
 package org.totalgrid.reef.messaging.mock.synchronous
 
-import org.totalgrid.reef.api.{ IDestination, RequestEnv }
+import org.totalgrid.reef.sapi.{ Destination, RequestEnv }
 import java.lang.Exception
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.sapi.client._
 
 class MockSession extends ClientSession with AsyncRestAdapter {
 
   // implement the ClientSession trait
 
-  final override def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: IDestination)(callback: Response[A] => Unit) = {
+  final override def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: Destination)(callback: Response[A] => Unit) = {
     if (!open) throw new IllegalStateException("Session is not open")
     queue.enqueue(Record[A](Request(verb, payload, env, dest), callback))
   }

@@ -44,13 +44,13 @@ import org.totalgrid.reef.proto.FEP.{ CommChannel, FrontEndProcessor, CommEndpoi
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig => ConfigProto, CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
-import org.totalgrid.reef.api.scalaclient.{ Response, Event }
+import org.totalgrid.reef.sapi.client.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.{ MockConnection, MockEvent }
 import org.totalgrid.reef.protocol.api.MockProtocol
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.event._
 
-import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.totalgrid.reef.sapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.matchers.ShouldMatchers

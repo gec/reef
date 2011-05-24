@@ -20,9 +20,9 @@ package org.totalgrid.reef.messaging.mock
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool }
+import org.totalgrid.reef.sapi.client.{ ClientSession, SessionPool }
 
-class MockSessionPool(session: ClientSession) extends ISessionPool {
+class MockSessionPool(session: ClientSession) extends SessionPool {
 
   final override def borrow[A](fun: ClientSession => A): A = fun(session)
 

@@ -22,17 +22,14 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.{ Timer, Logging }
 
-import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.sapi.client.ClientSession
 import org.totalgrid.reef.messaging.Connection
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.RequestEnv
-import org.totalgrid.reef.api.scalaclient.{ Success, Failure }
-import org.totalgrid.reef.api.scalaclient.Event
-import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import javax.jms.Session
-
-//implicit
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.client.{ Success, Failure }
+import org.totalgrid.reef.sapi.client.Event
+import org.totalgrid.reef.sapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 object ServiceHandler {
 

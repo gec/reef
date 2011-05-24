@@ -24,13 +24,13 @@ import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP.CommChannel
 import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.api.scalaclient.ISessionPool
+import org.totalgrid.reef.sapi.client.SessionPool
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.protocol.api._
-import org.totalgrid.reef.api._
+import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.japi.{ ReefServiceException, ResponseTimeoutException }
@@ -70,7 +70,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, endpointListener)
     val service = new SingleEndpointCommandService(cmdHandler)
-    conn.bindService(service, AddressableService(c.getRouting.getServiceRoutingKey))
+    conn.bindService(service, AddressableDestination(c.getRouting.getServiceRoutingKey))
 
     info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
   }
@@ -113,7 +113,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   /**
    * push measurement batchs to the addressable service
    */
-  private def batchPublish(pool: ISessionPool, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
+  private def batchPublish(pool: SessionPool, attempts: Int, dest: Destination)(x: Measurements.MeasurementBatch): Unit = {
     try {
       pool.borrow {
         _.put(x, destination = dest).await().expectOne
@@ -135,7 +135,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
 
   private def newPublisher(routingKey: String) = new IListener[MeasurementBatch] {
 
-    override def onUpdate(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableService(routingKey))(batch)
+    override def onUpdate(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableDestination(routingKey))(batch)
 
   }
 }

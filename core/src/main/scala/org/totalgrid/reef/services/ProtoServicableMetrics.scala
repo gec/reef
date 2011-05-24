@@ -23,8 +23,8 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.util._
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.api.{ RequestEnv, StatusCodes }
-import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback, CallbackTimer }
+import org.totalgrid.reef.sapi.{ RequestEnv, StatusCodes }
+import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 
@@ -49,13 +49,13 @@ trait ServiceMetricHooks {
 /**
  * instruments a service proto request entry point so metrics can be collected (by verb if configured)
  */
-class ServiceMetrics[A](service: IServiceAsync[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long)
-    extends IServiceAsync[A]
+class ServiceMetrics[A](service: AsyncService[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long)
+    extends AsyncService[A]
     with Logging {
 
   override val descriptor = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) {
+  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
 
     def recordMetrics(metrics: ServiceVerbHooks)(time: Long, rsp: Envelope.ServiceResponse) {
       metrics.countHook(1)

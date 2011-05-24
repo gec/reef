@@ -32,7 +32,7 @@ import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.sapi.{ ServiceInfo, ServiceListOnMap }
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends DatabaseUsingTestBase {

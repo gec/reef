@@ -24,7 +24,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.japi.Envelope.Status
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }

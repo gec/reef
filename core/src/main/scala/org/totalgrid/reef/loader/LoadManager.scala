@@ -31,9 +31,9 @@ import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.loader.configuration._
 
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv }
+import org.totalgrid.reef.sapi.{ ServiceHandlerHeaders, RequestEnv }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.api.scalaclient.RestOperations
+import org.totalgrid.reef.sapi.client.RestOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.File

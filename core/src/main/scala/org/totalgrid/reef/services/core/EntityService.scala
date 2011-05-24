@@ -21,17 +21,17 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.api.scalaclient.Response
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.sapi.client.Response
+import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.framework.SquerylModel
 
 class EntityService extends SyncServiceBase[EntityProto] {

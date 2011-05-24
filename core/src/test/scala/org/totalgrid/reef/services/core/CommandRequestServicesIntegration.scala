@@ -37,13 +37,13 @@ import org.totalgrid.reef.util.EmptySyncVar
 import CommandAccess._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.messaging.SessionPool
-import org.totalgrid.reef.api.{ RequestEnv, scalaclient, AddressableService }
+import org.totalgrid.reef.messaging.BasicSessionPool
+import org.totalgrid.reef.sapi.{ RequestEnv, client, AddressableDestination }
 import org.totalgrid.reef.japi.Envelope
 
-import scalaclient.Response
+import client.Response
 
-import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.sapi.service.SyncServiceBase
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -54,7 +54,7 @@ class CommandRequestServicesIntegration
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
 
     val command = new CommandService(modelFac.cmds)
-    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new SessionPool(connection))
+    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new BasicSessionPool(connection))
     val endpointService = new CommunicationEndpointService(modelFac.endpoints)
     val access = new CommandAccessService(modelFac.accesses)
 
@@ -175,7 +175,7 @@ class CommandRequestServicesIntegration
     println(conn.getRouting.getServiceRoutingKey)
 
     //bind the 'proxied' service that will handle the call
-    fixture.connection.bindService(service, AddressableService(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantReactor {}))
+    fixture.connection.bindService(service, AddressableDestination(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantReactor {}))
 
     // Send the user command request
     val cmdReq = userRequest()

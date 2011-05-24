@@ -27,9 +27,9 @@ import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.util.SyncVar
 
-import org.totalgrid.reef.api._
+import org.totalgrid.reef.sapi._
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import scalaclient.{ Response, Event }
+import client.Event
 
 object ServiceResponseTestingHelpers extends ShouldMatchers {
 
