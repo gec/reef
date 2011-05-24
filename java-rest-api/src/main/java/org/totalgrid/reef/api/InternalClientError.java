@@ -26,7 +26,7 @@ package org.totalgrid.reef.api;
  */
 public class InternalClientError extends ReefServiceException {
 
-  public InternalClientError(String msg, Exception cause) {
+  public InternalClientError(String msg, Throwable cause) {
       super(msg, Envelope.Status.LOCAL_ERROR, cause);
   }
 
