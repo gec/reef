@@ -280,10 +280,10 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     if (types.isEmpty)
       throw new LoadingException(name + " needs at least one <type> specified in the Equipment Model.")
 
-    extraTypes.foreach { extra =>
-      if (types.contains(extra))
-        println("DEPRECATION WARNING: \"" + extra + "\" type is automatically added to " + name)
-    }
+    //    extraTypes.foreach { extra =>
+    //      if (types.contains(extra))
+    //        println("DEPRECATION WARNING: \"" + extra + "\" type is automatically added to " + name)
+    //    }
 
     val finalTypes = (types ::: extraTypes).distinct
 
