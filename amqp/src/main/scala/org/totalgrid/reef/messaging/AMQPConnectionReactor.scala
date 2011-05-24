@@ -23,18 +23,14 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
-import org.totalgrid.reef.api.javaclient.ConnectionListener
-import org.totalgrid.reef.api.{ ServiceIOException }
-
-import org.totalgrid.reef.messaging.broker._
+import org.totalgrid.reef.api.{ ConnectionListener, ServiceIOException }
+import org.totalgrid.reef.broker._
 
 /**
  * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
  */
 trait AMQPConnectionReactor extends Reactor with Lifecycle
     with ConnectionListener with Logging {
-
-  import org.totalgrid.reef.api.javaclient.ConnectionListener
 
   /// must be defined in concrete class
   protected val broker: BrokerConnection
@@ -59,7 +55,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     listeners = listeners.filterNot(_ == listener)
   }
 
-  def getChannel(): BrokerChannel = broker.newBrokerChannel()
+  def getChannel(): BrokerChannel = broker.newChannel()
 
   /// mutable state
   private var listeners = Queue.empty[ConnectionListener]
@@ -123,7 +119,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /// gives a broker object its session. May fail.
   private def createChannel(co: ChannelObserver) = {
     try {
-      co.online(broker.newBrokerChannel())
+      co.online(broker.newChannel())
       debug("Added channel for type: " + co.getClass)
     } catch {
       case ex: Exception => error("error configuring sessions: ", ex)

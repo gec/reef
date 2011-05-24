@@ -23,10 +23,8 @@ package org.totalgrid.reef.messaging.serviceprovider
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.messaging.broker.BrokerObjectConsumer
+import org.totalgrid.reef.broker.{ BrokerObjectConsumer, BrokerChannel }
 import org.totalgrid.reef.api.Envelope
-
-import org.totalgrid.reef.messaging.broker.BrokerChannel
 
 trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with BrokerObjectConsumer with Logging {
   val exchange: String

@@ -26,7 +26,7 @@ import org.totalgrid.reef.reactor.{ LifecycleWrapper }
 import org.totalgrid.reef.measproc.ProcessorEntryPoint
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.messaging.broker.BrokerProperties
+import org.totalgrid.reef.broker.BrokerProperties
 
 class ProcessingActivator extends BundleActivator {
 

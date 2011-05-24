@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.broker.qpid
+package org.totalgrid.reef.broker.qpid
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.messaging.mock._
 import org.totalgrid.reef.messaging.{ TestDescriptors, HeadersX2 }
-import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
+import org.totalgrid.reef.broker.BrokerConnectionInfo
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
 
 import org.totalgrid.reef.api._

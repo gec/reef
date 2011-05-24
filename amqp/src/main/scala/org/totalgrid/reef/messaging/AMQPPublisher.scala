@@ -24,7 +24,7 @@ import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.ServiceIOException
 
-import org.totalgrid.reef.messaging.broker._
+import org.totalgrid.reef.broker._
 
 object AMQPPublisher {
   val defaultBufferSize = 1024 * 1024

@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.broker
+package org.totalgrid.reef.broker
 
 /**
  * Copyright 2011 Green Energy Corp.

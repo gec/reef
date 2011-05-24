@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.broker.mock
+package org.totalgrid.reef.broker.mock
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers

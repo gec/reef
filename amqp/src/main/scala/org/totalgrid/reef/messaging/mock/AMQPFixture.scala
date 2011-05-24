@@ -20,12 +20,12 @@ package org.totalgrid.reef.messaging.mock
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.messaging.broker._
-import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker.mock.MockBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.broker.mock.MockBrokerConnection
 
 import sync.AMQPSyncFactory
 

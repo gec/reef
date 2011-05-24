@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.broker.qpid
+package org.totalgrid.reef.broker.qpid
 
 import org.apache.qpid.transport.{ Connection }
 import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.messaging.broker.{ BrokerConnectionInfo, BrokerConnection, BrokerChannel }
+import org.totalgrid.reef.broker._
 import scala.{ Some, Option => ScalaOption }
 
 class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnection with Logging {
@@ -108,7 +108,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   // TODO - Looks like this list of channels never shrinks as sessions die? - JAC
   private var channels = List.empty[QpidBrokerChannel]
 
-  final override def newBrokerChannel(): BrokerChannel = connection match {
+  final override def newChannel(): BrokerChannel = connection match {
     case Some(ConnectionRecord(c, _)) =>
       val channel = new QpidBrokerChannel(c.createSession(0))
       channels = channel :: channels

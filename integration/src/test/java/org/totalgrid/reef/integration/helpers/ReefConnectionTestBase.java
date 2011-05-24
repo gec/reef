@@ -28,7 +28,7 @@ import org.totalgrid.reef.api.javaclient.SessionExecutionPool;
 import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo;
+import org.totalgrid.reef.broker.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 

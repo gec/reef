@@ -31,7 +31,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.messaging.broker.BrokerProperties
+import org.totalgrid.reef.broker.BrokerProperties
 
 class ServiceActivator extends BundleActivator {
 

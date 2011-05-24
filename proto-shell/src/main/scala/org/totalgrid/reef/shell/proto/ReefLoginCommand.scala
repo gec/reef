@@ -98,8 +98,8 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
   def setupReefSession() = {
 
     import org.totalgrid.reef.reactor.ReactActor
-    import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
+    import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
+    import org.totalgrid.reef.broker.BrokerConnectionInfo
     import org.totalgrid.reef.messaging.{ ProtoClient, AMQPProtoFactory }
     import org.totalgrid.reef.proto.ReefServicesList
 

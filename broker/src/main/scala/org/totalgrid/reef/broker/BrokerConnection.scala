@@ -18,9 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.broker
+package org.totalgrid.reef.broker
 
-import org.totalgrid.reef.api.javaclient.ConnectionListener
+import org.totalgrid.reef.api.ConnectionListener
 
 trait BrokerConnection {
 
@@ -51,7 +51,7 @@ trait BrokerConnection {
   def disconnect(): Boolean
 
   /// create a new single-thread only interface object that provides low level access to the amqp broker
-  def newBrokerChannel(): BrokerChannel
+  def newChannel(): BrokerChannel
 
   /// sets the connection listener
   final def addListener(listener: ConnectionListener) = listeners.synchronized {

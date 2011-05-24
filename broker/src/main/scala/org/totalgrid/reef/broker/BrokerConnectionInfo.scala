@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.broker
+package org.totalgrid.reef.broker
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -20,17 +20,17 @@ package org.totalgrid.reef.messaging.broker
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.util.ConfigReader
+import org.totalgrid.reef.util.{ ConfigReader, BuildEnv }
 
-object BrokerProperties {
+object BrokerConnectionInfo {
 
-  def get(cr: ConfigReader): BrokerConnectionInfo = {
-    val host = cr.getString("org.totalgrid.reef.amqp.host", "127.0.0.1")
-    val port = cr.getInt("org.totalgrid.reef.amqp.port", 5672)
-    val user = cr.getString("org.totalgrid.reef.amqp.user", "guest")
-    val password = cr.getString("org.totalgrid.reef.amqp.password", "guest")
-    val virtualHost = cr.getString("org.totalgrid.reef.amqp.virtualHost", "test")
+  def loadInfo(cr: ConfigReader): BrokerConnectionInfo = BrokerProperties.get(cr)
 
-    new BrokerConnectionInfo(host, port, user, password, virtualHost)
-  }
+  def loadInfo(env: String): BrokerConnectionInfo = loadInfo(BuildEnv.cfgFileReader(env))
+
+  def loadInfo(): BrokerConnectionInfo = loadInfo(BuildEnv.environment)
+}
+
+class BrokerConnectionInfo(val host: String, val port: Int, val user: String, val password: String, val virtualHost: String) {
+  override def toString() = "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost
 }

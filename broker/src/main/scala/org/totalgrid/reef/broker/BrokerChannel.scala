@@ -18,9 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.broker
-
-import org.totalgrid.reef.api.javaclient.ConnectionListener
+package org.totalgrid.reef.broker
 
 /**
  * helper to package up ReplyTo address

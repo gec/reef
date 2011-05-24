@@ -21,8 +21,7 @@
 package org.totalgrid.reef.messaging.serviceprovider
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.messaging.broker.BrokerObjectConsumerActor
-import org.totalgrid.reef.messaging.broker.BrokerChannel
+import org.totalgrid.reef.broker.{ BrokerObjectConsumerActor, BrokerChannel }
 import org.totalgrid.reef.reactor.Reactable
 
 class PublishingSubscriptionActor(exch: String, reactor: Reactable) extends BrokerObjectConsumerActor(reactor) with PublishingSubscriptionHandler with Logging {

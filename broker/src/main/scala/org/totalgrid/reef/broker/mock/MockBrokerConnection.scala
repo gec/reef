@@ -18,11 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.broker.mock
+package org.totalgrid.reef.broker.mock
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.messaging.broker._
+import org.totalgrid.reef.broker._
 import org.totalgrid.reef.api.ServiceIOException
 
 /**
@@ -73,7 +73,7 @@ class MockBrokerChannel(parent: MockBrokerConnection) extends BrokerChannel {
     onClose(true)
   }
 
-  def throwOnClosed() = if (!started) throw new ServiceIOException("Allready closed")
+  def throwOnClosed() = if (!started) throw new ServiceIOException("Already closed")
 
   def listen(queue: String, mc: MessageConsumer) = {
     throwOnClosed()
@@ -112,7 +112,7 @@ class MockBrokerConnection(connectCorrectly: Boolean = true, reportCorrectClosur
 
   private var channels = List.empty[MockBrokerChannel]
 
-  def newBrokerChannel(): BrokerChannel = {
+  def newChannel(): BrokerChannel = {
     if (!isConnected) throw new Exception("Mock broker not connected")
     val c = new MockBrokerChannel(this)
     channels = c :: channels

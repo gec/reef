@@ -27,7 +27,7 @@ import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
-import org.totalgrid.reef.messaging.broker.{ MessageConsumer, Destination }
+import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
 
 object AMQPMessageConsumers extends Logging {
 

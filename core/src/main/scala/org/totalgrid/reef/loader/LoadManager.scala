@@ -25,8 +25,8 @@ import org.totalgrid.reef.app.ApplicationEnroller
 import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.broker._
-import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.loader.configuration._

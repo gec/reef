@@ -26,12 +26,12 @@ import org.totalgrid.reef.reactor.{ ReactActor, Lifecycle }
 
 import org.totalgrid.reef.app.{ ApplicationEnroller }
 
-import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
-import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
+import org.totalgrid.reef.broker.BrokerConnectionInfo
 
 /**
  *  Contains entry point specific code for the measurement processor

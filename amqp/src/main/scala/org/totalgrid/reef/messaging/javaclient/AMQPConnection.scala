@@ -22,15 +22,15 @@ package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.sync._
-import org.totalgrid.reef.messaging.broker._
-import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
-
-import org.totalgrid.reef.api.ServiceList
+import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.api.javaclient.{ ConnectionListener, SessionExecutionPool, Connection, Session }
+import org.totalgrid.reef.api.{ ConnectionListener, ServiceList }
+import org.totalgrid.reef.api.javaclient.{ SessionExecutionPool, Connection, Session }
 import org.totalgrid.reef.api.scalaclient.ClientSession
+
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
  */

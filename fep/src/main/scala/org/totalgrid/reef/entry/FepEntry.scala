@@ -23,7 +23,7 @@ package org.totalgrid.reef.entry
 import org.osgi.framework._
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.{ ReactActor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
@@ -35,7 +35,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 
-import org.totalgrid.reef.messaging.broker.BrokerProperties
+import org.totalgrid.reef.broker.BrokerProperties
 
 class FepActivator extends BundleActivator with Logging {
 

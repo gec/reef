@@ -24,6 +24,7 @@
         <module>util</module>
         <module>metrics</module>
         <module>amqp</module>
+        <module>broker</module>
         <module>persistence-api</module>
         <module>persistence-postgresql</module>
         <module>measurementstore-api</module>

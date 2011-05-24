@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging
 
 import mock.AMQPFixture
-import broker.mock.MockBrokerConnection
+import org.totalgrid.reef.broker.mock.MockBrokerConnection
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

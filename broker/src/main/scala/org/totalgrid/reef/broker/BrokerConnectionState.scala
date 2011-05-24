@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.broker
+package org.totalgrid.reef.broker
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -21,8 +21,8 @@ package org.totalgrid.reef.messaging.broker
  * under the License.
  */
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.api.javaclient.ConnectionListener
-import org.totalgrid.reef.api.{ ServiceIOException }
+
+import org.totalgrid.reef.api.{ ConnectionListener, ServiceIOException }
 
 class BrokerConnectionState extends ConnectionListener {
   private val connected = new SyncVar(false)

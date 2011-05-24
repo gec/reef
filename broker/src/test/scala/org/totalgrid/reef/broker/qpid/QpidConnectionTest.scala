@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.broker.qpid
+package org.totalgrid.reef.broker.qpid
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -25,30 +25,24 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.reactor.ReactActor
-
 import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.broker._
-import org.totalgrid.reef.api.ServiceIOException
+import org.totalgrid.reef.broker._
 
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
   test("Qpid connect/disconnect events") {
     val default = BrokerConnectionInfo.loadInfo("test")
-    val amqp = new AMQPConnectionReactor with ReactActor {
-      val broker = new QpidBrokerConnection(default)
-    }
+    val broker = new QpidBrokerConnection(default)
 
     val listener = new BrokerConnectionState
-    amqp.addConnectionListener(listener)
+    broker.addListener(listener)
 
     10.times {
-      amqp.start()
+      broker.connect() should equal(true)
       listener.waitUntilConnected()
-      amqp.stop()
+      broker.disconnect() should equal(true)
       listener.waitUntilDisconnected()
     }
 
@@ -56,27 +50,22 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
   test("Connection Timeout") {
     val default = new BrokerConnectionInfo("127.0.0.1", 10000, "", "", "")
-    val amqp = new AMQPConnectionReactor with ReactActor {
-      val broker = new QpidBrokerConnection(default)
-    }
+    val broker = new QpidBrokerConnection(default)
 
-    intercept[ServiceIOException] {
-      amqp.connect(100)
-    }
+    broker.connect() should equal(false)
 
-    amqp.disconnect(100)
-    amqp.disconnect(100)
+    3.times {
+      broker.disconnect() should equal(true)
+    }
   }
 
   test("Qpid bind/unbind") {
     val default = BrokerConnectionInfo.loadInfo("test")
-    val amqp = new AMQPConnectionReactor with ReactActor {
-      val broker = new QpidBrokerConnection(default)
-    }
 
-    amqp.connect(1000)
+    val broker = new QpidBrokerConnection(default)
+    broker.connect() should equal(true)
 
-    val channel = amqp.getChannel
+    val channel = broker.newChannel()
 
     channel.declareExchange("test")
     channel.declareQueue("magic")
@@ -113,13 +102,11 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
   test("Qpid Close") {
     val default = BrokerConnectionInfo.loadInfo("test")
-    val amqp = new AMQPConnectionReactor with ReactActor {
-      val broker = new QpidBrokerConnection(default)
-    }
+    val broker = new QpidBrokerConnection(default)
 
-    amqp.connect(1000)
+    broker.connect() should equal(true)
 
-    val channel = amqp.getChannel
+    val channel = broker.newChannel()
 
     var expectedClose: Option[Boolean] = None
 
@@ -131,7 +118,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
     expectedClose should equal(None)
 
-    channel.close
+    channel.close()
 
     expectedClose should equal(Some(true))
   }
