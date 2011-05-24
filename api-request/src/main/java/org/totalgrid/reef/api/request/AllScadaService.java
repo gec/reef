@@ -20,12 +20,24 @@
  */
 package org.totalgrid.reef.api.request;
 
+import org.totalgrid.reef.api.javaclient.ISubscriptionCreator;
+
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
 public abstract class AllScadaService
-        implements AuthTokenService, EntityService, ConfigFileService, MeasurementService, MeasurementOverrideService, EventService, CommandService, PointService, AlarmService, AgentService, EndpointManagementService {
-
-}
+        implements ISubscriptionCreator,
+        AuthTokenService,
+        EntityService,
+        ConfigFileService,
+        MeasurementService,
+        MeasurementOverrideService,
+        EventService,
+        CommandService,
+        PointService,
+        AlarmService,
+        AgentService,
+        EndpointManagementService
+{}
 

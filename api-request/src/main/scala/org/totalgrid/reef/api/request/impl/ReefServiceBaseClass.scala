@@ -26,7 +26,7 @@ import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResult, Session }
 import org.totalgrid.reef.api.scalaclient.{ SubscriptionManagement, Subscription, ClientSession, SyncOperations }
 import org.totalgrid.reef.api.javaclient._
 
-trait ReefServiceBaseClass extends ClientSource {
+trait ReefServiceBaseClass extends ClientSource with ISubscriptionCreator {
 
   def useSubscription[A, B](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
     val sub = session.addSubscription[B](klass)
@@ -34,7 +34,7 @@ trait ReefServiceBaseClass extends ClientSource {
 
       val result = block(sub)
       val ret = new SubscriptionResult(result, sub)
-      //onSubscriptionCreated(sub)
+      onSubscriptionCreated(ret.getSubscription)
       ret
     } catch {
       case x =>
@@ -43,6 +43,15 @@ trait ReefServiceBaseClass extends ClientSource {
     }
   }
 
+  private var creationListeners = List.empty[ISubscriptionCreationListener]
+
+  private def onSubscriptionCreated(sub: ISubscription[_]) {
+    creationListeners.foreach(_.onSubscriptionCreated(sub))
+  }
+
+  def addSubscriptionCreationListener(listener: ISubscriptionCreationListener) {
+    creationListeners ::= listener
+  }
 }
 
 /**

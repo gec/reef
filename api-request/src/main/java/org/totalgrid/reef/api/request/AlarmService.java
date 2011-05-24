@@ -21,6 +21,7 @@
 package org.totalgrid.reef.api.request;
 
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.javaclient.ISubscriptionCreator;
 import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 
@@ -39,7 +40,7 @@ import java.util.List;
  * During the configuration process, the system designer decides what events trigger alarms. The primary consumers of
  * alarms are operators tasked with monitoring the system in real-time and responding to abnormal conditions.
  */
-public interface AlarmService {
+public interface AlarmService extends ISubscriptionCreator {
 
     /**
      * get a single alarm

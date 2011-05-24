@@ -169,7 +169,7 @@ class QpidBrokerInterface(session: Session) extends SessionListener with BrokerC
   }
 
   def stop() {
-    reefLogger.debug("Stopping: " + queueName.get)
+    reefLogger.debug("Stopping: {}", queueName)
 
     unlink()
     close

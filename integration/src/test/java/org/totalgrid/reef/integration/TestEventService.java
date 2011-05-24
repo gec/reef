@@ -22,11 +22,14 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.javaclient.ISubscription;
+import org.totalgrid.reef.api.javaclient.ISubscriptionCreationListener;
 import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
 import org.totalgrid.reef.api.request.AlarmService;
 import org.totalgrid.reef.api.request.EventService;
 import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
+import org.totalgrid.reef.integration.helpers.BlockingQueue;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockEventAcceptor;
 import org.totalgrid.reef.proto.Alarms.Alarm;
@@ -108,6 +111,27 @@ public class TestEventService extends ReefConnectionTestBase {
 
         result.getSubscription().start(mock);
         mock.pop(1000);
+    }
+
+    @Test
+	public void subscriptionCreationCallback() throws ReefServiceException, InterruptedException {
+
+        final BlockingQueue<ISubscription<?>> callback = new BlockingQueue<ISubscription<?>>();
+
+        EventService es = (EventService)helpers;
+
+        es.addSubscriptionCreationListener(new ISubscriptionCreationListener() {
+            @Override
+            public void onSubscriptionCreated(ISubscription<?> sub) {
+                callback.push(sub);
+            }
+        });
+
+        ISubscriptionResult<List<Events.Event>, Events.Event> result = es.subscribeToRecentEvents(1);
+		List<Events.Event> events = result.getResult();
+        assertEquals(events.size(), 1);
+
+        assertEquals(callback.pop(1000), result.getSubscription());
     }
 
 }

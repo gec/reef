@@ -21,6 +21,7 @@
 package org.totalgrid.reef.api.request;
 
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.javaclient.ISubscriptionCreator;
 import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
 import org.totalgrid.reef.proto.Measurements.Measurement;
 import org.totalgrid.reef.proto.Model.Point;
@@ -33,7 +34,7 @@ import java.util.List;
  * batches. For current and historical value functions you can also pass in an ISubscription object which will receive
  * all future measurement changes for those points. Asking for unknown points/ measurements will result in an exception
  */
-public interface MeasurementService {
+public interface MeasurementService extends ISubscriptionCreator {
 
     /**
      * gets the most recent measurement for a point

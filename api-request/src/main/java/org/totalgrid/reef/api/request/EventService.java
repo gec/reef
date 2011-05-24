@@ -21,6 +21,7 @@
 package org.totalgrid.reef.api.request;
 
 import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.api.javaclient.ISubscriptionCreator;
 import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
 import org.totalgrid.reef.proto.Events.Event;
 import org.totalgrid.reef.proto.Events.EventSelect;
@@ -32,7 +33,7 @@ import java.util.List;
  * to unusual or interesting occurances, usually they are interesting to an operator but do not require immediate action.
  * When an event is published the system may "upgrade" an Event to also generate an alarm.
  */
-public interface EventService {
+public interface EventService extends ISubscriptionCreator {
     /**
      * get a single event
      *
