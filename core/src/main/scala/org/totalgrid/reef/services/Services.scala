@@ -21,8 +21,8 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
-import org.totalgrid.reef.messaging.BrokerConnectionInfo
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
+import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 

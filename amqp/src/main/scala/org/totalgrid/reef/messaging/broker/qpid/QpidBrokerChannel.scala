@@ -18,18 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.qpid
+package org.totalgrid.reef.messaging.broker.qpid
 
 import scala.{ Option => ScalaOption }
 
-import org.apache.qpid.AMQException
 import org.apache.qpid.transport.{ Session, SessionListener, SessionException }
 import org.apache.qpid.transport.{ DeliveryProperties, MessageProperties, Header, ReplyTo, MessageTransfer }
 import org.apache.qpid.transport.{ Option, MessageAcceptMode, MessageAcquireMode, MessageCreditUnit }
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.messaging.{ BrokerChannel, MessageConsumer, Destination }
+import org.totalgrid.reef.messaging.broker.{ BrokerChannel, MessageConsumer, Destination }
 import org.totalgrid.reef.api.ServiceIOException
 
 class QpidBrokerChannel(session: Session) extends SessionListener with BrokerChannel with Logging {

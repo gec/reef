@@ -24,9 +24,9 @@ import org.osgi.framework._
 
 import org.totalgrid.reef.reactor.{ LifecycleWrapper }
 import org.totalgrid.reef.measproc.ProcessorEntryPoint
-import org.totalgrid.reef.messaging.AMQPProperties
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
+import org.totalgrid.reef.messaging.broker.BrokerProperties
 
 class ProcessingActivator extends BundleActivator {
 
@@ -36,7 +36,7 @@ class ProcessingActivator extends BundleActivator {
 
     org.totalgrid.reef.reactor.Reactable.setupThreadPools
 
-    val processor = ProcessorEntryPoint.makeContext(AMQPProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")), SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
+    val processor = ProcessorEntryPoint.makeContext(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")), SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
 
     wrapper = Some(new LifecycleWrapper(processor))
     wrapper.get.start

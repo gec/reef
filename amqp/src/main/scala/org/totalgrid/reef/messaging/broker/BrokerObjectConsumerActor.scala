@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.broker
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,10 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
-
-import scala.actors.Actor
-import scala.actors.Actor._
 
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.reactor.Reactable

@@ -20,10 +20,9 @@
  */
 package org.totalgrid.reef.messaging.sync
 
-import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.messaging.broker._
 
 /**
  * 	Simple publisher that fails when the session fails

@@ -21,7 +21,9 @@
 package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.api.scalaclient.{ Subscription, Event }
-import org.totalgrid.reef.messaging.{ QueuePatterns, MessageConsumer, BrokerChannel }
+import org.totalgrid.reef.messaging.QueuePatterns
+
+import org.totalgrid.reef.messaging.broker.{ MessageConsumer, BrokerChannel }
 
 /**
  * synchronous subscription object, allows canceling and a delayed starting

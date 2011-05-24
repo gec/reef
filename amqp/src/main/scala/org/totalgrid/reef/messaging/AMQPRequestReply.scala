@@ -21,6 +21,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.api.Envelope._
+import org.totalgrid.reef.messaging.broker._
 
 /**
  * trait used to present a simple interface to a request/reply interface as a

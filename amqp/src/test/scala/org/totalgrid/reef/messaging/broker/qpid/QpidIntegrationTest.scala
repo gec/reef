@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.broker.qpid
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,12 +20,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.qpid
-
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.messaging.mock._
-import org.totalgrid.reef.messaging.{ TestDescriptors, BrokerConnectionInfo, HeadersX2 }
+import org.totalgrid.reef.messaging.{ TestDescriptors, HeadersX2 }
+import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
 
 import org.totalgrid.reef.api._

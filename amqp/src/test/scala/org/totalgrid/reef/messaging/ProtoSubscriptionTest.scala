@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.messaging
 
-import mock.{ AMQPFixture, MockBrokerInterface }
+import mock.AMQPFixture
+import broker.mock.MockBrokerConnection
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -45,7 +46,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
     // TODO: fix setupTest to use all async and all sync
 
-    val mock = new MockBrokerInterface
+    val mock = new MockBrokerConnection
 
     AMQPFixture.using(mock) { amqp =>
 

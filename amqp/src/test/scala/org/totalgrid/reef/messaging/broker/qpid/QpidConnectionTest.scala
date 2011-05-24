@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.broker.qpid
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.qpid
-
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -30,7 +30,8 @@ import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
+import org.totalgrid.reef.messaging.broker._
+import org.totalgrid.reef.api.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {

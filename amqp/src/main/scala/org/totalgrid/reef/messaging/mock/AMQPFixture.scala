@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.mock
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,12 +20,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.mock
-
-import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.messaging.broker._
+import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.messaging.broker.mock.MockBrokerConnection
+
 import sync.AMQPSyncFactory
 
 object AMQPFixture {
@@ -35,7 +38,7 @@ object AMQPFixture {
   }
 
   def mock(requireConn: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
-    using(new MockBrokerInterface, requireConn)(test)
+    using(new MockBrokerConnection, requireConn)(test)
   }
 
   def using(connection: BrokerConnection, requireConnection: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
@@ -61,7 +64,7 @@ object AMQPFixture {
   }
 
   def mockSync(test: AMQPSyncFactory => Unit): Unit = {
-    sync(new MockBrokerInterface, true) { test }
+    sync(new MockBrokerConnection, true) { test }
   }
 
   def sync(connection: BrokerConnection, requireConnection: Boolean)(test: AMQPSyncFactory => Unit): Unit = {

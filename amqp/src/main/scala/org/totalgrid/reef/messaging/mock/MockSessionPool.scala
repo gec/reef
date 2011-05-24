@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.mock
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.mock
-
 import org.totalgrid.reef.api.scalaclient.{ ClientSession, ISessionPool }
 
 class MockSessionPool(session: ClientSession) extends ISessionPool {

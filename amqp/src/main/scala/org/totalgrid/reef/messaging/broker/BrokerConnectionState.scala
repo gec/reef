@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.broker
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
-
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
 

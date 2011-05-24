@@ -18,15 +18,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.qpid
+package org.totalgrid.reef.messaging.broker.qpid
 
-import org.apache.qpid.transport.{Connection}
-import org.apache.qpid.transport.{ConnectionListener, ConnectionException}
+import org.apache.qpid.transport.{ Connection }
+import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.messaging.{BrokerConnectionInfo, BrokerConnection, BrokerChannel}
-import scala.{Some, Option => ScalaOption}
+import org.totalgrid.reef.messaging.broker.{ BrokerConnectionInfo, BrokerConnection, BrokerChannel }
+import scala.{ Some, Option => ScalaOption }
 
 class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnection with Logging {
 
@@ -40,11 +40,11 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
 
     def invalidate() = valid = false
 
-    def closed(conn: Connection) = if(valid) qpid.onClosed()
+    def closed(conn: Connection) = if (valid) qpid.onClosed()
 
-    def opened(conn: Connection) = if(valid) qpid.onOpened(conn)
+    def opened(conn: Connection) = if (valid) qpid.onOpened(conn)
 
-    def exception(conn: Connection, ex: ConnectionException) = if(valid) qpid.onException(conn, ex)
+    def exception(conn: Connection, ex: ConnectionException) = if (valid) qpid.onException(conn, ex)
 
   }
 
@@ -84,7 +84,6 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
     channels = Nil
   }
 
-
   def onClosed() {
     info("Qpid connection unexpectedly closed")
     cleanupAfterClose(false)
@@ -110,7 +109,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   private var channels = List.empty[QpidBrokerChannel]
 
   final override def newBrokerChannel(): BrokerChannel = connection match {
-    case Some(ConnectionRecord(c,_)) =>
+    case Some(ConnectionRecord(c, _)) =>
       val channel = new QpidBrokerChannel(c.createSession(0))
       channels = channel :: channels
       channel

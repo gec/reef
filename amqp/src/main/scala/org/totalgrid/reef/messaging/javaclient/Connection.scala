@@ -22,7 +22,8 @@ package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.sync._
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.messaging.broker._
+import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.api.ServiceList
 

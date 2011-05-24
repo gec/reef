@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.broker
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,10 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging
-
-import java.io.File
-
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

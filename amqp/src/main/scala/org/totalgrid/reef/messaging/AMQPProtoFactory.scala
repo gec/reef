@@ -26,6 +26,8 @@ import org.totalgrid.reef.api.service.IServiceAsync
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.api.scalaclient._
 
+import org.totalgrid.reef.messaging.broker.MessageConsumer
+
 /**
  * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
  *

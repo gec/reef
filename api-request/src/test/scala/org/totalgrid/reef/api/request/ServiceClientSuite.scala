@@ -22,17 +22,17 @@ package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.reactor.ReactActor
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.api.ServiceHandlerHeaders
-import org.totalgrid.reef.api.scalaclient.Event
 import org.totalgrid.reef.proto.ReefServicesList
 import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.SystemPropertyConfigReader
-import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
+import org.totalgrid.reef.messaging.ProtoClient
+import org.totalgrid.reef.messaging.broker.BrokerConnectionInfo
 
 import org.totalgrid.reef.api.javaclient.{ IEventAcceptor, IEvent }
 

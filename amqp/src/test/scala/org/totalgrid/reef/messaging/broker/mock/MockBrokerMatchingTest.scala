@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.mock
+package org.totalgrid.reef.messaging.broker.mock
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class MockBrokerMatchingTest extends FunSuite with ShouldMatchers {
 
-  val m = MockBrokerInterface.matches(_, _)
+  val m = MockBrokerConnection.matches(_, _)
   val r = "valA.valB.valC"
 
   test("Exact Match") { m(r, r) should equal(true) }

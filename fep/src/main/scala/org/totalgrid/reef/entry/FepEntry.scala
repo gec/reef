@@ -22,10 +22,10 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.messaging.{ AMQPProperties, AMQPProtoFactory }
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.messaging.broker.qpid.QpidBrokerConnection
 
-import org.totalgrid.reef.reactor.{ Reactable, ReactActor, LifecycleWrapper, Lifecycle, LifecycleManager }
+import org.totalgrid.reef.reactor.{ ReactActor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
 import org.totalgrid.reef.frontend.{ FrontEndActor }
 import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
@@ -35,7 +35,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 
-import scala.collection.immutable
+import org.totalgrid.reef.messaging.broker.BrokerProperties
 
 class FepActivator extends BundleActivator with Logging {
 
@@ -48,7 +48,7 @@ class FepActivator extends BundleActivator with Logging {
     org.totalgrid.reef.reactor.Reactable.setupThreadPools
 
     amqp = Some(new AMQPProtoFactory with ReactActor {
-      val broker = new QpidBrokerConnection(AMQPProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
+      val broker = new QpidBrokerConnection(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
     })
 
     manager.add(amqp.get)

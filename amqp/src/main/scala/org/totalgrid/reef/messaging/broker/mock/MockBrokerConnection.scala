@@ -18,11 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.mock
+package org.totalgrid.reef.messaging.broker.mock
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.messaging._
+import org.totalgrid.reef.messaging.broker._
 import org.totalgrid.reef.api.ServiceIOException
 
 /**
@@ -43,7 +43,7 @@ trait RoundRobinList[A] {
   }
 }
 
-object MockBrokerInterface {
+object MockBrokerConnection {
   def matches(routingKey: String, bindingKey: String): Boolean = {
     val r = routingKey.split('.')
     val b = bindingKey.split('.')
@@ -58,7 +58,7 @@ object MockBrokerInterface {
   }
 }
 
-class MockBrokerChannel(parent: MockBrokerInterface) extends BrokerChannel {
+class MockBrokerChannel(parent: MockBrokerConnection) extends BrokerChannel {
   var started = true
 
   var messageConsumer: Option[MessageConsumer] = None
@@ -107,8 +107,8 @@ class MockBrokerChannel(parent: MockBrokerInterface) extends BrokerChannel {
   }
 }
 
-class MockBrokerInterface(connectCorrectly: Boolean = true, reportCorrectClosure: Boolean = true) extends BrokerConnection {
-  import MockBrokerInterface._
+class MockBrokerConnection(connectCorrectly: Boolean = true, reportCorrectClosure: Boolean = true) extends BrokerConnection {
+  import MockBrokerConnection._
 
   private var channels = List.empty[MockBrokerChannel]
 
