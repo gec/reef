@@ -32,15 +32,15 @@ trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with Brok
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = {
     sendTo((b: BrokerChannel) => {
       val msg = Envelope.ServiceNotification.newBuilder.setEvent(event).setPayload(resp.toByteString()).build
-      info("Published event: " + event + " to " + exchange + " key = " + key)
+      reefLogger.debug("published event: {} to {}, key = {}", Array[AnyRef](event, exchange, key))
       b.publish(exchange, key, msg.toByteArray(), None)
     })
   }
 
   def bind(subQueue: String, key: String) = {
     sendTo((b: BrokerChannel) => {
-      info("Binding queue: " + subQueue + " to " + exchange + " key = " + key)
       b.bindQueue(subQueue, exchange, key)
+      reefLogger.info("binding queue: {} to {} key = {}", Array[AnyRef](subQueue, exchange, key))
     })
   }
 }

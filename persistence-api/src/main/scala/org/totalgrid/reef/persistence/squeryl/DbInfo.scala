@@ -29,4 +29,5 @@ object DbInfo {
   def loadInfo(): DbInfo = loadInfo(BuildEnv.environment)
 }
 
-case class DbInfo(val dbType: String, val host: String, val port: Int, val database: String, val user: String, val password: String, val slowQueryTime: Long) extends BuildEnv.ConnInfo
+case class DbInfo(val dbType: String, val host: String, val port: Int, val database: String, val user: String, val password: String,
+  val slowQueryTimeMilli: Long) extends BuildEnv.ConnInfo

@@ -29,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.{ NoSuchElementException, Iterator }
 
 // TODO rename BaseReefService or similar, class is redundant.
-trait ReefServiceBaseClass extends ClientSource {
+trait ReefServiceBaseClass extends SessionSource {
 
   private val listeners: CopyOnWriteArrayList[SubscriptionListener] = new CopyOnWriteArrayList[SubscriptionListener]()
 
@@ -38,7 +38,7 @@ trait ReefServiceBaseClass extends ClientSource {
       listeners.add(listener)
     }
 
-  def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S) = {
+  def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S): SubscriptionResult[S, R] = {
     val subscription: Subscription[R] = session.addSubscription[R](klass)
     try {
       val result = block(subscription)
@@ -83,7 +83,7 @@ trait SubscriptionListener {
  * base trait for implementations that need a ClientSession and don't want to specify
  * if we are using a pooled or not implementation
  */
-trait ClientSource {
+trait SessionSource {
   protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
     try {
       _ops(block)
@@ -93,7 +93,7 @@ trait ClientSource {
         // calls, if its already a ReefServiceException we have nothing to do
         throw rse
       case e: Exception =>
-        throw new InternalClientError("Unexpected error: " + e.getMessage, e)
+        throw new InternalClientError("ops() call: unexpected error: " + e.getMessage, e)
     }
   }
 
@@ -104,7 +104,7 @@ trait ClientSource {
  * simplest implementation of ClientSource, just hands the same session for every request
  * without attaching any extra information
  */
-trait SingleSessionClientSource extends ClientSource {
+trait SingleSessionClientSource extends SessionSource {
   def session: SyncOperations with SubscriptionManagement
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = block(session)
@@ -113,9 +113,9 @@ trait SingleSessionClientSource extends ClientSource {
 /**
  * takes a single session and sets the authToken before each call and removes it afterwards
  */
-trait AuthorizedSingleSessionClientSource extends ClientSource {
-  def session: ClientSession
+trait AuthorizedSingleSessionClientSource extends SessionSource {
 
+  def session: ClientSession
   def authToken: String
 
   override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
@@ -132,7 +132,7 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 /**
  * uses a sessionpool to acquire a session out of a pool for each call
  */
-trait PooledClientSource extends ClientSource {
+trait PooledClientSource extends SessionSource {
 
   // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
   def sessionPool: SessionExecutionPool
@@ -148,7 +148,7 @@ trait PooledClientSource extends ClientSource {
  * uses a sessionpool to acquire a session out of a pool for each call and also attaches an
  * authtoken before every call
  */
-trait AuthorizedAndPooledClientSource extends ClientSource {
+trait AuthorizedAndPooledClientSource extends SessionSource {
 
   def sessionPool: SessionExecutionPool
   def authToken: String
