@@ -22,7 +22,7 @@
 package org.totalgrid.reef.japi.client;
 
 /**
- * It is important to use an ConnectionListener to be informed of disconnections from the message broker (expected
+ * ConnectionListener is informed of connections/disconnections from the message broker (expected
  * or otherwise). Callbacks come in from the messaging thread so it is important not to block the callbacks.
  */
 public interface ConnectionListener {

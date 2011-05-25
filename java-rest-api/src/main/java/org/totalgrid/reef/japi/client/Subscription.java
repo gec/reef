@@ -22,16 +22,26 @@ package org.totalgrid.reef.japi.client;
  */
 
 /**
- * A subscription object provides header info and can also be canceled. It carries the message type
- * primarily to make message signatures more expressive.
+ * Object used in a service request and defines where messages are to be queued.
  */
-// TODO: add ISubscriptions to scala apis, what is this?  is it still relevant?
 public interface Subscription<A> {
 
+   /**
+     * Stops subscription delivery forever
+     */
   void cancel();
 
+   /**
+     * @return Unique Id used by the system
+     */
   String getId();
 
+   /**
+     * Starts delivering events to the specified acceptor.
+     * Called after a successful service call.
+     *
+     * @param acceptor Callback for SubscriptionEvents
+     */
   void start(SubscriptionEventAcceptor<A> acceptor);
 
 }

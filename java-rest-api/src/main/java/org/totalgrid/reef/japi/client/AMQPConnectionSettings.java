@@ -20,15 +20,24 @@
  */
 package org.totalgrid.reef.japi.client;
 
-
+/**
+ *   Settings class that defines properties for an AMQP connection
+ */
 public class AMQPConnectionSettings {
 
-    private String host;
-    private int port;
-    private String user;
-    private String password;
-    private String virtualHost;
+    private final String host;
+    private final int port;
+    private final String user;
+    private final String password;
+    private final String virtualHost;
 
+   /**
+     * @param host The IP address or DNS name of AMQP broker
+     * @param port The TCP port that the broker is listening on (default 5672)
+     * @param user The username for the connection
+     * @param password The password for the connection
+     * @param virtualHost The virtual host to use, default is '/'
+     */
     public AMQPConnectionSettings(String host, int port, String user, String password, String virtualHost) {
         this.host = host;
         this.port = port;
@@ -37,22 +46,42 @@ public class AMQPConnectionSettings {
         this.virtualHost = virtualHost;
     }
 
+    /**
+     *
+     * @return host name
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     *
+     * @return TCP port
+     */
     public int getPort() {
         return port;
     }
 
+    /**
+     *
+     * @return username
+     */
     public String getUser() {
         return user;
     }
 
+    /**
+     *
+     * @return password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     *
+     * @return virtual host
+     */
     public String getVirtualHost() {
         return virtualHost;
     }
