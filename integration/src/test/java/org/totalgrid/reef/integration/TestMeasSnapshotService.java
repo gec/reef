@@ -24,7 +24,7 @@ import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.List;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestMeasSnapshotService extends JavaBridgeTestBase {
+public class TestMeasSnapshotService extends ReefConnectionTestBase {
 
 	/**
 	 * Test that the number of measurements retrieved from the measurement Snapshot service by name

@@ -25,7 +25,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.List;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestPointService extends JavaBridgeTestBase
+public class TestPointService extends ReefConnectionTestBase
 {
     /** Test that some points names are returns from the Point service */
     @Test
@@ -56,7 +56,7 @@ public class TestPointService extends JavaBridgeTestBase
 
         // Build the point service request using the entity descriptor
         Point p = Point.newBuilder().setEntity(eqRequest).build();
-        List<Point> list = client.get(p);
+        List<Point> list = client.get(p).await().expectMany();
 
         assertNotNull(list);
         assertTrue("expected at least one point: " + list.size(), list.size() > 0);
@@ -82,7 +82,7 @@ public class TestPointService extends JavaBridgeTestBase
 
         // Build the point service request using the entity descriptor
         Point p = Point.newBuilder().setEntity(eqRequest).build();
-        List<Point> list = client.get(p);
+        List<Point> list = client.get(p).await().expectMany();
 
         assertNotNull(list);
         assertEquals(1, list.size());

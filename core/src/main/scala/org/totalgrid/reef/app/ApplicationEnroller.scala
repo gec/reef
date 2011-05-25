@@ -25,8 +25,8 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, ServiceTypes, RequestEnv }
-import ServiceTypes.{ Failure, SingleSuccess }
+import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv }
+import org.totalgrid.reef.api.scalaclient.{ Success, Failure, SingleSuccess }
 
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
@@ -36,21 +36,11 @@ import org.totalgrid.reef.proto.ReefServicesList
 
 object ApplicationEnroller extends Logging {
 
-  def getSysProperty(prop: String, default: String): String = {
-    val propVal = System.getProperty(prop)
-    if (propVal == null) {
-      info(prop + " not defined, defaulting to :" + default)
-      default
-    } else {
-      propVal
-    }
-  }
-
-  lazy val defaultUserName = getSysProperty("reef.user", "system")
-  lazy val defaultUserPassword = getSysProperty("reef.user.password", "-system-")
-  lazy val defaultNodeName = getSysProperty("reef.node", "node01")
-  lazy val defaultLocation = getSysProperty("reef.network", "any")
-  lazy val defaultNetwork = getSysProperty("reef.location", "any")
+  def defaultUserName = SystemProperty.get("reef.user", "system")
+  def defaultUserPassword = SystemProperty.get("reef.user.password", "-system-")
+  def defaultNodeName = SystemProperty.get("reef.node", "node01")
+  def defaultLocation = SystemProperty.get("reef.network", "any")
+  def defaultNetwork = SystemProperty.get("reef.location", "any")
 
   def buildLogin(userName: Option[String] = None, userPassword: Option[String] = None) = {
     val agent = Agent.newBuilder
@@ -79,6 +69,7 @@ object ApplicationEnroller extends Logging {
     b.build
   }
 }
+
 import ApplicationEnroller._
 
 /**
@@ -96,33 +87,42 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
   private var container: Option[Lifecycle] = None
 
   // we only need the registry to get the appClient, could special case for ApplicationConfig if bootstrapping exchange names
+  // TODO - replace with SessionPool
   private var client: Option[ProtoClient] = None
 
   private def enroll() {
     freshClient
-    client.foreach(c =>
-      c.asyncPutOne(buildLogin()) {
-        _ match {
+    client.foreach { c =>
+      c.put(buildLogin()).listen { rsp =>
+        rsp match {
+          case SingleSuccess(status, single) =>
+            val env = new RequestEnv
+            env.addAuthToken(single.getToken)
+            c.setDefaultHeaders(env)
+            putAppConfig(c, env, buildConfig(capabilites, instanceName))
+          case Success(_, list) =>
+            error("Expected 1 AuthToken, but received " + rsp.list)
+            reenroll()
           case x: Failure =>
             error("Error getting auth token. " + x)
-            delay(2000) { enroll() }
-          case SingleSuccess(status, authToken) =>
-            val env = new RequestEnv
-            env.addAuthToken(authToken.getToken)
-            c.setDefaultHeaders(env)
-            c.asyncPutOne(buildConfig(capabilites, instanceName)) {
-              _ match {
-                case x: Failure =>
-                  error("Error registering application. " + x)
-                  delay(2000) { enroll() }
-                case SingleSuccess(status, app) =>
-                  val components = new CoreApplicationComponents(amqp, app, env)
-                  container = Some(setupFun(components))
-                  container.get.start
-              }
-            }
+            reenroll()
         }
-      })
+      }
+    }
+  }
+
+  private def reenroll() = delay(2000) { enroll() }
+
+  def putAppConfig(client: ProtoClient, env: RequestEnv, configRequest: ApplicationConfig) = client.put(configRequest).listen {
+    _ match {
+      case SingleSuccess(_, config) =>
+        val components = new CoreApplicationComponents(amqp, config, env)
+        container = Some(setupFun(components))
+        container.get.start
+      case Failure(status, err) =>
+        error("Error registering application: " + err)
+        reenroll()
+    }
   }
 
   /**

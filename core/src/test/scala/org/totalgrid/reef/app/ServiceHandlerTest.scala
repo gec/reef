@@ -21,7 +21,7 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Event }
+import org.totalgrid.reef.api.scalaclient.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.MockConnection
 import org.totalgrid.reef.proto.{ Processing }
 import org.totalgrid.reef.proto.Model.Point
@@ -32,7 +32,7 @@ import org.totalgrid.reef.reactor.ReactActor
 import scala.concurrent.MailBox
 
 import org.totalgrid.reef.api.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 class ServiceHandlerMock(conn: Connection, retryMS: Long) {
 

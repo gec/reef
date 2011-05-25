@@ -20,71 +20,54 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.api.scalaclient.{ ClientSession, SubscriptionManagement, SyncOperations }
+import org.totalgrid.reef.japi.{ ReefServiceException, InternalClientError }
+
+import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResultWrapper, SessionWrapper }
+
+import org.totalgrid.reef.japi.client.{ Subscription => JavaSubscription }
+import org.totalgrid.reef.api.scalaclient.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
+import org.totalgrid.reef.japi.client._
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.{ Subscription, InternalClientError, ReefServiceException, ExpectationException }
-import org.totalgrid.reef.messaging.javaclient.SubscriptionResult
-import org.totalgrid.reef.api.javaclient.{ ISubscription, ISession, ISessionConsumer, SessionExecutionPool }
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.{ NoSuchElementException, Iterator }
 
 // TODO rename BaseReefService or similar, class is redundant.
-trait ReefServiceBaseClass extends SessionSource {
-
-  private val listeners: CopyOnWriteArrayList[SubscriptionListener] = new CopyOnWriteArrayList[SubscriptionListener]()
-
-  def addListener(listener: SubscriptionListener): Boolean =
-    {
-      listeners.add(listener)
-    }
+trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
 
   def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S): SubscriptionResult[S, R] = {
-    val subscription: Subscription[R] = session.addSubscription[R](klass)
+    val sub: Subscription[R] = session.addSubscription[R](klass)
     try {
-      val result = block(subscription)
-      val subscriptionResult = new SubscriptionResult(result, subscription)
-      notifyListeners(subscriptionResult)
-      subscriptionResult
+
+      val result = block(sub)
+      val ret = new SubscriptionResultWrapper(result, sub)
+      onSubscriptionCreated(ret.getSubscription)
+      ret
     } catch {
       case x =>
-        subscription.cancel
+        sub.cancel()
         throw x
     }
   }
 
-  protected def reThrowExpectationException[R](why: => String)(f: => R): R = {
-    try {
-      f
-    } catch {
-      case e: ExpectationException => throw new ExpectationException(why)
-    }
+  private var creationListeners = List.empty[SubscriptionCreationListener]
+
+  private def onSubscriptionCreated(sub: JavaSubscription[_]) {
+    creationListeners.foreach(_.onSubscriptionCreated(sub))
   }
 
-  private def notifyListeners[S, R <: GeneratedMessage](subscriptionResult: SubscriptionResult[S, R]) {
-    val iterator: Iterator[SubscriptionListener] = listeners.iterator()
-    while (iterator.hasNext) {
-      try {
-        val listener: SubscriptionListener = iterator.next()
-        if (listener != null) {
-          listener.onNewSubscription(subscriptionResult.getSubscription)
-        }
-      } catch {
-        case e: NoSuchElementException => {}
-      }
-    }
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {
+    creationListeners ::= listener
   }
-}
-
-trait SubscriptionListener {
-  def onNewSubscription[T <: GeneratedMessage](subscription: ISubscription[T]): Unit
 }
 
 /**
  * base trait for implementations that need a ClientSession and don't want to specify
  * if we are using a pooled or not implementation
  */
-trait SessionSource {
-  protected def ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+trait ClientSource {
+
+  // TODO - find a type-safe replacement
+  def convertByCasting(session: Session): RestOperations with SubscriptionManagement = session.asInstanceOf[SessionWrapper].client
+
+  protected def ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     try {
       _ops(block)
     } catch {
@@ -97,28 +80,28 @@ trait SessionSource {
     }
   }
 
-  protected def _ops[A](block: SyncOperations with SubscriptionManagement => A): A
+  protected def _ops[A](block: RestOperations with SubscriptionManagement => A): A
 }
 
 /**
  * simplest implementation of ClientSource, just hands the same session for every request
  * without attaching any extra information
  */
-trait SingleSessionClientSource extends SessionSource {
-  def session: SyncOperations with SubscriptionManagement
+trait SingleSessionClientSource extends ClientSource {
+  def session: RestOperations with SubscriptionManagement
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = block(session)
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = block(session)
 }
 
 /**
  * takes a single session and sets the authToken before each call and removes it afterwards
  */
-trait AuthorizedSingleSessionClientSource extends SessionSource {
+trait AuthorizedSingleSessionClientSource extends ClientSource {
 
   def session: ClientSession
   def authToken: String
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     try {
       import org.totalgrid.reef.api.ServiceHandlerHeaders._
       session.getDefaultHeaders.setAuthToken(authToken)
@@ -132,14 +115,14 @@ trait AuthorizedSingleSessionClientSource extends SessionSource {
 /**
  * uses a sessionpool to acquire a session out of a pool for each call
  */
-trait PooledClientSource extends SessionSource {
+trait PooledClientSource extends ClientSource {
 
   // TODO: examine pooling implementation to obviate need for ISessionConsumer wrapper
   def sessionPool: SessionExecutionPool
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.execute(new ISessionConsumer[A] {
-      def apply(session: ISession) = block(session.getUnderlyingClient)
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
+    sessionPool.execute(new SessionFunction[A] {
+      def apply(session: Session) = block(convertByCasting(session))
     })
   }
 }
@@ -148,14 +131,14 @@ trait PooledClientSource extends SessionSource {
  * uses a sessionpool to acquire a session out of a pool for each call and also attaches an
  * authtoken before every call
  */
-trait AuthorizedAndPooledClientSource extends SessionSource {
+trait AuthorizedAndPooledClientSource extends ClientSource {
 
   def sessionPool: SessionExecutionPool
   def authToken: String
 
-  override def _ops[A](block: SyncOperations with SubscriptionManagement => A): A = {
-    sessionPool.execute(authToken, new ISessionConsumer[A] {
-      def apply(session: ISession) = block(session.getUnderlyingClient)
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
+    sessionPool.execute(authToken, new SessionFunction[A] {
+      def apply(session: Session) = block(convertByCasting(session))
     })
   }
 }

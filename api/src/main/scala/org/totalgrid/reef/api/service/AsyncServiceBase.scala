@@ -20,8 +20,11 @@ package org.totalgrid.reef.api.service
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ReefServiceException }
-import org.totalgrid.reef.api.ServiceTypes.Response
+
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
+import org.totalgrid.reef.api.scalaclient.Response
+
 import org.totalgrid.reef.util.Logging
 
 trait AsyncServiceBase[A <: AnyRef] extends IServiceAsync[A]

@@ -28,10 +28,10 @@ import org.totalgrid.reef.messaging.mock.AMQPFixture
 
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.api.Envelope.Event
+import org.totalgrid.reef.japi.Envelope.Event
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
@@ -128,11 +128,11 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(9)
 
       feps.foreach { fepUid =>
-        val fassign = many(3, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepUid).build))
+        val fassign = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepUid).build).expectMany(3)
         coord.checkFeps(fassign, false, Some(fepUid), true)
       }
       procs.foreach { measUid =>
-        val massign = many(3, coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measUid).build))
+        val massign = coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measUid).build).expectMany(3)
         coord.checkMeasProcs(massign, Some(measUid), true)
       }
     }
@@ -152,9 +152,9 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val serialLocB1 = coord.addDnp3Device("serialLocB1", None, Some("locB"))
       val serialLocB2 = coord.addDnp3Device("serialLocB2", None, Some("locB"))
 
-      coord.checkFeps(many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
-      coord.checkFeps(many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
-      coord.checkFeps(many(2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
+      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build).expectOne(), false, Some(fepNetALocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectOne(), false, Some(fepNetBLocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(2), false, Some(fepNetBLocB), true)
 
       val ipNetA1 = coord.addDnp3Device("ipNetA1", Some("netA"), None)
       val ipNetA2 = coord.addDnp3Device("ipNetA2", Some("netA"), None)
@@ -162,9 +162,9 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val ipNetB2 = coord.addDnp3Device("ipNetB2", Some("netB"), None)
 
       // fepNetALocA should have got both netA devices and the fepNetB* feps will split the netB additions
-      coord.checkFeps(many(1 + 2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build)), false, Some(fepNetALocA), true)
-      coord.checkFeps(many(2 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build)), false, Some(fepNetBLocA), true)
-      coord.checkFeps(many(1 + 1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build)), false, Some(fepNetBLocB), true)
+      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build).expectMany(2 + 1), false, Some(fepNetALocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectMany(2 + 1), false, Some(fepNetBLocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(1 + 1), false, Some(fepNetBLocB), true)
 
     }
   }
@@ -180,18 +180,18 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(1)
       coord.checkAssignments(1, Some(fep), Some(meas))
 
-      val connection = one(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build))
-      val ret = one(coord.frontEndConnection.put(connection.toBuilder.setEnabled(false).build))
+      val connection = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build).expectOne()
+      val ret = coord.frontEndConnection.put(connection.toBuilder.setEnabled(false).build).expectOne()
       ret.getEnabled should equal(false)
 
       // check that we have unassigned the fep
       coord.checkAssignments(1, None, Some(meas))
 
       // we can also now search by enabled == false
-      one(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(false).build))
-      none(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build))
+      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(false).build).expectOne()
+      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build).expectNone()
 
-      one(coord.frontEndConnection.put(ret.toBuilder.setEnabled(true).build))
+      coord.frontEndConnection.put(ret.toBuilder.setEnabled(true).build).expectOne()
 
       coord.checkAssignments(1, Some(fep), Some(meas))
     }
@@ -210,11 +210,11 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(2)
       coord.checkAssignments(2, Some(fep), Some(meas))
 
-      val connections = many(2, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build))
-      one(coord.frontEndConnection.put(connections.head.toBuilder.setState(CommEndpointConnection.State.COMMS_UP).build))
+      val connections = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build).expectMany(2)
+      coord.frontEndConnection.put(connections.head.toBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne()
 
-      many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build))
-      many(1, coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_UP).build))
+      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build).expectOne()
+      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne()
     }
   }
 

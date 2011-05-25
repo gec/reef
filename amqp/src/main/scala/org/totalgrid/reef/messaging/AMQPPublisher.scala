@@ -22,7 +22,9 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.api.ServiceIOException
+import org.totalgrid.reef.japi.ServiceIOException
+
+import org.totalgrid.reef.broker._
 
 object AMQPPublisher {
   val defaultBufferSize = 1024 * 1024
@@ -45,6 +47,8 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
   private var replyTo: Option[Destination] = None
   private var channel: Option[BrokerChannel] = None
   private var closedPermenantly = false
+
+  if (exchangeList.find(_.trim.length == 0).isDefined) throw new Exception("Bad exchange name: " + exchangeList)
 
   // implement ChannelObserver
   override def online(b: BrokerChannel) = this.execute {
@@ -93,7 +97,7 @@ abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int =
       delayedMsgs = Msg(b, exchange, key) :: delayedMsgs
       bytesDelayed += b.size
     } else {
-      reefLogger.error("unable to queue msg, buffer size exceeded: exchange: " + exchange + ", key: " + key, exchange, key)
+      reefLogger.error("unable to queue msg, buffer size exceeded: exchange: " + exchange + ", key: " + key)
     }
   }
 

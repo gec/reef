@@ -42,13 +42,12 @@ trait Reactable {
    * between the end of previous unit of work and the beginning of the next invocation of the callback.
    *
    * This means calling repeat(500){Thread.sleep(1000)} will get executed at t = 0 and t = 1500 milliseconds,
-   * This means calling repeat(500){Thread.sleep(1000)} will get executed at t = 0 and t = 1500 milliseconds,
    * not t = 0, t = 500, t = 1000.
    */
   def repeat(msec: Long)(fun: => Unit): Timer
 
   /**
-   * dispatches a unit of work synchronously with a specific evaluation type T
+   * dispatches a unit of work synchronously with a specific evaluation type A
    */
   def request[A](fun: => A): A
 }

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.request
 
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.api.UnauthorizedException
+import org.totalgrid.reef.japi.UnauthorizedException
 
 import scala.collection.JavaConversions._
 import org.scalatest.junit.JUnitRunner

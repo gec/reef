@@ -29,7 +29,7 @@ import presentation.ChannelView
 class ChannelListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = reefSession.getOrThrow(CommChannel.newBuilder.setName("*").build)
+    val results = reefSession.get(CommChannel.newBuilder.setName("*").build).await().expectMany()
     ChannelView.printTable(results)
   }
 }

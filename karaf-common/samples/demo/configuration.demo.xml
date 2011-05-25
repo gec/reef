@@ -49,12 +49,10 @@
 
             <eq:equipmentProfile name="Substation">
                 <eq:type name="Substation"/>
-                <eq:type name="EquipmentGroup"/>
             </eq:equipmentProfile>
 
             <eq:equipmentProfile name="FullBreaker">
                 <eq:type name="Breaker"/>
-                <eq:type name="Equipment"/>
 
                 <eq:control name="Trip"/>
                 <eq:control name="Close"/>
@@ -85,12 +83,10 @@
 
              <eq:equipmentProfile name="LineMeas">
                 <eq:type name="Line"/>
-                <eq:type name="Equipment"/>
             </eq:equipmentProfile>
 
             <eq:equipmentProfile name="BusWithFreq">
                 <eq:type name="Bus"/>
-                <eq:type name="Equipment"/>
                 <eq:analog name="Kv" unit="kV">
                     <eq:range actionSet="Nominal" low="0.3" high="0.4" deadband="0.1"/>
                 </eq:analog>
@@ -178,7 +174,6 @@
             </eq:equipment>
             <eq:equipment name="G1">
                 <eq:type name="Generator"/>
-                <eq:type name="Equipment"/>
                 <eq:analog name="Mw" unit="MW">
                     <eq:range actionSet="Nominal" low="0.67" high="0.87" deadband="0.02"/>
                 </eq:analog>

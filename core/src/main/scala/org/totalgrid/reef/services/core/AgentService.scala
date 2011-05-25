@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.{ BadRequestException }
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
 class AgentService(protected val modelTrans: ServiceTransactable[AgentServiceModel])
@@ -110,7 +110,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     }
   }
 
-  def validatePassword(password: String) {
+  private def validatePassword(password: String) {
     // TODO: password settings?
     if (password.length < 4) {
       throw new BadRequestException("Password must be atleast 4 characters")

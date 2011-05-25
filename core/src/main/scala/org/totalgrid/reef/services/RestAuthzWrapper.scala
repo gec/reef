@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.auth.IAuthService
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 import org.totalgrid.reef.api.auth.AuthDenied

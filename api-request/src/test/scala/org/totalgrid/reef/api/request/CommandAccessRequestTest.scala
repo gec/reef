@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.japi.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest
@@ -49,45 +49,45 @@ class CommandAccessRequestTest
 
   test("Search") {
     val cmdNames = "SimulatedSubstation.Breaker01.Trip" :: "SimulatedSubstation.Breaker01.Close" :: Nil
-    val firstResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName(cmdNames.get(0)))
-    val secondResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName(cmdNames.get(1)))
-    val thirdResp = client.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames))
+    val firstResp = client.put(CommandAccessRequestBuilders.allowAccessForCommandName(cmdNames.get(0))).await().expectOne
+    val secondResp = client.put(CommandAccessRequestBuilders.allowAccessForCommandName(cmdNames.get(1))).await().expectOne
+    val thirdResp = client.put(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames)).await().expectOne
 
     client.addExplanation("Get by UID", "Search for an access entry by UID.")
-    client.getOrThrow(CommandAccessRequestBuilders.getForUid(firstResp.getUid))
+    client.get(CommandAccessRequestBuilders.getForUid(firstResp.getUid)).await().expectMany()
 
     client.addExplanation("Get all", "Search for all access entries.")
-    client.getOrThrow(CommandAccessRequestBuilders.getAll)
+    client.get(CommandAccessRequestBuilders.getAll).await().expectMany()
 
     client.addExplanation("Get for user", "Search for all access entries for the given user.")
-    client.getOrThrow(CommandAccessRequestBuilders.getForUser(firstResp.getUser))
+    client.get(CommandAccessRequestBuilders.getForUser(firstResp.getUser)).await().expectMany()
 
-    client.deleteOneOrThrow(firstResp)
-    client.deleteOneOrThrow(secondResp)
-    client.deleteOneOrThrow(thirdResp)
+    client.delete(firstResp).await().expectOne
+    client.delete(secondResp).await().expectOne
+    client.delete(thirdResp).await().expectOne
   }
 
   test("Allowed") {
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
     client.addExplanation("Create allow access", "Create ALLOWED access entry for a command.")
-    val createResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName(cmdName))
+    val createResp = client.put(CommandAccessRequestBuilders.allowAccessForCommandName(cmdName)).await().expectOne
 
     val delDesc = "The same proto object that was used to create an entry can be used to delete it. " +
       "The service identifies the object by uid, other fields are ignored."
 
     client.addExplanation("Delete access using original object", delDesc)
-    client.deleteOneOrThrow(createResp)
+    client.delete(createResp).await().expectOne
   }
 
   test("Block") {
 
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
     client.addExplanation("Block commands", "Create BLOCKED access for multiple commands.")
-    val createdResp = client.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames))
+    val createdResp = client.put(CommandAccessRequestBuilders.blockAccessForCommandNames(cmdNames)).await().expectOne
 
     client.addExplanation("Delete access using UID", "Delete a command access object by UID only.")
-    client.deleteOneOrThrow(CommandAccessRequestBuilders.delete(createdResp))
+    client.delete(CommandAccessRequestBuilders.delete(createdResp)).await().expectOne
   }
 
   test("ReBlock") {
@@ -95,13 +95,13 @@ class CommandAccessRequestTest
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
 
     client.addExplanation("Select commands", "Create ALLOWED access for multiple commands.")
-    val createdResp = client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandNames(cmdNames))
+    val createdResp = client.put(CommandAccessRequestBuilders.allowAccessForCommandNames(cmdNames)).await().expectOne
 
     client.addExplanation("Selecing Selected Commands fails", "Trying to reselect the command fails with a non success status code. (Note that this will normally mean a ReefServiceException will be thrown by client code)")
     intercept[ReefServiceException] {
-      client.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommandName("StaticSubstation.Breaker02.Close"))
+      client.put(CommandAccessRequestBuilders.allowAccessForCommandName("StaticSubstation.Breaker02.Close")).await().expectOne
     }
 
-    client.deleteOneOrThrow(CommandAccessRequestBuilders.delete(createdResp))
+    client.delete(CommandAccessRequestBuilders.delete(createdResp)).await().expectOne
   }
 }

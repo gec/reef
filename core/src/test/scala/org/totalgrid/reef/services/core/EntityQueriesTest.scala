@@ -30,9 +30,9 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.messaging.BrokerObjectConsumer
+import org.totalgrid.reef.broker.BrokerObjectConsumer
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 import java.util.UUID

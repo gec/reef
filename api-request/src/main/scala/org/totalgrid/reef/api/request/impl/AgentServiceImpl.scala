@@ -27,42 +27,41 @@ import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
-  def getAgent(name: String) = {
-    ops { _.getOneOrThrow(Agent.newBuilder.setName(name).build) }
+  override def getAgent(name: String) = ops {
+    _.get(Agent.newBuilder.setName(name).build).await().expectOne
   }
 
-  def getAgents() = {
-    ops { _.getOrThrow(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build) }
+  override def getAgents() = ops {
+    _.get(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany()
   }
 
-  def getPermissionSets() = {
-    ops { _.getOrThrow(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build) }
-  }
-  def getPermissionSet(name: String) = {
-    ops { _.getOneOrThrow(PermissionSet.newBuilder.setName(name).build) }
+  override def getPermissionSets() = ops {
+    _.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany()
   }
 
-  def createPermissionSet(name: String, permissions: java.util.List[Permission]) = {
-    ops { _.putOneOrThrow(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build) }
+  override def getPermissionSet(name: String) = ops {
+    _.get(PermissionSet.newBuilder.setName(name).build).await().expectOne
   }
 
-  def deletePermissionSet(permissionSet: PermissionSet) = {
-    ops { _.deleteOneOrThrow(permissionSet) }
+  override def createPermissionSet(name: String, permissions: java.util.List[Permission]) = ops {
+    _.put(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build).await().expectOne
   }
 
-  def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = {
-    ops { session =>
-      val agent = Agent.newBuilder.setName(name).setPassword(password)
-      permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
-      session.putOneOrThrow(agent.build)
-    }
+  override def deletePermissionSet(permissionSet: PermissionSet) = ops {
+    _.delete(permissionSet).await().expectOne
   }
 
-  def deleteAgent(agent: Agent) = {
-    ops { _.deleteOneOrThrow(agent) }
+  override def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = ops { session =>
+    val agent = Agent.newBuilder.setName(name).setPassword(password)
+    permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
+    session.put(agent.build).await().expectOne
   }
 
-  def setAgentPassword(agent: Agent, newPassword: String) = {
-    ops { _.putOneOrThrow(agent.toBuilder.setPassword(newPassword).build) }
+  override def deleteAgent(agent: Agent) = ops {
+    _.delete(agent).await().expectOne
+  }
+
+  override def setAgentPassword(agent: Agent, newPassword: String) = ops {
+    _.put(agent.toBuilder.setPassword(newPassword).build).await().expectOne
   }
 }

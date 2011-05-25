@@ -28,38 +28,32 @@ import org.totalgrid.reef.proto.Descriptors
 import scala.collection.JavaConversions._
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
-  def getAlarm(uid: String) = {
-    reThrowExpectationException("Alarm with UID: " + uid + " not found") {
-      ops { _.getOneOrThrow(AlarmRequestBuilders.getByUID(uid)) }
+
+  override def getAlarm(uid: String) = ops {
+    _.get(AlarmRequestBuilders.getByUID(uid)).await().expectOne("Alarm with UID: " + uid + " not found")
+  }
+
+  override def getActiveAlarms(limit: Int) = ops {
+    _.get(AlarmListRequestBuilders.getUnacknowledged(limit)).await().expectOne.getAlarmsList
+  }
+
+  override def subscribeToActiveAlarms(limit: Int) = ops { session =>
+    useSubscription(session, Descriptors.alarm.getKlass) { sub =>
+      session.get(AlarmListRequestBuilders.getUnacknowledged(limit), sub).await().expectOne.getAlarmsList
     }
   }
 
-  def getActiveAlarms(limit: Int) = {
-    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit)).getAlarmsList }
+  override def getActiveAlarms(types: java.util.List[String], limit: Int) = ops {
+    _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).await().expectOne.getAlarmsList
   }
 
-  def subscribeToActiveAlarms(limit: Int) = {
-    ops { session =>
-      useSubscription(session, Descriptors.alarm.getKlass) { sub =>
-        session.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledged(limit), sub).getAlarmsList
-      }
-    }
-  }
+  override def removeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.REMOVED)
 
-  def getActiveAlarms(types: java.util.List[String], limit: Int) = {
-    ops { _.getOneOrThrow(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).getAlarmsList }
-  }
+  override def acknowledgeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.ACKNOWLEDGED)
 
-  def removeAlarm(alarm: Alarm) = {
-    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.REMOVED).build) }
-  }
+  override def silenceAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.UNACK_SILENT)
 
-  def acknowledgeAlarm(alarm: Alarm) = {
-    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.ACKNOWLEDGED).build) }
+  private def changeAlarmState(alarm: Alarm, state: Alarm.State) = ops {
+    _.put(alarm.toBuilder.setState(state).build).await().expectOne
   }
-
-  def silenceAlarm(alarm: Alarm) = {
-    ops { _.putOneOrThrow(alarm.toBuilder.setState(Alarm.State.UNACK_SILENT).build) }
-  }
-
 }

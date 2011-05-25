@@ -10,7 +10,7 @@
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>reef-karaf-linux</artifactId>
+    <artifactId>reef-karaf</artifactId>
     <packaging>pom</packaging>
     <profiles>
         <profile>

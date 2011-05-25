@@ -24,7 +24,8 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.api.javaclient.ISubscriptionResult;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.api.request.MeasurementService;
 import org.totalgrid.reef.api.request.builders.MeasurementBatchRequestBuilders;
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders;
@@ -36,12 +37,10 @@ import org.totalgrid.reef.proto.Processing.MeasOverride;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.totalgrid.reef.api.ReefServiceException;
-
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestMeasOverrideService extends JavaBridgeTestBase {
+public class TestMeasOverrideService extends ReefConnectionTestBase {
 
 	/** Test that the measurement overrides work correctly */
 	@Test
@@ -57,13 +56,13 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
 
         Measurement originalValue = ms.getMeasurementByPoint(p);
 
-		MockEventAcceptor<Measurement> mock = new MockEventAcceptor<Measurement>(true);
+		MockSubscriptionEventAcceptor<Measurement> mock = new MockSubscriptionEventAcceptor<Measurement>(true);
 
         // delete override by point
         client.delete(MeasurementOverrideRequestBuilders.getByPoint(p));
 
         // subscribe to updates for this point
-        ISubscriptionResult<List<Measurement>,Measurement> result = ms.subscribeToMeasurementsByPoints(ps);
+        SubscriptionResult<List<Measurement>,Measurement> result = ms.subscribeToMeasurementsByPoints(ps);
 
         assertEquals(result.getResult().size(), 1);
         result.getSubscription().start(mock);
@@ -74,7 +73,7 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         // create an override
 		Measurement m = MeasurementRequestBuilders.makeIntMeasurement(pointName, 11111, now);
 		MeasOverride ovrRequest = MeasurementOverrideRequestBuilders.makeOverride(p, m);
-		MeasOverride override = client.putOne(ovrRequest);
+		MeasOverride override = client.put(ovrRequest).await().expectOne();
 
         // make sure we see it in the event stream
         assertTrue(mock.waitFor(MeasurementRequestBuilders.makeSubstituted(m), 5000));
@@ -86,21 +85,21 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         // if we now try to put a measurement it should be suppressed (b/c we have overridden it)
         Measurement suppressedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 22222, now + 1);
         MeasurementBatch mb = MeasurementBatchRequestBuilders.makeBatch(suppressedValue);
-        client.putOne(mb);
+        client.put(mb).await().expectOne();
 
         // we store the most recently reported value in a cache so if we publish a value
         // while it is overridden and then take off the override we should see the cached value published
         Measurement cachedValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 33333, now + 2);
         MeasurementBatch mb2 = MeasurementBatchRequestBuilders.makeBatch(cachedValue);
-        client.putOne(mb2);
+        client.put(mb2).await().expectOne();
 
         // now we remove the override, we should get the second measurement we attempted to publish
-		client.deleteOne(override);
+		client.delete(override).await().expectOne();
 
         // publish a final measurement we expect to see on the subscription channel
         Measurement finalValue = MeasurementRequestBuilders.makeIntMeasurement(pointName, 44444, now + 3);
         MeasurementBatch mb3 = MeasurementBatchRequestBuilders.makeBatch(finalValue);
-        client.putOne(mb3);
+        client.put(mb3).await().expectOne();
 
         // verify that last value got to measurement database
         Measurement lastValue = helpers.getMeasurementByPoint(p);
@@ -115,6 +114,6 @@ public class TestMeasOverrideService extends JavaBridgeTestBase {
         assertFalse(measurements.contains(suppressedValue));
 
         // put the original value back in
-        client.putOne(MeasurementBatchRequestBuilders.makeBatch(originalValue));
+        client.put(MeasurementBatchRequestBuilders.makeBatch(originalValue)).await().expectOne();
 	}
 }

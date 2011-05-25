@@ -27,15 +27,13 @@ import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ Envelope, BadRequestException }
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
-import org.totalgrid.reef.event.SilentEventLogPublisher
 import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
@@ -176,26 +174,26 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
     // Select EventType only.
     //
 
-    var resp = one(service.get(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY)))
+    var resp = service.get(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY)).expectOne()
     resp.getAlarmsCount should equal(3)
     resp.getAlarmsList.toIterable.foreach(a => a.getEvent.getEventType should equal(Scada.ControlExe.toString))
 
-    resp = one(service.get(makeAL(STATE_ANY, 0, 0, Some(System.UserLogin), USER_ANY, ENTITY_ANY)))
+    resp = service.get(makeAL(STATE_ANY, 0, 0, Some(System.UserLogin), USER_ANY, ENTITY_ANY)).expectOne()
     resp.getAlarmsCount should equal(0)
 
     // Select EventType and user
     //
 
-    resp = one(service.get(makeAL(STATE_ANY, 0, 0, Some(System.UserLogout), USER1, ENTITY_ANY)))
+    resp = service.get(makeAL(STATE_ANY, 0, 0, Some(System.UserLogout), USER1, ENTITY_ANY)).expectOne()
     resp.getAlarmsCount should equal(0)
 
-    resp = one(service.get(makeAL(STATE_ANY, 0, 0, None, USER1, ENTITY_ANY)))
+    resp = service.get(makeAL(STATE_ANY, 0, 0, None, USER1, ENTITY_ANY)).expectOne()
     resp.getAlarmsCount should equal(1)
 
     // Select EventType, user, and entity
     //
 
-    resp = one(service.get(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER1, ENTITY1)))
+    resp = service.get(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER1, ENTITY1)).expectOne()
     resp.getAlarmsCount should equal(1)
     resp.getAlarms(0).getEvent.getEventType should equal(Scada.ControlExe.toString)
     resp.getAlarms(0).getEvent.getUserId should equal(USER1)

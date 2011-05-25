@@ -30,9 +30,9 @@ import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.util.BlockingQueue
 
-import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, ServiceTypes }
-import ServiceTypes.Event
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
+import org.totalgrid.reef.api.{ RequestEnv, ServiceHandlerHeaders, scalaclient }
+import scalaclient.Event
 
 //implicits
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
@@ -50,9 +50,9 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     val client = registry.getClientSession()
 
-    val parentEntity = client.putOneOrThrow(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build)
+    val parentEntity = client.put(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build).await().expectOne
 
-    val measPublish = amqp.send("measurement")
+    val measPublish = amqp.send("measurement", Descriptors.measurement.serialize)
 
     // add a summary device and make sure it has an fep/measproc
     addDevice("summary", "abnormals")
@@ -65,7 +65,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
     abnormalThunker.addAMQPConsumers(amqp, new InstantReactor {})
 
     def addPoint(proto: PointProto) = {
-      client.putOneOrThrow(proto.toBuilder.setLogicalNode(parentEntity).build)
+      client.put(proto.toBuilder.setLogicalNode(parentEntity).build).await().expectOne
     }
     val changedPoints = new BlockingQueue[PointProto]
 
@@ -78,14 +78,14 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     def subscribePoints(req: PointProto) = {
       val eventQueueName = new SyncVar("")
-      val pointSource = amqp.getEventQueue(PointProto.parseFrom, { evt: Event[PointProto] => changedPoints.push(evt.result) }, { q => eventQueueName.update(q) })
+      val pointSource = amqp.getEventQueue(PointProto.parseFrom, { evt: Event[PointProto] => changedPoints.push(evt.value) }, { q => eventQueueName.update(q) })
 
       // wait for the queue name to get populated (actor startup delay)
       eventQueueName.waitWhile("")
 
       val env = new RequestEnv
       env.setSubscribeQueue(eventQueueName.current)
-      client.getOrThrow(req, env)
+      client.get(req, env).await().expectMany()
     }
 
     def nextNotification(timeout: Int = 5000) = {
@@ -108,6 +108,8 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
       syncs.waitFor({ l: List[(String, MeasurementBatch)] => getValue(name) == value }, 5000)
     }
   }
+
+  //TODO - refactor these tests and class. They're way too long with wat too many string literals - JAC
 
   test("Abnormal updated on general subscription") {
     AMQPFixture.mock(true) { amqp =>

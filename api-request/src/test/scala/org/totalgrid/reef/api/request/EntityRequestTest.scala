@@ -50,28 +50,28 @@ class EntityRequestTest
 
   test("Simple gets") {
 
-    val allEntities = client.getOrThrow(EntityRequestBuilders.getAll)
+    val allEntities = client.get(EntityRequestBuilders.getAll).await().expectMany()
     val targetUuid = allEntities.head.getUuid
 
     client.addExplanation("Get by UID", "Finds a specific entity by UID.")
-    client.getOneOrThrow(EntityRequestBuilders.getByUid(targetUuid))
+    client.get(EntityRequestBuilders.getByUid(targetUuid)).await().expectOne
 
     client.addExplanation("Get by type", "Find all entities that match a given type.")
-    client.getOrThrow(EntityRequestBuilders.getByType("Breaker"))
+    client.get(EntityRequestBuilders.getByType("Breaker")).await().expectMany()
   }
 
   test("Children") {
-    val subs = client.getOrThrow(EntityRequestBuilders.getByType("Substation"))
+    val subs = client.get(EntityRequestBuilders.getByType("Substation")).await().expectMany()
     val subUid = subs.head.getUuid
 
     client.addExplanation("Get descendants", "Finds all descendants of the root entity with the relationship \"owns\".")
-    client.getOrThrow(EntityRequestBuilders.getAllRelatedChildrenFromRootUid(subUid, "owns"))
+    client.get(EntityRequestBuilders.getAllRelatedChildrenFromRootUid(subUid, "owns")).await().expectMany()
 
     client.addExplanation("Get direct descendants", "Finds all descendants of the root entity with the relationship \"owns\" and that are a distance 1 away.")
-    client.getOrThrow(EntityRequestBuilders.getDirectChildrenFromRootUid(subUid, "owns"))
+    client.get(EntityRequestBuilders.getDirectChildrenFromRootUid(subUid, "owns")).await().expectMany()
 
     client.addExplanation("Get descendants of a type", "Finds all descendants of the root entity with the relationship \"owns\" and that are of type \"Point\".")
-    client.getOrThrow(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(subUid, "Point"))
+    client.get(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(subUid, "Point")).await().expectMany()
 
   }
 
@@ -80,18 +80,18 @@ class EntityRequestTest
     val desc = <div>Instead of starting the query with a UID, this finds all the entities of type "Point" and any "feedback" relationships to entities of type "Command"</div>
 
     client.addExplanation("Abstract root set", desc)
-    client.getOrThrow(EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands())
+    client.get(EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands()).await().expectMany()
 
   }
 
   test("Multilevel") {
-    val subs = client.getOrThrow(EntityRequestBuilders.getByType("Substation"))
+    val subs = client.get(EntityRequestBuilders.getByType("Substation")).await().expectMany()
     val subUid = subs.head.getUuid
 
     val desc = <div>Starting from a root node ("Substation"), the request asks for children of type "Breaker", and children of those of type "Point".</div>
 
     client.addExplanation("Multi-level tree query", desc)
-    val resp = client.getOrThrow(EntityRequestBuilders.getAllPointsSortedByOwningEquipment(subUid))
+    val resp = client.get(EntityRequestBuilders.getAllPointsSortedByOwningEquipment(subUid)).await().expectMany()
 
   }
 }

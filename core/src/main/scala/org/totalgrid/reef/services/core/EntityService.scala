@@ -21,16 +21,18 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 import org.totalgrid.reef.api.service.SyncServiceBase
+import org.totalgrid.reef.services.framework.SquerylModel
 
 class EntityService extends SyncServiceBase[EntityProto] {
 
@@ -47,9 +49,7 @@ class EntityService extends SyncServiceBase[EntityProto] {
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     transaction {
-      reefLogger.info("Query: {}", req)
       val result = EQ.fullQuery(req);
-      reefLogger.info("Result: {}", result)
       Response(Envelope.Status.OK, result)
     }
   }

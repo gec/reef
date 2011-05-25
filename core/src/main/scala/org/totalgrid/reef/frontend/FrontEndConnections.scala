@@ -20,18 +20,20 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.{ Commands, Measurements }
+import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP.CommChannel
 import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.scalaclient.ISessionPool
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.{ IProtocol, IPublisher, ICommandHandler, IResponseHandler, IChannelListener, IEndpointListener }
+import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.api._
 import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.japi.{ ReefServiceException, ResponseTimeoutException }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
@@ -39,6 +41,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   def getKey(c: ConnProto) = c.getUid
 
   val protocols = comms.mapify { _.name }
+
+  val pool = conn.getSessionPool
 
   val maxAttemptsToRetryMeasurements = 1
 
@@ -79,14 +83,12 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
-  private def newEndpointListener(connectionUid: String) = new IEndpointListener {
+  private def newEndpointListener(connectionUid: String) = new IListener[ConnProto.State] {
 
-    val session = conn.getClientSession
-
-    override def onStateChange(state: ConnProto.State) = {
+    override def onUpdate(state: ConnProto.State) = {
       val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
       try {
-        val result = session.postOneOrThrow(update)
+        val result = pool.borrow { _.post(update).await().expectOne }
         info { "Updated connection state: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
@@ -94,14 +96,12 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newChannelListener(channelUid: ReefUUID) = new IChannelListener {
+  private def newChannelListener(channelUid: ReefUUID) = new IListener[CommChannel.State] {
 
-    val session = conn.getClientSession
-
-    override def onStateChange(state: CommChannel.State) = {
+    override def onUpdate(state: CommChannel.State) = {
       val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
       try {
-        val result = session.postOneOrThrow(update)
+        val result = pool.borrow { _.post(update).await().expectOne }
         info { "Updated channel: " + result }
       } catch {
         case ex: ReefServiceException => error(ex)
@@ -113,9 +113,11 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   /**
    * push measurement batchs to the addressable service
    */
-  private def batchPublish(client: ClientSession, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
+  private def batchPublish(pool: ISessionPool, attempts: Int, dest: IDestination)(x: Measurements.MeasurementBatch): Unit = {
     try {
-      client.putOrThrow(x, destination = dest)
+      pool.borrow {
+        _.put(x, destination = dest).await().expectOne
+      }
     } catch {
       case a: ResponseTimeoutException =>
         if (attempts >= maxAttemptsToRetryMeasurements) {
@@ -123,7 +125,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
           error(a)
         } else {
           info("Retrying publishing measurements : " + x.getMeasCount)
-          batchPublish(client, attempts + 1, dest)(x)
+          batchPublish(pool, attempts + 1, dest)(x)
         }
       case e: Exception =>
         error("Error publishing measurements to MeasurementProcessor at: " + dest)
@@ -131,13 +133,10 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newPublisher(routingKey: String) = new IPublisher {
+  private def newPublisher(routingKey: String) = new IListener[MeasurementBatch] {
 
-    val session = conn.getClientSession
+    override def onUpdate(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableService(routingKey))(batch)
 
-    override def publish(batch: Measurements.MeasurementBatch) = batchPublish(session, 0, AddressableService(routingKey))(batch)
-
-    override def close() = session.close
   }
 }
 

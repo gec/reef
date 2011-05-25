@@ -22,21 +22,22 @@ package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.reactor.ReactActor
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.api.{ ServiceHandlerHeaders, IConnectionListener }
+import org.totalgrid.reef.api.ServiceHandlerHeaders
 import org.totalgrid.reef.proto.ReefServicesList
 import utils.InteractionRecorder
 import xml.Node
-import org.totalgrid.reef.util.{ SystemPropertyConfigReader, SyncVar }
-import org.totalgrid.reef.messaging.{ BrokerConnectionInfo, ProtoClient }
+import org.totalgrid.reef.util.SystemPropertyConfigReader
+import org.totalgrid.reef.messaging.ProtoClient
+import org.totalgrid.reef.broker.BrokerConnectionInfo
 
-import org.totalgrid.reef.api.ServiceTypes.Event
-import org.totalgrid.reef.api.javaclient.IEventAcceptor
-class IEventAcceptorShim[T](fun: Event[T] => _) extends IEventAcceptor[T] {
-  def onEvent(event: Event[T]) = fun(event)
+import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
+
+class SubscriptionEventAcceptorShim[T](fun: SubscriptionEvent[T] => _) extends SubscriptionEventAcceptor[T] {
+  def onEvent(event: SubscriptionEvent[T]) = fun(event)
 }
 
 abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
@@ -50,6 +51,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
   override def afterAll() {
     factory.disconnect(5000)
+
     client.save(file, title, desc)
   }
 
@@ -73,7 +75,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
     val agent = Agent.newBuilder.setName(username).setPassword(password).build
     val request = AuthToken.newBuilder.setAgent(agent).build
-    val response = client.putOneOrThrow(request)
+    val response = client.put(request).await().expectOne
 
     client.getDefaultHeaders.addAuthToken(response.getToken)
 

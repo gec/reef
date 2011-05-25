@@ -19,10 +19,12 @@
         <module>proto</module>
         <module>api</module>
         <module>api-request</module>
+        <module>java-rest-api</module>
         <module>xml</module>
         <module>util</module>
         <module>metrics</module>
         <module>amqp</module>
+        <module>broker</module>
         <module>persistence-api</module>
         <module>persistence-postgresql</module>
         <module>measurementstore-api</module>
@@ -171,7 +173,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-							  <version>2.1.2</version>
+				<version>2.1.2</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

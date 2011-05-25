@@ -27,7 +27,7 @@ import org.totalgrid.reef.app.ServiceContext
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.api.scalaclient.ClientSession
-import org.totalgrid.reef.api.ServiceTypes.{ SingleSuccess, Failure }
+import org.totalgrid.reef.api.scalaclient.{ SingleSuccess }
 
 import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
 
@@ -38,6 +38,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.app.{ ServiceHandler }
+import javax.jms.Session
 
 object FrontEndActor {
   val retryms = 5000
@@ -47,7 +48,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
     extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
 
   //helper objects that sets up all of the services/publishers from abstract registries
-  val session = conn.getClientSession()
+  val pool = conn.getSessionPool()
   val connections = new FrontEndConnections(protocols, conn)
 
   /* ---- Implement ServiceContext[Endpoint] ---- */
@@ -78,16 +79,18 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
 
     val cp = ConnProto.newBuilder(conn)
 
-    val ep = client.getOneOrThrow(conn.getEndpoint)
+    val ep = client.get(conn.getEndpoint).await().expectOne
     val endpoint = ConfigProto.newBuilder(ep)
 
-    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getOneOrThrow(cf)))
+    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.get(cf).await().expectOne))
 
-    if (ep.hasChannel) endpoint.setChannel(client.getOneOrThrow(ep.getChannel))
+    if (ep.hasChannel) endpoint.setChannel(client.get(ep.getChannel).await().expectOne)
     cp.setEndpoint(endpoint).build()
   }
 
-  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = fun(loadOrThrow(session, conn))
+  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = {
+    fun(pool.borrow(loadOrThrow(_, conn)))
+  }
 
   def subscribed(list: List[ConnProto]) = list.foreach(add)
 
@@ -113,21 +116,23 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
       msg.addProtocols(p.name)
     }.setAppConfig(appConfig).build
 
-    session.asyncPutOne(msg) {
-      _ match {
-        case SingleSuccess(status, fem) =>
-          eventLog.event(EventType.System.SubsystemStarted)
-          info {
-            "Got uid: " + fem.getUuid.getUuid
-          }
-          val query = ConnProto.newBuilder.setFrontEnd(fem).build
-          // this is where we actually bind up the service calls
-          this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
-        case x: Failure =>
-          warn(x)
-          delay(retryms) {
-            annouce
-          }
+    pool.borrow { session =>
+      session.put(msg).listen { rsp =>
+        rsp match {
+          case SingleSuccess(_, fep) =>
+            eventLog.event(EventType.System.SubsystemStarted)
+            info {
+              "Got uid: " + fep.getUuid.getUuid
+            }
+            val query = ConnProto.newBuilder.setFrontEnd(fep).build
+            // this is where we actually bind up the service calls
+            this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
+          case _ =>
+            warn("Unexpected response: " + rsp.toString)
+            delay(retryms) {
+              annouce
+            }
+        }
       }
     }
   }

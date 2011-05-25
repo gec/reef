@@ -57,25 +57,25 @@ class EventConfigRequestTest
 
   test("Create Log, Event, Alarm configurations") {
     client.addExplanation("Treat as Log", "When ")
-    client.putOneOrThrow(EventConfigRequestBuilders.makeLog("Demo.AsLog", "Log Message", 1))
+    client.put(EventConfigRequestBuilders.makeLog("Demo.AsLog", "Log Message", 1)).await().expectOne
 
     client.addExplanation("Treat as Event", "")
-    client.putOneOrThrow(EventConfigRequestBuilders.makeEvent("Demo.AsEvent", "Event Message", 2))
+    client.put(EventConfigRequestBuilders.makeEvent("Demo.AsEvent", "Event Message", 2)).await().expectOne
 
     client.addExplanation("Treat as Alarm", "")
-    client.putOneOrThrow(EventConfigRequestBuilders.makeAudibleAlarm("Demo.AsAlarm", "Alarm Message", 3))
+    client.put(EventConfigRequestBuilders.makeAudibleAlarm("Demo.AsAlarm", "Alarm Message", 3)).await().expectOne
 
     client.addExplanation("Post an Event", "Post an event that is configured to make an event entry in the table.")
-    client.putOneOrThrow(EventRequestBuilders.makeNewEventForEntityByName("Demo.AsEvent", "StaticSubstation.Line02.Current"))
+    client.put(EventRequestBuilders.makeNewEventForEntityByName("Demo.AsEvent", "StaticSubstation.Line02.Current")).await().expectOne
 
     client.addExplanation("Post a Log", "When we post an event that is downgraded to a log message the result doesn't have the UID field set since they werenot stored in database")
-    client.putOneOrThrow(EventRequestBuilders.makeNewEventForEntityByName("Demo.AsLog", "StaticSubstation.Line02.Current"))
+    client.put(EventRequestBuilders.makeNewEventForEntityByName("Demo.AsLog", "StaticSubstation.Line02.Current")).await().expectOne
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    client.putOneOrThrow(EventConfigRequestBuilders.makeLog("Demo.Formatting", "Attributes name: {name} value: {value}", 1))
+    client.put(EventConfigRequestBuilders.makeLog("Demo.Formatting", "Attributes name: {name} value: {value}", 1)).await().expectOne
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    client.putOneOrThrow(EventRequestBuilders.makeNewEventWithAttributes("Demo.Formatting", "name" -> "abra", "value" -> "cadabra"))
+    client.put(EventRequestBuilders.makeNewEventWithAttributes("Demo.Formatting", "name" -> "abra", "value" -> "cadabra")).await().expectOne
   }
 
 }

@@ -26,9 +26,9 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.BlockingQueue
-import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, Measurement }
-import org.totalgrid.reef.api.BadRequestException
-import org.totalgrid.reef.api.ServiceTypes.Event
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.japi.client.SubscriptionEvent
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryTest
@@ -65,7 +65,7 @@ class MeasurementHistoryTest
     val last2 = client.subscribeToMeasurementHistory(point, now + 9, 100)
     last2.getResult.map { _.getDoubleVal } should equal(List(startValue + 9, startValue + 10))
 
-    last2.getSubscription.start(new IEventAcceptorShim[Measurement]({ ea: Event[Measurement] => queue.push(ea.result) }))
+    last2.getSubscription.start(new SubscriptionEventAcceptorShim[Measurement]({ ea: SubscriptionEvent[Measurement] => queue.push(ea.getValue()) }))
 
     client.addExplanation("Get measurements in range", "We can ask for a specific time range of measurements, this implies not getting live data.")
     val middle = client.getMeasurementHistory(point, now + 3, now + 5, true, 100)

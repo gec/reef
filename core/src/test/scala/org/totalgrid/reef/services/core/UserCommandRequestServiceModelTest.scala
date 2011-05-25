@@ -26,13 +26,11 @@ import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Model.{ Command => FepCommand }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.proto.Commands.{ CommandResponse, CommandAccess }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandAccess }
 import CommandAccess._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
-import org.totalgrid.reef.api.{ Envelope, ReefServiceException }
+import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Command => FepCommandModel, UserCommandModel, CommandAccessModel, CommandBlockJoin }
 
 @RunWith(classOf[JUnitRunner])

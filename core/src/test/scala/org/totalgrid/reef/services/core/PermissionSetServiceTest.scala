@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.Auth._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])
@@ -58,36 +58,36 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
   test("PermissionSet create, update and delete") {
     val fix = new Fixture
 
-    val permissionSet1 = one(fix.permissionSetService.put(makePermissionSet()))
+    val permissionSet1 = fix.permissionSetService.put(makePermissionSet()).expectOne()
     permissionSet1.getPermissionsCount should equal(1)
     permissionSet1.getDefaultExpirationTime should not equal (10000)
 
-    val permissionSet2 = one(fix.permissionSetService.put(makePermissionSet(expirationTime = Some(10000))))
+    val permissionSet2 = fix.permissionSetService.put(makePermissionSet(expirationTime = Some(10000))).expectOne()
     permissionSet2.getDefaultExpirationTime should equal(10000)
 
-    val permissionSet3 = one(fix.permissionSetService.put(makePermissionSet(deniedPermissions = List(VerbResource("*", "*")))))
+    val permissionSet3 = fix.permissionSetService.put(makePermissionSet(deniedPermissions = List(VerbResource("*", "*")))).expectOne()
     permissionSet3.getPermissionsCount should equal(2)
 
-    one(fix.permissionSetService.delete(makePermissionSet()))
+    fix.permissionSetService.delete(makePermissionSet()).expectOne()
 
   }
 
   test("PermissionSet View and Cleanup") {
     val fix = new Fixture
 
-    one(fix.permissionSetService.put(makePermissionSet("all")))
-    one(fix.permissionSetService.put(makePermissionSet("read_only")))
-    one(fix.permissionSetService.put(makePermissionSet("set3")))
+    fix.permissionSetService.put(makePermissionSet("all")).expectOne()
+    fix.permissionSetService.put(makePermissionSet("read_only")).expectOne()
+    fix.permissionSetService.put(makePermissionSet("set3")).expectOne()
 
-    many(3, fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build))
-    many(3, fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
+    fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectMany(3)
+    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectMany(3)
 
-    one(fix.permissionSetService.delete(makePermissionSet("all")))
-    one(fix.permissionSetService.delete(makePermissionSet("read_only")))
-    one(fix.permissionSetService.delete(makePermissionSet("set3")))
+    fix.permissionSetService.delete(makePermissionSet("all")).expectOne()
+    fix.permissionSetService.delete(makePermissionSet("read_only")).expectOne()
+    fix.permissionSetService.delete(makePermissionSet("set3")).expectOne()
 
-    many(0, fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build))
-    many(0, fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build))
+    fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectNone()
+    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectNone()
 
     import org.squeryl.PrimitiveTypeMode._
     import org.totalgrid.reef.models.ApplicationSchema

@@ -26,7 +26,6 @@ import java.io.FileInputStream
 class FileConfigReader(file: String) extends ConfigReader {
   val fis = new FileInputStream(file)
   val props = new Properties
-
   try {
     props.load(fis)
   } finally {

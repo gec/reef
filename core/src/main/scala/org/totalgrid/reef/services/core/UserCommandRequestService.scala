@@ -20,24 +20,24 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.scalaclient.ClientSessionExecutionPool
+import org.totalgrid.reef.api.scalaclient.ISessionPool
 
 import org.totalgrid.reef.proto.Commands
 import Commands.UserCommandRequest
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.ServiceTypes.{ Failure, SingleSuccess, Response }
 import org.totalgrid.reef.api.service.ServiceTypeIs
-import org.totalgrid.reef.api.auth.IAuthService
+import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.{ RequestEnv, AddressableService }
 
 import org.totalgrid.reef.services.framework._
 import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
-import org.totalgrid.reef.api.{ RequestEnv, Envelope, BadRequestException, AddressableService }
-import org.totalgrid.reef.models.{ Command, UserCommandModel, ApplicationSchema }
+import org.totalgrid.reef.models.{ Command, UserCommandModel }
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ClientSessionExecutionPool)
+  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: ISessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled
@@ -48,7 +48,7 @@ class UserCommandRequestService(
 
   override def doAsyncPutPost(rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
 
-    val request = rsp.result.head
+    val request = rsp.expectOne
 
     val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
@@ -61,12 +61,8 @@ class UserCommandRequestService(
       case None => throw new BadRequestException("Command has no endpoint set " + request)
     }
 
-    pool.execute { session =>
-      session.asyncPutOne(request, dest = address) { result =>
-        val response: Response[UserCommandRequest] = result match {
-          case SingleSuccess(status, cmd) => Response(status, UserCommandRequest.newBuilder(request).setStatus(cmd.getStatus).build :: Nil)
-          case Failure(status, msg) => Response(status, error = msg)
-        }
+    pool.borrow { session =>
+      session.put(request, destination = address).listen { response =>
         callback(response)
       }
     }

@@ -80,14 +80,15 @@ class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with Be
 
       val client = amqp.getProtoClientSession(ReefServicesList, 500000)
 
-      val getMeas1 = client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").build)
+      val getMeas1 = client.get(MeasurementHistory.newBuilder.setPointName("meas1").build).await().expectOne()
       getMeas1.getMeasurementsCount() should equal(2)
+
       validateHistorian(historian, 0, Long.MaxValue, service.HISTORY_LIMIT, false)
 
-      client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build)
+      client.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).await().expectOne()
       validateHistorian(historian, 10, 1000, service.HISTORY_LIMIT, false)
 
-      client.getOneOrThrow(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build)
+      client.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).await().expectOne()
       validateHistorian(historian, 0, Long.MaxValue, 99, false)
     }
   }

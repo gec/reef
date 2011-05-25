@@ -22,6 +22,7 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 
+import Measurements.MeasurementBatch
 import FEP.CommChannel
 
 object IProtocol {
@@ -29,43 +30,37 @@ object IProtocol {
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
     files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
   }
-}
+  /*
+  type IPublisher = IListener[MeasurementBatch]
+  type IChannelListener = IListener[CommChannel.State]
+  type IEndpointListener = IListener[FEP.CommEndpointConnection.State]
 
-trait IPublisher {
-  def publish(batch: Measurements.MeasurementBatch): Unit
-  def close()
-}
-
-trait IResponseHandler {
-  def onResponse(rsp: Commands.CommandResponse): Unit
+  type ChannelState = CommChannel.State
+  type EndpointState = FEP.CommEndpointConnection.State
+  */
 }
 
 trait ICommandHandler {
-  def issue(cmd: Commands.CommandRequest, rspHandler: IResponseHandler)
+  def issue(cmd: Commands.CommandRequest, listener: IListener[Commands.CommandResponse])
 }
 
-trait IEndpointListener {
-  def onStateChange(state: FEP.CommEndpointConnection.State)
+trait IListener[A] {
+  def onUpdate(value: A)
 }
 
-trait IChannelListener {
-  def onStateChange(state: CommChannel.State)
+trait NullListener[A] extends IListener[A] {
+  final override def onUpdate(value: A) = {}
 }
 
-case object NullPublisher extends IPublisher {
-  def publish(batch: Measurements.MeasurementBatch): Unit = {}
-  def close() {}
-}
+case object NullPublisher extends NullListener[Measurements.MeasurementBatch]
 
-case object NullEndpointListener extends IEndpointListener {
-  def onStateChange(state: FEP.CommEndpointConnection.State) = {}
-}
+case object NullEndpointListener extends NullListener[FEP.CommEndpointConnection.State]
 
-case object NullChannelListener extends IChannelListener {
-  def onStateChange(state: CommChannel.State) = {}
-}
+case object NullChannelListener extends NullListener[CommChannel.State]
 
 trait IProtocol {
+
+  import IProtocol._
 
   /**
    * @return Unique name, i.e. 'dnp3'
@@ -78,9 +73,15 @@ trait IProtocol {
    */
   def requiresChannel: Boolean
 
-  def addChannel(channel: FEP.CommChannel, listener: IChannelListener): Unit
-  def removeChannel(channel: String): IChannelListener
+  def addChannel(channel: FEP.CommChannel, channelListener: IListener[CommChannel.State]): Unit
 
-  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: IPublisher, listener: IEndpointListener): ICommandHandler
-  def removeEndpoint(endpoint: String): IEndpointListener
+  def removeChannel(channel: String): IListener[CommChannel.State]
+
+  def addEndpoint(endpoint: String,
+    channelName: String,
+    config: List[Model.ConfigFile],
+    publish: IListener[MeasurementBatch],
+    epListener: IListener[FEP.CommEndpointConnection.State]): ICommandHandler
+
+  def removeEndpoint(endpoint: String): IListener[FEP.CommEndpointConnection.State]
 }

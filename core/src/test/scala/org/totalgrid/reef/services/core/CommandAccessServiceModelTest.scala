@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.japi.ReefServiceException
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.models._

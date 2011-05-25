@@ -24,16 +24,14 @@ import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
-import org.totalgrid.reef.proto.{ Measurements, Processing }
-
-import Measurements._
-import Processing._
-
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
-import org.totalgrid.reef.proto.{ RoutingKeys, ReefServicesList }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
 import org.totalgrid.reef.api.AddressableService
 import org.totalgrid.reef.metrics.MetricsHookContainer
+import org.totalgrid.reef.proto._
+
+import Measurements._
+import Processing._
 
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.
@@ -52,10 +50,10 @@ class MeasurementStreamProcessingNode(
   // the main actor 
   val provider = new ServiceHandlerProvider(registry, new ServiceHandler { def execute(fun: => Unit) = reactor.execute(fun) })
 
-  val eventSink = amqp.publish(connection.getRouting.getRawEventDest, RoutingKeys.event)
+  val eventSink = amqp.publish(connection.getRouting.getRawEventDest, RoutingKeys.event, Descriptors.event.serialize)
 
   val processor = ProcessingNode(
-    amqp.publish(connection.getRouting.getProcessedMeasDest, RoutingKeys.measurement),
+    amqp.publish(connection.getRouting.getProcessedMeasDest, RoutingKeys.measurement, Descriptors.measurement.serialize),
     connection.getLogicalNode,
     provider,
     measCache,
@@ -73,7 +71,7 @@ class MeasurementStreamProcessingNode(
 
     val connectionBuilder = connection.toBuilder.setReadyTime(System.currentTimeMillis)
 
-    client.putOne(connectionBuilder.build)
+    client.put(connectionBuilder.build).await().expectOne
   }
 
   def start() = reactor.start

@@ -167,7 +167,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     val errorMsg = "Endpoint '" + endpointName + "':"
     val isBenchmark = overriddenProtocolName == BENCHMARK
     ex.collect("Checking Indexes: " + endpointName) {
-      validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg)
+      validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg, compareControls)
       validateIndexesAreUnique[Setpoint](setpoints, isBenchmark, errorMsg)
       validateIndexesAreUnique[PointType](statuses, isBenchmark, errorMsg)
       validateIndexesAreUnique[PointType](analogs, isBenchmark, errorMsg)
@@ -204,11 +204,24 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
   }
 
+  private def compareControls(a: Control, b: Control): Boolean = {
+    if (a.isSetOptionsDnp3 != b.isSetOptionsDnp3) return false
+    if (!a.isSetOptionsDnp3) return false
+
+    val optA = a.getOptionsDnp3
+    val optB = b.getOptionsDnp3
+
+    return (optA.isSetCount == optB.isSetCount && (!optA.isSetCount || optA.getCount == optB.getCount)) &&
+      (optA.isSetType == optB.isSetType && (!optA.isSetType || optA.getType == optB.getType)) &&
+      (optA.isSetOnTime == optB.isSetOnTime && (!optA.isSetOnTime || optA.getOnTime == optB.getOnTime)) &&
+      (optA.isSetOffTime == optB.isSetOffTime && (!optA.isSetOffTime || optA.getOffTime == optB.getOffTime))
+  }
+
   /**
    * The indexes for controls and points have to be unique for each type.
    */
-  def validateIndexesAreUnique[A <: IndexType](indexables: HashMap[String, A], isBenchmark: Boolean, error: String): Unit = {
-    val map = HashMap[Int, String]()
+  def validateIndexesAreUnique[A <: IndexType](indexables: HashMap[String, A], isBenchmark: Boolean, error: String, equalsFunc: (A, A) => Boolean = { (a: A, b: A) => true }) {
+    val map = HashMap[Int, A]()
     for ((name, indexable) <- indexables) {
       // if there are indexes, check them
       // if the originalProtocol is benchmark, indexes are optional
@@ -216,8 +229,9 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       if (indexable.isSetIndex) {
         val index = indexable.getIndex
         map.contains(index) match {
-          case true => throw new LoadingException(error + " both '" + name + "' and '" + map(index) + "' cannot use the same index=\"" + index + "\"")
-          case false => map += (index -> name)
+          case true =>
+            if (equalsFunc(indexable, map(index))) throw new LoadingException(error + " both '" + name + "' and '" + map(index).getName + "' cannot use the same index=\"" + index + "\"")
+          case false => map += (index -> indexable)
         }
       } else {
         if (!isBenchmark)

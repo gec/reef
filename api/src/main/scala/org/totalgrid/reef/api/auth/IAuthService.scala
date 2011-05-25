@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.api.auth
 
-import org.totalgrid.reef.api.{ RequestEnv, Envelope }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.RequestEnv
 
 case class AuthDenied(val reason: String, val status: Envelope.Status)
 

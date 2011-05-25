@@ -26,11 +26,14 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
+import org.totalgrid.reef.proto.Descriptors
 
 abstract class ProcessHeartbeatActor(amqp: AMQPProtoFactory, configuration: HeartbeatConfig)
     extends Reactable with Lifecycle {
 
-  val publish = amqp.publish(configuration.getDest, { s: StatusSnapshot => configuration.getRoutingKey })
+  private def route(s: StatusSnapshot) = configuration.getRoutingKey
+
+  val publish = amqp.publish(configuration.getDest, route, Descriptors.statusSnapshot.serialize)
 
   private def makeProto(online: Boolean): StatusSnapshot = {
     StatusSnapshot.newBuilder

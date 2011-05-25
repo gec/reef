@@ -22,6 +22,8 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.api.IRoutingKey
 
+import org.totalgrid.reef.broker._
+
 /**
  * base class for AMQP subscripton modes, provides online/offline notifiers
  */

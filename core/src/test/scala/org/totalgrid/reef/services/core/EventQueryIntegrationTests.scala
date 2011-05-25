@@ -24,10 +24,10 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
-import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto, EventSelect }
-import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.proto.Events.{ EventList => EventListProto, EventSelect }
+import org.totalgrid.reef.proto.Alarms.{ EventConfig => EventConfigProto }
+import org.totalgrid.reef.japi.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryIntegrationTests extends EventIntegrationTestsBase {
@@ -55,7 +55,7 @@ class EventQueryIntegrationTests extends EventIntegrationTestsBase {
       val expected = expected1 :: expected2 :: expected3 :: expected4 :: expected5 :: expected6 :: Nil
       val not = not1 :: not2 :: not3 :: not4 :: not5 :: Nil
 
-      val event = one(fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")))
+      val event = fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")).expectOne()
 
       expected.foreach(_.pop(500) should equal(event))
       not.foreach(_.size should equal(0))

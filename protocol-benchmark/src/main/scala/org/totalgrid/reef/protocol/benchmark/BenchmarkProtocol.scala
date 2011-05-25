@@ -27,6 +27,7 @@ import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.protocol.api._
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
@@ -69,7 +70,11 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline
       r
   }
 
-  def _addEndpoint(endpoint: String, channel: String, files: List[Model.ConfigFile], publisher: IPublisher, listener: IEndpointListener): ICommandHandler = {
+  def _addEndpoint(endpoint: String,
+    channel: String,
+    files: List[Model.ConfigFile],
+    publisher: IListener[MeasurementBatch],
+    listener: IListener[FEP.CommEndpointConnection.State]): ICommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 

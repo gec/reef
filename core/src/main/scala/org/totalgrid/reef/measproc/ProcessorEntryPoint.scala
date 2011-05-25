@@ -21,16 +21,17 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
-import org.totalgrid.reef.messaging.BrokerConnectionInfo
-
 import org.totalgrid.reef.util.ShutdownHook
 import org.totalgrid.reef.reactor.{ ReactActor, Lifecycle }
 
 import org.totalgrid.reef.app.{ ApplicationEnroller }
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
+
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+
+import org.totalgrid.reef.broker.BrokerConnectionInfo
 
 /**
  *  Contains entry point specific code for the measurement processor
@@ -50,6 +51,7 @@ object ProcessorEntryPoint extends ShutdownHook {
     val amqp = new AMQPProtoFactory with ReactActor {
       val broker = new QpidBrokerConnection(bi)
     }
+
     val enroller = new ApplicationEnroller(amqp, None, List("Processing"), new FullProcessor(_, measInfo)) with ReactActor
 
     List(amqp, enroller)

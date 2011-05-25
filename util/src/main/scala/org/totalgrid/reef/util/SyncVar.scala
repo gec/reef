@@ -23,7 +23,7 @@ package org.totalgrid.reef.util
 import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 
-class EmptySyncVar[A <: Any] extends SyncVar[A] {
+class EmptySyncVar[A] extends SyncVar[A] {
 
   override def evaluate(fun: A => Boolean): Boolean = {
     if (queue.size == 0) false
@@ -31,8 +31,41 @@ class EmptySyncVar[A <: Any] extends SyncVar[A] {
   }
 }
 
+class AsyncValue[A] {
+  private var option: Option[A] = None
+  private val mutex = new Object
+
+  def set(value: A): Unit = mutex.synchronized {
+    option match {
+      case Some(x) => throw new IllegalStateException("Value has already been set")
+      case None =>
+        option = Some(value)
+        mutex.notifyAll()
+    }
+  }
+
+  def await(timeout: Long = 5000): A = {
+
+    @tailrec
+    def await(expectSet: Boolean): A = option match {
+      case Some(x) => x
+      case None =>
+        if (expectSet) throw new Exception("Value was never set")
+        else {
+          mutex.wait(timeout)
+          await(true)
+        }
+    }
+
+    mutex.synchronized {
+      await(false)
+    }
+  }
+
+}
+
 // New implementation of sync var uses standard synchronization and a mutable queue
-class SyncVar[A <: Any](initialValue: Option[A] = None) {
+class SyncVar[A](initialValue: Option[A] = None) {
 
   def this(initialValue: A) = this(Some(initialValue))
 

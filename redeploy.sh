@@ -1,6 +1,6 @@
 set -ex
 
-reefdir=reef-karaf-linux-0.3.0-SNAPSHOT-dist
+reefdir=reef-karaf-0.3.0-SNAPSHOT-dist
 
 $reefdir/bin/stop > /dev/null 2>&1 || true
 
@@ -17,4 +17,3 @@ cd $reefdir
 
 cd $current
 
-                                           ``

@@ -44,10 +44,10 @@ object ServiceBootstrap {
     val authService = new core.AuthTokenService(modelFac.authTokens)
 
     val login = ApplicationEnroller.buildLogin()
-    val authToken = authService.put(login).result.head
+    val authToken = authService.put(login).expectOne
 
     val config = ApplicationEnroller.buildConfig(List("Services"))
-    val appConfig = applicationConfigService.put(config).result.head
+    val appConfig = applicationConfigService.put(config).expectOne
 
     // the measurement batch service acts as a type of manual FEP
     val msg = FrontEndProcessor.newBuilder

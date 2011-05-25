@@ -25,8 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.proto.Auth.{ PermissionSet, Agent }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.api.BadRequestException
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.ApplicationSchema
 
 @RunWith(classOf[JUnitRunner])
@@ -74,11 +73,11 @@ class AgentServiceTest extends AuthSystemTestBase {
       fix.login("Nate", "password")
     }
 
-    val agent = one(fix.agentService.put(makeAgent()))
+    val agent = fix.agentService.put(makeAgent()).expectOne()
 
     fix.login("Nate", "password")
 
-    val deleted = fix.agentService.delete(agent)
+    val deleted = fix.agentService.delete(agent).expectOne()
 
     intercept[BadRequestException] {
       fix.login("Nate", "password")
@@ -88,11 +87,11 @@ class AgentServiceTest extends AuthSystemTestBase {
   test("Update Agent Password") {
     val fix = new Fixture
 
-    val agent1 = one(fix.agentService.put(makeAgent()))
+    val agent1 = fix.agentService.put(makeAgent()).expectOne()
 
     fix.login("Nate", "password")
 
-    val agent2 = one(fix.agentService.put(makeAgent(password = Some("newPassword"))))
+    val agent2 = fix.agentService.put(makeAgent(password = Some("newPassword"))).expectOne()
 
     intercept[BadRequestException] {
       fix.login("Nate", "password")
@@ -104,29 +103,29 @@ class AgentServiceTest extends AuthSystemTestBase {
   test("Update Agent Permissions") {
     val fix = new Fixture
 
-    val agent1 = one(fix.agentService.put(makeAgent(permissionSetNames = List("read_only"))))
+    val agent1 = fix.agentService.put(makeAgent(permissionSetNames = List("read_only"))).expectOne()
     agent1.getPermissionSets(0).getName should equal("read_only")
 
-    val agent2 = one(fix.agentService.put(makeAgent(permissionSetNames = List("all"))))
+    val agent2 = fix.agentService.put(makeAgent(permissionSetNames = List("all"))).expectOne()
     agent2.getPermissionSets(0).getName should equal("all")
 
-    val agent3 = one(fix.agentService.put(makeAgent(permissionSetNames = List("all", "read_only"))))
+    val agent3 = fix.agentService.put(makeAgent(permissionSetNames = List("all", "read_only"))).expectOne()
     agent3.getPermissionSetsList.toList.map { _.getName }.sorted should equal(List("all", "read_only"))
   }
 
   test("Cannot update both password and permissions") {
     val fix = new Fixture
-    one(fix.agentService.put(makeAgent()))
+    fix.agentService.put(makeAgent()).expectOne()
 
     intercept[BadRequestException] {
-      one(fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))))
+      fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))).expectOne()
     }
   }
 
   test("Deleting Agent invalidates AuthTokens") {
     val fix = new Fixture
 
-    one(fix.agentService.put(makeAgent()))
+    fix.agentService.put(makeAgent()).expectOne()
 
     // each login generates an auth token
     fix.login("Nate", "password")
@@ -136,7 +135,7 @@ class AgentServiceTest extends AuthSystemTestBase {
     transaction {
       ApplicationSchema.authTokens.size should equal(2)
 
-      one(fix.agentService.delete(makeAgent()))
+      fix.agentService.delete(makeAgent()).expectOne()
 
       ApplicationSchema.authTokens.size should equal(0)
     }

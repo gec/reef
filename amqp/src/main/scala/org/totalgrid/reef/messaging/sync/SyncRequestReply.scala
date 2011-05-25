@@ -22,7 +22,9 @@ package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.messaging._
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
+
+import org.totalgrid.reef.broker._
 
 class ProtoSyncRequestReply(channel: BrokerChannel)
   extends SyncRequestReply[Envelope.ServiceRequest, Envelope.ServiceResponse](
@@ -68,7 +70,8 @@ class SyncRequestReply[S, R](
       try {
         handle.onResponse(deseralize(bytes)) //forward the deserialized response somewhere else
       } catch {
-        case ex: Exception => reefLogger.error("failed handling response of receive: handle: " + handle, ex);
+        case ex: Exception =>
+          reefLogger.error("failed handling service response with: ", handle, ex)
       }
     case None => error("Response callback has not been set")
   }

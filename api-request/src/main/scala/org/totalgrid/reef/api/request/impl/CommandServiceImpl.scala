@@ -20,80 +20,76 @@
  */
 package org.totalgrid.reef.api.request.impl
 
-import org.totalgrid.reef.proto.Commands.{ UserCommandRequest, CommandStatus, CommandAccess }
-import org.totalgrid.reef.proto.Model.{ Command, ReefUUID }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
+import org.totalgrid.reef.proto.Model.Command
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
-import org.totalgrid.reef.api.ServiceTypes
 import org.totalgrid.reef.api.request.{ CommandService }
 
 trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 
-  def createCommandExecutionLock(id: Command): CommandAccess = createCommandExecutionLock(id :: Nil)
-  def createCommandExecutionLock(ids: java.util.List[Command]): CommandAccess = {
-    ops { _.putOneOrThrow(CommandAccessRequestBuilders.allowAccessForCommands(ids)) }
+  override def createCommandExecutionLock(id: Command): CommandAccess = createCommandExecutionLock(id :: Nil)
+
+  override def createCommandExecutionLock(ids: java.util.List[Command]): CommandAccess = ops {
+    _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids)).await().expectOne
   }
 
-  def deleteCommandLock(uid: String): CommandAccess = {
-    ops { _.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(uid)) }
-  }
-  def deleteCommandLock(ca: CommandAccess): CommandAccess = {
-    ops { _.deleteOneOrThrow(CommandAccessRequestBuilders.getForUid(ca.getUid)) }
+  override def deleteCommandLock(uid: String): CommandAccess = ops {
+    _.delete(CommandAccessRequestBuilders.getForUid(uid)).await().expectOne
   }
 
-  def clearCommandLocks(): java.util.List[CommandAccess] = {
-    ops { _.deleteOrThrow(CommandAccessRequestBuilders.getAll) }
+  override def deleteCommandLock(ca: CommandAccess): CommandAccess = ops {
+    _.delete(CommandAccessRequestBuilders.getForUid(ca.getUid)).await().expectOne
   }
 
-  def executeCommandAsControl(id: Command): CommandStatus = {
-    val result = ops { _.putOneOrThrow(UserCommandRequestBuilders.executeControl(id)) }
-    result.getStatus
+  override def clearCommandLocks(): java.util.List[CommandAccess] = ops {
+    _.delete(CommandAccessRequestBuilders.getAll).await().expectMany()
   }
 
-  def executeCommandAsSetpoint(id: Command, value: Double): CommandStatus = {
-    val result = ops { _.putOneOrThrow(UserCommandRequestBuilders.executeSetpoint(id, value)) }
-    result.getStatus
+  override def executeCommandAsControl(id: Command): CommandStatus = ops {
+    _.put(UserCommandRequestBuilders.executeControl(id)).await().expectOne.getStatus
   }
 
-  def executeCommandAsSetpoint(id: Command, value: Int): CommandStatus = {
-    val result = ops { _.putOneOrThrow(UserCommandRequestBuilders.executeSetpoint(id, value)) }
-    result.getStatus
+  override def executeCommandAsSetpoint(id: Command, value: Double): CommandStatus = ops {
+    _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).await().expectOne.getStatus
   }
 
-  def createCommandDenialLock(ids: java.util.List[Command]): CommandAccess = {
-    ops { _.putOneOrThrow(CommandAccessRequestBuilders.blockAccessForCommands(ids)) }
+  override def executeCommandAsSetpoint(id: Command, value: Int): CommandStatus = ops {
+    _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).await().expectOne.getStatus
   }
 
-  def getCommandLocks(): java.util.List[CommandAccess] = {
-    ops { _.getOrThrow(CommandAccessRequestBuilders.getAll) }
+  override def createCommandDenialLock(ids: java.util.List[Command]): CommandAccess = ops {
+    _.put(CommandAccessRequestBuilders.blockAccessForCommands(ids)).await().expectOne
   }
 
-  def getCommandLock(uid: String) = {
-    ops { _.getOneOrThrow(CommandAccessRequestBuilders.getForUid(uid)) }
+  override def getCommandLocks(): java.util.List[CommandAccess] = ops {
+    _.get(CommandAccessRequestBuilders.getAll).await().expectMany()
   }
 
-  def getCommandLockOnCommand(id: Command): CommandAccess = {
-    ops {
-      _.getOne(CommandAccessRequestBuilders.getByCommand(id)) match {
-        case ServiceTypes.SingleSuccess(status, lock) => lock
-        case ServiceTypes.Failure(status, str) => null
-      }
+  override def getCommandLock(uid: String) = ops {
+    _.get(CommandAccessRequestBuilders.getForUid(uid)).await().expectOne
+  }
+
+  override def getCommandLockOnCommand(id: Command): CommandAccess = ops {
+    _.get(CommandAccessRequestBuilders.getByCommand(id)).await().expectOneOrNone match {
+      case Some(x) => x
+      case None => null // TODO - Java API, so returning null probably okay, but may want to evaulate throwing
     }
   }
 
-  def getCommandLocksOnCommands(ids: java.util.List[Command]): java.util.List[CommandAccess] = {
-    ops { _.getOrThrow(CommandAccessRequestBuilders.getByCommands(ids)) }
+  override def getCommandLocksOnCommands(ids: java.util.List[Command]): java.util.List[CommandAccess] = ops {
+    _.get(CommandAccessRequestBuilders.getByCommands(ids)).await().expectMany()
   }
 
-  def getCommandHistory(): java.util.List[UserCommandRequest] = {
-    ops { _.getOrThrow(UserCommandRequestBuilders.getForUid("*")) }
+  override def getCommandHistory(): java.util.List[UserCommandRequest] = ops {
+    _.get(UserCommandRequestBuilders.getForUid("*")).await().expectMany()
   }
 
-  def getCommands(): java.util.List[Command] = {
-    ops { _.getOrThrow(CommandRequestBuilders.getAll) }
+  override def getCommands(): java.util.List[Command] = ops {
+    _.get(CommandRequestBuilders.getAll).await().expectMany()
   }
 
-  def getCommandByName(name: String) = {
-    ops { _.getOneOrThrow(CommandRequestBuilders.getByEntityName(name)) }
+  override def getCommandByName(name: String) = ops {
+    _.get(CommandRequestBuilders.getByEntityName(name)).await().expectOne
   }
 }

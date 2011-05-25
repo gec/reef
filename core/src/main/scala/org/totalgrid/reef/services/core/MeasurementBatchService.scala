@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.{ Descriptors }
+import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -29,12 +29,13 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, BadRequestException, IDestination, AddressableService }
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Request, Failure }
+import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api.service.AsyncServiceBase
-import org.totalgrid.reef.api.scalaclient.ClientSessionExecutionPool
+import org.totalgrid.reef.japi._
 
-class MeasurementBatchService(pool: ClientSessionExecutionPool) extends AsyncServiceBase[MeasurementBatch] {
+class MeasurementBatchService(pool: ISessionPool)
+    extends AsyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 
@@ -59,21 +60,20 @@ class MeasurementBatchService(pool: ClientSessionExecutionPool) extends AsyncSer
 
     }
 
-    pool.execute { client =>
-      client.requestAsyncScatterGather(requests) { results =>
-        val failures = results.flatMap {
-          _ match {
-            case x: Failure => Some(x)
-            case _ => None
-          }
-        }
-
-        if (failures.size == 0) callback(Response(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build())))
-        else {
-          val msg = failures.mkString(",")
-          callback(Response(Envelope.Status.INTERNAL_ERROR, error = msg))
-        }
+    val promises = pool.borrow { client =>
+      requests.map { req =>
+        client.request(req.verb, req.payload, req.env, req.destination)
       }
+    }
+
+    ScatterGather.collect(promises) { results =>
+      val failures = results.filterNot(_.success)
+      val response = if (failures.size == 0) Success(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
+      else {
+        val msg = failures.mkString(",")
+        Failure(Envelope.Status.INTERNAL_ERROR, msg)
+      }
+      callback(response)
     }
 
   }

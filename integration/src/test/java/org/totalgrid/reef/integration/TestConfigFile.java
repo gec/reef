@@ -21,13 +21,11 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.api.ReefServiceException;
-import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
-import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
-import org.totalgrid.reef.integration.helpers.JavaBridgeTestBase;
+import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.proto.Model;
 
-public class TestConfigFile extends JavaBridgeTestBase {
+public class TestConfigFile extends ReefConnectionTestBase {
 
     /**
      * example that shows the scala implementation of the api classes can be called from java code

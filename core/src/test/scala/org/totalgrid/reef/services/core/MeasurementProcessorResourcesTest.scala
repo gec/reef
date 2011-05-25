@@ -47,7 +47,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     }
     val pp = Point.newBuilder.setName(pointName).build
 
-    val point = one(service.put(pp))
+    val point = service.put(pp).expectOne()
 
     transaction {
       // TODO: add edge service
@@ -98,22 +98,22 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     addPoint("meas02", "dev2")
     val fac = new OverrideConfigModelFactory(publisher)
     val s = new OverrideConfigService(fac)
-    val put1 = one(s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build))
-    val put2 = one(s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build))
-    one(s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build))
+    val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build).expectOne()
+    val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build).expectOne()
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build).expectOne()
 
-    val gotten = one(s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build))
+    val gotten = s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build).expectOne()
     // make sure the object has had all of the point and node fields filled out
     gotten.getPoint.getName should equal("meas01")
     //gotten.getPoint.getLogicalNode.getUuid should equal(node.getUuid)
     gotten.getMeas.getIntVal should equal(999)
 
-    one(s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build))
-    one(s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build))
-    one(s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName(node.getName)).build))
+    s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build).expectOne()
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build).expectOne()
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName(node.getName)).build).expectOne()
 
-    many(2, s.get(MeasOverride.newBuilder.setPoint(makePoint("*")).build))
-    many(2, s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid("*")).build))
-    many(2, s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName("*")).build))
+    s.get(MeasOverride.newBuilder.setPoint(makePoint("*")).build).expectMany(2)
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid("*")).build).expectMany(2)
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName("*")).build).expectMany(2)
   }
 }

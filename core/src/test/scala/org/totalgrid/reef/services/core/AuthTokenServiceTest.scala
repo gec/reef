@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.api.Envelope._
+import org.totalgrid.reef.japi.Envelope._
 import org.totalgrid.reef.api.service.NoOpService
 
 import org.squeryl.PrimitiveTypeMode._
@@ -35,7 +35,8 @@ import org.totalgrid.reef.services.{ RestAuthzWrapper, RestAuthzMetrics, SqlAuth
 import org.totalgrid.reef.services.ServiceProviderHeaders._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.api.{ ReefServiceException, RequestEnv }
+import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.api.RequestEnv
 import org.totalgrid.reef.api.service.IServiceResponseCallback
 
 import org.scalatest.junit.JUnitRunner
@@ -66,7 +67,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
       val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location)
       permissionSetName.foreach(ps => b.addPermissionSets(PermissionSet.newBuilder.setName(ps)))
       timeoutAt.foreach(t => b.setExpirationTime(t))
-      val authToken = one(authService.put(b.build))
+      val authToken = authService.put(b.build).expectOne()
       // just check that the token is not a blank string
       authToken.getToken.length should not equal (0)
       authToken.getExpirationTime should (be >= System.currentTimeMillis)
@@ -161,7 +162,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
     val fix = new Fixture
 
     val authToken = fix.login("core", "core")
-    val deletedToken = one(fix.authService.delete(authToken))
+    val deletedToken = fix.authService.delete(authToken).expectOne()
 
     deletedToken.getExpirationTime should equal(-1)
   }
@@ -227,7 +228,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val fix = new AuthFixture
 
     val authToken = fix.login("guest", "guest")
-    one(fix.authService.delete(authToken))
+    fix.authService.delete(authToken).expectOne()
 
     fix.testRequest(Status.UNAUTHORIZED, Verb.GET, List(authToken.getToken))
   }

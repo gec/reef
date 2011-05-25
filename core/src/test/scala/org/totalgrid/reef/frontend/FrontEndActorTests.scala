@@ -44,7 +44,7 @@ import org.totalgrid.reef.proto.FEP.{ CommChannel, FrontEndProcessor, CommEndpoi
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig => ConfigProto, CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
-import org.totalgrid.reef.api.ServiceTypes.{ Response, Event }
+import org.totalgrid.reef.api.scalaclient.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.{ MockConnection, MockEvent }
 import org.totalgrid.reef.protocol.api.MockProtocol
 import org.totalgrid.reef.reactor.ReactActor
@@ -58,7 +58,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import MockProtocol._
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 @RunWith(classOf[JUnitRunner])

@@ -20,7 +20,6 @@
  */
 package org.totalgrid.reef.measproc
 
-import com.google.protobuf.GeneratedMessage
 import scala.collection.mutable
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Processing._
@@ -35,7 +34,7 @@ import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class ProcessingNodeIntegration extends Suite with ShouldMatchers {

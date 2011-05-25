@@ -23,13 +23,15 @@ package org.totalgrid.reef.messaging
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
-import org.totalgrid.reef.api.{ ServiceIOException, IConnectionListener }
+import org.totalgrid.reef.japi.client.ConnectionListener
+import org.totalgrid.reef.japi.ServiceIOException
+import org.totalgrid.reef.broker._
 
 /**
  * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
  */
 trait AMQPConnectionReactor extends Reactor with Lifecycle
-    with IConnectionListener with Logging {
+    with ConnectionListener with Logging {
 
   /// must be defined in concrete class
   protected val broker: BrokerConnection
@@ -46,20 +48,19 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     // TODO: need to add a removeChannelObserver function if keeping async around
   }
 
-  def addConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
+  def addConnectionListener(listener: ConnectionListener): Unit = this.synchronized {
     listeners = listeners.enqueue(listener)
   }
 
-  def removeConnectionListener(listener: IConnectionListener): Unit = this.synchronized {
+  def removeConnectionListener(listener: ConnectionListener) = this.synchronized {
     listeners = listeners.filterNot(_ == listener)
   }
 
-  def getChannel(): BrokerChannel = broker.newBrokerChannel()
+  def getChannel(): BrokerChannel = broker.newChannel()
 
   /// mutable state
-  private var listeners = Queue.empty[IConnectionListener]
+  private var listeners = Queue.empty[ConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
-  private var reconnectOnClose = true
   private var connectedState = new BrokerConnectionState
   addConnectionListener(connectedState)
 
@@ -68,10 +69,10 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
     super.start()
 
     try {
-      connectedState.waitUntilStarted(timeoutMs, "Couldn't connect to message broker: " + broker)
+      connectedState.waitUntilConnected(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
     } catch {
       case se: ServiceIOException =>
-        reefLogger.error("Syncronous start failed, stopping actor", se)
+        info("Syncronous start failed, stopping actor")
         super.stop()
         throw se
     }
@@ -80,19 +81,17 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   def disconnect(timeoutMs: Long) {
     if (timeoutMs <= 0) throw new IllegalArgumentException("Stop timeout must be greater than 0.")
     super.stop()
-    connectedState.waitUntilStopped(timeoutMs, "Connection to reef not stopped.")
+    connectedState.waitUntilDisconnected(timeoutMs, "Connection to reef not stopped.")
   }
 
   override def afterStart() = {
-    broker.addConnectionListener(this)
-    reconnectOnClose = true
+    broker.addListener(this)
     this.reconnect()
   }
 
   /// overriders base class. Terminates all the connections and machinery
   override def beforeStop() = {
-    reconnectOnClose = false
-    broker.close()
+    broker.disconnect()
   }
 
   private def addChannelObserver(handler: ChannelObserver) {
@@ -103,7 +102,8 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   // helper for starting a new connection chain
   private def reconnect() = execute { attemptConnection(1000) }
 
-  /// Makes a connection attempt. Retries if with exponential backoff if the attempt fails
+  /// Makes a connection attempt. Retries if with exponential backoff
+  /// if the attempt fails
   private def attemptConnection(retryms: Long): Unit = {
     try {
       broker.connect()
@@ -111,7 +111,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
       //listeners.foreach { _.opened() }
     } catch {
       case t: Throwable =>
-        reefLogger.error("connection attempt failed: " + t.getMessage, t)
+        error(t)
         // if we fail, retry, use exponential backoff
         delay(retryms) { attemptConnection(2 * retryms) }
     }
@@ -120,24 +120,24 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   /// gives a broker object its session. May fail.
   private def createChannel(co: ChannelObserver) = {
     try {
-      co.online(broker.newBrokerChannel())
-      reefLogger.debug("Added channel for type: {}", co)
+      co.online(broker.newChannel())
+      debug("Added channel for type: " + co.getClass)
     } catch {
-      case ex: Exception => reefLogger.error("error configuring sessions: " + co, ex)
+      case ex: Exception => error("error configuring sessions: ", ex)
     }
   }
 
   /* --- Implement Broker Connection Listener --- */
 
-  override def closed() {
-    reefLogger.info("Connection closed. reconnecting: {}", reconnectOnClose)
-    if (reconnectOnClose) this.delay(1000) { reconnect() }
-    this.synchronized { listeners.foreach { _.closed() } }
+  final override def onConnectionClosed(expected: Boolean) {
+    info(" Connection closed, expected:" + expected)
+    if (!expected) this.delay(1000) { reconnect() }
+    this.synchronized { listeners.foreach(_.onConnectionClosed(expected)) }
   }
 
-  override def opened() = {
-    reefLogger.info("Connection opened")
-    this.synchronized { listeners.foreach { _.opened() } }
+  final override def onConnectionOpened() = {
+    info("Connection opened")
+    this.synchronized { listeners.foreach(_.onConnectionOpened()) }
   }
 
 }

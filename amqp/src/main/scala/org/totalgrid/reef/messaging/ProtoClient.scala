@@ -22,14 +22,12 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.messaging.ProtoSerializer._
-import _root_.scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.ServiceTypes.{ MultiResult, Response }
-import org.totalgrid.reef.api.scalaclient.ClientSession
+import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.japi.Envelope
 
 /**
  * a super client that switches on the passed in proto to automatically call the correct client so the app developer
@@ -38,21 +36,21 @@ import org.totalgrid.reef.api._
  */
 class ProtoClient(
     factory: ClientSessionFactory,
-    lookup: ServiceList, timeoutms: Long) extends ClientSession with Logging {
+    lookup: ServiceList, timeoutms: Long) extends ClientSession with AsyncRestAdapter with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
   private var clients = Map.empty[Class[_], ClientSession]
 
-  def asyncRequest[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) {
+  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: IDestination)(callback: Response[A] => Unit) {
 
-    val info = lookup.getServiceInfo(payload.getClass.asInstanceOf[Class[A]])
-    val request = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(payload))
+    val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
+    val serviceRequest = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))
 
     val sendEnv = mergeHeaders(env)
-    sendEnv.asKeyValueList.foreach(kv => request.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
+    sendEnv.asKeyValueList.foreach(kv => serviceRequest.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {
-      val result = resp match {
+      val response: Option[Response[A]] = resp match {
         case Some(x) =>
           try {
             val list = x.getPayloadList.map { x => info.descriptor.deserialize(x.toByteArray) }.toList
@@ -66,16 +64,14 @@ class ProtoClient(
         case None => None
       }
 
-      import org.totalgrid.reef.api.scalaclient.ProtoConversions._
-      callback(result)
+      callback(Response.convert(response))
     }
 
-    correlator.send(request, info.descriptor.id, dest.key, handleResponse)
+    correlator.send(serviceRequest, info.descriptor.id, dest.key, handleResponse)
   }
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_]): Subscription[A] = {
+  final override def addSubscription[A](klass: Class[_]): Subscription[A] = {
 
-    // TODO: lookup by subscription klass instead of serviceKlass
     val info = lookup.getServiceInfo(klass)
     val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => A]
     val subIsStreamType = info.subIsStreamType
@@ -83,5 +79,5 @@ class ProtoClient(
     factory.prepareSubscription(deser, subIsStreamType)
   }
 
-  def close() = correlator.close
+  def close() = correlator.close()
 }

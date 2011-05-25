@@ -20,13 +20,14 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.api.ServiceTypes.Response
-import org.totalgrid.reef.api.{ RequestEnv, Envelope }
+import org.totalgrid.reef.api.scalaclient.{ Response, Success }
 import org.totalgrid.reef.api.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
 import org.totalgrid.reef.proto.Descriptors
 
-import org.totalgrid.reef.protocol.api.{ ICommandHandler, IResponseHandler }
+import org.totalgrid.reef.protocol.api.{ ICommandHandler, IListener }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.RequestEnv
 
 class SingleEndpointCommandService(handler: ICommandHandler) extends AsyncServiceBase[Command] {
 
@@ -34,10 +35,10 @@ class SingleEndpointCommandService(handler: ICommandHandler) extends AsyncServic
 
   override def putAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = {
 
-    val rspHandler = new IResponseHandler {
-      def onResponse(rsp: CommandResponse): Unit = {
+    val rspHandler = new IListener[CommandResponse] {
+      def onUpdate(rsp: CommandResponse): Unit = {
         val response = Command.newBuilder(req).setStatus(rsp.getStatus).build()
-        callback(Response(Envelope.Status.OK, List(response)))
+        callback(Success(Envelope.Status.OK, List(response)))
       }
     }
 

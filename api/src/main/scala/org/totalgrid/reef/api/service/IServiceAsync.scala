@@ -21,7 +21,8 @@ package org.totalgrid.reef.api.service
  * under the License.
  */
 
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, ITypeDescriptor }
+import org.totalgrid.reef.japi.{ Envelope, TypeDescriptor }
+import org.totalgrid.reef.api.RequestEnv
 
 object IServiceAsync {
   type ServiceFunction = (Envelope.ServiceRequest, RequestEnv, IServiceResponseCallback) => Unit
@@ -45,7 +46,7 @@ class NoOpService extends IServiceAsync[Any] {
   def respond(request: ServiceRequest, env: RequestEnv, callback: IServiceResponseCallback) =
     callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
 
-  override val descriptor = new ITypeDescriptor[Any] {
+  override val descriptor = new TypeDescriptor[Any] {
     def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
     def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
     def getKlass: Class[Any] = throw new Exception("unimplemented")

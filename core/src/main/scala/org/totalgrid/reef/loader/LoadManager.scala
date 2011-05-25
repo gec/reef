@@ -25,14 +25,15 @@ import org.totalgrid.reef.app.ApplicationEnroller
 import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.qpid.QpidBrokerConnection
+import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.loader.configuration._
 
 import org.totalgrid.reef.api.{ ServiceHandlerHeaders, RequestEnv }
 import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-import org.totalgrid.reef.api.scalaclient.SyncOperations
+import org.totalgrid.reef.api.scalaclient.RestOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.File
@@ -44,7 +45,7 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: => SyncOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
+  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
 
     info("Loading configuration file '" + filename + "'")
 
@@ -140,7 +141,7 @@ object LoadManager extends Logging {
         val client = new ProtoClient(amqp, ReefServicesList, 5000)
 
         // get an auth token and attach it to the client for all future requests
-        val authToken = client.putOneOrThrow(ApplicationEnroller.buildLogin())
+        val authToken = client.put(ApplicationEnroller.buildLogin()).await().expectOne
         val env = new RequestEnv
         env.addAuthToken(authToken.getToken)
         client.setDefaultHeaders(env)
@@ -198,7 +199,7 @@ object LoadManager extends Logging {
     if (filename == None)
       usage
 
-    val dbInfo = Option(java.lang.System.getProperty("config")).map(f => AMQPProperties.get(new FileConfigReader(f))).getOrElse(BrokerConnectionInfo.loadInfo)
+    val dbInfo = Option(java.lang.System.getProperty("config")).map(f => BrokerProperties.get(new FileConfigReader(f))).getOrElse(BrokerConnectionInfo.loadInfo)
     val amqp = new AMQPProtoFactory with ReactActor {
       val broker = new QpidBrokerConnection(dbInfo)
     }

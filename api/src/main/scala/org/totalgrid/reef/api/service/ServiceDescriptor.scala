@@ -20,13 +20,13 @@
  */
 package org.totalgrid.reef.api.service
 
-import org.totalgrid.reef.api.ITypeDescriptor
+import org.totalgrid.reef.japi.TypeDescriptor
 
 trait HasComponentId {
   def componentId: String
 }
 
 trait ServiceDescriptor[A] extends HasComponentId {
-  val descriptor: ITypeDescriptor[A]
+  val descriptor: TypeDescriptor[A]
   final override def componentId = descriptor.id
 }

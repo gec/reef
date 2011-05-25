@@ -98,31 +98,44 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList.map(p => equipmentProfiles(p.getName)) ::: List[EquipmentType](equipment)
     info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this equipment
-    val entity = toEntity(name, profiles)
-    client.putOrThrow(entity)
 
-    // Load all the children and create the edges
-    trace("load equipment: " + name + " children")
-    val children = profiles.flatMap(_.getEquipment).map(loadEquipment(_, childPrefix, actionModel))
-    children.foreach(child => client.putOrThrow(toEntityEdge(entity, child, "owns")))
+    val childEquipment = profiles.flatMap(_.getEquipment)
+    val controls = profiles.flatMap(_.getControl.toList)
+    val setpoints = profiles.flatMap(_.getSetpoint.toList)
+    val statuses = profiles.flatMap(_.getStatus.toList)
+    val analogs = profiles.flatMap(_.getAnalog.toList)
+    val counters = profiles.flatMap(_.getCounter.toList)
+
+    val points = statuses ::: analogs ::: counters
+    val commands = controls ::: setpoints
+
+    var extraTypes: List[String] = Nil
+    if (points.nonEmpty || commands.nonEmpty) extraTypes ::= "Equipment"
+    if (childEquipment.nonEmpty) extraTypes ::= "EquipmentGroup"
+
+    val entity = toEntity(name, profiles, extraTypes)
+    client.putOrThrow(entity)
 
     // Commands are controls and setpoints
     trace("load equipment: " + name + " commands")
-    val controls = profiles.flatMap(_.getControl.toList).map { c =>
+    controls.map { c =>
       val display = Option(c.getDisplayName) getOrElse c.getName
       processCommand(childPrefix + c.getName, display, "Control" :: getTypeList(c.getType), entity)
     }
 
-    val setpoints = profiles.flatMap(_.getSetpoint.toList).map { c =>
+    setpoints.map { c =>
       val display = Option(c.getDisplayName) getOrElse c.getName
       processCommand(childPrefix + c.getName, display, "Setpoint" :: getTypeList(c.getType), entity)
     }
 
     // Points
     trace("load equipment: " + name + " points")
-    val statuses = profiles.flatMap(_.getStatus.toList).map(processPointType(_, entity, childPrefix, actionModel))
-    val analogs = profiles.flatMap(_.getAnalog.toList).map(processPointType(_, entity, childPrefix, actionModel))
-    val counters = profiles.flatMap(_.getCounter.toList).map(processPointType(_, entity, childPrefix, actionModel))
+    points.map(processPointType(_, entity, childPrefix, actionModel))
+
+    // Load all the children and create the edges
+    trace("load equipment: " + name + " children")
+    val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
+    children.foreach(child => client.putOrThrow(toEntityEdge(entity, child, "owns")))
 
     entity
   }
@@ -162,9 +175,16 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
+    val types = "Point" :: (pointT match {
+      case c: equipment.Analog => "Analog"
+      case c: equipment.Status => "Status"
+      case c: equipment.Counter => "Counter"
+      case _ => throw new LoadingException("Bad point type")
+    }) :: getTypeList(pointT.getType)
+
     val name = childPrefix + pointT.getName
     trace("processPointType: " + name)
-    val pointEntity = toEntityType(name, "Point" :: getTypeList(pointT.getType))
+    val pointEntity = toEntityType(name, types)
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)
     client.putOrThrow(point)
@@ -202,7 +222,8 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
   /**
    * Get a point attribute in the point or the referenced pointProfile.
-   * For this function, profiles can be nested and it will get the first one it finds.
+   * For this function, profiles can be nested and it will get the first on it
+   * finds.
    * Throw exception if no attribute found.
    */
   def getAttribute[A](
@@ -252,13 +273,21 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Return an Entity proto
    */
-  def toEntity(name: String, profiles: List[EquipmentType]): Entity = {
+  def toEntity(name: String, profiles: List[EquipmentType], extraTypes: List[String]): Entity = {
     val proto = Entity.newBuilder
       .setName(name)
-    val types = profiles.flatMap(_.getType.toList)
+    val types = profiles.flatMap(_.getType.toList).map { _.getName }
     if (types.isEmpty)
       throw new LoadingException(name + " needs at least one <type> specified in the Equipment Model.")
-    types.foreach(typ => proto.addTypes(typ.getName))
+
+    //    extraTypes.foreach { extra =>
+    //      if (types.contains(extra))
+    //        println("DEPRECATION WARNING: \"" + extra + "\" type is automatically added to " + name)
+    //    }
+
+    val finalTypes = (types ::: extraTypes).distinct
+
+    finalTypes.foreach(typ => proto.addTypes(typ))
 
     //profiles.foreach( p => p.getType.toList.foreach(typ => proto.addTypes(typ.getName)) )
     //profiles.foreach( p => applyEquipmentTypes( proto, p))

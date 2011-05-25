@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.api
 
+import org.totalgrid.reef.japi._
+
 object StatusCodes {
 
   def isSuccess(status: Envelope.Status): Boolean = {
@@ -31,6 +33,13 @@ object StatusCodes {
       case Envelope.Status.NOT_MODIFIED => true
       case _ => false
     }
+  }
+
+  def toException(status: Envelope.Status, error: String): ReefServiceException = status match {
+    case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
+    case Envelope.Status.UNAUTHORIZED => new UnauthorizedException(error)
+    case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
+    case _ => new BadRequestException(error, status)
   }
 
 }

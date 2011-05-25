@@ -30,6 +30,7 @@ import org.totalgrid.reef.util.XMLHelper
 
 import scala.collection.immutable
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
 
@@ -40,14 +41,14 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, IPublisher)]
+  private var map = immutable.Map.empty[String, (MeasAdapter, IListener[MeasurementBatch])]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.CommChannel, listener: IChannelListener) = {
+  override def _addChannel(p: FEP.CommChannel, listener: IListener[FEP.CommChannel.State]) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -71,22 +72,25 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     info { "Removed channel with name: " + channel }
   }
 
-  override def _addEndpoint(endpoint: String, channelName: String, files: List[Model.ConfigFile], publisher: IPublisher, listener: IEndpointListener): ProtocolCommandHandler = {
+  override def _addEndpoint(endpoint: String,
+    channelName: String,
+    files: List[Model.ConfigFile],
+    publisher: IListener[MeasurementBatch],
+    listener: IListener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
 
     info { "Adding device with uid: " + endpoint + " onto channel " + channelName }
 
     val master = getMasterConfig(IProtocol.find(files, "text/xml")) //there is should be only one XML file
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
-    val meas_adapter = new MeasAdapter(mapping, publisher.publish)
+    val meas_adapter = new MeasAdapter(mapping, publisher.onUpdate)
     map += endpoint -> (meas_adapter, publisher)
     val cmd = dnp3.AddMaster(channelName, endpoint, FilterLevel.LEV_WARNING, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
 
   override def _removeEndpoint(endpoint: String) = {
-    // close the publisher
-    map(endpoint)._2.close
+
     debug { "Not removing stack " + endpoint + " as per workaround" }
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll
     times out.

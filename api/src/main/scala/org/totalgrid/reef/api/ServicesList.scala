@@ -20,6 +20,8 @@
  */
 package org.totalgrid.reef.api
 
+import org.totalgrid.reef.japi.UnknownServiceException
+
 object ServiceList {
 
   type ServiceMap = Map[Class[_], ServiceInfo[_, _]]

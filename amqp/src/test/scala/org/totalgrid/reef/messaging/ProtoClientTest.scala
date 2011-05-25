@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.messaging.mock._
+import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.broker.mock.MockBrokerConnection
 import com.google.protobuf.ByteString
 
 import org.scalatest.FunSuite
@@ -28,18 +29,20 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api._
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api.service.{ IServiceResponseCallback, SyncServiceBase }
+import org.totalgrid.reef.japi.{ TypeDescriptor, ServiceIOException, UnknownServiceException, ResponseTimeoutException }
 
 object TestDescriptors {
-  def requestHeader() = new ITypeDescriptor[Envelope.RequestHeader] {
+  def requestHeader() = new TypeDescriptor[Envelope.RequestHeader] {
     def serialize(typ: Envelope.RequestHeader): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
     def getKlass = classOf[Envelope.RequestHeader]
     def id = getKlass.toString
   }
 
-  def serviceNotification() = new ITypeDescriptor[Envelope.ServiceNotification] {
+  def serviceNotification() = new TypeDescriptor[Envelope.ServiceNotification] {
     def serialize(typ: Envelope.ServiceNotification): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.ServiceNotification.parseFrom(bytes)
     def getKlass = classOf[Envelope.ServiceNotification]
@@ -76,11 +79,11 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
 
   def setupTest(addServices: Boolean)(test: (ProtoClient, AMQPProtoFactory) => Unit) {
-    val connection = new MockBrokerInterface
+    val connection = new MockBrokerConnection
 
     // TODO: fix setupTest to use all async and all sync
 
-    AMQPFixture.run(connection, true) { amqp =>
+    AMQPFixture.using(connection, true) { amqp =>
 
       if (addServices) {
         amqp.bindService(exchangeA, (new ServiceNotificationServiceX3).respond, competing = true)
@@ -99,14 +102,14 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
     setupTest(true) { (client, amqp) =>
 
       val notificationRequest = Envelope.ServiceNotification.newBuilder.setEvent(Envelope.Event.ADDED).setPayload(ByteString.copyFromUtf8("hi")).build
-      client.getOrThrow(notificationRequest).size should equal(3)
+      client.get(notificationRequest).await().expectMany().size should equal(3)
 
       val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
-      client.getOrThrow(headerRequest).size should equal(2)
+      client.get(headerRequest).await().expectMany().size should equal(2)
 
       intercept[UnknownServiceException] {
         val responseRequest = Envelope.ServiceResponse.newBuilder.setId("").setStatus(Envelope.Status.BAD_REQUEST).build
-        client.getOrThrow(responseRequest)
+        client.get(responseRequest).await().expectMany()
       }
     }
   }
@@ -117,7 +120,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
 
       intercept[ServiceIOException] {
         val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
-        client.getOrThrow(headerRequest)
+        client.get(headerRequest).await().expectMany()
       }
     }
   }
@@ -136,7 +139,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
 
       intercept[ResponseTimeoutException] {
         val headerRequest = Envelope.RequestHeader.newBuilder.setKey("key").setValue("magic").build
-        client.getOrThrow(headerRequest)
+        client.get(headerRequest).await().expectMany()
       }
     }
   }

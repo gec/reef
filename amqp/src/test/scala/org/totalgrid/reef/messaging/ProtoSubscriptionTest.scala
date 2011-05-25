@@ -20,7 +20,8 @@
  */
 package org.totalgrid.reef.messaging
 
-import mock.{ AMQPFixture, MockBrokerInterface }
+import mock.AMQPFixture
+import org.totalgrid.reef.broker.mock.MockBrokerConnection
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -29,9 +30,10 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
 import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.api._
+import org.totalgrid.reef.api.scalaclient._
 import org.totalgrid.reef.api.service.SyncServiceBase
-import service.SyncServiceBase
 
 @RunWith(classOf[JUnitRunner])
 class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
@@ -42,17 +44,18 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: ProtoClient => Unit) {
-    val connection = new MockBrokerInterface
 
     // TODO: fix setupTest to use all async and all sync
 
-    AMQPFixture.run(connection, true) { amqp =>
+    val mock = new MockBrokerConnection
+
+    AMQPFixture.using(mock) { amqp =>
 
       val pub = new PublishingSubscriptionActor(exchange + "_events", new InstantReactor {})
       amqp.add(pub)
       amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, competing = true)
 
-      AMQPFixture.sync(connection, true) { syncAmqp =>
+      AMQPFixture.sync(mock, true) { syncAmqp =>
         val client = new ProtoClient(syncAmqp, servicelist, 10000)
 
         test(client)
@@ -83,7 +86,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
         case s => entries.find(_.getKey == s).toList
       }
 
-      ServiceTypes.Response(Envelope.Status.OK, response)
+      Response(Envelope.Status.OK, response)
     }
 
     override def post(req: Envelope.RequestHeader, env: RequestEnv) = put(req, env)
@@ -101,7 +104,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       }
       entries = entries.filterNot(_.getKey == req.getKey) ::: List(req)
 
-      ServiceTypes.Response(status, List(req))
+      Response(status, List(req))
     }
 
     override def delete(req: Envelope.RequestHeader, env: RequestEnv) = {
@@ -110,7 +113,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       entries = _entries._2
       publish(Envelope.Event.REMOVED, _entries._1)
 
-      ServiceTypes.Response(Envelope.Status.DELETED, _entries._1)
+      Response(Envelope.Status.DELETED, _entries._1)
     }
   }
 
@@ -124,14 +127,11 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       headerSub.start(headerSubFunc)
 
       import Subscription.convertSubscriptionToRequestEnv
-      val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, headerSub) match {
-        case ServiceTypes.MultiSuccess(status, Nil) =>
-        case _ => false should equal(true)
-      }
+      val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, headerSub).await().expectMany()
 
-      val created = client.putOneOrThrow(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("abra").build)
-      val modified = client.putOneOrThrow(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("cadabra").build)
-      val deleted = client.deleteOneOrThrow(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("cadabra").build)
+      val created = client.put(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("abra").build).await().expectOne
+      val modified = client.put(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("cadabra").build).await().expectOne
+      val deleted = client.delete(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("cadabra").build).await().expectOne
 
       updates.waitFor(_.size == 3)
 

@@ -71,7 +71,8 @@ trait ReactorBase extends Actor with Logging {
       running = false
       beforeExit()
     } catch {
-      case t: Throwable => reefLogger.error("exception encountered in handleStopping(): " + t.getMessage, t)
+      case t: Throwable =>
+        reefLogger.error("exception encountered in handleStopping(): " + t.getMessage, t)
     }
   }
 

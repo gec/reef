@@ -42,6 +42,7 @@ object Reactor {
  *  Generic actor that can be used to execute
  *  arbitrary blocks of code. Useful for synchronizing
  *  lots of other threads.
+ *
  */
 trait Reactor extends Reactable with Lifecycle {
 
@@ -63,7 +64,8 @@ trait Reactor extends Reactable with Lifecycle {
     myactor = getReactableActor
   }
 
-  /// Extending classes will implement the AbstractActor that receives these messages
+  /// Extending classes will implement the AbstractActor that receives these
+  /// messages
   var myactor: ReactorBase = getReactableActor
 
   def getActor: AbstractActor = myactor

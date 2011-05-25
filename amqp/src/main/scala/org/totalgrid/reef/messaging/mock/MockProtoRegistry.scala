@@ -1,3 +1,5 @@
+package org.totalgrid.reef.messaging.mock
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.messaging.mock
-
 import org.totalgrid.reef.util.{ Timer, OneArgFunc }
 
 import com.google.protobuf.GeneratedMessage
@@ -27,27 +27,26 @@ import com.google.protobuf.GeneratedMessage
 import scala.concurrent.MailBox
 import scala.collection.immutable
 
-import org.totalgrid.reef.messaging.Connection
-
-import org.totalgrid.reef.api.scalaclient.ClientSession
 import org.totalgrid.reef.api.service.IServiceAsync
 
 import org.totalgrid.reef.reactor.Reactable
-import org.totalgrid.reef.api.{ Envelope, RequestEnv, IDestination }
-import org.totalgrid.reef.api.ServiceTypes._
+import org.totalgrid.reef.api.{ RequestEnv, IDestination }
+import org.totalgrid.reef.japi.Envelope
+
+import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.messaging.Connection
 
 //implicits for massaging service return types
-import org.totalgrid.reef.api.scalaclient.ProtoConversions._
 
 object MockProtoRegistry {
   val timeout = 5000
 }
 
-class MockRegistry extends MockProtoPublisherRegistry with MockProtoSubscriberRegistry with MockConnection
+class MockRegistry extends MockConnection with MockProtoPublisherRegistry with MockProtoSubscriberRegistry
 
-class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends ClientSession {
+class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends ClientSession with AsyncRestAdapter {
 
-  private case class Req[A](callback: MultiResult[A] => Unit, req: Request[A])
+  private case class Req[A](callback: Response[A] => Unit, req: Request[A])
 
   private val in = new MailBox
 
@@ -56,23 +55,23 @@ class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends Clien
   def respondWithTimeout[A](timeout: Long)(f: Request[A] => Option[Response[A]]): Unit = {
     in.receiveWithin(timeout) {
       case Req(callback, request) =>
-        callback(f(request.asInstanceOf[Request[A]]))
+        callback(Response.convert(f(request.asInstanceOf[Request[A]])))
     }
   }
 
   def close(): Unit = throw new Exception("Unimplemented")
 
-  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: MultiResult[A] => Unit) = {
+  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination)(callback: Response[A] => Unit) = {
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
-        case Req(callback, request) => callback(Failure(Envelope.Status.RESPONSE_TIMEOUT))
+        case Req(callback, request) => callback(ResponseTimeout)
         case _ =>
       }
     }
   }
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_]) = {
+  final override def addSubscription[A](klass: Class[_]) = {
     throw new IllegalArgumentException("Subscriptions not implemented for MockRegistry.")
   }
 }
@@ -159,7 +158,7 @@ trait MockProtoSubscriberRegistry {
 
 case class MockEvent[A](accept: Event[A] => Unit, observer: Option[String => Unit])
 
-trait MockConnection extends Connection {
+class MockConnection extends Connection {
 
   val eventmail = new MailBox
   val servicemail = new MailBox
@@ -169,6 +168,7 @@ trait MockConnection extends Connection {
 
   // map classes to protoserviceconsumers
   var mockclient: Option[MockClientSession] = None
+
   var eventqueues = immutable.Map.empty[Class[_], Any]
 
   def getMockClient: MockClientSession = mockclient.get
@@ -185,13 +185,13 @@ trait MockConnection extends Connection {
     }
   }
 
-  override def getClientSession(): ClientSession = mockclient match {
-    case Some(x) => x
-    case None =>
-      val ret = new MockClientSession
-      mockclient = Some(ret)
-      ret
+  private lazy val pool = {
+    val session = new MockClientSession
+    mockclient = Some(session)
+    new MockSessionPool(session)
   }
+
+  final override def getSessionPool() = pool
 
   override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, None))

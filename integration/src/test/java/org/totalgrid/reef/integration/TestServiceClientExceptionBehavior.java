@@ -22,13 +22,13 @@ package org.totalgrid.reef.integration;
 
 import static org.junit.Assert.*;
 import org.junit.*;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.Entity;
-import org.totalgrid.reef.api.ReefServiceException;
 
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestServiceClientExceptionBehavior extends JavaBridgeTestBase {
+public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase {
 
 	@Test
 	public void getAllEntities() {
@@ -44,7 +44,7 @@ public class TestServiceClientExceptionBehavior extends JavaBridgeTestBase {
     @Test
 	public void settingNullAuthTokenThrows() {
 		try{
-            client.getDefaultEnv().setAuthToken(null);
+            client.getDefaultHeaders().setAuthToken(null);
             assertTrue(false);
         }catch(IllegalArgumentException e){
             assertTrue(true);

@@ -46,7 +46,7 @@ class CommandRequestTest
   test("Simple gets") {
 
     client.addExplanation("Get all", "Get all Commands")
-    client.getOrThrow(CommandRequestBuilders.getAll())
+    client.get(CommandRequestBuilders.getAll()).await().expectMany()
 
     /*val uidReq = Command.newBuilder.setUuid(allResp.head.getUuid).build
     val uidResp = client.getOrThrow(uidReq)
@@ -66,7 +66,7 @@ class CommandRequestTest
                </div>
 
     client.addExplanation("Get by entity", desc)
-    client.getOrThrow(CommandRequestBuilders.getByEntityName("StaticSubstation.Breaker02.Trip"))
+    client.get(CommandRequestBuilders.getByEntityName("StaticSubstation.Breaker02.Trip")).await().expectMany()
   }
 
   /*test("Entity tree query") {

@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.ReefServiceException
+import org.totalgrid.reef.japi.ReefServiceException
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
@@ -82,14 +82,14 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   test("Add parts seperatley (uid)") {
 
-    val pt = one(pointService.put(getPoint().build))
-    val cmd = one(commandService.put(getCommand().build))
-    val cf = one(configFileService.put(getConfigFile().build))
-    val port = one(portService.put(getIPPort().build))
+    val pt = pointService.put(getPoint().build).expectOne()
+    val cmd = commandService.put(getCommand().build).expectOne()
+    val cf = configFileService.put(getConfigFile().build).expectOne()
+    val port = portService.put(getIPPort().build).expectOne()
 
     val endpoint = getEndpoint().setChannel(port).addConfigFiles(cf).setOwnerships(getOwnership())
 
-    val returned = one(endpointService.put(endpoint.build))
+    val returned = endpointService.put(endpoint.build).expectOne()
 
     returned.getConfigFilesCount should equal(1)
     returned.hasChannel should equal(true)
@@ -100,14 +100,14 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
 
-    one(pointService.get(getPoint("*").build))
-    one(commandService.get(getCommand("*").build))
+    pointService.get(getPoint("*").build).expectOne()
+    commandService.get(getCommand("*").build).expectOne()
   }
 
   test("Endpoint put adds all needed entries") {
     val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
 
-    val returned = one(endpointService.put(endpoint.build))
+    val returned = endpointService.put(endpoint.build).expectOne()
 
     returned.getConfigFilesCount should equal(1)
     returned.hasChannel should equal(true)
@@ -118,14 +118,14 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
 
-    one(pointService.get(getPoint("*").build))
-    one(commandService.get(getCommand("*").build))
+    pointService.get(getPoint("*").build).expectOne()
+    commandService.get(getCommand("*").build).expectOne()
   }
 
   test("Add with no port") {
     val endpoint = getEndpoint().addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
 
-    val returned = one(endpointService.put(endpoint.build))
+    val returned = endpointService.put(endpoint.build).expectOne()
 
     returned.hasChannel should equal(false)
 
@@ -158,8 +158,8 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
     val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
 
-    val returned1 = one(endpointService.put(endpoint1.build))
-    val returned2 = one(endpointService.put(endpoint2.build))
+    val returned1 = endpointService.put(endpoint1.build).expectOne()
+    val returned2 = endpointService.put(endpoint2.build).expectOne()
 
     returned1.getConfigFilesCount should equal(1)
     returned2.getConfigFilesCount should equal(1)

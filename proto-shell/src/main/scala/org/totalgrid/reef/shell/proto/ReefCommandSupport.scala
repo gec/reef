@@ -23,8 +23,8 @@ package org.totalgrid.reef.shell.proto
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.ServiceHandlerHeaders
-import org.totalgrid.reef.api.scalaclient.SyncClientSession
 import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
+import org.totalgrid.reef.api.scalaclient.{ ClientSession }
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -35,18 +35,18 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
    *
    * would like this to be called session but OsgiCommandSupport already defines session
    */
-  protected def reefSession: SyncClientSession = {
+  protected def reefSession: ClientSession = {
     this.session.get("reefSession") match {
       case null => throw new Exception("No session configured!")
-      case x => x.asInstanceOf[SyncClientSession]
+      case x => x.asInstanceOf[ClientSession]
     }
   }
 
-  def setReefSession(session: SyncClientSession, context: String) = {
+  def setReefSession(session: ClientSession, context: String) = {
     this.session.put("context", context)
     this.session.get("reefSession") match {
       case null => // nothing to close
-      case x => x.asInstanceOf[SyncClientSession].close
+      case x => x.asInstanceOf[ClientSession].close
     }
     this.session.put("reefSession", session)
     session
@@ -93,7 +93,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     println("")
     try {
       if (requiresLogin && !isLoggedIn) {
-        println("You must be logged into Reef before you can this command")
+        println("You must be logged into Reef before you can run this command.")
         println("See help reef:login")
       } else doCommand()
     } catch {

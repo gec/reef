@@ -20,25 +20,23 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.api.service.{ IServiceAsync, IServiceResponseCallback }
 
-import org.totalgrid.reef.api.Envelope.Verb
+import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.proto.ReefServicesList
 import org.osgi.framework.BundleContext
-import com.weiglewilczek.scalamodules._
 
 import scala.annotation.tailrec
 
-import _root_.scala.collection.JavaConversions._
-import org.totalgrid.reef.api.scalaclient.ProtoConversions._
-import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.api._
-import scalaclient.{ SyncClientSession, SyncOperations, DefaultHeaders }
-import org.totalgrid.reef.api.ServiceTypes.{ Event, Response, MultiResult, Failure }
+import org.totalgrid.reef.api.scalaclient._
+import org.totalgrid.reef.japi._
 
-class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
+import com.weiglewilczek.scalamodules._
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.messaging.ProtoSerializer._
+
+class ServiceDispatcher[A](rh: IServiceAsync[A]) {
 
   def request(verb: Verb, payload: A, env: RequestEnv, timeoutms: Long = 5000): Response[A] = {
 
@@ -87,19 +85,24 @@ class ServiceDispatcher[A <: AnyRef](rh: IServiceAsync[A]) {
 
 }
 
-trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
+trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
-  override def request[A <: AnyRef](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): MultiResult[A] = ReefServicesList.getServiceOption(payload.getClass) match {
-    case Some(info) =>
-      val rsp = new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
-      Some(rsp)
-    case None =>
-      Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + payload.getClass)
+  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: IDestination = AnyNode): IPromise[Response[A]] = {
+
+    val klass = ClassLookup[A](payload)
+
+    val rsp = ReefServicesList.getServiceOption(klass) match {
+      case Some(info) =>
+        new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
+      case None =>
+        Response(Envelope.Status.LOCAL_ERROR, error = "Proto not registered: " + klass)
+    }
+    new Promise(rsp)
   }
 
-  private def getService[A <: AnyRef](exchange: String): IServiceAsync[A] = {
+  private def getService[A](exchange: String): IServiceAsync[A] = {
     this.getBundleContext findServices withInterface[IServiceAsync[_]] withFilter "exchange" === exchange andApply { x =>
       x.asInstanceOf[IServiceAsync[A]]
     } match {
@@ -113,10 +116,10 @@ trait OSGiSyncOperations extends SyncOperations with DefaultHeaders {
 
 }
 
-class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with SyncClientSession {
+class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with ClientSession {
   def getBundleContext: BundleContext = bundleContext
 
-  def addSubscription[A <: GeneratedMessage](klass: Class[_]) = {
+  def addSubscription[A](klass: Class[_]) = {
     throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
   }
 

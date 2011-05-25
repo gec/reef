@@ -20,21 +20,17 @@
  */
 package org.totalgrid.reef.loader
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import java.util.{ Date, Calendar }
 
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.sx.equipment._ // scala XML classes
 
-import com.google.protobuf.GeneratedMessage
-
-import org.totalgrid.reef.api.scalaclient.MockSyncOperations
-import org.totalgrid.reef.api.ServiceTypes._
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Success }
+import org.totalgrid.reef.japi.Envelope
 
 class NullExceptionCollector extends ExceptionCollector {
   def collect[A](name: => String)(f: => Unit) { f }
@@ -53,7 +49,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val client = new MockSyncOperations(AnyRef => Success(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
     val ex = new NullExceptionCollector
@@ -145,7 +141,6 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
         }
         breaker
           .add(new Type("Breaker"))
-          .add(new Type("Equipment"))
           .add(new Control("trip"))
           .add(new Control("close"))
           .add(status)
@@ -153,7 +148,6 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     new Equipment(substationName)
       .add(new Type("Substation"))
-      .add(new Type("EquipmentGroup"))
       .add(breaker)
   }
 
@@ -161,7 +155,6 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     new EquipmentProfile(profileName)
       .add(new Type("Breaker"))
-      .add(new Type("Equipment"))
       .add(new Control("trip"))
       .add(new Control("close"))
       .add(new Status("Bkr", "status", pointProfile))

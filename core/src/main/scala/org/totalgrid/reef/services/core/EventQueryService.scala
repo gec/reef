@@ -23,8 +23,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.models.EventStore
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.api.service.SyncServiceBase
-import org.totalgrid.reef.api.ServiceTypes.Response
+import org.totalgrid.reef.api.scalaclient.Response
 
 import org.totalgrid.reef.services.framework._
 
@@ -33,7 +32,8 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api._
-import service.SyncServiceBase
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.service.SyncServiceBase
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, ServiceEventPublishers }
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
@@ -101,9 +101,9 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
   import EventQueryService._
 
-  override val descriptor = Descriptors.eventList
+  final override val descriptor = Descriptors.eventList
 
-  override def get(req: EventList, env: RequestEnv): Response[EventList] = {
+  final override def get(req: EventList, env: RequestEnv): Response[EventList] = {
 
     if (!req.hasSelect) throw new BadRequestException("Must include select")
     val select = req.getSelect

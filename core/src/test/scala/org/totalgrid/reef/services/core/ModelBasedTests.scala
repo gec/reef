@@ -75,7 +75,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
 
     val req = PointProto.newBuilder.setEntity(entReq).build
     val specIds = Point.findByNames(List("Pittsboro.B12.Kv", "Pittsboro.B24.Kv")).map(_.entityId).toList
-    val resp = service.get(req)
+    val resp = service.get(req).expectMany()
     val resultIds = resp.map(x => java.util.UUID.fromString(x.getUuid.getUuid))
 
     specIds.foldLeft(resultIds) { (left, id) =>

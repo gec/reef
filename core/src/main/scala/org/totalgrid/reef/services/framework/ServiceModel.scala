@@ -23,7 +23,8 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
-import org.totalgrid.reef.api.{ Envelope, RequestEnv }
+import org.totalgrid.reef.api.RequestEnv
+import org.totalgrid.reef.japi.Envelope
 
 /**
  * Interface for generic use of models by simple REST services

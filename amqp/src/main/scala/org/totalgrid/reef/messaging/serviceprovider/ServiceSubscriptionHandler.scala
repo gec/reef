@@ -22,9 +22,10 @@ package org.totalgrid.reef.messaging.serviceprovider
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.japi.Envelope
 
 trait ServiceSubscriptionHandler {
+
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String)
 
   def bind(subQueue: String, key: String)

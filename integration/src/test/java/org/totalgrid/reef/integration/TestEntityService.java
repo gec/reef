@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.totalgrid.reef.api.ReefServiceException;
+import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.api.request.EntityService;
 import org.totalgrid.reef.proto.Model.*;
 
@@ -39,7 +39,7 @@ import java.util.Arrays;
 import org.totalgrid.reef.integration.helpers.*;
 
 @SuppressWarnings("unchecked")
-public class TestEntityService extends JavaBridgeTestBase {
+public class TestEntityService extends ReefConnectionTestBase {
 
 	private interface IKeyGen<T> {
 		public String getKey(T value);
@@ -210,7 +210,7 @@ public class TestEntityService extends JavaBridgeTestBase {
     @Test
     public void commandsToPointsMapping() throws ReefServiceException {
         // First get a substation we can use as an example root
-        Entity sub = client.getOne(Entity.newBuilder().setName("StaticSubstation").build());
+        Entity sub = client.get(Entity.newBuilder().setName("StaticSubstation").build()).await().expectOne();
 
         // Tree request, asks for points under this substation and the commands associated with those points.
         Entity request = Entity.newBuilder().setUuid(sub.getUuid()).addRelations(
@@ -220,7 +220,7 @@ public class TestEntityService extends JavaBridgeTestBase {
                                                 Entity.newBuilder().addTypes("Command"))))).build();
 
         // Request will return the substation as a root node, with the relationship tree below it
-        Entity tree = client.getOne(request);
+        Entity tree = client.get(request).await().expectOne();
 
         // Only owns should be there
         assertEquals(tree.getRelationsCount(), 1);

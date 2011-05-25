@@ -20,22 +20,16 @@
  */
 package org.totalgrid.reef.loader
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import java.util.{ Date, Calendar }
 
-//import org.totalgrid.reef.loader.configuration
-//import org.totalgrid.reef.loader.sx
-
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.proto.Alarms._
 
-import org.totalgrid.reef.api.scalaclient.MockSyncOperations
-import org.totalgrid.reef.api.ServiceTypes._
-import org.totalgrid.reef.api.Envelope
+import org.totalgrid.reef.api.scalaclient.{ MockSyncOperations, Response }
+import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
@@ -49,7 +43,7 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
    */
   def withFixture(test: OneArgTest) = {
 
-    val client = new MockSyncOperations((GeneratedMessage) => MultiSuccess(Envelope.Status.OK, List[GeneratedMessage]()))
+    val client = new MockSyncOperations((GeneratedMessage) => Response(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val config = new sx.Configuration("1.0")
 
@@ -65,21 +59,21 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
 
     mModel.add(new sx.Message("Scada.UserLogin", "EVENT", 1, "User login {status} {reason}"))
     LoadManager.loadConfiguration(loader, config, true) // T: benchmark
-    var protos = List[GeneratedMessage](toEvent("Scada.UserLogin", 1, "User login {status} {reason}"))
+    var protos = List[AnyRef](toEvent("Scada.UserLogin", 1, "User login {status} {reason}"))
     client.getPutQueue should equal(protos)
 
     mModel.reset
     client.reset
     mModel.add(new sx.Message("Scada.OutOfNominal", "LOG", 8, "User login {status} {reason}"))
     LoadManager.loadConfiguration(loader, config, true) // T: benchmark
-    protos = List[GeneratedMessage](toLog("Scada.OutOfNominal", 8, "User login {status} {reason}"))
+    protos = List[AnyRef](toLog("Scada.OutOfNominal", 8, "User login {status} {reason}"))
     client.getPutQueue should equal(protos)
 
     mModel.reset
     client.reset
     mModel.add(new sx.Message("Scada.OutOfNominal", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
     LoadManager.loadConfiguration(loader, config, true) // T: benchmark
-    protos = List[GeneratedMessage](toAlarm("Scada.OutOfNominal", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE))
+    protos = List[AnyRef](toAlarm("Scada.OutOfNominal", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE))
     client.getPutQueue should equal(protos)
 
   }
