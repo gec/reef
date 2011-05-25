@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:Master xmlns:ns2="org.psi.xml.dnp3" xmlns="org.psi.xml">
+  <ns2:Stack>
+    <ns2:LinkLayer RemoteBuffFullTimeoutMS="0" NumRetries="3" AckTimeoutMS="1000" UseConfirmations="false" RemoteAddress="1" LocalAddress="100" IsMaster="true"/>
+    <ns2:AppLayer NumRetries="0" MaxFragSize="2048" TimeoutMS="5000"/>
+  </ns2:Stack>
+  <ns2:MasterSettings IntegrityPeriodMS="2000" TaskRetryMS="5000" AllowTimeSync="true"/>
+  <ns2:ScanList>
+    <!--<ns2:ExceptionScan PeriodMS="2000" Class3="true" Class2="true" Class1="true"/>-->
+  </ns2:ScanList>
+  <ns2:Unsol Class3="true" Class2="true" Class1="true" Enable="false" DoTask="false"/>
+</ns2:Master>
