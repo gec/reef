@@ -26,31 +26,117 @@ import org.totalgrid.reef.japi.ServiceIOException;
 import org.totalgrid.reef.japi.TypeDescriptor;
 
 /**
- *  The interface that a concrete service client must provide.
+ *  Session are provides access to REST service calls and subscriptions
  */
 public interface Session {
 
-  /* -------- Synchronous API ------------ */
+   /**
+     * Make a service request using 'GET'
+     *
+     * @param request The request value to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> get(A request) throws ReefServiceException;
 
-  <A> Promise<Response<A>> get(A payload) throws ReefServiceException;
-  <A> Promise<Response<A>> delete(A payload) throws ReefServiceException;
-  <A> Promise<Response<A>> post(A payload) throws ReefServiceException;
-  <A> Promise<Response<A>> put(A payload) throws ReefServiceException;
+   /**
+     * Make a service request using 'DELETE'
+     *
+     * @param request The request value to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> delete(A request) throws ReefServiceException;
+
+   /**
+     * Make a service request using 'POST'
+     *
+     * @param request The request value to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> post(A request) throws ReefServiceException;
+
+   /**
+     * Make a service request using 'PUT'
+     *
+     * @param request The request value to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> put(A request) throws ReefServiceException;
+
+   /**
+     * Make a service request using 'GET' that establishes a subscription
+     *
+     * @param request The request value to use
+     * @param subscription Subscription object to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> get(A request, Subscription<A> subscription) throws ReefServiceException;
+
+  /**
+     * Make a service request using 'DELETE' that establishes a subscription
+     *
+     * @param request The request value to use
+     * @param subscription Subscription object to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> delete(A request, Subscription<A> subscription) throws ReefServiceException;
+
+  /**
+     * Make a service request using 'POST' that establishes a subscription
+     *
+     * @param request The request value to use
+     * @param subscription Subscription object to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> post(A request, Subscription<A> subscription) throws ReefServiceException;
+
+  /**
+     * Make a service request using 'PUT' that establishes a subscription
+     *
+     * @param request The request value to use
+     * @param subscription Subscription object to use
+     * @param <A> The type of the request/response
+     * @return A promise to the Response<A>
+     * @throws ReefServiceException if the service request cannot be made
+     */
+  <A> Promise<Response<A>> put(A request, Subscription<A> subscription) throws ReefServiceException;
 
 
-  <A> Promise<Response<A>> get(A payload, Subscription<A> subscription) throws ReefServiceException;
-  <A> Promise<Response<A>> delete(A payload, Subscription<A> subscription) throws ReefServiceException;
-  <A> Promise<Response<A>> post(A payload, Subscription<A> subscription) throws ReefServiceException;
-  <A> Promise<Response<A>> put(A payload, Subscription<A> subscription) throws ReefServiceException;
-
-  /* --- Misc --- */
-
+   /**
+     * Creates a subscription object that can be used during a request. After a successful request, the subscription can be started.
+     *
+     * @param descriptor TypeDescriptor corresponding to the type of the Subscription
+     * @param <A> Type of the subscription
+     * @return A Subscription object to use in a subsequent request
+     * @throws ServiceIOException If the broker is not available, the descriptor is not recognized
+     */
   <A> Subscription<A> addSubscription(TypeDescriptor<A> descriptor) throws ServiceIOException;
 
+  @Deprecated
   <A> Subscription<A> addSubscription(TypeDescriptor<A> descriptor, SubscriptionEventAcceptor<A> acceptor) throws ServiceIOException;
 
+   /**
+     * Returns the Service headers to set or clear AuthTokens
+     * @return A reference to the mutable ServiceHeaders object used by the client.
+     */
   ServiceHeaders getDefaultHeaders();
 
+   /**
+     * Close the session, releasing the underlying resource. The session is dead and can never be used again.
+     */
   void close();
 
 }

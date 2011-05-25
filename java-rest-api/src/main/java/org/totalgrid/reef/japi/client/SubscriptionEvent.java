@@ -23,9 +23,23 @@ package org.totalgrid.reef.japi.client;
 import org.totalgrid.reef.japi.Envelope;
 
 /**
- * when a
+ *
+ * Class received when an event occurs that matches a
+ * subscription request.
+ *
+ * @param <T> The type of event
  */
 public interface SubscriptionEvent<T> {
+
+    /**
+     *
+     * @return the value of event
+     */
     T getValue();
+
+   /**
+     *
+     * @return The type of the event (ADDED, MODIFIED, REMOVED)
+     */
     Envelope.Event getEventType();
 }

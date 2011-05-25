@@ -27,14 +27,25 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.sapi.ServiceList
+import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.sapi.client.ClientSession
 import org.totalgrid.reef.japi.client.{ AMQPConnectionSettings, ConnectionListener, Connection, Session, SessionExecutionPool }
+import org.totalgrid.reef.sapi.ServiceList
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
+ *
+ * @param settings Settings class to that defines properties of the connection
+ * @param services List defining mappings between
+ * @param timeoutms Response timeout for service calls in milliseconds
  */
+@scala.deprecated
 class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList, timeoutms: Long) extends Connection {
+
+  /**
+   * Overloaded constructor that defaults to the Reef services list
+   */
+  def this(settings: AMQPConnectionSettings, timeoutms: Long) = this(settings, ReefServicesList, timeoutms)
 
   val config = new BrokerConnectionInfo(settings.getHost, settings.getPort, settings.getUser, settings.getPassword, settings.getVirtualHost)
 

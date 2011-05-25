@@ -28,5 +28,9 @@ package org.totalgrid.reef.japi.client;
  */
 public interface SubscriptionCreator {
 
+   /**
+     * Binds a listener to a class that can create subscriptions
+     * @param listener Callback that receives updates when a subcription is added
+     */
     void addSubscriptionCreationListener(SubscriptionCreationListener listener);
 }

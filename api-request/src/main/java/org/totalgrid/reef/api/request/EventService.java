@@ -54,9 +54,7 @@ public interface EventService extends SubscriptionCreator {
      * get the most recent events and setup a subscription to all future events
      *
      * @param limit the number of incoming events
-     * @param sub   a subscription object that consumes the new Events coming in
      */
-
     public SubscriptionResult<List<Event>, Event> subscribeToRecentEvents(int limit) throws ReefServiceException;
 
     /**
@@ -65,7 +63,6 @@ public interface EventService extends SubscriptionCreator {
      * @param types event type names
      * @param limit the number of incoming events
      */
-
     public List<Event> getRecentEvents(List<String> types, int limit) throws ReefServiceException;
 
     /**

@@ -29,7 +29,6 @@ import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-import org.totalgrid.reef.proto.ReefServicesList;
 
 
 import org.totalgrid.reef.japi.client.Connection;
@@ -45,7 +44,7 @@ public class ReefConnectionTestBase {
 	/**
 	 * connector to the bus, restarted for every test connected for
 	 */
-	protected Connection connection = new AMQPConnection(getConnectionInfo(), ReefServicesList.getInstance(), 5000);
+	protected Connection connection = new AMQPConnection(getConnectionInfo(), 5000);
 	protected Session client;
     protected AtollService helpers;
 
