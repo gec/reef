@@ -20,20 +20,40 @@
  */
 package org.totalgrid.reef.japi.client;
 
-/**
- * Interface that defines what operations can be done to service header
- */
-public interface ServiceHeaders {
 
-  /**
-   * Sets the AuthToken field in the header
-   * @param token A string representing the auth token
-   */
-  void setAuthToken(String token);
+public class AMQPConnectionSettings {
 
-  /**
-    * Clears the AuthToken field in the header
-    */
-  void clearAuthToken();
+    private String host;
+    private int port;
+    private String user;
+    private String password;
+    private String virtualHost;
 
+    public AMQPConnectionSettings(String host, int port, String user, String password, String virtualHost) {
+        this.host = host;
+        this.port = port;
+        this.user = user;
+        this.password = password;
+        this.virtualHost = virtualHost;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getVirtualHost() {
+        return virtualHost;
+    }
 }

@@ -20,6 +20,7 @@
  */
 package org.totalgrid.reef.japi.client;
 
+// TODO write sensible javadoc that is useful to API consumers
 /**
  * Classes that may internally generate ISubscriptions will implement this interface
  * so the consuming code can register for a notification when a subscription is generated
@@ -27,5 +28,5 @@ package org.totalgrid.reef.japi.client;
  */
 public interface SubscriptionCreator {
 
-    public void addSubscriptionCreationListener(SubscriptionCreationListener listener);
+    void addSubscriptionCreationListener(SubscriptionCreationListener listener);
 }

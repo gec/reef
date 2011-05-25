@@ -18,33 +18,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.totalgrid.reef.japi;
 
 /**
  * Base class for all exceptions thrown by the api
  */
-public abstract class ReefServiceException extends Exception {
+public abstract class ReefServiceException extends Exception
+{
+    public final Envelope.Status status;
 
-  final public Envelope.Status status;
-  final public String msg;
+    public ReefServiceException( String msg, Envelope.Status status )
+    {
+        this( msg, status, null );
+    }
 
-  public ReefServiceException(String msg, Envelope.Status status, Throwable cause)
-  {
-    super(msg, cause);
-    this.msg = msg;
-    this.status = status;
-  }
+    public ReefServiceException( String msg, Envelope.Status status, Throwable cause )
+    {
+        super( msg, cause );
+        this.status = status;
+    }
 
-  public ReefServiceException(String msg, Envelope.Status status)
-  {
-    super(msg);
-    this.msg = msg;
-    this.status = status;
-  }
-
-  public Envelope.Status getStatus()
-  {
-    return status;
-  }
+    public Envelope.Status getStatus()
+    {
+        return status;
+    }
 }
 

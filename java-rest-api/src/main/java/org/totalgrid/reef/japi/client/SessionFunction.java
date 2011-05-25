@@ -23,13 +23,15 @@ package org.totalgrid.reef.japi.client;
 import org.totalgrid.reef.japi.ReefServiceException;
 
 /**
- * a helper class that encapsulates a block of code we want to execute using a single
- * session. Typed to allow the pool execute functions to return the same type as apply
+ * Function that does some work with the supplied <code>Session</code>.  The <code>Session</code> should be used only for the duration
+ * of the <code>apply()</code> method call.
  */
 public interface SessionFunction<A> {
 
-  /**
-   * called with a session from the pool
-   */
-  A apply(Session session) throws ReefServiceException;
+    /**
+     * @param session a session to use for the function
+     * @return the result of the function
+     * @throws ReefServiceException
+     */
+    A apply( Session session ) throws ReefServiceException;
 }

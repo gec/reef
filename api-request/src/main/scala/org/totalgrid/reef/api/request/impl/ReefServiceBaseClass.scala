@@ -27,11 +27,13 @@ import org.totalgrid.reef.messaging.javaclient.{ SubscriptionResultWrapper, Sess
 import org.totalgrid.reef.japi.client.{ Subscription => JavaSubscription }
 import org.totalgrid.reef.sapi.client.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
 import org.totalgrid.reef.japi.client._
+import com.google.protobuf.GeneratedMessage
 
+// TODO rename BaseReefService or similar, class is redundant.
 trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
 
-  def useSubscription[A, B](session: SubscriptionManagement, klass: Class[_])(block: Subscription[B] => A) = {
-    val sub = session.addSubscription[B](klass)
+  def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S): SubscriptionResult[S, R] = {
+    val sub: Subscription[R] = session.addSubscription[R](klass)
     try {
 
       val result = block(sub)
@@ -74,7 +76,7 @@ trait ClientSource {
         // calls, if its already a ReefServiceException we have nothing to do
         throw rse
       case e: Exception =>
-        throw new InternalClientError("Unexpected error: " + e.getMessage, e)
+        throw new InternalClientError("ops() call: unexpected error: " + e.getMessage, e)
     }
   }
 
@@ -95,8 +97,8 @@ trait SingleSessionClientSource extends ClientSource {
  * takes a single session and sets the authToken before each call and removes it afterwards
  */
 trait AuthorizedSingleSessionClientSource extends ClientSource {
-  def session: ClientSession
 
+  def session: ClientSession
   def authToken: String
 
   override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {

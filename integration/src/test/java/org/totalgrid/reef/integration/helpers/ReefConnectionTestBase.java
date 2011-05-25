@@ -23,12 +23,12 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.*;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
 import org.totalgrid.reef.japi.client.Session;
 import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-import org.totalgrid.reef.broker.BrokerConnectionInfo;
 import org.totalgrid.reef.proto.ReefServicesList;
 
 
@@ -72,7 +72,7 @@ public class ReefConnectionTestBase {
 	 * gets the ip of the qpid server, defaults to 127.0.0.1 but can be override with java property
 	 * -Dreef_node_ip=192.168.100.10
 	 */
-	private BrokerConnectionInfo getConnectionInfo() {
+	private AMQPConnectionSettings getConnectionInfo() {
 		String reef_ip = System.getProperty("reef_node_ip");
 		if (reef_ip == null) reef_ip = "127.0.0.1";
 		String reef_port = System.getProperty("reef_node_port");
@@ -84,7 +84,7 @@ public class ReefConnectionTestBase {
 		String virtualHost = System.getProperty("org.totalgrid.reef.amqp.virtualHost");
 		if (virtualHost == null) virtualHost = "test";
 
-		return new BrokerConnectionInfo(reef_ip, Integer.parseInt(reef_port), user, password, virtualHost);
+		return new AMQPConnectionSettings(reef_ip, Integer.parseInt(reef_port), user, password, virtualHost);
 	}
 
 	@Before

@@ -39,50 +39,43 @@ public interface MeasurementService extends SubscriptionCreator {
     /**
      * gets the most recent measurement for a point
      */
-
-    public Measurement getMeasurementByPoint(Point point) throws ReefServiceException;
+    Measurement getMeasurementByPoint( Point point ) throws ReefServiceException;
 
     /**
      * gets the current value for a point (specified by name)
      */
-
-    public Measurement getMeasurementByName(String name) throws ReefServiceException;
+    Measurement getMeasurementByName( String name ) throws ReefServiceException;
 
     /**
      * gets the most recent measurement for a set of points. If any points are unknown the call will throw a bad request
      * exception.
      */
-
-    public List<Measurement> getMeasurementsByNames(List<String> names) throws ReefServiceException;
+    List<Measurement> getMeasurementsByNames( List<String> names ) throws ReefServiceException;
 
     /**
      * gets the most recent measurement for a set of points (specified by names). If any points are unknown the
      * call will throw a bad request exception.
      */
-
-    public List<Measurement> getMeasurementsByPoints(List<Point> points) throws ReefServiceException;
-
-    /**
-     * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
-     * measurement change
-     */
-
-    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByPoints(List<Point> points) throws ReefServiceException;
+    List<Measurement> getMeasurementsByPoints( List<Point> points ) throws ReefServiceException;
 
     /**
      * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
      * measurement change
      */
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByPoints( List<Point> points ) throws ReefServiceException;
 
-    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByNames(List<String> points) throws ReefServiceException;
+    /**
+     * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
+     * measurement change
+     */
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByNames( List<String> points ) throws ReefServiceException;
 
     /**
      * get a subset of the recent measurements for a point
      *
      * @param limit - max number of measurements returned
      */
-
-    public List<Measurement> getMeasurementHistory(Point point, int limit) throws ReefServiceException;
+    List<Measurement> getMeasurementHistory( Point point, int limit ) throws ReefServiceException;
 
     /**
      * get a subset of the recent measurements for a point
@@ -90,8 +83,7 @@ public interface MeasurementService extends SubscriptionCreator {
      * @param since - dont return measurements older than this, inclusive (millis)
      * @param limit - max number of measurements returned
      */
-
-    public List<Measurement> getMeasurementHistory(Point point, long since, int limit) throws ReefServiceException;
+    List<Measurement> getMeasurementHistory( Point point, long since, int limit ) throws ReefServiceException;
 
     /**
      * get a subset of the recent measurements for a point. Note that setting the endTime and subscribing is incompatible
@@ -103,16 +95,14 @@ public interface MeasurementService extends SubscriptionCreator {
      * @param returnNewest - if there are more measurements in the range the range than limit return the newest measurements
      * @param limit        - max number of measurements returned
      */
-
-    public List<Measurement> getMeasurementHistory(Point point, long since, long before, boolean returnNewest, int limit) throws ReefServiceException;
+    List<Measurement> getMeasurementHistory( Point point, long since, long before, boolean returnNewest, int limit ) throws ReefServiceException;
 
     /**
      * get the most recent measurements for a point and setup a subscription for new measurements
      *
      * @param limit - max number of measurements returned
      */
-
-    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory(Point point, int limit) throws ReefServiceException;
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory( Point point, int limit ) throws ReefServiceException;
 
     /**
      * get the most recent measurements for a point and setup a subscription for new measurements
@@ -120,8 +110,7 @@ public interface MeasurementService extends SubscriptionCreator {
      * @param since - don't return measurements older than this, inclusive (millis)
      * @param limit - max number of measurements returned
      */
-
-    public SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory(Point point, long since, int limit) throws ReefServiceException;
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory( Point point, long since, int limit ) throws ReefServiceException;
 
     /**
      * publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -131,6 +120,5 @@ public interface MeasurementService extends SubscriptionCreator {
      * implement TODO protocol checking on publishMeasurements
      * - measurement processors must be available to process the measurement (only question during startup)
      */
-
-    public void publishMeasurements(List<Measurement> measurements) throws ReefServiceException;
+    void publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 }

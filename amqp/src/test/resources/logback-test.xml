@@ -39,7 +39,7 @@
 	<logger name="org.apache.qpid.transport" level="info"/>
 
 	<root>
-		<level value='debug'/>
+		<level value='info'/>
 
 		<appender-ref ref='FILE'/>
 	</root>

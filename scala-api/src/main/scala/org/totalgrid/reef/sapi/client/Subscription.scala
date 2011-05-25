@@ -40,6 +40,8 @@ trait Subscription[A] {
 object Subscription {
   /**
    * convert a Subscription to the RequestEnv used in scala SyncOps
+   *
+   * TODO should this todo really be in the scaladoc?
    * TODO: rationalize RequestEnv and Subscription interfaces
    */
   implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): RequestEnv = {

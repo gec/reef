@@ -18,30 +18,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.totalgrid.reef.japi.client;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 
 /**
- * A thread-safe interface for executing arbitrary blocks of code on against of pool of Session's
+ * Interface for executing a function with a <code>Session</code> supplied by the pool.
  */
-public interface SessionExecutionPool {
+// TODO: add shutdown behavior
+public interface SessionExecutionPool
+{
 
-  /**
-   * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
-   * @consumer a block of code to execute using the acquired Session
-   * @return the return value from consumer.apply
-   * @throws ReefServiceException if a session cannot be acquired we will throw an error
-   */
-  <A> A execute(SessionFunction<A> function) throws ReefServiceException;
+    /**
+     * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
+     *
+     * @param function block of code to execute using a session acquired from the pool.
+     * @return the return value from function.apply() method
+     * @throws ReefServiceException if a session cannot be acquired or the function throws an exception then an exception will be thrown from this
+     * method
+     */
+    <A> A execute( SessionFunction<A> function ) throws ReefServiceException;
 
-  /**
-   * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
-   * @param authToken an authtoken to attach before calling consumer.apply
-   * @param function a block of code to execute using the acquired Session
-   * @return the return value from consumer.apply
-   * @throws ReefServiceException if a session cannot be acquired we will throw an error
-   */
-  <A> A execute(String authToken, SessionFunction<A> function) throws ReefServiceException;
+    /**
+     * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
+     *
+     * @param authToken an authorization token to attach to the session before executing the function
+     * @param function block of code to execute using a session acquired from the pool.
+     * @return the return value from function.apply() method
+     * @throws ReefServiceException if a session cannot be acquired or the function throws an exception then an exception will be thrown from this
+     * method
+     */
+    <A> A execute( String authToken, SessionFunction<A> function ) throws ReefServiceException;
 
 }

@@ -27,14 +27,16 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.reactor.ReactActor
 
-import org.totalgrid.reef.japi.client.{ ConnectionListener, Connection, Session, SessionExecutionPool }
 import org.totalgrid.reef.sapi.ServiceList
 import org.totalgrid.reef.sapi.client.ClientSession
+import org.totalgrid.reef.japi.client.{ AMQPConnectionSettings, ConnectionListener, Connection, Session, SessionExecutionPool }
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
  */
-class AMQPConnection(config: BrokerConnectionInfo, servicesList: ServiceList, timeoutms: Long) extends Connection {
+class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList, timeoutms: Long) extends Connection {
+
+  val config = new BrokerConnectionInfo(settings.getHost, settings.getPort, settings.getUser, settings.getPassword, settings.getVirtualHost)
 
   /// Scala factory class we're wrapping to simplify access to java clients
   private val factory = new AMQPSyncFactory with ReactActor {

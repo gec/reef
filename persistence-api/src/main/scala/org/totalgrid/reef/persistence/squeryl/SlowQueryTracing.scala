@@ -29,25 +29,25 @@ import org.totalgrid.reef.util.Logging
 
 trait SlowQueryTracing extends DatabaseAdapter with Logging {
 
-  val slowQueryTime: Long
+  val slowQueryTimeMilli: Long
 
   override def execFailSafeExecute(sw: StatementWriter, silenceException: SQLException => Boolean): Unit = {
-    val timingFun = monitorSlowQueries(slowQueryTime, sw) _
+    val timingFun = monitorSlowQueries(slowQueryTimeMilli, sw) _
     Timing.time(timingFun) {
       super.execFailSafeExecute(sw, silenceException)
     }
   }
 
   override def exec[A](s: Session, sw: StatementWriter)(block: => A): A = {
-    val timingFun = monitorSlowQueries(slowQueryTime, sw) _
+    val timingFun = monitorSlowQueries(slowQueryTimeMilli, sw) _
     Timing.time[A](timingFun) {
       super.exec[A](s, sw)(block)
     }
   }
 
-  def monitorSlowQueries(maxTime: Long, sw: StatementWriter)(actualTime: Long): Unit = {
-    if (actualTime >= maxTime) {
-      info("SlowQuery: " + actualTime + ": " + sw.toString)
+  def monitorSlowQueries(maxTimeMilli: Long, sw: StatementWriter)(actualTimeMilli: Long): Unit = {
+    if (actualTimeMilli >= maxTimeMilli) {
+      reefLogger.info("SlowQuery: actual: {}ms, max allowed: {}ms, query: {}", Array(actualTimeMilli, maxTimeMilli, sw.toString))
     }
   }
 }

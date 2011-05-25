@@ -30,7 +30,9 @@ class Connector extends DbConnectorBase with Logging {
 
   def _connect(dbInfo: DbInfo): Unit = {
 
-    if (dbInfo.dbType != "postgresql") throw new IllegalArgumentException("Trying to use postgresql adapter to talk to database with type: " + dbInfo.dbType)
+    if (dbInfo.dbType != "postgresql") {
+      throw new IllegalArgumentException("Trying to use postgresql adapter to talk to database with type: " + dbInfo.dbType)
+    }
 
     val pool = new org.apache.commons.dbcp.BasicDataSource
     pool.setDriverClassName("org.postgresql.Driver")
@@ -39,13 +41,13 @@ class Connector extends DbConnectorBase with Logging {
     pool.setUsername(dbInfo.user)
     pool.setPassword(dbInfo.password)
 
-    info { "Connecting to: " + url }
+    reefLogger.info("Connecting to Database: {}", url)
 
     SessionFactory.concreteFactory = Some(() => {
       Session.create(
         pool.getConnection(),
         new PostgreSqlAdapter with SlowQueryTracing {
-          val slowQueryTime = dbInfo.slowQueryTime
+          val slowQueryTimeMilli = dbInfo.slowQueryTimeMilli
         })
     })
   }

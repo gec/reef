@@ -100,8 +100,10 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
     setHeader(RequestEnv.authToken, notNull(token, "token"))
   }
 
+  final override def clearAuthToken() = clearHeader(RequestEnv.authToken)
+
   def setAuthTokens(ss: List[String]) {
-    clearHeader(RequestEnv.authToken)
+    clearAuthToken()
     ss.foreach(addHeader(RequestEnv.authToken, _))
   }
 

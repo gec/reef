@@ -47,21 +47,21 @@ public interface AlarmService extends SubscriptionCreator {
      *
      * @param uid uid of alarm
      */
-    public Alarm getAlarm(String uid) throws ReefServiceException;
+    Alarm getAlarm( String uid ) throws ReefServiceException;
 
     /**
      * get the most recent alarms
      *
      * @param limit the number of incoming alarms
      */
-    public List<Alarm> getActiveAlarms(int limit) throws ReefServiceException;
+    List<Alarm> getActiveAlarms( int limit ) throws ReefServiceException;
 
     /**
      * get the most recent alarms and setup a subscription to all future alarms
      *
      * @param limit the number of incoming events
      */
-    public SubscriptionResult<List<Alarm>, Alarm> subscribeToActiveAlarms(int limit) throws ReefServiceException;
+    SubscriptionResult<List<Alarm>, Alarm> subscribeToActiveAlarms( int limit ) throws ReefServiceException;
 
     /**
      * get the most recent alarms
@@ -69,21 +69,21 @@ public interface AlarmService extends SubscriptionCreator {
      * @param types event type names
      * @param limit the number of incoming alarms
      */
-    public List<Alarm> getActiveAlarms(List<String> types, int limit) throws ReefServiceException;
+    List<Alarm> getActiveAlarms( List<String> types, int limit ) throws ReefServiceException;
 
     /**
      * silences an audible alarm
      */
-    public Alarm silenceAlarm(Alarm alarm) throws ReefServiceException;
+    Alarm silenceAlarm( Alarm alarm ) throws ReefServiceException;
 
     /**
      * acknowledge the alarm (silences if not already silenced)
      */
-    public Alarm acknowledgeAlarm(Alarm alarm) throws ReefServiceException;
+    Alarm acknowledgeAlarm( Alarm alarm ) throws ReefServiceException;
 
     /**
      * "remove" an Alarm from the active list.
      */
-    public Alarm removeAlarm(Alarm alarm) throws ReefServiceException;
+    Alarm removeAlarm( Alarm alarm ) throws ReefServiceException;
 
 }
