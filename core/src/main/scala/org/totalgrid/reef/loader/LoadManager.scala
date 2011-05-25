@@ -31,13 +31,11 @@ import org.totalgrid.reef.reactor.ReactActor
 
 import org.totalgrid.reef.loader.configuration._
 
-import org.totalgrid.reef.sapi.{ ServiceHandlerHeaders, RequestEnv }
-import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.RestOperations
 
 import org.totalgrid.reef.util.{ FileConfigReader, Logging, XMLHelper }
 import java.io.File
-import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.ReefServicesList
 
 object LoadManager extends Logging {

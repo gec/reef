@@ -31,11 +31,10 @@ import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityPro
 import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
-import org.totalgrid.reef.sapi.{ RequestEnv, ServiceHandlerHeaders, client }
-import client.Event
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.client.Event
 
 //implicits
-import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.squeryl.PrimitiveTypeMode._
 
 import org.scalatest.junit.JUnitRunner

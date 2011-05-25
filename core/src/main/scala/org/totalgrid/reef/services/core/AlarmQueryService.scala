@@ -43,8 +43,6 @@ import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
-
 import org.squeryl.dsl.ast.LogicalBoolean
 
 object AlarmQueryService {

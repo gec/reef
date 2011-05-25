@@ -25,7 +25,6 @@ import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
 
 import org.totalgrid.reef.measurementstore.Historian
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.japi.BadRequestException

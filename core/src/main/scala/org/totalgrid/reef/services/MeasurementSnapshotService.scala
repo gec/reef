@@ -28,7 +28,6 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.measurementstore.RTDatabase
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.Envelope

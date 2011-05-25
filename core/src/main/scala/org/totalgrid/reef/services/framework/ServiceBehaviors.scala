@@ -26,8 +26,6 @@ import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.sapi.RequestEnv
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
-
 import org.totalgrid.reef.sapi.service._
 
 object ServiceBehaviors {

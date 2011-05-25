@@ -94,7 +94,6 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
   }
 
   override def createFromProto(req: UserCommandRequest): UserCommandModel = {
-    import org.totalgrid.reef.services.ServiceProviderHeaders._
 
     val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
 

@@ -164,10 +164,10 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
       queueName.waitWhile("")
 
-      val env = new ServiceHandlerHeaders(new RequestEnv)
+      val env = new RequestEnv
       env.setSubscribeQueue(queueName.current)
 
-      val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env.env).expectMany()
+      val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env).expectMany()
 
       conns.foreach(c => mockMeas.onMeasProcAssign(new Event(Envelope.Event.ADDED, c)))
 

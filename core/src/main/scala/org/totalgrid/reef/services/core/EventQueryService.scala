@@ -42,8 +42,6 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import _root_.scala.collection.JavaConversions._
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
-
 import org.squeryl.dsl.ast.LogicalBoolean
 
 object EventQueryService {

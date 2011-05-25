@@ -32,8 +32,6 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.services.{ RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
-
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.sapi.RequestEnv

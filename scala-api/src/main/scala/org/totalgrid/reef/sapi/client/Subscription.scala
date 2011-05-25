@@ -22,7 +22,7 @@ package org.totalgrid.reef.sapi.client
  */
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.sapi.{ RequestEnv, ServiceHandlerHeaders }
+import org.totalgrid.reef.sapi.RequestEnv
 
 trait Subscription[A] {
   def cancel()
@@ -43,8 +43,8 @@ object Subscription {
    * TODO: rationalize RequestEnv and Subscription interfaces
    */
   implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): RequestEnv = {
-    val serviceHeaders = new ServiceHandlerHeaders()
-    serviceHeaders.setSubscribeQueue(sub.id)
-    serviceHeaders.env
+    val env = new RequestEnv
+    env.setSubscribeQueue(sub.id)
+    env
   }
 }

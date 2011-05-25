@@ -64,11 +64,10 @@ class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) 
 
     borrow { session =>
       try {
-        import org.totalgrid.reef.sapi.ServiceHandlerHeaders._
         session.getDefaultHeaders.setAuthToken(authToken)
         fun(session)
       } finally {
-        session.getDefaultHeaders.reset
+        session.getDefaultHeaders.clear()
       }
     }
 

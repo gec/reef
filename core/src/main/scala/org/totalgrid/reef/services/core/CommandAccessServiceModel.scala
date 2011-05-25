@@ -53,7 +53,6 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
   val table = ApplicationSchema.commandAccess
 
   override def createFromProto(req: AccessProto): AccessModel = {
-    import org.totalgrid.reef.services.ServiceProviderHeaders._
 
     val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
     req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }

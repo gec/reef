@@ -25,10 +25,8 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
 
-import org.totalgrid.reef.sapi.{ ServiceHandlerHeaders, RequestEnv }
+import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.{ Success, Failure, SingleSuccess }
-
-import ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._

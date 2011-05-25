@@ -22,13 +22,18 @@ package org.totalgrid.reef.sapi
  */
 import org.totalgrid.reef.japi.client.ServiceHeaders
 
+object RequestEnv {
+  val subQueueName = "SUB_QUEUE_NAME"
+  val authToken = "AUTH_TOKEN"
+}
+
 /**
  * This class wraps the headers we send/receive in the service envelope with helper
  * functions to make them look like a map. It is not intended that the user code directly
  * checks for the presence of specific headers, they should use helper classes like
  * ServiceHandlerHeaders to pull out the specific named values.
  */
-class RequestEnv(var headers: Map[String, List[String]]) {
+class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders {
 
   def this() = this(Map.empty[String, List[String]])
 
@@ -66,7 +71,7 @@ class RequestEnv(var headers: Map[String, List[String]]) {
     }
   }
 
-  def merge(defaults: RequestEnv) = {
+  def merge(defaults: RequestEnv): RequestEnv = {
     val k1 = Set(headers.keysIterator.toList: _*)
     val k2 = Set(defaults.headers.keysIterator.toList: _*)
     val intersection = k1 & k2
@@ -77,41 +82,32 @@ class RequestEnv(var headers: Map[String, List[String]]) {
 
   }
 
-  def reset(): Unit = headers = Map.empty[String, List[String]]
-}
-
-/**
- * helper to get/set headers on a request
- */
-class ServiceHandlerHeaders(val env: RequestEnv = new RequestEnv) extends ServiceHeaders {
+  def clear(): Unit = headers = Map.empty[String, List[String]]
 
   import org.totalgrid.reef.util.JavaInterop.notNull
 
-  def subQueue: Option[String] = env.getString("SUB_QUEUE_NAME")
-  def authTokens: List[String] = env.getList("AUTH_TOKEN")
+  def subQueue: Option[String] = getString(RequestEnv.subQueueName)
+  def authTokens: List[String] = getList(RequestEnv.authToken)
 
   def setSubscribeQueue(queueName: String) {
-    env.addHeader("SUB_QUEUE_NAME", notNull(queueName, "queueName"))
+    addHeader(RequestEnv.subQueueName, notNull(queueName, "queueName"))
   }
   def addAuthToken(token: String) {
-    env.addHeader("AUTH_TOKEN", notNull(token, "token"))
+    addHeader(RequestEnv.authToken, notNull(token, "token"))
   }
 
   final override def setAuthToken(token: String) {
-    env.setHeader("AUTH_TOKEN", notNull(token, "token"))
+    setHeader(RequestEnv.authToken, notNull(token, "token"))
   }
 
   def setAuthTokens(ss: List[String]) {
-    env.clearHeader("AUTH_TOKEN")
-    ss.foreach(env.addHeader("AUTH_TOKEN", _))
+    clearHeader(RequestEnv.authToken)
+    ss.foreach(addHeader(RequestEnv.authToken, _))
   }
 
-  /**
-   * clear all headers
-   */
-  def reset(): Unit = env.reset
+  def userName = getString("USER")
+
+  def setUserName(s: String) = setHeader("USER", s)
+
 }
 
-object ServiceHandlerHeaders {
-  implicit def convertRequestEnvToServiceHeaders(e: RequestEnv) = new ServiceHandlerHeaders(e)
-}

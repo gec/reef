@@ -25,8 +25,6 @@ import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.models.ApplicationSchema
 
-import org.totalgrid.reef.services.ServiceProviderHeaders._
-
 import org.squeryl.PrimitiveTypeMode._
 
 object SqlAuthzService extends SqlAuthzService

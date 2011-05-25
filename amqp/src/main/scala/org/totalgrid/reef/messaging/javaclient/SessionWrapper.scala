@@ -38,9 +38,9 @@ class SessionWrapper(val client: ClientSession) extends Session {
   final override def put[A](request: A): Promise[Response[A]] = client.put(request)
 
   private implicit def convert[A](sub: Subscription[A]): RequestEnv = {
-    val headers = new ServiceHandlerHeaders(new RequestEnv)
+    val headers = new RequestEnv
     headers.setSubscribeQueue(sub.getId)
-    headers.env
+    headers
   }
 
   final override def get[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.get(request, hdr)
@@ -60,7 +60,7 @@ class SessionWrapper(val client: ClientSession) extends Session {
     wrapped
   }
 
-  final override def getDefaultHeaders = new ServiceHandlerHeaders(client.getDefaultHeaders)
+  final override def getDefaultHeaders = client.getDefaultHeaders
 
   final override def close() = client.close()
 }

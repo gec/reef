@@ -68,13 +68,11 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     // list of entries
     private var entries = List.empty[Envelope.RequestHeader]
 
-    private def handleSub(req: Envelope.RequestHeader, env: RequestEnv) {
-      val serviceHeaders = new ServiceHandlerHeaders(env)
-      serviceHeaders.subQueue.foreach(subHandler.bind(_, req.getKey))
-    }
-    private def publish(evt: Envelope.Event, changes: List[Envelope.RequestHeader]) {
+    private def handleSub(req: Envelope.RequestHeader, env: RequestEnv) =
+      env.subQueue.foreach(subHandler.bind(_, req.getKey))
+
+    private def publish(evt: Envelope.Event, changes: List[Envelope.RequestHeader]) =
       changes.foreach(msg => subHandler.publish(evt, msg, msg.getKey))
-    }
 
     val descriptor = TestDescriptors.requestHeader
 

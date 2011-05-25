@@ -21,7 +21,6 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.sapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.sapi.client.{ Response, SingleSuccess, SessionPool }
 import org.totalgrid.reef.japi.ReefServiceException

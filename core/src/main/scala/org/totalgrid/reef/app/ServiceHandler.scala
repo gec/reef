@@ -29,7 +29,6 @@ import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.{ Success, Failure }
 import org.totalgrid.reef.sapi.client.Event
-import org.totalgrid.reef.sapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
 
 object ServiceHandler {
 

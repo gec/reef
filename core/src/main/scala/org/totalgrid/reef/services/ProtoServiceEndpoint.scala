@@ -22,7 +22,6 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.reactor.Reactable
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.sapi.{ RequestEnv, ServiceHandlerHeaders }
 
 /**
  * Interface for "coordinator" functionality, allows classes to get given a reactor for delayed
@@ -31,15 +30,5 @@ import org.totalgrid.reef.sapi.{ RequestEnv, ServiceHandlerHeaders }
 trait ProtoServiceCoordinator {
 
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable)
-}
-
-class ServiceProviderHeaders(e: RequestEnv) extends ServiceHandlerHeaders(e) {
-
-  def userName = e.getString("USER")
-
-  def setUserName(s: String) = e.setHeader("USER", s)
-}
-object ServiceProviderHeaders {
-  implicit def toServiceHeaders(e: RequestEnv) = new ServiceProviderHeaders(e)
 }
 

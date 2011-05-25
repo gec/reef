@@ -101,11 +101,10 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
 
   override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
     try {
-      import org.totalgrid.reef.sapi.ServiceHandlerHeaders._
       session.getDefaultHeaders.setAuthToken(authToken)
       block(session)
     } finally {
-      session.getDefaultHeaders.reset
+      session.getDefaultHeaders.clear()
     }
   }
 }

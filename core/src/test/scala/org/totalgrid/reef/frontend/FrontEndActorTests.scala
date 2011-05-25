@@ -50,8 +50,6 @@ import org.totalgrid.reef.protocol.api.MockProtocol
 import org.totalgrid.reef.reactor.ReactActor
 import org.totalgrid.reef.event._
 
-import org.totalgrid.reef.sapi.ServiceHandlerHeaders.convertRequestEnvToServiceHeaders
-
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

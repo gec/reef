@@ -82,8 +82,7 @@ object AMQPMessageConsumers extends Logging {
             val rspExchange = dest.exchange
             val rspKey = dest.key
 
-            import _root_.scala.collection.JavaConversions._
-            import ServiceHandlerHeaders._
+            import scala.collection.JavaConversions._
 
             val env = new RequestEnv
             // convert the headers back into the RequestEnv object
