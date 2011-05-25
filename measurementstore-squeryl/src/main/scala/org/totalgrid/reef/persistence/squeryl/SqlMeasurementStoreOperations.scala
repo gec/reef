@@ -50,10 +50,7 @@ trait SqlMeasurementStoreOperations {
     if (numPoints < counts) {
       // to trim to a specific # of points we can take advantage of the ID column being an auto-incremented value
       // we use the currentValue table to get the most recently updated point (which should have highest id value)
-      val currentValues = from(SqlMeasurementStoreSchema.currentValues)(n => select(n.proto)).map { p => Meas.parseFrom(p) }.toList
-      val mostRecentlyUpdatedPoint = currentValues.sortWith { _.getTime < _.getTime }.head.getName
-      // then get the most recent update using the fast history query
-      val mostRecentUpdate = getHistory(mostRecentlyUpdatedPoint, 0, Long.MaxValue, 1, false).head
+      val mostRecentUpdate = from(SqlMeasurementStoreSchema.updates)(n => select(n) orderBy (n.id.desc)).page(0, 1).head
       // then delete all records with id less than the most recent update - numpoints we want in system
       SqlMeasurementStoreSchema.updates.deleteWhere(u => u.id.~ <= mostRecentUpdate.id - numPoints)
       counts - numPoints
