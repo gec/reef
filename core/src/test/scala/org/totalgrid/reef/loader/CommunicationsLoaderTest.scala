@@ -40,6 +40,8 @@ import org.totalgrid.reef.japi.Envelope
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
+  val samplesPath = "assembly/src/main/filtered-resources/samples/"
+
   case class Fixture(client: MockSyncOperations, loader: CommunicationsLoader, model: CommunicationsModel) {
     def reset = {
       client.reset // reset putQueue, etc.
@@ -68,7 +70,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     import fixture._
 
     println("default path = " + new java.io.File(".").getAbsolutePath)
-    val path = new java.io.File(BuildEnv.configPath + "karaf-common/samples/two_substations")
+    val path = new java.io.File(BuildEnv.configPath + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
 
     model.add(
@@ -109,7 +111,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsPointProfiles(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../karaf-common/samples/two_substations")
+    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -154,7 +156,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsEndpointProfiles(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../karaf-common/samples/two_substations")
+    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -227,7 +229,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsBenchmarkWithoutIndexes(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../karaf-common/samples/two_substations")
+    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -248,7 +250,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsDnp3WithoutIndexes(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../karaf-common/samples/two_substations")
+    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
