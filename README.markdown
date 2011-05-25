@@ -128,21 +128,19 @@ Karaf Distribution
 
 We distribute Reef as a rebranded karaf OSGi container.
 
-- **karaf-common** : Contains the key file: reef-feature.xml that defines which of the above bundles need to be included
+- **assembly** : Repackages and rebrands an Apache Karaf distribution with Reef software and configuration.
+  Contains the key file: reef-feature.xml that defines which of the above bundles need to be included
   to make the empty karaf shell a fully fleshed out Reef node. Also includes a few sample xml-configuration files including
   the configuration we run our integration tests against. Also includes updated configuration files that adjust logging
   and maven settings.
 - **branding** : Implements some karaf specific classes to override the default branding and print the swanky REEF logo
   at the top of the shell.
-- **karaf-linux** : A maven project to download the linux version of karaf and add the branding project and files from 
-  karaf-common.
-- **karaf-windows** : Same as karaf-linux but downloads windows version (only difference is bin files .sh vs .bat) 
 
 Karaf Shell Commands
 -----------------------------------------
 
-- **admin-shell' : Contains a shell accessible commands that require direct in-memory access to the running Reef node.
+- **admin-shell** : Contains a shell accessible commands that require direct in-memory access to the running Reef node.
   This includes maintenance functionality to read metrics counters and reset/clear the database schema.
-- **proto-shell' : A potentially standalone application implemented using karaf shell (gogo) to expose many of the
+- **proto-shell** : A potentially standalone application implemented using karaf shell (gogo) to expose many of the
   reef api-request services as command line operations to allow quick prototyping of new user facing functionality.
  

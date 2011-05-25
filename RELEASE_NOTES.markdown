@@ -90,6 +90,7 @@ Primarily a stability and usability release, very limited new functionality.
 * Better loader warnings and behavior when config files are missing (includes REEF-46)
 * Fixed "Content not allowed in prolog" XML loading issue REEF-61
 * Multiple Controls with same index but different dnp3Options can be loaded by loader REEF-65
+* Fixed measurement history trimming bug that caused slow down over time REEF-67
 
 Version 0.2.3-dev
 ==============
