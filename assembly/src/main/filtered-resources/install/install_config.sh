@@ -6,7 +6,7 @@ load() {
     echo "Stopping running instances..."
     bin/stop > /dev/null 2>&1 || true
 
-    echo "Booting Reef..."
+    echo "Starting Reef..."
     bin/start
 
     # it can take a long time to setup the ssh session the first time karaf is run on a slow machine
