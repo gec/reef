@@ -27,5 +27,9 @@ package org.totalgrid.reef.japi.client;
  */
 public interface SubscriptionCreationListener {
 
+   /**
+     * Called when a subscription is created
+     * @param sub Newly created subscription
+     */
     public void onSubscriptionCreated(Subscription<?> sub);
 }

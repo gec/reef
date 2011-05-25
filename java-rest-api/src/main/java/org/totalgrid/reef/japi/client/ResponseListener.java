@@ -30,6 +30,6 @@ public interface ResponseListener<A> {
      *
      * @param value The asynchronous return value from a request
      */
-    void onCompletion(A value);
+   void onCompletion(A value);
 
 }
