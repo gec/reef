@@ -85,7 +85,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus),
-    new HistoryTrimmer(cm, serviceConfiguration.trimPeriodMinutes * 1000, serviceConfiguration.maxMeasurements),
+    new HistoryTrimmer(cm, serviceConfiguration.trimPeriodMinutes * 1000 * 60, serviceConfiguration.maxMeasurements),
     //serviceContainer.addCoordinator(new PointAbnormalsThunker(modelFac.points, summaries))
     //serviceContainer.addCoordinator(new AlarmSummaryInitializer(modelFac.alarms, summaries))
     new EventStreamThunker(modelFac.events, List("raw_events")))
