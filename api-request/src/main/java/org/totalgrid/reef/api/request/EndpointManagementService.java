@@ -96,7 +96,7 @@ public interface EndpointManagementService {
      * Same as getAllEndpointConnections but subscribes the user to all changes
      *
      * @return list of all endpoint connection objects
-     * @see getAllEndpointConnections
+     * @see #getAllEndpointConnections()
      */
 
     public SubscriptionResult<List<CommEndpointConnection>, CommEndpointConnection> subscribeToAllEndpointConnections() throws ReefServiceException;

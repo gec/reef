@@ -29,46 +29,94 @@ import org.totalgrid.reef.proto.Model.Command;
 import java.util.List;
 
 /**
- * To affect changes in the field devices SCADA systems use commands. Commands are usually executed in the field
- * by the same equipment that are generating measurements. Each command usually represents one action that can
- * be taken in the field like tripping a breaker or raising the setpoint voltage. To execute a control the agent
- * must first acquire an exclusive lock on the command. Acquiring these locks is usually known as "Selecting a
- * Command", the two terms are used interchangably. These locks can be at any command granularity, related-
- * commands, equipment, or equipment group.
- * <p/>
- * These locks are tied to the user who acquired them and do not need to be passed with the command request.
- * One thing to note is that if an operator had 2 open windows, locked the command in one window, he would
- * be allowed to execute the command in the other.
- * <p/>
- * Change TODO command names to UUIDs
+ *
+ * <p>
+ *   Service for issuing commands and controls on field devices.</p>
+ *
+ * <h3>Overview</h3>
+ *
+ * <p>SCADA systems use commands to affect changes in the field devices. Commands are usually executed in the field
+ * by the same equipment that is generating measurements. Each command usually represents one action that can
+ * be taken in the field like tripping a breaker or raising the setpoint voltage.
+ *
+ * <h3>Command</h3>
+ * <p>
+ *   The term "command" is a specific command on a specific field device instance. A command "name" is the
+ *   specific command for a device appended to the device name (ex: "substation1.breaker2.trip").</p>
+ *
+ * <h3>Select/Lock a Command</h3>
+ * <p>
+ *   An agent cannot execute a command until they first "select" the command to acquire an exclusive
+ *   lock on the command. The terms "select" and "lock" can be used interchangeably. The exclusive lock
+ *   is tied to the agent who acquired them and do not need to be passed with the command execute. The
+ *   agent may execute the command from different login session (ex: two browser windows).</p>
+ *
+ * <ul>
+ *   <li>A select is designed to be held for seconds up to minutes after which time it is deselected automatically.</li>
+ *   <li>The agent whom created the select should release the select.</li>
+ *   <li>A select is not automatically released after a command is executed.</li>
+ *   <li>Command Denial locks do not timeout (see below).</li>
+ * </ul>
+ *
+ * <h4>Usage</h4>
+ * <p>Issue a command: select, execute, deselect.</p>
+ * <pre>
+ *    Command cmd = getCommandByName( "substation1.breaker2.trip");
+ *    CommandAccess lock = createCommandExecutionLock( cmd);
+ *    executeCommandAsControl( cmd);
+ *    deleteCommandLock( lock);
+ * </pre>
+ *
+ * <p>Get a list of commands for a device.</p>
+ * <pre>
+ *    ???
+ * </pre>
+ *
+ * <h3>Command Denial Lock</h3>
+ * <p>
+ *   when an operator needs to make sure no one will execute any of a set of commands they
+ *   create a system-wide "denial lock" on those commands. This will prevent all operators and
+ *   applications from issuing a command or selecting those commands. To
+ *   execute those commands the lock will need to be deleted.</p>
+ *
+ * <p>
+ *   By default, Denial locks do not timeout like "execution locks".</p>
+ *
+ * <p>
+ *   TODO command names to UUIDs</p>
  */
 public interface CommandService {
 
     /**
+     * Select (or lock) a list of commands.
      * When an operator needs to issue a command they must first establish exclusive access to
      * the command (or set of commands). Getting a system-wide "execution lock" gives the operator
      * exclusive access to execute the locked commands to make sure no other operator/agent is operating
      * on those commands at the same time. A well behaved client should delete the lock once the user
-     * is satisfied with the command execution. The locks are designed to be held for seconds upto
-     * minutes, possibly directly related to the lifecycle of execution dialogs. Execution locks expire
+     * is satisfied with the command execution. The locks are designed to be held for seconds up to
+     * minutes, possibly directly related to the life-cycle of execution dialogs. Execution locks expire
      * after some period of time (system configurable but usually 30 seconds). It is the clients job
      * to lock the correct set of commands.
      *
-     * @param ids list of command names
-     * @return an object describing the lock
+     * @param cmds  List of commands. A "command" is a specific command on a specific device instance.
+     * @return an object describing the lock.
      */
 
     public CommandAccess createCommandExecutionLock(List<Command> cmds) throws ReefServiceException;
 
     /**
-     * same as createCommandExecutionLock
+     * Select (or lock) a command.
+     *
+     * @param command  A "command" is a specific command on a specific device instance.
+     * @return an object describing the lock.
      */
 
-    public CommandAccess createCommandExecutionLock(Command cmd) throws ReefServiceException;
+    public CommandAccess createCommandExecutionLock(Command command) throws ReefServiceException;
 
     /**
-     * when we have completed the execution of a command we delete the system-wide lock we had; this
-     * releases the resource so other agents can access those commands.
+     * Deselect a command or set of commands. When we have completed the execution of a command
+     * we delete the system-wide lock we had. This releases the resource so other agents can
+     * access those commands.
      *
      * @param ca the lock to be deleted
      * @return the deleted lock
@@ -77,15 +125,17 @@ public interface CommandService {
     public CommandAccess deleteCommandLock(CommandAccess ca) throws ReefServiceException;
 
     /**
-     * same as deleteCommandLock
+     * Deselect a command or set of commands. When we have completed the execution of a command
+     * we delete the system-wide lock we had. This releases the resource so other agents can
+     * access those commands.
      */
 
-    public CommandAccess deleteCommandLock(String uid) throws ReefServiceException;
+    public CommandAccess deleteCommandLock(String commandUid) throws ReefServiceException;
 
     /**
-     * Clear all of the command locks in the system. This is a dangerous operation that should only be preformed in test
-     * environments. In production systems this will fail if any other uses have locks (since we dont have permission to
-     * delete other peoples locks).
+     * Clear all of the command locks in the system. This is a dangerous operation that should only
+     * be preformed in test environments. In production systems this will fail if any other uses
+     * have locks (since we don't have permission to delete other peoples locks).
      *
      * @return the deleted locks
      */
@@ -93,37 +143,44 @@ public interface CommandService {
     public List<CommandAccess> clearCommandLocks() throws ReefServiceException;
 
     /**
-     * One type of Command in SCADA systems are refered to as "Controls". These can be thought of as
+     * Execute a control on a field device.
+     * One type of Command in SCADA systems are referred to as "Controls". These can be thought of as
      * buttons on pieces of field equipment. Examples are sending a "TRIP" control to a breaker, a
      * "RESET" control to a router or a "TAP_UP" control to a transformer tap changer. They carry no
      * data other than their ID. If the user tries to issue a "control" request on a non-control
-     * command it will cause an execption.
-     * add TODO checks for control vs. setpoint execution
+     * command it will cause an exception.
      *
-     * @param id the name of the command
-     * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
+     * TODO add checks for control vs. setpoint execution
+     *
+     * @param cmd  Name of the command
+     * @return the status of the execution, SUCCESS is only non-failure (throw exception?)
      */
 
     public CommandStatus executeCommandAsControl(Command cmd) throws ReefServiceException;
 
     /**
-     * One type of Command in SCADA systems are refered to as "Setpoints". These can be thought of
+     * Execute a setpoint on a field device.
+     * One type of Command in SCADA systems are referred to as "Setpoints". These can be thought of
      * as dials on a piece of field equipment. Examples are setting a thermostat to a new temperature
-     * or changing the channel on a TV. They carry an extra piece of data other than their name
+     * or changing the voltage on a transformer. They carry an extra piece of data other than their name
      * telling the field device what value we want to set the "dial" to. If the setpoint is actually
      * expecting an integer value the passed in double value will be floored.
      *
-     * @param id    the name of the command
-     * @param value Value of the setpoint
+     * @param cmd    The name of the command
+     * @param value  Value of the setpoint
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      */
 
     public CommandStatus executeCommandAsSetpoint(Command cmd, double value) throws ReefServiceException;
 
     /**
-     * Setpoint overload for Long type
+     * Execute a setpoint on a field device.
+     * One type of Command in SCADA systems are referred to as "Setpoints". These can be thought of
+     * as dials on a piece of field equipment. Examples are setting a thermostat to a new temperature
+     * or changing the voltage on a transformer. They carry an extra piece of data other than their name
+     * telling the field device what value we want to set the "dial" to.
      *
-     * @param id    the name of the command
+     * @param cmd    the name of the command
      * @param value Value of the setpoint
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      */
@@ -131,32 +188,34 @@ public interface CommandService {
     public CommandStatus executeCommandAsSetpoint(Command cmd, int value) throws ReefServiceException;
 
     /**
-     * when an operator needs to make sure no one will execute any of a set of commands they
+     * Select a field device so it will not accept any commands.
+     * When an operator needs to make sure no one will execute any of a set of commands they
      * create a system-wide "denial lock" on those commands. This will prevent all operators and
      * applications from issuing a command or getting an execution lock on those commands. To
-     * execute those commands the lock will need to be deleted. By default Denial locks do not
-     * timeout like "execution locks".
+     * execute those commands the lock will need to be deleted.
      *
-     * @param ids list of command names
+     * <p>By default Denial locks do not timeout like "execution locks".</p>
+     *
+     * @param cmds list of command names
      * @return an object describing the lock
      */
 
     public CommandAccess createCommandDenialLock(List<Command> cmds) throws ReefServiceException;
 
     /**
-     * get a list of all command locks in system
+     * Get a list of all command locks in system
      */
 
     public List<CommandAccess> getCommandLocks() throws ReefServiceException;
 
     /**
-     * get a command locks by UUID
+     * Get a command lock by UUID
      */
 
     public CommandAccess getCommandLock(String uid) throws ReefServiceException;
 
     /**
-     * get the command lock (if it exists) for a Command
+     * Get the command lock (if it exists) for a Command
      *
      * @return the command lock
      */
@@ -164,27 +223,29 @@ public interface CommandService {
     public CommandAccess getCommandLockOnCommand(Command cmd) throws ReefServiceException;
 
     /**
-     * gets a list of all command locks that are active for any of the commands. This is useful
+     * Gets a list of all command locks that are active for any of the commands. This is useful
      * to determine who is holding locks on the command you are trying to use.
      */
 
     public List<CommandAccess> getCommandLocksOnCommands(List<Command> cmds) throws ReefServiceException;
 
     /**
-     * get a recent history of issued commands. Information returned is who issued them, what
+     * Get a recent history of issued commands. Information returned is who issued them, what
      * the final status was and when they were issued.
      */
 
     public List<UserCommandRequest> getCommandHistory() throws ReefServiceException;
 
     /**
-     * get a list of available commands in the system
+     * Get a list of available commands in the system
      */
 
     public List<Command> getCommands() throws ReefServiceException;
 
     /**
-     * @param name command with name
+     * Get a command object by name.
+     *
+     * @param name  Command name (example: "substation1.breaker2.trip").
      * @return command with name
      */
 

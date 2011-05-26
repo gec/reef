@@ -23,7 +23,7 @@ package org.totalgrid.reef.api.request;
 import org.totalgrid.reef.japi.client.SubscriptionCreator;
 
 /**
- * "Super" interface that includes all of the helpers for the individual services. This could be broken down
+ * "Super" interface that includes all of the individual service interfaces. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
 public abstract class AllScadaService

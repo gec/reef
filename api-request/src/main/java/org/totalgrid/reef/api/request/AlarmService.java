@@ -28,8 +28,9 @@ import org.totalgrid.reef.proto.Alarms.Alarm;
 import java.util.List;
 
 /**
- * Alarms are a refinement of events which identify system occurrences that require operator intervention.
- * Alarm objects are tied closely to event objects. All alarms are associated with events, but not all events cause alarms.
+ * A service interface for managing and retrieving Alarms. Alarms are special
+ * system events that require operator intervention. Each alarm has an
+ * associated event object, but not all events are alarms.
  * <p/>
  * In contrast to events, alarms have persistent state. The three principal alarm states are unacknowledged,
  * acknowledged, and removed. The transitions between these states constitute the alarm lifecycle, and
@@ -43,46 +44,48 @@ import java.util.List;
 public interface AlarmService extends SubscriptionCreator {
 
     /**
-     * get a single alarm
+     * Get a single alarm
      *
      * @param uid uid of alarm
      */
     Alarm getAlarm( String uid ) throws ReefServiceException;
 
     /**
-     * get the most recent alarms
+     * Get the most recent alarms
      *
      * @param limit the number of incoming alarms
      */
     List<Alarm> getActiveAlarms( int limit ) throws ReefServiceException;
 
     /**
-     * get the most recent alarms and setup a subscription to all future alarms
+     * Get the most recent alarms and setup a subscription to all future alarms
      *
-     * @param limit the number of incoming events
+     * @param recentAlarmLimit the number of recent alarms.
      */
-    SubscriptionResult<List<Alarm>, Alarm> subscribeToActiveAlarms( int limit ) throws ReefServiceException;
+    SubscriptionResult<List<Alarm>, Alarm> subscribeToActiveAlarms( int recentAlarmLimit ) throws ReefServiceException;
 
     /**
-     * get the most recent alarms
+     * Get the most recent alarms
      *
      * @param types event type names
-     * @param limit the number of incoming alarms
+     * @param recentAlarmLimit the number of recent alarms
      */
-    List<Alarm> getActiveAlarms( List<String> types, int limit ) throws ReefServiceException;
+    List<Alarm> getActiveAlarms( List<String> types, int recentAlarmLimit ) throws ReefServiceException;
 
     /**
-     * silences an audible alarm
+     * Silences an audible alarm
      */
     Alarm silenceAlarm( Alarm alarm ) throws ReefServiceException;
 
     /**
-     * acknowledge the alarm (silences if not already silenced)
+     * Acknowledge the alarm (silences if not already silenced)
      */
     Alarm acknowledgeAlarm( Alarm alarm ) throws ReefServiceException;
 
     /**
-     * "remove" an Alarm from the active list.
+     * Change the Alarm state to REMOVED. Alarms are not deleted from the
+     * database unless they roll off due to database pruning of old
+     * information.
      */
     Alarm removeAlarm( Alarm alarm ) throws ReefServiceException;
 
