@@ -71,9 +71,9 @@ class SyncRequestReply[S, R](
         handle.onResponse(deseralize(bytes)) //forward the deserialized response somewhere else
       } catch {
         case ex: Exception =>
-          error("failed handling service response with: " + handle, ex)
+          logger.error("failed handling service response with: " + handle, ex)
       }
-    case None => error("Response callback has not been set")
+    case None => logger.error("Response callback has not been set")
   }
 
 }

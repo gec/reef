@@ -38,7 +38,7 @@ class MessageLoader(client: ModelLoader, ex: ExceptionCollector) extends Logging
 
     var messageCount = 0L
 
-    info("Start")
+    logger.info("Start")
 
     model.getMessageSet.toList.foreach(ms => {
       println("Loading messageModel: processing messageSet '" + ms.getName + "'")
@@ -51,8 +51,8 @@ class MessageLoader(client: ModelLoader, ex: ExceptionCollector) extends Logging
     messageCount += messages.length
 
     println("Loading messageModel: loaded " + messageCount + " messages")
-    info("Loading messageModel: loaded " + messageCount + " messages")
-    info("End")
+    logger.info("Loading messageModel: loaded " + messageCount + " messages")
+    logger.info("End")
   }
 
   /**
@@ -69,7 +69,7 @@ class MessageLoader(client: ModelLoader, ex: ExceptionCollector) extends Logging
     val name = namePrefix + messageSet.getName
     ex.collect("MessageSet: " + name) {
       val childPrefix = name + "."
-      trace("load messageSet: '" + name + "'")
+      logger.trace("load messageSet: '" + name + "'")
 
       val thisSeverity = getAttribute[Int](name, messageSet, _.isSetSeverity, _.getSeverity, severity, "severity")
       val thisTyp = getAttribute[String](name, messageSet, _.isSetType, _.getType, typ, "type")

@@ -100,6 +100,6 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
   def receive(bytes: Array[Byte], replyTo: Option[Destination]) {
     try {
       handler.get.onResponse(deseralize(bytes))
-    } catch { case ex: Exception => warn(ex) }
+    } catch { case ex: Exception => logger.warn("Exception while receiving response", ex) }
   }
 }

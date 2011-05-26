@@ -75,7 +75,7 @@ object AMQPMessageConsumers extends Logging {
       def receive(data: Array[Byte], replyTo: Option[Destination]): Unit = safeExecute {
 
         replyTo match {
-          case None => error("Service request without replyTo field")
+          case None => logger.error("Service request without replyTo field")
           case Some(dest) =>
 
             val request = Envelope.ServiceRequest.parseFrom(data)
@@ -122,8 +122,8 @@ object AMQPMessageConsumers extends Logging {
       fun
     } catch {
       case e: Exception =>
-        error(e)
-        error(e.getStackTraceString)
+        logger.error(e.getMessage(), e)
+        logger.error(e.getStackTraceString)
     }
   }
 }

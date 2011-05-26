@@ -143,19 +143,19 @@ trait LifecycleBase extends Logging {
 trait IdempotentLifecycle extends LifecycleBase {
   final def start() = mutex.synchronized {
     if (!started) {
-      debug("Starting " + this.getClass)
+      logger.debug("Starting " + this.getClass)
       this.dispatchStart()
       started = true
-      info("Started " + this.getClass)
+      logger.debug("Started " + this.getClass)
     }
   }
 
   final def stop() = mutex.synchronized {
     if (started) {
-      debug("Stopping " + this.getClass)
+      logger.debug("Stopping " + this.getClass)
       this.dispatchStop()
       started = false
-      info("Stopped " + this.getClass)
+      logger.debug("Stopped " + this.getClass)
     }
   }
 }
@@ -166,17 +166,17 @@ trait IdempotentLifecycle extends LifecycleBase {
 trait StatefulLifecycle extends LifecycleBase {
   final def start() = mutex.synchronized {
     if (started) throw new IllegalStateException("Already started")
-    debug("Starting " + this.getClass)
+    logger.debug("Starting " + this.getClass)
     this.dispatchStart()
     started = true
-    debug("Started " + this.getClass)
+    logger.debug("Started " + this.getClass)
   }
 
   final def stop() = mutex.synchronized {
     if (!started) throw new IllegalStateException("Already stopped")
-    debug("Stopping " + this.getClass)
+    logger.debug("Stopping " + this.getClass)
     this.dispatchStop()
     started = false
-    info("Stopped " + this.getClass)
+    logger.debug("Stopped " + this.getClass)
   }
 }

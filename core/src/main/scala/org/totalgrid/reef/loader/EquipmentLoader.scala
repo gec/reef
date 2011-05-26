@@ -60,7 +60,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
    */
   def load(model: EquipmentModel, actionModel: HashMap[String, ActionSet]): HashMap[String, String] = {
 
-    info("Start")
+    logger.info("Start")
 
     ex.collect("Equipment Profiles: ") {
       // Collect all the profiles in name->profile maps.
@@ -80,7 +80,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
       }
     })
 
-    info("End")
+    logger.info("End")
 
     equipmentPointUnits
   }
@@ -97,7 +97,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     //  TODO: We don't see profiles within profiles. Could go recursive and map each profile name to a list of profiles.
 
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList.map(p => equipmentProfiles(p.getName)) ::: List[EquipmentType](equipment)
-    info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this equipment
+    logger.info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this equipment
 
     val childEquipment = profiles.flatMap(_.getEquipment)
     val controls = profiles.flatMap(_.getControl.toList)
@@ -117,7 +117,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     client.putOrThrow(entity)
 
     // Commands are controls and setpoints
-    trace("load equipment: " + name + " commands")
+    logger.trace("load equipment: " + name + " commands")
     controls.map { c =>
       val display = Option(c.getDisplayName) getOrElse c.getName
       processCommand(childPrefix + c.getName, display, "Control" :: getTypeList(c.getType), entity)
@@ -129,11 +129,11 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     }
 
     // Points
-    trace("load equipment: " + name + " points")
+    logger.trace("load equipment: " + name + " points")
     points.map(processPointType(_, entity, childPrefix, actionModel))
 
     // Load all the children and create the edges
-    trace("load equipment: " + name + " children")
+    logger.trace("load equipment: " + name + " children")
     val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
     children.foreach(child => client.putOrThrow(toEntityEdge(entity, child, "owns")))
 
@@ -146,7 +146,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   def processCommand(name: String, displayName: String, types: List[String], equipmentEntity: Entity) = {
     import ProtoUtils._
 
-    trace("processControl: " + name)
+    logger.trace("processControl: " + name)
     loadCache.addControl(name)
     val commandEntity = toEntityType(name, "Command" :: types)
     val command = toCommand(name, displayName, commandEntity)
@@ -183,7 +183,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     }) :: getTypeList(pointT.getType)
 
     val name = childPrefix + pointT.getName
-    trace("processPointType: " + name)
+    logger.trace("processPointType: " + name)
     val pointEntity = toEntityType(name, types)
     val point = toPoint(name, pointEntity)
     client.putOrThrow(pointEntity)

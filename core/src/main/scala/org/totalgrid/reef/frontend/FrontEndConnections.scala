@@ -72,15 +72,15 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     val service = new SingleEndpointCommandService(cmdHandler)
     conn.bindService(service, AddressableDestination(c.getRouting.getServiceRoutingKey))
 
-    info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
+    logger.info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
   }
 
   def removeEntry(c: ConnProto) {
-    debug("Removing endpoint " + c.getEndpoint.getName)
+    logger.debug("Removing endpoint " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     protocol.removeEndpoint(c.getEndpoint.getName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
-    info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
+    logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
   private def newEndpointListener(connectionUid: String) = new IListener[ConnProto.State] {
@@ -89,9 +89,9 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
       val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
       try {
         val result = pool.borrow { _.post(update).await().expectOne }
-        info { "Updated connection state: " + result }
+        logger.info("Updated connection state: " + result)
       } catch {
-        case ex: ReefServiceException => error(ex)
+        case ex: ReefServiceException => logger.error("Exception while updating endpoint comm state", ex)
       }
     }
   }
@@ -102,9 +102,9 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
       val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
       try {
         val result = pool.borrow { _.post(update).await().expectOne }
-        info { "Updated channel: " + result }
+        logger.info("Updated channel: " + result)
       } catch {
-        case ex: ReefServiceException => error(ex)
+        case ex: ReefServiceException => logger.error("Exception while updating comm channel state", ex)
       }
     }
 
@@ -119,17 +119,16 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
         _.put(x, destination = dest).await().expectOne
       }
     } catch {
-      case a: ResponseTimeoutException =>
+      case rte: ResponseTimeoutException =>
         if (attempts >= maxAttemptsToRetryMeasurements) {
-          error("Multiple timeouts publishing measurements to MeasurementProcessor at: " + dest)
-          error(a)
+          logger.error("Multiple timeouts publishing measurements to MeasurementProcessor at: " + dest, rte)
+
         } else {
-          info("Retrying publishing measurements : " + x.getMeasCount)
+          logger.info("Retrying publishing measurements : " + x.getMeasCount)
           batchPublish(pool, attempts + 1, dest)(x)
         }
       case e: Exception =>
-        error("Error publishing measurements to MeasurementProcessor at: " + dest)
-        error(e)
+        logger.error("Error publishing measurements to MeasurementProcessor at: " + dest, e)
     }
   }
 

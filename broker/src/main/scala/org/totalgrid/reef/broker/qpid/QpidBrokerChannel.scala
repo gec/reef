@@ -47,12 +47,12 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   session.setAutoSync(true)
 
   def closed(s: Session) {
-    info("Qpid session closed")
+    logger.info("Qpid session closed")
     onClose(userClosed)
   }
 
   def exception(s: Session, e: SessionException) {
-    warn("Qpid Exception: " + queueName, e)
+    logger.warn("Qpid Exception: " + queueName, e)
     onClose(userClosed)
   }
 
@@ -75,7 +75,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     userClosed = true
     // qpid just does a 60 second timeout if close is called more than once
     if (!session.isClosing()) {
-      debug("Closing session: " + queueName)
+      logger.debug("Closing session: " + queueName)
       session.close()
       onClose(userClosed)
     }
@@ -91,7 +91,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (autoDelete) l ::= Option.AUTO_DELETE
     if (exclusive) l ::= Option.EXCLUSIVE
     session.queueDeclare(queue, null, null, l: _*)
-    debug("Declared Queue: " + queue)
+    logger.debug("Declared Queue: " + queue)
     queue //return the unique queue name
   }
 
@@ -106,7 +106,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
       if (exchange.trim.length < 1) throw new Exception("Bad exchange name: " + exchange)
 
       session.exchangeDeclare(exchange, exchangeType, null, null)
-      debug("Declared Exchange: " + exchange)
+      logger.debug("Declared Exchange: " + exchange)
     }
   }
 
@@ -118,7 +118,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
       unbindQueue(queue, exchange, key)
     }
     session.exchangeBind(queue, exchange, key, null)
-    debug("Bound " + describeBinding(queue, exchange, key))
+    logger.debug("Bound " + describeBinding(queue, exchange, key))
   }
 
   def unbindQueue(queue: String, exchange: String, key: String): Unit = {
@@ -126,14 +126,14 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     session.exchangeUnbind(queue, exchange, key)
-    debug("Unbound " + describeBinding(queue, exchange, key))
+    logger.debug("Unbound " + describeBinding(queue, exchange, key))
   }
 
   def listen(queue: String, mc: MessageConsumer) = {
 
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
-    debug("Listening, queue: " + queue + " consumer: " + mc)
+    logger.debug("Listening, queue: " + queue + " consumer: " + mc)
     messageConsumer = Some(mc)
     queueName = Some(queue)
 
@@ -144,7 +144,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
 
     val queue = queueName.get
 
-    debug("Starting: " + queue)
+    logger.debug("Starting: " + queue)
 
     session.messageSubscribe(queue, queue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null)
     session.messageFlow(queue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT)
@@ -175,7 +175,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   }
 
   def stop() {
-    debug("Stopping: " + queueName)
+    logger.debug("Stopping: " + queueName)
     unlink()
     close()
   }

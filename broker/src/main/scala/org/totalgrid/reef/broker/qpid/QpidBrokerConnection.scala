@@ -56,7 +56,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       val conn = new Connection
       val listener = new Listener(this)
       conn.addConnectionListener(listener)
-      info("Connecting to " + config)
+      logger.info("Connecting to " + config)
       try {
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
         connection = Some(ConnectionRecord(conn, listener))
@@ -64,7 +64,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
         true
       } catch {
         case ex: Exception =>
-          error(ex)
+          logger.error(ex.getMessage, ex)
           false
       }
   }
@@ -85,7 +85,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   }
 
   def onClosed() {
-    info("Qpid connection unexpectedly closed")
+    logger.info("Qpid connection unexpectedly closed")
     cleanupAfterClose(false)
   }
 
@@ -96,11 +96,11 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   }
 
   def onOpened(conn: Connection) {
-    info("Qpid Connection opened")
+    logger.info("Qpid Connection opened")
   }
 
   def onException(conn: Connection, ex: ConnectionException) {
-    error("Connection Exception: ", ex)
+    logger.error("Connection Exception: ", ex)
   }
 
   /* -- End Qpid Connection Listener -- */

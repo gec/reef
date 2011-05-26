@@ -31,7 +31,7 @@ class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long
     if (ms.supportsTrim) reactor.repeat(period) {
       val num = ms.trim(totalMeasurements)
       if (num > 0) {
-        debug("trimmed: " + num + " measurements")
+        logger.debug("trimmed: " + num + " measurements")
       }
     }
   }

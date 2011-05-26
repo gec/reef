@@ -41,7 +41,7 @@ class Connector extends DbConnectorBase with Logging {
     pool.setUsername(dbInfo.user)
     pool.setPassword(dbInfo.password)
 
-    info("Connecting to Database: " + url)
+    logger.info("Connecting to Database: " + url)
 
     SessionFactory.concreteFactory = Some(() => {
       Session.create(

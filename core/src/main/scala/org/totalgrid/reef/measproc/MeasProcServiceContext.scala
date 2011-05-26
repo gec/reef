@@ -32,7 +32,7 @@ trait MeasProcServiceContext[A] extends ServiceContext[A] with Logging {
 
   //modified and subscribed get defined
   def subscribed(list: List[A]) = {
-    info("Subscribed.")
+    logger.info("Subscribed.")
     list.foreach { x => add(x) }
   }
   def modify(obj: A) = add(obj)

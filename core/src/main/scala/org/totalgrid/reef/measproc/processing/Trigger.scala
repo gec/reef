@@ -52,11 +52,11 @@ object Trigger extends Logging {
   def processAll(m: Measurement, cache: ObjectCache[Boolean], triggers: List[Trigger]): Measurement = {
     triggers.foldLeft(m) { (meas, trigger) =>
       // Evaluate trigger
-      debug("Applying trigger: " + trigger + " to meas: " + meas)
+      logger.debug("Applying trigger: " + trigger + " to meas: " + meas)
       val (result, stopProcessing) = trigger.process(meas, cache)
 
       // Either continue folding or return immediately if the trigger requires us to stop processing
-      debug("Result: " + result + ", stop: " + stopProcessing)
+      logger.debug("Result: " + result + ", stop: " + stopProcessing)
       if (stopProcessing) return result
       else result
     }

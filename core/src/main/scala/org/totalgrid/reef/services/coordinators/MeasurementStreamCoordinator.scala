@@ -124,7 +124,7 @@ class MeasurementStreamCoordinator(
     } else {
       fepAssignmentTable.where(fep => fep.applicationId === app.id).toList
     }
-    info { "FEP: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName } }
+    logger.info("FEP: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName })
     rechecks.foreach { a => checkFepAssignment(a, a.endpoint.value.get) }
   }
 
@@ -140,10 +140,9 @@ class MeasurementStreamCoordinator(
     // lookup a compatible FEP only if the connection is enabled
     val applicationId = if (assign.enabled) getFep(ce).map { _.id } else None
 
-    info {
+    logger.info(
       ce.entityName + " assigned FEP: " + applicationId + " protocol: " + ce.protocol +
-        " port: " + ce.port.value + " routingKey: " + serviceRoutingKey + " last Fep:" + assign.applicationId
-    }
+        " port: " + ce.port.value + " routingKey: " + serviceRoutingKey + " last Fep:" + assign.applicationId)
 
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId || assign.serviceRoutingKey != serviceRoutingKey) {
@@ -196,7 +195,7 @@ class MeasurementStreamCoordinator(
    * to either enable or disable them
    */
   def onMeasProcAssignmentChanged(meas: MeasProcAssignment) {
-    info { "MeasProc Change, rechecking: " + meas.endpoint.value.get.entityName + " readyTime: " + meas.readyTime + " key: " + meas.serviceRoutingKey }
+    logger.info("MeasProc Change, rechecking: " + meas.endpoint.value.get.entityName + " readyTime: " + meas.readyTime + " key: " + meas.serviceRoutingKey)
     fepAssignmentTable.where(fep => fep.endpointId === meas.endpointId).headOption.foreach { assign =>
       checkFepAssignment(assign, assign.endpoint.value.get)
     }
@@ -213,7 +212,7 @@ class MeasurementStreamCoordinator(
     } else {
       measProcTable.where(measProc => measProc.applicationId === app.id).toList
     }
-    info { "Meas Proc: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName } }
+    logger.info("Meas Proc: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName })
     rechecks.foreach { checkMeasProcAssignment(_) }
   }
 
@@ -222,7 +221,7 @@ class MeasurementStreamCoordinator(
    */
   private def checkMeasProcAssignment(assign: MeasProcAssignment) {
     val applicationId = getMeasProc().map { _.id }
-    info { assign.endpoint.value.get.entityName + " assigned MeasProc: " + applicationId }
+    logger.info(assign.endpoint.value.get.entityName + " assigned MeasProc: " + applicationId)
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     val serviceRoutingKey = applicationId.map { x => "meas_batch_" + assign.endpoint.value.get.entityName }
     if (assign.applicationId != applicationId) {
