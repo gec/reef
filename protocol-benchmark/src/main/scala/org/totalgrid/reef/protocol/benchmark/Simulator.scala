@@ -62,7 +62,7 @@ class Simulator(name: String, publisher: IListener[MeasurementBatch], config: Si
     // if the delay is 0 we shouldn't publish any random values after
     // the initial integrity poll
     delay = newDelay
-    reefLogger.info("Updating parameters for {}: delay = {}", name, delay)
+    info("Updating parameters for simulator " + name + " delay = " + delay)
     this.synchronized {
       repeater.foreach(_.cancel)
       repeater = if (delay == 0) None else Some(reactor.repeat(delay) {
@@ -79,9 +79,9 @@ class Simulator(name: String, publisher: IListener[MeasurementBatch], config: Si
       }
     }
     if (batch.getMeasCount > 0) {
-      reefLogger.debug("{} publishing batch of size: {}", name, batch.getMeasCount)
+      debug(name + " publishing batch of size: " + batch.getMeasCount)
       publisher.onUpdate(batch.build)
-      reefLogger.debug("{} published batch", name)
+      debug(name + " published batch")
     }
   }
 
@@ -97,7 +97,7 @@ class Simulator(name: String, publisher: IListener[MeasurementBatch], config: Si
 
   def issue(cr: Commands.CommandRequest, rspHandler: IListener[CommandResponse]) = cmdMap.get(cr.getName) match {
     case Some(x) =>
-      reefLogger.info { "handled command:" + cr }
+      info("handled command: " + cr)
       val rsp = Commands.CommandResponse.newBuilder
       rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
       rspHandler.onUpdate(rsp.build)

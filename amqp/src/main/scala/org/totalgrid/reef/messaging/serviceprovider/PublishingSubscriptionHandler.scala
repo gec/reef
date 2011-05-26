@@ -29,10 +29,13 @@ import org.totalgrid.reef.japi.Envelope
 trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with BrokerObjectConsumer with Logging {
   val exchange: String
 
+  private def describe(exchange: String, key: String) =
+    exchange + ", w/ key = " + key
+
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = {
     sendTo((b: BrokerChannel) => {
       val msg = Envelope.ServiceNotification.newBuilder.setEvent(event).setPayload(resp.toByteString()).build
-      reefLogger.debug("published event: {} to {}, key = {}", Array[AnyRef](event, exchange, key))
+      debug("published event: " + event + " to " + describe(exchange, key))
       b.publish(exchange, key, msg.toByteArray(), None)
     })
   }
@@ -40,7 +43,7 @@ trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with Brok
   def bind(subQueue: String, key: String) = {
     sendTo((b: BrokerChannel) => {
       b.bindQueue(subQueue, exchange, key)
-      reefLogger.info("binding queue: {} to {} key = {}", Array[AnyRef](subQueue, exchange, key))
+      debug("binding queue: " + subQueue + " to " + describe(exchange, key))
     })
   }
 }

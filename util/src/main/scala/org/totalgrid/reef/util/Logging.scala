@@ -28,7 +28,7 @@ import org.slf4j.{ Logger, LoggerFactory }
  */
 trait Logging {
   // named so we dont conflict with the field "log" in standard java classes that use slf4j
-  protected val reefLogger = LoggerFactory.getLogger(getClass)
+  private val reefLogger = LoggerFactory.getLogger(getClass)
 
   protected def trace(f: => String): Unit = if (reefLogger.isTraceEnabled) reefLogger.trace(f)
   protected def debug(f: => String): Unit = if (reefLogger.isDebugEnabled) reefLogger.debug(f)

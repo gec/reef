@@ -28,7 +28,7 @@ class PublishingSubscriptionActor(exch: String, reactor: Reactable) extends Brok
   val exchange = exch
 
   override def onConnect(b: BrokerChannel) = {
-    reefLogger.debug("declaring exchange: {}", exchange)
+    debug("declaring exchange: " + exchange)
     b.declareExchange(exch)
   }
 
