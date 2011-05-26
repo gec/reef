@@ -55,9 +55,15 @@ class EntityRequestTest
 
     client.addExplanation("Get by UID", "Finds a specific entity by UID.")
     client.get(EntityRequestBuilders.getByUid(targetUuid)).await().expectOne
+  }
+
+  test("Get by types") {
 
     client.addExplanation("Get by type", "Find all entities that match a given type.")
     client.get(EntityRequestBuilders.getByType("Breaker")).await().expectMany()
+
+    client.addExplanation("Get by types", "Find all entities that match at least one of the specified types.")
+    client.get(EntityRequestBuilders.getByTypes(List("Agent", "PermissionSet"))).await().expectMany()
   }
 
   test("Children") {

@@ -27,7 +27,12 @@ import org.totalgrid.reef.proto.Auth.PermissionSet;
 
 import java.util.List;
 
-
+/**
+ * A service interface for managing and retrieving Agents. An Agent has a name,
+ * password, and a set of permissions in the Reef system. An Agent can be a
+ * real user that logs into the system or a software service that "owns" an
+ * agent it uses to access to other services.
+ */
 public interface AgentService {
     /**
      * @param name of agent to find

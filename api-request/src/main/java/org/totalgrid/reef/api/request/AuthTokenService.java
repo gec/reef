@@ -23,10 +23,11 @@ package org.totalgrid.reef.api.request;
 import org.totalgrid.reef.japi.ReefServiceException;
 
 /**
+ * A service for retrieving and deleting authorization tokens needed to access all other Reef services.
  * All requests (except for authorization token requests) require that the agent has acquired an
  * "Auth Token" and is sending it with every request. This auth token contains the user name and
  * all of the permissions available to that user. The token itself is a cryptographically secure string
- * that is an unguessable, unforgeable and must be kept secret by the client. Anyone with access to
+ * that is an unguessable, unforgettable and must be kept secret by the client. Anyone with access to
  * that token will have the full capabilities of that user until it expires or is revoked. When a user
  * is finished using an auth token it should be deleted to minimize this danger.
  * <p/>
@@ -39,15 +40,19 @@ import org.totalgrid.reef.japi.ReefServiceException;
 public interface AuthTokenService {
 
     /**
-     * create an authorization token for the user with all available permissions "checked out". If the password
-     * or username is wrong this method will throw an exception without indicating which was wrong.
+     * Create an authorization token for the specified Agent with all available
+     * permissions "checked out". If the password or agentName is wrong this
+     * method will throw an exception without indicating which was wrong.
      *
+     * @param agentName
+     * @param passwordUnencrypted
      * @return authToken string
      */
-    String createNewAuthorizationToken( String user, String password ) throws ReefServiceException;
-
+    String createNewAuthorizationToken(String agentName, String passwordUnencrypted) throws ReefServiceException;
+    
     /**
-     * revoke the authToken string. This means all future requests using this auth token will fail.
+     * Revoke the specified authorization token. This means all future requests using this authorization token will fail.
+     * @param authorizationToken
      */
-    void deleteAuthorizationToken( String token ) throws ReefServiceException;
+    void deleteAuthorizationToken(String authorizationToken) throws ReefServiceException;
 }

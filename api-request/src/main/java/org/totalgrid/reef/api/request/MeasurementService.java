@@ -29,96 +29,105 @@ import org.totalgrid.reef.proto.Model.Point;
 import java.util.List;
 
 /**
- * Non-exhaustive API for using the reef Measurement services. This API allows the client code to read current measurement
- * values for many points at a time, read historical values for a single measuremnt at a time or publish measurements in
- * batches. For current and historical value functions you can also pass in an Subscription object which will receive
- * all future measurement changes for those points. Asking for unknown points/ measurements will result in an exception
+ * <p>
+ *   Service for retrieving, subscribing to, and publishing measurements. Clients can retrieve current measurement
+ *   values for multiple points, read historical values for a single point, or
+ *   publish measurements in batches.
+ *   </p>
+ *
+ * <p>
+ *   Asking for unknown points will result in an exception.
+ *   </p>
  */
 public interface MeasurementService extends SubscriptionCreator {
 
     /**
-     * gets the most recent measurement for a point
+     * Get the most recent measurement for a point.
      */
     Measurement getMeasurementByPoint( Point point ) throws ReefServiceException;
 
     /**
-     * gets the current value for a point (specified by name)
+     * Get the most recent measurement for a point.
      */
-    Measurement getMeasurementByName( String name ) throws ReefServiceException;
+    Measurement getMeasurementByName( String pointName ) throws ReefServiceException;
 
     /**
-     * gets the most recent measurement for a set of points. If any points are unknown the call will throw a bad request
-     * exception.
+     * Get the most recent measurement for a set of points. If any points are unknown,
+     * the call will throw a bad request exception.
      */
-    List<Measurement> getMeasurementsByNames( List<String> names ) throws ReefServiceException;
+    List<Measurement> getMeasurementsByNames( List<String> pointNames ) throws ReefServiceException;
 
     /**
-     * gets the most recent measurement for a set of points (specified by names). If any points are unknown the
+     * Get the most recent measurement for a set of points. If any points are unknown, the
      * call will throw a bad request exception.
      */
     List<Measurement> getMeasurementsByPoints( List<Point> points ) throws ReefServiceException;
 
     /**
-     * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
-     * measurement change
+     * Get the most recent measurement for a set of points and subscribe to receive updates for
+     * measurement changes.
      */
     SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByPoints( List<Point> points ) throws ReefServiceException;
 
     /**
-     * gets the most recent measurement for a set of points and configure a subscription to receive updates for every
-     * measurement change
+     * Gets the most recent measurement for a set of points and subscribe to receive updates for
+     * measurement changes.
      */
-    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByNames( List<String> points ) throws ReefServiceException;
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementsByNames( List<String> pointNames ) throws ReefServiceException;
 
     /**
-     * get a subset of the recent measurements for a point
+     * Get a list of recent measurements for a point.
      *
-     * @param limit - max number of measurements returned
+     * @param limit  Max number of measurements returned
      */
     List<Measurement> getMeasurementHistory( Point point, int limit ) throws ReefServiceException;
 
     /**
-     * get a subset of the recent measurements for a point
+     * Get a list of historical measurements that were recorded on or after the specified time.
      *
-     * @param since - dont return measurements older than this, inclusive (millis)
-     * @param limit - max number of measurements returned
+     * @param since  Return measurements on or after this date/time (in milliseconds).
+     * @param limit  max number of measurements returned
      */
     List<Measurement> getMeasurementHistory( Point point, long since, int limit ) throws ReefServiceException;
 
     /**
-     * get a subset of the recent measurements for a point. Note that setting the endTime and subscribing is incompatible
-     * and will result in an exception since its dangerous to ask for a fixed time period and also be getting new
-     * measurements since this can lead to missed measurements.
+     * Get a list of historical measurements for the specified time span.
      *
-     * @param since        - don't return measurements older than this, inclusive (millis)
-     * @param before       - don't return measurements newer than this, inclusive (millis)
-     * @param returnNewest - if there are more measurements in the range the range than limit return the newest measurements
-     * @param limit        - max number of measurements returned
+     * @param from         Return measurements on or after this time (milliseconds)
+     * @param to           Return measurements on or before this time (milliseconds)
+     * @param returnNewest If there are more measurements than the specified limit, return the newest (true) or oldest (false).
+     * @param limit        Max number of measurements returned
      */
-    List<Measurement> getMeasurementHistory( Point point, long since, long before, boolean returnNewest, int limit ) throws ReefServiceException;
+    List<Measurement> getMeasurementHistory( Point point, long from, long to, boolean returnNewest, int limit ) throws ReefServiceException;
 
     /**
-     * get the most recent measurements for a point and setup a subscription for new measurements
+     * Get the most recent measurements for a point and subscribe to receive updates for
+     * measurement changes.
      *
-     * @param limit - max number of measurements returned
+     * @param limit  Max number of measurements returned
      */
     SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory( Point point, int limit ) throws ReefServiceException;
 
     /**
-     * get the most recent measurements for a point and setup a subscription for new measurements
+     * Get the most recent measurements for a point and subscribe to receive updates for
+     * measurement changes.
      *
-     * @param since - don't return measurements older than this, inclusive (millis)
-     * @param limit - max number of measurements returned
+     * @param since  Return measurements on or after this time (milliseconds)
+     * @param limit  Max number of measurements returned
      */
     SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory( Point point, long since, int limit ) throws ReefServiceException;
 
     /**
-     * publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
-     * should not use this function. If any point is not publishable the whole group should fail.
-     * Preconditions for  success*   - the points listed in the measurements all need to exist
-     * - the points must be configured to use an appropriate protocol (benchmark or manual) to maintain message stream
-     * implement TODO protocol checking on publishMeasurements
-     * - measurement processors must be available to process the measurement (only question during startup)
+     * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
+     * should not use this function. If any point is not publishable, the whole group will fail.
+     *
+     * <p>Preconditions for  success:</p>
+     * <ul>
+     *   <li>Every point listed in the measurements exists</li>
+     *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
+     *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
+     * </ul>
+     * TODO protocol checking on publishMeasurements
      */
     void publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 }

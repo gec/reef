@@ -10,6 +10,12 @@
         <relativePath>../scala-base</relativePath>
     </parent>
 
+    <properties>
+        <app.name>Reef</app.name>
+        <app.fullname>Totalgrid.org Reef</app.fullname>
+        <app.blurb>Dedicated to enabling the smart grid.</app.blurb>
+    </properties>
+
     <licenses>
         <license>
             <name>AGPLv3</name>
@@ -18,7 +24,17 @@
     </licenses>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

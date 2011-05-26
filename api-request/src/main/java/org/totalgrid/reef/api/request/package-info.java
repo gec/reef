@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.api.request;
 
 /**
  * The reef system is fundamentally constructed using a REST approach. This means the system is modeled using nouns and
@@ -26,18 +25,20 @@ package org.totalgrid.reef.api.request;
  * robust services and have a relatively simple protocol to make interoperability across a wide range of languages
  * possible. While this model is powerful it can also be confusing to an application developer to determine exactly how
  * to map from a concrete goal ("Get list of Substations") to the noun+verb combination necessary to implement that
- * request (GET Entity{ type"Substation"}). In order to reduce the cognitive load on application developers we have
+ * request (GET Entity type=Substation). In order to reduce the cognitive load on application developers we have
  * provided a suite of interfaces that include requests for most of the common use cases. These interfaces are not
  * exhaustive, and do not attempt to expose all of the functionality available to clients of a service, instead they
  * serve as a starting point and suite of examples to pull from to make more complex requests when necessary.
  *
- * Some applications to have to write custom requests to support some use cases. Many very "chatty" sets of requests can
+ * <p>Some applications have to write custom requests to support some use cases. Many very "chatty" sets of requests can
  * be implemented with a single more complex request. We envision application developers extending the interfaces with
  * their own custom functions for their application. To add those custom functions it is best to understand the requests
- * we have provided reference implementations of. This can be done in a few  ways* <ul>
+ * we have provided in reference implementations. This can be done in a few  ways.</p>
+ * <ul>
  * <li> read the code in XxxxxRequestBuilders and XxxxxServiceImpl classes </li>
  * <li> read the "generated proto request/reply" documents, they show live versions of the proto messages that are sent over the wires </li>
  * <li> read the documentation on the protobuf files (*.proto) </li>
  * </ul>
  * Once a new query has been figured out, the XxxxxService class can be extended to add in the new requests.
  */
+package org.totalgrid.reef.api.request;
