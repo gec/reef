@@ -24,7 +24,7 @@ package org.totalgrid.reef.japi;
 /**
  * Base class for all exceptions thrown by the api
  */
-public abstract class ReefServiceException extends Exception
+public class ReefServiceException extends Exception
 {
     public final Envelope.Status status;
 

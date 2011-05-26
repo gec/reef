@@ -57,14 +57,12 @@ public interface CommandService {
      * @param ids list of command names
      * @return an object describing the lock
      */
-
-    public CommandAccess createCommandExecutionLock(List<Command> cmds) throws ReefServiceException;
+    CommandAccess createCommandExecutionLock( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * same as createCommandExecutionLock
      */
-
-    public CommandAccess createCommandExecutionLock(Command cmd) throws ReefServiceException;
+    CommandAccess createCommandExecutionLock( Command cmd ) throws ReefServiceException;
 
     /**
      * when we have completed the execution of a command we delete the system-wide lock we had; this
@@ -73,14 +71,12 @@ public interface CommandService {
      * @param ca the lock to be deleted
      * @return the deleted lock
      */
-
-    public CommandAccess deleteCommandLock(CommandAccess ca) throws ReefServiceException;
+    CommandAccess deleteCommandLock( CommandAccess ca ) throws ReefServiceException;
 
     /**
      * same as deleteCommandLock
      */
-
-    public CommandAccess deleteCommandLock(String uid) throws ReefServiceException;
+    CommandAccess deleteCommandLock( String uid ) throws ReefServiceException;
 
     /**
      * Clear all of the command locks in the system. This is a dangerous operation that should only be preformed in test
@@ -89,8 +85,7 @@ public interface CommandService {
      *
      * @return the deleted locks
      */
-
-    public List<CommandAccess> clearCommandLocks() throws ReefServiceException;
+    List<CommandAccess> clearCommandLocks() throws ReefServiceException;
 
     /**
      * One type of Command in SCADA systems are refered to as "Controls". These can be thought of as
@@ -100,11 +95,10 @@ public interface CommandService {
      * command it will cause an execption.
      * add TODO checks for control vs. setpoint execution
      *
-     * @param id the name of the command
+     * @param cmd the name of the command
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      */
-
-    public CommandStatus executeCommandAsControl(Command cmd) throws ReefServiceException;
+    CommandStatus executeCommandAsControl( Command cmd ) throws ReefServiceException;
 
     /**
      * One type of Command in SCADA systems are refered to as "Setpoints". These can be thought of
@@ -117,8 +111,7 @@ public interface CommandService {
      * @param value Value of the setpoint
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      */
-
-    public CommandStatus executeCommandAsSetpoint(Command cmd, double value) throws ReefServiceException;
+    CommandStatus executeCommandAsSetpoint( Command cmd, double value ) throws ReefServiceException;
 
     /**
      * Setpoint overload for Long type
@@ -127,8 +120,7 @@ public interface CommandService {
      * @param value Value of the setpoint
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      */
-
-    public CommandStatus executeCommandAsSetpoint(Command cmd, int value) throws ReefServiceException;
+    CommandStatus executeCommandAsSetpoint( Command cmd, int value ) throws ReefServiceException;
 
     /**
      * when an operator needs to make sure no one will execute any of a set of commands they
@@ -140,53 +132,45 @@ public interface CommandService {
      * @param ids list of command names
      * @return an object describing the lock
      */
-
-    public CommandAccess createCommandDenialLock(List<Command> cmds) throws ReefServiceException;
+    CommandAccess createCommandDenialLock( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * get a list of all command locks in system
      */
-
-    public List<CommandAccess> getCommandLocks() throws ReefServiceException;
+    List<CommandAccess> getCommandLocks() throws ReefServiceException;
 
     /**
      * get a command locks by UUID
      */
-
-    public CommandAccess getCommandLock(String uid) throws ReefServiceException;
+    CommandAccess getCommandLock( String uid ) throws ReefServiceException;
 
     /**
      * get the command lock (if it exists) for a Command
      *
      * @return the command lock
      */
-
-    public CommandAccess getCommandLockOnCommand(Command cmd) throws ReefServiceException;
+    CommandAccess getCommandLockOnCommand( Command cmd ) throws ReefServiceException;
 
     /**
      * gets a list of all command locks that are active for any of the commands. This is useful
      * to determine who is holding locks on the command you are trying to use.
      */
-
-    public List<CommandAccess> getCommandLocksOnCommands(List<Command> cmds) throws ReefServiceException;
+    List<CommandAccess> getCommandLocksOnCommands( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * get a recent history of issued commands. Information returned is who issued them, what
      * the final status was and when they were issued.
      */
-
-    public List<UserCommandRequest> getCommandHistory() throws ReefServiceException;
+    List<UserCommandRequest> getCommandHistory() throws ReefServiceException;
 
     /**
      * get a list of available commands in the system
      */
-
-    public List<Command> getCommands() throws ReefServiceException;
+    List<Command> getCommands() throws ReefServiceException;
 
     /**
      * @param name command with name
      * @return command with name
      */
-
-    public Command getCommandByName(String name) throws ReefServiceException;
+    Command getCommandByName( String name ) throws ReefServiceException;
 }

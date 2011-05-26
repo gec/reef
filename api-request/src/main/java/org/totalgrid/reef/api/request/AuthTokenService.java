@@ -37,18 +37,17 @@ import org.totalgrid.reef.japi.ReefServiceException;
  * add TODO setAuthToken function on Session
  */
 public interface AuthTokenService {
+
     /**
      * create an authorization token for the user with all available permissions "checked out". If the password
      * or username is wrong this method will throw an exception without indicating which was wrong.
      *
      * @return authToken string
      */
-
-    public String createNewAuthorizationToken(String user, String password) throws ReefServiceException;
+    String createNewAuthorizationToken( String user, String password ) throws ReefServiceException;
 
     /**
      * revoke the authToken string. This means all future requests using this auth token will fail.
      */
-
-    public void deleteAuthorizationToken(String token) throws ReefServiceException;
+    void deleteAuthorizationToken( String token ) throws ReefServiceException;
 }

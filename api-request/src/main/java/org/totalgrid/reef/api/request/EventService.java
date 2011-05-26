@@ -39,23 +39,21 @@ public interface EventService extends SubscriptionCreator {
      *
      * @param uid event
      */
-
-    public Event getEvent(String uid) throws ReefServiceException;
+    Event getEvent( String uid ) throws ReefServiceException;
 
     /**
      * get the most recent events
      *
      * @param limit the number of incoming events
      */
-
-    public List<Event> getRecentEvents(int limit);
+    List<Event> getRecentEvents( int limit );
 
     /**
      * get the most recent events and setup a subscription to all future events
      *
      * @param limit the number of incoming events
      */
-    public SubscriptionResult<List<Event>, Event> subscribeToRecentEvents(int limit) throws ReefServiceException;
+    SubscriptionResult<List<Event>, Event> subscribeToRecentEvents( int limit ) throws ReefServiceException;
 
     /**
      * get the most recent events
@@ -63,14 +61,13 @@ public interface EventService extends SubscriptionCreator {
      * @param types event type names
      * @param limit the number of incoming events
      */
-    public List<Event> getRecentEvents(List<String> types, int limit) throws ReefServiceException;
+    List<Event> getRecentEvents( List<String> types, int limit ) throws ReefServiceException;
 
     /**
      * @param selector a selector that allows us to express more specific queries
      * @return all matching events
      */
-
-    public List<Event> getEvents(EventSelect selector) throws ReefServiceException;
+    List<Event> getEvents( EventSelect selector ) throws ReefServiceException;
 
     /**
      * Allows querying and subscribing to specific event types
@@ -79,11 +76,11 @@ public interface EventService extends SubscriptionCreator {
      * @param selector a selector that allows us to express more specific queries
      * @return all matching events
      */
-    public SubscriptionResult<List<Event>, Event> subscribeToEvents(EventSelect selector) throws ReefServiceException;
+    SubscriptionResult<List<Event>, Event> subscribeToEvents( EventSelect selector ) throws ReefServiceException;
 
     /**
      * publish a new Event to the system
      */
-    public Event publishEvent(Event event) throws ReefServiceException;
+    Event publishEvent( Event event ) throws ReefServiceException;
 
 }

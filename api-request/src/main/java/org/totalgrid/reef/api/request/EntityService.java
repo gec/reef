@@ -63,45 +63,45 @@ public interface EntityService {
      * Get all entities, should not be used in large systems
      *
      * @return all entities in the system
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public List<Entity> getAllEntities() throws ReefServiceException;
+    List<Entity> getAllEntities() throws ReefServiceException;
 
     /**
      * Get an entity using its unique identification.
      *
      * @param uid The entity id.
      * @return The entity object.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public Entity getEntityByUid(ReefUUID uid) throws ReefServiceException;
+    Entity getEntityByUid(ReefUUID uid) throws ReefServiceException;
 
     /**
      * Get an entity using its name.
      *
      * @param name The configured name of the entity.
      * @return The entity object.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public Entity getEntityByName(String name) throws ReefServiceException;
+    Entity getEntityByName(String name) throws ReefServiceException;
 
     /**
      * Find all entities with a specified type.
      *
      * @param typ The entity type to search for.
      * @return The list of entities that have the specified type.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public List<Entity> getAllEntitiesWithType(String typ) throws ReefServiceException;
+    List<Entity> getAllEntitiesWithType(String typ) throws ReefServiceException;
 
     /**
      * Find all entities with a specified type.
      *
      * @param types List of required entity types to search for.
      * @return The list of entities that have the specified type.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public List<Entity> getAllEntitiesWithTypes(List<String> types) throws ReefServiceException;
+    List<Entity> getAllEntitiesWithTypes(List<String> types) throws ReefServiceException;
 
     /**
      * Return all child entities that have the correct type and a matching relationship to the parent Entity. The results
@@ -112,9 +112,9 @@ public interface EntityService {
      * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
      * @param typ          the "type" or "class" the matching children need to have
      * @return list of all children in arbitrary order
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public List<Entity> getEntityRelatedChildrenOfType(ReefUUID parent, String relationship, String typ) throws ReefServiceException;
+    List<Entity> getEntityRelatedChildrenOfType(ReefUUID parent, String relationship, String typ) throws ReefServiceException;
 
     /**
      * Use this function to make a complex entity model query. It is usually possible to satisfy most entity requirements
@@ -128,8 +128,7 @@ public interface EntityService {
      * @param an Entity describing the tree request
      * @return a "filled out" copy of the original tree request.
      */
-
-    public Entity getEntityTree(Entity entityTree) throws ReefServiceException;
+    Entity getEntityTree(Entity entityTree) throws ReefServiceException;
 
     /**
      * Use this function to make a complex entity model query. This query is very similar to getEntityTree but doesn't
@@ -137,20 +136,20 @@ public interface EntityService {
      * <p/>
      * Entity TODO will become EntitySelector in the future
      *
-     * @param an Entity describing the tree request
+     * @param entityTree an Entity describing the tree request
      * @return a list of Entities that matched query possibly with filled in relationships
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public List<Entity> getEntities(Entity entityTree) throws ReefServiceException;
+    List<Entity> getEntities(Entity entityTree) throws ReefServiceException;
 
     /**
      * Get the attributes for a specified Entity.
      *
      * @param uid The entity id.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes getEntityAttributes(ReefUUID uid) throws ReefServiceException;
+    EntityAttributes getEntityAttributes(ReefUUID uid) throws ReefServiceException;
 
     /**
      * Remove a specific attribute by name for a particular Entity.
@@ -158,18 +157,18 @@ public interface EntityService {
      * @param uid      The entity id.
      * @param attrName The name of the attribute.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes removeEntityAttribute(ReefUUID uid, String attrName) throws ReefServiceException;
+    EntityAttributes removeEntityAttribute(ReefUUID uid, String attrName) throws ReefServiceException;
 
     /**
      * Clear all attributes for a specified Entity.
      *
      * @param uid The entity id.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes clearEntityAttributes(ReefUUID uid) throws ReefServiceException;
+    EntityAttributes clearEntityAttributes(ReefUUID uid) throws ReefServiceException;
 
     /**
      * Set a boolean attribute by name for a specified Entity.
@@ -178,9 +177,9 @@ public interface EntityService {
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes setEntityAttribute(ReefUUID uid, String name, boolean value) throws ReefServiceException;
+    EntityAttributes setEntityAttribute(ReefUUID uid, String name, boolean value) throws ReefServiceException;
 
     /**
      * Set a signed 64-bit integer attribute by name for a specified Entity.
@@ -189,9 +188,9 @@ public interface EntityService {
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes setEntityAttribute(ReefUUID uid, String name, long value) throws ReefServiceException;
+    EntityAttributes setEntityAttribute(ReefUUID uid, String name, long value) throws ReefServiceException;
 
     /**
      * Set an attribute of type double by name for a specified Entity.
@@ -200,9 +199,9 @@ public interface EntityService {
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes setEntityAttribute(ReefUUID uid, String name, double value) throws ReefServiceException;
+    EntityAttributes setEntityAttribute(ReefUUID uid, String name, double value) throws ReefServiceException;
 
     /**
      * Set a string attribute by name for a specified Entity.
@@ -211,9 +210,9 @@ public interface EntityService {
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes setEntityAttribute(ReefUUID uid, String name, String value) throws ReefServiceException;
+    EntityAttributes setEntityAttribute(ReefUUID uid, String name, String value) throws ReefServiceException;
 
     /**
      * Set an attribute of type Array<Byte> by name for a specified Entity.
@@ -222,7 +221,7 @@ public interface EntityService {
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
+     * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-
-    public EntityAttributes setEntityAttribute(ReefUUID uid, String name, byte[] value) throws ReefServiceException;
+    EntityAttributes setEntityAttribute(ReefUUID uid, String name, byte[] value) throws ReefServiceException;
 }
