@@ -80,7 +80,12 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   }
 
   private def unlinkChannels() = {
-    channels.foreach(_.stop())
+    channels.foreach(channel =>
+      try {
+        channel.stop()
+      } catch {
+        case e: Exception => warn("Qpid unlink error: " + e.getMessage)
+      })
     channels = Nil
   }
 
