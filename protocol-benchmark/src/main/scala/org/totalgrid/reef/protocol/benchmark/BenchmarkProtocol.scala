@@ -1,28 +1,26 @@
 /**
  * Copyright 2011 Green Energy Corp.
  *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. Green Energy Corp licenses this file
- * to you under the GNU Affero General Public License Version 3.0
- * (the "License"); you may not use this file except in compliance
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
  *
  * http://www.gnu.org/licenses/agpl.html
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.totalgrid.reef.protocol.benchmark
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
@@ -55,16 +53,16 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline
   override def name: String = "benchmark"
 
   private var map = immutable.Map.empty[String, Simulator]
-  private var reactor: Option[ReactActor] = None
+  private var reactor: Option[ReactActorExecutor] = None
 
   def getSimulators(names: List[String]): Map[String, ControllableSimulator] =
     if (names.isEmpty) map else map.filterKeys(k => names.contains(k))
 
   // get or create and start the shared reactor
-  private def getReactor: ReactActor = reactor match {
+  private def getReactor: ReactActorExecutor = reactor match {
     case Some(r) => r
     case None =>
-      val r = new ReactActor {}
+      val r = new ReactActorExecutor {}
       r.start
       reactor = Some(r)
       r

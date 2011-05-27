@@ -158,9 +158,9 @@ def generatePackageInfo(fname, file_text)
   overview += "<pre>"
   overview += file_text.gsub("*/", "*-/")
   overview += "</pre>\n*/\n"
-  overview += "package org.totalgrid.reef.api.request.protodoc.#{proto_name.downcase};"
+  overview += "package org.totalgrid.reef.japi.request.protodoc.#{proto_name.downcase};"
 
-  dir_name = "./api-request/src/main/java/org/totalgrid/reef/api/request/protodoc/#{proto_name.downcase}"
+  dir_name = "./api-request/src/main/java/org/totalgrid/reef/japi/request/protodoc/#{proto_name.downcase}"
   FileUtils.mkdir_p(dir_name)
 
   f = File.open(File.join(File.dirname(__FILE__),"#{dir_name}/package-info.java"), 'wb')
@@ -170,7 +170,7 @@ end
 
 f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
 
-types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth Tags]
+types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth]
 
 scala_imports = types.collect{|t| "import org.totalgrid.reef.proto.#{t}._"}.join("\n")
 java_imports = scala_imports.gsub("_","*")

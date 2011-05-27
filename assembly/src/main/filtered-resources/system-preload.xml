@@ -1,0 +1,6 @@
+<features>
+	<feature name="reef-system-preload" version="0.3.0-SNAPSHOT">
+		<bundle>mvn:org.ops4j.pax.logging/pax-logging-api/1.6.3-LOCATION</bundle>
+		<bundle>mvn:org.ops4j.pax.logging/pax-logging-service/1.6.3-LOCATION</bundle>
+	</feature>
+</features>

@@ -155,6 +155,23 @@
                         <version>${karaf.version}</version>
                         <executions>
                             <execution>
+                                <id>copy-system-bundles</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>add-features-to-repo</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>file:${basedir}/target/classes/system-preload.xml</descriptor>
+                                    </descriptors>
+                                    <features>
+                                        <feature>reef-system-preload</feature>
+                                    </features>
+                                    <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
+                                    <repository>target/system-repo</repository>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>add-reef-bundles-to-repo</id>
                                 <phase>generate-resources</phase>
                                 <goals>
