@@ -38,12 +38,12 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
   def markOffline(ce: CommunicationEndpoint) {
     markPointsOffline(ce.points.value)
     markCommandsOffline(ce.commands.value)
-    info("Marked: " + ce.entityName + " offline. Points: " + ce.points.value.size + " Commands: " + ce.commands.value.size)
+    logger.info("Marked: " + ce.entityName + " offline. Points: " + ce.points.value.size + " Commands: " + ce.commands.value.size)
   }
 
   def markOnline(ce: CommunicationEndpoint) {
     markCommandsOnline(ce.commands.value)
-    info("Marked: " + ce.entityName + " online. Commands: " + ce.commands.value.size)
+    logger.info("Marked: " + ce.entityName + " online. Commands: " + ce.commands.value.size)
   }
 
   private def markPointsOffline(points: List[Point]) {

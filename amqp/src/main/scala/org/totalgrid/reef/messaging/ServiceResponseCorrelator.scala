@@ -96,7 +96,7 @@ class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) e
         map.remove(rsp.getId)
         callback(Some(rsp))
       case None =>
-        warn("got unexpected request response: " + rsp.getId)
+        logger.warn("got unexpected request response: " + rsp.getId)
     }
   }
 

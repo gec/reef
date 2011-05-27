@@ -72,7 +72,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
       connectedState.waitUntilConnected(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
     } catch {
       case se: ServiceIOException =>
-        info("Syncronous start failed, stopping actor")
+        logger.info("Syncronous start failed, stopping actor")
         super.stop()
         throw se
     }
@@ -111,7 +111,7 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
       //listeners.foreach { _.opened() }
     } catch {
       case t: Throwable =>
-        error(t)
+        logger.error("Exception while attempting connection", t)
         // if we fail, retry, use exponential backoff
         delay(retryms) { attemptConnection(2 * retryms) }
     }
@@ -121,22 +121,22 @@ trait AMQPConnectionReactor extends Reactor with Lifecycle
   private def createChannel(co: ChannelObserver) = {
     try {
       co.online(broker.newChannel())
-      debug("Added channel for type: " + co.getClass)
+      logger.debug("Added channel for type: " + co.getClass)
     } catch {
-      case ex: Exception => error("error configuring sessions: ", ex)
+      case ex: Exception => logger.error("error configuring sessions: ", ex)
     }
   }
 
   /* --- Implement Broker Connection Listener --- */
 
   final override def onConnectionClosed(expected: Boolean) {
-    info(" Connection closed, expected:" + expected)
+    logger.info(" Connection closed, expected:" + expected)
     if (!expected) this.delay(1000) { reconnect() }
     this.synchronized { listeners.foreach(_.onConnectionClosed(expected)) }
   }
 
   final override def onConnectionOpened() = {
-    info("Connection opened")
+    logger.info("Connection opened")
     this.synchronized { listeners.foreach(_.onConnectionOpened()) }
   }
 

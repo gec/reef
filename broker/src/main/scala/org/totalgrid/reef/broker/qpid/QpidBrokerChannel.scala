@@ -29,7 +29,16 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.japi.ServiceIOException
 
+object QpidBrokerChannel {
+
+  def describeBinding(queue: String, exchange: String, key: String): String =
+    "queue " + queue + " to exchange " + exchange + " w/ key " + key
+}
+
 class QpidBrokerChannel(session: Session) extends SessionListener with BrokerChannel with Logging {
+
+  import QpidBrokerChannel._
+
   var messageConsumer: ScalaOption[MessageConsumer] = None
   var userClosed = false
   var queueName: ScalaOption[String] = None
@@ -38,12 +47,12 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   session.setAutoSync(true)
 
   def closed(s: Session) {
-    reefLogger.info("Qpid session closed")
+    logger.info("Qpid session closed")
     onClose(userClosed)
   }
 
   def exception(s: Session, e: SessionException) {
-    reefLogger.warn("Qpid Exception: " + queueName, e)
+    logger.warn("Qpid Exception: " + queueName, e)
     onClose(userClosed)
   }
 
@@ -66,7 +75,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     userClosed = true
     // qpid just does a 60 second timeout if close is called more than once
     if (!session.isClosing()) {
-      reefLogger.debug("Closing session: {}", queueName)
+      logger.debug("Closing session: " + queueName)
       session.close()
       onClose(userClosed)
     }
@@ -82,7 +91,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (autoDelete) l ::= Option.AUTO_DELETE
     if (exclusive) l ::= Option.EXCLUSIVE
     session.queueDeclare(queue, null, null, l: _*)
-    reefLogger.debug("Declared Queue: {}", queue)
+    logger.debug("Declared Queue: " + queue)
     queue //return the unique queue name
   }
 
@@ -97,7 +106,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
       if (exchange.trim.length < 1) throw new Exception("Bad exchange name: " + exchange)
 
       session.exchangeDeclare(exchange, exchangeType, null, null)
-      reefLogger.debug("Declared Exchange: {}", exchange)
+      logger.debug("Declared Exchange: " + exchange)
     }
   }
 
@@ -109,7 +118,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
       unbindQueue(queue, exchange, key)
     }
     session.exchangeBind(queue, exchange, key, null)
-    reefLogger.debug("Bound: {} to {} key: {}", Array[Object](queue, exchange, key))
+    logger.debug("Bound " + describeBinding(queue, exchange, key))
   }
 
   def unbindQueue(queue: String, exchange: String, key: String): Unit = {
@@ -117,14 +126,14 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     session.exchangeUnbind(queue, exchange, key)
-    reefLogger.debug("Removed Binding: {} to {} key: {}", Array[Object](queue, exchange, key))
+    logger.debug("Unbound " + describeBinding(queue, exchange, key))
   }
 
   def listen(queue: String, mc: MessageConsumer) = {
 
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
-    reefLogger.debug("Listening: queue: {}, consumer: {}", queue, mc)
+    logger.debug("Listening, queue: " + queue + " consumer: " + mc)
     messageConsumer = Some(mc)
     queueName = Some(queue)
 
@@ -135,7 +144,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
 
     val queue = queueName.get
 
-    reefLogger.debug("Starting: {}", queue)
+    logger.debug("Starting: " + queue)
 
     session.messageSubscribe(queue, queue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null)
     session.messageFlow(queue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT)
@@ -166,7 +175,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   }
 
   def stop() {
-    reefLogger.debug("Stopping: {}", queueName)
+    logger.debug("Stopping: " + queueName)
     unlink()
     close()
   }

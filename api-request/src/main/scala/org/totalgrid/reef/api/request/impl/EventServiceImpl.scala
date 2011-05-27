@@ -29,37 +29,41 @@ import scala.collection.JavaConversions._
 
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
-  override def getEvent(uid: String) = ops {
-    _.get(EventRequestBuilders.getByUID(uid)).await().expectOne("Event with UID: " + uid + " not found")
+  override def getEvent(uid: String) = ops("Couldn't get event with uid: " + uid) {
+    _.get(EventRequestBuilders.getByUID(uid)).await().expectOne
   }
 
-  override def getRecentEvents(limit: Int) = ops {
+  override def getRecentEvents(limit: Int) = ops("Couldn't get the last " + limit + " recent events") {
     _.get(EventListRequestBuilders.getAll(limit)).await().expectOne.getEventsList
   }
 
   override def subscribeToRecentEvents(limit: Int) = {
-    ops { session =>
+    ops("Couldn't subscribe to recent events") { session =>
       useSubscription(session, Descriptors.event.getKlass) { sub =>
         session.get(EventListRequestBuilders.getAll(limit), sub).await().expectOne.getEventsList
       }
     }
   }
 
-  override def getRecentEvents(types: java.util.List[String], limit: Int) = ops {
-    _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).await().expectOne.getEventsList
-  }
-
-  override def getEvents(selector: EventSelect) = ops {
-    _.get(EventListRequestBuilders.getByEventSelect(selector)).await().expectOne.getEventsList
-  }
-
-  override def subscribeToEvents(selector: EventSelect) = ops { session =>
-    useSubscription(session, Descriptors.event.getKlass) { sub =>
-      session.get(EventListRequestBuilders.getByEventSelect(selector), sub).await().expectOne.getEventsList
+  override def getRecentEvents(types: java.util.List[String], limit: Int) = {
+    ops("Couldn't get recent events with types: " + types) {
+      _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).await().expectOne.getEventsList
     }
   }
 
-  override def publishEvent(event: Event) = ops {
+  override def getEvents(selector: EventSelect) = ops("Couldn't get events matching: " + selector) {
+    _.get(EventListRequestBuilders.getByEventSelect(selector)).await().expectOne.getEventsList
+  }
+
+  override def subscribeToEvents(selector: EventSelect) = {
+    ops("Couldn't subscribe to events matching: " + selector) { session =>
+      useSubscription(session, Descriptors.event.getKlass) { sub =>
+        session.get(EventListRequestBuilders.getByEventSelect(selector), sub).await().expectOne.getEventsList
+      }
+    }
+  }
+
+  override def publishEvent(event: Event) = ops("Couldn't publish event: " + event) {
     _.put(event).await().expectOne
   }
 

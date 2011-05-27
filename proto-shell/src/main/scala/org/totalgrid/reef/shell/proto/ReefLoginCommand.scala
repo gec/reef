@@ -61,7 +61,7 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
         case x: Exception =>
           setReefSession(null, null)
           println("Couldn't login to Reef: " + x.getMessage)
-          error(x.getStackTraceString)
+          logger.error(x.getStackTraceString)
       }
     }
   }

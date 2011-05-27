@@ -19,7 +19,7 @@
                 SCADA measurements defined in the equipment section are linked to actual measurements
                 in endpoint devices. All required scaling is also done in the communications modeling sections.
                 <span class="elementStyle">communicationModel</span>
-                is one of the four main elements or “sections” of the overall parent configuration element.<span
+                is one of the four main elements or sections of the overall parent configuration element.<span
                     class="elementStyle">equipmentModel, messageModel, actionModel</span>,
                 and
                 <span class="elementStyle">communicationModel</span>
@@ -42,13 +42,13 @@
 
                     <span class="nameStyle">&lt;cm:communicationsModel&gt; </span>
                     &lt;cm:profiles&gt;
-                    &lt;!—pointProfile, equipmentProfile, controlProfile, and endpointprofile defined--&gt;
+                    &lt;!-pointProfile, equipmentProfile, controlProfile, and endpointprofile defined--&gt;
                     &lt;/cm:profiles&gt;
                     &lt;cm:interface&gt;
-                    &lt;!—Communication interface parameters defined--&gt;
+                    &lt;!-Communication interface parameters defined--&gt;
                     &lt;/cm:interface&gt;
                     &lt;cm:endpoint&gt;
-                    &lt;!—Endpoint (IED) and measurement mapping parameters defined--&gt;
+                    &lt;!-Endpoint (IED) and measurement mapping parameters defined--&gt;
                     &lt;/cm:endpoint&gt;
                     <span class="nameStyle">&lt;/cm:communicationsModel&gt; </span>
                     &lt;/configuration&gt;
@@ -260,7 +260,7 @@
                     The following are the attributes contained in the protocol configuration file:
                     <blockquote>
                         <span class="elementStyle">RemoteBuffFullTimeoutMS</span>
-                        – Time in milliseconds the link will wait if the remote buffer is full.
+                        - Time in milliseconds the link will wait if the remote buffer is full.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">NumRetries</span>
@@ -378,20 +378,20 @@
                     attributes include:
                     <blockquote>
                         <span class="elementStyle">type</span>
-                        – Control output type. Valid values are PULSE, LATCH_ON, LATCH_OFF, PULSE_CLOSE, PULSE_TRIP, and
+                        - Control output type. Valid values are PULSE, LATCH_ON, LATCH_OFF, PULSE_CLOSE, PULSE_TRIP, and
                         SETPOINT.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">onTime</span>
-                        – pulse on duration (not used for LATCH controls)
+                        - pulse on duration (not used for LATCH controls)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">offTime</span>
-                        – pulse off duration (not used for LATCH controls)
+                        - pulse off duration (not used for LATCH controls)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">count</span>
-                        – number of pulse outputs (not used for LATCH controls)
+                        - number of pulse outputs (not used for LATCH controls)
                     </blockquote>
                 </p>
             </xs:documentation>
@@ -418,31 +418,31 @@
                     are the following.
                     <blockquote>
                         <span class="elementStyle">rawLow</span>
-                        – raw or unscaled low value for the measurement.
+                        - raw or unscaled low value for the measurement.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">rawHigh</span>
-                        – raw or unscaled high value for the measurement.
+                        - raw or unscaled high value for the measurement.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">rawUnit</span>
-                        – unit of measurement for the raw value.
+                        - unit of measurement for the raw value.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">engLow</span>
-                        – engineering scaled low value for the measurement (paired with rawLow).
+                        - engineering scaled low value for the measurement (paired with rawLow).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">engHigh</span>
-                        – engineering scaled high value for the measurement (paired with rawHigh).
+                        - engineering scaled high value for the measurement (paired with rawHigh).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">engUnit</span>
-                        – unit of measurement for the eng value.
+                        - unit of measurement for the eng value.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">slope</span>
-                        – Value of slope.
+                        - Value of slope.
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">offset</span>
@@ -475,24 +475,24 @@
                     of endpoints or devices. The control element assigns attributes
                     to a control output type. The following attributes can be assigned under control.
                     <span class="elementStyle">name</span>
-                    – name used to reference the control profile in the communications mapping section (required). The
+                    - name used to reference the control profile in the communications mapping section (required). The
                     control name must match the control name defined for the corresponding point in the equipment
                     modeling section.
                     <blockquote>
                         <span class="elementStyle">index</span>
-                        – DNP3 index of the control output (optional).
+                        - DNP3 index of the control output (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">unit</span>
-                        – Unit of measurement (optional).
+                        - Unit of measurement (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">controlProfile</span>
-                        – name of the desired controlProfile (optional).
+                        - name of the desired controlProfile (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">optionsDnp3</span>
-                        – control output parameters (see documentation for optionsDnp3 element).
+                        - control output parameters (see documentation for optionsDnp3 element).
                     </blockquote>
                 </p>
             </xs:documentation>
@@ -552,19 +552,19 @@
                     The following attributes can be assigned under<span class="elementStyle">pointProfile</span>.
                     <blockquote>
                         <span class="elementStyle">name</span>
-                        – name used to reference the point profile in the communications mapping section (required).
+                        - name used to reference the point profile in the communications mapping section (required).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">index</span>
-                        – DNP3 index of the measurement. (optional)
+                        - DNP3 index of the measurement. (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">unit</span>
-                        – Unit of measurement (optional)
+                        - Unit of measurement (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">pointProfile</span>
-                        – name of nested pointProfile. Point profile attributes can be assigned to other point profiles
+                        - name of nested pointProfile. Point profile attributes can be assigned to other point profiles
                         (optional)
                     </blockquote>
 
@@ -587,19 +587,19 @@
                     endpoints or devices. The following attributes can be assigned under status.
                     <blockquote>
                         <span class="elementStyle">name</span>
-                        – name used to reference the status point in the communications mapping section (required).
+                        - name used to reference the status point in the communications mapping section (required).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">index</span>
-                        – DNP3 index of the measurement (optional).
+                        - DNP3 index of the measurement (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">unit</span>
-                        – Unit of measurement (optional).
+                        - Unit of measurement (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">pointProfile</span>
-                        – name of pointProfile assigned to the status.
+                        - name of pointProfile assigned to the status.
                     </blockquote>
                 </p>
             </xs:documentation>
@@ -617,19 +617,19 @@
                     or devices. The following attributes can be assigned under analog.
                     <blockquote>
                         <span class="elementStyle">name</span>
-                        – name used to reference the analog in the communications mapping section (required).
+                        - name used to reference the analog in the communications mapping section (required).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">index</span>
-                        – DNP3 index of the measurement. (optional).
+                        - DNP3 index of the measurement. (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">unit</span>
-                        – Unit of measurement (optional).
+                        - Unit of measurement (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">pointProfile</span>
-                        – name of pointProfile assigned to the analog.
+                        - name of pointProfile assigned to the analog.
                     </blockquote>
 
                     Measurement scaling can also be assigned to a analog measurement using the
@@ -651,19 +651,19 @@
                     devices. The following attributes can be assigned under counter.
                     <blockquote>
                         <span class="elementStyle">name</span>
-                        – name used to reference the counter in the communications mapping section (required).
+                        - name used to reference the counter in the communications mapping section (required).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">index</span>
-                        – DNP3 index of the counter measurement (optional)
+                        - DNP3 index of the counter measurement (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">unit</span>
-                        – Unit of measurement (optional).
+                        - Unit of measurement (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">pointProfile</span>
-                        – name of pointProfile assigned to the counter.
+                        - name of pointProfile assigned to the counter.
                     </blockquote>
 
                     Measurement scaling can also be assigned to a counter using the
@@ -753,37 +753,37 @@
                     assigned under equipment.
                     <blockquote>
                         <span class="elementStyle">name</span>
-                        – name of the equipment. The name specified here must match the corresponding equipment name
+                        - name of the equipment. The name specified here must match the corresponding equipment name
                         specified in the equipment modeling section (ex. Chapel Hill, CB11001) (required).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">equipmentProfile</span>
-                        – Equipment profiles defined in the equipment modeling section can be assigned to the equipment.
+                        - Equipment profiles defined in the equipment modeling section can be assigned to the equipment.
                         (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">control</span>
-                        – List all controls under the equipment. The control names must match the corresponding control
+                        - List all controls under the equipment. The control names must match the corresponding control
                         defined in the equipment modeling sections. (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">analog</span>
-                        – List all analogs under the equipment. The analog names must match the corresponding analog
+                        - List all analogs under the equipment. The analog names must match the corresponding analog
                         defined in the equipment modeling sections. (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">status</span>
-                        – List all status under the equipment. The status names must match the corresponding status
+                        - List all status under the equipment. The status names must match the corresponding status
                         defined in the equipment modeling sections. (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">counter</span>
-                        – List all counters under the equipment. The counter names must match the corresponding counters
+                        - List all counters under the equipment. The counter names must match the corresponding counters
                         defined in the equipment modeling sections. (optional)
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">equipment</span>
-                        – equipments are nested to specify the measurement tag hierarchy
+                        - equipments are nested to specify the measurement tag hierarchy
                         (equipment.equipment.measurement) (ex. Chapel Hill.CB11001.Bkr).
                     </blockquote>
                 </p>
@@ -839,28 +839,28 @@
                     under<span class="elementStyle">endpoint</span>.
                     <blockquote>
                         <span class="elementStyle">name</span>
-                        – name of the endpoint. (ex. RTU22, SEL351-1) (required).
+                        - name of the endpoint. (ex. RTU22, SEL351-1) (required).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">type</span>
-                        – type of endpoint (see type) (optional).
+                        - type of endpoint (see type) (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">protocol</span>
-                        – protocol of the endpoint device (ex. Dnp3) (optional).
+                        - protocol of the endpoint device (ex. Dnp3) (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">interface</span>
-                        – Communication interface of the endpoint device. (see interface) (optional).
+                        - Communication interface of the endpoint device. (see interface) (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">equipment</span>
-                        – equipment includes the list of measurements aquired from the endpoint device (see equipment)
+                        - equipment includes the list of measurements aquired from the endpoint device (see equipment)
                         (optional).
                     </blockquote>
                     <blockquote>
                         <span class="elementStyle">endpointProfile</span>
-                        – endpoint profile assigned to the endpoint.
+                        - endpoint profile assigned to the endpoint.
                     </blockquote>
                 </p>
             </xs:documentation>
@@ -878,13 +878,13 @@
                 <p class="elementDef">Defines the IP communication interface of the end device. The following attributes
                     can be assigned under<span class="elementStyle">interface</span>.
                     <span class="elementStyle">name</span>
-                    – name used to reference the interface in the communications modeling section (required).
+                    - name used to reference the interface in the communications modeling section (required).
                     <span class="elementStyle">ip</span>
-                    – The IP address of the end device. (optional)
+                    - The IP address of the end device. (optional)
                     <span class="elementStyle">netmask</span>
-                    – Network subnet mask (optional)
+                    - Network subnet mask (optional)
                     <span class="elementStyle">port</span>
-                    – IP port of end device.(optional)
+                    - IP port of end device.(optional)
                     <span class="elementStyle">network</span>
                     - network
                 </p>

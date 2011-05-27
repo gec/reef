@@ -39,7 +39,6 @@ import org.totalgrid.reef.sapi.ServiceList
  * @param services List defining mappings between
  * @param timeoutms Response timeout for service calls in milliseconds
  */
-@scala.deprecated
 class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList, timeoutms: Long) extends Connection {
 
   /**

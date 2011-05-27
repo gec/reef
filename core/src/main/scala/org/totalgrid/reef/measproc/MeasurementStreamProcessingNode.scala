@@ -89,7 +89,7 @@ object MeasurementStreamProcessingNode extends Logging {
     //    })
     val measBatchService = new AddressableMeasurementBatchService(processor)
     val exchange = measBatchService.descriptor.id
-    info { "Attached " + exchange + " key: " + connection.getRouting.getServiceRoutingKey }
+    logger.info("Attached " + exchange + " key: " + connection.getRouting.getServiceRoutingKey)
     amqp.bindService(exchange, measBatchService.respond, AddressableDestination(connection.getRouting.getServiceRoutingKey), false, Some(reactor))
   }
 }

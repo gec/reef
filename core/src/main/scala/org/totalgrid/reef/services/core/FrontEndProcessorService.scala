@@ -67,7 +67,7 @@ class FrontEndProcessorServiceModel(
   override def createFromProto(req: FrontEndProcessor): ApplicationInstance = {
     val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getUuid)).single
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, appInstance.id)))
-    info { "Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList }
+    logger.info("Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList)
     coordinator.onFepAppChanged(appInstance, true)
     appInstance
   }
@@ -75,7 +75,7 @@ class FrontEndProcessorServiceModel(
   override def updateFromProto(req: FrontEndProcessor, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
     ApplicationSchema.protocols.delete(ApplicationSchema.protocols.where(p => p.applicationId === existing.id))
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, existing.id)))
-    info { "Updated FEP: " + existing.instanceName + " protocols: " + req.getProtocolsList.toList }
+    logger.info("Updated FEP: " + existing.instanceName + " protocols: " + req.getProtocolsList.toList)
     coordinator.onFepAppChanged(existing, true)
     (existing, true)
   }

@@ -75,7 +75,7 @@ class MeasurementProcessingConnectionServiceModel(
 
     if (!proto.hasReadyTime) throw new BadRequestException("Measurement processor being updated without ready set!")
 
-    if (existing.readyTime.isDefined) warn("Measurement processor already marked as ready!")
+    if (existing.readyTime.isDefined) logger.warn("Measurement processor already marked as ready!")
 
     // only update we should get is from the measproc when it is ready to handle measurements
 

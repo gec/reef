@@ -28,6 +28,8 @@ public class ReefServiceException extends Exception
 {
     public final Envelope.Status status;
 
+    private String extraInformation = "";
+
     public ReefServiceException( String msg, Envelope.Status status )
     {
         this( msg, status, null );
@@ -42,6 +44,15 @@ public class ReefServiceException extends Exception
     public Envelope.Status getStatus()
     {
         return status;
+    }
+
+    public void addExtraInformation(String extraInformation){
+        this.extraInformation += extraInformation;
+    }
+
+    @Override
+    public String getMessage() {
+        return extraInformation + super.getMessage();
     }
 }
 

@@ -27,6 +27,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.ExpectationException
 import org.totalgrid.reef.api.request.{ ConfigFileService }
 import org.totalgrid.reef.api.request.builders.{ EntityRequestBuilders, ConfigFileRequestBuilders }
+import org.totalgrid.reef.proto.OptionalProtos._
 
 /**
  * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever
@@ -37,49 +38,67 @@ import org.totalgrid.reef.api.request.builders.{ EntityRequestBuilders, ConfigFi
  */
 trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService {
 
-  override def getAllConfigFiles(): java.util.List[ConfigFile] = ops {
+  override def getAllConfigFiles(): java.util.List[ConfigFile] = ops("Couldn't get list of all config files") {
     _.get(ConfigFileRequestBuilders.getAll).await().expectMany()
   }
 
-  override def getConfigFileByUid(uid: ReefUUID): ConfigFile = ops {
+  override def getConfigFileByUid(uid: ReefUUID): ConfigFile = ops("Couldn't get config file with uid: " + uid.uuid) {
     _.get(ConfigFileRequestBuilders.getByUid(uid)).await().expectOne
   }
 
-  override def getConfigFileByName(name: String): ConfigFile = ops {
+  override def getConfigFileByName(name: String): ConfigFile = ops("Couldn't get config file with name: " + name) {
     _.get(ConfigFileRequestBuilders.getByName(name)).await().expectOne
   }
 
-  override def getConfigFilesUsedByEntity(entityUid: ReefUUID): java.util.List[ConfigFile] = ops {
-    _.get(ConfigFileRequestBuilders.getByEntity(entityUid)).await().expectMany()
+  override def getConfigFilesUsedByEntity(entityUid: ReefUUID): java.util.List[ConfigFile] = {
+    ops("Couldn't get config files used by entity: " + entityUid.uuid) {
+      _.get(ConfigFileRequestBuilders.getByEntity(entityUid)).await().expectMany()
+    }
   }
 
-  override def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = ops {
-    _.get(ConfigFileRequestBuilders.getByEntity(entityUid, mimeType)).await().expectMany()
+  override def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = {
+    ops("Couldn't get config files used by entity: " + entityUid.uuid + " mimeType: " + mimeType) {
+      _.get(ConfigFileRequestBuilders.getByEntity(entityUid, mimeType)).await().expectMany()
+    }
   }
 
-  override def createConfigFile(name: String, mimeType: String, data: Array[Byte]): ConfigFile = ops {
-    _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data)).await().expectOne
+  override def createConfigFile(name: String, mimeType: String, data: Array[Byte]): ConfigFile = {
+    ops("Couldn't create config file with name: " + name + " mimeType: " + mimeType + " dataLength: " + data.length) {
+      _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data)).await().expectOne
+    }
   }
 
-  override def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile = ops {
-    _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityUid)).await().expectOne
+  override def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile = {
+    ops("Couldn't create config file with name: " + name + " mimeType: " + mimeType + " dataLength: " + data.length
+      + " for entity: " + entityUid.uuid) {
+      _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityUid)).await().expectOne
+    }
   }
 
   //TODO - Evaluate why we're doing client side validation. Seems that all validation should be server-side JAC
 
   override def updateConfigFile(configFile: ConfigFile, data: Array[Byte]): ConfigFile = {
-    if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set. Cannot update a config file with only a name, need to know uid.")
-    ops { _.put(configFile.toBuilder.setFile(ByteString.copyFrom(data)).build).await().expectOne }
+
+    ops("Couldn't update configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
+      if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set.")
+      session.put(configFile.toBuilder.setFile(ByteString.copyFrom(data)).build).await().expectOne
+    }
   }
 
   override def addConfigFileUserByEntity(configFile: ConfigFile, entityUid: ReefUUID): ConfigFile = {
-    if (!configFile.hasUuid) throw new ExpectationException("uid field is expected to be set. Cannot add a config file user with only a name, need to know uid.")
-    ops { _.put(configFile.toBuilder.addEntities(EntityRequestBuilders.getByUid(entityUid)).build).await().expectOne }
+
+    ops("Couldn't add entity: " + entityUid.uuid + " as user of configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
+      if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set.")
+      session.put(configFile.toBuilder.addEntities(EntityRequestBuilders.getByUid(entityUid)).build).await().expectOne
+    }
   }
 
   override def deleteConfigFile(configFile: ConfigFile): ConfigFile = {
-    if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set. Cannot delete a config file with only a name, need to know uid.")
-    ops { _.delete(ConfigFile.newBuilder.setUuid(configFile.getUuid).build).await().expectOne }
+
+    ops("Couldn't delete configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
+      if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set.")
+      session.delete(ConfigFile.newBuilder.setUuid(configFile.getUuid).build).await().expectOne
+    }
   }
 }
 

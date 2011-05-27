@@ -101,9 +101,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
   }
 
   override def beforeStop() = {
-    info {
-      "Clearing Connections..."
-    }
+    logger.info("Clearing connections")
     connections.clear()
   }
 
@@ -121,14 +119,12 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
         rsp match {
           case SingleSuccess(_, fep) =>
             eventLog.event(EventType.System.SubsystemStarted)
-            info {
-              "Got uid: " + fep.getUuid.getUuid
-            }
+            logger.info("Got uid: " + fep.getUuid.getUuid)
             val query = ConnProto.newBuilder.setFrontEnd(fep).build
             // this is where we actually bind up the service calls
             this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
           case _ =>
-            warn("Unexpected response: " + rsp.toString)
+            logger.warn("Unexpected response: " + rsp.toString)
             delay(retryms) {
               annouce
             }
@@ -145,7 +141,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
     try {
       fun
     } catch {
-      case t: Throwable => error(msg + ": " + t)
+      case t: Throwable => logger.error(msg + ": " + t)
     }
   }
 }

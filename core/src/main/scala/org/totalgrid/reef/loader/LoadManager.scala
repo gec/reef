@@ -45,7 +45,7 @@ object LoadManager extends Logging {
    */
   def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
 
-    info("Loading configuration file '" + filename + "'")
+    logger.info("Loading configuration file '" + filename + "'")
 
     val file = new File(filename)
     try {
@@ -56,7 +56,7 @@ object LoadManager extends Logging {
 
       val valid = loadConfiguration(loader, xml, benchmark, file.getParentFile)
 
-      info("Finished analyzing configuration '" + filename + "'")
+      logger.info("Finished analyzing configuration '" + filename + "'")
 
       if (!valid && !ignoreWarnings) {
         println("Configuration invalid, fix errors or add ignoreWarnings argument")
@@ -113,7 +113,7 @@ object LoadManager extends Logging {
       case exception: Exception =>
         println("Parsing halted by terminal error: " + exception.getMessage)
         println("Fix Critical Errors and try again.")
-        warn(exception.getStackTraceString)
+        logger.warn(exception.getStackTraceString)
     }
 
     val errors = ex.getErrors

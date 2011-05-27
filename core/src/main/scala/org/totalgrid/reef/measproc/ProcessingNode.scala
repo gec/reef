@@ -57,7 +57,7 @@ class BasicProcessingNode(procFun: Measurement => Unit, flushCache: () => Unit)
     batchProcessingTime {
       ProcessingNode.debatch(b) { meas =>
         measProcessingTime {
-          debug("Processing: " + meas)
+          logger.debug("Processing: " + meas)
           procFun(meas)
         }
       }

@@ -25,20 +25,21 @@ import org.totalgrid.reef.api.request.EndpointManagementService
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
 
-  override def getAllEndpoints() = ops {
+  override def getAllEndpoints() = ops("Couldn't get list of all endpoints") {
     _.get(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany()
   }
 
-  override def getEndpointByName(name: String) = ops {
+  override def getEndpointByName(name: String) = ops("Couldn't get endpoint with name: " + name) {
     _.get(CommEndpointConfig.newBuilder.setName(name).build).await().expectOne
   }
 
-  override def getEndpoint(endpointUuid: ReefUUID) = ops {
+  override def getEndpoint(endpointUuid: ReefUUID) = ops("Couldn't get endpoint with uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConfig.newBuilder.setUuid(endpointUuid).build).await().expectOne
   }
 
@@ -48,22 +49,22 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean) = {
     val connection = getEndpointConnection(endpointUuid)
-    ops {
+    ops("Couldn't alter endpoint: " + endpointUuid.uuid + " to enabled: " + enabled) {
       _.put(connection.toBuilder.setEnabled(enabled).build).await().expectOne
     }
   }
 
-  override def getAllEndpointConnections() = ops {
+  override def getAllEndpointConnections() = ops("Couldn't get list of all endpoint connections") {
     _.get(CommEndpointConnection.newBuilder.setUid("*").build).await().expectMany()
   }
 
-  override def subscribeToAllEndpointConnections() = ops { session =>
+  override def subscribeToAllEndpointConnections() = ops("Couldn't subscribe to all endpoint connections") { session =>
     useSubscription(session, Descriptors.commEndpointConnection.getKlass) { sub =>
       session.get(CommEndpointConnection.newBuilder.setUid("*").build, sub).await().expectMany()
     }
   }
 
-  override def getEndpointConnection(endpointUuid: ReefUUID) = ops {
+  override def getEndpointConnection(endpointUuid: ReefUUID) = ops("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).await().expectOne
   }
 

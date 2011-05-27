@@ -53,7 +53,7 @@ trait ServiceHandler extends Logging {
         case Success(_, list) => execute(subHandler(list))
         case Failure(status, msg) =>
           // TODO - replace deprecated usage
-          error("Error getting subscription for " + searchObj)
+          logger.error("Error getting subscription for " + searchObj)
           Timer.delay(retryMS) {
             subscribe(client, queue, searchObj, retryMS, subHandler) //defined recursively
           }

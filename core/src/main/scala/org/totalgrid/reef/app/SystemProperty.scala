@@ -27,7 +27,7 @@ object SystemProperty extends Logging {
   def get(prop: String, default: String): String = Option(System.getProperty(prop)) match {
     case Some(x) => x
     case None =>
-      info(prop + " not defined, defaulting to: " + default)
+      logger.info(prop + " not defined, defaulting to: " + default)
       default
   }
 

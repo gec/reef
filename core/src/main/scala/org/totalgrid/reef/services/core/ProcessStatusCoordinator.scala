@@ -47,7 +47,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
         try {
           checkTimeouts(System.currentTimeMillis)
         } catch {
-          case e: Exception => error("Error checking timeout", e)
+          case e: Exception => logger.error("Error checking timeout", e)
         }
       }
     }
@@ -65,7 +65,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
   def checkTimeouts(now: Long) {
     trans.transaction { model =>
       ApplicationSchema.heartbeats.where(h => h.isOnline === true and (h.timeoutAt lte now)).foreach(h => {
-        info { "App " + h.instanceName.value + ": has timed out at " + now + " (" + (h.timeoutAt - now) + ")" }
+        logger.info("App " + h.instanceName.value + ": has timed out at " + now + " (" + (h.timeoutAt - now) + ")")
         model.takeApplicationOffline(h, now)
       })
     }
@@ -76,26 +76,26 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
     def update(model: ProcessStatusServiceModel, hbeat: HeartbeatStatus) {
       if (hbeat.isOnline) {
         if (ss.getOnline) {
-          info { "Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime) }
+          logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
           hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
           // don't publish a modify
           ApplicationSchema.heartbeats.update(hbeat)
         } else {
-          info { "App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime }
+          logger.info("App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
           model.takeApplicationOffline(hbeat, ss.getTime)
         }
       } else {
-        warn { "App " + ss.getInstanceName + ": is marked offline but got message!" }
+        logger.warn("App " + ss.getInstanceName + ": is marked offline but got message!")
       }
     }
 
     trans.transaction { model =>
       if (!ss.hasProcessId) {
-        warn { "Malformed" + ss.getInstanceName + ": isn't configured!" }
+        logger.warn("Malformed" + ss.getInstanceName + ": isn't configured!")
       } else {
         ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
           case List(hbeat) => update(model, hbeat)
-          case _ => warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
+          case _ => logger.warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
         }
       }
     }
@@ -125,7 +125,7 @@ class ProcessStatusCoordinator(publishers: ServiceEventPublishers) extends Loggi
         try {
           checkTimeouts(System.currentTimeMillis)
         } catch {
-          case e: Exception => error("Error starting timeout checks", e)
+          case e: Exception => logger.error("Error starting timeout checks", e)
         }
       }
     }
@@ -172,7 +172,7 @@ class ProcessStatusCoordinator(publishers: ServiceEventPublishers) extends Loggi
       } else {
         ApplicationSchema.heartbeats.lookup(ss.getUuid.toLong) match {
           case Some(hbeat) => update(hbeat)
-          case None => warn("App " + ss.getInstanceName + ": isn't configured!")
+          case None => logger.warn("App " + ss.getInstanceName + ": isn't configured!")
         }
       }
     }

@@ -47,12 +47,12 @@ abstract class DbConnectorBase extends Logging {
       Some(connected)
     } catch {
       case e: Exception =>
-        error("got exception trying to connect to database, is it correctly configured?")
-        error("try granting access to db:")
-        error("grant all on %s.* to '%s'@'%%' identified by '%s';".format(dbInfo.database, dbInfo.user, dbInfo.password))
-        error("grant all on %s.* to '%s'@'localhost' identified by '%s';".format(dbInfo.database, dbInfo.user, dbInfo.password))
-        error("create database %s;".format(dbInfo.database))
-        error("Exception connecting", e)
+        logger.error("got exception trying to connect to database, is it correctly configured?")
+        logger.error("try granting access to db:")
+        logger.error("grant all on %s.* to '%s'@'%%' identified by '%s';".format(dbInfo.database, dbInfo.user, dbInfo.password))
+        logger.error("grant all on %s.* to '%s'@'localhost' identified by '%s';".format(dbInfo.database, dbInfo.user, dbInfo.password))
+        logger.error("create database %s;".format(dbInfo.database))
+        logger.error("Exception connecting", e)
         throw e
     }
   }

@@ -20,32 +20,196 @@
  */
 package org.totalgrid.reef.util
 
-import org.slf4j.{ Logger, LoggerFactory }
-
 /**
  * Provides a scala-fied interface to slf4j. widens the logger interface to include
  * the use of lazy logging via closures.
  */
 trait Logging {
-  // named so we dont conflict with the field "log" in standard java classes that use slf4j
-  protected val reefLogger = LoggerFactory.getLogger(getClass)
+  val logger = LoggerFactory(getClass)
+}
 
-  protected def trace(f: => String): Unit = if (reefLogger.isTraceEnabled) reefLogger.trace(f)
-  protected def debug(f: => String): Unit = if (reefLogger.isDebugEnabled) reefLogger.debug(f)
-  protected def info(f: => String): Unit = if (reefLogger.isInfoEnabled) reefLogger.info(f)
-  protected def warn(f: => String): Unit = if (reefLogger.isWarnEnabled) reefLogger.warn(f)
-  protected def error(f: => String): Unit = if (reefLogger.isErrorEnabled) reefLogger.error(f)
+object LoggerFactory {
 
-  protected def trace(ex: Throwable): Unit = trace { ex.toString }
-  protected def debug(ex: Throwable): Unit = debug { ex.toString }
-  protected def info(ex: Throwable): Unit = info { ex.toString }
-  protected def warn(ex: Throwable): Unit = warn { ex.toString }
-  protected def error(ex: Throwable): Unit = error { ex.toString }
+  def apply(klass: Class[_]): Logger = getLogger(org.slf4j.LoggerFactory.getLogger(klass))
 
-  protected def trace(msg: String, ex: Throwable): Unit = reefLogger.trace(msg, ex)
-  protected def debug(msg: String, ex: Throwable): Unit = reefLogger.debug(msg, ex)
-  protected def info(msg: String, ex: Throwable): Unit = reefLogger.info(msg, ex)
-  protected def warn(msg: String, ex: Throwable): Unit = reefLogger.warn(msg, ex)
-  protected def error(msg: String, ex: Throwable): Unit = reefLogger.error(msg, ex)
+  def apply(name: String): Logger = getLogger(org.slf4j.LoggerFactory.getLogger(name))
 
+  private def getLogger(logger: org.slf4j.Logger): Logger = logger match {
+    case x: org.slf4j.spi.LocationAwareLogger => new BasicLocationAwareLogger(x)
+    case _ => new BasicLogger(logger)
+  }
+
+  private class BasicLogger(override protected val slf4jLogger: org.slf4j.Logger) extends Logger
+
+  private class BasicLocationAwareLogger(override protected val slf4jLogger: org.slf4j.spi.LocationAwareLogger) extends LocationAwareLogger {
+    override protected val wrapperClassName = classOf[BasicLocationAwareLogger].getName
+  }
+
+}
+
+/**
+ * Thin wrapper for SLF4J making use of by-name parameters to improve performance.
+ */
+trait Logger {
+
+  /**
+   * The name of this Logger.
+   */
+  lazy val name = slf4jLogger.getName
+
+  /**
+   * The wrapped SLF4J Logger.
+   */
+  protected val slf4jLogger: org.slf4j.Logger
+
+  /**
+   * Log a message with ERROR level.
+   * @param msg The message to be logged
+   */
+  def error(msg: => String) {
+    if (slf4jLogger.isErrorEnabled) slf4jLogger.error(msg)
+  }
+
+  /**
+   * Log a message with ERROR level.
+   * @param msg The message to be logged
+   * @param t The Throwable to be logged
+   */
+  def error(msg: => String, t: Throwable) {
+    if (slf4jLogger.isErrorEnabled) slf4jLogger.error(msg, t)
+  }
+
+  /**
+   * Log a message with WARN level.
+   * @param msg The message to be logged
+   */
+  def warn(msg: => String) {
+    if (slf4jLogger.isWarnEnabled) slf4jLogger.warn(msg)
+  }
+
+  /**
+   * Log a message with WARN level.
+   * @param msg The message to be logged
+   * @param t The Throwable to be logged
+   */
+  def warn(msg: => String, t: Throwable) {
+    if (slf4jLogger.isWarnEnabled) slf4jLogger.warn(msg, t)
+  }
+
+  /**
+   * Log a message with INFO level.
+   * @param msg The message to be logged
+   */
+  def info(msg: => String) {
+    if (slf4jLogger.isInfoEnabled) slf4jLogger.info(msg)
+  }
+
+  /**
+   * Log a message with INFO level.
+   * @param msg The message to be logged
+   * @param t The Throwable to be logged
+   */
+  def info(msg: => String, t: Throwable) {
+    if (slf4jLogger.isInfoEnabled) slf4jLogger.info(msg, t)
+  }
+
+  /**
+   * Log a message with DEBUG level.
+   * @param msg The message to be logged
+   */
+  def debug(msg: => String) {
+    if (slf4jLogger.isDebugEnabled) slf4jLogger.debug(msg)
+  }
+
+  /**
+   * Log a message with DEBUG level.
+   * @param msg The message to be logged
+   * @param t The Throwable to be logged
+   */
+  def debug(msg: => String, t: Throwable) {
+    if (slf4jLogger.isDebugEnabled) slf4jLogger.debug(msg, t)
+  }
+
+  /**
+   * Log a message with TRACE level.
+   * @param msg The message to be logged
+   */
+  def trace(msg: => String) {
+    if (slf4jLogger.isTraceEnabled) slf4jLogger.trace(msg)
+  }
+
+  /**
+   * Log a message with TRACE level.
+   * @param msg The message to be logged
+   * @param t The Throwable to be logged
+   */
+  def trace(msg: => String, t: Throwable) {
+    if (slf4jLogger.isTraceEnabled) slf4jLogger.trace(msg, t)
+  }
+
+}
+
+/**
+ * Thin wrapper for a location aware SLF4J logger making use of by-name parameters to improve performance.
+ *
+ * This implementation delegates to a location aware logger. For those SLF4J adapters that implement this
+ * interface, such as log4j and java.util.logging adapters, the code location reported will be that
+ * of the caller instead of the wrapper.
+ *
+ * Hint: Use the Logger object to choose the correct implementation automatically.
+ */
+trait LocationAwareLogger extends Logger {
+  import org.slf4j.spi.LocationAwareLogger.{ ERROR_INT, WARN_INT, INFO_INT, DEBUG_INT, TRACE_INT }
+
+  override def error(msg: => String) {
+    if (slf4jLogger.isErrorEnabled) log(ERROR_INT, msg)
+  }
+
+  override def error(msg: => String, t: Throwable) {
+    if (slf4jLogger.isErrorEnabled) log(ERROR_INT, msg, t)
+  }
+
+  override def warn(msg: => String) {
+    if (slf4jLogger.isWarnEnabled) log(WARN_INT, msg)
+  }
+
+  override def warn(msg: => String, t: Throwable) {
+    if (slf4jLogger.isWarnEnabled) log(WARN_INT, msg, t)
+  }
+
+  override def info(msg: => String) {
+    if (slf4jLogger.isInfoEnabled) log(INFO_INT, msg)
+  }
+
+  override def info(msg: => String, t: Throwable) {
+    if (slf4jLogger.isInfoEnabled) log(INFO_INT, msg, t)
+  }
+
+  override def debug(msg: => String) {
+    if (slf4jLogger.isDebugEnabled) log(DEBUG_INT, msg)
+  }
+
+  override def debug(msg: => String, t: Throwable) {
+    if (slf4jLogger.isDebugEnabled) log(DEBUG_INT, msg, t)
+  }
+
+  override def trace(msg: => String) {
+    if (slf4jLogger.isTraceEnabled) log(TRACE_INT, msg)
+  }
+
+  override def trace(msg: => String, t: Throwable) {
+    if (slf4jLogger.isTraceEnabled) log(TRACE_INT, msg, t)
+  }
+
+  override protected val slf4jLogger: org.slf4j.spi.LocationAwareLogger
+
+  /**
+   * Get the wrapper class name for detection of the stackframe of the user code calling into the log framework.
+   * @return The fully qualified class name of the outermost logger wrapper class.
+   */
+  protected val wrapperClassName: String
+
+  private final def log(level: Int, msg: String, throwable: Throwable = null) {
+    slf4jLogger.log(null, wrapperClassName, level, msg, null, throwable)
+  }
 }

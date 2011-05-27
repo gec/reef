@@ -35,7 +35,7 @@ object MeasurementStoreFinder extends Logging {
     config match {
       case di: DbInfo =>
         val actor = new ReactActor {}
-        val connection = new SimpleDbConnection(di, actor)(x => info("connected to db: " + x))
+        val connection = new SimpleDbConnection(di, actor)(x => logger.info("connected to db: " + x))
         lifecyleSink(actor)
         new SqlMeasurementStore(connection)
       case _ => throw new Exception("Unknown measurementStore Implementation: " + config)

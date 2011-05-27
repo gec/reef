@@ -22,46 +22,57 @@ package org.totalgrid.reef.api.request.impl
 
 import scala.collection.JavaConversions._
 
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.request.AgentService
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
-  override def getAgent(name: String) = ops {
+  override def getAgent(name: String) = ops("Couldn't get agent with name: " + name) {
     _.get(Agent.newBuilder.setName(name).build).await().expectOne
   }
 
-  override def getAgents() = ops {
-    _.get(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany()
+  override def getAgents() = ops("Couldn't get list of all agents") {
+    _.get(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany
   }
 
-  override def getPermissionSets() = ops {
-    _.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany()
+  override def getPermissionSets() = ops("Couldn't get list of all permission sets") {
+    _.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).await().expectMany
   }
 
-  override def getPermissionSet(name: String) = ops {
+  override def getPermissionSet(name: String) = ops("Couldn't get permission set with name: " + name) {
     _.get(PermissionSet.newBuilder.setName(name).build).await().expectOne
   }
 
-  override def createPermissionSet(name: String, permissions: java.util.List[Permission]) = ops {
-    _.put(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build).await().expectOne
+  override def createPermissionSet(name: String, permissions: java.util.List[Permission]) = {
+    ops("Couldn't create permission set with name: " + name + " and " + permissions.size + " permissions") {
+      _.put(PermissionSet.newBuilder.setName(name).addAllPermissions(permissions).build).await().expectOne
+    }
   }
 
-  override def deletePermissionSet(permissionSet: PermissionSet) = ops {
-    _.delete(permissionSet).await().expectOne
+  override def deletePermissionSet(permissionSet: PermissionSet) = {
+    ops("Couldn't delete permission set: " + permissionSet.name) {
+      _.delete(permissionSet).await().expectOne
+    }
   }
 
-  override def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = ops { session =>
-    val agent = Agent.newBuilder.setName(name).setPassword(password)
-    permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
-    session.put(agent.build).await().expectOne
+  override def createNewAgent(name: String, password: String, permissionSets: java.util.List[String]) = {
+    ops("Couldn't create agent with name: " + name + " permission set names: " + permissionSets) { session =>
+      val agent = Agent.newBuilder.setName(name).setPassword(password)
+      permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
+      session.put(agent.build).await().expectOne
+    }
   }
 
-  override def deleteAgent(agent: Agent) = ops {
-    _.delete(agent).await().expectOne
+  override def deleteAgent(agent: Agent) = {
+    ops("Couldn't delete agent with name: " + agent.name + " uuid: " + agent.uuid) {
+      _.delete(agent).await().expectOne
+    }
   }
 
-  override def setAgentPassword(agent: Agent, newPassword: String) = ops {
-    _.put(agent.toBuilder.setPassword(newPassword).build).await().expectOne
+  override def setAgentPassword(agent: Agent, newPassword: String) = {
+    ops("Couldn't change password for agent name: " + agent.name + " uuid: " + agent.uuid) {
+      _.put(agent.toBuilder.setPassword(newPassword).build).await().expectOne
+    }
   }
 }

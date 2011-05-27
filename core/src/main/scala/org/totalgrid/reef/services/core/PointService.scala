@@ -227,7 +227,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
 
     if (currentlyAbnormal != point.abnormal) {
       trans.transaction { model =>
-        debug { "updated point: " + m.getName + " to abnormal= " + currentlyAbnormal }
+        logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
         val updated = point.copy(abnormal = currentlyAbnormal)
         updated.abnormalUpdated = true
         model.update(updated, point)

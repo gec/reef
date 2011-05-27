@@ -58,7 +58,7 @@ class ProtoClient(
             Some(Response(x.getStatus, list, error))
           } catch {
             case ex: Exception =>
-              warn("Error deserializing proto: ", ex)
+              logger.warn("Error deserializing proto: ", ex)
               None
           }
         case None => None

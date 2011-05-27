@@ -51,7 +51,7 @@ object Authorization extends Logging {
           case SingleSuccess(status, auth) =>
             callback(auth)
           case rsp: Response[AuthToken] =>
-            error("Error getting auth token: " + rsp)
+            logger.error("Error getting auth token: " + rsp)
             retry
         }
       }
@@ -61,7 +61,7 @@ object Authorization extends Logging {
       initiate
     } catch {
       case ex: ReefServiceException =>
-        error("Exception while getting auth token: " + ex)
+        logger.error("Exception while getting auth token: " + ex)
         retry
     }
 

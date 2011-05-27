@@ -150,6 +150,24 @@ def processLines(opt_file, deserializers, lines)
   end
 end
 
+require 'fileutils'
+def generatePackageInfo(fname, file_text)
+  proto_name = File.basename(fname, ".proto")
+
+  overview = "/**\nProto definition file for #{proto_name}.\n"
+  overview += "<pre>"
+  overview += file_text.gsub("*/", "*-/")
+  overview += "</pre>\n*/\n"
+  overview += "package org.totalgrid.reef.api.request.protodoc.#{proto_name.downcase};"
+
+  dir_name = "./api-request/src/main/java/org/totalgrid/reef/api/request/protodoc/#{proto_name.downcase}"
+  FileUtils.mkdir_p(dir_name)
+
+  f = File.open(File.join(File.dirname(__FILE__),"#{dir_name}/package-info.java"), 'wb')
+  f.puts(overview)
+  f.close
+end
+
 f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
 
 types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth Tags]
@@ -207,7 +225,9 @@ end
 all_names = all_names.sort{|a,b| fix_dir(a) <=> fix_dir(b)}
 #puts all_names
 all_names.each do |fname|
-  processLines(f, deseralizers, File.open(fname).read.lines)
+  file_text = File.open(fname).read
+  processLines(f, deseralizers, file_text.lines)
+  generatePackageInfo(fname, file_text)
 end
 
 f.puts "}"

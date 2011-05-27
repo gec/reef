@@ -101,7 +101,7 @@ public interface CommandService {
      *
      * @param cmds  List of commands. A "command" is a specific command on a specific device instance.
      * @return an object describing the lock.
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess createCommandExecutionLock( List<Command> cmds ) throws ReefServiceException;
 
@@ -120,7 +120,7 @@ public interface CommandService {
      * @param cmds  List of commands. A "command" is a specific command on a specific device instance.
      * @param expirationTimeMilli milliseconds to lock the supplied commands
      * @return an object describing the lock.
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess createCommandExecutionLock( List<Command> cmds, long expirationTimeMilli ) throws ReefServiceException;
 
@@ -129,9 +129,19 @@ public interface CommandService {
      *
      * @param command  A "command" is a specific command on a specific device instance.
      * @return an object describing the lock.
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess createCommandExecutionLock(Command command) throws ReefServiceException;
+
+    /**
+     * Select (i.e lock) a command.
+     *
+     * @param command  A "command" is a specific command on a specific device instance.
+     * @param expirationTimeMilli milliseconds to lock the supplied commands
+     * @return an object describing the lock.
+     * @throws ReefServiceException if an error occurs
+     */
+    CommandAccess createCommandExecutionLock(Command command, long expirationTimeMilli ) throws ReefServiceException;
 
     /**
      * Deselect a command or set of commands. When we have completed the execution of a command
@@ -140,7 +150,7 @@ public interface CommandService {
      *
      * @param ca the lock to be deleted
      * @return the deleted lock
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess deleteCommandLock( CommandAccess ca ) throws ReefServiceException;
 
@@ -149,7 +159,7 @@ public interface CommandService {
      * we delete the system-wide lock we had. This releases the resource so other agents can
      * access those commands.
      * @param commandUid
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess deleteCommandLock(String commandUid) throws ReefServiceException;
 
@@ -159,7 +169,7 @@ public interface CommandService {
      * have locks (since we don't have permission to delete other peoples locks).
      *
      * @return the deleted locks
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     List<CommandAccess> clearCommandLocks() throws ReefServiceException;
 
@@ -174,7 +184,7 @@ public interface CommandService {
      *
      * @param cmd  Name of the command
      * @return the status of the execution, SUCCESS is only non-failure (throw exception?)
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandStatus executeCommandAsControl( Command cmd ) throws ReefServiceException;
 
@@ -189,7 +199,7 @@ public interface CommandService {
      * @param cmd    The name of the command
      * @param value  Value of the setpoint
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandStatus executeCommandAsSetpoint( Command cmd, double value ) throws ReefServiceException;
 
@@ -203,7 +213,7 @@ public interface CommandService {
      * @param cmd    the name of the command
      * @param value Value of the setpoint
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandStatus executeCommandAsSetpoint( Command cmd, int value ) throws ReefServiceException;
 
@@ -218,20 +228,20 @@ public interface CommandService {
      *
      * @param cmds list of command names
      * @return an object describing the lock
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess createCommandDenialLock( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * Get a list of all command locks in system
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     List<CommandAccess> getCommandLocks() throws ReefServiceException;
 
     /**
      * Get a command lock by UUID
      * @param uid the uid of the command to lock
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess getCommandLock( String uid ) throws ReefServiceException;
 
@@ -240,7 +250,7 @@ public interface CommandService {
      *
      * @param cmd the command to find the lock for
      * @return the command lock or null if no matching lock found
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     CommandAccess getCommandLockOnCommand( Command cmd ) throws ReefServiceException;
 
@@ -248,19 +258,20 @@ public interface CommandService {
      * Gets a list of all command locks that are active for any of the commands. This is useful
      * to determine who is holding locks on the command you are trying to use.
      * @param cmds the commands to find the lock for
+     * @throws ReefServiceException if an error occurs
      */
     List<CommandAccess> getCommandLocksOnCommands( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * Get a recent history of issued commands. Information returned is who issued them, what
      * the final status was and when they were issued.
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     List<UserCommandRequest> getCommandHistory() throws ReefServiceException;
 
     /**
      * Get a list of available commands in the system
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     List<Command> getCommands() throws ReefServiceException;
 
@@ -269,7 +280,7 @@ public interface CommandService {
      *
      * @param name  Command name (example: "substation1.breaker2.trip").
      * @return command associated with the supplied name
-     * @throws ReefServiceException
+     * @throws ReefServiceException if an error occurs
      */
     Command getCommandByName( String name ) throws ReefServiceException;
 }

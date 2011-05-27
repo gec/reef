@@ -99,10 +99,10 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
             c.setDefaultHeaders(env)
             putAppConfig(c, env, buildConfig(capabilites, instanceName))
           case Success(_, list) =>
-            error("Expected 1 AuthToken, but received " + rsp.list)
+            logger.error("Expected 1 AuthToken, but received " + rsp.list)
             reenroll()
           case x: Failure =>
-            error("Error getting auth token. " + x)
+            logger.error("Error getting auth token. " + x)
             reenroll()
         }
       }
@@ -118,7 +118,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
         container = Some(setupFun(components))
         container.get.start
       case Failure(status, err) =>
-        error("Error registering application: " + err)
+        logger.error("Error registering application: " + err)
         reenroll()
     }
   }

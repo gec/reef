@@ -70,7 +70,7 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
     val currentlyNIS = map.contains(name)
     val replaceMeas = over.hasMeas thenGet over.getMeas
 
-    info("Adding measurement override on: " + name)
+    logger.info("Adding measurement override on: " + name)
 
     (currentlyNIS, replaceMeas) match {
 
@@ -89,7 +89,7 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
       }
 
       // point already NIS, no replace specified
-      case (true, None) => info("NIS to point already NIS, ignoring")
+      case (true, None) => logger.info("NIS to point already NIS, ignoring")
 
       // point already NIS, replace specified, treat as simple replace
       case (true, Some(repl)) => {
@@ -104,7 +104,7 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
   def remove(over: MeasOverride) {
     val name = over.getPoint.getName
 
-    info("Removing measurement override on: " + name)
+    logger.info("Removing measurement override on: " + name)
 
     map -= name
     updateMetrics
