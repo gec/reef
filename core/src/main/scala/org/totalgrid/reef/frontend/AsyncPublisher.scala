@@ -49,7 +49,7 @@ class AsyncQueuePublisher[A](pool: ISessionPool, verb: Envelope.Verb, destinatio
       }
       catch {
         case ex: ReefServiceException =>
-          error(ex)
+          logger.error(ex)
           stopSending()
       }
   }
@@ -72,7 +72,7 @@ class AsyncQueuePublisher[A](pool: ISessionPool, verb: Envelope.Verb, destinatio
           queue.notifyAll()
         }
       case x : Failure =>
-        error(msg)
+        logger.error(msg)
         if(numRetries > 0) send(value, numRetries)
         else
     }

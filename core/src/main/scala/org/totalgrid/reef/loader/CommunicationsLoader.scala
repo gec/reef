@@ -72,7 +72,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
    */
   def load(model: CommunicationsModel, path: File, equipmentPointUnits: HashMap[String, String], benchmark: Boolean) = {
 
-    info("Start")
+    logger.info("Start")
     // Collect all the profiles in name->profile maps.
     val profiles = model.getProfiles
     if (profiles != null) {
@@ -81,15 +81,15 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       profiles.getEndpointProfile.toList.foreach(endpointProfile => endpointProfiles += (endpointProfile.getName -> endpointProfile))
       profiles.getEquipmentProfile.toList.foreach(equipmentProfile => equipmentProfiles += (equipmentProfile.getName -> equipmentProfile))
     }
-    info("Loading Communications: found ControlProfiles: " + controlProfiles.keySet.mkString(", "))
-    info("Loading Communications: found PointProfiles: " + pointProfiles.keySet.mkString(", "))
-    info("Loading Communications: found EndpointProfiles: " + endpointProfiles.keySet.mkString(", "))
-    info("Loading Communications: found EquipmentProfiles: " + equipmentProfiles.keySet.mkString(", "))
+    logger.info("Loading Communications: found ControlProfiles: " + controlProfiles.keySet.mkString(", "))
+    logger.info("Loading Communications: found PointProfiles: " + pointProfiles.keySet.mkString(", "))
+    logger.info("Loading Communications: found EndpointProfiles: " + endpointProfiles.keySet.mkString(", "))
+    logger.info("Loading Communications: found EquipmentProfiles: " + equipmentProfiles.keySet.mkString(", "))
 
     validateProfiles
 
     model.getInterface.toList.foreach(interface => interfaces += (interface.getName -> interface))
-    info("Loading Communications: found Interfaces: " + interfaces.keySet.mkString(", "))
+    logger.info("Loading Communications: found Interfaces: " + interfaces.keySet.mkString(", "))
 
     // Load endpoints
     model.getEndpoint.toList.foreach(e => {
@@ -99,7 +99,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       }
     })
 
-    info("End")
+    logger.info("End")
   }
 
   /**
@@ -126,12 +126,12 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     val endpointName = endpoint.getName
     val childPrefix = endpointName + "."
-    trace("loadEndpoint: " + endpointName)
+    logger.trace("loadEndpoint: " + endpointName)
 
     // IMPORTANT:  profiles is a list of profiles plus this endpoint (as the last "profile" in the list)
     //
     val profiles: List[EndpointType] = endpoint.getEndpointProfile.toList.map(p => endpointProfiles(p.getName)) ::: List[EndpointType](endpoint)
-    info("load endpoint '" + endpointName + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this endpoint
+    logger.info("load endpoint '" + endpointName + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this endpoint
 
     //var (protocol, configFiles) = processProtocol(profiles, path: File, benchmark)
 
@@ -154,11 +154,11 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     val analogs = HashMap[String, PointType]()
     val counters = HashMap[String, PointType]()
     profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, setpoints, statuses, analogs, counters)) // TODO: should the endpoint name be used as the starting prefixed ?
-    trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
-    trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
-    trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
-    trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
-    trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
+    logger.trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
+    logger.trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
+    logger.trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
+    logger.trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
+    logger.trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
 
     for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex) // TODO fill in endpoint name
     for ((name, s) <- setpoints) loadCache.addControl("", name, s.getIndex)
@@ -181,7 +181,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     for ((name, p) <- statuses) addUniquePoint(points, name, p, errorMsg + "status")
     for ((name, p) <- analogs) addUniquePoint(points, name, p, errorMsg + "analog")
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
-    trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
+    logger.trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
     processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
 
@@ -394,13 +394,13 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType]): Model.ConfigFile.Builder = {
 
-    debug(endpointName + " CONTROLS:")
+    logger.debug(endpointName + " CONTROLS:")
     val controlProtos = for ((key, value) <- controls) yield controlToCommandMap(endpointName, key, value)
 
-    debug(endpointName + " SETPOINTS:")
+    logger.debug(endpointName + " SETPOINTS:")
     val setpointsProtos = for ((key, value) <- setpoints) yield setpointToCommandMap(endpointName, key, value)
 
-    debug(endpointName + " POINTS:")
+    logger.debug(endpointName + " POINTS:")
     val pointProtos = for ((key, value) <- points) yield toMeasMap(endpointName, key, value)
 
     val indexMap = toIndexMapping(controlProtos.toList ::: setpointsProtos.toList, pointProtos).build
@@ -483,7 +483,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     val name = namePrefix + equipment.getName
     val childPrefix = name + "."
-    trace("findControlAndPoints: " + name)
+    logger.trace("findControlAndPoints: " + name)
 
     // IMPORTANT:  profiles is a list of profiles plus this equipment (as the last "profile" in the list)
     //
@@ -560,7 +560,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       } catch {
         case f: Exception =>
           throw new LoadingException("Error loading config file: " + path + " Message: " + f.getMessage)
-          error(f)
+          logger.error(f.getMessage, f)
       }
     }
 
@@ -592,7 +592,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def toMeasMap(endpointName: String, name: String, point: PointType): Mapping.MeasMap.Builder = {
     import CommunicationsLoader._
 
-    debug("    POINT " + point.getIndex + " -> " + name)
+    logger.debug("    POINT " + point.getIndex + " -> " + name)
     val proto = Mapping.MeasMap.newBuilder
       .setPointName(name)
       .setUnit(point.getUnit)
@@ -629,7 +629,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
         }
     }
 
-    debug("    COMMAND " + index + " -> " + name)
+    logger.debug("    COMMAND " + index + " -> " + name)
 
     Mapping.CommandMap.newBuilder
       .setCommandName(name)
@@ -654,7 +654,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
           case _ => throw new LoadingException("Control '" + name + "' and its associated controlProfile element(s) do not specify an index.")
         }
     }
-    debug("    COMMAND " + index + " -> " + name)
+    logger.debug("    COMMAND " + index + " -> " + name)
     // Find the first optionsDNP3 in the reverse profile list.
     // TODO: We get all attributes from a single optionsDnp3. Could "find" each attribute in the first optionsDnp3 that has that attribute.
     val options: OptionsDnp3 = reverseProfiles.find(_.isSetOptionsDnp3) match {
@@ -714,7 +714,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def toMeasSim(name: String, point: PointType): SimMapping.MeasSim.Builder = {
     import ProtoUtils._
 
-    debug("    SIM POINT  -> " + name)
+    logger.debug("    SIM POINT  -> " + name)
     val proto = SimMapping.MeasSim.newBuilder
       .setName(name)
       .setUnit(point.getUnit)
@@ -768,7 +768,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       .setName(name + "-sim.pi")
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(simMapping.toByteString)
-    info(simMapping.toString)
+    logger.info(simMapping.toString)
 
     proto
   }

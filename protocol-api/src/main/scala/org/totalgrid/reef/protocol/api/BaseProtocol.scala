@@ -43,7 +43,7 @@ trait BaseProtocol extends IProtocol with Logging {
         channels = channels + (p.getName -> Channel(p, listener))
         _addChannel(p, listener)
       case Some(x) =>
-        info("Ignoring duplicate channel " + p)
+        logger.info("Ignoring duplicate channel " + p)
     }
   }
 

@@ -105,7 +105,7 @@ trait SummaryPointHolder extends SummaryPoints with Logging {
       val currentVal = currentValues.get(name) match {
         case Some(old) =>
           val newSet = ValueHolder(old.increments, value, true)
-          warn { "overwriting currently set summary value: " + old + " with: " + newSet }
+          logger.warn("overwriting currently set summary value: " + old + " with: " + newSet)
           currentValues = (currentValues - name) + (name -> newSet)
           newSet
         case None =>
@@ -186,7 +186,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
               ce.frontEndAssignment.value.serviceRoutingKey match {
                 case Some(routingKey) =>
 
-                  warn { "SummaryPoint: " + name + " publishing to: " + routingKey }
+                  logger.warn("SummaryPoint: " + name + " publishing to: " + routingKey)
 
                   // all publishing to the same meas proc uses the same client which can then throttle failures
                   clients.get(routingKey) match {
@@ -198,11 +198,11 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
                       ret = Some(func)
                   }
 
-                case None => warn { "SummaryPoint: " + name + " has no meas proc." }
+                case None => logger.warn("SummaryPoint: " + name + " has no meas proc")
               }
-            case None => warn { "SummaryPoint: " + name + " has no endpoint" }
+            case None => logger.warn("SummaryPoint: " + name + " has no endpoint")
           }
-        case None => debug { "SummaryPoint: " + name + " not configured" }
+        case None => logger.debug("SummaryPoint: " + name + " not configured")
       }
     }
     ret
@@ -219,7 +219,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
   private def publishMeasurement(client: ClientSession, lastAttempt: LastAttempt, dest: Destination)(mb: Measurements.MeasurementBatch) {
     val now = System.currentTimeMillis
     if (!lastAttempt.success && now < lastAttempt.nextTime) {
-      info { "failed last time, skipping publishing summary until: " + lastAttempt.nextTime }
+      logger.info("failed last time, skipping publishing summary until: " + lastAttempt.nextTime)
       return
     }
     try {
@@ -227,9 +227,9 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
       client.put(mb, destination = dest).await().expectMany()
       lastAttempt.success = true
     } catch {
-      case e: Exception =>
+      case ex: Exception =>
         lastAttempt.success = false
-        error { e }
+        logger.error("Exception while publishing measurement", ex)
     }
   }
 }

@@ -47,21 +47,21 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
 
   override def AcceptResponse(rsp: CommandResponse, seq: Int) = idMap.get(seq) match {
     case Some(ResponseInfo(id, handler)) =>
-      info("Got command response: " + rsp.toString + " seq: " + seq)
+      logger.info("Got command response: " + rsp.toString + " seq: " + seq)
       idMap -= seq //remove from the map
       handler.onUpdate(DNPTranslator.translate(rsp, id)) //send the response to the sender
-    case None => warn("Unknown command response with sequence " + seq)
+    case None => logger.warn("Unknown command response with sequence " + seq)
   }
 
   def issue(cr: Commands.CommandRequest, rspHandler: IListener[Commands.CommandResponse]): Unit = map.get(cr.getName) match {
     case Some(x) =>
-      info("Sending command request: " + x.toString)
+      logger.info("Sending command request: " + x.toString)
       if (x.getType == Mapping.CommandType.SETPOINT)
         cmd.AcceptCommand(DNPTranslator.translateSetpoint(cr), x.getIndex, nextSeq(cr.getCorrelationId, rspHandler), this)
       else
         cmd.AcceptCommand(DNPTranslator.translateBinaryOutput(x), x.getIndex, nextSeq(cr.getCorrelationId, rspHandler), this)
 
-    case None => warn("Unregisterd command request: " + cr.toString)
+    case None => logger.warn("Unregisterd command request: " + cr.toString)
   }
 
   private def nextSeq(id: String, handler: IListener[Commands.CommandResponse]): Int = {

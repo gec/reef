@@ -98,7 +98,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
       case RequestFailure(why) => println(why)
       case ex: Exception =>
         println("Error running command: " + ex)
-        error(ex.getStackTraceString)
+        logger.error(ex.getStackTraceString)
     }
     println("")
     null

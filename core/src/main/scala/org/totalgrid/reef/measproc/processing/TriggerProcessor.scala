@@ -48,9 +48,9 @@ class TriggerProcessor(protected val next: Measurement => Unit,
     val triggerList = map.get(m.getName)
     val result = triggerList match {
       case Some(list) =>
-        debug("Applying triggers: " + list.size + " to meas: " + m)
+        logger.debug("Applying triggers: " + list.size + " to meas: " + m)
         val res = Trigger.processAll(m, stateCache, list)
-        debug("Trigger result: " + res)
+        logger.debug("Trigger result: " + res)
         res
       case None =>
         m
@@ -59,7 +59,7 @@ class TriggerProcessor(protected val next: Measurement => Unit,
   }
 
   def add(set: TriggerSet) {
-    debug("TriggerSet received: " + set)
+    logger.debug("TriggerSet received: " + set)
     val pointName = set.getPoint.getName
     val trigList = set.getTriggersList.toList.map(proto => factory.buildTrigger(proto, pointName))
     map += (pointName -> trigList)
@@ -67,7 +67,7 @@ class TriggerProcessor(protected val next: Measurement => Unit,
   }
 
   def remove(set: TriggerSet) {
-    debug("TriggerSet removed: " + set)
+    logger.debug("TriggerSet removed: " + set)
     map -= set.getPoint.getName
     updateMetrics
   }

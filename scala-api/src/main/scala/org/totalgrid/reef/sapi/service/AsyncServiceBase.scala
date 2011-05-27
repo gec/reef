@@ -50,10 +50,10 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
       handleRequest(req, env, callback)
     } catch {
       case px: ReefServiceException =>
-        reefLogger.error(px.getMessage, px)
+        logger.error(px.getMessage, px)
         callback.onResponse(getFailure(req.getId, px.getStatus, px.getMessage))
       case x: Exception =>
-        reefLogger.error(x.getMessage, x)
+        logger.error(x.getMessage, x)
         val msg = x.getMessage + "\n" + x.getStackTraceString
         callback.onResponse(getFailure(req.getId, Envelope.Status.BAD_REQUEST, msg))
     }

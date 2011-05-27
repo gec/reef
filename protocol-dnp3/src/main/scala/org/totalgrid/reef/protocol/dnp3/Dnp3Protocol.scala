@@ -63,13 +63,13 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     } else {
       throw new Exception("Invalid channel info, no type set")
     }
-    info { "Added channel with name: " + p.getName }
+    logger.info("Added channel with name: " + p.getName)
   }
 
   override def _removeChannel(channel: String) = {
-    debug { "removing channel with name: " + channel }
+    logger.debug("removing channel with name: " + channel)
     dnp3.RemovePort(channel)
-    info { "Removed channel with name: " + channel }
+    logger.info("Removed channel with name: " + channel)
   }
 
   override def _addEndpoint(endpoint: String,
@@ -78,7 +78,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     publisher: IListener[MeasurementBatch],
     listener: IListener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
 
-    info { "Adding device with uid: " + endpoint + " onto channel " + channelName }
+    logger.info("Adding device with uid: " + endpoint + " onto channel " + channelName)
 
     val master = getMasterConfig(IProtocol.find(files, "text/xml")) //there is should be only one XML file
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
@@ -91,7 +91,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
 
   override def _removeEndpoint(endpoint: String) = {
 
-    debug { "Not removing stack " + endpoint + " as per workaround" }
+    logger.debug("Not removing stack " + endpoint + " as per workaround")
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll
     times out.
      */

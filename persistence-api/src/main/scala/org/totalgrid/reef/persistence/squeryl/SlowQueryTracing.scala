@@ -47,7 +47,7 @@ trait SlowQueryTracing extends DatabaseAdapter with Logging {
 
   def monitorSlowQueries(maxTimeMilli: Long, sw: StatementWriter)(actualTimeMilli: Long): Unit = {
     if (actualTimeMilli >= maxTimeMilli) {
-      reefLogger.info("SlowQuery: actual: {}ms, max allowed: {}ms, query: {}", Array(actualTimeMilli, maxTimeMilli, sw.toString))
+      logger.info("SlowQuery, actual: " + actualTimeMilli + "ms max allowed: " + maxTimeMilli + "ms, query: " + sw.toString)
     }
   }
 }

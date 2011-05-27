@@ -39,11 +39,11 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
     batch = MeasBatch.newBuilder.setWallTime(System.currentTimeMillis)
 
   override def _End() = if (batch.getMeasCount > 0) {
-    debug("Publishing batch size: " + batch.getMeasCount)
+    logger.debug("Publishing batch size: " + batch.getMeasCount)
     try {
       accept(batch.build)
     } catch {
-      case e: Exception => error("Batch publishing threw exception: " + e.toString)
+      case e: Exception => logger.error("Batch publishing threw exception: " + e.toString)
     }
   }
 
@@ -66,7 +66,7 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
   private def add(index: Long, t: Mapping.DataType)(f: (String, String) => Meas) = {
     map.get((index, t.getNumber)) match {
       case Some(pointInfo) => batch.addMeas(f(pointInfo.getPointName, pointInfo.getUnit))
-      case None => debug { "Unknown type/index: " + t.toString + "/" + index }
+      case None => logger.debug("Unknown type/index: " + t.toString + "/" + index)
     }
   }
 }

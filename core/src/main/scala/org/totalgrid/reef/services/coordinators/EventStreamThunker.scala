@@ -47,7 +47,7 @@ class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], raw
       eventModel.transaction { _.createFromProto(msg) }
     } catch {
       case e: ReefServiceException =>
-        warn { "Service Exception thunking event: " + e.getMessage }
+        logger.warn("Service Exception thunking event: " + e.getMessage)
     }
   }
 }

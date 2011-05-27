@@ -76,19 +76,19 @@ trait KeyedMap[A] extends Logging {
       case None =>
         addEntry(c)
         active += getKey(c) -> c
-        info { "added key " + getKey(c) }
+        logger.info("added key " + getKey(c))
     }
 
   }
 
   def remove(c: A): Unit = {
     active.get(getKey(c)) match {
-      case None => warn { "Remove on unregistered key: " + getKey(c) }
+      case None => logger.warn("Remove on unregistered key: " + getKey(c))
       case Some(x) =>
-        info { "removing ... " + getKey(c) }
+        logger.info("removing ... " + getKey(c))
         removeEntry(x)
         active -= getKey(c)
-        info { "removed ... " + getKey(c) }
+        logger.info("removed ... " + getKey(c))
     }
   }
 

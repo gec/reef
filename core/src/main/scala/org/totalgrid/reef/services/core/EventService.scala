@@ -29,7 +29,6 @@ import org.totalgrid.reef.proto.Utils.AttributeList
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
-import org.totalgrid.reef.japi.BadRequestException
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
@@ -85,7 +84,6 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
    * into a real Event, Alarm, or Log.
    */
   override def createFromProto(req: Event): EventStore = {
-    import org.totalgrid.reef.event.EventType
 
     if (!req.hasEventType) { throw new BadRequestException("Unknown EventType: '" + req.getEventType + "'", Envelope.Status.BAD_REQUEST) }
 
@@ -130,7 +128,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
     def eventToList(req: Event, entity: Option[Entity]) =
       event.severity :: event.eventType :: entityToString(entity) :: event.userId :: event.rendered :: Nil
 
-    info(eventToList(req, entity).mkString(" "))
+    logger.info(eventToList(req, entity).mkString(" "))
 
   }
 

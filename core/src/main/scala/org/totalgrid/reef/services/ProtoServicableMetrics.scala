@@ -61,7 +61,7 @@ class ServiceMetrics[A](service: AsyncService[A], hooks: ServiceMetricHooks, slo
       metrics.countHook(1)
       metrics.timerHook(time.toInt)
       if (time > slowQueryThreshold)
-        info("Slow Request: " + time + "ms to handle request: " + req + " response " + rsp)
+        logger.info("Slow Request: " + time + "ms to handle request: " + req + " response " + rsp)
       if (!StatusCodes.isSuccess(rsp.getStatus)) metrics.errorHook(1)
     }
 

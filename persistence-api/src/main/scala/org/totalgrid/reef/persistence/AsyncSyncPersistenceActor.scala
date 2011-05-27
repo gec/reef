@@ -116,7 +116,7 @@ abstract class AsyncBufferReactor[ConnType](val reactor: Reactable, obs: Connect
       }
     } catch {
       case t: Throwable =>
-        error(t)
+        logger.error(t.getMessage, t)
         setConnection(None)
         connect()
         false
@@ -131,7 +131,7 @@ abstract class AsyncBufferReactor[ConnType](val reactor: Reactable, obs: Connect
       }
     } catch {
       case t: Throwable =>
-        error(t)
+        logger.error(t.getMessage, t)
         setConnection(None)
         connect()
         None

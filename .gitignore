@@ -7,5 +7,5 @@ out
 reef-karaf-*
 totalgrid-reef-*
 Thumbs.db
-*/test.log
-test.log
+*.log
+**/*.log

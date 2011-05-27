@@ -84,7 +84,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
       postUpdate(sql, existing)
       (sql, true)
     } else {
-      info { entry + " not modified." }
+      logger.info(entry + " not modified")
       (existing, false)
     }
   }

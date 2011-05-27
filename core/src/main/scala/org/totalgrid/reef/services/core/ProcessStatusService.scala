@@ -78,10 +78,10 @@ class ProcessStatusServiceModel(
     val existing = table.where(h => h.applicationId === app.id)
 
     val ret = if (existing.size == 1) {
-      info("App " + hbSql.instanceName.value + ": is being marked back online at " + now + " id: " + processId)
+      logger.info("App " + hbSql.instanceName.value + ": is being marked back online at " + now + " id: " + processId)
       update(hbSql, existing.head)
     } else {
-      info("App " + hbSql.instanceName.value + ": is added and marked online at " + now + " id: " + processId)
+      logger.info("App " + hbSql.instanceName.value + ": is added and marked online at " + now + " id: " + processId)
       create(hbSql)
     }
 
@@ -92,7 +92,7 @@ class ProcessStatusServiceModel(
 
   def takeApplicationOffline(hbeat: HeartbeatStatus, now: Long) {
 
-    debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
+    logger.debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
     val ret = update(new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)
 
     notifyModels(hbeat.application.value, false, hbeat.application.value.capabilities.value.toList.map { _.capability })

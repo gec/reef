@@ -65,7 +65,7 @@ class FepActivator extends BundleActivator with Logging {
 
   private def addProtocol(p: IProtocol) = map.synchronized {
     map.get(p) match {
-      case Some(x) => info("Protocol already added: " + p.name)
+      case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
         val enroller = new ApplicationEnroller(amqp.get, Some("FEP-" + p.name), List("FEP"), create(List(p), _)) with ReactActor
         map = map + (p -> enroller)
@@ -78,7 +78,7 @@ class FepActivator extends BundleActivator with Logging {
       case Some(lifecycle) =>
         map = map - p
         manager.remove(lifecycle)
-      case None => warn("Protocol not found: " + p.name)
+      case None => logger.warn("Protocol not found: " + p.name)
     }
   }
 
