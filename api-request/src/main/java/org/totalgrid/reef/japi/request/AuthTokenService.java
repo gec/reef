@@ -1,22 +1,20 @@
 /**
  * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  Green Energy Corp licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
+ * 
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.totalgrid.reef.japi.request;
 
@@ -37,7 +35,8 @@ import org.totalgrid.reef.japi.ReefServiceException;
  * <p/>
  * add TODO setAuthToken function on Session
  */
-public interface AuthTokenService {
+public interface AuthTokenService
+{
 
     /**
      * Create an authorization token for the specified Agent with all available
@@ -48,11 +47,11 @@ public interface AuthTokenService {
      * @param passwordUnencrypted
      * @return authToken string
      */
-    String createNewAuthorizationToken(String agentName, String passwordUnencrypted) throws ReefServiceException;
-    
+    String createNewAuthorizationToken( String agentName, String passwordUnencrypted ) throws ReefServiceException;
+
     /**
      * Revoke the specified authorization token. This means all future requests using this authorization token will fail.
      * @param authorizationToken
      */
-    void deleteAuthorizationToken(String authorizationToken) throws ReefServiceException;
+    void deleteAuthorizationToken( String authorizationToken ) throws ReefServiceException;
 }

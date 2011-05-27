@@ -1,22 +1,20 @@
 /**
  * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  Green Energy Corp licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
+ * 
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.totalgrid.reef.japi.request;
 
@@ -85,7 +83,8 @@ import java.util.List;
  * <p>
  *   TODO command names to UUIDs</p>
  */
-public interface CommandService {
+public interface CommandService
+{
 
     /**
      * Select (i.e. lock) a list of commands. The system default lock expiration time is used with this method.
@@ -131,7 +130,7 @@ public interface CommandService {
      * @return an object describing the lock.
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandExecutionLock(Command command) throws ReefServiceException;
+    CommandAccess createCommandExecutionLock( Command command ) throws ReefServiceException;
 
     /**
      * Select (i.e lock) a command.
@@ -141,7 +140,7 @@ public interface CommandService {
      * @return an object describing the lock.
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandExecutionLock(Command command, long expirationTimeMilli ) throws ReefServiceException;
+    CommandAccess createCommandExecutionLock( Command command, long expirationTimeMilli ) throws ReefServiceException;
 
     /**
      * Deselect a command or set of commands. When we have completed the execution of a command
@@ -161,7 +160,7 @@ public interface CommandService {
      * @param commandUid
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess deleteCommandLock(String commandUid) throws ReefServiceException;
+    CommandAccess deleteCommandLock( String commandUid ) throws ReefServiceException;
 
     /**
      * Clear all of the command locks in the system. This is a dangerous operation that should only
