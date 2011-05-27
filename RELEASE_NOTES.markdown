@@ -16,20 +16,46 @@ Primarily Service and API refinements and refactorings.
 
 ### API Updates:
 
+* Java facing APIs are 100% java
+* XxxxService interfaces are now implemented using a SessionExecutionPool wrapper that
+  uses a pool of sessions and handles the connection going up and down.
+* Subscriptions don't automatically start flowing messages, a start() function was added
+* Replaced getOne, getMany, getAsyncOne with unified functions that return Promises that
+  have the one() or many() expectation functions.
+* Javadoc and sources jars are now published into maven repo
+
 ### Service Updates:
 
 * All protos for "long lived" and "static" resources now have ReefUUID field
 * "long lived" and "static" resources use UUID instead of integers
+* Distribtion renamed to totalgrid-reef-0.3.0.
+* Loader now attaches Analog, Status, Counter types to Points on Load
+* Authorization is now CRUD rather than verb based (can distinguish between a create and update)
 
 ### Shell Commands:
 
+* Added configfile:list command to view config files
+
 ### Breaking Changes:
+
+* APIs renamed and moved packages, "I" prefix removed, all java apis moved to 
+  org.totalgrid.reef.japi.*.
+* Most protos are no longer binary comptabile with 0.2.x versions.
 
 ### Reef Internals:
 
+* Updated karaf to version 2.2.1
+* Updated squeryl to 0.9.4-RC7-uuid for UUID support
+* Updated to qpid 0.10 java-client-api
+* Logback used in local tests
+* Logging output now has correct line numbers from scala code
+* Updated pax-logging to 1.6.3-LOCATION with line number patches until 1.6.3 is released
+* DNP3 logging has better error messages
+
+
 ### Bug Fixes:
 
-Version 0.2.3-SNAPSHOT
+Version 0.2.3
 ==============
 
 Primarily a stability and usability release, very limited new functionality.
@@ -158,7 +184,7 @@ Version 0.0.1
 RoadMap
 =============
 
-* Add UUID subproto to all resources
+* 
 
 #### Formatting
 
