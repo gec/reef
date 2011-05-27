@@ -22,7 +22,7 @@ package org.totalgrid.reef.protocol.benchmark
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
@@ -55,16 +55,16 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline
   override def name: String = "benchmark"
 
   private var map = immutable.Map.empty[String, Simulator]
-  private var reactor: Option[ReactActor] = None
+  private var reactor: Option[ReactActorExecutor] = None
 
   def getSimulators(names: List[String]): Map[String, ControllableSimulator] =
     if (names.isEmpty) map else map.filterKeys(k => names.contains(k))
 
   // get or create and start the shared reactor
-  private def getReactor: ReactActor = reactor match {
+  private def getReactor: ReactActorExecutor = reactor match {
     case Some(r) => r
     case None =>
-      val r = new ReactActor {}
+      val r = new ReactActorExecutor {}
       r.start
       reactor = Some(r)
       r

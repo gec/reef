@@ -28,14 +28,14 @@ import org.totalgrid.reef.proto.Model.Point
 
 import Processing._
 
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import scala.concurrent.MailBox
 
 import org.totalgrid.reef.japi.Envelope
 
 class ServiceHandlerMock(conn: Connection, retryMS: Long) {
 
-  val act = new ReactActor with ServiceHandler
+  val act = new ReactActorExecutor with ServiceHandler
 
   def start() = act.start
 

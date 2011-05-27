@@ -26,7 +26,7 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
-import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
+import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
@@ -38,7 +38,7 @@ object Services {
   def makeContext(auth: AuthService): ServiceContext = makeContext(BrokerConnectionInfo.loadInfo, DbInfo.loadInfo, MeasurementStoreFinder.getConfig, ServiceOptions.loadInfo, auth)
 
   def makeContext(bi: BrokerConnectionInfo, di: DbInfo, measInfo: ConnInfo, srvOpt: ServiceOptions, auth: AuthService): ServiceContext = {
-    val amqp = new AMQPProtoFactory with ReactActor {
+    val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(bi)
     }
 

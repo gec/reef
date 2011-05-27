@@ -29,7 +29,7 @@ import scala.collection.immutable
 
 import org.totalgrid.reef.sapi.service.AsyncService
 
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.sapi.{ RequestEnv, Destination }
 import org.totalgrid.reef.japi.Envelope
 
@@ -164,7 +164,7 @@ class MockConnection extends Connection {
   val servicemail = new MailBox
 
   case class EventSub(val klass: Class[_], val mock: MockEvent[_])
-  case class ServiceBinding(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Reactable])
+  case class ServiceBinding(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor])
 
   // map classes to protoserviceconsumers
   var mockclient: Option[MockClientSession] = None
@@ -201,7 +201,7 @@ class MockConnection extends Connection {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, Some(notify)))
   }
 
-  override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Reactable]): Unit = {
+  override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): Unit = {
     servicemail send ServiceBinding(service, destination, competing, reactor)
   }
 

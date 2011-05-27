@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.reactor.Lifecycle
+import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.sapi.auth.NullAuthService
 import org.totalgrid.reef.sapi.service.{ NoOpService, AsyncService }
 

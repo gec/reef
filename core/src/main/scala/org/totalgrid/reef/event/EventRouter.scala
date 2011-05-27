@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.event
 
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 
 import org.totalgrid.reef.util.Localizer
 
@@ -51,7 +51,7 @@ abstract class EventRouter(
   rawEventExchanges: List[String],
   conn: Connection,
   logger: EventLogPublisher)
-    extends Reactable with ServiceHandler with Localizer {
+    extends Executor with ServiceHandler with Localizer {
 
   private val publishEvent = amqp.publish(processedEventExchange, RoutingKeys.event, Descriptors.event.serialize)
   private val publishLog = amqp.publish(processedLogExchange, RoutingKeys.log, Descriptors.log.serialize)

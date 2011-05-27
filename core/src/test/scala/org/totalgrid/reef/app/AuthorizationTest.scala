@@ -24,7 +24,7 @@ package org.totalgrid.reef.app
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.messaging.mock.synchronous.MockConnection
-import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 
 import org.scalatest.{ BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.proto.Auth.AuthToken
@@ -38,12 +38,12 @@ class AuthorizationTest extends FunSuite with ShouldMatchers with BeforeAndAfter
 
   var env: Option[String] = None
   var conn = new MockConnection
-  var exe = new InstantReactor
+  var exe = new InstantExecutor
 
   override def beforeEach() = {
     env = None
     conn = new MockConnection
-    exe = new InstantReactor
+    exe = new InstantExecutor
     Authorization.login(conn.getSessionPool, exe, 200)(x => env = Some(x.getToken))
   }
 

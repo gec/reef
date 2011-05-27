@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
@@ -102,7 +102,7 @@ object AMQPMessageConsumers extends Logging {
   /**
    * push the receive to another thread using a reactor
    */
-  def dispatchToReactor[A](reactor: Reactable, binding: MessageConsumer): MessageConsumer = {
+  def dispatchToReactor[A](reactor: Executor, binding: MessageConsumer): MessageConsumer = {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         reactor.execute {

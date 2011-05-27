@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.persistence
 
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.util.{ Logging, Timer }
 
 import scala.actors.Actor._
@@ -45,7 +45,7 @@ import ConnectionReactor._
 /// Implements connection/reconnection behavior on a 
 trait ConnectionReactor[ConnType] extends Logging {
 
-  val reactor: Reactable
+  val reactor: Executor
 
   val connectOnStart: Boolean
 

@@ -23,7 +23,7 @@ package org.totalgrid.reef.app
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.Auth._
 
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.{ Success, Failure, SingleSuccess }
@@ -80,7 +80,7 @@ import ApplicationEnroller._
  * @param processType should be either FEP or Processing
  * @param setupFun the construction function for the class using the components, must be StartStoppable
  */
-abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[String], capabilites: List[String], setupFun: CoreApplicationComponents => Lifecycle) extends Reactable with Lifecycle with Logging {
+abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[String], capabilites: List[String], setupFun: CoreApplicationComponents => Lifecycle) extends Executor with Lifecycle with Logging {
 
   private var container: Option[Lifecycle] = None
 

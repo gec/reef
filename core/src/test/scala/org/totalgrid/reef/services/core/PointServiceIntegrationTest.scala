@@ -21,7 +21,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
@@ -61,7 +61,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
     val syncs = listenForMeasurements("meas")
 
     val abnormalThunker = new PointAbnormalsThunker(modelFac.points, new SummaryPointPublisher(amqp))
-    abnormalThunker.addAMQPConsumers(amqp, new InstantReactor {})
+    abnormalThunker.addAMQPConsumers(amqp, new InstantExecutor {})
 
     def addPoint(proto: PointProto) = {
       client.put(proto.toBuilder.setLogicalNode(parentEntity).build).await().expectOne

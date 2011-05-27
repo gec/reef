@@ -23,13 +23,13 @@ package org.totalgrid.reef.procstatus
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 import org.totalgrid.reef.proto.Descriptors
 
 abstract class ProcessHeartbeatActor(amqp: AMQPProtoFactory, configuration: HeartbeatConfig)
-    extends Reactable with Lifecycle {
+    extends Executor with Lifecycle {
 
   private def route(s: StatusSnapshot) = configuration.getRoutingKey
 

@@ -31,7 +31,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 
 import ProcessStatus._
 
@@ -59,7 +59,7 @@ class ProcessHeartbeatActorTest extends Suite with ShouldMatchers {
   def testComeUp() {
     AMQPFixture.mock(true) { amqp =>
       val box = subscribe(amqp)
-      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActor
+      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActorExecutor
       actor.start
       box.waitFor((s: StatusSnapshot) => { s.getOnline == true })
 
@@ -69,7 +69,7 @@ class ProcessHeartbeatActorTest extends Suite with ShouldMatchers {
   def testBeating() {
     AMQPFixture.mock(true) { amqp =>
       val box = subscribe(amqp)
-      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActor
+      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActorExecutor
 
       actor.start
       var lastTime = -1: Long
@@ -80,7 +80,7 @@ class ProcessHeartbeatActorTest extends Suite with ShouldMatchers {
   def testGoDown() {
     AMQPFixture.mock(true) { amqp =>
       val box = subscribe(amqp)
-      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActor
+      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActorExecutor
 
       actor.start
       box.waitFor((s: StatusSnapshot) => { s.getOnline == true })

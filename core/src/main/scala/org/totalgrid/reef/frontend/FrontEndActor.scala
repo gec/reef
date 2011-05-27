@@ -21,7 +21,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
@@ -45,7 +45,7 @@ object FrontEndActor {
 }
 
 abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
-    extends Reactable with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
+    extends Executor with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
 
   //helper objects that sets up all of the services/publishers from abstract registries
   val pool = conn.getSessionPool()

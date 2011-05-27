@@ -25,11 +25,11 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.event.EventType._
 import org.totalgrid.reef.frontend.KeyedMap
 
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle, LifecycleManager }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle, LifecycleManager }
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
 
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.app.{ ServiceHandler, CoreApplicationComponents, ServiceContext }
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
 import org.totalgrid.reef.persistence.{ InMemoryObjectCache }
@@ -37,7 +37,7 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheA
 
 abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNode)
     extends ServiceHandler with ServiceContext[ConnProto] with KeyedMap[ConnProto]
-    with Reactable with Lifecycle {
+    with Executor with Lifecycle {
 
   protected override def getKey(c: ConnProto) = c.getUid
 
@@ -75,7 +75,7 @@ class FullProcessor(components: CoreApplicationComponents, measStoreConfig: Conn
   val overCache = new InMemoryObjectCache[Measurement]
   val triggerStateCache = new InMemoryObjectCache[Boolean]
 
-  val connectionHandler = new ConnectionHandler(addStreamProcessor(_)) with ReactActor
+  val connectionHandler = new ConnectionHandler(addStreamProcessor(_)) with ReactActorExecutor
 
   override def doStart() {
     components.logger.event(System.SubsystemStarting)
@@ -92,7 +92,7 @@ class FullProcessor(components: CoreApplicationComponents, measStoreConfig: Conn
   }
 
   def addStreamProcessor(streamConfig: ConnProto): MeasurementStreamProcessingNode = {
-    val reactor = new ReactActor {}
+    val reactor = new ReactActorExecutor {}
     val streamHandler = new MeasurementStreamProcessingNode(components.amqp, components.registry, measCache, overCache, triggerStateCache, streamConfig, reactor)
     streamHandler.setHookSource(components.metricsPublisher.getStore("measproc-" + streamConfig.getLogicalNode.getName))
     streamHandler

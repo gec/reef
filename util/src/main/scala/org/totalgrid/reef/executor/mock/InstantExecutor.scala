@@ -18,9 +18,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor.mock
+package org.totalgrid.reef.executor.mock
 
-import org.totalgrid.reef.reactor._
+import org.totalgrid.reef.executor._
 import org.totalgrid.reef.util.Timer
 
 /**
@@ -29,7 +29,7 @@ import org.totalgrid.reef.util.Timer
  * class is not appropriate for testing class with with complex timing requirements
  */
 
-class InstantReactor extends Reactable with Lifecycle {
+class InstantExecutor extends Executor with Lifecycle {
 
   private var count = 0
 

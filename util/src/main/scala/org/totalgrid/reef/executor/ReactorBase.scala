@@ -18,17 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
-import scala.actors.{ Actor, AbstractActor, Exit }
+import scala.actors.{ Actor, Exit }
 
 import org.totalgrid.reef.util.Logging
 
-import Reactor._
+import ActorExecutor._
 
 trait ReactorBase extends Actor with Logging {
 
-  val reactable: Reactable
+  val executor: Executor
   def beforeExit()
 
   private var running = false
@@ -82,7 +82,7 @@ trait ReactorBase extends Actor with Logging {
         case Some(Stop) =>
         case None => logger.error("Actor deadlock detected on stop")
       }
-    } else throw new IllegalStateException("Reactable not running")
+    } else throw new IllegalStateException("Executor not running")
   }
 
   override def start() = {

@@ -18,15 +18,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
 import scala.actors.AbstractActor
 import scala.actors.Actor._
 import scala.actors.TIMEOUT
 import org.totalgrid.reef.util.Timer
 
-/// Companion class with case classes that correspond to Reactable's interface
-object Reactor {
+/// Companion class with case classes that correspond to Executor's interface
+object ActorExecutor {
 
   case class Execute(fun: () => Any)
 
@@ -44,13 +44,13 @@ object Reactor {
  *  lots of other threads.
  *
  */
-trait Reactor extends Reactable with Lifecycle {
+trait ActorExecutor extends Executor with Lifecycle {
 
   case object CANCEL
   case object NOW
   case object OPERATION_COMPLETE
 
-  import Reactor._
+  import ActorExecutor._
 
   /// start execution and run fun just afterwards
   override def dispatchStart() = {
@@ -61,18 +61,18 @@ trait Reactor extends Reactable with Lifecycle {
   /// stop execution and run fun
   override def dispatchStop() = {
     myactor.stop()
-    myactor = getReactableActor
+    myactor = getExecutorActor
   }
 
   /// Extending classes will implement the AbstractActor that receives these
   /// messages
-  var myactor: ReactorBase = getReactableActor
+  var myactor: ReactorBase = getExecutorActor
 
   def getActor: AbstractActor = myactor
 
-  def getReactableActor: ReactorBase
+  def getExecutorActor: ReactorBase
 
-  /* --- Implement Reactable --- */
+  /* --- Implement Executor --- */
 
   /// sends a unit of work to the actor
   def execute(fun: => Unit) = myactor ! Execute(() => fun)

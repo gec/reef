@@ -169,12 +169,12 @@ trait AlarmSummaryCalculations {
 object AlarmSummaryCalculations extends AlarmSummaryCalculations
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 
 class AlarmSummaryInitializer(modelFac: AlarmServiceModelFactory, summary: SummaryPoints) extends ProtoServiceCoordinator with AlarmSummaryCalculations {
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable) {
+  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     reactor.execute {
       modelFac.transaction { model =>
         initializeSummaries(summary)

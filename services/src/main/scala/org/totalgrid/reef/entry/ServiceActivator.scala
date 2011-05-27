@@ -26,7 +26,7 @@ import org.totalgrid.reef.sapi.service.AsyncService
 
 import org.totalgrid.reef.services.{ Services, ServiceOptions, SqlAuthzService }
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
-import org.totalgrid.reef.reactor.Lifecycle
+import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
@@ -39,7 +39,7 @@ class ServiceActivator extends BundleActivator {
 
   def start(context: BundleContext) {
 
-    org.totalgrid.reef.reactor.Reactable.setupThreadPools
+    org.totalgrid.reef.executor.Executor.setupThreadPools
 
     val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
     val amqp = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))

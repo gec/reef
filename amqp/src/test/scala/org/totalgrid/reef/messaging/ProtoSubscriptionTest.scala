@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
 import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
-import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi._
 import client._
@@ -51,7 +51,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
 
     AMQPFixture.using(mock) { amqp =>
 
-      val pub = new PublishingSubscriptionActor(exchange + "_events", new InstantReactor {})
+      val pub = new PublishingSubscriptionActor(exchange + "_events", new InstantExecutor {})
       amqp.add(pub)
       amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, competing = true)
 

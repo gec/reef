@@ -18,9 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
-import scala.actors.AbstractActor
 import org.totalgrid.reef.util.Timer
 import scala.collection.immutable
 
@@ -28,7 +27,7 @@ import scala.collection.immutable
  * Keeps a synchronized map of delay timers for clients
  * to manage asynchronously
  */
-trait KeyedDelays[A] extends Reactable {
+trait KeyedDelays[A] extends Executor {
   private var delays = immutable.Map[A, Timer]()
 
   def startRepeat(key: A, msec: Long)(fun: => Unit) = execute {

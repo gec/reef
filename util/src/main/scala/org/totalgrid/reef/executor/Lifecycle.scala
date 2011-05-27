@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
 import org.totalgrid.reef.util.{ ShutdownHook, Logging }
 

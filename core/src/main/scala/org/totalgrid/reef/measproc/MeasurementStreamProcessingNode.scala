@@ -22,7 +22,7 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.util.{ Logging }
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
@@ -45,7 +45,7 @@ class MeasurementStreamProcessingNode(
   overCache: ObjectCache[Measurement],
   stateCache: ObjectCache[Boolean],
   connection: MeasurementProcessingConnection,
-  reactor: Reactable with Lifecycle)
+  reactor: Executor with Lifecycle)
     extends Logging with MetricsHookContainer {
   // the main actor 
   val provider = new ServiceHandlerProvider(registry, new ServiceHandler { def execute(fun: => Unit) = reactor.execute(fun) })
@@ -81,7 +81,7 @@ class MeasurementStreamProcessingNode(
 }
 
 object MeasurementStreamProcessingNode extends Logging {
-  def attachNode(processor: ProcessingNode, connection: MeasurementProcessingConnection, amqp: AMQPProtoFactory, reactor: Reactable) {
+  def attachNode(processor: ProcessingNode, connection: MeasurementProcessingConnection, amqp: AMQPProtoFactory, reactor: Executor) {
     //    val queue = connection.getRouting.getMeasBatchQueue
     //    info("Configured, listening to measurements on queue: " + queue)
     //    amqp.listen(queue, MeasurementBatch.parseFrom, { batch: MeasurementBatch =>

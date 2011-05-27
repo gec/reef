@@ -23,7 +23,7 @@ package org.totalgrid.reef.messaging
 import org.totalgrid.reef.sapi.client.{ ClientSession, Event, SessionPool }
 import org.totalgrid.reef.sapi.{ ServiceList, RequestEnv, Destination, AnyNodeDestination }
 import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 
 trait PoolableConnection {
 
@@ -50,7 +50,7 @@ trait Connection {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Reactable] = None): Unit
+  def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): Unit
 
 }
 
@@ -75,7 +75,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
     factory.getEventQueue(deserialize, accept, notify)
   }
 
-  final override def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Reactable] = None): Unit = {
+  final override def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): Unit = {
     factory.bindService(service.descriptor.id, service.respond, destination, competing, reactor)
   }
 

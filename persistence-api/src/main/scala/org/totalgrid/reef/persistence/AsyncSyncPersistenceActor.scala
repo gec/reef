@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.persistence
 
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.metrics.{ MetricsHooks }
 
 /**
@@ -54,7 +54,7 @@ class LockStepConnection[ConnectionType](r: ConnectionType) extends ConnectionOp
 /**
  * Reactor class that buffers async operations in a list until a connection is restored.
  */
-abstract class AsyncBufferReactor[ConnType](val reactor: Reactable, obs: ConnectionReactor.Observer, val connectOnStart: Boolean = true)
+abstract class AsyncBufferReactor[ConnType](val reactor: Executor, obs: ConnectionReactor.Observer, val connectOnStart: Boolean = true)
     extends ConnectionReactor[ConnType] with ConnectionOperations[ConnType] with MetricsHooks {
 
   private lazy val delayedPuts = counterHook("delayedPuts")

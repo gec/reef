@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.japi.ServiceIOException
 
@@ -37,7 +37,7 @@ object AMQPPublisher {
  * 	@param	exchangeList	AMQP exchanges to declare when connecting to the bus
  * 	@param	bufferSize	Maximum size of the buffer in bytes
  */
-abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int = AMQPPublisher.defaultBufferSize) extends ChannelObserver with BrokerChannelCloseListener with Reactable with Logging {
+abstract class AMQPPublisher(exchangeList: List[String] = Nil, bufferSize: Int = AMQPPublisher.defaultBufferSize) extends ChannelObserver with BrokerChannelCloseListener with Executor with Logging {
 
   case class Msg(bytes: Array[Byte], exchange: String, key: String)
 

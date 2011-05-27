@@ -47,7 +47,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.sapi.client.{ Response, Event }
 import org.totalgrid.reef.messaging.mock.{ MockConnection, MockEvent }
 import org.totalgrid.reef.protocol.api.MockProtocol
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.event._
 
 import org.scalatest.fixture.FixtureSuite
@@ -81,7 +81,7 @@ class FrontEndActorTests extends FixtureSuite with ShouldMatchers {
     val appConfig = ApplicationConfig.newBuilder.setUuid("0").build
 
     //immediately retry for testing purposes
-    val a = new FrontEndActor(conn, List(mp), eventLog, appConfig, 0) with ReactActor
+    val a = new FrontEndActor(conn, List(mp), eventLog, appConfig, 0) with ReactActorExecutor
     try {
       a.start
       test(Fixture(conn, mp, a))

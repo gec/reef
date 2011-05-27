@@ -22,7 +22,7 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.reactor.{ LifecycleWrapper }
+import org.totalgrid.reef.executor.{ LifecycleWrapper }
 import org.totalgrid.reef.measproc.ProcessorEntryPoint
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
@@ -34,7 +34,7 @@ class ProcessingActivator extends BundleActivator {
 
   def start(context: BundleContext) {
 
-    org.totalgrid.reef.reactor.Reactable.setupThreadPools
+    org.totalgrid.reef.executor.Executor.setupThreadPools
 
     val processor = ProcessorEntryPoint.makeContext(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")), SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
 
