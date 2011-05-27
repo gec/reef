@@ -28,8 +28,8 @@
             </includes>
         </dependencySet>
     </dependencySets>
-    <fileSets>
 
+    <fileSets>
         <fileSet>
             <directory>target/dependencies/win/apache-karaf-${karaf.version}</directory>
             <outputDirectory>.</outputDirectory>
