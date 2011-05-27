@@ -25,7 +25,7 @@ import org.junit.*;
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
 import org.totalgrid.reef.japi.client.Session;
-import org.totalgrid.reef.api.request.impl.AuthTokenServicePooledWrapper;
+import org.totalgrid.reef.japi.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.integration.AtollService;
 import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;

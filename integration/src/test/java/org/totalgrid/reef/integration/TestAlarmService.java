@@ -24,9 +24,9 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.api.request.builders.EntityRequestBuilders;
-import org.totalgrid.reef.api.request.builders.EventConfigRequestBuilders;
-import org.totalgrid.reef.api.request.builders.EventRequestBuilders;
+import org.totalgrid.reef.japi.request.builders.EntityRequestBuilders;
+import org.totalgrid.reef.japi.request.builders.EventConfigRequestBuilders;
+import org.totalgrid.reef.japi.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Model.Entity;
 

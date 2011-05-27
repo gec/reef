@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
-import org.totalgrid.reef.api.request.MeasurementService;
+import org.totalgrid.reef.japi.request.MeasurementService;
 
 import org.totalgrid.reef.japi.*;
 import org.totalgrid.reef.japi.client.Subscription;

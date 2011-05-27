@@ -23,7 +23,7 @@ package org.totalgrid.reef.integration;
 import org.totalgrid.reef.japi.client.Session;
 import org.totalgrid.reef.japi.ReefServiceException;
 
-import org.totalgrid.reef.api.request.builders.*;
+import org.totalgrid.reef.japi.request.builders.*;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Auth.*;
 import org.totalgrid.reef.proto.Model.*;

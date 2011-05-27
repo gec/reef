@@ -22,7 +22,7 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 import java.io.{ InputStreamReader, BufferedReader }
-import org.totalgrid.reef.api.request.AgentService
+import org.totalgrid.reef.japi.request.AgentService
 import org.totalgrid.reef.shell.proto.presentation.AgentView
 
 import scala.collection.JavaConversions._
