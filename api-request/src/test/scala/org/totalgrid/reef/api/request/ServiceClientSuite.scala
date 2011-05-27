@@ -21,7 +21,7 @@
 package org.totalgrid.reef.api.request
 
 import org.totalgrid.reef.api.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
@@ -56,7 +56,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   // gets default connection settings or overrides using system properties
   val config = BrokerConnectionInfo.loadInfo(new SystemPropertyConfigReader())
-  val factory = new AMQPSyncFactory with ReactActor {
+  val factory = new AMQPSyncFactory with ReactActorExecutor {
     val broker = new QpidBrokerConnection(config)
   }
 

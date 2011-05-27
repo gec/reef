@@ -23,7 +23,7 @@ package org.totalgrid.reef.measurementstore
 import org.totalgrid.reef.util.Logging
 object MeasurementStoreFinder extends Logging {
 
-  import org.totalgrid.reef.reactor.{ Lifecycle, ReactActor }
+  import org.totalgrid.reef.executor.{ Lifecycle, ReactActorExecutor }
   import org.totalgrid.reef.util.BuildEnv.ConnInfo
   import org.totalgrid.reef.persistence.squeryl._
   /**
@@ -34,7 +34,7 @@ object MeasurementStoreFinder extends Logging {
   def getInstance(config: ConnInfo, lifecyleSink: Lifecycle => Unit): MeasurementStore = {
     config match {
       case di: DbInfo =>
-        val actor = new ReactActor {}
+        val actor = new ReactActorExecutor {}
         val connection = new SimpleDbConnection(di, actor)(x => logger.info("connected to db: " + x))
         lifecyleSink(actor)
         new SqlMeasurementStore(connection)

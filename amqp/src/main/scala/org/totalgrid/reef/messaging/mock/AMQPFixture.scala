@@ -24,7 +24,7 @@ import org.totalgrid.reef.broker._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.broker.mock.MockBrokerConnection
 
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.messaging._
 
 import sync.AMQPSyncFactory
@@ -43,7 +43,7 @@ object AMQPFixture {
 
   def using(connection: BrokerConnection, requireConnection: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
 
-    val amqp = new AMQPProtoFactory with ReactActor {
+    val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = connection
     }
 
@@ -68,7 +68,7 @@ object AMQPFixture {
   }
 
   def sync(connection: BrokerConnection, requireConnection: Boolean)(test: AMQPSyncFactory => Unit): Unit = {
-    val amqp = new AMQPSyncFactory with ReactActor {
+    val amqp = new AMQPSyncFactory with ReactActorExecutor {
       val broker = connection
     }
 

@@ -21,7 +21,7 @@
 package org.totalgrid.reef.messaging.serviceprovider
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.sapi.ServiceList
 
 /**
@@ -31,7 +31,7 @@ import org.totalgrid.reef.sapi.ServiceList
 class ServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
 
   def createPublisher(exchange: String): ServiceSubscriptionHandler = {
-    val reactor = new ReactActor {}
+    val reactor = new ReactActorExecutor {}
     val pubsub = new PublishingSubscriptionActor(exchange, reactor)
     amqp.add(pubsub)
     amqp.addReactor(reactor)

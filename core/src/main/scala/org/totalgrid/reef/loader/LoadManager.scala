@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 
 import org.totalgrid.reef.loader.configuration._
 
@@ -198,7 +198,7 @@ object LoadManager extends Logging {
       usage
 
     val dbInfo = Option(java.lang.System.getProperty("config")).map(f => BrokerProperties.get(new FileConfigReader(f))).getOrElse(BrokerConnectionInfo.loadInfo)
-    val amqp = new AMQPProtoFactory with ReactActor {
+    val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(dbInfo)
     }
 

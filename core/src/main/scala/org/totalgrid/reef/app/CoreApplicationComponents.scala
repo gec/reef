@@ -24,7 +24,7 @@ import org.totalgrid.reef.event.BusTiedEventLogPublisher
 
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.reactor.ReactActor
+import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.ReefServicesList
 
@@ -50,7 +50,7 @@ class CoreApplicationComponents(
   /// heartbeatActor sends regular updates to the system to let it know we are still running, if this process
   /// dies the system can notice quickly and recover. Its important that the client start this actor and stop
   /// it cleanly before the amqp service is killed, that allows a nice clean shutdown
-  val heartbeatActor = new ProcessHeartbeatActor(amqp, appConfig.getHeartbeatCfg) with ReactActor
+  val heartbeatActor = new ProcessHeartbeatActor(amqp, appConfig.getHeartbeatCfg) with ReactActorExecutor
 
   /// log and event sink, should also be registered as slf4j backend
   val logger = new BusTiedEventLogPublisher(amqp, appConfig.getCapabilites(0), appConfig.getStreamCfg.getEventsDest, appConfig.getStreamCfg.getLogsDest)

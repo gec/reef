@@ -18,12 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
 /**
  * Convenience class for common use case of repeated to keep running forever
  */
-abstract class PeriodicReactor(intervalMS: Long, func: () => Unit) extends Reactable with Lifecycle {
+abstract class PeriodicExecutor(intervalMS: Long, func: () => Unit) extends Executor with Lifecycle {
 
   override def afterStart() = this.repeat(intervalMS)(func())
 

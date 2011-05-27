@@ -23,7 +23,7 @@ package org.totalgrid.reef.persistence.squeryl
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.persistence.AsyncBufferReactor
 import org.totalgrid.reef.persistence.ConnectionReactor.Observer
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 
 object DbConnector {
   def connect(dbInfo: DbInfo): Option[Boolean] = {
@@ -58,7 +58,7 @@ abstract class DbConnectorBase extends Logging {
   }
 }
 
-class SimpleDbConnection(connInfo: DbInfo, reactor: Reactable)(obs: Observer)
+class SimpleDbConnection(connInfo: DbInfo, reactor: Executor)(obs: Observer)
     extends AsyncBufferReactor[Boolean](reactor, obs) {
 
   override def connectFun() = DbConnector.connect(connInfo)

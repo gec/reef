@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -29,24 +29,24 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
 
 @RunWith(classOf[JUnitRunner])
-class ReactActorTest extends ReactableTestBase {
+class ReactActorExecutorTest extends ExecutorTestBase {
   override val maxActorPowerOf2 = 6 // 64
-  def _getActor = new TestActorBase with ReactActor
+  def _getActor = new TestActorBase with ReactActorExecutor
 
-  override def toString = "ReactActorTest"
+  override def toString = "ReactActorExecutorTest"
 }
 
 @RunWith(classOf[JUnitRunner])
-class ReceiveActorTest extends ReactableTestBase {
+class ReceiveActorExecutorTest extends ExecutorTestBase {
   override val maxActorPowerOf2 = 6 // 64
-  def _getActor = new TestActorBase with ReceiveActor
+  def _getActor = new TestActorBase with ReceiveActorExecutor
 }
 
-abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
+abstract class ExecutorTestBase extends FunSuite with ShouldMatchers {
 
   val maxActorPowerOf2: Int
 
-  abstract class TestActorBase extends Reactable with Lifecycle {
+  abstract class TestActorBase extends Executor with Lifecycle {
     var running = new SyncVar[Option[Boolean]](None: Option[Boolean])
     var called = new SyncVar(0)
 
@@ -84,10 +84,10 @@ abstract class ReactableTestBase extends FunSuite with ShouldMatchers {
   }
 
   // let concrete classes define the right reactable implementation
-  def _getActor: TestActorBase with Reactor
+  def _getActor: TestActorBase with ActorExecutor
 
   // auto-starts the actors
-  def getActor: TestActorBase with Reactor = {
+  def getActor: TestActorBase with ActorExecutor = {
     val a = _getActor
     a.start
     a

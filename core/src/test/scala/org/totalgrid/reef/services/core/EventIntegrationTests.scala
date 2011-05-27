@@ -23,7 +23,7 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
@@ -55,7 +55,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     transaction { seed() }
 
     val alarmInitializer = new AlarmSummaryInitializer(factories.alarms, summaries)
-    alarmInitializer.addAMQPConsumers(amqp, new InstantReactor {})
+    alarmInitializer.addAMQPConsumers(amqp, new InstantExecutor {})
 
     def seed() {
       seed("SubA")

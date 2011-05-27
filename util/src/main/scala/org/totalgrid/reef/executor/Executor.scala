@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
+package org.totalgrid.reef.executor
 
 import org.totalgrid.reef.util.Timer
 
 /**
- * Abstracts the execution of work on some thread-like implementation.
+ * Concurrency pattern for abstracting the execution of work on some thread-like implementation.
  */
-trait Reactable {
+trait Executor {
 
   /**
    * dispatches a unit of work immediately
@@ -52,7 +52,7 @@ trait Reactable {
   def request[A](fun: => A): A
 }
 
-object Reactable {
+object Executor {
   /**
    *  sets the scala runtime up with the standard thread pool setup (resizable for now)
    */
@@ -61,7 +61,7 @@ object Reactable {
     // un-deadlocks the measproc when it tries to load lots of resources at one time. Problem is due to
     // inline actors all blocking on service futures and starving the AMQP actors so it cant receive the 
     // service resposes and causing erroneous timeouts
-    import scala.actors.{ Actor, Scheduler }
+    import scala.actors.Scheduler
     import scala.actors.scheduler.ResizableThreadPoolScheduler
     Scheduler.impl = {
       val s = new ResizableThreadPoolScheduler(false)

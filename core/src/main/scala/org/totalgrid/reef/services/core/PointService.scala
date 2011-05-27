@@ -180,7 +180,7 @@ object PointTiedModel {
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.Measurements.{ Measurement, Quality }
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
@@ -193,7 +193,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
 
   val pointMap = scala.collection.mutable.Map.empty[String, Point]
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable) {
+  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     // TODO: assign abnormal thunkers to communication streams
     reactor.execute {
       transaction {

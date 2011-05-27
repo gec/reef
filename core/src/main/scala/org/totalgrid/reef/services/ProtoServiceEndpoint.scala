@@ -20,7 +20,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 
 /**
@@ -29,6 +29,6 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
  */
 trait ProtoServiceCoordinator {
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable)
+  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor)
 }
 

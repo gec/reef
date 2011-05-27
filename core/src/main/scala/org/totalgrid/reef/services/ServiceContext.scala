@@ -25,7 +25,7 @@ import org.totalgrid.reef.sapi.auth.AuthService
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.reactor.{ ReactActor, LifecycleManager }
+import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
@@ -53,7 +53,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
   this.addCoordinator(providers.coordinators)
 
   def addCoordinator(coord: ProtoServiceCoordinator) {
-    val reactor = new ReactActor {}
+    val reactor = new ReactActorExecutor {}
     this.add(reactor)
     coord.addAMQPConsumers(components.amqp, reactor)
   }
@@ -64,7 +64,7 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
 
     // each service gets its own actor so a slow service can't block a fast service but
     // a slow query will block the next query to that service
-    val serviceReactor = new ReactActor {}
+    val serviceReactor = new ReactActorExecutor {}
     this.add(serviceReactor)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange

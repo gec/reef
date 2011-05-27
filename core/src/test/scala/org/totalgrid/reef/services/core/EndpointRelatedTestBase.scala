@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 import _root_.scala.collection.JavaConversions._
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
@@ -53,7 +53,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
   class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
 
     def createPublisher(exchange: String): ServiceSubscriptionHandler = {
-      val reactor = new InstantReactor {}
+      val reactor = new InstantExecutor {}
       val pubsub = new PublishingSubscriptionActor(exchange, reactor)
       amqp.add(pubsub)
       pubsub
@@ -82,7 +82,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
         def add(set: TriggerSet) {}
         def remove(set: TriggerSet) {}
       }
-      MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantReactor {})
+      MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantExecutor {})
 
       info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
 

@@ -18,25 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.totalgrid.reef.reactor
-
-import scala.actors.{ AbstractActor }
-import scala.actors.Actor._
+package org.totalgrid.reef.executor
 
 /**
  *  Implements Reactor as a concete Actor using react style
  *  message handling (thread pool)
  *
  */
-trait ReactActor extends Reactor with Lifecycle {
+trait ReactActorExecutor extends ActorExecutor {
 
   val parentclass = this
 
-  def getReactableActor: ReactorBase = new ReactorBase {
+  def getExecutorActor: ReactorBase = new ReactorBase {
 
     def beforeExit = beforeStop()
 
-    val reactable = parentclass
+    final override val executor = parentclass
 
     def act {
       loop {

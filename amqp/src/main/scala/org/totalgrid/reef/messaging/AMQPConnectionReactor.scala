@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging
 
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.reactor.{ Reactor, Lifecycle }
+import org.totalgrid.reef.executor.{ ActorExecutor, Lifecycle }
 import org.totalgrid.reef.japi.client.ConnectionListener
 import org.totalgrid.reef.japi.ServiceIOException
 import org.totalgrid.reef.broker._
@@ -30,7 +30,7 @@ import org.totalgrid.reef.broker._
 /**
  * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler
  */
-trait AMQPConnectionReactor extends Reactor with Lifecycle
+trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     with ConnectionListener with Logging {
 
   /// must be defined in concrete class

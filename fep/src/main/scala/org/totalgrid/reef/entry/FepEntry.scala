@@ -25,7 +25,7 @@ import org.osgi.framework._
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
-import org.totalgrid.reef.reactor.{ ReactActor, LifecycleWrapper, Lifecycle, LifecycleManager }
+import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
 import org.totalgrid.reef.frontend.{ FrontEndActor }
 import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
@@ -45,9 +45,9 @@ class FepActivator extends BundleActivator with Logging {
 
   def start(context: BundleContext) {
 
-    org.totalgrid.reef.reactor.Reactable.setupThreadPools
+    org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    amqp = Some(new AMQPProtoFactory with ReactActor {
+    amqp = Some(new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
     })
 
@@ -67,7 +67,7 @@ class FepActivator extends BundleActivator with Logging {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
-        val enroller = new ApplicationEnroller(amqp.get, Some("FEP-" + p.name), List("FEP"), create(List(p), _)) with ReactActor
+        val enroller = new ApplicationEnroller(amqp.get, Some("FEP-" + p.name), List("FEP"), create(List(p), _)) with ReactActorExecutor
         map = map + (p -> enroller)
         manager.add(enroller)
     }
@@ -91,7 +91,7 @@ class FepActivator extends BundleActivator with Logging {
       protocols,
       components.logger,
       components.appConfig,
-      FrontEndActor.retryms) with ReactActor
+      FrontEndActor.retryms) with ReactActorExecutor
 
     new LifecycleWrapper(components.heartbeatActor :: fepActor :: Nil)
   }

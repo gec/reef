@@ -21,7 +21,7 @@
 package org.totalgrid.reef.protocol.benchmark
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.reactor.{ Reactable, Lifecycle }
+import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.util.Timer
 
 import java.util.Random
@@ -34,7 +34,7 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler, IListener }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.proto.Commands.CommandResponse
 
-class Simulator(name: String, publisher: IListener[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Reactable) extends Lifecycle with ICommandHandler with ControllableSimulator with Logging {
+class Simulator(name: String, publisher: IListener[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with ICommandHandler with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 

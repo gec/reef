@@ -30,13 +30,13 @@ import org.totalgrid.reef.models._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 import org.totalgrid.reef.japi.Envelope
 
 class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceModel]) extends ProtoServiceCoordinator with Logging {
 
-  def startTimeoutChecks(react: Reactable) {
+  def startTimeoutChecks(react: Executor) {
     // we need to delay the timeout check a bit to make sure any already queued heartbeat messages are waiting
     // to be processed. If we checked the timeouts before processing all waiting messages we would always disable 
     // all applications if this coordinator had been turned off for longer than periodMs even if the other apps
@@ -53,7 +53,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
     }
   }
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable) {
+  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     val sub = amqp.listen("proc_status_queue", "proc_status", StatusSnapshot.parseFrom(_), { (x: StatusSnapshot) => reactor.execute { handleRawStatus(x) } })
     sub.observeConnection((online: Boolean) => {
       if (online) {
@@ -108,13 +108,13 @@ class ProcessStatusCoordinator(publishers: ServiceEventPublishers) extends Loggi
 
   val coordinatorModel = new ProcessStatusModel(publishers.getEventSink(classOf[StatusSnapshot]))
 
-  var reactor: Option[Reactable] = None
+  var reactor: Option[Executor] = None
 
-  def addProcesses(react: Reactable) {
+  def addProcesses(react: Executor) {
     reactor = Some(react)
   }
 
-  def startTimeoutChecks(react: Reactable) {
+  def startTimeoutChecks(react: Executor) {
     // we need to delay the timeout check a bit to make sure any already queued heartbeat messages are waiting
     // to be processed. If we checked the timeouts before processing all waiting messages we would always disable 
     // all applications if this coordinator had been turned off for longer than periodMs even if the other apps

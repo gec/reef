@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.reactor.mock.InstantReactor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.util.EmptySyncVar
 
 import CommandAccess._
@@ -175,7 +175,7 @@ class CommandRequestServicesIntegration
     println(conn.getRouting.getServiceRoutingKey)
 
     //bind the 'proxied' service that will handle the call
-    fixture.connection.bindService(service, AddressableDestination(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantReactor {}))
+    fixture.connection.bindService(service, AddressableDestination(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantExecutor {}))
 
     // Send the user command request
     val cmdReq = userRequest()

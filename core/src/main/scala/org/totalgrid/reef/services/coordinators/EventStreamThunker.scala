@@ -22,7 +22,7 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.services.framework.ServiceTransactable
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.Logging
@@ -36,7 +36,7 @@ import org.totalgrid.reef.services.core.EventServiceModel
  */
 class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], rawEventExchanges: List[String]) extends ProtoServiceCoordinator with Logging {
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Reactable) {
+  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     // shift the processing of the event onto another thread
     val callback = (e: Event) => reactor.execute { handleEventMessage(e) }
     rawEventExchanges.foreach(exchange => amqp.listen(exchange + "_server", exchange, Event.parseFrom(_), callback))

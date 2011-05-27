@@ -22,7 +22,7 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
 import org.totalgrid.reef.util.ShutdownHook
-import org.totalgrid.reef.reactor.{ ReactActor, Lifecycle }
+import org.totalgrid.reef.executor.{ ReactActorExecutor, Lifecycle }
 
 import org.totalgrid.reef.app.{ ApplicationEnroller }
 
@@ -40,7 +40,7 @@ object ProcessorEntryPoint extends ShutdownHook {
 
   def main(args: Array[String]) {
 
-    org.totalgrid.reef.reactor.Reactable.setupThreadPools
+    org.totalgrid.reef.executor.Executor.setupThreadPools
 
     Lifecycle.run(makeContext()) {}
   }
@@ -48,11 +48,11 @@ object ProcessorEntryPoint extends ShutdownHook {
   def makeContext(): List[Lifecycle] = makeContext(BrokerConnectionInfo.loadInfo, MeasurementStoreFinder.getConfig)
 
   def makeContext(bi: BrokerConnectionInfo, measInfo: ConnInfo): List[Lifecycle] = {
-    val amqp = new AMQPProtoFactory with ReactActor {
+    val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(bi)
     }
 
-    val enroller = new ApplicationEnroller(amqp, None, List("Processing"), new FullProcessor(_, measInfo)) with ReactActor
+    val enroller = new ApplicationEnroller(amqp, None, List("Processing"), new FullProcessor(_, measInfo)) with ReactActorExecutor
 
     List(amqp, enroller)
   }

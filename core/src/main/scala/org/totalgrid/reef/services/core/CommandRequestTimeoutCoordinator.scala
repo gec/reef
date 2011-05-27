@@ -21,13 +21,13 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.totalgrid.reef.proto.Commands.{ CommandResponse }
 import org.totalgrid.reef.models.{ ApplicationSchema, UserCommandModel }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 
-trait CommandRequestTimeoutCoordinator extends Reactable {
+trait CommandRequestTimeoutCoordinator extends Executor {
 
   protected val trans: ServiceTransactable[UserCommandRequestServiceModel]
 

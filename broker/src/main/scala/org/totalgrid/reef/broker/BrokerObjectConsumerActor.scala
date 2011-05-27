@@ -22,7 +22,7 @@ package org.totalgrid.reef.broker
  */
 
 import scala.collection.immutable.Queue
-import org.totalgrid.reef.reactor.Reactable
+import org.totalgrid.reef.executor.Executor
 
 trait BrokerObjectConsumer {
   type BrokerApplicable = (BrokerChannel) => _
@@ -34,7 +34,7 @@ trait BrokerObjectConsumer {
  * This actor simplifies objects that need to handle the broker coming up and down and
  * queuing operations until the broker is online.
  */
-class BrokerObjectConsumerActor(reactor: Reactable) extends BrokerObjectConsumer with ChannelObserver {
+class BrokerObjectConsumerActor(reactor: Executor) extends BrokerObjectConsumer with ChannelObserver {
 
   private var channel: Option[BrokerChannel] = None
   private var queued: Queue[BrokerApplicable] = Queue.empty
