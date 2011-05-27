@@ -31,8 +31,8 @@
             <fileMode>0644</fileMode>
         </dependencySet>
     </dependencySets>
-    <fileSets>
 
+    <fileSets>
         <fileSet>
             <directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
             <outputDirectory>.</outputDirectory>
