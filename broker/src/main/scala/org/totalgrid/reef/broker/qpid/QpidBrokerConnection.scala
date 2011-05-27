@@ -84,7 +84,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       try {
         channel.stop()
       } catch {
-        case e: Exception => warn("Qpid unlink error: " + e.getMessage)
+        case e: Exception => logger.warn("Qpid unlink error: " + e.getMessage)
       })
     channels = Nil
   }

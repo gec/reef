@@ -20,18 +20,20 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.util.LoggerFactory
 
 /**
  * Shim layer to push log messages from the c++ dnp3 world
  */
-class LogAdapter extends ILogBase with Logging {
+class LogAdapter extends ILogBase {
 
-  override def Log(lev: FilterLevel, loggerName: String, location: String, message: String, code: Int): Unit = {
+  final override def Log(level: FilterLevel, loggerName: String, location: String, message: String, code: Int): Unit = {
 
     def getMsg: String = loggerName + " - " + message
 
-    lev match {
+    val logger = LoggerFactory(loggerName)
+
+    level match {
       case FilterLevel.LEV_COMM => logger.debug(getMsg)
       case FilterLevel.LEV_DEBUG => logger.debug(getMsg)
       case FilterLevel.LEV_ERROR => logger.error(getMsg)
