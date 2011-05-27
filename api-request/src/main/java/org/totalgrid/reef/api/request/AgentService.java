@@ -27,19 +27,23 @@ import org.totalgrid.reef.proto.Auth.PermissionSet;
 
 import java.util.List;
 
-
+/**
+ * A service interface for managing and retrieving Agents. An Agent has a name,
+ * password, and a set of permissions in the Reef system. An Agent can be a
+ * real user that logs into the system or a software service that "owns" an
+ * agent it uses to access to other services.
+ */
 public interface AgentService {
     /**
      * @param name of agent to find
      * @return the agent requested or throws exception
      */
-    public Agent getAgent(String name) throws ReefServiceException;
+    Agent getAgent(String name) throws ReefServiceException;
 
     /**
      * @return list of all agents
      */
-
-    public List<Agent> getAgents() throws ReefServiceException;
+    List<Agent> getAgents() throws ReefServiceException;
 
     /**
      * Creates (or overwrites) an agent and grants them access to the named PermissionSets
@@ -49,15 +53,13 @@ public interface AgentService {
      * @param permissionSetNames list of permissions sets we want to assign to the user
      * @return the newly created agent object
      */
-
-    public Agent createNewAgent(String name, String password, List<String> permissionSetNames) throws ReefServiceException;
+    Agent createNewAgent(String name, String password, List<String> permissionSetNames) throws ReefServiceException;
 
     /**
      * @param agent the agent to delete
      * @return the deleted agent
      */
-
-    public Agent deleteAgent(Agent agent) throws ReefServiceException;
+    Agent deleteAgent(Agent agent) throws ReefServiceException;
 
     /**
      * Updates the agent password
@@ -65,34 +67,29 @@ public interface AgentService {
      * @param agent       the agent to update
      * @param newPassword the new password, must obey systems password rules
      */
-
-    public void setAgentPassword(Agent agent, String newPassword) throws ReefServiceException;
+    void setAgentPassword(Agent agent, String newPassword) throws ReefServiceException;
 
     /**
      * @return list of all of the possible permission sets
      */
-
-    public List<PermissionSet> getPermissionSets() throws ReefServiceException;
+    List<PermissionSet> getPermissionSets() throws ReefServiceException;
 
     /**
      * @param name of PermissionSet
      * @return the permissionset with matching name or an exception is thrown
      */
-
-    public PermissionSet getPermissionSet(String name) throws ReefServiceException;
+    PermissionSet getPermissionSet(String name) throws ReefServiceException;
 
     /**
      * @param name        descriptive name for the PermissionSet
      * @param permissions list of allows and denies we want to create
      * @return the created PermissionSet or throws an exception
      */
-
-    public PermissionSet createPermissionSet(String name, List<Permission> permissions) throws ReefServiceException;
+    PermissionSet createPermissionSet(String name, List<Permission> permissions) throws ReefServiceException;
 
     /**
      * @param permission the PermissionSet to delete
      * @return the deleted PermissionSet
      */
-
-    public PermissionSet deletePermissionSet(PermissionSet permission) throws ReefServiceException;
+    PermissionSet deletePermissionSet(PermissionSet permission) throws ReefServiceException;
 }

@@ -43,7 +43,7 @@ public interface PointService {
      *
      * @return all points
      */
-    public List<Point> getAllPoints();
+    List<Point> getAllPoints();
 
     /**
      * retrieve a point by name, throws exception if point is unknown
@@ -51,8 +51,7 @@ public interface PointService {
      * @param name of the Point we are retrieving
      * @return the point object with matching name
      */
-
-    public Point getPointByName(String name) throws ReefServiceException;
+    Point getPointByName( String name ) throws ReefServiceException;
 
     /**
      * retrieve a point by uuid, throws exception if point is unknown
@@ -60,8 +59,7 @@ public interface PointService {
      * @param uuid of the Point we are retrieving
      * @return the point object with matching name
      */
-
-    public Point getPointByUid(ReefUUID uuid) throws ReefServiceException;
+    Point getPointByUid( ReefUUID uuid ) throws ReefServiceException;
 
     /**
      * retrieve all points that are have the relationship "owns" to the parent entity
@@ -69,8 +67,7 @@ public interface PointService {
      * @param parentEntity parent we are looking for children of
      * @return points owned by parentEntity
      */
-
-    public List<Point> getPointsOwnedByEntity(Entity parentEntity) throws ReefServiceException;
+    List<Point> getPointsOwnedByEntity( Entity parentEntity ) throws ReefServiceException;
 
     /**
      * retrieve all points that are have the relationship "source" to the endpoint
@@ -78,7 +75,6 @@ public interface PointService {
      * @param endpointUuid uuid of endpoint
      * @return all points that are related to endpoint
      */
-
-    public List<Point> getPointsBelongingToEndpoint(ReefUUID endpointUuid) throws ReefServiceException;
+    List<Point> getPointsBelongingToEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
 
 }

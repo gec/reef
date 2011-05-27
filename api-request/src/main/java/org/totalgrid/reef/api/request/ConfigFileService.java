@@ -44,59 +44,52 @@ public interface ConfigFileService {
     /**
      * Get all config files
      */
-    public List<ConfigFile> getAllConfigFiles() throws ReefServiceException;
+    List<ConfigFile> getAllConfigFiles() throws ReefServiceException;
 
     /**
      * retrieve a config file by its UID
      */
-    public ConfigFile getConfigFileByUid(ReefUUID uid) throws ReefServiceException;
+    ConfigFile getConfigFileByUid(ReefUUID uid) throws ReefServiceException;
 
     /**
      * retrieve a config file by its name
      */
-    public ConfigFile getConfigFileByName(String name) throws ReefServiceException;
+    ConfigFile getConfigFileByName(String name) throws ReefServiceException;
 
     /**
      * search for all config files "used" by an entity
      */
-
-    public List<ConfigFile> getConfigFilesUsedByEntity(ReefUUID entityUid) throws ReefServiceException;
+    List<ConfigFile> getConfigFilesUsedByEntity(ReefUUID entityUid) throws ReefServiceException;
 
     /**
      * search for all config files "used" by an entity, only returns files with matching mimeType
      */
-
-    public List<ConfigFile> getConfigFilesUsedByEntity(ReefUUID entityUid, String mimeType) throws ReefServiceException;
+    List<ConfigFile> getConfigFilesUsedByEntity(ReefUUID entityUid, String mimeType) throws ReefServiceException;
 
     /**
      * create a "free-floating" ConfigFile that isnt "used" by any entities. This means is only retrievable
      * by name or uid (or mimeType if there is only one file with that type in system)
      */
-
-    public ConfigFile createConfigFile(String name, String mimeType, byte[] data) throws ReefServiceException;
+    ConfigFile createConfigFile(String name, String mimeType, byte[] data) throws ReefServiceException;
 
     /**
      * create a ConfigFile that is "used" by an Entity, it is now queryable by name, mimeType and entity.
      */
-
-    public ConfigFile createConfigFile(String name, String mimeType, byte[] data, ReefUUID entityUid) throws ReefServiceException;
+    ConfigFile createConfigFile(String name, String mimeType, byte[] data, ReefUUID entityUid) throws ReefServiceException;
 
     /**
      * update the text of the previously retrieved ConfigFile
      */
-
-    public ConfigFile updateConfigFile(ConfigFile configFile, byte[] data) throws ReefServiceException;
+    ConfigFile updateConfigFile(ConfigFile configFile, byte[] data) throws ReefServiceException;
 
     /**
      * adds another Entity as a "user" of the ConfigFile
      */
-
-    public ConfigFile addConfigFileUserByEntity(ConfigFile configFile, ReefUUID entityUid) throws ReefServiceException;
+    ConfigFile addConfigFileUserByEntity(ConfigFile configFile, ReefUUID entityUid) throws ReefServiceException;
 
     /**
      * delete the passed in config file and all "using" relationships to Entities
      */
-
-    public ConfigFile deleteConfigFile(ConfigFile configFile);
+    ConfigFile deleteConfigFile(ConfigFile configFile);
 }
 

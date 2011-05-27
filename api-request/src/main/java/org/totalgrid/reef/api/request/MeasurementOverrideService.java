@@ -44,8 +44,7 @@ public interface MeasurementOverrideService {
      * because the measurement processor is the only place in the system that can do this override safely without any
      * possibility of losing measurements.
      */
-
-    public MeasOverride setPointOutOfService(Point point) throws ReefServiceException;
+    MeasOverride setPointOutOfService( Point point ) throws ReefServiceException;
 
     /**
      * overrides the "field protocol" measurement stream for a point. While an override is in place
@@ -54,20 +53,17 @@ public interface MeasurementOverrideService {
      * that the client code provides a sensible Measurement. The measurement processor will publish the measurement with
      * the SUBSTITUTED quality bit set.
      */
-
-    public MeasOverride setPointOverriden(Point point, Measurement measurement) throws ReefServiceException;
+    MeasOverride setPointOverriden( Point point, Measurement measurement ) throws ReefServiceException;
 
     /**
      * deletes a given measurement override, most recent field value will be instantly published if available
      */
-
-    public MeasOverride deleteMeasurementOverride(MeasOverride measOverride) throws ReefServiceException;
+    MeasOverride deleteMeasurementOverride( MeasOverride measOverride ) throws ReefServiceException;
 
     /**
      * makes sure that any measurement overrides are cleared if existent
      *
      * @return whether an override was cleared.
      */
-
-    public boolean clearMeasurementOverridesOnPoint(Point point) throws ReefServiceException;
+    boolean clearMeasurementOverridesOnPoint( Point point ) throws ReefServiceException;
 }
