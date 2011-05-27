@@ -20,6 +20,8 @@
  */
 
 /**
+ * RPC Interfaces to the most commonly used Reef Services.
+ *
  * The reef system is fundamentally constructed using a REST approach. This means the system is modeled using nouns and
  * a common set of 4 verbs GET, PUT, POST, DELETE. This is a very powerful approach and allows us to create simple and
  * robust services and have a relatively simple protocol to make interoperability across a wide range of languages

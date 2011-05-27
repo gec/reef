@@ -21,8 +21,9 @@
 package org.totalgrid.reef.japi;
 
 /**
- *  A blanket exception that gets rethrown when an internal exception happens
- *  (i.e. an exception in the particular messaging binding we're using)
+ *  A blanket exception that gets rethrown when an exception happens
+ *  in the messaging stack. Used to prevent any non ReefServiceExceptions
+ *  from bubbling out of api calls.
  */
 public class InternalClientError extends ReefServiceException {
 

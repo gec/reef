@@ -20,6 +20,10 @@
  */
 package org.totalgrid.reef.japi;
 
+/**
+ * Thrown when an agent attempts to perform an action for which they don't
+ * have appropriate permissions
+ */
 public class UnauthorizedException extends BadRequestException {
 
   public UnauthorizedException(String msg)

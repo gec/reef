@@ -20,6 +20,11 @@
  */
 package org.totalgrid.reef.japi;
 
+/**
+ * Thrown if we got a response from the server but it didn't match the client side
+ * expectation. One example is a query that should return exactly one result but
+ * instead returned a list of ten results.
+ */
 public class ExpectationException extends ReplyException {
 
   public ExpectationException(String msg)

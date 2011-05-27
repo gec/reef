@@ -20,6 +20,9 @@
  */
 package org.totalgrid.reef.japi;
 
+/**
+ * Thrown when no response was received from the server before the timeout expired.
+ */
 public class ResponseTimeoutException extends ReefServiceException {
 
   public ResponseTimeoutException()
