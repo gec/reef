@@ -13,7 +13,6 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.proto.Tags._
 
 object Descriptors {
 
@@ -388,48 +387,6 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.SimMapping.SimulatorMapping.parseFrom(bytes)
     def getKlass = classOf[org.totalgrid.reef.proto.SimMapping.SimulatorMapping]
     def id = "simulator_mapping"
-  }
-  def fieldDescr() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.FieldDescr] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.FieldDescr): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.FieldDescr.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.FieldDescr]
-    def id = "field_descr"
-  }
-  def field() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.Field] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.Field): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.Field.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.Field]
-    def id = "field"
-  }
-  def tagControl() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.TagControl] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.TagControl): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.TagControl.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.TagControl]
-    def id = "tag_control"
-  }
-  def tagType() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.TagType] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.TagType): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.TagType.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.TagType]
-    def id = "tag_type"
-  }
-  def tag() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.Tag] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.Tag): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.Tag.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.Tag]
-    def id = "tag"
-  }
-  def tagQuery() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.TagQuery] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.TagQuery): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.TagQuery.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.TagQuery]
-    def id = "tag_query"
-  }
-  def tagList() = new TypeDescriptor[org.totalgrid.reef.proto.Tags.TagList] {
-    def serialize(typ: org.totalgrid.reef.proto.Tags.TagList): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Tags.TagList.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Tags.TagList]
-    def id = "tag_list"
   }
   def attribute() = new TypeDescriptor[org.totalgrid.reef.proto.Utils.Attribute] {
     def serialize(typ: org.totalgrid.reef.proto.Utils.Attribute): Array[Byte] = typ.toByteArray

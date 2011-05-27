@@ -11,7 +11,6 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.proto.Tags._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Optional._
@@ -482,76 +481,6 @@ object OptionalProtos {
     val delay = optionally(_.getDelay)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptSimMappingMeasSim(Some(i)) })
     val commands = optionally(_.getCommandsList.toList.map { i => new OptSimMappingCommandSim(Some(i)) })
-  }
-  implicit def proto2OptTagsFieldDescr(a: org.totalgrid.reef.proto.Tags.FieldDescr): OptTagsFieldDescr = new OptTagsFieldDescr(Some(a))
-  class OptTagsFieldDescr(real: Option[org.totalgrid.reef.proto.Tags.FieldDescr]) extends OptionalStruct(real) {
-    val id = optionally(_.getId)
-    val name = optionally(_.getName)
-    val shortName = optionally(_.hasShortName, _.getShortName)
-    val _type = optionally(_.getType)
-    val validation = optionally(_.hasValidation, _.getValidation)
-    val fieldWidth = optionally(_.getFieldWidth)
-    val fieldHeight = optionally(_.getFieldHeight)
-    val maxLength = optionally(_.getMaxLength)
-    val displayOrder = optionally(_.hasDisplayOrder, _.getDisplayOrder)
-    val createOnly = optionally(_.getCreateOnly)
-    val readOnly = optionally(_.getReadOnly)
-  }
-  implicit def proto2OptTagsField(a: org.totalgrid.reef.proto.Tags.Field): OptTagsField = new OptTagsField(Some(a))
-  class OptTagsField(real: Option[org.totalgrid.reef.proto.Tags.Field]) extends OptionalStruct(real) {
-    val _type = optionally(_.getType)
-    val dataString = optionally(_.hasDataString, _.getDataString)
-    val dataUint = optionally(_.hasDataUint, _.getDataUint)
-    val dataTime = optionally(_.hasDataTime, _.getDataTime)
-  }
-  implicit def proto2OptTagsTagControl(a: org.totalgrid.reef.proto.Tags.TagControl): OptTagsTagControl = new OptTagsTagControl(Some(a))
-  class OptTagsTagControl(real: Option[org.totalgrid.reef.proto.Tags.TagControl]) extends OptionalStruct(real) {
-    val action = optionally(_.getAction)
-    val command = new OptCommandsCommandAccess(optionally(_.getCommand))
-    val commandLocked = optionally(_.hasCommandLocked, _.getCommandLocked)
-    val entity = optionally(_.getEntityList.toList.map { i => new OptModelEntity(Some(i)) })
-  }
-  implicit def proto2OptTagsTagType(a: org.totalgrid.reef.proto.Tags.TagType): OptTagsTagType = new OptTagsTagType(Some(a))
-  class OptTagsTagType(real: Option[org.totalgrid.reef.proto.Tags.TagType]) extends OptionalStruct(real) {
-    val id = optionally(_.hasId, _.getId)
-    val name = optionally(_.hasName, _.getName)
-    val color = optionally(_.hasColor, _.getColor)
-    val image = optionally(_.hasImage, _.getImage)
-    val iconChar = optionally(_.hasIconChar, _.getIconChar)
-    val control = new OptTagsTagControl(optionally(_.hasControl, _.getControl))
-    val field = optionally(_.getFieldList.toList.map { i => new OptTagsFieldDescr(Some(i)) })
-  }
-  implicit def proto2OptTagsTag(a: org.totalgrid.reef.proto.Tags.Tag): OptTagsTag = new OptTagsTag(Some(a))
-  class OptTagsTag(real: Option[org.totalgrid.reef.proto.Tags.Tag]) extends OptionalStruct(real) {
-    val id = optionally(_.hasId, _.getId)
-    val name = optionally(_.hasName, _.getName)
-    val typeId = optionally(_.getTypeId)
-    val entity = new OptModelEntity(optionally(_.getEntity))
-    val command = new OptCommandsCommandAccess(optionally(_.hasCommand, _.getCommand))
-    val createTime = optionally(_.hasCreateTime, _.getCreateTime)
-    val createUser = optionally(_.hasCreateUser, _.getCreateUser)
-    val fieldTime = optionally(_.hasFieldTime, _.getFieldTime)
-    val fieldUser = optionally(_.hasFieldUser, _.getFieldUser)
-    val modifiedTime = optionally(_.hasModifiedTime, _.getModifiedTime)
-    val field = optionally(_.getFieldList.toList.map { i => new OptTagsField(Some(i)) })
-  }
-  implicit def proto2OptTagsTagQuery(a: org.totalgrid.reef.proto.Tags.TagQuery): OptTagsTagQuery = new OptTagsTagQuery(Some(a))
-  class OptTagsTagQuery(real: Option[org.totalgrid.reef.proto.Tags.TagQuery]) extends OptionalStruct(real) {
-    val id = optionally(_.getIdList.toList)
-    val _type = optionally(_.getTypeList.toList)
-    val timeFrom = optionally(_.hasTimeFrom, _.getTimeFrom)
-    val timeTo = optionally(_.hasTimeTo, _.getTimeTo)
-    val equipmentgroup = optionally(_.getEquipmentgroupList.toList)
-    val entity = optionally(_.getEntityList.toList)
-    val userId = optionally(_.getUserIdList.toList)
-    val limit = optionally(_.hasLimit, _.getLimit)
-    val ascending = optionally(_.hasAscending, _.getAscending)
-    val idAfter = optionally(_.hasIdAfter, _.getIdAfter)
-  }
-  implicit def proto2OptTagsTagList(a: org.totalgrid.reef.proto.Tags.TagList): OptTagsTagList = new OptTagsTagList(Some(a))
-  class OptTagsTagList(real: Option[org.totalgrid.reef.proto.Tags.TagList]) extends OptionalStruct(real) {
-    val query = new OptTagsTagQuery(optionally(_.hasQuery, _.getQuery))
-    val tags = optionally(_.getTagsList.toList.map { i => new OptTagsTag(Some(i)) })
   }
   implicit def proto2OptUtilsAttribute(a: org.totalgrid.reef.proto.Utils.Attribute): OptUtilsAttribute = new OptUtilsAttribute(Some(a))
   class OptUtilsAttribute(real: Option[org.totalgrid.reef.proto.Utils.Attribute]) extends OptionalStruct(real) {
