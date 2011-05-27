@@ -30,9 +30,17 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 
   override def createCommandExecutionLock(id: Command): CommandAccess = createCommandExecutionLock(id :: Nil)
 
+  override def createCommandExecutionLock(id: Command, expirationTimeMilli: Long): CommandAccess = createCommandExecutionLock(id :: Nil, expirationTimeMilli)
+
   override def createCommandExecutionLock(ids: java.util.List[Command]): CommandAccess = {
-    ops("Couldn't get command execution lock for :" + ids.map { _.getName }) {
+    ops("Couldn't get command execution lock for: " + ids.map { _.getName }) {
       _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids)).await().expectOne
+    }
+  }
+
+  override def createCommandExecutionLock(ids: java.util.List[Command], expirationTimeMilli: Long): CommandAccess = {
+    ops("Couldn't get command execution lock for: " + ids.map { _.getName }) {
+      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids, Option(expirationTimeMilli))).await().expectOne
     }
   }
 
@@ -49,18 +57,18 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     _.delete(CommandAccessRequestBuilders.getAll).await().expectMany
   }
 
-  override def executeCommandAsControl(id: Command): CommandStatus = ops("Couldn't execute control:" + id) {
+  override def executeCommandAsControl(id: Command): CommandStatus = ops("Couldn't execute control: " + id) {
     _.put(UserCommandRequestBuilders.executeControl(id)).await().expectOne.getStatus
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Double): CommandStatus = {
-    ops("Couldn't execute setpoint:" + id + " with double value: " + value) {
+    ops("Couldn't execute setpoint: " + id + " with double value: " + value) {
       _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).await().expectOne.getStatus
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Int): CommandStatus = {
-    ops("Couldn't execute setpoint:" + id + " with integer value: " + value) {
+    ops("Couldn't execute setpoint: " + id + " with integer value: " + value) {
       _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).await().expectOne.getStatus
     }
   }

@@ -23,6 +23,7 @@ package org.totalgrid.reef.api.request.builders
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.CommandAccess
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
+import scala.None
 
 object CommandAccessRequestBuilders {
 
@@ -44,9 +45,22 @@ object CommandAccessRequestBuilders {
 
   // we defer to scala implementation to collect names b/c there is no good way to handle java lists in scala
   def allowAccessForCommands(commands: List[Command]): CommandAccess = {
-    CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).setAccess(CommandAccess.AccessMode.ALLOWED).build
+    allowAccessForCommands(commands, None)
   }
-  def allowAccessForCommands(commands: java.util.List[Command]): CommandAccess = allowAccessForCommands(commands.toList)
+
+  def allowAccessForCommands(commands: List[Command], expirationTimeMilli: Option[Long]): CommandAccess = {
+    val access = CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).setAccess(CommandAccess.AccessMode.ALLOWED)
+    expirationTimeMilli match {
+      case Some(time) => access.setExpireTime(time)
+      case None =>
+    }
+    access.build
+  }
+
+  def allowAccessForCommands(commands: java.util.List[Command]): CommandAccess = allowAccessForCommands(commands, None)
+
+  def allowAccessForCommands(commands: java.util.List[Command], expirationTimeMilli: Option[Long]): CommandAccess = allowAccessForCommands(commands.toList,
+    expirationTimeMilli)
 
   def blockAccessForCommandNames(commands: List[String]): CommandAccess = blockAccessForCommandNames(commands: java.util.List[String])
   def blockAccessForCommandNames(commands: java.util.List[String]): CommandAccess = {
