@@ -34,6 +34,10 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids)).await().expectOne
   }
 
+  override def createCommandExecutionLock(ids: java.util.List[Command], expirationTimeMilli: Long): CommandAccess = ops {
+    _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids, Option(expirationTimeMilli))).await().expectOne
+  }
+
   override def deleteCommandLock(uid: String): CommandAccess = ops {
     _.delete(CommandAccessRequestBuilders.getForUid(uid)).await().expectOne
   }
