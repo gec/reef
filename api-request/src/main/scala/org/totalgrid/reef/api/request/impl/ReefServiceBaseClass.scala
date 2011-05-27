@@ -67,16 +67,28 @@ trait ClientSource {
   // TODO - find a type-safe replacement
   def convertByCasting(session: Session): RestOperations with SubscriptionManagement = session.asInstanceOf[SessionWrapper].client
 
-  protected def ops[A](block: RestOperations with SubscriptionManagement => A): A = {
+  protected def ops[A](errorMsg: => String)(block: RestOperations with SubscriptionManagement => A): A = {
     try {
       _ops(block)
     } catch {
       case rse: ReefServiceException =>
         // we are just trying to verify that only ReefService derived Execeptions bubble out of the
         // calls, if its already a ReefServiceException we have nothing to do
+        rse.addExtraInformation(renderErrorMsg(errorMsg))
         throw rse
       case e: Exception =>
-        throw new InternalClientError("ops() call: unexpected error: " + e.getMessage, e)
+        val ice = new InternalClientError("ops() call: unexpected error: " + e.getMessage, e)
+        ice.addExtraInformation(renderErrorMsg(errorMsg))
+        throw ice
+    }
+  }
+
+  private def renderErrorMsg(errorMsg: => String): String = {
+    try {
+      val errorString = errorMsg
+      errorString.replaceAll("\n", " ") + " - "
+    } catch {
+      case e: Exception => "Error rendering extra errorMsg"
     }
   }
 

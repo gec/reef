@@ -24,26 +24,36 @@ import org.totalgrid.reef.api.request.MeasurementOverrideService
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.MeasOverride
 import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.api.request.builders.MeasurementOverrideRequestBuilders
 
 trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with MeasurementOverrideService {
 
-  override def setPointOutOfService(point: Point): MeasOverride = ops {
-    _.put(MeasurementOverrideRequestBuilders.makeNotInService(point)).await().expectOne
+  override def setPointOutOfService(point: Point): MeasOverride = {
+    ops("Couldn't set point uuid:" + point.uuid + " name: " + point.name + " out of service") {
+      _.put(MeasurementOverrideRequestBuilders.makeNotInService(point)).await().expectOne
+    }
   }
 
-  override def setPointOverriden(point: Point, measurement: Measurement) = ops {
-    _.put(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)).await().expectOne
+  override def setPointOverriden(point: Point, measurement: Measurement) = {
+    ops("Couldn't override point uuid:" + point.uuid + " name: " + point.name + " to: " + measurement) {
+      _.put(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)).await().expectOne
+    }
   }
 
-  override def deleteMeasurementOverride(measOverride: MeasOverride) = ops {
-    _.delete(measOverride).await().expectOne
+  override def deleteMeasurementOverride(measOverride: MeasOverride) = {
+    // TODO: measurementOverride needs uid
+    ops("Couldn't delete measurementOverride: " + measOverride.meas + " on: " + measOverride.point) {
+      _.delete(measOverride).await().expectOne
+    }
   }
 
-  override def clearMeasurementOverridesOnPoint(point: Point) = ops {
-    _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).await().expectMany() match {
-      case Nil => false
-      case _ => true
+  override def clearMeasurementOverridesOnPoint(point: Point) = {
+    ops("Couldn't clear measurementOverrides on point uuid: " + point.uuid + " name: " + point.name) {
+      _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).await().expectMany() match {
+        case Nil => false
+        case _ => true
+      }
     }
   }
 

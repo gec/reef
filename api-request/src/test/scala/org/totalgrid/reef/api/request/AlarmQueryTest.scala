@@ -24,6 +24,7 @@ import builders.AlarmListRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.japi.ReefServiceException
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryTest
@@ -74,6 +75,14 @@ class AlarmQueryTest
 
     client.addExplanation("Get alarms with multiple selects", desc)
     client.get(AlarmListRequestBuilders.getUnacknowledgedWithType("Scada.OutOfNominal", 2)).await().expectOne
+  }
+
+  test("Test alarm failure") {
+    val exc = intercept[ReefServiceException] {
+      client.getAlarm("1234567890123456789")
+    }.getMessage
+    exc.contains("1234567890123456789") should equal(true)
+    exc.contains("uid") should equal(true)
   }
 
 }

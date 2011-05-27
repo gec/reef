@@ -28,23 +28,27 @@ import org.totalgrid.reef.api.request.builders.PointRequestBuilders
 
 trait PointServiceImpl extends ReefServiceBaseClass with PointService {
 
-  override def getAllPoints() = ops {
-    _.get(PointRequestBuilders.getAll).await().expectMany()
+  override def getAllPoints() = ops("Failed getting all points in system") {
+    _.get(PointRequestBuilders.getAll).await().expectMany
   }
 
-  override def getPointByName(name: String) = ops {
-    _.get(PointRequestBuilders.getByName(name)).await().expectOne("Point not found with name: " + name)
+  override def getPointByName(name: String) = ops("Point not found with name: " + name) {
+    _.get(PointRequestBuilders.getByName(name)).await().expectOne
   }
 
-  override def getPointByUid(uuid: ReefUUID) = ops {
-    _.get(PointRequestBuilders.getByUid(uuid)).await().expectOne("Point not found with uuid: " + uuid)
+  override def getPointByUid(uuid: ReefUUID) = ops("Point not found with uuid: " + uuid) {
+    _.get(PointRequestBuilders.getByUid(uuid)).await().expectOne
   }
 
-  override def getPointsOwnedByEntity(parentEntity: Entity) = ops {
-    _.get(PointRequestBuilders.getOwnedByEntity(parentEntity)).await().expectMany()
+  override def getPointsOwnedByEntity(parentEntity: Entity) = {
+    ops("Couldn't find points owned by parent entity: " + parentEntity) {
+      _.get(PointRequestBuilders.getOwnedByEntity(parentEntity)).await().expectMany
+    }
   }
 
-  override def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = ops {
-    _.get(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)).await().expectMany()
+  override def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = {
+    ops("Couldn't find points belong to endpoint: " + endpointUuid.getUuid) {
+      _.get(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)).await().expectMany
+    }
   }
 }

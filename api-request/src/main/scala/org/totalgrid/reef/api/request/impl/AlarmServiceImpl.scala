@@ -24,27 +24,31 @@ import org.totalgrid.reef.api.request.{ AlarmService }
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.request.builders.{ AlarmListRequestBuilders, AlarmRequestBuilders }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
 
-  override def getAlarm(uid: String) = ops {
-    _.get(AlarmRequestBuilders.getByUID(uid)).await().expectOne("Alarm with UID: " + uid + " not found")
+  override def getAlarm(uid: String) = ops("Couldn't get alarm with uid: " + uid) {
+    _.get(AlarmRequestBuilders.getByUID(uid)).await()
+      .expectOne
   }
 
-  override def getActiveAlarms(limit: Int) = ops {
+  override def getActiveAlarms(limit: Int) = ops("Couldn't get the last " + limit + " active alarms") {
     _.get(AlarmListRequestBuilders.getUnacknowledged(limit)).await().expectOne.getAlarmsList
   }
 
-  override def subscribeToActiveAlarms(limit: Int) = ops { session =>
+  override def subscribeToActiveAlarms(limit: Int) = ops("Couldn't subscribe to active alarms") { session =>
     useSubscription(session, Descriptors.alarm.getKlass) { sub =>
       session.get(AlarmListRequestBuilders.getUnacknowledged(limit), sub).await().expectOne.getAlarmsList
     }
   }
 
-  override def getActiveAlarms(types: java.util.List[String], limit: Int) = ops {
-    _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).await().expectOne.getAlarmsList
+  override def getActiveAlarms(types: java.util.List[String], limit: Int) = {
+    ops("Couldn't get active alarms with types: " + types) {
+      _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).await().expectOne.getAlarmsList
+    }
   }
 
   override def removeAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.REMOVED)
@@ -53,7 +57,9 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
 
   override def silenceAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.UNACK_SILENT)
 
-  private def changeAlarmState(alarm: Alarm, state: Alarm.State) = ops {
-    _.put(alarm.toBuilder.setState(state).build).await().expectOne
+  private def changeAlarmState(alarm: Alarm, state: Alarm.State) = {
+    ops("Couldn't update alarm: " + alarm.uid + " to state: " + state) {
+      _.put(alarm.toBuilder.setState(state).build).await().expectOne
+    }
   }
 }
