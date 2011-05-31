@@ -1,11 +1,6 @@
 set -ex
 
-if [ -z $DEV ]
-then
-    mvn install -DskipTests -Pdist,preload
-else
-    mvn install -DskipTests -Pdist
-fi
+mvn install -DskipTests -Pdist
 
 ./bin/redeploy.sh
 
