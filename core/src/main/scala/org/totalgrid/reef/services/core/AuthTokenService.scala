@@ -45,7 +45,7 @@ object AuthTokenService {
   import org.totalgrid.reef.models.{ Agent, AuthPermission, PermissionSet, PermissionSetJoin, AgentPermissionSetJoin }
   def seed() {
 
-    transaction {
+    inTransaction {
       if (ApplicationSchema.agents.Count.head == 0) {
 
         val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", "-system-"))

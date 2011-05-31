@@ -40,17 +40,13 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   }
   class TestRig extends UserCommandTestRig with AccessTestRig {
     val model = userCommands
-    val cmd = transaction {
-      seed("cmd01")
-    }
+    val cmd = seed("cmd01")
 
     def scenario(mode: AccessMode, time: Long, user: String) {
-      transaction {
-        val selectId = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user))).id
-        ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(cmd.id, selectId))
-        cmd.lastSelectId = Some(selectId)
-        ApplicationSchema.commands.update(cmd)
-      }
+      val selectId = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user))).id
+      ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(cmd.id, selectId))
+      cmd.lastSelectId = Some(selectId)
+      ApplicationSchema.commands.update(cmd)
     }
   }
 
@@ -58,13 +54,9 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val r = new TestRig
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
-    val inserted = transaction {
-      r.model.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
-    }
+    val inserted = r.model.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
 
-    transaction {
-      r.model.markCompleted(inserted, status)
-    }
+    r.model.markCompleted(inserted, status)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -85,13 +77,9 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val r = new TestRig
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
-    val inserted = transaction {
-      r.model.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
-    }
+    val inserted = r.model.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
 
-    transaction {
-      r.model.findAndMarkExpired
-    }
+    r.model.findAndMarkExpired
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -108,9 +96,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
     intercept[ReefServiceException] {
-      transaction {
-        r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
-      }
+      r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
     }
   }
 
@@ -121,9 +107,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
-    transaction {
-      r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
-    }
+    r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)

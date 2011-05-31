@@ -43,9 +43,9 @@ class EventServiceTest extends DatabaseUsingTestBase {
   val EVENT = EventConfig.Designation.EVENT.getNumber
   val LOG = EventConfig.Designation.LOG.getNumber
 
-  override def beforeEach() {
-    super.beforeEach()
-    seedEventConfigTable
+  override def beforeAll() {
+    super.beforeAll()
+    transaction { seedEventConfigTable }
   }
 
   def seedEventConfigTable() {
@@ -64,111 +64,105 @@ class EventServiceTest extends DatabaseUsingTestBase {
       EventConfigStore(System.SubsystemStopped, 8, LOG, 0, "Subsystem has stopped"),
       EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}"))
 
-    transaction {
-      ApplicationSchema.eventConfigs.deleteWhere(e => true === true)
-      ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
-    }
+    ApplicationSchema.eventConfigs.deleteWhere(e => true === true)
+    ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
   }
 
   test("Create Events and Alarms") {
     import EventType._
     import EventConfig.Designation
 
-    transaction {
-      val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
-      val eventService = factories.events.model
-      // Post an event
-      var event = eventService.createFromProto(makeEvent(System.UserLogin))
-      event.alarm should be(false)
-      event.severity should be(7)
-      event.rendered should be("User logged in")
+    val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val eventService = factories.events.model
+    // Post an event
+    var event = eventService.createFromProto(makeEvent(System.UserLogin))
+    event.alarm should be(false)
+    event.severity should be(7)
+    event.rendered should be("User logged in")
 
-      // Post an event that is an alarm
-      event = eventService.createFromProto(makeEvent(Scada.ControlExe))
-      event.alarm should be(true)
-      event.severity should be(3)
-      event.rendered should be("User executed control val0 on device val1")
-      val alarm = event.associatedAlarm.value
-      alarm.eventUid should be(event.id)
-      alarm.state should be(AlarmModel.UNACK_AUDIBLE)
+    // Post an event that is an alarm
+    event = eventService.createFromProto(makeEvent(Scada.ControlExe))
+    event.alarm should be(true)
+    event.severity should be(3)
+    event.rendered should be("User executed control val0 on device val1")
+    val alarm = event.associatedAlarm.value
+    alarm.eventUid should be(event.id)
+    alarm.state should be(AlarmModel.UNACK_AUDIBLE)
 
-    }
   }
 
   test("Update Alarm States") {
     import EventType._
 
-    transaction {
-      val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
-      val eventService = factories.events.model
-      val alarmService = factories.alarms.model
+    val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val eventService = factories.events.model
+    val alarmService = factories.alarms.model
 
-      // Post an event that is an alarm
-      var event = eventService.createFromProto(makeEvent(Scada.ControlExe))
-      event.alarm should be(true)
-      event.severity should be(3)
-      var alarm = event.associatedAlarm.value
-      alarm.eventUid should be(event.id)
-      alarm.state should be(AlarmModel.UNACK_AUDIBLE)
+    // Post an event that is an alarm
+    var event = eventService.createFromProto(makeEvent(Scada.ControlExe))
+    event.alarm should be(true)
+    event.severity should be(3)
+    var alarm = event.associatedAlarm.value
+    alarm.eventUid should be(event.id)
+    alarm.state should be(AlarmModel.UNACK_AUDIBLE)
 
-      // Can't go to REMOVED
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.REMOVED), alarm) }
+    // Can't go to REMOVED
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.REMOVED), alarm) }
 
-      // Update to UNACK_SILENT
-      {
-        val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm)
-        modified should be(true)
-        alarm2.state should be(AlarmModel.UNACK_SILENT)
-        alarm = alarm2
-      }
+    // Update to UNACK_SILENT
+    {
+      val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm)
+      modified should be(true)
+      alarm2.state should be(AlarmModel.UNACK_SILENT)
+      alarm = alarm2
+    }
 
-      // Can't go back to UNACK_AUDIBLE
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
+    // Can't go back to UNACK_AUDIBLE
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
 
-      // Update to ACKNOWLEDGED
-      {
-        val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm)
-        modified should be(true)
-        alarm2.state should be(AlarmModel.ACKNOWLEDGED)
-        alarm = alarm2
-      }
-      // Update to ACKNOWLEDGED again
-      {
-        val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm)
-        modified should be(false)
-        alarm2.state should be(AlarmModel.ACKNOWLEDGED)
-        alarm = alarm2
-      }
+    // Update to ACKNOWLEDGED
+    {
+      val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm)
+      modified should be(true)
+      alarm2.state should be(AlarmModel.ACKNOWLEDGED)
+      alarm = alarm2
+    }
+    // Update to ACKNOWLEDGED again
+    {
+      val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm)
+      modified should be(false)
+      alarm2.state should be(AlarmModel.ACKNOWLEDGED)
+      alarm = alarm2
+    }
 
-      // Can't go back to UNACK_*
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
+    // Can't go back to UNACK_*
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
 
-      // Update to REMOVED
-      {
-        val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.REMOVED), alarm)
-        modified should be(true)
-        alarm2.state should be(AlarmModel.REMOVED)
-        alarm = alarm2
-      }
+    // Update to REMOVED
+    {
+      val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.REMOVED), alarm)
+      modified should be(true)
+      alarm2.state should be(AlarmModel.REMOVED)
+      alarm = alarm2
+    }
 
-      // Can't go back to ACKNOWLEDGED or UNACK_*
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
-      intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm) }
+    // Can't go back to ACKNOWLEDGED or UNACK_*
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_AUDIBLE), alarm) }
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.UNACK_SILENT), alarm) }
+    intercept[ReefServiceException] { alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm) }
 
-      // Check UNACK_AUDIBLE straight to ACKNOWLEDGED with a new event
-      event = eventService.createFromProto(makeEvent(Scada.ControlExe))
-      alarm = event.associatedAlarm.value
-      alarm.state should be(AlarmModel.UNACK_AUDIBLE); // need semicolon!
+    // Check UNACK_AUDIBLE straight to ACKNOWLEDGED with a new event
+    event = eventService.createFromProto(makeEvent(Scada.ControlExe))
+    alarm = event.associatedAlarm.value
+    alarm.state should be(AlarmModel.UNACK_AUDIBLE); // need semicolon!
 
-      // Update to ACKNOWLEDGED
-      {
-        val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm)
-        modified should be(true)
-        alarm2.state should be(AlarmModel.ACKNOWLEDGED)
-        alarm = alarm2
-      }
+    // Update to ACKNOWLEDGED
+    {
+      val (alarm2, modified) = alarmService.updateFromProto(makeAlarm(alarm.id, Alarm.State.ACKNOWLEDGED), alarm)
+      modified should be(true)
+      alarm2.state should be(AlarmModel.ACKNOWLEDGED)
+      alarm = alarm2
     }
   }
 

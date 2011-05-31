@@ -34,8 +34,8 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
-  override def beforeEach() {
-    super.beforeEach()
+  override def beforeAll() {
+    super.beforeAll()
     transaction {
       ModelSeed.seed()
       seedPoints

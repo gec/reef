@@ -24,7 +24,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Entity, EntityEdge => Edge
 object ModelSeed {
 
   def seed() {
-    transaction {
+    inTransaction {
       if (ApplicationSchema.entities.Count.head == 0) {
         pittsboro.seed()
         apex.seed()

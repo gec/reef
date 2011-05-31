@@ -44,9 +44,13 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.service.AsyncService
 
 import client.Event
-import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 
-abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
+abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
+
+  override def beforeEach() {
+    ServiceBootstrap.resetDb
+  }
 
   class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
 

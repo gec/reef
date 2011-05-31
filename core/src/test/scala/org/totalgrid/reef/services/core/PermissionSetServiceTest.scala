@@ -86,13 +86,5 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
 
     fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectNone()
     fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectNone()
-
-    import org.squeryl.PrimitiveTypeMode._
-    import org.totalgrid.reef.models.ApplicationSchema
-    transaction {
-      ApplicationSchema.permissions.size should equal(0)
-      ApplicationSchema.permissionSets.size should equal(0)
-      ApplicationSchema.permissionSetJoins.size should equal(0)
-    }
   }
 }

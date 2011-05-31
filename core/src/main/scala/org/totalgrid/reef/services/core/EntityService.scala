@@ -38,7 +38,7 @@ class EntityService extends SyncServiceBase[EntityProto] {
 
   override def put(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
 
-    transaction {
+    inTransaction {
       var ent = EQ.findOrCreateEntity(req.getName, req.getTypesList.head) // TODO: need better message if getTypesList is empty: "BAD_REQUEST with message: java.util.NoSuchElementException"
       req.getTypesList.tail.foreach(t => if (ent.types.value.find(_ == t).isEmpty) ent = EQ.addTypeToEntity(ent, t))
       Response(Envelope.Status.OK, EQ.entityToProto(ent).build :: Nil)
@@ -46,7 +46,7 @@ class EntityService extends SyncServiceBase[EntityProto] {
   }
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
-    transaction {
+    inTransaction {
       val result = EQ.fullQuery(req);
       Response(Envelope.Status.OK, result)
     }
@@ -71,7 +71,7 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
 
   override def put(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
 
-    transaction {
+    inTransaction {
       val parentEntity = EQ.findEntity(req.getParent).getOrElse(throw new Exception("cannot find parent"))
       val childEntity = EQ.findEntity(req.getChild).getOrElse(throw new Exception("cannot find child"))
       val existingEdge = EQ.findEdge(parentEntity, childEntity, req.getRelationship)
@@ -86,7 +86,7 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
   }
 
   override def get(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
-    transaction {
+    inTransaction {
       // TODO: add edge searching
       val edges = EQ.edges.where(t => true === true).toList
       Response(Envelope.Status.OK, edges.map { convertToProto(_) })

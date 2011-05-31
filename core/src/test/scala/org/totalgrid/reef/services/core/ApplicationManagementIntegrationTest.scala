@@ -33,10 +33,15 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
+import org.totalgrid.reef.services.ServiceBootstrap
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagementIntegrationTest extends DatabaseUsingTestBase {
+class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
+
+  override def beforeEach() {
+    ServiceBootstrap.resetDb
+  }
 
   class Fixture(amqp: AMQPProtoFactory) {
 
