@@ -37,6 +37,16 @@
             <artifactId>reef-branding</artifactId>
             <version>0.3.0-RC1</version>
         </dependency>
+        <dependency>
+            <groupId>org.ops4j.pax.logging</groupId>
+            <artifactId>pax-logging-api</artifactId>
+            <version>1.6.3-LOCATION</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ops4j.pax.logging</groupId>
+            <artifactId>pax-logging-service</artifactId>
+            <version>1.6.3-LOCATION</version>
+        </dependency>
     </dependencies>
 
     <artifactId>reef-dist</artifactId>
@@ -142,13 +152,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>preload</id>
-            <build>
-                <plugins>
                     <plugin>
                         <groupId>org.apache.karaf.tooling</groupId>
                         <artifactId>features-maven-plugin</artifactId>
@@ -171,6 +174,25 @@
                                     <repository>target/system-repo</repository>
                                 </configuration>
                             </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>preload</id>
+            <activation>
+                <property>
+                  <name>!DEV</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.karaf.tooling</groupId>
+                        <artifactId>features-maven-plugin</artifactId>
+                        <version>${karaf.version}</version>
+                        <executions>
                             <execution>
                                 <id>add-reef-bundles-to-repo</id>
                                 <phase>generate-resources</phase>
