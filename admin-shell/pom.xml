@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.0-RC1</version>
+        <version>0.3.0-RC2</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -45,17 +45,17 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto-shell</artifactId>
-            <version>0.3.0-RC1</version>
+            <version>0.3.0-RC2</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-core</artifactId>
-            <version>0.3.0-RC1</version>
+            <version>0.3.0-RC2</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-metrics</artifactId>
-            <version>0.3.0-RC1</version>
+            <version>0.3.0-RC2</version>
         </dependency>
         <dependency>
             <groupId>com.weiglewilczek.scalamodules</groupId>
