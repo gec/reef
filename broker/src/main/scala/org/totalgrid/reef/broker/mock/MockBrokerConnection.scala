@@ -67,8 +67,9 @@ class MockBrokerChannel(parent: MockBrokerConnection) extends BrokerChannel {
     parent.listen(queueName.get, messageConsumer.get)
   }
   def close() {
+    val wasStarted = started
     started = false
-    onClose(true)
+    if (wasStarted) onClose(true)
   }
 
   def throwOnClosed() = if (!started) throw new ServiceIOException("Already closed")
