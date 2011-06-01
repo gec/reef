@@ -23,6 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.util.{ EmptySyncVar }
+import org.totalgrid.reef.executor.{ ReactActorExecutor, Executor }
 
 @RunWith(classOf[JUnitRunner]) //disabled because it hangs under eclipse
 class CommandIntegrationTest extends FunSuite with ShouldMatchers {
@@ -43,7 +44,9 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
 
     slave.setDevice(new DeviceTemplate(100, 100, 100, 0, 0, 1, 1))
 
-    val commandHandler = new InstantCommandResponder(CommandStatus.CS_SUCCESS, false)
+    val executor = new ReactActorExecutor {}
+    executor.start
+    val commandHandler = new InstantCommandResponder(CommandStatus.CS_SUCCESS, executor)
 
     val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
     val acceptors = (port_start to port_end).map { port =>
@@ -63,17 +66,24 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
     val responder = new CachingResponseAcceptor()
 
     var seq: Int = 999
-    (1 to 150).foreach { i =>
+    (1 to (150 / num_pairs)).foreach { i =>
       acceptors.foreach { ac =>
-        val bo = new BinaryOutput(ControlCode.CC_PULSE_TRIP, 1, seq, seq)
-        val st = new Setpoint(seq)
-
-        seq += 1
-        ac.AcceptCommand(bo, 0, seq, responder)
+        seq += 1;
+        { // putting this into its own frame to try to make garbage collector reap the BinaryOutput and Setpoint objects
+          ac.AcceptCommand(new BinaryOutput(ControlCode.CC_PULSE_TRIP, 1, seq, seq), 0, seq, responder)
+        }
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
 
-        seq += 1
-        ac.AcceptCommand(st, 0, seq, responder)
+        seq += 1;
+        {
+          ac.AcceptCommand(new Setpoint(seq.toDouble * 100), 0, seq, responder)
+        }
+        responder.waitFor(seq, CommandStatus.CS_SUCCESS)
+
+        seq += 1;
+        {
+          ac.AcceptCommand(new Setpoint(seq.toInt * 100), 0, seq, responder)
+        }
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
       }
     }
@@ -93,16 +103,18 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  class InstantCommandResponder(status: CommandStatus, throws: Boolean = false) extends ICommandAcceptor {
+  class InstantCommandResponder(status: CommandStatus, executor: Executor) extends ICommandAcceptor {
 
     override def AcceptCommand(obj: BinaryOutput, index: Long, seq: Int, accept: IResponseAcceptor) {
-      if (throws) throw new Exception("Stack dump?")
-      accept.AcceptResponse(response, seq)
+      executor.delay(10) {
+        accept.AcceptResponse(response, seq)
+      }
     }
 
     override def AcceptCommand(obj: Setpoint, index: Long, seq: Int, accept: IResponseAcceptor) {
-      if (throws) throw new Exception("Stack dump?")
-      accept.AcceptResponse(response, seq)
+      executor.delay(10) {
+        accept.AcceptResponse(response, seq)
+      }
     }
 
     private def response = new CommandResponse(status)
