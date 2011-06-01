@@ -112,7 +112,7 @@ class SyncVar[A](initialValue: Option[A] = None) {
         } else {
           if (throwOnFailure) {
             if (customException.isDefined) throw customException.get(queue.last)
-            throw new Exception("Condition not met, final value was: " + queue.last)
+            throw new Exception("Condition not met, final value was: " + queue.lastOption)
           } else false
         }
       }
