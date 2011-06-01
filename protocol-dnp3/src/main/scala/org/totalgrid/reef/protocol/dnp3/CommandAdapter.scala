@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.dnp3
 
 import scala.collection.mutable
 
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.util.{ SafeExecution, Logging }
 
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
@@ -34,7 +34,7 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHand
  * @param accept Function that processes Command responses
  */
 class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
-    extends IResponseAcceptor with IProtocolCommandHandler with Logging {
+    extends IResponseAcceptor with IProtocolCommandHandler with Logging with SafeExecution {
 
   case class ResponseInfo(id: String, handler: IListener[Commands.CommandResponse])
 
@@ -43,23 +43,29 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
   private val idMap = mutable.Map.empty[Int, ResponseInfo]
   /// maps sequence numbers to id's
 
-  override def AcceptResponse(rsp: CommandResponse, seq: Int) = idMap.get(seq) match {
-    case Some(ResponseInfo(id, handler)) =>
-      logger.info("Got command response: " + rsp.toString + " seq: " + seq)
-      idMap -= seq //remove from the map
-      handler.onUpdate(DNPTranslator.translate(rsp, id)) //send the response to the sender
-    case None => logger.warn("Unknown command response with sequence " + seq)
+  override def AcceptResponse(rsp: CommandResponse, seq: Int) = safeExecute {
+    idMap.get(seq) match {
+      case Some(ResponseInfo(id, handler)) =>
+        logger.info("Got command response: " + rsp.toString + " seq: " + seq)
+        idMap -= seq //remove from the map
+        handler.onUpdate(DNPTranslator.translate(rsp, id)) //send the response to the sender
+      case None => logger.warn("Unknown command response with sequence " + seq)
+    }
   }
 
-  def issue(cr: Commands.CommandRequest, rspHandler: IListener[Commands.CommandResponse]): Unit = map.get(cr.getName) match {
-    case Some(x) =>
-      logger.info("Sending command request: " + x.toString)
-      if (x.getType == Mapping.CommandType.SETPOINT)
-        cmd.AcceptCommand(DNPTranslator.translateSetpoint(cr), x.getIndex, nextSeq(cr.getCorrelationId, rspHandler), this)
-      else
-        cmd.AcceptCommand(DNPTranslator.translateBinaryOutput(x), x.getIndex, nextSeq(cr.getCorrelationId, rspHandler), this)
+  def issue(cr: Commands.CommandRequest, rspHandler: IListener[Commands.CommandResponse]): Unit = safeExecute {
+    map.get(cr.getName) match {
+      case Some(x) =>
+        val cid = nextSeq(cr.getCorrelationId, rspHandler)
+        val index = x.getIndex
+        logger.info("Sending command request: " + x.toString + " index: " + index + " cid: " + cid)
+        if (x.getType == Mapping.CommandType.SETPOINT)
+          cmd.AcceptCommand(DNPTranslator.translateSetpoint(cr), index, cid, this)
+        else
+          cmd.AcceptCommand(DNPTranslator.translateBinaryOutput(x), index, cid, this)
 
-    case None => logger.warn("Unregisterd command request: " + cr.toString)
+      case None => logger.warn("Unregisterd command request: " + cr.toString)
+    }
   }
 
   private def nextSeq(id: String, handler: IListener[Commands.CommandResponse]): Int = {

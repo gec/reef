@@ -18,26 +18,26 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.util.LoggerFactory
+import org.totalgrid.reef.util.{ SafeExecution, Logging, LoggerFactory }
 
 /**
  * Shim layer to push log messages from the c++ dnp3 world
  */
-class LogAdapter extends ILogBase {
+class LogAdapter extends ILogBase with Logging with SafeExecution {
 
-  final override def Log(level: FilterLevel, loggerName: String, location: String, message: String, code: Int): Unit = {
+  final override def Log(level: FilterLevel, loggerName: String, location: String, message: String, code: Int): Unit = safeExecute {
 
     def getMsg: String = loggerName + " - " + message
 
-    val logger = LoggerFactory(loggerName)
+    val customLogger = LoggerFactory(loggerName)
 
     level match {
-      case FilterLevel.LEV_COMM => logger.debug(getMsg)
-      case FilterLevel.LEV_DEBUG => logger.debug(getMsg)
-      case FilterLevel.LEV_ERROR => logger.error(getMsg)
-      case FilterLevel.LEV_INFO => logger.info(getMsg)
-      case FilterLevel.LEV_INTERPRET => logger.info(getMsg)
-      case FilterLevel.LEV_WARNING => logger.warn(getMsg)
+      case FilterLevel.LEV_COMM => customLogger.debug(getMsg)
+      case FilterLevel.LEV_DEBUG => customLogger.debug(getMsg)
+      case FilterLevel.LEV_ERROR => customLogger.error(getMsg)
+      case FilterLevel.LEV_INFO => customLogger.info(getMsg)
+      case FilterLevel.LEV_INTERPRET => customLogger.info(getMsg)
+      case FilterLevel.LEV_WARNING => customLogger.warn(getMsg)
     }
 
   }

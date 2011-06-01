@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.util.{ SafeExecution, Logging }
 
 import org.totalgrid.reef.proto.Mapping
 import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
@@ -28,20 +28,23 @@ import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementB
  * @param cfg Measurement mapping configuration
  * 	@param accept Function that accepts the converted measurement types
  */
-class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends IDataObserver with Logging {
+class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends IDataObserver with Logging with SafeExecution {
 
   val map = MapGenerator.getMeasMap(cfg)
   var batch = MeasBatch.newBuilder
 
-  override def _Start() =
+  override def _Start() = safeExecute {
     batch = MeasBatch.newBuilder.setWallTime(System.currentTimeMillis)
+  }
 
-  override def _End() = if (batch.getMeasCount > 0) {
-    logger.debug("Publishing batch size: " + batch.getMeasCount)
-    try {
-      accept(batch.build)
-    } catch {
-      case e: Exception => logger.error("Batch publishing threw exception: " + e.toString)
+  override def _End() = safeExecute {
+    if (batch.getMeasCount > 0) {
+      logger.debug("Publishing batch size: " + batch.getMeasCount)
+      try {
+        accept(batch.build)
+      } catch {
+        case e: Exception => logger.error("Batch publishing threw exception: " + e.toString)
+      }
     }
   }
 
@@ -61,7 +64,7 @@ class MeasAdapter(cfg: Mapping.IndexMapping, accept: MeasBatch => Unit) extends 
     add(index, Mapping.DataType.CONTROL_STATUS) { DNPTranslator.translate(v, _, _) }
 
   /// if the measurement exits, transform using the specified function and send to the actor
-  private def add(index: Long, t: Mapping.DataType)(f: (String, String) => Meas) = {
+  private def add(index: Long, t: Mapping.DataType)(f: (String, String) => Meas) = safeExecute {
     map.get((index, t.getNumber)) match {
       case Some(pointInfo) => batch.addMeas(f(pointInfo.getPointName, pointInfo.getUnit))
       case None => logger.debug("Unknown type/index: " + t.toString + "/" + index)
