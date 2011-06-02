@@ -188,6 +188,7 @@
                                     </descriptors>
                                     <features>
                                         <feature>reef</feature>
+                                        <feature>reef-dnp3</feature>
                                     </features>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/reef-repo</repository>
