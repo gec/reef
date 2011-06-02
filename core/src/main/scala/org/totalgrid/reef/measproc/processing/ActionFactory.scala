@@ -119,8 +119,13 @@ object Actions {
   }
   class LinearTransform(scale: Double, offset: Double) extends Action.Evaluation {
     def apply(m: Measurement): Measurement = {
-      if (m.getType != Measurement.Type.DOUBLE || !m.hasDoubleVal) return m
-      Measurement.newBuilder(m).setDoubleVal(m.getDoubleVal * scale + offset).build
+      m.getType match {
+        case Measurement.Type.DOUBLE =>
+          if (m.hasDoubleVal) Measurement.newBuilder(m).setDoubleVal(m.getDoubleVal * scale + offset).build else m
+        case Measurement.Type.INT =>
+          if (m.hasIntVal) Measurement.newBuilder(m).setIntVal((m.getIntVal * scale + offset).toLong).build else m
+        case _ => m
+      }
     }
   }
 
