@@ -23,7 +23,7 @@ import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandler }
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
-import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer }
+import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
 import org.totalgrid.reef.util.XMLHelper
 
 import scala.collection.immutable
@@ -78,12 +78,17 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
 
     logger.info("Adding device with uid: " + endpoint + " onto channel " + channelName)
 
-    val master = getMasterConfig(IProtocol.find(files, "text/xml")) //there is should be only one XML file
+    val configFile = IProtocol.find(files, "text/xml") //there is should be only one XML file
+    val xml = XMLHelper.read(configFile.getFile.toByteArray, classOf[Master])
+    val master = getMasterConfig(xml)
+
+    val filterLevel = Option(xml.getLog).map { logElem => configure(logElem.getFilter) }.getOrElse(FilterLevel.LEV_WARNING)
+
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
     val meas_adapter = new MeasAdapter(mapping, publisher.onUpdate)
     map += endpoint -> (meas_adapter, publisher)
-    val cmd = dnp3.AddMaster(channelName, endpoint, FilterLevel.LEV_WARNING, meas_adapter, master)
+    val cmd = dnp3.AddMaster(channelName, endpoint, filterLevel, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
 
@@ -104,8 +109,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     info { "removed stack with name: " + endpoint }*/
   }
 
-  private def getMasterConfig(file: Model.ConfigFile): MasterStackConfig = {
-    val xml = XMLHelper.read(file.getFile.toByteArray, classOf[Master])
+  private def getMasterConfig(xml: Master): MasterStackConfig = {
     val config = new MasterStackConfig
     config.setMaster(configure(xml, xml.getStack.getAppLayer.getMaxFragSize))
     config.setApp(configure(xml.getStack.getAppLayer))
@@ -155,6 +159,19 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     }
 
     cfg
+  }
+
+  private def configure(xmlLevel: LogLevel): FilterLevel = {
+    xmlLevel match {
+      case LogLevel.LOG_EVENT => FilterLevel.LEV_EVENT
+      case LogLevel.LOG_ERROR => FilterLevel.LEV_ERROR
+      case LogLevel.LOG_WARNING => FilterLevel.LEV_WARNING
+      case LogLevel.LOG_INFO => FilterLevel.LEV_INFO
+      case LogLevel.LOG_INTERPRET => FilterLevel.LEV_INTERPRET
+      case LogLevel.LOG_COMM => FilterLevel.LEV_COMM
+      case LogLevel.LOG_DEBUG => FilterLevel.LEV_DEBUG
+      case _ => FilterLevel.LEV_WARNING
+    }
   }
 
   private def configure(channel: FEP.SerialPort): SerialSettings = {
