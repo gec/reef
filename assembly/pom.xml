@@ -6,14 +6,14 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
-        <version>0.3.0-RC3</version>
+        <version>0.3.0-RC4</version>
         <relativePath>../</relativePath>
     </parent>
 
     <properties>
         <karaf.version>2.2.1</karaf.version>
         <karaf.name>apache-karaf-${karaf.version}</karaf.name>
-        <reef.version>0.3.0-RC3</reef.version>
+        <reef.version>0.3.0-RC4</reef.version>
         <reef.default.repository>reef-bundles</reef.default.repository>
         <maven-assembly-plugin.version>2.2-beta-4</maven-assembly-plugin.version>
         <dist.name>totalgrid-reef</dist.name>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-branding</artifactId>
-            <version>0.3.0-RC3</version>
+            <version>0.3.0-RC4</version>
         </dependency>
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
