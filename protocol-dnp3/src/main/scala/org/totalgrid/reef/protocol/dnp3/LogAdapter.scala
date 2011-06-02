@@ -25,19 +25,24 @@ import org.totalgrid.reef.util.{ SafeExecution, Logging, LoggerFactory }
  */
 class LogAdapter extends ILogBase with Logging with SafeExecution {
 
+  // DNPLOG is common logger name for all dnp log messages
+  val customLogger = LoggerFactory("DNPLOG")
+
   final override def Log(level: FilterLevel, loggerName: String, location: String, message: String, code: Int): Unit = safeExecute {
 
-    def getMsg: String = loggerName + " - " + message
+    def getMsg: String = level + " - " + loggerName + " - " + message
 
-    val customLogger = LoggerFactory(loggerName)
-
+    // we need to upgrade all of the messages up to a usable logging level, we let the
+    // filter settings we pass into the stack determine how much info we see
     level match {
-      case FilterLevel.LEV_COMM => customLogger.debug(getMsg)
-      case FilterLevel.LEV_DEBUG => customLogger.debug(getMsg)
+      case FilterLevel.LEV_COMM => customLogger.info(getMsg)
+      case FilterLevel.LEV_DEBUG => customLogger.info(getMsg)
       case FilterLevel.LEV_ERROR => customLogger.error(getMsg)
+      case FilterLevel.LEV_EVENT => customLogger.error(getMsg)
       case FilterLevel.LEV_INFO => customLogger.info(getMsg)
       case FilterLevel.LEV_INTERPRET => customLogger.info(getMsg)
       case FilterLevel.LEV_WARNING => customLogger.warn(getMsg)
+      case _ => customLogger.error(getMsg)
     }
 
   }

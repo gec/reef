@@ -52,7 +52,7 @@ trait BasicServiceTransactable[+ModelType <: BufferLike]
   def transaction[R](fun: ModelType => R): R = {
     val m = model
     try {
-      val result: R = PrimitiveTypeMode.transaction {
+      val result: R = PrimitiveTypeMode.inTransaction {
         // Run logic inside sql transaction
         val resultInner = fun(m)
 

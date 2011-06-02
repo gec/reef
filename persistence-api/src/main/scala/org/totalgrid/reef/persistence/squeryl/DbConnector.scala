@@ -24,9 +24,18 @@ import org.totalgrid.reef.persistence.ConnectionReactor.Observer
 import org.totalgrid.reef.executor.Executor
 
 object DbConnector {
-  def connect(dbInfo: DbInfo): Option[Boolean] = {
-    val klass = Class.forName("org.totalgrid.reef.persistence.squeryl." + dbInfo.dbType + ".Connector")
-    val connector = klass.newInstance.asInstanceOf[DbConnectorBase]
+
+  private val connectedAdapters = scala.collection.mutable.Map.empty[String, DbConnectorBase]
+
+  def connect(dbInfo: DbInfo): Option[Boolean] = connectedAdapters.synchronized {
+    val connector = connectedAdapters.get(dbInfo.dbType) match {
+      case None =>
+        val klass = Class.forName("org.totalgrid.reef.persistence.squeryl." + dbInfo.dbType + ".Connector")
+        val connector = klass.newInstance.asInstanceOf[DbConnectorBase]
+        connectedAdapters.put(dbInfo.dbType, connector)
+        connector
+      case Some(c) => c
+    }
     connector.connect(dbInfo)
   }
 }

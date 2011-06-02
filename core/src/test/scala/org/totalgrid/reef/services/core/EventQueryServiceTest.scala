@@ -70,9 +70,9 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
 
   val SUB1 = "subsystem1"
 
-  override def beforeEach() {
-    super.beforeEach()
-    seedEventTable
+  override def beforeAll() {
+    super.beforeAll()
+    transaction { seedEventTable }
   }
 
   def seedEventTable() {
@@ -80,28 +80,26 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     import org.squeryl.Table
     import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
     import EventType._
-    transaction {
-      val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
-      val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
+    val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
+    val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
-      val events = List[EventStore](
-        // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
+    val events = List[EventStore](
+      // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
 
-        EventStore(System.UserLogin, false, DAYS_AGO_2, 0, INFORM, SUB1, USER1, None, Array[Byte](), ""),
-        EventStore(Scada.ControlExe, false, DAYS_AGO_2 + 1000, 0, CRITICAL, SUB1, USER1, Some(entity1.id), Array[Byte](), ""),
+      EventStore(System.UserLogin, false, DAYS_AGO_2, 0, INFORM, SUB1, USER1, None, Array[Byte](), ""),
+      EventStore(Scada.ControlExe, false, DAYS_AGO_2 + 1000, 0, CRITICAL, SUB1, USER1, Some(entity1.id), Array[Byte](), ""),
 
-        EventStore(System.UserLogin, false, HOURS_AGO_2, 0, INFORM, SUB1, USER2, None, Array[Byte](), ""),
-        EventStore(Scada.ControlExe, false, HOURS_AGO_2 + 1000, 0, CRITICAL, SUB1, USER2, Some(entity2.id), Array[Byte](), ""),
-        EventStore(System.UserLogout, false, HOURS_AGO_2 + 2000, 0, INFORM, SUB1, USER2, None, Array[Byte](), ""),
+      EventStore(System.UserLogin, false, HOURS_AGO_2, 0, INFORM, SUB1, USER2, None, Array[Byte](), ""),
+      EventStore(Scada.ControlExe, false, HOURS_AGO_2 + 1000, 0, CRITICAL, SUB1, USER2, Some(entity2.id), Array[Byte](), ""),
+      EventStore(System.UserLogout, false, HOURS_AGO_2 + 2000, 0, INFORM, SUB1, USER2, None, Array[Byte](), ""),
 
-        EventStore(System.UserLogin, false, HOURS_AGO_1, 0, INFORM, SUB1, USER3, None, Array[Byte](), ""),
-        EventStore(Scada.ControlExe, false, HOURS_AGO_1 + 1000, 0, CRITICAL, SUB1, USER3, Some(entity2.id), Array[Byte](), ""),
-        EventStore(System.UserLogout, false, HOURS_AGO_1 + 2000, 0, INFORM, SUB1, USER3, None, Array[Byte](), ""),
+      EventStore(System.UserLogin, false, HOURS_AGO_1, 0, INFORM, SUB1, USER3, None, Array[Byte](), ""),
+      EventStore(Scada.ControlExe, false, HOURS_AGO_1 + 1000, 0, CRITICAL, SUB1, USER3, Some(entity2.id), Array[Byte](), ""),
+      EventStore(System.UserLogout, false, HOURS_AGO_1 + 2000, 0, INFORM, SUB1, USER3, None, Array[Byte](), ""),
 
-        EventStore(System.UserLogout, false, NOW, 0, INFORM, SUB1, USER1, None, Array[Byte](), ""))
+      EventStore(System.UserLogout, false, NOW, 0, INFORM, SUB1, USER1, None, Array[Byte](), ""))
 
-      events.foreach(ApplicationSchema.events.insert(_))
-    }
+    events.foreach(ApplicationSchema.events.insert(_))
 
   }
 
@@ -282,9 +280,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
 
       EventStore(System.UserLogout, false, NOW + 8, 0, INFORM, SUB1, USER1, Some(entity.id), Array[Byte](), ""))
 
-    transaction {
-      events.foreach(ApplicationSchema.events.insert(_))
-    }
+    events.foreach(ApplicationSchema.events.insert(_))
 
     /*var resp2 = one(service.get(makeEL_UidAfter(lastUid, USER_ANY)))
     resp2.getEventsCount should equal(9)

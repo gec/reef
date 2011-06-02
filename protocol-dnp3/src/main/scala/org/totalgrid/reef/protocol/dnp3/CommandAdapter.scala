@@ -36,7 +36,7 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHand
 class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     extends IResponseAcceptor with IProtocolCommandHandler with Logging with SafeExecution {
 
-  case class ResponseInfo(id: String, handler: IListener[Commands.CommandResponse])
+  case class ResponseInfo(id: String, handler: IListener[Commands.CommandResponse], obj: Object)
 
   private val map = MapGenerator.getCommandMap(cfg)
   private var sequence = 0
@@ -45,7 +45,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
 
   override def AcceptResponse(rsp: CommandResponse, seq: Int) = safeExecute {
     idMap.get(seq) match {
-      case Some(ResponseInfo(id, handler)) =>
+      case Some(ResponseInfo(id, handler, obj)) =>
         logger.info("Got command response: " + rsp.toString + " seq: " + seq)
         idMap -= seq //remove from the map
         handler.onUpdate(DNPTranslator.translate(rsp, id)) //send the response to the sender
@@ -56,21 +56,29 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
   def issue(cr: Commands.CommandRequest, rspHandler: IListener[Commands.CommandResponse]): Unit = safeExecute {
     map.get(cr.getName) match {
       case Some(x) =>
-        val cid = nextSeq(cr.getCorrelationId, rspHandler)
         val index = x.getIndex
-        logger.info("Sending command request: " + x.toString + " index: " + index + " cid: " + cid)
-        if (x.getType == Mapping.CommandType.SETPOINT)
-          cmd.AcceptCommand(DNPTranslator.translateSetpoint(cr), index, cid, this)
-        else
-          cmd.AcceptCommand(DNPTranslator.translateBinaryOutput(x), index, cid, this)
+        if (x.getType == Mapping.CommandType.SETPOINT) {
+          val st = DNPTranslator.translateSetpoint(cr)
+          val cid = nextSeq(cr.getCorrelationId, rspHandler, st)
+
+          logger.info("Sending setpoint request: " + x.toString + " index: " + index + " cid: " + cid)
+          cmd.AcceptCommand(st, index, cid, this)
+        } else {
+          val bo = DNPTranslator.translateBinaryOutput(x)
+          val cid = nextSeq(cr.getCorrelationId, rspHandler, bo)
+
+          logger.info("Sending control request: " + x.toString + " index: " + index + " cid: " + cid)
+          cmd.AcceptCommand(bo, index, cid, this)
+        }
 
       case None => logger.warn("Unregisterd command request: " + cr.toString)
     }
   }
 
-  private def nextSeq(id: String, handler: IListener[Commands.CommandResponse]): Int = {
+  /// obj is just held to stop garbage collector destroying reference
+  private def nextSeq(id: String, handler: IListener[Commands.CommandResponse], obj: Object): Int = {
     sequence += 1
-    idMap.put(sequence, ResponseInfo(id, handler))
+    idMap.put(sequence, ResponseInfo(id, handler, obj))
     sequence
   }
 }

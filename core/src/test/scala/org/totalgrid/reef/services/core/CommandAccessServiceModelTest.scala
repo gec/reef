@@ -179,11 +179,10 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   test("Block multiple") {
     val r = new TestRig
-    transaction {
-      r.seed("cmd01")
-      r.seed("cmd02")
-      r.seed("cmd03")
-    }
+
+    r.seed("cmd01")
+    r.seed("cmd02")
+    r.seed("cmd03")
 
     val blockedCmds = List("cmd01", "cmd02", "cmd03")
 

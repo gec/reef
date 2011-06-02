@@ -130,12 +130,12 @@ class AgentServiceTest extends AuthSystemTestBase {
     fix.login("Nate", "password")
 
     import org.squeryl.PrimitiveTypeMode._
-    transaction {
-      ApplicationSchema.authTokens.size should equal(2)
 
-      fix.agentService.delete(makeAgent()).expectOne()
+    ApplicationSchema.authTokens.size should equal(2)
 
-      ApplicationSchema.authTokens.size should equal(0)
-    }
+    fix.agentService.delete(makeAgent()).expectOne()
+
+    ApplicationSchema.authTokens.size should equal(0)
+
   }
 }

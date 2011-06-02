@@ -73,8 +73,8 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
   val SUB1 = "subsystem1"
 
-  override def beforeEach() {
-    super.beforeEach()
+  override def beforeAll() {
+    super.beforeAll()
     val al = new AlarmAndEventInserter
     al.seedEventConfigTable
     al.seedMessages

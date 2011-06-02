@@ -39,7 +39,7 @@ class MeasurementBatchService(pool: SessionPool)
 
   override def putAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = {
 
-    val requests: List[Request[MeasurementBatch]] = transaction {
+    val requests: List[Request[MeasurementBatch]] = inTransaction {
       // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName)
       val points = Point.findByNames(names).toList

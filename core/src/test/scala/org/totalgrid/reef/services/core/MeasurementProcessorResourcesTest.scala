@@ -60,20 +60,16 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
-    val device = transaction {
-      EQ.findOrCreateEntity(devName, "LogicalNode")
-    }
+    val device = EQ.findOrCreateEntity(devName, "LogicalNode")
     val pp = Point.newBuilder.setName(pointName).build
 
     val point = service.put(pp).expectOne()
 
-    transaction {
-      // TODO: add edge service
-      val point_ent = EQ.findEntity(point.getEntity).get
-      EQ.addEdge(device, point_ent, "source")
+    // TODO: add edge service
+    val point_ent = EQ.findEntity(point.getEntity).get
+    EQ.addEdge(device, point_ent, "source")
 
-      EQ.entityToProto(device).build
-    }
+    EQ.entityToProto(device).build
   }
 
   // TODO: reenable trigger tests

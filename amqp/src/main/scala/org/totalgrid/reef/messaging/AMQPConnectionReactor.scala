@@ -94,7 +94,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
 
   private def addChannelObserver(handler: ChannelObserver) {
     queue = queue.enqueue(handler)
-    if (broker.isConnected) createChannel(handler)
+    if (broker.isConnected) createChannel(handler, broker.newChannel())
   }
 
   // helper for starting a new connection chain
@@ -105,7 +105,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
   private def attemptConnection(retryms: Long): Unit = {
     try {
       broker.connect()
-      queue.foreach { createChannel(_) }
+      queue.foreach { createChannel(_, broker.newChannel()) }
       //listeners.foreach { _.opened() }
     } catch {
       case t: Throwable =>
@@ -116,12 +116,12 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
   }
 
   /// gives a broker object its session. May fail.
-  private def createChannel(co: ChannelObserver) = {
+  private def createChannel(co: ChannelObserver, channel: BrokerChannel) = {
     try {
-      co.online(broker.newChannel())
+      co.online(channel)
       logger.debug("Added channel for type: " + co.getClass)
     } catch {
-      case ex: Exception => logger.error("error configuring sessions: ", ex)
+      case ex: Exception => logger.error("error configuring session for type: " + co.getClass, ex)
     }
   }
 

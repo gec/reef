@@ -49,7 +49,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     /*if (req.getAttributesCount == 0)
       throw new BadRequestException("Must specify at least one attribute.")*/
 
-    transaction {
+    inTransaction {
       val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       deleteAllFromEntity(entEntry.id)
@@ -66,7 +66,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
-    transaction {
+    inTransaction {
       val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
       deleteAllFromEntity(entEntry.id)
 
@@ -78,7 +78,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
-    transaction {
+    inTransaction {
       Response(Envelope.Status.OK, queryEntities(req.getEntity))
     }
   }

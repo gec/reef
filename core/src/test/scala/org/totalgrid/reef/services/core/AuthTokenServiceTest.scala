@@ -41,8 +41,8 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
-  override def beforeEach() {
-    super.beforeEach()
+  override def beforeAll() {
+    super.beforeAll()
     AuthTokenService.seed()
   }
 

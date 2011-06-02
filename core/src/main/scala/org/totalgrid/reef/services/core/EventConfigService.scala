@@ -43,7 +43,7 @@ object EventConfigService {
     import org.totalgrid.reef.event.EventType._
     import org.totalgrid.reef.proto.Alarms._
 
-    transaction {
+    inTransaction {
       if (ApplicationSchema.eventConfigs.Count.head == 0) {
         val ALARM = EventConfig.Designation.ALARM.getNumber
         val UNACK_SILENT = Alarm.State.UNACK_SILENT.getNumber

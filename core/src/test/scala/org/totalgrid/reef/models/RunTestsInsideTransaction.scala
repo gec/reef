@@ -18,14 +18,30 @@
  */
 package org.totalgrid.reef.models
 
-import org.scalatest.FunSuite
-import org.scalatest.{ Reporter, Stopper, Filter, Distributor, Tracker }
-
 import org.squeryl.PrimitiveTypeMode.transaction
+import org.scalatest._
 
-trait RunTestsInsideTransaction extends FunSuite {
+trait RunTestsInsideTransaction extends FunSuite with BeforeAndAfterEach {
 
   case object TransactionAbortException extends Exception
+
+  /**
+   * test classes shouldn't use beforeEach if using RunTestsInsideTransaction
+   */
+  final override def beforeEach() {}
+  final override def afterEach() {}
+
+  /**
+   * should be overriden by tests to run setup code inside same transaction
+   * as the test run.
+   */
+  def beforeEachInTransaction() {}
+
+  /**
+   * should be overriden by tests to run teardown code inside same transaction
+   * as the test run.
+   */
+  def afterEachInTransaction() {}
 
   override def runTest(
     testName: String,
@@ -38,7 +54,9 @@ trait RunTestsInsideTransaction extends FunSuite {
       // each test occur from within a transaction, that way when the test completes _all_ changes
       // made during the test are reverted so each test gets a clean enviroment to test against
       transaction {
+        beforeEachInTransaction()
         super.runTest(testName, reporter, stopper, configMap, tracker)
+        afterEachInTransaction()
 
         // we abort the transaction if we get to here, so changes get rolled back
         throw TransactionAbortException

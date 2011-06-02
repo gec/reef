@@ -46,9 +46,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   protected val service = new EntityAttributesService
 
   test("Put") {
-    val entUid = transaction {
-      seedEntity("ent01", "entType")
-    }
+    val entUid = seedEntity("ent01", "entType")
 
     val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
@@ -78,9 +76,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Bad put - type but no value") {
-    val entUid = transaction {
-      seedEntity("ent01", "entType")
-    }
+    val entUid = seedEntity("ent01", "entType")
 
     val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).build
@@ -90,13 +86,11 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def simpleGetScenario = {
-    transaction {
-      val id = EQ.addEntity("ent01", "entType1").id
-      EQ.addEntity("ent02", "entType2")
+    val id = EQ.addEntity("ent01", "entType1").id
+    EQ.addEntity("ent02", "entType2")
 
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
-      ReefUUID.newBuilder.setUuid(id.toString).build
-    }
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
+    ReefUUID.newBuilder.setUuid(id.toString).build
   }
 
   def attrReq(entityUid: ReefUUID, attributes: List[Attribute]) = {
@@ -105,9 +99,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Second put modifies") {
-    val entUid = transaction {
-      seedEntity("ent01", "entType")
-    }
+    val entUid = seedEntity("ent01", "entType")
 
     val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
@@ -125,9 +117,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put fully replaces") {
-    val entUid = transaction {
-      seedEntity("ent01", "entType")
-    }
+    val entUid = seedEntity("ent01", "entType")
 
     val initial = Attribute.newBuilder.setName("testAttr01").setVtype(Attribute.Type.SINT64).setValueSint64(56).build ::
       Attribute.newBuilder.setName("testAttr02").setVtype(Attribute.Type.SINT64).setValueSint64(23).build ::
@@ -195,16 +185,14 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get multiple") {
-    transaction {
-      val entId1 = EQ.addEntity("ent01", "entType1").id
-      val entId2 = EQ.addEntity("ent02", "entType2").id
+    val entId1 = EQ.addEntity("ent01", "entType1").id
+    val entId2 = EQ.addEntity("ent02", "entType2").id
 
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
 
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr03", Some("hello"), None, None, None, None))
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr04", Some("again"), None, None, None, None))
-    }
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr03", Some("hello"), None, None, None, None))
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr04", Some("again"), None, None, None, None))
 
     val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
@@ -216,9 +204,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def roundtrip[A](v: A, typ: Attribute.Type, setup: (Attribute.Builder, A) => Unit, get: Attribute => A) = {
-    val entUid = transaction {
-      seedEntity("ent01", "entType")
-    }
+    val entUid = seedEntity("ent01", "entType")
 
     val entity = Entity.newBuilder.setUuid(entUid).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(typ)
@@ -274,18 +260,14 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def deleteScenario = {
-    transaction {
-      val entId1 = EQ.addEntity("ent01", "entType1").id
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
-      ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
-      ReefUUID.newBuilder.setUuid(entId1.toString).build
-    }
+    val entId1 = EQ.addEntity("ent01", "entType1").id
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
+    ReefUUID.newBuilder.setUuid(entId1.toString).build
   }
 
   def noneForEntity(entId: ReefUUID) = {
-    transaction {
-      ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getUuid)).toList should equal(Nil)
-    }
+    ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getUuid)).toList should equal(Nil)
   }
 
 }

@@ -86,7 +86,7 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServ
 
     val select = req.getSelect
 
-    transaction {
+    inTransaction {
       env.subQueue.foreach { queueName =>
         val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
         keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts)))

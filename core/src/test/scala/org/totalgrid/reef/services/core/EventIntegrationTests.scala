@@ -50,7 +50,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     val eventQuery = new EventQueryService(factories.events, publishers)
     val alarmQuery = new AlarmQueryService(publishers)
 
-    transaction { seed() }
+    seed()
 
     val alarmInitializer = new AlarmSummaryInitializer(factories.alarms, summaries)
     alarmInitializer.addAMQPConsumers(amqp, new InstantExecutor {})
@@ -109,13 +109,11 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       // check that the "live" counted summaries match our expectations
       summaries.getMap should equal(expectedValues)
 
-      transaction {
-        // check that a restart at this point would come up with the same numbers
-        val integrityPoll = new SilentSummaryPoints
-        AlarmSummaryCalculations.initializeSummaries(integrityPoll)
-        integrityPoll.getMap should equal(expectedValues)
+      // check that a restart at this point would come up with the same numbers
+      val integrityPoll = new SilentSummaryPoints
+      AlarmSummaryCalculations.initializeSummaries(integrityPoll)
+      integrityPoll.getMap should equal(expectedValues)
 
-      }
       expectedValues
     }
 
@@ -123,13 +121,11 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       val m = summaries.getMap
       m.size should equal(size)
       m.values.forall { _ == 0 }
-      transaction {
-        val integrityPoll = new SilentSummaryPoints
-        AlarmSummaryCalculations.initializeSummaries(integrityPoll)
-        val m2 = integrityPoll.getMap
-        m2.size should equal(size)
-        m2.values.forall { _ == 0 }
-      }
+      val integrityPoll = new SilentSummaryPoints
+      AlarmSummaryCalculations.initializeSummaries(integrityPoll)
+      val m2 = integrityPoll.getMap
+      m2.size should equal(size)
+      m2.values.forall { _ == 0 }
     }
   }
 
