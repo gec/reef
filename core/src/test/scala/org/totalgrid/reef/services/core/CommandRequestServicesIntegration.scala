@@ -170,7 +170,8 @@ class CommandRequestServicesIntegration
 
     val conn = fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectOne()
 
-    println(conn.getRouting.getServiceRoutingKey)
+    // act like the FEP and mark the endpoint as comms_up
+    fixture.frontEndConnection.put(conn.toBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne
 
     //bind the 'proxied' service that will handle the call
     fixture.connection.bindService(service, AddressableDestination(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantExecutor {}))
