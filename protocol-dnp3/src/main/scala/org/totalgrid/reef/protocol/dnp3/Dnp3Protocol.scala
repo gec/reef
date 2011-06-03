@@ -24,13 +24,12 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandl
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
-import org.totalgrid.reef.util.XMLHelper
-
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.util.{ SafeExecution, XMLHelper }
 
-class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
+class Dnp3Protocol extends BaseProtocol with ChannelAlwaysOnline with SafeExecution {
 
   override def name = "dnp3"
 
@@ -39,7 +38,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, IListener[MeasurementBatch])]
+  private var map = immutable.Map.empty[String, (MeasAdapter, IListener[MeasurementBatch], IMasterObserver)]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
@@ -82,12 +81,19 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     val xml = XMLHelper.read(configFile.getFile.toByteArray, classOf[Master])
     val master = getMasterConfig(xml)
 
+    val observer = new IMasterObserver() {
+      override def OnStateChange(state: MasterStates) = safeExecute {
+        listener.onUpdate(translate(state))
+      }
+    }
+    master.getMaster.setMpObserver(observer)
+
     val filterLevel = Option(xml.getLog).map { logElem => configure(logElem.getFilter) }.getOrElse(FilterLevel.LEV_WARNING)
 
     val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
     val meas_adapter = new MeasAdapter(mapping, publisher.onUpdate)
-    map += endpoint -> (meas_adapter, publisher)
+    map += endpoint -> (meas_adapter, publisher, observer)
     val cmd = dnp3.AddMaster(channelName, endpoint, filterLevel, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
@@ -191,5 +197,13 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     })
     ss.setMStopBits(channel.getStopBits)
     ss
+  }
+
+  private def translate(state: MasterStates): FEP.CommEndpointConnection.State = {
+    state match {
+      case MasterStates.MS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
+      case MasterStates.MS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
+      case MasterStates.MS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
+    }
   }
 }
