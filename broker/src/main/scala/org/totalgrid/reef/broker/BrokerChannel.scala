@@ -35,6 +35,10 @@ trait ChannelObserver extends BrokerChannelCloseListener {
   def online(broker: BrokerChannel)
 }
 
+trait CloseableChannel {
+  def close()
+}
+
 trait BrokerChannelCloseListener {
   def onClosed(channel: BrokerChannel, expected: Boolean)
 }

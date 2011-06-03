@@ -53,6 +53,7 @@ import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.messaging.Connection
+import org.totalgrid.reef.broker.CloseableChannel
 
 //implicits for massaging service return types
 
@@ -211,6 +212,10 @@ class MockConnection extends Connection {
 
   final override def getSessionPool() = pool
 
+  val closeable = new CloseableChannel {
+    def close() = {}
+  }
+
   override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, None))
   }
@@ -219,8 +224,9 @@ class MockConnection extends Connection {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, Some(notify)))
   }
 
-  override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): Unit = {
+  override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): CloseableChannel = {
     servicemail send ServiceBinding(service, destination, competing, reactor)
+    closeable
   }
 
 }

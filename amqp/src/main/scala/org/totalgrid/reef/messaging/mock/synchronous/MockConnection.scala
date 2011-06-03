@@ -24,6 +24,7 @@ import org.totalgrid.reef.sapi.client.{ Event, SessionPool }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.Destination
 import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.broker.CloseableChannel
 
 class MockConnection extends Connection {
 
@@ -37,6 +38,6 @@ class MockConnection extends Connection {
 
   def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = throw new Exception("Unimplemented")
 
-  def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): Unit = throw new Exception("Unimplemented")
+  def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): CloseableChannel = throw new Exception("Unimplemented")
 
 }

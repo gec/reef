@@ -25,7 +25,7 @@ import org.totalgrid.reef.broker._
 /**
  * base class for AMQP subscripton modes, provides online/offline notifiers
  */
-trait AMQPConsumptionPattern extends ChannelObserver with ObserverableBrokerObject with BrokerChannelCloseListener {
+trait AMQPConsumptionPattern extends ChannelObserver with ObserverableBrokerObject with BrokerChannelCloseListener with CloseableChannel {
 
   def getQueue(broker: BrokerChannel): String
 

@@ -45,6 +45,12 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     handler
     // TODO: need to add a removeChannelObserver function if keeping async around
   }
+  def remove[A <: ChannelObserver](handler: A): A = {
+    request {
+      queue = queue.filter(handler == _)
+      handler
+    }
+  }
 
   def addConnectionListener(listener: ConnectionListener): Unit = this.synchronized {
     listeners = listeners.enqueue(listener)
