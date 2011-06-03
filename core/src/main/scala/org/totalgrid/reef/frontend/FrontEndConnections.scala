@@ -32,6 +32,7 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.japi.{ ReefServiceException, ResponseTimeoutException }
+import org.totalgrid.reef.broker.CloseableChannel
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
@@ -39,6 +40,8 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   def getKey(c: ConnProto) = c.getUid
 
   val protocols = comms.mapify { _.name }
+
+  var commandAdapters = Map.empty[String, CloseableChannel]
 
   val pool = conn.getSessionPool
 
@@ -67,8 +70,9 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, endpointListener)
-    val service = new SingleEndpointCommandService(cmdHandler)
-    conn.bindService(service, AddressableDestination(c.getRouting.getServiceRoutingKey))
+    val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
+
+    commandAdapters += c.getEndpoint.getName -> service
 
     logger.info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
   }
@@ -76,6 +80,14 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
   def removeEntry(c: ConnProto) {
     logger.debug("Removing endpoint " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
+
+    // need to make sure we close the addressable service
+    commandAdapters.get(c.getEndpoint.getName) match {
+      case Some(serviceBinding) => serviceBinding.close
+      case None =>
+    }
+    commandAdapters -= c.getEndpoint.getName
+
     protocol.removeEndpoint(c.getEndpoint.getName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
