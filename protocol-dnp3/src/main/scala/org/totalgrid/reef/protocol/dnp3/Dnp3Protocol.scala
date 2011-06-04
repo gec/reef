@@ -29,7 +29,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.util.{ SafeExecution, XMLHelper }
 
-class Dnp3Protocol extends BaseProtocol with ChannelAlwaysOnline with SafeExecution {
+class Dnp3Protocol extends BaseProtocol with SafeExecution {
 
   override def name = "dnp3"
 
@@ -40,6 +40,8 @@ class Dnp3Protocol extends BaseProtocol with ChannelAlwaysOnline with SafeExecut
   // this object. Keep a map of meas adapters around by name to prevent this.
   private var map = immutable.Map.empty[String, (MeasAdapter, IListener[MeasurementBatch], IMasterObserver)]
 
+  private var physMonitorMap = immutable.Map.empty[String, IPhysMonitor]
+
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
   private val dnp3 = new StackManager(true)
@@ -47,7 +49,15 @@ class Dnp3Protocol extends BaseProtocol with ChannelAlwaysOnline with SafeExecut
 
   override def _addChannel(p: FEP.CommChannel, listener: IListener[FEP.CommChannel.State]) = {
 
-    val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
+    val physMonitor = new IPhysMonitor {
+      override def OnStateChange(state: IPhysMonitor.State) = safeExecute {
+        listener.onUpdate(translate(state))
+      }
+    }
+
+    physMonitorMap += p.getName -> physMonitor
+
+    val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000, physMonitor)
 
     if (p.hasIp) {
       val ip = p.getIp
@@ -66,6 +76,7 @@ class Dnp3Protocol extends BaseProtocol with ChannelAlwaysOnline with SafeExecut
   override def _removeChannel(channel: String) = {
     logger.debug("removing channel with name: " + channel)
     dnp3.RemovePort(channel)
+    physMonitorMap -= channel
     logger.info("Removed channel with name: " + channel)
   }
 
@@ -204,6 +215,17 @@ class Dnp3Protocol extends BaseProtocol with ChannelAlwaysOnline with SafeExecut
       case MasterStates.MS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
       case MasterStates.MS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
       case MasterStates.MS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
+    }
+  }
+
+  private def translate(state: IPhysMonitor.State): FEP.CommChannel.State = {
+    state match {
+      case IPhysMonitor.State.Closed => FEP.CommChannel.State.CLOSED
+      case IPhysMonitor.State.Open => FEP.CommChannel.State.OPEN
+      case IPhysMonitor.State.Opening => FEP.CommChannel.State.OPENING
+      // TODO: which state CommChannel.State is stopped and waiting
+      case IPhysMonitor.State.Stopped => FEP.CommChannel.State.CLOSED
+      case IPhysMonitor.State.Waiting => FEP.CommChannel.State.ERROR
     }
   }
 }
