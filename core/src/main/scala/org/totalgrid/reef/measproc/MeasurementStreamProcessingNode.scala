@@ -88,6 +88,8 @@ object MeasurementStreamProcessingNode extends Logging {
     val measBatchService = new AddressableMeasurementBatchService(processor)
     val exchange = measBatchService.descriptor.id
     logger.info("Attached " + exchange + " key: " + connection.getRouting.getServiceRoutingKey)
+
+    // TODO: need to detach processing node addressable service when removed
     amqp.bindService(exchange, measBatchService.respond, AddressableDestination(connection.getRouting.getServiceRoutingKey), false, Some(reactor))
   }
 }
