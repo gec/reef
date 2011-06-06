@@ -21,6 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.sapi.client.SessionPool
 
 import org.totalgrid.reef.proto.Commands
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import Commands.UserCommandRequest
 
 import org.totalgrid.reef.proto.Descriptors
@@ -52,7 +53,15 @@ class UserCommandRequestService(
 
     val address = command.endpoint.value match {
       case Some(ep) =>
-        ep.frontEndAssignment.value.serviceRoutingKey match {
+        val frontEndAssignment = ep.frontEndAssignment.value
+
+        val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
+
+        if (endpointState != CommEndpointConnection.State.COMMS_UP) {
+          throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP: " + endpointState)
+        }
+
+        frontEndAssignment.serviceRoutingKey match {
           case Some(key) => AddressableDestination(key)
           case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
         }
