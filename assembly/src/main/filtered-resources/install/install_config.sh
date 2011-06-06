@@ -23,16 +23,10 @@ if [ -z $1 ]
 then
 echo "Usage: ./install_reef.sh (config file)"
 else
-if [ -f $1 ]
-then
+
 config_file=$1
 load
 
-else
-
-echo "$1 not found."
-
-fi
 fi
 
 
