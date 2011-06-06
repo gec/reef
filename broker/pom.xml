@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
