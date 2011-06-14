@@ -30,19 +30,24 @@ import CommandAccess._
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Command => FepCommandModel, UserCommandModel, CommandAccessModel, CommandBlockJoin }
+import org.totalgrid.reef.event.SilentEventSink
+import org.totalgrid.reef.sapi.RequestEnv
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
   trait UserCommandTestRig extends CommandTestRig with AccessTestRig {
-    val userCommands = new UserCommandRequestServiceModel(new SilentServiceSubscriptionHandler, commandModel, accessModel)
-
+    val userCommands = new UserCommandRequestServiceModel(new SilentServiceSubscriptionHandler, commandModel, accessModel, new SilentEventSink)
   }
   class TestRig extends UserCommandTestRig with AccessTestRig {
     val model = userCommands
     val cmd = seed("cmd01")
 
     def scenario(mode: AccessMode, time: Long, user: String) {
+      val env = new RequestEnv
+      env.setUserName(user)
+      model.setEnv(env)
+
       val selectId = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user))).id
       ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(cmd.id, selectId))
       cmd.lastSelectId = Some(selectId)
@@ -96,7 +101,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
     intercept[ReefServiceException] {
-      r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
+      r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq)
     }
   }
 
@@ -107,7 +112,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
-    r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq.toByteString.toByteArray)
+    r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
