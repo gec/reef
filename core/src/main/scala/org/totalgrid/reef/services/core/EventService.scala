@@ -23,7 +23,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Ev
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Utils.AttributeList
+import org.totalgrid.reef.proto.Utils.{ AttributeList => AttributeListProto }
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
@@ -32,7 +32,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.services.core.util.MessageFormatter
+import org.totalgrid.reef.services.core.util.{ MessageFormatter, AttributeList }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -212,13 +212,17 @@ trait EventConversion
 
   def createModelEntry(proto: Event, isAlarm: Boolean, severity: Int, entity: Option[Entity], resource: String): EventStore = {
 
-    var rendered = ""
-    val args = if (proto.hasArgs) {
-      val alist = proto.getArgs
-      rendered = MessageFormatter.format(resource, alist)
-      alist.toByteArray
+    val (args, attributeList) = if (proto.hasArgs) {
+      (proto.getArgs.toByteArray, new AttributeList(proto.getArgs))
     } else {
-      Array[Byte]()
+      (Array[Byte](), new AttributeList)
+    }
+
+    val rendered = try {
+      MessageFormatter.format(resource, attributeList)
+    } catch {
+      case x: Exception =>
+        "Error rendering event string: " + resource + " with attributes: " + attributeList + " error: " + x
     }
 
     val es = EventStore(proto.getEventType,
@@ -250,7 +254,7 @@ trait EventConversion
     entry.entity.value // force it to try to load the related entity for now
     entry.entity.asOption.foreach(_.foreach(x => b.setEntity(EQ.entityToProto(x).build)))
     if (entry.args.length > 0) {
-      b.setArgs(AttributeList.parseFrom(entry.args))
+      b.setArgs(AttributeListProto.parseFrom(entry.args))
     }
     //TODO: could set rendered here!
 
