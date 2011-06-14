@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import java.lang.{ System => JavaSystem }
 
 @RunWith(classOf[JUnitRunner])
-class EventTests extends FunSuite with ShouldMatchers {
+class EventTypeTests extends FunSuite with ShouldMatchers {
   import EventType._
 
   def castToString(s: String) = s
