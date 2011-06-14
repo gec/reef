@@ -120,6 +120,12 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
 
 @Command(scope = "reef", name = "logout", description = "Logs out the current user")
 class ReefLogoutCommand extends ReefCommandSupport {
-  def doCommand() = this.logout()
+  def doCommand() = {
+    this.get("authToken") match {
+      case Some(token) => services.deleteAuthorizationToken(token)
+      case None =>
+    }
+    this.logout()
+  }
 }
 
