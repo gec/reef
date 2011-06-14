@@ -123,10 +123,11 @@ trait AuthTokenConversions
   def createModelEntry(proto: AuthToken): AuthTokenModel = throw new Exception
 }
 
-class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, eventSink: SystemEventSink)
+class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)
     extends SquerylServiceModel[AuthToken, AuthTokenModel]
     with EventedServiceModel[AuthToken, AuthTokenModel]
-    with AuthTokenConversions {
+    with AuthTokenConversions
+    with ServiceModelSystemEventPublisher {
 
   override def createFromProto(req: AuthToken): AuthTokenModel = {
 
@@ -181,7 +182,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
   def postLoginException[A](status: Status, reason: String): A = {
 
-    postSystemEvent(EventType.System.UserLoginFailure, "status" -> status.toString, "reason" -> reason)
+    postSystemEvent(EventType.System.UserLoginFailure, "reason" -> reason)
 
     throw new BadRequestException(reason, status)
   }
@@ -196,6 +197,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     entry.expirationTime = -1
     table.update(entry)
 
+    env.setUserName(entry.agent.value.entityName)
     postSystemEvent(EventType.System.UserLogout)
 
     onUpdated(entry)
@@ -203,26 +205,6 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     entry
   }
 
-  def subsystem: String = "Core"
-  def userId: String = env.userName.getOrElse("")
-  def time: Long = System.currentTimeMillis()
-
-  //def eventSink : Event => Any
-
-  def postSystemEvent(eventType: EventType, args: (String, Any)*) {
-    val b = Event.newBuilder
-      .setTime(time)
-      .setEventType(eventType.toString)
-      .setSubsystem(subsystem)
-      .setUserId(userId)
-
-    if (!args.isEmpty) {
-      val aList = new AttributeList
-      args.foreach { case (name, value) => aList.addAttribute(name, value) }
-      b.setArgs(aList.toProto)
-    }
-    eventSink.publishSystemEvent(b.build)
-  }
 }
 
 class AuthTokenServiceModelFactory(

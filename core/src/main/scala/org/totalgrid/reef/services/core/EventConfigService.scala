@@ -48,14 +48,16 @@ object EventConfigService {
         val UNACK_SILENT = Alarm.State.UNACK_SILENT.getNumber
 
         val ecs = List[EventConfigStore](
-          EventConfigStore(System.UserLogin, 8, ALARM, UNACK_SILENT, "User log in {status} {reason}"),
+          EventConfigStore(System.UserLogin, 8, ALARM, UNACK_SILENT, "User logged in"),
+          EventConfigStore(System.UserLoginFailure, 8, ALARM, UNACK_SILENT, "User login failed {reason}"),
           EventConfigStore(System.UserLogout, 8, ALARM, UNACK_SILENT, "User logged out"),
           EventConfigStore(System.SubsystemStarting, 8, ALARM, UNACK_SILENT, "Subsystem is starting"),
           EventConfigStore(System.SubsystemStarted, 8, ALARM, UNACK_SILENT, "Subsystem has started"),
-          EventConfigStore(System.SubsystemStopping, 8, ALARM, UNACK_SILENT, "Subsystem is stapping"),
+          EventConfigStore(System.SubsystemStopping, 8, ALARM, UNACK_SILENT, "Subsystem is stopping"),
           EventConfigStore(System.SubsystemStopped, 8, ALARM, UNACK_SILENT, "Subsystem has stopped"),
 
-          EventConfigStore(Scada.ControlExe, 8, ALARM, UNACK_SILENT, "User executed control {control} on device {device}"),
+          EventConfigStore(Scada.ControlExe, 8, ALARM, UNACK_SILENT, "Executed control {command}"),
+          EventConfigStore(Scada.UpdatedSetpoint, 8, ALARM, UNACK_SILENT, "Updated setpoint {command} to {value}"),
           EventConfigStore(Scada.OutOfNominal, 8, ALARM, UNACK_SILENT, "Measurement not in nominal range: {value}{unit} validity {validity} "),
           EventConfigStore(Scada.OutOfReasonable, 8, ALARM, UNACK_SILENT, "Measurement not reasonable: {value}{unit} validity {validity}"))
 

@@ -53,6 +53,7 @@ object EventType {
 
   object Scada {
     case object ControlExe extends EventType
+    case object UpdatedSetpoint extends EventType
     case object OutOfNominal extends EventType
     case object OutOfReasonable extends EventType
   }

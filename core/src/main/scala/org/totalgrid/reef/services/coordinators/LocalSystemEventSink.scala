@@ -22,6 +22,7 @@ import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.core.EventServiceModelFactory
 import org.totalgrid.reef.japi.ReefServiceException
+import org.squeryl.PrimitiveTypeMode
 
 class LocalSystemEventSink extends SystemEventSink with Logging {
 
@@ -29,7 +30,11 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
 
   def publishSystemEvent(evt: org.totalgrid.reef.proto.Events.Event) {
     try {
-      eventModelFactory.get.transaction { _.createFromProto(evt) }
+      // we need a different transaction so events are retained even if
+      // we rollback the rest of the transaction because of an error
+      PrimitiveTypeMode.transaction {
+        eventModelFactory.get.transaction { _.createFromProto(evt) }
+      }
     } catch {
       case e: ReefServiceException =>
         logger.warn("Service Exception thunking event: " + e.getMessage)
