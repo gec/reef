@@ -30,6 +30,9 @@
         <command name="command/list">
             <action class="org.totalgrid.reef.shell.proto.CommandListCommand"/>
         </command>
+        <command name="command/hist">
+            <action class="org.totalgrid.reef.shell.proto.CommandHistoryCommand"/>
+        </command>
         <command name="command/issue">
             <action class="org.totalgrid.reef.shell.proto.CommandIssueCommand"/>
         </command>
