@@ -25,13 +25,13 @@ import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -60,8 +60,8 @@ class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEnd
   override val descriptor = Descriptors.commChannel
 }
 
-class FrontEndPortModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[ChannelProto, FrontEndPortServiceModel](pub, classOf[ChannelProto]) {
+class FrontEndPortModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[ChannelProto, FrontEndPortServiceModel](dependencies, classOf[ChannelProto]) {
 
   def model = new FrontEndPortServiceModel(subHandler)
 }

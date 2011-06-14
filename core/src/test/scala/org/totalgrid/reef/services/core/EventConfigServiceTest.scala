@@ -31,6 +31,7 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.sapi.{ ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends DatabaseUsingTestBase {
@@ -40,7 +41,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
     import EventConfig.Designation
 
     AMQPFixture.mock(true) { amqp =>
-      val fac = new EventConfigServiceModelFactory(new SilentEventPublishers)
+      val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
       val service = new EventConfigService(fac)
       val exchange = Descriptors.eventConfig.id
       amqp.bindService(exchange, service.respond) // listen for service requests with the echo service

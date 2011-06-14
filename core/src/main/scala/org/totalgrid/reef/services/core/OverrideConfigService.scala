@@ -23,9 +23,9 @@ import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._
@@ -41,8 +41,8 @@ class OverrideConfigService(protected val modelTrans: ServiceTransactable[Overri
   override val descriptor = Descriptors.measOverride
 }
 
-class OverrideConfigModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[MeasOverride, OverrideConfigServiceModel](pub, classOf[MeasOverride]) {
+class OverrideConfigModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[MeasOverride, OverrideConfigServiceModel](dependencies, classOf[MeasOverride]) {
 
   def model = new OverrideConfigServiceModel(subHandler)
 }

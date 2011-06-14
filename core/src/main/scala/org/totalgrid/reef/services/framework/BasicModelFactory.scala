@@ -21,13 +21,14 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.services.ServiceDependencies
 
 /**
  * Implements ModelFactory/ServiceTransactable interfaces and handles subscription
  * wiring from ServiceEventPublishers
  */
 abstract class BasicModelFactory[MessageType <: GeneratedMessage, +ModelType <: BufferLike](
-  pub: ServiceEventPublishers,
+  dependencies: ServiceDependencies,
   msgType: Class[MessageType])
     extends ModelFactory[ModelType]
     with BasicServiceTransactable[ModelType] {
@@ -37,6 +38,6 @@ abstract class BasicModelFactory[MessageType <: GeneratedMessage, +ModelType <: 
    */
   def messageType = msgType
 
-  protected val subHandler = pub.getEventSink(messageType)
+  protected val subHandler = dependencies.pubs.getEventSink(messageType)
 
 }

@@ -28,6 +28,7 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase {
@@ -40,9 +41,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test Status Codes") {
-    val publisher = new SilentEventPublishers
+    val deps = new ServiceDependencies()
 
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
+    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
 
     val configFile = makeConfigFile("testFile1", "text", "blah")
 
@@ -60,9 +61,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test Searching") {
-    val publisher = new SilentEventPublishers
+    val deps = new ServiceDependencies()
 
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
+    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
 
     val configFile1 = makeConfigFile("testFile1", "text", "blah")
     val configFile2 = makeConfigFile("testFile2", "text", "blah")
@@ -83,11 +84,11 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test EntityOwnerShip") {
-    val publisher = new SilentEventPublishers
+    val deps = new ServiceDependencies()
 
     val es = new EntityService()
 
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
+    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
     val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
@@ -102,11 +103,11 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Shared Entity Ownership") {
-    val publisher = new SilentEventPublishers
+    val deps = new ServiceDependencies()
 
     val es = new EntityService()
 
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(publisher))
+    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
     val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()

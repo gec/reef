@@ -23,35 +23,35 @@ import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFact
 
 class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies) {
 
-  val cmds = new CommandServiceModelFactory(dependencies.pubs)
+  val cmds = new CommandServiceModelFactory(dependencies)
 
-  val triggerSets = new TriggerSetServiceModelFactory(dependencies.pubs)
-  val accesses = new CommandAccessServiceModelFactory(dependencies.pubs, cmds)
-  val userRequests = new UserCommandRequestServiceModelFactory(dependencies.pubs, cmds, accesses)
+  val triggerSets = new TriggerSetServiceModelFactory(dependencies)
+  val accesses = new CommandAccessServiceModelFactory(dependencies, cmds)
+  val userRequests = new UserCommandRequestServiceModelFactory(dependencies, cmds, accesses)
 
-  val coordinator = new MeasurementStreamCoordinatorFactory(dependencies.pubs, dependencies.cm)
+  val coordinator = new MeasurementStreamCoordinatorFactory(dependencies)
 
-  val fepConn = new CommunicationEndpointConnectionModelFactory(dependencies.pubs, coordinator)
-  val measProcConn = new MeasurementProcessingConnectionModelFactory(dependencies.pubs, coordinator)
+  val fepConn = new CommunicationEndpointConnectionModelFactory(dependencies, coordinator)
+  val measProcConn = new MeasurementProcessingConnectionModelFactory(dependencies, coordinator)
 
-  val fep = new FrontEndProcessorModelFactory(dependencies.pubs, coordinator)
-  val fepPort = new FrontEndPortModelFactory(dependencies.pubs)
+  val fep = new FrontEndProcessorModelFactory(dependencies, coordinator)
+  val fepPort = new FrontEndPortModelFactory(dependencies)
 
-  val points = new PointServiceModelFactory(dependencies.pubs)
-  val overrides = new OverrideConfigModelFactory(dependencies.pubs)
+  val points = new PointServiceModelFactory(dependencies)
+  val overrides = new OverrideConfigModelFactory(dependencies)
 
-  val configFiles = new ConfigFileServiceModelFactory(dependencies.pubs)
-  val endpoints = new CommEndCfgServiceModelFactory(dependencies.pubs, cmds, configFiles, points, fepPort, coordinator)
+  val configFiles = new ConfigFileServiceModelFactory(dependencies)
+  val endpoints = new CommEndCfgServiceModelFactory(dependencies, cmds, configFiles, points, fepPort, coordinator)
 
-  val alarms = new AlarmServiceModelFactory(dependencies.pubs, dependencies.summaries)
-  val eventConfig = new EventConfigServiceModelFactory(dependencies.pubs)
-  val events = new EventServiceModelFactory(dependencies.pubs, eventConfig, alarms)
+  val alarms = new AlarmServiceModelFactory(dependencies)
+  val eventConfig = new EventConfigServiceModelFactory(dependencies)
+  val events = new EventServiceModelFactory(dependencies, eventConfig, alarms)
 
-  val authTokens = new AuthTokenServiceModelFactory(dependencies.pubs, dependencies.eventSink.publishSystemEvent _)
-  val agents = new AgentServiceModelFactory(dependencies.pubs)
-  val permissionSets = new PermissionSetServiceModelFactory(dependencies.pubs)
+  val authTokens = new AuthTokenServiceModelFactory(dependencies)
+  val agents = new AgentServiceModelFactory(dependencies)
+  val permissionSets = new PermissionSetServiceModelFactory(dependencies)
 
-  val procStatus = new ProcessStatusServiceModelFactory(dependencies.pubs, coordinator)
-  val appConfig = new ApplicationConfigServiceModelFactory(dependencies.pubs, procStatus)
+  val procStatus = new ProcessStatusServiceModelFactory(dependencies, coordinator)
+  val appConfig = new ApplicationConfigServiceModelFactory(dependencies, procStatus)
 
 }

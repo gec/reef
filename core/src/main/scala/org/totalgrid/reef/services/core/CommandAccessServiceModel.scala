@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.squeryl.{ Table, Query }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
@@ -31,9 +30,12 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])
-    extends BasicModelFactory[AccessProto, CommandAccessServiceModel](pub, classOf[AccessProto]) {
+class CommandAccessServiceModelFactory(
+  dependencies: ServiceDependencies,
+  commands: ModelFactory[CommandServiceModel])
+    extends BasicModelFactory[AccessProto, CommandAccessServiceModel](dependencies, classOf[AccessProto]) {
 
   def model = new CommandAccessServiceModel(subHandler, commands.model)
   def model(commandModel: CommandServiceModel) = new CommandAccessServiceModel(subHandler, commandModel)

@@ -47,8 +47,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model.{ Point, Entity }
 
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
@@ -106,11 +106,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   }*/
 
   test("Exercise Overrides Service") {
-    val publisher = new SilentEventPublishers
+    val deps = new ServiceDependencies()
 
     val node = addPoint("meas01", "dev1")
     addPoint("meas02", "dev2")
-    val fac = new OverrideConfigModelFactory(publisher)
+    val fac = new OverrideConfigModelFactory(deps)
     val s = new OverrideConfigService(fac)
     val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build).expectOne()
     val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build).expectOne()

@@ -27,16 +27,16 @@ import org.totalgrid.reef.services.framework.{ LinkedBufferedEvaluation, LinkedB
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublishers
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.services.ServiceDependencies
 
 class MeasurementStreamCoordinatorFactory(
-    pub: ServiceEventPublishers,
-    measurementStore: MeasurementStore) {
+    dependencies: ServiceDependencies) {
 
   def model = {
     // we have to make our own copies of the other service models to break the cyclic dependencies
-    val measProc = new MeasurementProcessingConnectionServiceModel(pub.getEventSink(classOf[MeasurementProcessingConnection]))
-    val fepModel = new CommunicationEndpointConnectionServiceModel(pub.getEventSink(classOf[CommEndpointConnection]))
-    val coord = new MeasurementStreamCoordinator(measProc, fepModel, measurementStore)
+    val measProc = new MeasurementProcessingConnectionServiceModel(dependencies.pubs.getEventSink(classOf[MeasurementProcessingConnection]))
+    val fepModel = new CommunicationEndpointConnectionServiceModel(dependencies.pubs.getEventSink(classOf[CommEndpointConnection]))
+    val coord = new MeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
     measProc.setCoordinator(coord, false)
     fepModel.setCoordinator(coord, false)
     coord

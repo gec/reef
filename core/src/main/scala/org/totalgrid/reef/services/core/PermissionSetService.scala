@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ProtoRoutingKeys }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -31,6 +30,7 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class PermissionSetService(protected val modelTrans: ServiceTransactable[PermissionSetServiceModel])
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
@@ -39,8 +39,8 @@ class PermissionSetService(protected val modelTrans: ServiceTransactable[Permiss
   override val descriptor = Descriptors.permissionSet
 }
 
-class PermissionSetServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[PermissionSetProto, PermissionSetServiceModel](pub, classOf[PermissionSetProto]) {
+class PermissionSetServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[PermissionSetProto, PermissionSetServiceModel](dependencies, classOf[PermissionSetProto]) {
 
   def model = new PermissionSetServiceModel(subHandler)
 }

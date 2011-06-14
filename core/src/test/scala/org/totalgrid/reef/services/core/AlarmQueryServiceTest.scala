@@ -36,6 +36,7 @@ import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -148,9 +149,9 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
    */
   def getFixture() = {
 
-    val pubs = new SilentEventPublishers
-    val fac = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
-    val service = new AlarmQueryService(pubs)
+    val deps = new ServiceDependencies()
+    val fac = new AlarmServiceModelFactory(deps)
+    val service = new AlarmQueryService(deps.pubs)
 
     Fixture(service)
   }

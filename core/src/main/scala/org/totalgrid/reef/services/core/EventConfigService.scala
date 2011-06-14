@@ -27,9 +27,8 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -73,8 +72,8 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
   override val descriptor = Descriptors.eventConfig
 }
 
-class EventConfigServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[EventConfig, EventConfigServiceModel](pub, classOf[EventConfig]) {
+class EventConfigServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[EventConfig, EventConfigServiceModel](dependencies, classOf[EventConfig]) {
 
   def model = new EventConfigServiceModel(subHandler)
 }

@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ProtoRoutingKeys }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -31,6 +30,7 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class AgentService(protected val modelTrans: ServiceTransactable[AgentServiceModel])
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
@@ -39,8 +39,8 @@ class AgentService(protected val modelTrans: ServiceTransactable[AgentServiceMod
   override val descriptor = Descriptors.agent
 }
 
-class AgentServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[Agent, AgentServiceModel](pub, classOf[Agent]) {
+class AgentServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[Agent, AgentServiceModel](dependencies, classOf[Agent]) {
 
   def model = new AgentServiceModel(subHandler)
 }

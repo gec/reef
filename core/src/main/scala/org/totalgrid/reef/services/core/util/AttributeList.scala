@@ -120,6 +120,20 @@ class AttributeList extends HashMap[String, Attribute] {
 
   }
 
+  def addAttribute(name: String, value: Any): AttributeList = {
+    value match {
+      case x: Int => this += (name -> AttributeLong(x))
+      case x: Long => this += (name -> AttributeLong(x))
+      case x: Float => this += (name -> AttributeDouble(x))
+      case x: Double => this += (name -> AttributeDouble(x))
+      case x: Boolean => this += (name -> AttributeBoolean(x))
+      case x: Array[Byte] => this += (name -> AttributeByteArray(x))
+      case x: String => this += (name -> AttributeString(x))
+      case _ => throw new IllegalArgumentException("Unknown attribute type for class: " + value.asInstanceOf[AnyRef].getClass)
+    }
+    this
+  }
+
   /**
    * Get a value with a specific type
    */

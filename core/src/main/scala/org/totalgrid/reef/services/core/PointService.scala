@@ -26,7 +26,6 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
@@ -34,6 +33,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.sapi.AllMessages
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -46,8 +46,8 @@ class PointService(protected val modelTrans: ServiceTransactable[PointServiceMod
   override val descriptor = Descriptors.point
 }
 
-class PointServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[PointProto, PointServiceModel](pub, classOf[PointProto]) {
+class PointServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[PointProto, PointServiceModel](dependencies, classOf[PointProto]) {
 
   def model = new PointServiceModel(subHandler)
 }

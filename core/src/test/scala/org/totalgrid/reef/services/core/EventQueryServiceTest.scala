@@ -36,6 +36,7 @@ import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.event.SilentEventLogPublisher
 
 import java.util.{ Calendar }
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryServiceTest extends DatabaseUsingTestBase {
@@ -122,11 +123,11 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
   type FixtureParam = Fixture
 
   def getFixture(): Fixture = {
-    val pubs = new SilentEventPublishers
-    val alarms = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
-    val eventConfig = new EventConfigServiceModelFactory(pubs)
-    val fac = new EventServiceModelFactory(pubs, eventConfig, alarms)
-    val service = new EventQueryService(fac, pubs)
+    val deps = new ServiceDependencies()
+    val alarms = new AlarmServiceModelFactory(deps)
+    val eventConfig = new EventConfigServiceModelFactory(deps)
+    val fac = new EventServiceModelFactory(deps, eventConfig, alarms)
+    val service = new EventQueryService(fac, deps.pubs)
 
     Fixture(service)
   }

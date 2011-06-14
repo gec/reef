@@ -23,13 +23,13 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.proto.Processing.{ TriggerSet => TriggerProto }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ ProtoRoutingKeys }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class TriggerSetService(protected val modelTrans: ServiceTransactable[TriggerSetServiceModel])
     extends SyncModeledServiceBase[TriggerProto, TriggerSet, TriggerSetServiceModel]
@@ -38,8 +38,8 @@ class TriggerSetService(protected val modelTrans: ServiceTransactable[TriggerSet
   override val descriptor = Descriptors.triggerSet
 }
 
-class TriggerSetServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[TriggerProto, TriggerSetServiceModel](pub, classOf[TriggerProto]) {
+class TriggerSetServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[TriggerProto, TriggerSetServiceModel](dependencies, classOf[TriggerProto]) {
 
   def model = new TriggerSetServiceModel(subHandler)
 }

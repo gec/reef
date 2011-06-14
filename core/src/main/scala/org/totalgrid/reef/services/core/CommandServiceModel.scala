@@ -23,7 +23,6 @@ import org.totalgrid.reef.proto.Model.{ Command => CommandProto, Entity => Entit
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
@@ -32,6 +31,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import java.util.UUID
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -40,8 +40,8 @@ class CommandService(protected val modelTrans: ServiceTransactable[CommandServic
   override val descriptor = Descriptors.command
 }
 
-class CommandServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[CommandProto, CommandServiceModel](pub, classOf[CommandProto]) {
+class CommandServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[CommandProto, CommandServiceModel](dependencies, classOf[CommandProto]) {
 
   def model = new CommandServiceModel(subHandler)
 }

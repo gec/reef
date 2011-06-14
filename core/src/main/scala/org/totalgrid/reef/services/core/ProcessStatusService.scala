@@ -27,12 +27,12 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.japi.BadRequestException
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // Implicits
 import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
@@ -49,9 +49,9 @@ class ProcessStatusService(protected val modelTrans: ServiceTransactable[Process
 }
 
 class ProcessStatusServiceModelFactory(
-  pub: ServiceEventPublishers,
+  dependencies: ServiceDependencies,
   coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[StatusSnapshot, ProcessStatusServiceModel](pub, classOf[StatusSnapshot]) {
+    extends BasicModelFactory[StatusSnapshot, ProcessStatusServiceModel](dependencies, classOf[StatusSnapshot]) {
 
   def model = new ProcessStatusServiceModel(subHandler, coordinatorFac.model)
 }

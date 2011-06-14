@@ -27,13 +27,12 @@ import org.totalgrid.reef.proto.Utils.AttributeList
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.services.core.util.MessageFormatter
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -54,8 +53,11 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
   override val descriptor = Descriptors.event
 }
 
-class EventServiceModelFactory(pub: ServiceEventPublishers, eventConfig: ModelFactory[EventConfigServiceModel], alarmServiceModel: ModelFactory[AlarmServiceModel])
-    extends BasicModelFactory[Event, EventServiceModel](pub, classOf[Event]) {
+class EventServiceModelFactory(
+  dependencies: ServiceDependencies,
+  eventConfig: ModelFactory[EventConfigServiceModel],
+  alarmServiceModel: ModelFactory[AlarmServiceModel])
+    extends BasicModelFactory[Event, EventServiceModel](dependencies, classOf[Event]) {
 
   def model = new EventServiceModel(subHandler, eventConfig.model, alarmServiceModel.model)
 }

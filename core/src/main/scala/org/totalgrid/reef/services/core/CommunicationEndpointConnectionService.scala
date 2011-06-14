@@ -26,14 +26,13 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -59,9 +58,10 @@ class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTr
   }
 }
 
-class CommunicationEndpointConnectionModelFactory(pub: ServiceEventPublishers,
+class CommunicationEndpointConnectionModelFactory(
+  dependencies: ServiceDependencies,
   coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[ConnProto, CommunicationEndpointConnectionServiceModel](pub, classOf[ConnProto]) {
+    extends BasicModelFactory[ConnProto, CommunicationEndpointConnectionServiceModel](dependencies, classOf[ConnProto]) {
 
   def model = {
     val csm = new CommunicationEndpointConnectionServiceModel(subHandler)
