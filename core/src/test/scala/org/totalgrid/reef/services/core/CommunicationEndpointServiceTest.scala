@@ -40,7 +40,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   val pubs = new SilentEventPublishers
   val rtDb = new InMemoryMeasurementStore()
-  val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
+  val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb))
 
   val endpointService = new CommunicationEndpointService(modelFac.endpoints)
 

@@ -39,7 +39,14 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   private val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   private val summaries = new SummaryPointPublisher(components.amqp)
-  private val modelFac = new ModelFactories(pubs, summaries, cm)
+  private val eventPublisher = new LocalSystemEventSink
+  private val dependencies = ServiceDependencies(pubs, summaries, cm, eventPublisher)
+
+  private val modelFac = new ModelFactories(dependencies)
+
+  // we have to fill in the event model after constructing the event service to break the circular
+  // dependency on ServiceDepenedencies, should clear up once we OSGI the services
+  eventPublisher.setEventModel(modelFac.events)
 
   private val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))

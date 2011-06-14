@@ -49,8 +49,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
   }
 
   test("Point model lookup") {
-    val pubs = new SilentEventPublishers
-    val models = new ModelFactories(pubs, new SilentSummaryPoints)
+    val models = new ModelFactories()
     val service = new PointService(models.points)
 
     val entReq =

@@ -59,6 +59,7 @@ object EventType {
 
   object System {
     case object UserLogin extends EventType
+    case object UserLoginFailure extends EventType
     case object UserLogout extends EventType
     case object SubsystemStarting extends EventType
     case object SubsystemStarted extends EventType

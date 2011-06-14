@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services._
-
 import org.totalgrid.reef.measproc.MeasurementStreamProcessingNode
 
 import org.totalgrid.reef.proto.Measurements._
@@ -45,6 +43,7 @@ import org.totalgrid.reef.sapi.service.AsyncService
 
 import client.Event
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
+import org.totalgrid.reef.services._
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 
@@ -98,7 +97,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val connection = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
     val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
-    val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
+    val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb))
 
     def attachServices(endpoints: Seq[AsyncService[_]]): Unit = endpoints.foreach { ep =>
       amqp.bindService(ep.descriptor.id, ep.respond, competing = true)

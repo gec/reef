@@ -33,15 +33,15 @@ import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.services.ServiceDependencies
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: AMQPProtoFactory) {
     val publishers = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
-    val summaries = new SilentSummaryPoints //((name, value) => println(name + " => " + value))
-
-    val factories = new ModelFactories(publishers, summaries)
+    val summaries = new SilentSummaryPoints
+    val factories = new ModelFactories(ServiceDependencies(publishers, summaries))
 
     val alarms = new AlarmService(factories.alarms)
     val events = new EventService(factories.events)

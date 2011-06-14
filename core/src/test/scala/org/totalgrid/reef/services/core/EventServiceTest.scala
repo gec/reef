@@ -72,7 +72,7 @@ class EventServiceTest extends DatabaseUsingTestBase {
     import EventType._
     import EventConfig.Designation
 
-    val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val factories = new ModelFactories()
     val eventService = factories.events.model
     // Post an event
     var event = eventService.createFromProto(makeEvent(System.UserLogin))
@@ -94,7 +94,7 @@ class EventServiceTest extends DatabaseUsingTestBase {
   test("Update Alarm States") {
     import EventType._
 
-    val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val factories = new ModelFactories()
     val eventService = factories.events.model
     val alarmService = factories.alarms.model
 

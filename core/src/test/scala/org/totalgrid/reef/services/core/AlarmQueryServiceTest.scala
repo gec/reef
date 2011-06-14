@@ -119,7 +119,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
         val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
-        val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+        val factories = new ModelFactories()
 
         val eventService = factories.events.model
 

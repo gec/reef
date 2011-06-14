@@ -33,6 +33,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
@@ -69,7 +70,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val pubs = new CountingEventPublishers
 
-    val modelFac = new ModelFactories(pubs, new SilentSummaryPoints)
+    val modelFac = new ModelFactories(ServiceDependencies(pubs))
 
     val service = new ProcessStatusService(modelFac.procStatus)
 
