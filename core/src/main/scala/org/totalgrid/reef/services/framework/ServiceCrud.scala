@@ -129,7 +129,7 @@ trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
    * @param existing   Existing model entry
    * @return Verified/modified update request message
    */
-  protected def preUpdate(request: ServiceType, existing: ModelType): ServiceType = request
+  protected def preUpdate(request: ServiceType, existing: ModelType, headers: RequestEnv): ServiceType = request
 
   /**
    * Called after successful update. Default implementation does nothing.
@@ -141,7 +141,7 @@ trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
    * Performs an update operation first calling preUpdate, then updating, then calling postUpdate.
    */
   final protected def update(model: ServiceModelType, request: ServiceType, existing: ModelType, headers: RequestEnv): Tuple2[ServiceType, Envelope.Status] = {
-    val validated = preUpdate(request, existing)
+    val validated = preUpdate(request, existing, headers)
     val authorized = authorizeUpdate(validated, headers)
     val (sql, updated) = performUpdate(model, authorized, existing)
     postUpdate(sql, validated)
@@ -169,7 +169,7 @@ trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
    * Called before delete. Default implementation does nothing.
    *  @param proto    Delete request message
    */
-  protected def preDelete(request: ServiceType): ServiceType = request
+  protected def preDelete(request: ServiceType, headers: RequestEnv): ServiceType = request
 
   /**
    * Called after preDelete validation step. Default does no authorization
@@ -186,7 +186,7 @@ trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
 
   final protected def doDelete(model: ServiceModelType, request: ServiceType, headers: RequestEnv): List[ServiceType] = {
     // TODO: consider stripping off everything but UID if UID set on delete
-    val validated = preDelete(request)
+    val validated = preDelete(request, headers)
     val authorized = authorizeDelete(validated, headers)
     val existing = performDelete(model, authorized)
     postDelete(existing.map(model.convertToProto(_)))

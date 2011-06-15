@@ -79,7 +79,7 @@ object ServiceBehaviors {
       Response(status, value :: Nil)
     }
 
-    override def preUpdate(proto: ServiceType, existing: ModelType): ServiceType = merge(proto, existing)
+    override def preUpdate(proto: ServiceType, existing: ModelType, headers: RequestEnv): ServiceType = merge(proto, existing)
 
     protected def merge(req: ServiceType, current: ModelType): ServiceType
 

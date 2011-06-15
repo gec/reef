@@ -50,7 +50,7 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
   }
 
   // If they don't have a state, what are they doing with an update?
-  override def preUpdate(proto: ServiceType, existing: ModelType) = {
+  override def preUpdate(proto: ServiceType, existing: ModelType, headers: RequestEnv) = {
     if (!proto.hasState)
       throw new BadRequestException("AlarmService update is for changing alarm state, but there is no state field in this proto.")
 

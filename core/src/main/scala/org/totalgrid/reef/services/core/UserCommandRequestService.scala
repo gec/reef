@@ -100,12 +100,12 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
     super.preCreate(this.doCommonValidation(proto), headers)
   }
 
-  override protected def preUpdate(proto: UserCommandRequest, existing: UserCommandModel) = {
+  override protected def preUpdate(proto: UserCommandRequest, existing: UserCommandModel, headers: RequestEnv) = {
 
     if (!proto.hasStatus)
       throw new BadRequestException("Update must specify status", Envelope.Status.BAD_REQUEST)
 
-    super.preUpdate(doCommonValidation(proto), existing)
+    super.preUpdate(doCommonValidation(proto), existing, headers)
   }
 }
 

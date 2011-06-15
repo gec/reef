@@ -30,6 +30,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.sapi.RequestEnv
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -78,7 +79,7 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
 
   override val descriptor = Descriptors.eventConfig
 
-  override def preCreate(proto: EventConfig): EventConfig = {
+  override def preCreate(proto: EventConfig, headers: RequestEnv): EventConfig = {
     if (!proto.hasDesignation || !proto.hasEventType || !proto.hasSeverity || !proto.hasResource) {
       throw new BadRequestException("Must fill in designation, eventType, severity and resource fields.")
     }
@@ -96,8 +97,8 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
     }
   }
 
-  override protected def preUpdate(request: EventConfig, existing: EventConfigStore): EventConfig = {
-    preCreate(request)
+  override protected def preUpdate(request: EventConfig, existing: EventConfigStore, headers: RequestEnv): EventConfig = {
+    preCreate(request, headers)
     // TODO: should we re-render all events with the same event type?
   }
 }
