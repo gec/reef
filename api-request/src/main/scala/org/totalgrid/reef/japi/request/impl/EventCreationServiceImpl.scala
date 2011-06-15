@@ -92,8 +92,6 @@ trait EventCreationServiceImpl extends ReefServiceBaseClass with EventCreationSe
       argList.toList.foreach { aList.addAttribute(_) }
       b.setArgs(aList)
     }
-    val returned = session.put(b.build).await().expectOne
-    println(returned)
-    returned
+    session.put(b.build).await().expectOne
   }
 }

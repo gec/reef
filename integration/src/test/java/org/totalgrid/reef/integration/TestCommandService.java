@@ -45,7 +45,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void someCommandsReturned() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
         List<Command> commands = cs.getCommands();
         assertTrue( commands.size() > 0 );
     }
@@ -57,7 +57,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void clearAllAccesses() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
 
         cs.clearCommandLocks();
 
@@ -72,7 +72,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void testCommandFailsWithoutSelect() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
 
         Command c = cs.getCommands().get( 0 );
         try
@@ -93,7 +93,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void testGetPutDeleteCommandAccess() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
 
         Command cmd = cs.getCommands().get( 0 );
 
@@ -110,7 +110,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void testCommandSelectAndExecute() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
         cs.clearCommandLocks();
         List<Command> commands = cs.getCommands();
 
@@ -133,7 +133,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void testMultiSelect() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
         List<Command> cmds = cs.getCommands();
 
         CommandAccess accessResponse1 = cs.createCommandExecutionLock( cmds.subList( 0, 3 ) );
@@ -159,7 +159,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void testSearchingAndDeletingSelectByCommandName() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
 
         List<Command> cmds = cs.getCommands();
         Command cmd1 = cmds.get( 0 );
@@ -196,7 +196,7 @@ public class TestCommandService extends ReefConnectionTestBase
     public void testCommandSelectExecuteDeleteExecuteDelete() throws ReefServiceException
     {
 
-        CommandService cs = helpers;
+        CommandService cs = (CommandService)helpers;
 
         Command cmd = cs.getCommands().get( 0 );
 
