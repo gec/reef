@@ -19,6 +19,7 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.Alarms.Alarm
+import org.totalgrid.reef.proto.OptionalProtos._
 
 object AlarmView {
 
@@ -32,7 +33,7 @@ object AlarmView {
 
   def row(a: Alarm) = {
     val e = a.getEvent
-    a.getUid :: a.getState.toString :: e.getEventType :: e.getSeverity.toString :: e.getSubsystem :: e.getUserId :: EventView.timeString(e) :: e.getRendered :: Nil
+    a.getUid :: a.getState.toString :: e.getEventType :: e.getSeverity.toString :: e.getSubsystem :: e.getUserId :: EventView.timeString(e.time) :: e.getRendered :: Nil
   }
 
 }

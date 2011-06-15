@@ -78,8 +78,26 @@
         <command name="meas/download">
             <action class="org.totalgrid.reef.shell.proto.MeasDownloadCommand"/>
         </command>
-        <command name="event/event">
-            <action class="org.totalgrid.reef.shell.proto.EventCommand"/>
+        <command name="event/list">
+            <action class="org.totalgrid.reef.shell.proto.EventListCommand"/>
+        </command>
+        <command name="event/view">
+            <action class="org.totalgrid.reef.shell.proto.EventViewCommand"/>
+        </command>
+        <command name="event/publish">
+            <action class="org.totalgrid.reef.shell.proto.EventPublishCommand"/>
+        </command>
+        <command name="event-config/list">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigListCommand"/>
+        </command>
+        <command name="event-config/view">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigViewCommand"/>
+        </command>
+        <command name="event-config/create">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigCreateCommand"/>
+        </command>
+        <command name="event-config/delete">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigDeleteCommand"/>
         </command>
         <command name="alarm/alarm">
             <action class="org.totalgrid.reef.shell.proto.AlarmCommand"/>
