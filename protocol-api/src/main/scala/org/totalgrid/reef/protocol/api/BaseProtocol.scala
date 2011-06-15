@@ -45,7 +45,7 @@ trait BaseProtocol extends Protocol with Logging {
     }
   }
 
-  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: Listener[MeasurementBatch], listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
+  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: Publisher[MeasurementBatch], listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
@@ -102,7 +102,7 @@ trait BaseProtocol extends Protocol with Logging {
   protected def _addEndpoint(endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    publish: Listener[MeasurementBatch],
+    publish: Publisher[MeasurementBatch],
     listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler
 
   protected def _removeEndpoint(endpoint: String)

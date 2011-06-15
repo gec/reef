@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-
 import org.totalgrid.reef.japi.client._
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.{ Promise => ScalaPromise }

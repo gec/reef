@@ -16,22 +16,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.sapi.{ Promise => ScalaPromise }
+package org.totalgrid.reef.sapi
 
-import org.totalgrid.reef.sapi.client.{ Response => ScalaResponse }
-import org.totalgrid.reef.japi.client.{ Promise, ResponseListener, Response }
+class FixedPromise[A](value: A) extends Promise[A] {
 
-class PromiseWrapper[A](promise: ScalaPromise[ScalaResponse[A]]) extends Promise[Response[A]] {
+  final override def await(): A = value
 
-  private lazy val response = new ResponseWrapper(promise.await())
+  final override def listen(fun: A => Unit): Unit = fun(value)
 
-  final override def await(): Response[A] = response
+  final override def isComplete: Boolean = true
 
-  final override def addListener(listener: ResponseListener[Response[A]]): Unit = promise.listen { rsp =>
-    listener.onCompletion(new ResponseWrapper[A](rsp))
-  }
-
-  final override def isComplete = promise.isComplete
 }

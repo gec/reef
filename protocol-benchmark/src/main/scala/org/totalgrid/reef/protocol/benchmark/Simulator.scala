@@ -28,11 +28,11 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.{ CommandHandler, Listener }
+import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher, Listener }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.proto.Commands.CommandResponse
 
-class Simulator(name: String, publisher: Listener[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
+class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -78,7 +78,7 @@ class Simulator(name: String, publisher: Listener[MeasurementBatch], config: Sim
     }
     if (batch.getMeasCount > 0) {
       logger.debug(name + " publishing batch of size: " + batch.getMeasCount)
-      publisher.onUpdate(batch.build)
+      publisher.publish(batch.build)
       logger.debug(name + " published batch")
     }
   }

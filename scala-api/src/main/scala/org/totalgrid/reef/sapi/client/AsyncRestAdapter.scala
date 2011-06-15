@@ -47,7 +47,7 @@ trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 
   // Implement request in terms of an abstract asynchronous request
   override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination): Promise[Response[A]] = {
-    val promise = new BasicPromise[Response[A]]
+    val promise = new SynchronizedPromise[Response[A]]
     this.asyncRequest(verb, payload, env, dest)(promise.onResponse(_))
     promise
   }

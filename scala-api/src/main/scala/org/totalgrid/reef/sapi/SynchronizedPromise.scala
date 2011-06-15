@@ -1,5 +1,3 @@
-package org.totalgrid.reef.sapi
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,9 +16,10 @@ package org.totalgrid.reef.sapi
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.sapi
 
-class BasicPromise[A](private var result: Option[A]) extends Promise[A] {
+package org.totalgrid.reef.sapi
+
+class SynchronizedPromise[A](private var result: Option[A]) extends Promise[A] {
 
   def this(result: A) = this(Some(result))
   def this() = this(None)

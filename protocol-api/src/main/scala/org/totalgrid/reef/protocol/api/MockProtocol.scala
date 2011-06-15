@@ -62,7 +62,7 @@ class MockProtocol(needsChannel: Boolean = true) extends BaseProtocol {
 
   override def _removeChannel(channel: String) = mail send RemovePort(channel)
 
-  override def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: Listener[MeasurementBatch], listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
+  override def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: Publisher[MeasurementBatch], listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
     mail send AddEndpoint(endpoint, channel, config)
     new CommandHandler {
       def issue(request: Commands.CommandRequest, rspHandler: Listener[Commands.CommandResponse]) = mail send request

@@ -71,7 +71,7 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline
   def _addEndpoint(endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
-    publisher: Listener[MeasurementBatch],
+    publisher: Publisher[MeasurementBatch],
     listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)

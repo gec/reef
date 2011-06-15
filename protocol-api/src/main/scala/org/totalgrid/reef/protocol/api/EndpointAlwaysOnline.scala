@@ -27,7 +27,7 @@ trait EndpointAlwaysOnline extends Protocol {
   abstract override def addEndpoint(endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    publish: Listener[Measurements.MeasurementBatch],
+    publish: Publisher[Measurements.MeasurementBatch],
     listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
 
     val ret = super.addEndpoint(endpoint, channel, config, publish, listener)

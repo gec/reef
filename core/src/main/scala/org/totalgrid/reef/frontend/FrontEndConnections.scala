@@ -18,11 +18,9 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP.CommChannel
 import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.sapi.client.SessionPool
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
@@ -31,8 +29,8 @@ import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.japi.{ ReefServiceException, ResponseTimeoutException }
 import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedMap[ConnProto] {
@@ -44,8 +42,6 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
   var commandAdapters = Map.empty[String, CloseableChannel]
 
   val pool = conn.getSessionPool
-
-  val maxAttemptsToRetryMeasurements = 1
 
   private def getProtocol(name: String): Protocol = protocols.get(name) match {
     case Some(p) => p
@@ -63,13 +59,15 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getChannel
 
-    val publisher = newPublisher(c.getRouting.getServiceRoutingKey)
+    val publisher = new OrderedPublisher(pool)
+
+    val batchPublisher = newMeasBatchPublisher(publisher, c.getRouting.getServiceRoutingKey)
     val channelListener = newChannelListener(port.getUuid)
     val endpointListener = newEndpointListener(c.getUid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
-    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, publisher, endpointListener)
+    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
     val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
 
     commandAdapters += c.getEndpoint.getName -> service
@@ -92,6 +90,9 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
     logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
+
+  private def newMeasBatchPublisher(publisher: OrderedPublisher, routingKey: String) =
+    new OrderedPublisherAdapter[MeasurementBatch](publisher, Envelope.Verb.POST, AddressableDestination(routingKey), 1)(x => x)
 
   private def newEndpointListener(connectionUid: String) = new Listener[ConnProto.State] {
 
@@ -120,32 +121,5 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
 
   }
 
-  /**
-   * push measurement batchs to the addressable service
-   */
-  private def batchPublish(pool: SessionPool, attempts: Int, dest: Destination)(x: Measurements.MeasurementBatch): Unit = {
-    try {
-      pool.borrow {
-        _.put(x, destination = dest).await().expectOne
-      }
-    } catch {
-      case rte: ResponseTimeoutException =>
-        if (attempts >= maxAttemptsToRetryMeasurements) {
-          logger.error("Multiple timeouts publishing measurements to MeasurementProcessor at: " + dest, rte)
-
-        } else {
-          logger.info("Retrying publishing measurements : " + x.getMeasCount)
-          batchPublish(pool, attempts + 1, dest)(x)
-        }
-      case e: Exception =>
-        logger.error("Error publishing measurements to MeasurementProcessor at: " + dest, e)
-    }
-  }
-
-  private def newPublisher(routingKey: String) = new Listener[MeasurementBatch] {
-
-    override def onUpdate(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableDestination(routingKey))(batch)
-
-  }
 }
 

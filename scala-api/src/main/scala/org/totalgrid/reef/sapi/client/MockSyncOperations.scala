@@ -91,13 +91,13 @@ class MockSyncOperations(
    * Override request to define all of the verb helpers
    */
   final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: Destination = AnyNodeDestination): Promise[Response[A]] = verb match {
-    case Envelope.Verb.GET => new BasicPromise(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]])
+    case Envelope.Verb.GET => new SynchronizedPromise(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]])
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload.asInstanceOf[AnyRef])
-      new BasicPromise(Success(Envelope.Status.OK, List[A](payload)))
+      new SynchronizedPromise(Success(Envelope.Status.OK, List[A](payload)))
     case Envelope.Verb.PUT =>
       putQueue.enqueue(payload.asInstanceOf[AnyRef])
-      new BasicPromise(Success(Envelope.Status.OK, List[A](payload)))
+      new SynchronizedPromise(Success(Envelope.Status.OK, List[A](payload)))
     case Envelope.Verb.POST => throw new Exception("unimplemented")
   }
 

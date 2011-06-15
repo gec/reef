@@ -92,6 +92,6 @@ trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
       explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, promise.await)
     }
 
-    new BasicPromise(promise.await)
+    new SynchronizedPromise(promise.await)
   }
 }

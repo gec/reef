@@ -18,31 +18,24 @@
  */
 package org.totalgrid.reef.messaging
 
-import scala.collection.mutable._
 import org.totalgrid.reef.sapi.client.{ ClientSession, SessionPool }
 import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
 
 class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends SessionPool with SessionExecutionPool {
 
-  private val available = Set.empty[ClientSession]
-  private val unavailable = Set.empty[ClientSession]
+  private val available = scala.collection.mutable.Set.empty[ClientSession]
 
   private def acquire(): ClientSession = available.synchronized {
     available.lastOption match {
       case Some(s) =>
         available.remove(s)
-        unavailable.add(s)
         s
-      case None =>
-        val s = conn.getClientSession()
-        unavailable.add(s)
-        s
+      case None => conn.getClientSession()
     }
   }
 
   private def release(session: ClientSession) = available.synchronized {
-    unavailable.remove(session)
     available.add(session)
   }
 
@@ -58,17 +51,13 @@ class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) 
 
   }
 
-  override def borrow[A](authToken: String)(fun: ClientSession => A): A = {
-
-    borrow { session =>
-      try {
-        session.getDefaultHeaders.setAuthToken(authToken)
-        fun(session)
-      } finally {
-        session.getDefaultHeaders.clear()
-      }
+  override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow { session =>
+    try {
+      session.getDefaultHeaders.setAuthToken(authToken)
+      fun(session)
+    } finally {
+      session.getDefaultHeaders.clear()
     }
-
   }
 
   // implement Java SessionExecutionPool

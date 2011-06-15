@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.benchmark
 
-import org.totalgrid.reef.protocol.api.{ Listener, NullEndpointListener }
+import org.totalgrid.reef.protocol.api.{ Listener, NullEndpointListener, Publisher }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -28,6 +28,7 @@ import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.proto.Commands.CommandResponse
+import org.totalgrid.reef.sapi.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
@@ -63,10 +64,13 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     Commands.CommandRequest.newBuilder.setName(name).build
   }
 
-  class MeasCallbacks extends Listener[MeasurementBatch] {
+  class MeasCallbacks extends Publisher[MeasurementBatch] {
 
     val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
-    def onUpdate(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)
+    final override def publish(m: Measurements.MeasurementBatch) = {
+      measurements.atomic(l => (m :: l).reverse)
+      new FixedPromise(true)
+    }
 
   }
 

@@ -19,10 +19,9 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
-import org.totalgrid.reef.sapi.Promise
-
 import Measurements.MeasurementBatch
 import FEP.CommChannel
+import org.totalgrid.reef.sapi.{ FixedPromise, Promise }
 
 object Protocol {
 
@@ -39,15 +38,23 @@ trait Listener[A] {
   def onUpdate(value: A)
 }
 
-trait Publisher {
-  def publish(batch : MeasurementBatch) : Promise[Boolean]
+trait Publisher[A] {
+  /**
+   * @param value Value that will be updated
+   * @return A promise that can be used synchronously or asynchronously to determine completion
+   */
+  def publish(value: A): Promise[Boolean]
+}
+
+trait NullPublisher[A] extends Publisher[A] {
+  def publish(value: A): Promise[Boolean] = new FixedPromise(true)
 }
 
 trait NullListener[A] extends Listener[A] {
   final override def onUpdate(value: A) = {}
 }
 
-case object NullPublisher extends NullListener[Measurements.MeasurementBatch]
+case object NullMeasPublisher extends NullPublisher[MeasurementBatch]
 
 case object NullEndpointListener extends NullListener[FEP.CommEndpointConnection.State]
 
@@ -75,7 +82,7 @@ trait Protocol {
   def addEndpoint(endpoint: String,
     channelName: String,
     config: List[Model.ConfigFile],
-    publish: Listener[MeasurementBatch],
+    batchPublisher: Publisher[MeasurementBatch],
     epListener: Listener[FEP.CommEndpointConnection.State]): CommandHandler
 
   def removeEndpoint(endpoint: String): Listener[FEP.CommEndpointConnection.State]

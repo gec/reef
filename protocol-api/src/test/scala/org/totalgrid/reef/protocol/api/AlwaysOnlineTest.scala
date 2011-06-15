@@ -49,7 +49,7 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     val mp = new MockProtocol(false) with EndpointAlwaysOnline
     val listener = new MockListener[CommEndpointConnection.State]
 
-    mp.addEndpoint("endpoint1", "", Nil, NullPublisher, listener)
+    mp.addEndpoint("endpoint1", "", Nil, NullMeasPublisher, listener)
     listener.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))
 
     mp.removeEndpoint("endpoint1")

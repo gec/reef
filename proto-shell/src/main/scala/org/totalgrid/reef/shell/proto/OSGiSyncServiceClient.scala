@@ -97,7 +97,7 @@ trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
       case None =>
         Response(Envelope.Status.LOCAL_ERROR, error = "Proto not registered: " + klass)
     }
-    new BasicPromise(rsp)
+    new SynchronizedPromise(rsp)
   }
 
   private def getService[A](exchange: String): AsyncService[A] = {

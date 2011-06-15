@@ -39,7 +39,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, Listener[MeasurementBatch])]
+  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch])]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
@@ -73,7 +73,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   override def _addEndpoint(endpoint: String,
     channelName: String,
     files: List[Model.ConfigFile],
-    publisher: Listener[MeasurementBatch],
+    publisher: Publisher[MeasurementBatch],
     listener: Listener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
 
     logger.info("Adding device with uid: " + endpoint + " onto channel " + channelName)
@@ -86,7 +86,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
 
     val mapping = Mapping.IndexMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
-    val meas_adapter = new MeasAdapter(mapping, publisher.onUpdate)
+    val meas_adapter = new MeasAdapter(mapping, publisher.publish)
     map += endpoint -> (meas_adapter, publisher)
     val cmd = dnp3.AddMaster(channelName, endpoint, filterLevel, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
