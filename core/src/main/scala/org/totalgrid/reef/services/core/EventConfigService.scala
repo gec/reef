@@ -29,6 +29,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.japi.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -76,6 +77,29 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.eventConfig
+
+  override def preCreate(proto: EventConfig): EventConfig = {
+    if (!proto.hasDesignation || !proto.hasEventType || !proto.hasSeverity || !proto.hasResource) {
+      throw new BadRequestException("Must fill in designation, eventType, severity and resource fields.")
+    }
+    if (proto.getDesignation == EventConfig.Designation.ALARM) {
+      if (!proto.hasAlarmState) throw new BadRequestException("Must set initial alarm state if designation is alarm")
+      proto.getAlarmState match {
+        case Alarm.State.UNACK_AUDIBLE | Alarm.State.UNACK_SILENT => // ok states
+        case _ => throw new BadRequestException("Initial alarm state can only be UNACK_AUDIBLE or UNACK_SILENT")
+      }
+      proto
+    } else {
+      // remove the alarm state field for non alarm messages
+      if (proto.hasAlarmState) proto.toBuilder.clearAlarmState().build
+      else proto
+    }
+  }
+
+  override protected def preUpdate(request: EventConfig, existing: EventConfigStore): EventConfig = {
+    preCreate(request)
+    // TODO: should we re-render all events with the same event type?
+  }
 }
 
 class EventConfigServiceModelFactory(dependencies: ServiceDependencies)
@@ -126,7 +150,7 @@ trait EventConfigConversion
     // If it's not an alarm, set the state to 0.
     val state = proto.getDesignation match {
       case EventConfig.Designation.ALARM => proto.getAlarmState.getNumber
-      case _ => 0
+      case _ => -1
     }
 
     EventConfigStore(proto.getEventType,
@@ -143,7 +167,7 @@ trait EventConfigConversion
       .setDesignation(EventConfig.Designation.valueOf(entry.designation))
       .setResource(entry.resource)
 
-    if (entry.alarmState > 0)
+    if (entry.alarmState != -1)
       ec.setAlarmState(Alarm.State.valueOf(entry.alarmState))
 
     ec.build

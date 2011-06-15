@@ -25,7 +25,6 @@ import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
-import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 import org.squeryl.PrimitiveTypeMode.transaction
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
@@ -34,6 +33,7 @@ import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -144,6 +144,8 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       .setEventType(event)
       .setSeverity(severity)
       .setDesignation(designation)
+      .setResource("")
+      .setAlarmState(AlarmProto.State.UNACK_AUDIBLE)
       .build
 
   def makeEventByEntityName(name: String) = {

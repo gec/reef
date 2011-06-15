@@ -21,10 +21,7 @@ package org.totalgrid.reef.integration;
 import org.junit.Test;
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionCreationListener;
-import org.totalgrid.reef.japi.request.AlarmService;
-import org.totalgrid.reef.japi.request.EntityService;
-import org.totalgrid.reef.japi.request.EventCreationService;
-import org.totalgrid.reef.japi.request.EventService;
+import org.totalgrid.reef.japi.request.*;
 import org.totalgrid.reef.japi.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.japi.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.integration.helpers.BlockingQueue;
@@ -32,6 +29,7 @@ import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.japi.client.Subscription;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
+import org.totalgrid.reef.proto.Alarms;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 import org.totalgrid.reef.proto.Events;
 import org.totalgrid.reef.proto.Model;
@@ -44,16 +42,34 @@ import static org.junit.Assert.assertTrue;
 
 public class TestEventService extends ReefConnectionTestBase
 {
+    @Test
+    public void validateLongEventConfigStrings() throws ReefServiceException
+    {
+        EventConfigService configService = (EventConfigService)helpers;
+        EventCreationService es = (EventCreationService)helpers;
+
+        StringBuffer sb = new StringBuffer();
+        for ( int i = 0; i < 1000; i++ )
+            sb.append( "a" );
+        String longString = sb.toString();
+
+        Alarms.EventConfig config = configService.setEventConfig( "Test.EventSuperLong", 1, Alarms.EventConfig.Designation.EVENT, false, longString );
+
+        assertEquals( longString, config.getResource() );
+
+        //Events.Event event = es.publishEvent( "Test.EventSuperLong", "Tests" );
+        //assertEquals( longString, event.getRendered() );
+    }
 
     @Test
     public void prepareEvents() throws ReefServiceException
     {
-
-        // make an event type for our test events
-        client.put( EventConfigRequestBuilders.makeEvent( "Test.Event", "Event", 1 ) ).await().expectOne();
-
         EventCreationService es = (EventCreationService)helpers;
         EntityService entityService = (EntityService)helpers;
+        EventConfigService configService = (EventConfigService)helpers;
+
+        // make an event type for our test events
+        configService.setEventConfig( "Test.Event", 1, Alarms.EventConfig.Designation.EVENT, false, "Event" );
 
         Model.Entity entity = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
 

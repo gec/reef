@@ -90,7 +90,7 @@ object EventView {
     e.getEventType ::
       e.getDesignation.toString ::
       e.getSeverity.toString ::
-      (e.getAlarmState == Alarm.State.UNACK_SILENT).toString ::
+      (e.getAlarmState == Alarm.State.UNACK_AUDIBLE).toString ::
       e.getResource :: Nil
   }
 }

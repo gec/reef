@@ -60,9 +60,11 @@ object ApplicationSchema extends Schema {
 
   val events = table[EventStore]
   on(events)(s => declare(
-    s.time is (indexed)))
+    s.time is (indexed),
+    s.rendered is dbType("TEXT")))
 
   val eventConfigs = table[EventConfigStore]
+  on(eventConfigs)(s => declare(s.resource is dbType("TEXT")))
 
   val overrides = table[OverrideConfig]
 
