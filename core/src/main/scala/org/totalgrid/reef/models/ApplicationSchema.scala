@@ -64,7 +64,6 @@ object ApplicationSchema extends Schema {
 
   val eventConfigs = table[EventConfigStore]
 
-  val triggers = table[TriggerConfig]
   val overrides = table[OverrideConfig]
 
   val triggerSets = table[TriggerSet]

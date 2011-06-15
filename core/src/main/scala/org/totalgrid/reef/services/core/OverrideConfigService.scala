@@ -23,9 +23,10 @@ import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.event.{ EventType, SystemEventSink }
 
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._
@@ -44,13 +45,29 @@ class OverrideConfigService(protected val modelTrans: ServiceTransactable[Overri
 class OverrideConfigModelFactory(dependencies: ServiceDependencies)
     extends BasicModelFactory[MeasOverride, OverrideConfigServiceModel](dependencies, classOf[MeasOverride]) {
 
-  def model = new OverrideConfigServiceModel(subHandler)
+  def model = new OverrideConfigServiceModel(subHandler, dependencies.eventSink)
 }
 
-class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)
     extends SquerylServiceModel[MeasOverride, OverrideConfig]
     with EventedServiceModel[MeasOverride, OverrideConfig]
-    with OverrideConfigConversion {
+    with OverrideConfigConversion
+    with ServiceModelSystemEventPublisher {
+
+  override protected def postCreate(entry: OverrideConfig) {
+    val code = if (entry.proto.value.meas.isDefined) EventType.Scada.SetOverride else EventType.Scada.SetNotInService
+    postSystemEvent(code, entity = Some(entry.point.value.entity.value))
+  }
+
+  override protected def postUpdate(entry: OverrideConfig, previous: OverrideConfig) {
+    val code = if (entry.proto.value.meas.isDefined) EventType.Scada.SetOverride else EventType.Scada.SetNotInService
+    postSystemEvent(code, entity = Some(entry.point.value.entity.value))
+  }
+
+  override protected def postDelete(entry: OverrideConfig) {
+    val code = if (entry.proto.value.meas.isDefined) EventType.Scada.RemoveOverride else EventType.Scada.RemoveNotInService
+    postSystemEvent(code, entity = Some(entry.point.value.entity.value))
+  }
 }
 
 trait OverrideConfigConversion
@@ -73,18 +90,21 @@ trait OverrideConfigConversion
   def searchQuery(proto: MeasOverride, sql: OverrideConfig) = Nil
 
   def isModified(entry: OverrideConfig, existing: OverrideConfig): Boolean = {
-    !entry.proto.sameElements(existing.proto)
+    !entry.protoData.sameElements(existing.protoData)
   }
 
   def convertToProto(sql: OverrideConfig): MeasOverride = {
-    MeasOverride.parseFrom(sql.proto)
+    sql.proto.value
   }
 
   def createModelEntry(rawProto: MeasOverride): OverrideConfig = {
     val point = PointTiedModel.lookupPoint(rawProto.getPoint)
     val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
-    new OverrideConfig(
+    val over = new OverrideConfig(
       point.id,
       proto.toByteString.toByteArray)
+    over.point.value = point
+    over.proto.value = proto
+    over
   }
 }

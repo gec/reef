@@ -56,6 +56,10 @@ object EventType {
     case object UpdatedSetpoint extends EventType
     case object OutOfNominal extends EventType
     case object OutOfReasonable extends EventType
+    case object SetOverride extends EventType
+    case object SetNotInService extends EventType
+    case object RemoveOverride extends EventType
+    case object RemoveNotInService extends EventType
   }
 
   object System {

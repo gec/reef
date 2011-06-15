@@ -58,8 +58,12 @@ object EventConfigService {
 
           EventConfigStore(Scada.ControlExe, 8, ALARM, UNACK_SILENT, "Executed control {command}"),
           EventConfigStore(Scada.UpdatedSetpoint, 8, ALARM, UNACK_SILENT, "Updated setpoint {command} to {value}"),
-          EventConfigStore(Scada.OutOfNominal, 8, ALARM, UNACK_SILENT, "Measurement not in nominal range: {value}{unit} validity {validity} "),
-          EventConfigStore(Scada.OutOfReasonable, 8, ALARM, UNACK_SILENT, "Measurement not reasonable: {value}{unit} validity {validity}"))
+          EventConfigStore(Scada.OutOfNominal, 8, ALARM, UNACK_SILENT, "Measurement not in nominal range: {value}"),
+          EventConfigStore(Scada.OutOfReasonable, 8, ALARM, UNACK_SILENT, "Measurement not reasonable: {value}"),
+          EventConfigStore(Scada.SetOverride, 8, ALARM, UNACK_SILENT, "Point overridden"),
+          EventConfigStore(Scada.SetNotInService, 8, ALARM, UNACK_SILENT, "Point removed from service"),
+          EventConfigStore(Scada.RemoveOverride, 8, ALARM, UNACK_SILENT, "Removed override on point"),
+          EventConfigStore(Scada.RemoveNotInService, 8, ALARM, UNACK_SILENT, "Returned point to service"))
 
         ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
       }
