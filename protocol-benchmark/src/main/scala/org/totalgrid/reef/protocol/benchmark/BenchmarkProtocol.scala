@@ -71,12 +71,12 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline
   def _addEndpoint(endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
-    publisher: IListener[MeasurementBatch],
-    listener: IListener[FEP.CommEndpointConnection.State]): ICommandHandler = {
+    publisher: Listener[MeasurementBatch],
+    listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 
-    val mapping = SimMapping.SimulatorMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile)
+    val mapping = SimMapping.SimulatorMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile)
     val sim = new Simulator(endpoint, publisher, mapping, getReactor)
     sim.start
     map += endpoint -> sim

@@ -18,10 +18,12 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.sapi.client.{ Promise => IScalaPromise, Response => ScalaResponse }
+import org.totalgrid.reef.sapi.{Promise => ScalaPromise}
+
+import org.totalgrid.reef.sapi.client.{ Response => ScalaResponse }
 import org.totalgrid.reef.japi.client.{ Promise, ResponseListener, Response }
 
-class PromiseWrapper[A](promise: IScalaPromise[ScalaResponse[A]]) extends Promise[Response[A]] {
+class PromiseWrapper[A](promise: ScalaPromise[ScalaResponse[A]]) extends Promise[Response[A]] {
 
   private lazy val response = new ResponseWrapper(promise.await())
 

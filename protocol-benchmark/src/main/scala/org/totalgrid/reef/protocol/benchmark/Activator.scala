@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.benchmark
 
 import org.osgi.framework.{ ServiceRegistration, BundleActivator, BundleContext }
-import org.totalgrid.reef.protocol.api.IProtocol
+import org.totalgrid.reef.protocol.api.Protocol
 import scala.collection.mutable.Map
 import scala.collection.JavaConversions._
 
@@ -28,7 +28,7 @@ class Activator extends BundleActivator {
 
   override def start(context: BundleContext) {
     val protocol = new BenchmarkProtocol
-    reg = Some(context.registerService(classOf[IProtocol].getName, protocol, Map("protocol" -> protocol.name)))
+    reg = Some(context.registerService(classOf[Protocol].getName, protocol, Map("protocol" -> protocol.name)))
   }
 
   override def stop(context: BundleContext) {}

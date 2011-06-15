@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.{ SafeExecution, Logging }
 
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
-import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHandler, IListener }
+import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler, Listener }
 
 /**
  * Command adapter acts as a command response acceptor, forwarding translated responses to an actor
@@ -34,9 +34,9 @@ import org.totalgrid.reef.protocol.api.{ ICommandHandler => IProtocolCommandHand
  * @param accept Function that processes Command responses
  */
 class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
-    extends IResponseAcceptor with IProtocolCommandHandler with Logging with SafeExecution {
+    extends IResponseAcceptor with ProtocolCommandHandler with Logging with SafeExecution {
 
-  case class ResponseInfo(id: String, handler: IListener[Commands.CommandResponse], obj: Object)
+  case class ResponseInfo(id: String, handler: Listener[Commands.CommandResponse], obj: Object)
 
   private val map = MapGenerator.getCommandMap(cfg)
   private var sequence = 0
@@ -53,7 +53,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     }
   }
 
-  def issue(cr: Commands.CommandRequest, rspHandler: IListener[Commands.CommandResponse]): Unit = safeExecute {
+  def issue(cr: Commands.CommandRequest, rspHandler: Listener[Commands.CommandResponse]): Unit = safeExecute {
     map.get(cr.getName) match {
       case Some(x) =>
         val index = x.getIndex
@@ -76,7 +76,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
   }
 
   /// obj is just held to stop garbage collector destroying reference
-  private def nextSeq(id: String, handler: IListener[Commands.CommandResponse], obj: Object): Int = {
+  private def nextSeq(id: String, handler: Listener[Commands.CommandResponse], obj: Object): Int = {
     sequence += 1
     idMap.put(sequence, ResponseInfo(id, handler, obj))
     sequence

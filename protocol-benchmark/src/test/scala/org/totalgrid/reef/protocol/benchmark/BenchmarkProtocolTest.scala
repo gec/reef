@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.benchmark
 
-import org.totalgrid.reef.protocol.api.{ IListener, NullEndpointListener }
+import org.totalgrid.reef.protocol.api.{ Listener, NullEndpointListener }
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -63,14 +63,14 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     Commands.CommandRequest.newBuilder.setName(name).build
   }
 
-  class MeasCallbacks extends IListener[MeasurementBatch] {
+  class MeasCallbacks extends Listener[MeasurementBatch] {
 
     val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
     def onUpdate(m: Measurements.MeasurementBatch) = measurements.atomic(l => (m :: l).reverse)
 
   }
 
-  class CommandCallbacks extends IListener[CommandResponse] {
+  class CommandCallbacks extends Listener[CommandResponse] {
 
     val cmdResponses = new SyncVar[Option[Commands.CommandResponse]](None: Option[Commands.CommandResponse])
     def onUpdate(c: Commands.CommandResponse) = cmdResponses.update(Some(c))

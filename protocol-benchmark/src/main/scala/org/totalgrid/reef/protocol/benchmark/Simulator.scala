@@ -28,11 +28,11 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.{ ICommandHandler, IListener }
+import org.totalgrid.reef.protocol.api.{ CommandHandler, Listener }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.proto.Commands.CommandResponse
 
-class Simulator(name: String, publisher: IListener[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with ICommandHandler with ControllableSimulator with Logging {
+class Simulator(name: String, publisher: Listener[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -93,7 +93,7 @@ class Simulator(name: String, publisher: IListener[MeasurementBatch], config: Si
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest, rspHandler: IListener[CommandResponse]) = cmdMap.get(cr.getName) match {
+  def issue(cr: Commands.CommandRequest, rspHandler: Listener[CommandResponse]) = cmdMap.get(cr.getName) match {
     case Some(x) =>
       logger.info("handled command: " + cr)
       val rsp = Commands.CommandResponse.newBuilder

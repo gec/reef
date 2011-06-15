@@ -19,34 +19,31 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
+import org.totalgrid.reef.sapi.Promise
 
 import Measurements.MeasurementBatch
 import FEP.CommChannel
 
-object IProtocol {
+object Protocol {
 
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
     files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
   }
-  /*
-  type IPublisher = IListener[MeasurementBatch]
-  type IChannelListener = IListener[CommChannel.State]
-  type IEndpointListener = IListener[FEP.CommEndpointConnection.State]
-
-  type ChannelState = CommChannel.State
-  type EndpointState = FEP.CommEndpointConnection.State
-  */
 }
 
-trait ICommandHandler {
-  def issue(cmd: Commands.CommandRequest, listener: IListener[Commands.CommandResponse])
+trait CommandHandler {
+  def issue(cmd: Commands.CommandRequest, listener: Listener[Commands.CommandResponse])
 }
 
-trait IListener[A] {
+trait Listener[A] {
   def onUpdate(value: A)
 }
 
-trait NullListener[A] extends IListener[A] {
+trait Publisher {
+  def publish(batch : MeasurementBatch) : Promise[Boolean]
+}
+
+trait NullListener[A] extends Listener[A] {
   final override def onUpdate(value: A) = {}
 }
 
@@ -56,9 +53,9 @@ case object NullEndpointListener extends NullListener[FEP.CommEndpointConnection
 
 case object NullChannelListener extends NullListener[CommChannel.State]
 
-trait IProtocol {
+trait Protocol {
 
-  import IProtocol._
+  import Protocol._
 
   /**
    * @return Unique name, i.e. 'dnp3'
@@ -71,15 +68,15 @@ trait IProtocol {
    */
   def requiresChannel: Boolean
 
-  def addChannel(channel: FEP.CommChannel, channelListener: IListener[CommChannel.State]): Unit
+  def addChannel(channel: FEP.CommChannel, channelListener: Listener[CommChannel.State]): Unit
 
-  def removeChannel(channel: String): IListener[CommChannel.State]
+  def removeChannel(channel: String): Listener[CommChannel.State]
 
   def addEndpoint(endpoint: String,
     channelName: String,
     config: List[Model.ConfigFile],
-    publish: IListener[MeasurementBatch],
-    epListener: IListener[FEP.CommEndpointConnection.State]): ICommandHandler
+    publish: Listener[MeasurementBatch],
+    epListener: Listener[FEP.CommEndpointConnection.State]): CommandHandler
 
-  def removeEndpoint(endpoint: String): IListener[FEP.CommEndpointConnection.State]
+  def removeEndpoint(endpoint: String): Listener[FEP.CommEndpointConnection.State]
 }

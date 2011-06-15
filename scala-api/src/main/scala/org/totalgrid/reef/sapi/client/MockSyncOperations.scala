@@ -41,7 +41,7 @@ package org.totalgrid.reef.sapi.client
 
 import scala.collection.mutable.Queue
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi._
 
 /* TODO - rename this class, it's really a "queueing" SyncOperations */
 

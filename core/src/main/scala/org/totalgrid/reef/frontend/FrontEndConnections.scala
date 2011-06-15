@@ -35,7 +35,7 @@ import org.totalgrid.reef.japi.{ ReefServiceException, ResponseTimeoutException 
 import org.totalgrid.reef.broker.CloseableChannel
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends KeyedMap[ConnProto] {
+class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedMap[ConnProto] {
 
   def getKey(c: ConnProto) = c.getUid
 
@@ -47,7 +47,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
 
   val maxAttemptsToRetryMeasurements = 1
 
-  private def getProtocol(name: String): IProtocol = protocols.get(name) match {
+  private def getProtocol(name: String): Protocol = protocols.get(name) match {
     case Some(p) => p
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
@@ -93,7 +93,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
-  private def newEndpointListener(connectionUid: String) = new IListener[ConnProto.State] {
+  private def newEndpointListener(connectionUid: String) = new Listener[ConnProto.State] {
 
     override def onUpdate(state: ConnProto.State) = {
       val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
@@ -106,7 +106,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newChannelListener(channelUid: ReefUUID) = new IListener[CommChannel.State] {
+  private def newChannelListener(channelUid: ReefUUID) = new Listener[CommChannel.State] {
 
     override def onUpdate(state: CommChannel.State) = {
       val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
@@ -142,7 +142,7 @@ class FrontEndConnections(comms: Seq[IProtocol], conn: Connection) extends Keyed
     }
   }
 
-  private def newPublisher(routingKey: String) = new IListener[MeasurementBatch] {
+  private def newPublisher(routingKey: String) = new Listener[MeasurementBatch] {
 
     override def onUpdate(batch: Measurements.MeasurementBatch) = batchPublish(pool, 0, AddressableDestination(routingKey))(batch)
 

@@ -22,7 +22,7 @@
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
    <bean id="benchmark-protocol" class="org.totalgrid.reef.protocol.benchmark.BenchmarkProtocol" />
-   <service id="protocol-benchmark"  ref="benchmark-protocol" interface="org.totalgrid.reef.protocol.api.IProtocol"/>
+   <service id="protocol-benchmark"  ref="benchmark-protocol" interface="org.totalgrid.reef.protocol.api.Protocol"/>
 
   <command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
       <command name="sim/list">

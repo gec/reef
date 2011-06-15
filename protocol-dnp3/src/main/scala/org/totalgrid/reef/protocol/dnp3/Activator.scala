@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.dnp3
 
 import org.osgi.framework.{ ServiceRegistration, BundleActivator, BundleContext }
-import org.totalgrid.reef.protocol.api.IProtocol
+import org.totalgrid.reef.protocol.api.Protocol
 import scala.collection.mutable.Map
 import scala.collection.JavaConversions._
 
@@ -31,7 +31,7 @@ class Activator extends BundleActivator {
     System.loadLibrary("dnp3java")
     System.setProperty("reef.protocol.dnp3.nostaticload", "")
     val protocol = new Dnp3Protocol
-    reg = Some(context.registerService(classOf[IProtocol].getName, protocol, Map("protocol" -> protocol.name)))
+    reg = Some(context.registerService(classOf[Protocol].getName, protocol, Map("protocol" -> protocol.name)))
   }
 
   override def stop(context: BundleContext) {

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.dnp3
 
 import org.totalgrid.reef.proto.{ Mapping, Commands }
-import org.totalgrid.reef.protocol.api.IListener
+import org.totalgrid.reef.protocol.api.Listener
 import scala.collection.mutable
 
 class MockCommandAcceptor extends ICommandAcceptor {
@@ -42,7 +42,7 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {
 
-  class MockResponseHandler extends IListener[Commands.CommandResponse] {
+  class MockResponseHandler extends Listener[Commands.CommandResponse] {
     val responses = new mutable.Queue[Commands.CommandResponse]
     final override def onUpdate(rsp: Commands.CommandResponse) = responses += rsp
   }

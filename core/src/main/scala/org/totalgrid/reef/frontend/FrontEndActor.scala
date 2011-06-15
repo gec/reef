@@ -27,7 +27,7 @@ import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.sapi.client.ClientSession
 import org.totalgrid.reef.sapi.client.{ SingleSuccess }
 
-import org.totalgrid.reef.protocol.api.{ IProtocol => Protocol }
+import org.totalgrid.reef.protocol.api.Protocol
 
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
 import org.totalgrid.reef.proto.Application.ApplicationConfig

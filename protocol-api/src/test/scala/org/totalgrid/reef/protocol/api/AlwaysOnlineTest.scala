@@ -30,7 +30,7 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
-  class MockListener[A] extends IListener[A] {
+  class MockListener[A] extends Listener[A] {
     var queue = Queue.empty[A]
     def onUpdate(state: A) = queue += state
   }

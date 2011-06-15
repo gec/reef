@@ -43,6 +43,7 @@ import scala.collection.mutable.Queue
 
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.{ RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
 
 /**

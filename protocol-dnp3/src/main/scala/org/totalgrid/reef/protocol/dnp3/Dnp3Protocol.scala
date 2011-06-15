@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.dnp3
 
 import org.totalgrid.reef.protocol.api._
 
-import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
@@ -39,14 +39,14 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, IListener[MeasurementBatch])]
+  private var map = immutable.Map.empty[String, (MeasAdapter, Listener[MeasurementBatch])]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.CommChannel, listener: IListener[FEP.CommChannel.State]) = {
+  override def _addChannel(p: FEP.CommChannel, listener: Listener[FEP.CommChannel.State]) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -73,18 +73,18 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   override def _addEndpoint(endpoint: String,
     channelName: String,
     files: List[Model.ConfigFile],
-    publisher: IListener[MeasurementBatch],
-    listener: IListener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
+    publisher: Listener[MeasurementBatch],
+    listener: Listener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
 
     logger.info("Adding device with uid: " + endpoint + " onto channel " + channelName)
 
-    val configFile = IProtocol.find(files, "text/xml") //there is should be only one XML file
+    val configFile = Protocol.find(files, "text/xml") //there is should be only one XML file
     val xml = XMLHelper.read(configFile.getFile.toByteArray, classOf[Master])
     val master = getMasterConfig(xml)
 
     val filterLevel = Option(xml.getLog).map { logElem => configure(logElem.getFilter) }.getOrElse(FilterLevel.LEV_WARNING)
 
-    val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
+    val mapping = Mapping.IndexMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
     val meas_adapter = new MeasAdapter(mapping, publisher.onUpdate)
     map += endpoint -> (meas_adapter, publisher)
