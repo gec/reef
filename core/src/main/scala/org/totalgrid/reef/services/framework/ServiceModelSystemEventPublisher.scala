@@ -19,8 +19,12 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+
 import org.totalgrid.reef.services.core.util.AttributeList
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
+import org.totalgrid.reef.models.Entity
+import org.totalgrid.reef.services.framework.SquerylModel._
 
 trait ServiceModelSystemEventPublisher { self: EnvHolder =>
   def subsystem: String = "Core"
@@ -29,12 +33,14 @@ trait ServiceModelSystemEventPublisher { self: EnvHolder =>
 
   def eventSink: SystemEventSink
 
-  def postSystemEvent(eventType: EventType, args: (String, Any)*) {
+  def postSystemEvent(eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil) {
     val b = Event.newBuilder
       .setTime(time)
       .setEventType(eventType.toString)
       .setSubsystem(subsystem)
       .setUserId(userId)
+
+    entity.foreach { e => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(e)).setName(e.name)) }
 
     if (!args.isEmpty) {
       val aList = new AttributeList

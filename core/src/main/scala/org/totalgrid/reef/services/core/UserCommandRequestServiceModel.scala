@@ -99,7 +99,7 @@ class UserCommandRequestServiceModel(
         case Some(ValType.INT) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
         case Some(ValType.DOUBLE) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
       }
-      postSystemEvent(code, "command" -> cmd.entityName, valueArg)
+      postSystemEvent(code, args = "command" -> cmd.entityName :: valueArg :: Nil)
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber

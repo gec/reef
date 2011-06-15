@@ -182,7 +182,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
   def postLoginException[A](status: Status, reason: String): A = {
 
-    postSystemEvent(EventType.System.UserLoginFailure, "reason" -> reason)
+    postSystemEvent(EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
 
     throw new BadRequestException(reason, status)
   }
