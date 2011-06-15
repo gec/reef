@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionCreationListener;
 import org.totalgrid.reef.japi.request.AlarmService;
+import org.totalgrid.reef.japi.request.EntityService;
+import org.totalgrid.reef.japi.request.EventCreationService;
 import org.totalgrid.reef.japi.request.EventService;
 import org.totalgrid.reef.japi.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.japi.request.builders.EventRequestBuilders;
@@ -32,10 +34,13 @@ import org.totalgrid.reef.japi.client.Subscription;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 import org.totalgrid.reef.proto.Events;
+import org.totalgrid.reef.proto.Model;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class TestEventService extends ReefConnectionTestBase
 {
@@ -47,19 +52,27 @@ public class TestEventService extends ReefConnectionTestBase
         // make an event type for our test events
         client.put( EventConfigRequestBuilders.makeEvent( "Test.Event", "Event", 1 ) ).await().expectOne();
 
-        EventService es = helpers;
+        EventCreationService es = (EventCreationService)helpers;
+        EntityService entityService = (EntityService)helpers;
+
+        Model.Entity entity = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
 
         // populate some events
         for ( int i = 0; i < 15; i++ )
         {
-            es.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Event", "StaticSubstation.Line02.Current" ) );
+            Events.Event e = es.publishEvent( "Test.Event", "Tests", entity.getUuid() );
+            assertTrue( e.hasUid() );
+            assertNotSame( 0, e.getUid().length() );
+
+            assertTrue( e.hasTime() );
+            // assertTrue(e.getTime() > 0);
         }
     }
 
     @Test
     public void getRecentEvents() throws ReefServiceException
     {
-        EventService es = helpers;
+        EventService es = (EventService)helpers;
         List<Events.Event> events = es.getRecentEvents( 10 );
         assertEquals( events.size(), 10 );
     }
@@ -70,12 +83,14 @@ public class TestEventService extends ReefConnectionTestBase
 
         MockSubscriptionEventAcceptor<Events.Event> mock = new MockSubscriptionEventAcceptor<Events.Event>( true );
 
-        EventService es = helpers;
+        EventService es = (EventService)helpers;
 
         SubscriptionResult<List<Events.Event>, Events.Event> events = es.subscribeToRecentEvents( 10 );
         assertEquals( events.getResult().size(), 10 );
 
-        es.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Event", "StaticSubstation.Line02.Current" ) );
+        EventCreationService pub = (EventCreationService)helpers;
+
+        pub.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Event", "StaticSubstation.Line02.Current" ) );
 
         events.getSubscription().start( mock );
 
@@ -91,7 +106,7 @@ public class TestEventService extends ReefConnectionTestBase
         // make an event type for our test alarms
         client.put( EventConfigRequestBuilders.makeAudibleAlarm( "Test.Alarm", "Alarm", 1 ) ).await().expectOne();
 
-        EventService es = helpers;
+        EventCreationService es = (EventCreationService)helpers;
 
         // populate some alarms
         for ( int i = 0; i < 5; i++ )
@@ -106,14 +121,16 @@ public class TestEventService extends ReefConnectionTestBase
 
         MockSubscriptionEventAcceptor<Alarm> mock = new MockSubscriptionEventAcceptor<Alarm>( true );
 
-        EventService es = helpers;
-        AlarmService as = helpers;
+        EventService es = (EventService)helpers;
+        AlarmService as = (AlarmService)helpers;
 
         SubscriptionResult<List<Alarm>, Alarm> result = as.subscribeToActiveAlarms( 2 );
         List<Alarm> events = result.getResult();
         assertEquals( events.size(), 2 );
 
-        es.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Alarm", "StaticSubstation.Line02.Current" ) );
+        EventCreationService pub = (EventCreationService)helpers;
+
+        pub.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Alarm", "StaticSubstation.Line02.Current" ) );
 
         result.getSubscription().start( mock );
         mock.pop( 1000 );
