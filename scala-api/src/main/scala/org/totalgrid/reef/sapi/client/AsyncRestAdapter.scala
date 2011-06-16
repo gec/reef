@@ -40,6 +40,7 @@ package org.totalgrid.reef.sapi.client
  */
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
 trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 

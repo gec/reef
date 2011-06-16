@@ -19,10 +19,11 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ SynchronizedPromise, AnyNodeDestination, Destination, Promise }
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination }
 import org.totalgrid.reef.sapi.client.{ Failure, Response, SessionPool }
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.protocol.api.Publisher
+import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
 class OrderedPublisherAdapter[A](
     publisher: OrderedPublisher,

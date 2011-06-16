@@ -42,6 +42,7 @@ package org.totalgrid.reef.sapi.client
 import scala.collection.mutable.Queue
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
 /* TODO - rename this class, it's really a "queueing" SyncOperations */
 

@@ -33,6 +33,7 @@ import org.totalgrid.reef.japi._
 import com.weiglewilczek.scalamodules._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.promise.{ Promise, SynchronizedPromise }
 
 class ServiceDispatcher[A](rh: AsyncService[A]) {
 

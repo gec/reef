@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.api
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
 import FEP.CommChannel
-import org.totalgrid.reef.sapi.{ FixedPromise, Promise }
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
 object Protocol {
 

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.promise
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,14 +19,12 @@
  * the License.
  */
 
-package org.totalgrid.reef.sapi
+class FixedPromise[A](value: A) extends Promise[A] {
 
-trait Promise[A] {
+  final override def await(): A = value
 
-  def await(): A
+  final override def listen(fun: A => Unit): Unit = fun(value)
 
-  def listen(fun: A => Unit): Unit
-
-  def isComplete: Boolean
+  final override def isComplete: Boolean = true
 
 }

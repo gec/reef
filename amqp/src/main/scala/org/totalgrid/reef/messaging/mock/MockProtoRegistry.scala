@@ -210,7 +210,10 @@ class MockConnection extends Connection {
 
   private val session = new MockClientSession
 
-  private val pool = new MockSessionPool(session)
+  private lazy val pool = {
+    mockclient = Some(session)
+    new MockSessionPool(session)
+  }
 
   final override def getSessionPool() = pool
 

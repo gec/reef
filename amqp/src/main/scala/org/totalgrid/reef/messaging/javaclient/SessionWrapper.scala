@@ -20,7 +20,7 @@ package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.japi.client._
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.{ Promise => ScalaPromise }
+import org.totalgrid.reef.promise.{ Promise => ScalaPromise }
 import org.totalgrid.reef.sapi.client.{ ClientSession, Response => ScalaResponse }
 import org.totalgrid.reef.japi.TypeDescriptor
 

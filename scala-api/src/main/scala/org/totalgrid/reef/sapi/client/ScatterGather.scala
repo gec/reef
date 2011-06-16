@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.sapi.client
 
-import org.totalgrid.reef.sapi.Promise
+import org.totalgrid.reef.promise.Promise
 
 object ScatterGather {
 

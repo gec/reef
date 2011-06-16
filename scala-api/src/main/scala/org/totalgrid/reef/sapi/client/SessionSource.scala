@@ -18,4 +18,3 @@
  */
 package org.totalgrid.reef.sapi.client
 
-

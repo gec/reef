@@ -20,6 +20,7 @@ package org.totalgrid.reef.sapi.client
 
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.promise.Promise
 
 trait RestOperations {
 

@@ -25,7 +25,7 @@ import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.sapi._
 import client._
 import org.totalgrid.reef.japi.{ InternalClientError, Envelope, ReefServiceException }
-
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
 class BasicSessionPool(source: SessionSource) extends SessionPool with SessionExecutionPool with Logging {
 
@@ -69,12 +69,11 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
 
   private def release(session: ClientSession) = available.synchronized {
     session match {
-      case ex : ErroredClientSession => // do nothing
+      case ex: ErroredClientSession => // do nothing
       case _ =>
         if (session.isOpen) available.add(session) // if the session somehow gets closed, we discard it
         else count -= 1
     }
-
 
   }
 

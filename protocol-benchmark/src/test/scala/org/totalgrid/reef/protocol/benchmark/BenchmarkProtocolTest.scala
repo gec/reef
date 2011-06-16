@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.proto.Commands.CommandResponse
-import org.totalgrid.reef.sapi.FixedPromise
+import org.totalgrid.reef.promise.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {

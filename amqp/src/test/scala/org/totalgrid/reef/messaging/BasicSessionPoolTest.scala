@@ -19,46 +19,66 @@
 
 package org.totalgrid.reef.messaging
 
-import mock.MockClientSession
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.util.Conversion.convertIntToTimes
-import org.totalgrid.reef.sapi.client.{Failure, SessionPool, ClientSession}
-import org.totalgrid.reef.japi.{Envelope, ServiceIOException}
 
+import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import scala.actors.Actor._
+import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, RequestEnv }
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
+import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.japi.{ ServiceIOException, ReefServiceException, Envelope }
 
 @RunWith(classOf[JUnitRunner])
 class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
 
+  class EchoingClientSession extends ClientSession {
+
+    var numRequests = 0
+    private var open = true
+
+    final override def isOpen = open
+    final override def close() = open = false
+
+    def addSubscription[A](klass: Class[_]): Subscription[A] = throw new ServiceIOException("Unimplemented")
+
+    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
+      numRequests += 1
+      new FixedPromise(SingleSuccess(single = payload))
+    }
+
+  }
+
   class MockSessionSource(throws: Boolean = false) extends SessionSource {
 
-    val sessions = scala.collection.mutable.Set.empty[MockClientSession]
+    val sessions = scala.collection.mutable.Set.empty[EchoingClientSession]
 
     def newSession(): ClientSession = {
-      if(throws) throw new ServiceIOException("Test exception")
-      val s = new MockClientSession
+      if (throws) throw new ServiceIOException("Test exception")
+      val s = new EchoingClientSession
       sessions += s
       s
     }
   }
 
-  def fixture(test : (MockSessionSource, SessionPool) => Unit) : Unit = fixture(false)(test)
+  def fixture(test: (MockSessionSource, SessionPool) => Unit): Unit = fixture(false)(test)
 
-  def fixture(throws: Boolean)(test : (MockSessionSource, SessionPool) => Unit) : Unit = {
+  def fixture(throws: Boolean)(test: (MockSessionSource, SessionPool) => Unit): Unit = {
     val mock = new MockSessionSource(throws)
     val pool = new BasicSessionPool(mock)
     test(mock, pool)
   }
 
-  test("StartsWithZeroSize") {
+  test("Starts with zero size") {
     fixture { (source, pool) =>
       pool.size should equal(0)
     }
   }
 
-  test("PoolReusesSessions") {
+  test("Pool reuses sessions") {
     fixture { (source, pool) =>
       3.times(pool.borrow(s => s))
       source.sessions.size should equal(1)
@@ -66,10 +86,10 @@ class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("RecursiveBorrowAcquiresNewSessions") {
+  test("Recursive borrowing acquires new sessions") {
 
-    def borrow(pool: SessionPool, num: Int) : Unit =
-      if(num > 0) pool.borrow(s => borrow(pool, num - 1))
+    def borrow(pool: SessionPool, num: Int): Unit =
+      if (num > 0) pool.borrow(s => borrow(pool, num - 1))
 
     val num = 100
 
@@ -80,7 +100,7 @@ class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("ClosedSessionsAreRemoved") {
+  test("Closed sessions are removed") {
     fixture { (source, pool) =>
       pool.borrow(_.close())
       source.sessions.size should equal(1)
@@ -88,13 +108,36 @@ class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("ExceptionWhileBorrowingYieldsSpecialSession") {
+  test("Exception while borrowing yields a special session that errors") {
     fixture(true) { (source, pool) =>
       pool.borrow { s =>
         s.get(4).await().status should equal(Envelope.Status.BUS_UNAVAILABLE)
       }
       source.sessions.size should equal(0)
       pool.size should equal(0)
+    }
+  }
+
+  test("Handles borrowing from multiple threads") {
+    fixture { (source, pool) =>
+      case object Borrow
+
+      def newActor = actor {
+        react {
+          case Borrow => reply(pool.borrow(s => s.get(4).await))
+        }
+      }
+
+      // use futures to start all operations and then block for completion
+      val replys = (1 to 100).map(i => newActor).map(a => a !! Borrow).map(f => f.apply())
+
+      // Some aspects of the test are non-deterministic, but there are some reasonable assertions we can make
+      source.sessions.size should (be > 0 and be <= 100)
+
+      // calculate the total number of operations performed on all of the EchoSession
+      val totalops = source.sessions.foldLeft(0)((sum, s) => sum + s.numRequests)
+
+      totalops should equal(100)
     }
   }
 
