@@ -23,21 +23,6 @@ import Measurements.MeasurementBatch
 import FEP.CommChannel
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
-object Protocol {
-
-  def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
-    files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
-  }
-}
-
-trait CommandHandler {
-  def issue(cmd: Commands.CommandRequest, listener: Listener[Commands.CommandResponse])
-}
-
-trait Listener[A] {
-  def onUpdate(value: A)
-}
-
 trait Publisher[A] {
   /**
    * @param value Value that will be updated
@@ -46,19 +31,29 @@ trait Publisher[A] {
   def publish(value: A): Promise[Boolean]
 }
 
+object Protocol {
+
+  def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
+    files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
+  }
+
+  type BatchPublisher = Publisher[MeasurementBatch]
+  type EndpointPublisher = Publisher[FEP.CommEndpointConnection.State]
+  type ChannelPublisher = Publisher[CommChannel.State]
+  type ResponsePublisher = Publisher[Commands.CommandResponse]
+}
+
+trait CommandHandler {
+  def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher)
+}
+
 trait NullPublisher[A] extends Publisher[A] {
   def publish(value: A): Promise[Boolean] = new FixedPromise(true)
 }
 
-trait NullListener[A] extends Listener[A] {
-  final override def onUpdate(value: A) = {}
-}
-
-case object NullMeasPublisher extends NullPublisher[MeasurementBatch]
-
-case object NullEndpointListener extends NullListener[FEP.CommEndpointConnection.State]
-
-case object NullChannelListener extends NullListener[CommChannel.State]
+case object NullBatchPublisher extends NullPublisher[MeasurementBatch]
+case object NullEndpointPublisher extends NullPublisher[FEP.CommEndpointConnection.State]
+case object NullChannelPublisher extends NullPublisher[CommChannel.State]
 
 trait Protocol {
 
@@ -75,15 +70,15 @@ trait Protocol {
    */
   def requiresChannel: Boolean
 
-  def addChannel(channel: FEP.CommChannel, channelListener: Listener[CommChannel.State]): Unit
+  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit
 
-  def removeChannel(channel: String): Listener[CommChannel.State]
+  def removeChannel(channel: String): ChannelPublisher
 
   def addEndpoint(endpoint: String,
     channelName: String,
     config: List[Model.ConfigFile],
-    batchPublisher: Publisher[MeasurementBatch],
-    epListener: Listener[FEP.CommEndpointConnection.State]): CommandHandler
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler
 
-  def removeEndpoint(endpoint: String): Listener[FEP.CommEndpointConnection.State]
+  def removeEndpoint(endpoint: String): EndpointPublisher
 }

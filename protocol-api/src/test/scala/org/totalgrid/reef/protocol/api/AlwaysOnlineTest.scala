@@ -26,34 +26,38 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.promise.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
-  class MockListener[A] extends Listener[A] {
+  class MockPublisher[A] extends Publisher[A] {
     var queue = Queue.empty[A]
-    def onUpdate(state: A) = queue += state
+    def publish(state: A) = {
+      queue += state
+      new FixedPromise(true)
+    }
   }
 
   test("Channel callbacks") {
     val mp = new MockProtocol with ChannelAlwaysOnline
-    val listener = new MockListener[CommChannel.State]
+    val pub = new MockPublisher[CommChannel.State]
 
-    mp.addChannel(CommChannel.newBuilder.setName("channel1").build, listener)
+    mp.addChannel(CommChannel.newBuilder.setName("channel1").build, pub)
     mp.removeChannel("channel1")
 
-    listener.queue should equal(Queue(CommChannel.State.OPENING, CommChannel.State.OPEN, CommChannel.State.CLOSED))
+    pub.queue should equal(Queue(CommChannel.State.OPENING, CommChannel.State.OPEN, CommChannel.State.CLOSED))
   }
 
   test("Endpoint callbacks") {
     val mp = new MockProtocol(false) with EndpointAlwaysOnline
-    val listener = new MockListener[CommEndpointConnection.State]
+    val pub = new MockPublisher[CommEndpointConnection.State]
 
-    mp.addEndpoint("endpoint1", "", Nil, NullMeasPublisher, listener)
-    listener.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))
+    mp.addEndpoint("endpoint1", "", Nil, NullBatchPublisher, pub)
+    pub.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))
 
     mp.removeEndpoint("endpoint1")
-    listener.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP, CommEndpointConnection.State.COMMS_DOWN))
+    pub.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP, CommEndpointConnection.State.COMMS_DOWN))
   }
 
 }

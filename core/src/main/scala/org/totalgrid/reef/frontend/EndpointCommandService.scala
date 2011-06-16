@@ -23,24 +23,28 @@ import org.totalgrid.reef.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
 import org.totalgrid.reef.proto.Descriptors
 
-import org.totalgrid.reef.protocol.api.{ CommandHandler, Listener }
+import org.totalgrid.reef.protocol.api.CommandHandler
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.promise.FixedPromise
 
 class SingleEndpointCommandService(handler: CommandHandler) extends AsyncServiceBase[Command] {
+
+  import org.totalgrid.reef.protocol.api.Protocol.ResponsePublisher
 
   val descriptor = Descriptors.userCommandRequest
 
   override def putAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = {
 
-    val rspHandler = new Listener[CommandResponse] {
-      def onUpdate(rsp: CommandResponse): Unit = {
+    val rspPublisher = new ResponsePublisher {
+      def publish(rsp: CommandResponse) = {
         val response = Command.newBuilder(req).setStatus(rsp.getStatus).build()
         callback(Success(Envelope.Status.OK, List(response)))
+        new FixedPromise(true)
       }
     }
 
-    handler.issue(req.getCommandRequest, rspHandler)
+    handler.issue(req.getCommandRequest, rspPublisher)
   }
 
 }

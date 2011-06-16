@@ -30,10 +30,12 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.broker.CloseableChannel
-import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
+import org.totalgrid.reef.japi.Envelope
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedMap[ConnProto] {
+
+  val retries = 3
 
   def getKey(c: ConnProto) = c.getUid
 
@@ -59,11 +61,11 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     val endpoint = c.getEndpoint
     val port = c.getEndpoint.getChannel
 
-    val publisher = new OrderedPublisher(pool)
+    val transmitter = new OrderedServiceTransmitter(pool)
 
-    val batchPublisher = newMeasBatchPublisher(publisher, c.getRouting.getServiceRoutingKey)
-    val channelListener = newChannelListener(port.getUuid)
-    val endpointListener = newEndpointListener(c.getUid)
+    val batchPublisher = newMeasBatchPublisher(transmitter, c.getRouting.getServiceRoutingKey)
+    val channelListener = newChannelStatePublisher(transmitter, port.getUuid)
+    val endpointListener = newEndpointStatePublisher(transmitter, c.getUid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
@@ -91,35 +93,17 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
-  private def newMeasBatchPublisher(publisher: OrderedPublisher, routingKey: String) =
-    new OrderedPublisherAdapter[MeasurementBatch](publisher, Envelope.Verb.POST, AddressableDestination(routingKey), 1)(x => x)
+  private def newMeasBatchPublisher(tx: OrderedServiceTransmitter, routingKey: String) =
+    new IdentityOrderedPublisher[MeasurementBatch](tx, Envelope.Verb.POST, AddressableDestination(routingKey), retries)
 
-  private def newEndpointListener(connectionUid: String) = new Listener[ConnProto.State] {
-
-    override def onUpdate(state: ConnProto.State) = {
-      val update = ConnProto.newBuilder.setUid(connectionUid).setState(state).build
-      try {
-        val result = pool.borrow { _.post(update).await().expectOne }
-        logger.info("Updated connection state: " + result)
-      } catch {
-        case ex: ReefServiceException => logger.error("Exception while updating endpoint comm state", ex)
-      }
-    }
+  private def newEndpointStatePublisher(tx: OrderedServiceTransmitter, connectionUid: String) = {
+    def transform(x: ConnProto.State): ConnProto = ConnProto.newBuilder.setUid(connectionUid).setState(x).build
+    new OrderedPublisher(tx, Envelope.Verb.POST, AnyNodeDestination, retries)(transform)
   }
 
-  private def newChannelListener(channelUid: ReefUUID) = new Listener[CommChannel.State] {
-
-    override def onUpdate(state: CommChannel.State) = {
-      val update = CommChannel.newBuilder.setUuid(channelUid).setState(state).build
-      try {
-        val result = pool.borrow { _.post(update).await().expectOne }
-        logger.info("Updated channel: " + result)
-      } catch {
-        case ex: ReefServiceException => logger.error("Exception while updating comm channel state", ex)
-      }
-    }
-
+  private def newChannelStatePublisher(tx: OrderedServiceTransmitter, channelUid: ReefUUID) = {
+    def transform(x: CommChannel.State): CommChannel = CommChannel.newBuilder.setUuid(channelUid).setState(x).build
+    new OrderedPublisher(tx, Envelope.Verb.POST, AnyNodeDestination, retries)(transform)
   }
-
 }
 

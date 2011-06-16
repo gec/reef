@@ -28,41 +28,43 @@ import org.totalgrid.reef.util.Logging
 
 trait BaseProtocol extends Protocol with Logging {
 
-  case class Endpoint(name: String, channel: Option[FEP.CommChannel], config: List[Model.ConfigFile], listener: Listener[FEP.CommEndpointConnection.State]) /// The issue function and the channel
-  case class Channel(config: FEP.CommChannel, listener: Listener[CommChannel.State])
+  import Protocol._
+
+  case class Endpoint(name: String, channel: Option[FEP.CommChannel], config: List[Model.ConfigFile], publisher: EndpointPublisher) /// The issue function and the channel
+  case class Channel(config: FEP.CommChannel, publisher: ChannelPublisher)
 
   // only mutable state is current assignment of these variables
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
   private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  override def addChannel(p: FEP.CommChannel, listener: Listener[CommChannel.State]): Unit = {
+  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher): Unit = {
     channels.get(p.getName) match {
       case None =>
-        channels = channels + (p.getName -> Channel(p, listener))
-        _addChannel(p, listener)
+        channels = channels + (p.getName -> Channel(p, publisher))
+        _addChannel(p, publisher)
       case Some(x) =>
         logger.info("Ignoring duplicate channel " + p)
     }
   }
 
-  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], publish: Publisher[MeasurementBatch], listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
+  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher, endpointPublisher: EndpointPublisher): CommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
       case None =>
         channels.get(channelName) match {
           case Some(p) =>
-            endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, listener)
-            _addEndpoint(endpoint, channelName, config, publish, listener)
+            endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, endpointPublisher)
+            _addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher)
           case None =>
             if (requiresChannel) throw new IllegalArgumentException("Port not registered " + channelName)
-            endpoints += endpoint -> Endpoint(endpoint, None, config, listener)
-            _addEndpoint(endpoint, channelName, config, publish, listener)
+            endpoints += endpoint -> Endpoint(endpoint, None, config, endpointPublisher)
+            _addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher)
         }
     }
   }
 
-  override def removeChannel(channel: String): Listener[CommChannel.State] = {
+  override def removeChannel(channel: String): ChannelPublisher = {
     channels.get(channel) match {
       case Some(Channel(_, listener)) =>
         // if a channel is removed, check to see that all of the endpoints using the channel have been removed
@@ -83,7 +85,7 @@ trait BaseProtocol extends Protocol with Logging {
   }
 
   /// remove the device from the map and its channel's device list
-  override def removeEndpoint(endpoint: String): Listener[FEP.CommEndpointConnection.State] = {
+  override def removeEndpoint(endpoint: String): EndpointPublisher = {
     endpoints.get(endpoint) match {
       case Some(Endpoint(_, _, _, listener)) =>
         endpoints -= endpoint
@@ -95,15 +97,15 @@ trait BaseProtocol extends Protocol with Logging {
   }
 
   /// These get implemented by the parent
-  protected def _addChannel(p: FEP.CommChannel, listener: Listener[CommChannel.State])
+  protected def _addChannel(p: FEP.CommChannel, publisher: ChannelPublisher)
 
   protected def _removeChannel(channel: String)
 
   protected def _addEndpoint(endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    publish: Publisher[MeasurementBatch],
-    listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler
 
   protected def _removeEndpoint(endpoint: String)
 

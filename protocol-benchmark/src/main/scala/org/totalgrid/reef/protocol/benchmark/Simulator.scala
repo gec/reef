@@ -28,9 +28,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher, Listener }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
-import org.totalgrid.reef.proto.Commands.CommandResponse
+import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler, Publisher }
 
 class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
 
@@ -93,12 +92,12 @@ class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: Si
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest, rspHandler: Listener[CommandResponse]) = cmdMap.get(cr.getName) match {
+  def issue(cr: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) = cmdMap.get(cr.getName) match {
     case Some(x) =>
       logger.info("handled command: " + cr)
       val rsp = Commands.CommandResponse.newBuilder
       rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
-      rspHandler.onUpdate(rsp.build)
+      publisher.publish(rsp.build)
     case None =>
   }
 

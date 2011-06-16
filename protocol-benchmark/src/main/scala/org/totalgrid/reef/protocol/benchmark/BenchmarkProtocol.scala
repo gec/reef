@@ -50,6 +50,8 @@ trait ControllableSimulator {
  */
 class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline with ChannelAlwaysOnline with SimulatorManagement with Logging {
 
+  import Protocol._
+
   override def name: String = "benchmark"
 
   private var map = immutable.Map.empty[String, Simulator]
@@ -71,13 +73,13 @@ class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline
   def _addEndpoint(endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
-    publisher: Publisher[MeasurementBatch],
-    listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler = {
 
     if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
 
     val mapping = SimMapping.SimulatorMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile)
-    val sim = new Simulator(endpoint, publisher, mapping, getReactor)
+    val sim = new Simulator(endpoint, batchPublisher, mapping, getReactor)
     sim.start
     map += endpoint -> sim
     sim

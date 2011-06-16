@@ -34,6 +34,8 @@ object MockProtocol {
 
 class MockProtocol(needsChannel: Boolean = true) extends BaseProtocol {
 
+  import Protocol._
+
   def requiresChannel = needsChannel
 
   case object NOTHING
@@ -58,14 +60,14 @@ class MockProtocol(needsChannel: Boolean = true) extends BaseProtocol {
 
   val name: String = "mock"
 
-  override def _addChannel(channel: FEP.CommChannel, listener: Listener[CommChannel.State]) = mail send AddPort(channel)
+  override def _addChannel(channel: FEP.CommChannel, publisher: ChannelPublisher) = mail send AddPort(channel)
 
   override def _removeChannel(channel: String) = mail send RemovePort(channel)
 
-  override def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], publish: Publisher[MeasurementBatch], listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
+  override def _addEndpoint(endpoint: String, channel: String, config: List[Model.ConfigFile], batch: BatchPublisher, epPublisher: EndpointPublisher): CommandHandler = {
     mail send AddEndpoint(endpoint, channel, config)
     new CommandHandler {
-      def issue(request: Commands.CommandRequest, rspHandler: Listener[Commands.CommandResponse]) = mail send request
+      def issue(request: Commands.CommandRequest, rspPublisher: ResponsePublisher) = mail send request
     }
   }
 

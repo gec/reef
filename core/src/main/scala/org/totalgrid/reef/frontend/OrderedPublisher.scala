@@ -25,23 +25,29 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
-class OrderedPublisherAdapter[A](
-    publisher: OrderedPublisher,
+class IdentityOrderedPublisher[A](
+  tx: OrderedServiceTransmitter,
+  verb: Envelope.Verb,
+  address: Destination,
+  maxRetries: Int) extends OrderedPublisher[A, A](tx, verb, address, maxRetries)(x => x)
+
+class OrderedPublisher[A, B](
+    tx: OrderedServiceTransmitter,
     verb: Envelope.Verb,
     address: Destination,
-    maxRetries: Int)(transform: A => AnyRef) extends Publisher[A] {
+    maxRetries: Int)(transform: A => B) extends Publisher[A] {
 
-  def publish(value: A): Promise[Boolean] = publisher.publish(transform(value), verb, address, maxRetries)
+  def publish(value: A): Promise[Boolean] = tx.publish(transform(value), verb, address, maxRetries)
 }
 
-class OrderedPublisher(pool: SessionPool, maxQueueSize: Int = 100) extends Logging {
+class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) extends Logging {
 
-  private case class Record(value: AnyRef, verb: Envelope.Verb, destination: Destination, maxRetries: Int, promise: SynchronizedPromise[Boolean])
+  private case class Record(value: Any, verb: Envelope.Verb, destination: Destination, maxRetries: Int, promise: SynchronizedPromise[Boolean])
 
   private val queue = new scala.collection.mutable.Queue[Record]
   private var transmitting = false
 
-  def publish(value: AnyRef,
+  def publish(value: Any,
     verb: Envelope.Verb = Envelope.Verb.POST,
     address: Destination = AnyNodeDestination,
     maxRetries: Int = 3): Promise[Boolean] = queue.synchronized {
@@ -66,7 +72,7 @@ class OrderedPublisher(pool: SessionPool, maxQueueSize: Int = 100) extends Loggi
     s.request(record.verb, record.value, destination = record.destination).listen(onResponse(record, retries))
   }
 
-  private def onResponse(record: Record, retries: Int)(response: Response[AnyRef]) = response match {
+  private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {
     case failure: Failure =>
       if (retries > 0) publish(record, retries - 1)
       else complete(record.promise, false)

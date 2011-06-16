@@ -27,17 +27,17 @@ trait EndpointAlwaysOnline extends Protocol {
   abstract override def addEndpoint(endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    publish: Publisher[Measurements.MeasurementBatch],
-    listener: Listener[FEP.CommEndpointConnection.State]): CommandHandler = {
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler = {
 
-    val ret = super.addEndpoint(endpoint, channel, config, publish, listener)
-    listener.onUpdate(FEP.CommEndpointConnection.State.COMMS_UP)
+    val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher)
+    endpointPublisher.publish(FEP.CommEndpointConnection.State.COMMS_UP)
     ret
   }
 
-  abstract override def removeEndpoint(endpoint: String): Listener[FEP.CommEndpointConnection.State] = {
+  abstract override def removeEndpoint(endpoint: String): EndpointPublisher = {
     val ret = super.removeEndpoint(endpoint)
-    ret.onUpdate(FEP.CommEndpointConnection.State.COMMS_DOWN)
+    ret.publish(FEP.CommEndpointConnection.State.COMMS_DOWN)
     ret
   }
 

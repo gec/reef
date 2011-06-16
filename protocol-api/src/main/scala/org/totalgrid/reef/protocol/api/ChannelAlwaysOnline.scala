@@ -22,15 +22,17 @@ import org.totalgrid.reef.proto.FEP.CommChannel
 
 trait ChannelAlwaysOnline extends Protocol {
 
-  abstract override def addChannel(p: CommChannel, listener: Listener[CommChannel.State]): Unit = {
-    super.addChannel(p, listener)
-    listener.onUpdate(CommChannel.State.OPENING)
-    listener.onUpdate(CommChannel.State.OPEN)
+  import Protocol._
+
+  abstract override def addChannel(p: CommChannel, publisher: ChannelPublisher): Unit = {
+    super.addChannel(p, publisher)
+    publisher.publish(CommChannel.State.OPENING)
+    publisher.publish(CommChannel.State.OPEN)
   }
 
-  abstract override def removeChannel(name: String): Listener[CommChannel.State] = {
+  abstract override def removeChannel(name: String): ChannelPublisher = {
     val ret = super.removeChannel(name)
-    ret.onUpdate(CommChannel.State.CLOSED)
+    ret.publish(CommChannel.State.CLOSED)
     ret
   }
 

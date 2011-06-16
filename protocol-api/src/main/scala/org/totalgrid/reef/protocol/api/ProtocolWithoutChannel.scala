@@ -21,7 +21,10 @@ package org.totalgrid.reef.protocol.api
 import org.totalgrid.reef.proto.FEP.CommChannel
 
 trait ProtocolWithoutChannel extends BaseProtocol {
+
+  import Protocol.ChannelPublisher
+
   final def requiresChannel = false
-  final def _addChannel(channel: CommChannel, listener: Listener[CommChannel.State]) = {}
+  final def _addChannel(channel: CommChannel, publisher: ChannelPublisher) = {}
   final def _removeChannel(channel: String) = {}
 }

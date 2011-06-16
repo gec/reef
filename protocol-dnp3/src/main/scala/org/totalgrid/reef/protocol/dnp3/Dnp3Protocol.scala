@@ -32,6 +32,8 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
 
+  import Protocol._
+
   override def name = "dnp3"
 
   override def requiresChannel = true
@@ -46,7 +48,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.CommChannel, listener: Listener[FEP.CommChannel.State]) = {
+  override def _addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -73,8 +75,8 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   override def _addEndpoint(endpoint: String,
     channelName: String,
     files: List[Model.ConfigFile],
-    publisher: Publisher[MeasurementBatch],
-    listener: Listener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
 
     logger.info("Adding device with uid: " + endpoint + " onto channel " + channelName)
 
@@ -86,8 +88,8 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
 
     val mapping = Mapping.IndexMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
-    val meas_adapter = new MeasAdapter(mapping, publisher.publish)
-    map += endpoint -> (meas_adapter, publisher)
+    val meas_adapter = new MeasAdapter(mapping, batchPublisher.publish)
+    map += endpoint -> (meas_adapter, batchPublisher)
     val cmd = dnp3.AddMaster(channelName, endpoint, filterLevel, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
