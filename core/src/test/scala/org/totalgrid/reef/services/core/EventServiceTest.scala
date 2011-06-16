@@ -89,8 +89,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
     fix.createConfig(makeEc(Some("Test.Event"), Some(7), Some(EventConfig.Designation.EVENT), Some("{attr0} {attr1}")))
 
     val event = fix.publishEvent(createSystemEvent("Test.Event", "FEP", args = "badattr0" -> "val0" :: "badattr1" -> "val1" :: Nil).build)
-    //event.rendered.get should be("{attr0} {attr1}")
-    // TODO: fix event rendering behavior on error
+    event.rendered.get should be("{attr0} {attr1}")
   }
 
   test("Create Alarms") {

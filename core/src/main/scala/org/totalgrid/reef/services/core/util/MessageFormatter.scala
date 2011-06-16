@@ -52,18 +52,6 @@ object MessageFormatter {
     parseResource(resource).map(_.apply(alist)).mkString("")
 
   /**
-   * Render the resource string using the AttributeList proto.
-   */
-  def format(resource: String, proto: Utils.AttributeList): String =
-    format(resource, new AttributeList(proto))
-
-  /**
-   * Render the resource string using the AttributeList proto byte array.
-   */
-  def format(resource: String, bytes: Array[Byte]): String =
-    format(resource, new AttributeList(Utils.AttributeList.parseFrom(bytes)))
-
-  /**
    * Return a list of ResourceSegment
    */
   protected def parseResource(resource: String): List[ResourceSegment] = {
@@ -80,7 +68,7 @@ object MessageFormatter {
         segments ::= ResourceSegmentString(resource.substring(index, leftBrace))
 
       // For now we have a simple name inside the brace
-      segments ::= ResourceSegmentNamedValue(resource.substring(leftBrace + 1, rightBrace).trim)
+      segments ::= ResourceSegmentNamedValue(resource.substring(leftBrace + 1, rightBrace).trim, resource.substring(leftBrace, rightBrace + 1))
 
       index = rightBrace + 1
       leftBrace = indexOfWithEscape(resource, '{', index)
@@ -137,9 +125,10 @@ case class ResourceSegmentString(s: String) extends ResourceSegment {
 /**
  * A named value part of a resource string.
  */
-case class ResourceSegmentNamedValue(name: String) extends ResourceSegment {
+case class ResourceSegmentNamedValue(name: String, original: String) extends ResourceSegment {
   // TODO: we'll be adding date and number types.
   // TODO: This breaks if the named attribute is not in the AttributeList. Need to return empty string in those cases.
-  def apply(alist: AttributeList) = alist.applyString(name)
+
+  def apply(alist: AttributeList) = alist.get(name).map { _.getString }.getOrElse(original)
 }
 

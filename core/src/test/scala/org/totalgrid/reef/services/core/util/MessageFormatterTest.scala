@@ -60,6 +60,21 @@ class MessageFormatterTest extends FunSuite with ShouldMatchers {
     MessageFormatter.format("H{a0} {a1} tail", alist) should be("Hval0 val1 tail")
   }
 
+  test("Missing attributes") {
+    val alist = new AttributeList
+
+    MessageFormatter.format("Hello", alist) should be("Hello")
+    MessageFormatter.format("Hello {a0} {a1}", alist) should be("Hello {a0} {a1}")
+    MessageFormatter.format("{a0} {a1}", alist) should be("{a0} {a1}")
+    MessageFormatter.format("H{a0} {a1}", alist) should be("H{a0} {a1}")
+    MessageFormatter.format("Hello {a0} {a1}t", alist) should be("Hello {a0} {a1}t")
+    MessageFormatter.format("{a0} {a1} tail", alist) should be("{a0} {a1} tail")
+    MessageFormatter.format("H{a0} {a1} tail", alist) should be("H{a0} {a1} tail")
+
+    // check that spaces in attr sections are preserved
+    MessageFormatter.format("H{ a0 } { a1 } tail", alist) should be("H{ a0 } { a1 } tail")
+  }
+
   /* TODO: This isn't available yet.
   test("Escape sequences") {
     val alist = new AttributeList
