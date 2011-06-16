@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.client.{ ClientSession, Event, SessionPool }
 import org.totalgrid.reef.sapi.{ ServiceList, RequestEnv, Destination, AnyNodeDestination }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.sapi.client.{SessionSource, ClientSession, Event, SessionPool}
 
 trait PoolableConnection {
 
@@ -54,11 +54,11 @@ trait Connection {
 }
 
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
-class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection {
+class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection with SessionSource {
 
   private lazy val pool = new BasicSessionPool(this)
 
-  def getClientSession(): ClientSession = {
+  final override def newSession(): ClientSession = {
     val client = new ProtoClient(factory, lookup, timeoutms)
     defaultEnv.foreach(client.setDefaultHeaders)
     client

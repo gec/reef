@@ -65,7 +65,7 @@ class MeasurementStreamProcessingNode(
   // we'll process them on the chainActor 
   private def startProcessing() {
     MeasurementStreamProcessingNode.attachNode(processor, connection, amqp, reactor)
-    val client = registry.getClientSession()
+    val client = registry.newSession()
 
     val connectionBuilder = connection.toBuilder.setReadyTime(System.currentTimeMillis)
 

@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.client.{ ClientSession, SessionPool }
 import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
+import org.totalgrid.reef.sapi.client.{SessionSource, ClientSession, SessionPool}
 
-class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends SessionPool with SessionExecutionPool {
+class BasicSessionPool(source: SessionSource) extends SessionPool with SessionExecutionPool {
 
   private val available = scala.collection.mutable.Set.empty[ClientSession]
 
@@ -31,7 +31,7 @@ class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) 
       case Some(s) =>
         available.remove(s)
         s
-      case None => conn.getClientSession()
+      case None => source.newSession()
     }
   }
 
