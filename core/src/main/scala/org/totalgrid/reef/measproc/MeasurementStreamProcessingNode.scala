@@ -48,6 +48,7 @@ class MeasurementStreamProcessingNode(
   // the main actor 
   val provider = new ServiceHandlerProvider(registry, new ServiceHandler { def execute(fun: => Unit) = reactor.execute(fun) })
 
+  // TODO: measproc should post events using service, not direct publishing
   val eventSink = amqp.publish(connection.getRouting.getRawEventDest, RoutingKeys.event, Descriptors.event.serialize)
 
   val processor = ProcessingNode(

@@ -27,7 +27,7 @@ import org.totalgrid.reef.services.core.util._
 /**
  * Trigger/Action factory with constructor dependencies.
  */
-class TriggerProcessingFactory(protected val subsystem: String, protected val publishEvent: Event => Unit)
+class TriggerProcessingFactory(protected val publishEvent: Event.Builder => Unit)
   extends ProcessingResources
   with TriggerFactory
   with ActionFactory
@@ -36,8 +36,7 @@ class TriggerProcessingFactory(protected val subsystem: String, protected val pu
  * Internal interface for Trigger/Action factory dependencies
  */
 trait ProcessingResources {
-  protected val subsystem: String
-  protected val publishEvent: (Event) => Unit
+  protected val publishEvent: (Event.Builder) => Unit
 }
 
 /**
@@ -68,7 +67,7 @@ trait ActionFactory { self: ProcessingResources =>
     } else if (proto.hasSetUnit) {
       new SetUnit(proto.getSetUnit)
     } else if (proto.hasEvent) {
-      new EventGenerator(publishEvent, proto.getEvent.getEventType, proto.getEvent.getSeverity, subsystem)
+      new EventGenerator(publishEvent, proto.getEvent.getEventType)
     } else if (proto.hasBoolTransform) {
       new BoolEnumTransformer(proto.getBoolTransform.getFalseString, proto.getBoolTransform.getTrueString)
     } else if (proto.hasIntTransform) {
@@ -129,11 +128,10 @@ object Actions {
     }
   }
 
-  class EventGenerator(out: Event => Unit, eventType: String, severity: Int, subsystem: String)
+  class EventGenerator(out: Event.Builder => Unit, eventType: String)
       extends Action.Evaluation {
 
     def apply(m: Measurement): Measurement = {
-      val time = System.currentTimeMillis // TODO: Should we get this from the measurement?
 
       val alist = new AttributeList
       alist += ("validity" -> AttributeString(m.getQuality.getValidity.toString))
@@ -148,16 +146,12 @@ object Actions {
         alist += ("unit" -> AttributeString(m.getUnit))
       }
 
-      out(Event.newBuilder
-        .setTime(time)
-        .setDeviceTime(if (m.getIsDeviceTime) m.getTime else 0)
+      val builder = Event.newBuilder
         .setEventType(eventType)
-        .setSeverity(severity)
-        .setSubsystem(subsystem)
-        .setUserId(subsystem)
         .setEntity(Entity.newBuilder.setName(m.getName))
         .setArgs(alist.toProto)
-        .build)
+      if (m.getIsDeviceTime) builder.setDeviceTime(m.getTime)
+      out(builder)
       m
     }
   }
