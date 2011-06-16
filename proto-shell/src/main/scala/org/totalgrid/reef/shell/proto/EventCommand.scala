@@ -62,7 +62,7 @@ class EventPublishCommand extends ReefCommandSupport {
   @GogoOption(name = "-s", description = "Subsystem", required = false, multiValued = false)
   var subsystem: String = "proto-shell"
 
-  @GogoOption(name = "-a", description = "Arguments, need to be of the form \"<name>;<value>\"", required = false, multiValued = true)
+  @GogoOption(name = "-a", description = "Arguments, need to be of the form \"<name>:<value>\"", required = false, multiValued = true)
   var arguments: java.util.List[String] = null
 
   @GogoOption(name = "-e", description = "Entity Name", required = false, multiValued = false)
@@ -74,7 +74,7 @@ class EventPublishCommand extends ReefCommandSupport {
     var attributes = List.empty[Attribute]
     if (arguments != null) {
       arguments.toList.foreach { arg =>
-        val split = arg.split(";")
+        val split = arg.split(":")
         val name = split.head
         val value = split.tail.mkString("")
         if (value.length == 0) throw new Exception("Badly formed argument: " + arg)

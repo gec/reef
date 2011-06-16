@@ -55,8 +55,9 @@ object EventView {
 
   def printInspect(e: Event) = {
 
-    val argumentLines: List[List[String]] = e.args.attribute.map {
-      _.toList.map { optAttr =>
+    val argumentLines: List[List[String]] = e.args.attribute.map { jargs =>
+      val args = jargs.toList
+      ("Arguments" :: args.size.toString :: Nil) :: args.map { optAttr =>
         val attr = optAttr.get
         attr.getName :: getValueAsString(attr) :: attr.getVtype.toString :: Nil
       }
@@ -73,7 +74,7 @@ object EventView {
         ("Rendered" :: e.getRendered :: Nil) ::
         ("Time" :: timeString(e.time) :: Nil) ::
         ("Device Time" :: timeString(e.deviceTime) :: Nil) ::
-        ("Arguments" :: Nil) :: argumentLines
+        argumentLines
 
     Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
   }
