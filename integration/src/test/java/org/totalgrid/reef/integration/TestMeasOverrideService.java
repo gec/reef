@@ -74,7 +74,8 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
 
         // create an override
         Measurement m = MeasurementRequestBuilders.makeIntMeasurement( pointName, 11111, now );
-        MeasOverride override = overrideService.setPointOverriden( p, m );
+        overrideService.setPointOutOfService( p );
+        MeasOverride override = overrideService.setPointOverride( p, m );
 
         // make sure we see it in the event stream
         assertTrue( mock.waitFor( MeasurementRequestBuilders.makeSubstituted( m ), 5000 ) );

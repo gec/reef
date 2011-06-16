@@ -34,4 +34,6 @@ case class OverrideConfig(
   val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
 
   val proto = LazyVar(MeasOverride.parseFrom(protoData))
+
+  def isOperatorBlockRequest = !proto.value.hasMeas
 }

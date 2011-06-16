@@ -64,7 +64,7 @@ public class TestEventService extends ReefConnectionTestBase
         assertTrue( event.hasTime() );
         assertTrue( event.getTime() > 0 );
 
-        configService.deleteEventConfig(config);
+        configService.deleteEventConfig( config );
     }
 
     @Test
@@ -193,8 +193,8 @@ public class TestEventService extends ReefConnectionTestBase
     public void cleanupEventConfigs() throws ReefServiceException
     {
         EventConfigService configService = helpers;
-        configService.deleteEventConfig(configService.getEventConfiguration("Test.Event"));
-        configService.deleteEventConfig(configService.getEventConfiguration("Test.Alarm"));
+        configService.deleteEventConfig( configService.getEventConfiguration( "Test.Event" ) );
+        configService.deleteEventConfig( configService.getEventConfiguration( "Test.Alarm" ) );
     }
 
 }

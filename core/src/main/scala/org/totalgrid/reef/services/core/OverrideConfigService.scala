@@ -27,6 +27,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
+import org.totalgrid.reef.japi.BadRequestException
 
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._
@@ -53,6 +54,13 @@ class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHa
     with EventedServiceModel[MeasOverride, OverrideConfig]
     with OverrideConfigConversion
     with ServiceModelSystemEventPublisher {
+
+  override protected def preCreate(entry: OverrideConfig): OverrideConfig = {
+    if (entry.isOperatorBlockRequest)
+      entry
+    else
+      throw new BadRequestException("Cannot override a point that is in service. First block the point, then override it.")
+  }
 
   override protected def postCreate(entry: OverrideConfig) {
     val code = if (entry.proto.value.meas.isDefined) EventType.Scada.SetOverride else EventType.Scada.SetNotInService
