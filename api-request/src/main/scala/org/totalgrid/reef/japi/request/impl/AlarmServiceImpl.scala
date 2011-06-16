@@ -25,6 +25,8 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Model.Entity
+import java.util.List
 
 trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
 
@@ -46,6 +48,12 @@ trait AlarmServiceImpl extends ReefServiceBaseClass with AlarmService {
   override def getActiveAlarms(types: java.util.List[String], limit: Int) = {
     ops("Couldn't get active alarms with types: " + types) {
       _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).await().expectOne.getAlarmsList
+    }
+  }
+
+  override def getActiveAlarmsByEntity(entityTree: Entity, types: List[String], recentAlarmLimit: Int) = {
+    ops("Couldn't get active alarms with types: " + types + " and entity: " + entityTree) {
+      _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypesAndEntity(types, entityTree, recentAlarmLimit)).await().expectOne.getAlarmsList
     }
   }
 

@@ -22,6 +22,7 @@ import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionCreator;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.proto.Alarms.Alarm;
+import org.totalgrid.reef.proto.Model.Entity;
 
 import java.util.List;
 
@@ -70,6 +71,15 @@ public interface AlarmService extends SubscriptionCreator
      * @param recentAlarmLimit the number of recent alarms
      */
     List<Alarm> getActiveAlarms( List<String> types, int recentAlarmLimit ) throws ReefServiceException;
+
+    /**
+     * Get the most recent alarms
+     *
+     * @param entityTree entity proto that describes which entities we want to see related alarms for
+     * @param types event type names
+     * @param recentAlarmLimit the number of recent alarms
+     */
+    List<Alarm> getActiveAlarmsByEntity( Entity entityTree, List<String> types, int recentAlarmLimit ) throws ReefServiceException;
 
     /**
      * Silences an audible alarm
