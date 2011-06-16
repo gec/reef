@@ -32,8 +32,20 @@ trait EventConfigServiceImpl extends ReefServiceBaseClass with EventConfigServic
     _.get(EventConfig.newBuilder.setEventType(eventType).build).await().expectOne
   }
 
+  override def setEventConfigAsLogOnly(eventType: String, severity: Int, resourceString: String) = {
+    setEventConfig(eventType, severity, EventConfig.Designation.LOG, false, resourceString)
+  }
+
+  override def setEventConfigAsEvent(eventType: String, severity: Int, resourceString: String) = {
+    setEventConfig(eventType, severity, EventConfig.Designation.EVENT, false, resourceString)
+  }
+
+  override def setEventConfigAsAlarm(eventType: String, severity: Int, resourceString: String, audibleAlarm: Boolean) = {
+    setEventConfig(eventType, severity, EventConfig.Designation.ALARM, true, resourceString)
+  }
+
   override def setEventConfig(eventType: String, severity: Int, designation: EventConfig.Designation, audibleAlarm: Boolean, resourceString: String) = {
-    ops("Couldn't create event config with type: " + eventType) { session =>
+    ops("Couldn't create event config with type: " + eventType + " designation: " + designation) { session =>
 
       val alarmState = if (audibleAlarm) Alarm.State.UNACK_AUDIBLE else Alarm.State.UNACK_SILENT
 

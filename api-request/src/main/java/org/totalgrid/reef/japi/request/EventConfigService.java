@@ -41,6 +41,34 @@ public interface EventConfigService
     EventConfig getEventConfiguration( String eventType ) throws ReefServiceException;
 
     /**
+     * Create a new event routing configuration that routes only to log file
+     * @param eventType name of the event, usually of the format Application.Event. Ex: Scada.ControlSent, System.UserLogin
+     * @param severity severity to attach to event
+     * @param resourceString format string to render while replacing the named attributes
+     * @return newly generated event routing configuration
+     */
+    EventConfig setEventConfigAsLogOnly( String eventType, int severity, String resourceString ) throws ReefServiceException;
+
+    /**
+     * Create a new event routing configuration that routes to event table and log file
+     * @param eventType name of the event, usually of the format Application.Event. Ex: Scada.ControlSent, System.UserLogin
+     * @param severity severity to attach to event
+     * @param resourceString format string to render while replacing the named attributes
+     * @return newly generated event routing configuration
+     */
+    EventConfig setEventConfigAsEvent( String eventType, int severity, String resourceString ) throws ReefServiceException;
+
+    /**
+     * Create a new event routing configuration that routes to event table and log file and makes an alarm lifecycle object
+     * @param eventType name of the event, usually of the format Application.Event. Ex: Scada.ControlSent, System.UserLogin
+     * @param severity severity to attach to event
+     * @param resourceString format string to render while replacing the named attributes
+     * @param audibleAlarm should alarm start out in the UNACK_AUDIBLE state, making noise on operator consoles
+     * @return newly generated event routing configuration
+     */
+    EventConfig setEventConfigAsAlarm( String eventType, int severity, String resourceString, boolean audibleAlarm ) throws ReefServiceException;
+
+    /**
      * Create a new event routing configuration
      * @param eventType name of the event, usually of the format Application.Event. Ex: Scada.ControlSent, System.UserLogin
      * @param severity severity to attach to event
