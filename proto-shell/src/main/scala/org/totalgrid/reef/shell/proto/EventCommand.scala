@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Alarms.{ EventConfig, Alarm }
 @Command(scope = "event", name = "list", description = "Prints all recent events.")
 class EventListCommand extends ReefCommandSupport {
 
-  @GogoOption(name = "-t", description = "Show only events of type.", required = false, multiValued = true)
+  @GogoOption(name = "-t", description = "Show only events of type, can be repeated.", required = false, multiValued = true)
   var types: java.util.List[String] = null
 
   @GogoOption(name = "-l", description = "Limit number of displayed events", required = false, multiValued = false)

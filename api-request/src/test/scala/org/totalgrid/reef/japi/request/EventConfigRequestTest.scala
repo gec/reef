@@ -45,6 +45,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.Utils.Attribute
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Alarms.EventConfig
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigRequestTest
@@ -76,14 +77,17 @@ class EventConfigRequestTest
     with ShouldMatchers {
 
   test("Create Log, Event, Alarm configurations") {
+
+    var configs = List.empty[EventConfig]
+
     client.addExplanation("Treat as Log", "When ")
-    client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message")
+    configs ::= client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message")
 
     client.addExplanation("Treat as Event", "")
-    client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message")
+    configs ::= client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message")
 
     client.addExplanation("Treat as Alarm", "")
-    client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message")
+    configs ::= client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message")
 
     client.addExplanation("Post an Event", "Post an event that is configured to make an event entry in the table.")
     client.publishEvent("Demo.AsEvent", "Tests")
@@ -92,10 +96,12 @@ class EventConfigRequestTest
     client.publishEvent("Demo.AsLog", "Tests")
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}")
+    configs ::= client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}")
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
     client.publishEvent("Demo.Formatting", "Tests", makeAttributeList("name" -> "abra", "value" -> "cadabra"))
+
+    configs.foreach(client.deleteEventConfig(_))
   }
 
   def makeAttributeList(tuples: Tuple2[String, String]*): List[Attribute] = {

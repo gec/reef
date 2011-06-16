@@ -84,7 +84,7 @@ object EventView {
   }
 
   def configHeader = {
-    "Type" :: "Designation" :: "Sev" :: "Audible" :: "Resources" :: Nil
+    "EventType" :: "Dest" :: "Sev" :: "Audible" :: "Resources" :: Nil
   }
 
   def configRow(e: EventConfig) = {
