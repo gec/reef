@@ -25,7 +25,6 @@ import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
-import org.squeryl.PrimitiveTypeMode.transaction
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.proto.ReefServicesList
@@ -34,6 +33,9 @@ import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
+
+import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.sapi.RequestEnv
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -49,6 +51,13 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
 
     val eventQuery = new EventQueryService(factories.events, publishers)
     val alarmQuery = new AlarmQueryService(publishers)
+
+    val headers = new RequestEnv
+    headers.setUserName("user")
+
+    def publishEvent(evt: EventProto): EventProto = {
+      events.put(evt, headers).expectOne()
+    }
 
     seed()
 
@@ -129,15 +138,23 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     }
   }
 
-  def makeEvent(event: String, entityName: String, subsystem: String = "FEP") =
-    EventProto.newBuilder
-      .setTime(0)
-      .setDeviceTime(0)
-      .setEventType(event)
-      .setSubsystem(subsystem)
-      .setUserId("flint")
-      .setEntity(EntityProto.newBuilder.setName(entityName).build)
-      .build
+  def makeEvent(eventType: String,
+    subsystem: String = "FEP",
+    dt: Option[Long] = None,
+    entityName: Option[String] = None,
+    args: Option[List[Attribute]] = None) = {
+
+    val b = EventProto.newBuilder.setEventType(eventType).setSubsystem(subsystem)
+    dt.foreach(b.setDeviceTime(_))
+    entityName.foreach(u => b.setEntity(EntityProto.newBuilder.setName(u)))
+
+    args.foreach { argList =>
+      val aList = AttributeList.newBuilder
+      argList.toList.foreach { aList.addAttribute(_) }
+      b.setArgs(aList)
+    }
+    b.build
+  }
 
   def makeEC(event: String, severity: Int, designation: EventConfigProto.Designation) =
     EventConfigProto.newBuilder
@@ -175,16 +192,18 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
 
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
+  val waitTime = 5000
+
   test("Event Subscribe at multiple levels") {
     AMQPFixture.mock(true) { amqp =>
       val fix = new AlarmTestFixture(amqp)
       fix.eventConfigs.put(makeEC("Test.Event", 1, EventConfigProto.Designation.EVENT))
 
-      fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA"))
-      fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointB"))
-      fix.events.put(makeEvent("Test.Event", "SubA-DeviceB-PointB"))
-      fix.events.put(makeEvent("Test.Event", "SubB-DeviceB-PointB"))
-      fix.events.put(makeEvent("Test.Event", "Orphan"))
+      fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceA-PointA")))
+      fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceA-PointB")))
+      fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceB-PointB")))
+      fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubB-DeviceB-PointB")))
+      fix.publishEvent(makeEvent("Test.Event", entityName = Some("Orphan")))
 
       val (starting2, pointA) = fix.subscribeEvents(1, makeEventByEntityName("SubA-DeviceA-PointA"))
       val (starting3, deviceA) = fix.subscribeEvents(2, makeEventByEntityName("SubA-DeviceA"))
@@ -200,41 +219,39 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
         allEvents.size should equal(0)
       }
 
-      // TODO - Make 5000 a default somewhere and then hide it with an overload - JAC
-
       // should get event1 on all 4 levels of subscriber
-      val event1 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA")).expectOne()
-      allEvents.pop(5000) should equal(event1)
-      subAll.pop(5000) should equal(event1)
-      subA.pop(5000) should equal(event1)
-      deviceA.pop(5000) should equal(event1)
-      pointA.pop(5000) should equal(event1)
+      val event1 = fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceA-PointA")))
+      allEvents.pop(waitTime) should equal(event1)
+      subAll.pop(waitTime) should equal(event1)
+      subA.pop(waitTime) should equal(event1)
+      deviceA.pop(waitTime) should equal(event1)
+      pointA.pop(waitTime) should equal(event1)
       allEmpty()
 
       // should get event2 for device and substation subscriptions
-      val event2 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointB")).expectOne()
-      allEvents.pop(5000) should equal(event2)
-      subAll.pop(5000) should equal(event2)
-      subA.pop(5000) should equal(event2)
-      deviceA.pop(5000) should equal(event2)
+      val event2 = fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceA-PointB")))
+      allEvents.pop(waitTime) should equal(event2)
+      subAll.pop(waitTime) should equal(event2)
+      subA.pop(waitTime) should equal(event2)
+      deviceA.pop(waitTime) should equal(event2)
       allEmpty()
 
       // should get event3 for substation only
-      val event3 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceB-PointB")).expectOne()
-      allEvents.pop(5000) should equal(event3)
-      subAll.pop(5000) should equal(event3)
-      subA.pop(5000) should equal(event3)
+      val event3 = fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceB-PointB")))
+      allEvents.pop(waitTime) should equal(event3)
+      subAll.pop(waitTime) should equal(event3)
+      subA.pop(waitTime) should equal(event3)
       allEmpty()
 
       // should get event4 on the substation subscriptions
-      val event4 = fix.events.put(makeEvent("Test.Event", "SubB-DeviceB-PointB")).expectOne()
-      allEvents.pop(5000) should equal(event4)
-      subAll.pop(5000) should equal(event4)
+      val event4 = fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubB-DeviceB-PointB")))
+      allEvents.pop(waitTime) should equal(event4)
+      subAll.pop(waitTime) should equal(event4)
       allEmpty()
 
       // since its not in our "device tree" we wont see any alarms not associated with our devices
-      val event5 = fix.events.put(makeEvent("Test.Event", "Orphan")).expectOne()
-      allEvents.pop(5000) should equal(event5)
+      val event5 = fix.publishEvent(makeEvent("Test.Event", entityName = Some("Orphan")))
+      allEvents.pop(waitTime) should equal(event5)
       allEmpty()
     }
   }
@@ -254,19 +271,19 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
         allEvents.size should equal(0)
       }
 
-      val event1 = fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")).expectOne()
-      allEvents.pop(5000) should equal(event1)
-      allAlarms.pop(5000).getEvent should equal(event1)
-      deviceAlarms.pop(5000).getEvent should equal(event1)
+      val event1 = fix.publishEvent(makeEvent("Test.Alarm", entityName = Some("SubA-DeviceA-PointA")))
+      allEvents.pop(waitTime) should equal(event1)
+      allAlarms.pop(waitTime).getEvent should equal(event1)
+      deviceAlarms.pop(waitTime).getEvent should equal(event1)
       allEmpty()
 
-      val event2 = fix.events.put(makeEvent("Test.Event", "SubA-DeviceA-PointA")).expectOne()
-      allEvents.pop(5000) should equal(event2)
+      val event2 = fix.publishEvent(makeEvent("Test.Event", entityName = Some("SubA-DeviceA-PointA")))
+      allEvents.pop(waitTime) should equal(event2)
       allEmpty()
 
-      val event3 = fix.events.put(makeEvent("Test.Alarm", "SubA")).expectOne()
-      allEvents.pop(5000) should equal(event3)
-      allAlarms.pop(5000).getEvent should equal(event3)
+      val event3 = fix.publishEvent(makeEvent("Test.Alarm", entityName = Some("SubA")))
+      allEvents.pop(waitTime) should equal(event3)
+      allAlarms.pop(waitTime).getEvent should equal(event3)
       allEmpty()
     }
   }
@@ -280,8 +297,8 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
 
       def allEmpty() = allAlarms.size should equal(0)
 
-      val rootEvent = fix.events.put(makeEvent("Test.Alarm", "SubA-DeviceA-PointA")).expectOne()
-      val freshAlarm = allAlarms.pop(5000)
+      val rootEvent = fix.publishEvent(makeEvent("Test.Alarm", entityName = Some("SubA-DeviceA-PointA")))
+      val freshAlarm = allAlarms.pop(waitTime)
       freshAlarm.getEvent should equal(rootEvent)
       freshAlarm.getState should equal(AlarmProto.State.UNACK_AUDIBLE)
       allEmpty()
@@ -290,21 +307,21 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
 
       val silenced = fix.alarms.put(freshAlarm.toBuilder.setState(AlarmProto.State.UNACK_SILENT).build).expectOne()
       silenced.getState should equal(AlarmProto.State.UNACK_SILENT)
-      allAlarms.pop(5000) should equal(silenced)
+      allAlarms.pop(waitTime) should equal(silenced)
       allEmpty()
 
       fix.alarms.get(allAlarmRequest).expectOne()
 
       val acked = fix.alarms.put(silenced.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
       acked.getState should equal(AlarmProto.State.ACKNOWLEDGED)
-      allAlarms.pop(5000) should equal(acked)
+      allAlarms.pop(waitTime) should equal(acked)
       allEmpty()
 
       fix.alarms.get(allAlarmRequest).expectOne()
 
       val removed = fix.alarms.put(acked.toBuilder.setState(AlarmProto.State.REMOVED).build).expectOne()
       removed.getState should equal(AlarmProto.State.REMOVED)
-      allAlarms.pop(5000) should equal(removed)
+      allAlarms.pop(waitTime) should equal(removed)
       allEmpty()
 
       // we dont return REMOVED alarms by default
@@ -324,10 +341,10 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
 
       //fix.checkAllSummariesZero(7)
 
-      val event1 = fix.events.put(makeEvent("Test.Alarm1", "SubA-DeviceA-PointA", "FEP")).expectOne()
-      val event2 = fix.events.put(makeEvent("Test.Alarm2", "SubA-DeviceA-PointA", "FEP")).expectOne()
-      val event3 = fix.events.put(makeEvent("Test.Alarm2", "SubA-DeviceA-PointA", "Processing")).expectOne()
-      val event4 = fix.events.put(makeEvent("Test.Alarm3", "SubB-DeviceA-PointA", "FEP")).expectOne()
+      val event1 = fix.publishEvent(makeEvent("Test.Alarm1", "FEP", entityName = Some("SubA-DeviceA-PointA")))
+      val event2 = fix.publishEvent(makeEvent("Test.Alarm2", "FEP", entityName = Some("SubA-DeviceA-PointA")))
+      val event3 = fix.publishEvent(makeEvent("Test.Alarm2", "Processing", entityName = Some("SubA-DeviceA-PointA")))
+      val event4 = fix.publishEvent(makeEvent("Test.Alarm3", "FEP", entityName = Some("SubB-DeviceA-PointA")))
 
       val expectedValues = fix.checkSummaries(Map(
         "summary.unacked_alarms_severity_1" -> 1,

@@ -102,7 +102,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
 
             val entId = Some(entIds(i % entIds.size))
 
-            val ev = EventStore(typName, false, time, time, 4, subName, userName, entId, new Array[Byte](0), "event render")
+            val ev = EventStore(typName, false, time, None, 4, subName, userName, entId, new Array[Byte](0), "event render")
             l += ev
 
             i = i + 1

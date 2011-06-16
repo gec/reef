@@ -22,6 +22,10 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.request.AlarmService;
+import org.totalgrid.reef.japi.request.EntityService;
+import org.totalgrid.reef.japi.request.EventConfigService;
+import org.totalgrid.reef.japi.request.EventCreationService;
 import org.totalgrid.reef.japi.request.builders.EntityRequestBuilders;
 import org.totalgrid.reef.japi.request.builders.EventConfigRequestBuilders;
 import org.totalgrid.reef.japi.request.builders.EventRequestBuilders;
@@ -41,19 +45,25 @@ public class TestAlarmService extends ReefConnectionTestBase
     @Test
     public void prepareAlarms() throws ReefServiceException
     {
-        client.put( EventConfigRequestBuilders.makeAudibleAlarm( "Test.Alarm", "Alarm", 1 ) ).await().expectOne();
+        EventConfigService configService = (EventConfigService)helpers;
+        EventCreationService pub = (EventCreationService)helpers;
+
+        configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
+
+        EntityService entityService = (EntityService)helpers;
+        Entity e = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
 
         // add an alarm for a point we know is not changing
-        client.put( EventRequestBuilders.makeNewEventForEntityByName( "Test.Alarm", "StaticSubstation.Line02.Current" ) ).await().expectOne();
+        pub.publishEvent( "Test.Alarm", "Tests", e.getUuid() );
     }
 
     /** Test that some alarms are returned from the AlarmQuery service */
     @Test
     public void simpleQueries() throws ReefServiceException
     {
-
+        AlarmService as = (AlarmService)helpers;
         // Get all alarms that are not removed.
-        List<Alarm> alarms = SampleRequests.getUnRemovedAlarms( client, "Test.Alarm" );
+        List<Alarm> alarms = as.getActiveAlarms( 10 );
         assertTrue( alarms.size() > 0 );
 
     }
@@ -62,12 +72,14 @@ public class TestAlarmService extends ReefConnectionTestBase
     @Test
     public void entityQueries() throws ReefServiceException
     {
-
+        EntityService entityService = (EntityService)helpers;
         // Get the first substation
-        Entity substation = client.get( EntityRequestBuilders.getByName( "StaticSubstation" ) ).await().expectOne();
+        Entity substation = entityService.getEntityByName( "StaticSubstation" );
 
         // Get all the points in the substation. Alarms are associated with individual points.
         Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid( substation, "Point" );
+
+        //entityService.getEntityRelatedChildrenOfType(substation.getUuid(), "owns", "Point");
 
         // Get the alarms on both the substation and devices under the substation.
         List<Alarm> alarms = SampleRequests.getAlarmsForEntity( client, eqRequest, "Test.Alarm" );

@@ -25,28 +25,55 @@ import org.totalgrid.reef.services.core.util.AttributeList
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.models.Entity
 import org.totalgrid.reef.services.framework.SquerylModel._
+import org.totalgrid.reef.japi.UnknownServiceException
 
-trait ServiceModelSystemEventPublisher { self: EnvHolder =>
-  def subsystem: String = "Core"
-  def userId: String = env.userName.getOrElse("")
-  def time: Long = System.currentTimeMillis()
+trait SystemEventCreator {
 
-  def eventSink: SystemEventSink
+  /**
+   * this is an easy to use method for creating a system event with name/value pairs and handles the
+   * creation of attributes based on the closest fit of the attribute type
+   */
+  def createSystemEvent(
+    eventType: String,
+    subsystem: String,
+    entityUuid: Option[Entity] = None,
+    entityName: Option[String] = None,
+    args: List[(String, Any)] = Nil,
+    deviceTime: Option[Long] = None): Event.Builder = {
 
-  def postSystemEvent(eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil) {
     val b = Event.newBuilder
-      .setTime(time)
       .setEventType(eventType.toString)
       .setSubsystem(subsystem)
-      .setUserId(userId)
 
-    entity.foreach { e => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(e)).setName(e.name)) }
+    deviceTime.foreach(b.setDeviceTime(_))
+    entityUuid.foreach { u => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(u))) }
+    entityName.foreach { n => b.setEntity(EntityProto.newBuilder.setName(n)) }
 
     if (!args.isEmpty) {
       val aList = new AttributeList
       args.foreach { case (name, value) => aList.addAttribute(name, value) }
       b.setArgs(aList.toProto)
     }
+    b
+  }
+}
+
+/**
+ * a trait to be mixed into the model classes to make creating and publishing events as simple as possible
+ * so we will be more inclined to add them everywhere necessary.
+ */
+trait ServiceModelSystemEventPublisher extends SystemEventCreator { self: EnvHolder =>
+
+  def eventSink: SystemEventSink
+
+  def postSystemEvent(eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil, deviceTime: Option[Long] = None) {
+
+    // TODO: put name of services instance handling request on RequestContext, attach to events
+    val b = createSystemEvent(eventType, "services", entity, None, args, deviceTime)
+
+    b.setUserId(env.userName.getOrElse(throw new UnknownServiceException("No user during event generation")))
+    b.setTime(System.currentTimeMillis())
+
     eventSink.publishSystemEvent(b.build)
   }
 }

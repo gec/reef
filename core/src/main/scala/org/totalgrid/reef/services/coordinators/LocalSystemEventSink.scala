@@ -33,7 +33,11 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error
       PrimitiveTypeMode.transaction {
-        eventModelFactory.get.transaction { _.createFromProto(evt) }
+        eventModelFactory.get.transaction {
+          // notice we are skipping the event service preCreate step that strips time and userId
+          // because our local trusted service components have already set those values correctly
+          _.createFromProto(evt)
+        }
       }
     } catch {
       case e: ReefServiceException =>

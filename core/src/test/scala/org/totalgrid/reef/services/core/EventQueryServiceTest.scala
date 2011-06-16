@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
+
 import org.totalgrid.reef.japi.Envelope
 
 import org.squeryl.PrimitiveTypeMode._
@@ -33,7 +33,6 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
-import org.totalgrid.reef.event.SilentEventLogPublisher
 
 import java.util.{ Calendar }
 import org.totalgrid.reef.services.ServiceDependencies
@@ -87,18 +86,18 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     val events = List[EventStore](
       // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
 
-      EventStore(System.UserLogin, false, DAYS_AGO_2, 0, INFORM, SUB1, USER1, None, Array[Byte](), ""),
-      EventStore(Scada.ControlExe, false, DAYS_AGO_2 + 1000, 0, CRITICAL, SUB1, USER1, Some(entity1.id), Array[Byte](), ""),
+      EventStore(System.UserLogin, false, DAYS_AGO_2, None, INFORM, SUB1, USER1, None, Array[Byte](), ""),
+      EventStore(Scada.ControlExe, false, DAYS_AGO_2 + 1000, None, CRITICAL, SUB1, USER1, Some(entity1.id), Array[Byte](), ""),
 
-      EventStore(System.UserLogin, false, HOURS_AGO_2, 0, INFORM, SUB1, USER2, None, Array[Byte](), ""),
-      EventStore(Scada.ControlExe, false, HOURS_AGO_2 + 1000, 0, CRITICAL, SUB1, USER2, Some(entity2.id), Array[Byte](), ""),
-      EventStore(System.UserLogout, false, HOURS_AGO_2 + 2000, 0, INFORM, SUB1, USER2, None, Array[Byte](), ""),
+      EventStore(System.UserLogin, false, HOURS_AGO_2, None, INFORM, SUB1, USER2, None, Array[Byte](), ""),
+      EventStore(Scada.ControlExe, false, HOURS_AGO_2 + 1000, None, CRITICAL, SUB1, USER2, Some(entity2.id), Array[Byte](), ""),
+      EventStore(System.UserLogout, false, HOURS_AGO_2 + 2000, None, INFORM, SUB1, USER2, None, Array[Byte](), ""),
 
-      EventStore(System.UserLogin, false, HOURS_AGO_1, 0, INFORM, SUB1, USER3, None, Array[Byte](), ""),
-      EventStore(Scada.ControlExe, false, HOURS_AGO_1 + 1000, 0, CRITICAL, SUB1, USER3, Some(entity2.id), Array[Byte](), ""),
-      EventStore(System.UserLogout, false, HOURS_AGO_1 + 2000, 0, INFORM, SUB1, USER3, None, Array[Byte](), ""),
+      EventStore(System.UserLogin, false, HOURS_AGO_1, None, INFORM, SUB1, USER3, None, Array[Byte](), ""),
+      EventStore(Scada.ControlExe, false, HOURS_AGO_1 + 1000, None, CRITICAL, SUB1, USER3, Some(entity2.id), Array[Byte](), ""),
+      EventStore(System.UserLogout, false, HOURS_AGO_1 + 2000, None, INFORM, SUB1, USER3, None, Array[Byte](), ""),
 
-      EventStore(System.UserLogout, false, NOW, 0, INFORM, SUB1, USER1, None, Array[Byte](), ""))
+      EventStore(System.UserLogout, false, NOW, None, INFORM, SUB1, USER1, None, Array[Byte](), ""))
 
     events.foreach(ApplicationSchema.events.insert(_))
 
@@ -236,67 +235,6 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     resp.getEventsCount should equal(9)
     resp = service.get(makeEL(HOURS_AGO_2, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(7)
-
-  }
-
-  /**
-   *  Add some events to the database, and see if we're getting the updates.
-   */
-  test("Updates") {
-    val fixture = getFixture
-    import fixture._
-
-    import EventType._
-    import org.squeryl.PrimitiveTypeMode._
-    import org.squeryl.Table
-    import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
-    import EventType._
-
-    val ENTITY42 = "Entity42" // Make the entity for updated entries unique.
-
-    var resp = service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
-    resp.getEventsCount should equal(9)
-    var lastUid = resp.getEventsList.head.getUid // The latest UID in the database
-
-    val entity = transaction {
-      ApplicationSchema.entities.insert(new Entity("Entity42"))
-    }
-
-    val events = List[EventStore](
-      // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
-
-      // Overlap the first event with the same time as the last event to make sure the don't get overlaps
-      // and we don't miss one.
-      //
-      EventStore(System.UserLogin, false, NOW, 0, INFORM, SUB1, USER1, Some(entity.id), Array[Byte](), ""),
-      EventStore(Scada.ControlExe, false, NOW + 1, 0, CRITICAL, SUB1, USER1, Some(entity.id), Array[Byte](), ""),
-
-      EventStore(System.UserLogin, false, NOW + 2, 0, INFORM, SUB1, USER2, Some(entity.id), Array[Byte](), ""),
-      EventStore(Scada.ControlExe, false, NOW + 3, 0, CRITICAL, SUB1, USER2, Some(entity.id), Array[Byte](), ""),
-      EventStore(System.UserLogout, false, NOW + 4, 0, INFORM, SUB1, USER2, Some(entity.id), Array[Byte](), ""),
-
-      EventStore(System.UserLogin, false, NOW + 5, 0, INFORM, SUB1, USER3, Some(entity.id), Array[Byte](), ""),
-      EventStore(Scada.ControlExe, false, NOW + 6, 0, CRITICAL, SUB1, USER3, Some(entity.id), Array[Byte](), ""),
-      EventStore(System.UserLogout, false, NOW + 7, 0, INFORM, SUB1, USER3, Some(entity.id), Array[Byte](), ""),
-
-      EventStore(System.UserLogout, false, NOW + 8, 0, INFORM, SUB1, USER1, Some(entity.id), Array[Byte](), ""))
-
-    events.foreach(ApplicationSchema.events.insert(_))
-
-    /*var resp2 = one(service.get(makeEL_UidAfter(lastUid, USER_ANY)))
-    resp2.getEventsCount should equal(9)
-    resp2.getEventsList.toIterable.foreach(e => {
-      e.getTime should be >= (NOW)
-      e.getEntity.getName should equal(ENTITY42)
-    })
-
-    resp2 = one(service.get(makeEL_UidAfter(lastUid, USER1)))
-    resp2.getEventsCount should equal(3)
-    resp2.getEventsList.toIterable.foreach(e => {
-      e.getTime should be >= (NOW)
-      e.getEntity.getName should equal(ENTITY42)
-      e.getUserId should equal(USER1)
-    })*/
 
   }
 

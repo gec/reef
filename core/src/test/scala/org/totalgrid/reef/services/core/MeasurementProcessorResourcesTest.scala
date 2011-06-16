@@ -49,6 +49,7 @@ import org.totalgrid.reef.proto.Model.{ Point, Entity }
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
+import org.totalgrid.reef.sapi.RequestEnv
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
@@ -112,9 +113,13 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     addPoint("meas02", "dev2")
     val fac = new OverrideConfigModelFactory(deps)
     val s = new OverrideConfigService(fac)
-    val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build).expectOne()
-    val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build).expectOne()
-    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build).expectOne()
+
+    val headers = new RequestEnv
+    headers.setUserName("user")
+
+    val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build, headers).expectOne()
+    val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build, headers).expectOne()
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build, headers).expectOne()
 
     val gotten = s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build).expectOne()
     // make sure the object has had all of the point and node fields filled out

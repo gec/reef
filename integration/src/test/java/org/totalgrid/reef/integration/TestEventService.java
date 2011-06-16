@@ -22,8 +22,6 @@ import org.junit.Test;
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionCreationListener;
 import org.totalgrid.reef.japi.request.*;
-import org.totalgrid.reef.japi.request.builders.EventConfigRequestBuilders;
-import org.totalgrid.reef.japi.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.integration.helpers.BlockingQueue;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
@@ -33,7 +31,9 @@ import org.totalgrid.reef.proto.Alarms;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 import org.totalgrid.reef.proto.Events;
 import org.totalgrid.reef.proto.Model;
+import org.totalgrid.reef.proto.Utils;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -53,12 +53,16 @@ public class TestEventService extends ReefConnectionTestBase
             sb.append( "a" );
         String longString = sb.toString();
 
-        Alarms.EventConfig config = configService.setEventConfig( "Test.EventSuperLong", 1, Alarms.EventConfig.Designation.EVENT, false, longString );
-
+        Alarms.EventConfig config = configService.setEventConfigAsEvent( "Test.EventSuperLong", 1, longString );
         assertEquals( longString, config.getResource() );
 
-        //Events.Event event = es.publishEvent( "Test.EventSuperLong", "Tests" );
-        //assertEquals( longString, event.getRendered() );
+        Events.Event event = es.publishEvent( "Test.EventSuperLong", "Tests", new LinkedList<Utils.Attribute>() );
+        assertEquals( longString, event.getRendered() );
+        assertTrue( event.hasUid() );
+        assertNotSame( 0, event.getUid().length() );
+
+        assertTrue( event.hasTime() );
+        assertTrue( event.getTime() > 0 );
     }
 
     @Test
@@ -69,7 +73,7 @@ public class TestEventService extends ReefConnectionTestBase
         EventConfigService configService = (EventConfigService)helpers;
 
         // make an event type for our test events
-        configService.setEventConfig( "Test.Event", 1, Alarms.EventConfig.Designation.EVENT, false, "Event" );
+        configService.setEventConfigAsEvent( "Test.Event", 1, "Event" );
 
         Model.Entity entity = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
 
@@ -81,7 +85,7 @@ public class TestEventService extends ReefConnectionTestBase
             assertNotSame( 0, e.getUid().length() );
 
             assertTrue( e.hasTime() );
-            // assertTrue(e.getTime() > 0);
+            assertTrue( e.getTime() > 0 );
         }
     }
 
@@ -106,7 +110,7 @@ public class TestEventService extends ReefConnectionTestBase
 
         EventCreationService pub = (EventCreationService)helpers;
 
-        pub.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Event", "StaticSubstation.Line02.Current" ) );
+        pub.publishEvent( "Test.Event", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
 
         events.getSubscription().start( mock );
 
@@ -115,19 +119,27 @@ public class TestEventService extends ReefConnectionTestBase
 
     }
 
+    private Model.ReefUUID getUUID( String name ) throws ReefServiceException
+    {
+        EntityService es = (EntityService)helpers;
+        Model.Entity e = es.getEntityByName( name );
+        return e.getUuid();
+    }
+
     @Test
     public void prepareAlarms() throws ReefServiceException
     {
 
         // make an event type for our test alarms
-        client.put( EventConfigRequestBuilders.makeAudibleAlarm( "Test.Alarm", "Alarm", 1 ) ).await().expectOne();
+        EventConfigService configService = (EventConfigService)helpers;
+        configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
 
         EventCreationService es = (EventCreationService)helpers;
 
         // populate some alarms
         for ( int i = 0; i < 5; i++ )
         {
-            es.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Alarm", "StaticSubstation.Line02.Current" ) );
+            es.publishEvent( "Test.Alarm", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
         }
     }
 
@@ -146,7 +158,7 @@ public class TestEventService extends ReefConnectionTestBase
 
         EventCreationService pub = (EventCreationService)helpers;
 
-        pub.publishEvent( EventRequestBuilders.makeNewEventForEntityByName( "Test.Alarm", "StaticSubstation.Line02.Current" ) );
+        pub.publishEvent( "Test.Alarm", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
 
         result.getSubscription().start( mock );
         mock.pop( 1000 );
