@@ -99,7 +99,8 @@ class EventConfigRequestTest
   }
 
   def makeAttributeList(tuples: Tuple2[String, String]*): List[Attribute] = {
-    tuples.map { case (name, value) =>
+    tuples.map {
+      case (name, value) =>
         Attribute.newBuilder.setName(name).setValueString(value).setVtype(Attribute.Type.STRING).build
     }.toList
   }

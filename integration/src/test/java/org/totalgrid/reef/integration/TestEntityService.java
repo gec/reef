@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.request.EntityService;
+import org.totalgrid.reef.japi.request.PointService;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public class TestEntityService extends ReefConnectionTestBase
         public String getKey( T value );
     }
 
-    public static <T> Map<String, T> toMap( List<T> list, IKeyGen<T> gen )
+    private static <T> Map<String, T> toMap( List<T> list, IKeyGen<T> gen )
     {
         Map<String, T> map = new HashMap<String, T>();
         for ( T value : list )
@@ -148,10 +149,10 @@ public class TestEntityService extends ReefConnectionTestBase
     @Test
     public void pointToPointEntityConsistency() throws ReefServiceException
     {
-        List<Point> points = helpers.getAllPoints();
-
+        PointService ps = helpers;
         EntityService es = helpers;
 
+        List<Point> points = ps.getAllPoints();
         List<Entity> point_entities = es.getAllEntitiesWithType( "Point" );
 
         assertEquals( points.size(), point_entities.size() ); // check that they have the same size
@@ -172,10 +173,10 @@ public class TestEntityService extends ReefConnectionTestBase
     @Test
     public void equipmentToPointConsistency() throws ReefServiceException
     {
+        PointService ps = helpers;
         EntityService es = helpers;
 
-        List<Point> points = helpers.getAllPoints();
-
+        List<Point> points = ps.getAllPoints();
         List<Entity> point_entities = es.getAllEntitiesWithType( "Point" );
 
         assertEquals( points.size(), point_entities.size() ); // check that they have the same size
@@ -228,8 +229,9 @@ public class TestEntityService extends ReefConnectionTestBase
     @Test
     public void commandsToPointsMapping() throws ReefServiceException
     {
+        EntityService es = helpers;
         // First get a substation we can use as an example root
-        Entity sub = client.get( Entity.newBuilder().setName( "StaticSubstation" ).build() ).await().expectOne();
+        Entity sub = es.getEntityByName( "StaticSubstation" );
 
         // Tree request, asks for points under this substation and the commands associated with those points.
         Entity request =
@@ -240,7 +242,7 @@ public class TestEntityService extends ReefConnectionTestBase
                                             Entity.newBuilder().addTypes( "Command" ) ) ) ) ).build();
 
         // Request will return the substation as a root node, with the relationship tree below it
-        Entity tree = client.get( request ).await().expectOne();
+        Entity tree = es.getEntityTree( request );
 
         // Only owns should be there
         assertEquals( tree.getRelationsCount(), 1 );
@@ -291,10 +293,13 @@ public class TestEntityService extends ReefConnectionTestBase
     @Test
     public void getEquipmentInASubstation() throws ReefServiceException
     {
+        EntityService es = helpers;
 
-        Entity substation = SampleRequests.getRandomSubstation( client );
+        Entity substation = es.getAllEntitiesWithType( "Substation" ).get( 0 );
 
-        List<Entity> entities = SampleRequests.getChildrenOfType( client, substation.getName(), "Equipment" );
+        List<Entity> entities = es.getEntityRelatedChildrenOfType( substation.getUuid(), "owns", "Equipment" );
+
+        assertNotSame( 0, entities.size() );
         Set<String> equipTypes = new HashSet<String>();
 
         for ( Entity e : entities )

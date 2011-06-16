@@ -29,6 +29,7 @@ import org.totalgrid.reef.japi.*;
 import org.totalgrid.reef.japi.client.Subscription;
 import org.totalgrid.reef.japi.client.SubscriptionEvent;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
+import org.totalgrid.reef.japi.request.PointService;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
 
@@ -52,12 +53,13 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase
     {
 
         MeasurementService ms = helpers;
+        PointService ps = helpers;
 
         // mock object that will receive queue and measurement subscription
         MockSubscriptionEventAcceptor<Measurements.Measurement> mock = new MockSubscriptionEventAcceptor<Measurements.Measurement>();
 
 
-        List<Model.Point> points = SampleRequests.getAllPoints( client );
+        List<Model.Point> points = ps.getAllPoints();
 
         SubscriptionResult<List<Measurements.Measurement>, Measurements.Measurement> result = ms.subscribeToMeasurementsByPoints( points );
 

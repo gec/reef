@@ -27,11 +27,10 @@ import org.totalgrid.reef.japi.request.EntityService;
 import org.totalgrid.reef.japi.request.EventConfigService;
 import org.totalgrid.reef.japi.request.EventCreationService;
 import org.totalgrid.reef.japi.request.builders.EntityRequestBuilders;
-import org.totalgrid.reef.japi.request.builders.EventConfigRequestBuilders;
-import org.totalgrid.reef.japi.request.builders.EventRequestBuilders;
 import org.totalgrid.reef.proto.Alarms.*;
 import org.totalgrid.reef.proto.Model.Entity;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.totalgrid.reef.integration.helpers.*;
@@ -45,12 +44,12 @@ public class TestAlarmService extends ReefConnectionTestBase
     @Test
     public void prepareAlarms() throws ReefServiceException
     {
-        EventConfigService configService = (EventConfigService)helpers;
-        EventCreationService pub = (EventCreationService)helpers;
+        EventConfigService configService = helpers;
+        EventCreationService pub = helpers;
 
         configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
 
-        EntityService entityService = (EntityService)helpers;
+        EntityService entityService = helpers;
         Entity e = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
 
         // add an alarm for a point we know is not changing
@@ -61,7 +60,7 @@ public class TestAlarmService extends ReefConnectionTestBase
     @Test
     public void simpleQueries() throws ReefServiceException
     {
-        AlarmService as = (AlarmService)helpers;
+        AlarmService as = helpers;
         // Get all alarms that are not removed.
         List<Alarm> alarms = as.getActiveAlarms( 10 );
         assertTrue( alarms.size() > 0 );
@@ -72,17 +71,20 @@ public class TestAlarmService extends ReefConnectionTestBase
     @Test
     public void entityQueries() throws ReefServiceException
     {
-        EntityService entityService = (EntityService)helpers;
+        EntityService entityService = helpers;
+        AlarmService as = helpers;
+
         // Get the first substation
         Entity substation = entityService.getEntityByName( "StaticSubstation" );
 
         // Get all the points in the substation. Alarms are associated with individual points.
         Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid( substation, "Point" );
 
-        //entityService.getEntityRelatedChildrenOfType(substation.getUuid(), "owns", "Point");
-
         // Get the alarms on both the substation and devices under the substation.
-        List<Alarm> alarms = SampleRequests.getAlarmsForEntity( client, eqRequest, "Test.Alarm" );
+        List<String> alarmTypes = new LinkedList<String>();
+        alarmTypes.add( "Test.Alarm" );
+
+        List<Alarm> alarms = as.getActiveAlarmsByEntity( eqRequest, alarmTypes, 10 );
         assertTrue( alarms.size() > 0 );
     }
 
@@ -90,9 +92,9 @@ public class TestAlarmService extends ReefConnectionTestBase
     @Test
     public void updateAlarms() throws ReefServiceException
     {
-
+        AlarmService as = helpers;
         // Get unacknowledged alarms.
-        List<Alarm> alarms = SampleRequests.getUnRemovedAlarms( client, "Test.Alarm" );
+        List<Alarm> alarms = as.getActiveAlarms( 50 );
         assertTrue( alarms.size() > 0 );
 
         // Grab the first unacknowledged alarm and acknowledge it.
@@ -100,7 +102,7 @@ public class TestAlarmService extends ReefConnectionTestBase
         {
             if ( alarm.getState() == Alarm.State.UNACK_AUDIBLE || alarm.getState() == Alarm.State.UNACK_SILENT )
             {
-                Alarm result = SampleRequests.updateAlarm( client, alarm, Alarm.State.ACKNOWLEDGED );
+                Alarm result = as.acknowledgeAlarm( alarm );
                 assertTrue( result.getState() == Alarm.State.ACKNOWLEDGED );
                 break;
             }

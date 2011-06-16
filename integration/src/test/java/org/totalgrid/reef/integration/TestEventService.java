@@ -45,10 +45,10 @@ public class TestEventService extends ReefConnectionTestBase
     @Test
     public void validateLongEventConfigStrings() throws ReefServiceException
     {
-        EventConfigService configService = (EventConfigService)helpers;
-        EventCreationService es = (EventCreationService)helpers;
+        EventConfigService configService = helpers;
+        EventCreationService es = helpers;
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < 1000; i++ )
             sb.append( "a" );
         String longString = sb.toString();
@@ -68,9 +68,9 @@ public class TestEventService extends ReefConnectionTestBase
     @Test
     public void prepareEvents() throws ReefServiceException
     {
-        EventCreationService es = (EventCreationService)helpers;
-        EntityService entityService = (EntityService)helpers;
-        EventConfigService configService = (EventConfigService)helpers;
+        EventCreationService es = helpers;
+        EntityService entityService = helpers;
+        EventConfigService configService = helpers;
 
         // make an event type for our test events
         configService.setEventConfigAsEvent( "Test.Event", 1, "Event" );
@@ -92,7 +92,7 @@ public class TestEventService extends ReefConnectionTestBase
     @Test
     public void getRecentEvents() throws ReefServiceException
     {
-        EventService es = (EventService)helpers;
+        EventService es = helpers;
         List<Events.Event> events = es.getRecentEvents( 10 );
         assertEquals( events.size(), 10 );
     }
@@ -103,12 +103,12 @@ public class TestEventService extends ReefConnectionTestBase
 
         MockSubscriptionEventAcceptor<Events.Event> mock = new MockSubscriptionEventAcceptor<Events.Event>( true );
 
-        EventService es = (EventService)helpers;
+        EventService es = helpers;
 
         SubscriptionResult<List<Events.Event>, Events.Event> events = es.subscribeToRecentEvents( 10 );
         assertEquals( events.getResult().size(), 10 );
 
-        EventCreationService pub = (EventCreationService)helpers;
+        EventCreationService pub = helpers;
 
         pub.publishEvent( "Test.Event", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
 
@@ -121,7 +121,7 @@ public class TestEventService extends ReefConnectionTestBase
 
     private Model.ReefUUID getUUID( String name ) throws ReefServiceException
     {
-        EntityService es = (EntityService)helpers;
+        EntityService es = helpers;
         Model.Entity e = es.getEntityByName( name );
         return e.getUuid();
     }
@@ -131,10 +131,10 @@ public class TestEventService extends ReefConnectionTestBase
     {
 
         // make an event type for our test alarms
-        EventConfigService configService = (EventConfigService)helpers;
+        EventConfigService configService = helpers;
         configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
 
-        EventCreationService es = (EventCreationService)helpers;
+        EventCreationService es = helpers;
 
         // populate some alarms
         for ( int i = 0; i < 5; i++ )
@@ -149,14 +149,13 @@ public class TestEventService extends ReefConnectionTestBase
 
         MockSubscriptionEventAcceptor<Alarm> mock = new MockSubscriptionEventAcceptor<Alarm>( true );
 
-        EventService es = (EventService)helpers;
-        AlarmService as = (AlarmService)helpers;
+        AlarmService as = helpers;
 
         SubscriptionResult<List<Alarm>, Alarm> result = as.subscribeToActiveAlarms( 2 );
         List<Alarm> events = result.getResult();
         assertEquals( events.size(), 2 );
 
-        EventCreationService pub = (EventCreationService)helpers;
+        EventCreationService pub = helpers;
 
         pub.publishEvent( "Test.Alarm", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
 
@@ -170,7 +169,7 @@ public class TestEventService extends ReefConnectionTestBase
 
         final BlockingQueue<Subscription<?>> callback = new BlockingQueue<Subscription<?>>();
 
-        EventService es = (EventService)helpers;
+        EventService es = helpers;
 
         es.addSubscriptionCreationListener( new SubscriptionCreationListener() {
             @Override

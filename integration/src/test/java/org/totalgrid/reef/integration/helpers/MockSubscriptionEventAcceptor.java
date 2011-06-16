@@ -28,9 +28,9 @@ import java.util.List;
 public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAcceptor<T>
 {
 
-    private boolean storeResults;
-    private BlockingQueue<SubscriptionEvent<T>> queue = new BlockingQueue<SubscriptionEvent<T>>();
-    private List<SubscriptionEvent<T>> results = new LinkedList<SubscriptionEvent<T>>();
+    private final boolean storeResults;
+    private final BlockingQueue<SubscriptionEvent<T>> queue = new BlockingQueue<SubscriptionEvent<T>>();
+    private final List<SubscriptionEvent<T>> results = new LinkedList<SubscriptionEvent<T>>();
 
     /**
      *
@@ -117,6 +117,6 @@ public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAccept
 
     public void clearResults()
     {
-        results = new LinkedList<SubscriptionEvent<T>>();
+        results.clear();
     }
 }
