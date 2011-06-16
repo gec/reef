@@ -42,6 +42,8 @@ public interface MeasurementOverrideService
      * important to use this function, not trying to read the current value and change the quality in client code,
      * because the measurement processor is the only place in the system that can do this override safely without any
      * possibility of losing measurements.
+     *
+     * TODO: OLD should not be set until a new field measurement comes in (61850-7-3).
      */
     MeasOverride setPointOutOfService( Point point ) throws ReefServiceException;
 
@@ -52,15 +54,17 @@ public interface MeasurementOverrideService
      * that the client code provides a sensible Measurement. The measurement processor will publish the measurement with
      * the SUBSTITUTED quality bit set.
      */
-    MeasOverride setPointOverriden( Point point, Measurement measurement ) throws ReefServiceException;
+    MeasOverride setPointOverride( Point point, Measurement measurement ) throws ReefServiceException;
 
     /**
      * deletes a given measurement override, most recent field value will be instantly published if available
+     * TODO: Is the method useful? When would it be used?
      */
     MeasOverride deleteMeasurementOverride( MeasOverride measOverride ) throws ReefServiceException;
 
     /**
-     * makes sure that any measurement overrides are cleared if existent
+     * Return the point to In Service and clear any measurement overrides if existent.
+     * TODO: Can we rename this to setPointInService or clearPointOutOfService or add a bool to setPointOutOfService?
      *
      * @return whether an override was cleared.
      */

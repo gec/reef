@@ -63,8 +63,8 @@
         <command name="entity/entity">
             <action class="org.totalgrid.reef.shell.proto.EntityCommand"/>
         </command>
-        <command name="meas/meas">
-            <action class="org.totalgrid.reef.shell.proto.MeasCommand"/>
+        <command name="meas/list">
+            <action class="org.totalgrid.reef.shell.proto.MeasListCommand"/>
         </command>
         <command name="meas/from">
             <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
@@ -77,6 +77,15 @@
         </command>
         <command name="meas/download">
             <action class="org.totalgrid.reef.shell.proto.MeasDownloadCommand"/>
+        </command>
+        <command name="meas/block">
+            <action class="org.totalgrid.reef.shell.proto.MeasBlockCommand"/>
+        </command>
+        <command name="meas/unblock">
+            <action class="org.totalgrid.reef.shell.proto.MeasUnblockCommand"/>
+        </command>
+        <command name="meas/override">
+            <action class="org.totalgrid.reef.shell.proto.MeasOverrideCommand"/>
         </command>
         <command name="event/list">
             <action class="org.totalgrid.reef.shell.proto.EventListCommand"/>
