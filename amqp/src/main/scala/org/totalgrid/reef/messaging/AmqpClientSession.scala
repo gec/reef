@@ -28,16 +28,18 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope
 
 /**
- * a super client that switches on the passed in proto to automatically call the correct client so the app developer
- * doesn't have to manage the clients manually. NOT THREAD SAFE, needs to be used from a single thread at a time.
+ * Messaging based implementation of ClientSession. Looks up information on the requested operation using the class of the request object.
  *
  */
-class ProtoClient(
+class AmqpClientSession(
     factory: ClientSessionFactory,
-    lookup: ServiceList, timeoutms: Long) extends ClientSession with AsyncRestAdapter with Logging {
+    lookup: ServiceList,
+    timeoutms: Long) extends ClientSession with AsyncRestAdapter with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
-  private var clients = Map.empty[Class[_], ClientSession]
+
+  final override def isOpen = correlator.isOpen
+  override def close() = correlator.close()
 
   final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) {
 
@@ -77,5 +79,4 @@ class ProtoClient(
     factory.prepareSubscription(deser, subIsStreamType)
   }
 
-  def close() = correlator.close()
 }

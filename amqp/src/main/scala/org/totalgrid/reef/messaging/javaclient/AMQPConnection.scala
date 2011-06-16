@@ -28,7 +28,7 @@ import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.japi.client.{ AMQPConnectionSettings, ConnectionListener, Connection, Session, SessionExecutionPool }
 import org.totalgrid.reef.sapi.ServiceList
-import org.totalgrid.reef.sapi.client.{SessionSource, ClientSession}
+import org.totalgrid.reef.sapi.client.ClientSession
 
 /**
  * A bridge for easily mapping the Scala messaging constructs onto Java constructs
@@ -50,7 +50,7 @@ class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList
   private val factory = new AMQPSyncFactory with ReactActorExecutor with SessionSource {
     val broker = new QpidBrokerConnection(config)
 
-    def newSession(): ClientSession = new ProtoClient(this, servicesList, timeoutms)
+    def newSession(): ClientSession = new AmqpClientSession(this, servicesList, timeoutms)
   }
 
   final override def addConnectionListener(listener: ConnectionListener) =
@@ -68,7 +68,7 @@ class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList
   final override def stop() = factory.stop()
 
   final override def newSession(): Session =
-    new SessionWrapper(new ProtoClient(factory, servicesList, timeoutms))
+    new SessionWrapper(new AmqpClientSession(factory, servicesList, timeoutms))
 
   final override def newSessionPool(): SessionExecutionPool = new BasicSessionPool(factory)
 

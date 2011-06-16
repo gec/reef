@@ -45,6 +45,8 @@ trait SessionPool {
 
   def borrow[A](authToken: String)(fun: ClientSession => A): A
 
+  def size : Int
+
   //def addListener(listener: IConnectionListener) : Unit
 
   //def removeListener(listener: IConnectionListener) : Unit

@@ -26,6 +26,7 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.japi.ServiceIOException
+import java.security.PrivateKey
 
 object QpidBrokerChannel {
 
@@ -37,15 +38,17 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
 
   import QpidBrokerChannel._
 
-  var messageConsumer: ScalaOption[MessageConsumer] = None
-  var userClosed = false
-  var queueName: ScalaOption[String] = None
+  private var messageConsumer: ScalaOption[MessageConsumer] = None
+  private var userClosed = false
+  private var isChannelOpen = true
+  private var queueName: ScalaOption[String] = None
 
   session.setSessionListener(this)
   session.setAutoSync(true)
 
   def closed(s: Session) {
     logger.info("Qpid session closed")
+    isChannelOpen = false
     onClose(userClosed)
   }
 
@@ -69,8 +72,11 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
 
   /* -- Implement BrokerChannel -- */
 
-  def close() = {
+  final override def isOpen = isChannelOpen
+
+  final override def close() = {
     userClosed = true
+    isChannelOpen = false
     // qpid just does a 60 second timeout if close is called more than once
     if (!session.isClosing()) {
       logger.debug("Closing session: " + queueName)

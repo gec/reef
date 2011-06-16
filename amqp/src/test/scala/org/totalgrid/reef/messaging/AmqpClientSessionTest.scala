@@ -67,7 +67,7 @@ class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
 }
 
 @RunWith(classOf[JUnitRunner])
-class ProtoClientTest extends FunSuite with ShouldMatchers {
+class AmqpClientSessionTest extends FunSuite with ShouldMatchers {
 
   val exchangeA = TestDescriptors.serviceNotification.id
   val exchangeB = TestDescriptors.requestHeader.id
@@ -76,7 +76,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
     classOf[Envelope.ServiceNotification] -> ServiceInfo.get(TestDescriptors.serviceNotification),
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
 
-  def setupTest(addServices: Boolean)(test: (ProtoClient, AMQPProtoFactory) => Unit) {
+  def setupTest(addServices: Boolean)(test: (AmqpClientSession, AMQPProtoFactory) => Unit) {
     val connection = new MockBrokerConnection
 
     // TODO: fix setupTest to use all async and all sync
@@ -89,7 +89,7 @@ class ProtoClientTest extends FunSuite with ShouldMatchers {
       }
 
       AMQPFixture.sync(connection, true) { syncAmqp =>
-        val client = new ProtoClient(syncAmqp, serviceList, 10000)
+        val client = new AmqpClientSession(syncAmqp, serviceList, 10000)
 
         test(client, amqp)
       }

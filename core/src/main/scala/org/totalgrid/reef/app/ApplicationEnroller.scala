@@ -84,7 +84,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
 
   // we only need the registry to get the appClient, could special case for ApplicationConfig if bootstrapping exchange names
   // TODO - replace with SessionPool
-  private var client: Option[ProtoClient] = None
+  private var client: Option[AmqpClientSession] = None
 
   private def enroll() {
     freshClient
@@ -109,7 +109,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
 
   private def reenroll() = delay(2000) { enroll() }
 
-  def putAppConfig(client: ProtoClient, env: RequestEnv, configRequest: ApplicationConfig) = client.put(configRequest).listen {
+  def putAppConfig(client: AmqpClientSession, env: RequestEnv, configRequest: ApplicationConfig) = client.put(configRequest).listen {
     _ match {
       case SingleSuccess(_, config) =>
         val components = new CoreApplicationComponents(amqp, config, env)
@@ -129,7 +129,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
    */
   private def freshClient() {
     client.foreach(_.close)
-    client = Some(new ProtoClient(amqp, ReefServicesList, 5000))
+    client = Some(new AmqpClientSession(amqp, ReefServicesList, 5000))
   }
 
   /**

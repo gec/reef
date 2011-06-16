@@ -34,6 +34,8 @@ class MockSession extends ClientSession with AsyncRestAdapter {
 
   final override def close() = open = false
 
+  final override def isOpen = open
+
   final override def addSubscription[A](klass: Class[_]): Subscription[A] = throw new Exception("Unimplemented")
 
   // Testing functions

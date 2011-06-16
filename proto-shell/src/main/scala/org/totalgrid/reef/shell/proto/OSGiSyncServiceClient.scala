@@ -83,7 +83,7 @@ class ServiceDispatcher[A](rh: AsyncService[A]) {
 
 }
 
-trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
+trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
@@ -114,12 +114,14 @@ trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
 
 }
 
-class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with ClientSession {
+class OsgiClientSession(bundleContext: BundleContext) extends OsgiSyncOperations with ClientSession {
   def getBundleContext: BundleContext = bundleContext
 
   def addSubscription[A](klass: Class[_]) = {
     throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
   }
+
+  def isOpen = true
 
   def close() {
     // nothing special to do

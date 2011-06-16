@@ -43,7 +43,9 @@ class SyncRequestReply[S, R](
   /**
    * Close the underlying channel. No further requests or responses are possible.
    */
-  override def close() = channel.close()
+  final override def close() = channel.close()
+
+  final override def isOpen = channel.isOpen
 
   /// where to send the received data, optional to break circular construction dependency, will blow
   /// up if used without setting the destination

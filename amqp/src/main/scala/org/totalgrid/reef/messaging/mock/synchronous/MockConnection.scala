@@ -32,12 +32,14 @@ class MockConnection extends Connection {
 
   private val pool = new MockSessionPool(session)
 
-  def getSessionPool(): SessionPool = pool
+  final override def newSession = session
 
-  def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = throw new Exception("Unimplemented")
+  final override def getSessionPool(): SessionPool = pool
 
-  def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = throw new Exception("Unimplemented")
+  final override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = throw new Exception("Unimplemented")
 
-  def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): CloseableChannel = throw new Exception("Unimplemented")
+  final override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = throw new Exception("Unimplemented")
+
+  final override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): CloseableChannel = throw new Exception("Unimplemented")
 
 }

@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.SystemPropertyConfigReader
-import org.totalgrid.reef.messaging.ProtoClient
+import org.totalgrid.reef.messaging.AmqpClientSession
 import org.totalgrid.reef.broker.BrokerConnectionInfo
 
 import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
@@ -64,7 +64,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   val password = "core"
 
   def connect = {
-    val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
+    val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
       def session = this
     }
 

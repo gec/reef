@@ -20,26 +20,65 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
-import org.totalgrid.reef.sapi.client.{SessionSource, ClientSession, SessionPool}
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.sapi._
+import client._
+import org.totalgrid.reef.japi.{ InternalClientError, Envelope, ReefServiceException }
 
-class BasicSessionPool(source: SessionSource) extends SessionPool with SessionExecutionPool {
+
+class BasicSessionPool(source: SessionSource) extends SessionPool with SessionExecutionPool with Logging {
+
+  class ErroredClientSession(exception: ReefServiceException) extends ClientSession {
+
+    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] =
+      new FixedPromise[Response[A]](Failure(Envelope.Status.BUS_UNAVAILABLE, "The session pool could not obtain a session: " + exception.toString))
+
+    final override def isOpen: Boolean = false
+
+    final override def close() = {}
+
+    final override def addSubscription[A](klass: Class[_]): Subscription[A] = throw new InternalClientError("Bus is unavailable", exception)
+  }
 
   private val available = scala.collection.mutable.Set.empty[ClientSession]
+  private var count = 0
+
+  final override def size = count
 
   private def acquire(): ClientSession = available.synchronized {
     available.lastOption match {
       case Some(s) =>
         available.remove(s)
         s
-      case None => source.newSession()
+      case None => getNewSession()
+    }
+  }
+
+  private def getNewSession(): ClientSession = {
+    try {
+      val session = source.newSession()
+      count += 1
+      session
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn("Exception getting new ClientSession", rse)
+        new ErroredClientSession(rse)
     }
   }
 
   private def release(session: ClientSession) = available.synchronized {
-    available.add(session)
+    session match {
+      case ex : ErroredClientSession => // do nothing
+      case _ =>
+        if (session.isOpen) available.add(session) // if the session somehow gets closed, we discard it
+        else count -= 1
+    }
+
+
   }
 
-  override def borrow[A](fun: ClientSession => A): A = {
+  final override def borrow[A](fun: ClientSession => A): A = {
 
     val session = acquire()
 
@@ -51,7 +90,7 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
 
   }
 
-  override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow { session =>
+  final override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow { session =>
     try {
       session.getDefaultHeaders.setAuthToken(authToken)
       fun(session)
@@ -69,3 +108,4 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
     borrow(authToken)(client => function.apply(new SessionWrapper(client)))
   }
 }
+
