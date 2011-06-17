@@ -74,7 +74,7 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     val iter = 1001
 
     iter.count { i =>
-      if(i.isOdd) exe.repeatNext() should equal(100)
+      if (i.isOdd) exe.repeatNext() should equal(100)
       else exe.repeatNext() should equal(50)
     }
 
@@ -113,6 +113,5 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     exe.repeatNext() should equal(50)
     count should equal(2)
   }
-
 
 }

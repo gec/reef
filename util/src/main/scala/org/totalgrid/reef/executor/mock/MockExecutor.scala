@@ -62,7 +62,7 @@ class MockExecutor extends Executor {
 
   }
 
-  private def addTimerAction(action : TimerAction) : Timer = {
+  private def addTimerAction(action: TimerAction): Timer = {
     queue.enqueue(action)
     new ActionTimer(action)
   }
@@ -71,39 +71,37 @@ class MockExecutor extends Executor {
     "Expected " + expected + " at front of queue, but it was " + actual
 
   def executeNext() {
-    if(queue.isEmpty) throw new Exception(exceptionText("Execute"))
+    if (queue.isEmpty) throw new Exception(exceptionText("Execute"))
     else queue.front match {
-      case x : Execution =>
+      case x: Execution =>
         queue.dequeue()
         x.execute
       case y: Action => throw new Exception(exceptionText("Execute", y.toString))
     }
   }
 
-  def delayNext() : Long = {
-    if(queue.isEmpty) throw new Exception(exceptionText("Delay"))
+  def delayNext(): Long = {
+    if (queue.isEmpty) throw new Exception(exceptionText("Delay"))
     else queue.front match {
       case Delay(fun, ms) =>
         queue.dequeue()
         fun()
         ms
       case y: Action =>
-        throw new Exception(exceptionText("Delay",y.toString))
+        throw new Exception(exceptionText("Delay", y.toString))
     }
   }
 
-  def repeatNext() : Long = {
-    if(queue.isEmpty) throw new Exception(exceptionText("Repeat"))
+  def repeatNext(): Long = {
+    if (queue.isEmpty) throw new Exception(exceptionText("Repeat"))
     else queue.front match {
       case Repeat(fun, ms) =>
         queue.enqueue(queue.dequeue())
         fun()
         ms
       case y: Action =>
-        throw new Exception(exceptionText("Repeat",y.toString))
+        throw new Exception(exceptionText("Repeat", y.toString))
     }
   }
-
-
 
 }

@@ -23,21 +23,19 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
-import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.promise.FixedPromise
 import org.totalgrid.reef.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
-import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.executor.mock.MockExecutor
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   val simpleMapping = SimMapping.SimulatorMapping.newBuilder
-      .setDelay(100)
-      .addMeasurements(makeAnalogSim())
-      .addCommands(makeCommandSim("success", Commands.CommandStatus.SUCCESS))
-      .addCommands(makeCommandSim("fail", Commands.CommandStatus.HARDWARE_ERROR))
-      .build
+    .setDelay(100)
+    .addMeasurements(makeAnalogSim("analog1"))
+    .addMeasurements(makeAnalogSim("analog2"))
+    .addCommands(makeCommandSim("success", Commands.CommandStatus.SUCCESS))
+    .addCommands(makeCommandSim("fail", Commands.CommandStatus.HARDWARE_ERROR))
+    .build
 
   def makeAnalogSim(name: String = "test") = {
     SimMapping.MeasSim.newBuilder
@@ -74,14 +72,13 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   class BatchPublisher extends QueueingPublisher[Measurements.MeasurementBatch]
   class ResponsePublisher extends QueueingPublisher[Commands.CommandResponse]
 
-  def fixture(test: (InstantExecutor, Protocol, BatchPublisher, ResponsePublisher) => Unit) = {
-    val exe = new InstantExecutor
+  def fixture(test: (MockExecutor, Protocol, BatchPublisher, ResponsePublisher) => Unit) = {
+    val exe = new MockExecutor
     val protocol = new BenchmarkProtocol(exe)
     val batch = new BatchPublisher
     val responses = new ResponsePublisher
     test(exe, protocol, batch, responses)
   }
-
 
   val endpointName = "endpoint"
 
@@ -89,10 +86,14 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     fixture { (exe, protocol, batch, responses) =>
 
       protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      batch.queue.size should equal(0)
+      exe.executeNext() // integrity poll
       batch.queue.size should equal(1)
+      batch.queue.front.getMeasCount() should equal(2) // integrity poll
+      exe.repeatNext() should equal(100) // random measurement at 100 ms interval
 
       protocol.removeEndpoint(endpointName)
-      batch.queue.size should equal(1)
+
     }
   }
 
