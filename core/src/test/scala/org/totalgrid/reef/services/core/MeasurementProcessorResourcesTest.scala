@@ -117,6 +117,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val headers = new RequestEnv
     headers.setUserName("user")
 
+    // first NIS the points
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build, headers).expectOne
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).build, headers).expectOne
+
+    // then override it a few times
     val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build, headers).expectOne()
     val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build, headers).expectOne()
     s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build, headers).expectOne()

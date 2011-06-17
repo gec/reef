@@ -30,7 +30,6 @@ import org.totalgrid.reef.app.SubscriptionProvider
 import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.metrics.{ MetricsHooks }
-import java.lang.Exception
 
 object OverrideProcessor {
   def transformSubstituted(meas: Measurement): Measurement = {
@@ -80,9 +79,12 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
         publish(transformNIS(curr), true)
       }
 
-      // new NIS request, replace specified -- invalid request!
-      case (false, Some(repl)) =>
-        throw new Exception("Cannot override a point that is in service. First block the point, then override it.")
+      // new NIS request, replace specified
+      case (false, Some(repl)) => {
+        cacheCurrent(name)
+        map += (name -> replaceMeas)
+        publish(transformSubstituted(repl), true)
+      }
 
       // point already NIS, no replace specified
       case (true, None) => logger.info("NIS to point already NIS, ignoring")

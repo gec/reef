@@ -27,9 +27,7 @@ import scala.collection.JavaConversions._
 import java.io.File
 import java.text.SimpleDateFormat
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.japi.request.utils.Documenter.CaseExplanation
 import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
-import org.omg.CORBA.DynAnyPackage.Invalid
 
 @Command(scope = "meas", name = "list", description = "Prints all measurements or a specified measurement.")
 class MeasListCommand extends ReefCommandSupport {

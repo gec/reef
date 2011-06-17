@@ -18,10 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import javax.management.remote.rmi._RMIConnection_Stub
-import sun.org.mozilla.javascript.tools.shell.QuitAction
-import org.totalgrid.reef.proto.Measurements.Quality.Validity
-import org.totalgrid.reef.proto.Measurements.{ DetailQual, Measurement, Quality }
+import org.totalgrid.reef.proto.Measurements.{ Measurement, Quality }
 
 object MeasView {
 
