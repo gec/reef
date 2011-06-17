@@ -27,9 +27,9 @@ import java.util.UUID
 import org.squeryl.Query
 
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity]) = {
+  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String) = {
     val ent = EQ.findOrCreateEntity(name, "Point")
-    val p = new Point(ent.id, false)
+    val p = new Point(ent.id, _type, unit, abnormal)
     dataSource.foreach(ln => { EQ.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
     p.entity.value = ent
     p
@@ -43,6 +43,8 @@ object Point {
 
 case class Point(
     _entityId: UUID,
+    pointType: Int,
+    unit: String,
     var abnormal: Boolean) extends EntityBasedModel(_entityId) {
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
@@ -61,15 +63,10 @@ case class Point(
 }
 
 object Command {
-  def newInstance(name: String, displayName: String) = {
+  def newInstance(name: String, displayName: String, _type: Int) = {
     val ent = EQ.findOrCreateEntity(name, "Command")
-    val c = new Command(ent.id, displayName, false, None, None)
+    val c = new Command(ent.id, displayName, _type, false, None, None)
     c.entity.value = ent
-    c
-  }
-  def newInstance(entity: Entity) = {
-    val c = new Command(entity.id, entity.name, false, None, None)
-    c.entity.value = entity
     c
   }
 
@@ -84,11 +81,12 @@ object Command {
 case class Command(
     _entityId: UUID,
     val displayName: String,
+    val commandType: Int,
     var connected: Boolean,
     var lastSelectId: Option[Long],
     var triggerId: Option[Long]) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", false, Some(0), Some(0))
+  def this() = this(new UUID(0, 0), "", -1, false, Some(0), Some(0))
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 

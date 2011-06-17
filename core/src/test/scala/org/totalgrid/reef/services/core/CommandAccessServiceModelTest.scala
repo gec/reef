@@ -43,7 +43,7 @@ trait AccessTestRig extends CommandTestRig {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String): Command = {
-    seed(Command.newInstance(name, name))
+    seed(Command.newInstance(name, name, 1))
   }
 }
 

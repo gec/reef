@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
@@ -65,10 +65,10 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     owners
   }
   def getPoint(name: String = "device.test_point") = {
-    Point.newBuilder.setName(name)
+    Point.newBuilder.setName(name).setUnit("raw").setType(PointType.ANALOG)
   }
   def getCommand(name: String = "device.test_command") = {
-    Command.newBuilder.setName(name)
+    Command.newBuilder.setName(name).setType(CommandType.CONTROL).setDisplayName(name)
   }
   def getConfigFile(name: Option[String] = Some("test1"), text: Option[String] = Some("Something"), mimeType: Option[String] = Some("text/xml")) = {
     val cf = ConfigFile.newBuilder
@@ -80,8 +80,8 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   test("Add parts seperatley (uid)") {
 
-    val pt = pointService.put(getPoint().build).expectOne()
-    val cmd = commandService.put(getCommand().build).expectOne()
+    pointService.put(getPoint().build).expectOne()
+    commandService.put(getCommand().build).expectOne()
     val cf = configFileService.put(getConfigFile().build).expectOne()
     val port = portService.put(getIPPort().build).expectOne()
 
@@ -102,25 +102,16 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     commandService.get(getCommand("*").build).expectOne()
   }
 
-  test("Endpoint put adds all needed entries") {
-    val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
-
-    val returned = endpointService.put(endpoint.build).expectOne()
-
-    returned.getConfigFilesCount should equal(1)
-    returned.hasChannel should equal(true)
-
-    returned.getChannel.hasUuid should equal(true)
-    returned.getConfigFiles(0).hasUuid should equal(true)
-
-    returned.getOwnerships.getPointsCount should equal(1)
-    returned.getOwnerships.getCommandsCount should equal(1)
-
-    pointService.get(getPoint("*").build).expectOne()
-    commandService.get(getCommand("*").build).expectOne()
+  test("Endpoint put with unkown points/commands fails") {
+    intercept[BadRequestException] {
+      val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
+      endpointService.put(endpoint.build).expectOne()
+    }
   }
 
   test("Add with no port") {
+    pointService.put(getPoint().build).expectOne()
+    commandService.put(getCommand().build).expectOne()
     val endpoint = getEndpoint().addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
 
     val returned = endpointService.put(endpoint.build).expectOne()
@@ -153,8 +144,12 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Shared Config file") {
-    val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
-    val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
+    pointService.put(getPoint("d1.test_point").build).expectOne()
+    pointService.put(getPoint("d2.test_point").build).expectOne()
+    commandService.put(getCommand("d1.test_command").build).expectOne()
+    commandService.put(getCommand("d2.test_command").build).expectOne()
+    val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership("d1"))
+    val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership("d2"))
 
     val returned1 = endpointService.put(endpoint1.build).expectOne()
     val returned2 = endpointService.put(endpoint2.build).expectOne()

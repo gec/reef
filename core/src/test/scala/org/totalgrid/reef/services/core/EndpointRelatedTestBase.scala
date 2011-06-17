@@ -145,6 +145,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val commEndpointService = new core.CommunicationEndpointService(modelFac.endpoints)
     val entityService = new EntityService
     val pointService = new core.PointService(modelFac.points)
+    val commandService = new core.CommandService(modelFac.cmds)
     val frontEndConnection = new CommunicationEndpointConnectionService(modelFac.fepConn)
     val measProcConnection = new MeasurementProcessingConnectionService(modelFac.measProcConn)
 
@@ -211,20 +212,32 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     }
 
     def addDevice(name: String, pname: String = "test_point"): CommEndpointConfig = {
-      val owns = EndpointOwnership.newBuilder.addPoints(name + "." + pname).addCommands(name + ".test_commands")
-      val send = CommEndpointConfig.newBuilder()
-        .setName(name).setProtocol("benchmark").setOwnerships(owns).build
-      commEndpointService.put(send).expectOne()
+      val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("benchmark")
+      addEndpointPointsAndCommands(send, List(name + "." + pname), List(name + ".test_commands"))
     }
 
     def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None): CommEndpointConfig = {
       val netPort = network.map { net => CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
       val locPort = location.map { loc => CommChannel.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
       val port = portService.put(netPort.getOrElse(locPort.get)).expectOne()
-      val owns = EndpointOwnership.newBuilder.addPoints(name + ".test_point").addCommands(name + ".test_commands")
-      val send = CommEndpointConfig.newBuilder()
-        .setName(name).setProtocol("dnp3").setChannel(port).setOwnerships(owns).build
-      commEndpointService.put(send).expectOne()
+      val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("dnp3").setChannel(port)
+      addEndpointPointsAndCommands(send, List(name + ".test_point"), List(name + ".test_commands"))
+    }
+
+    def addEndpointPointsAndCommands(ce: CommEndpointConfig.Builder, pointNames: List[String], commandNames: List[String]) = {
+      val owns = EndpointOwnership.newBuilder
+      pointNames.foreach { pname =>
+        owns.addPoints(pname)
+        val pointProto = Point.newBuilder().setName(pname).setType(PointType.ANALOG).setUnit("raw").build
+        pointService.put(pointProto).expectOne()
+      }
+      pointNames.foreach { cname =>
+        owns.addCommands(cname)
+        val cmdProto = Command.newBuilder().setName(cname).setDisplayName(cname).setType(CommandType.CONTROL).build
+        commandService.put(cmdProto).expectOne()
+      }
+      ce.setOwnerships(owns)
+      commEndpointService.put(ce.build).expectOne()
     }
 
     def getPoint(device: String): Point =

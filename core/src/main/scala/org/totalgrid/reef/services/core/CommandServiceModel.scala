@@ -19,7 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.Model.{ Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
@@ -32,12 +31,26 @@ import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import java.util.UUID
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
+import org.totalgrid.reef.sapi.RequestEnv
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.command
+
+  override def preCreate(proto: CommandProto, headers: RequestEnv) = {
+    if (!proto.hasName || !proto.hasType || !proto.hasDisplayName) {
+      throw new BadRequestException("Must specify name, type and displayName when creating command")
+    }
+    proto
+  }
+
+  override def preUpdate(request: CommandProto, existing: Command, headers: RequestEnv) = {
+    preCreate(request, headers)
+  }
 }
 
 class CommandServiceModelFactory(dependencies: ServiceDependencies)
@@ -59,6 +72,9 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     if (commands.size == 0) return
 
     val allreadyExistingCommands = Entity.asType(ApplicationSchema.commands, EQ.findEntitiesByName(commands).toList, Some("Command"))
+    val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
+    if (!newCommands.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newCommands)
+
     val changeCommandOwner = allreadyExistingCommands.filter { c => c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true) }
     changeCommandOwner.foreach(p => {
       p.sourceEdge.value.foreach(EQ.deleteEdge(_))
@@ -66,13 +82,6 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
       update(p, p)
     })
 
-    val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
-    newCommands.foreach(c => {
-      val ent = EQ.findOrCreateEntity(c, "Command")
-      EQ.addEdge(dataSource, ent, "source")
-      // TODO: cleaner way of doing entity bound models
-      create(Command.newInstance(ent))
-    })
   }
 }
 
@@ -92,7 +101,9 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
 
-  def createModelEntry(proto: CommandProto): Command = Command.newInstance(proto.getName, proto.getDisplayName)
+  def createModelEntry(proto: CommandProto): Command = {
+    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType.getNumber)
+  }
 
   def isModified(entry: Command, existing: Command) = {
     entry.lastSelectId != existing.lastSelectId
@@ -112,6 +123,7 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
     }
 
     sql.logicalNode.asOption.foreach(_.foreach(ln => EQ.entityToProto(ln)))
+    b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }
 }

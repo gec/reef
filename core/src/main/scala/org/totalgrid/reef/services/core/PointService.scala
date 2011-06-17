@@ -19,9 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
-import org.totalgrid.reef.proto.Model.{ Point => PointProto }
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -32,8 +29,10 @@ import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
-import org.totalgrid.reef.sapi.AllMessages
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
+import org.totalgrid.reef.sapi.{ RequestEnv, AllMessages }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -44,6 +43,18 @@ class PointService(protected val modelTrans: ServiceTransactable[PointServiceMod
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.point
+
+  override def preCreate(proto: PointProto, headers: RequestEnv) = {
+    if (!proto.hasName || !proto.hasUnit || !proto.hasType) {
+      throw new BadRequestException("Must specify name, type and unit when creating point")
+    }
+    proto
+  }
+
+  override def preUpdate(request: PointProto, existing: Point, headers: RequestEnv) = {
+    preCreate(request, headers)
+  }
+
 }
 
 class PointServiceModelFactory(dependencies: ServiceDependencies)
@@ -70,20 +81,17 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler)
   def createAndSetOwningNode(points: List[String], dataSource: Entity): Unit = {
     if (points.size == 0) return
     //TODO: combine the createAndSet for points and commands
-    val allreadyExistingPoints = Entity.asType(ApplicationSchema.points, EQ.findEntitiesByName(points).toList, Some("Point"))
+    val alreadyExistingPoints = Entity.asType(ApplicationSchema.points, EQ.findEntitiesByName(points).toList, Some("Point"))
+    val newPoints = points.diff(alreadyExistingPoints.map(_.entityName).toList)
+    if (!newPoints.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newPoints)
 
-    val changePointOwner = allreadyExistingPoints.filter { c =>
+    val changePointOwner = alreadyExistingPoints.filter { c =>
       c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true)
     }
     changePointOwner.foreach(p => {
       p.sourceEdge.value.foreach(EQ.deleteEdge(_))
       EQ.addEdge(dataSource, p.entity.value, "source")
       update(p, p)
-    })
-
-    val newPoints = points.diff(allreadyExistingPoints.map(_.entityName).toList)
-    newPoints.foreach(pname => {
-      create(makePointEntry(pname, false, Some(dataSource)))
     })
 
   }
@@ -141,16 +149,15 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
     sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.logicalNode.asOption.foreach(_.foreach(ln => b.setLogicalNode(EntityProto.newBuilder.setUuid(makeUuid(ln)).setName(ln.name))))
     b.setAbnormal(sql.abnormal)
+    b.setType(PointType.valueOf(sql.pointType))
+    b.setUnit(sql.unit)
     b.build
   }
 
   def createModelEntry(proto: PointProto): Point = {
-    makePointEntry(proto.name.get, false, None)
+    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit)
   }
 
-  def makePointEntry(pname: String, abnormal: Boolean, dataSource: Option[Entity]) = {
-    Point.newInstance(pname, abnormal, dataSource)
-  }
 }
 
 object PointServiceConversion extends PointServiceConversion
