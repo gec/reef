@@ -26,6 +26,7 @@ import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
 import org.totalgrid.reef.loader.communications.Scale
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
+import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 
 /**
  * Utility methods to crate protos
@@ -47,11 +48,8 @@ object ProtoUtils {
 
   def toTriggerSet(pointName: String, trigger: Trigger.Builder): TriggerSet = {
 
-    val pointEntity = toEntityType(pointName, List("Point"))
-    val point = toPoint(pointName, pointEntity)
-
     val proto = TriggerSet.newBuilder
-      .setPoint(point)
+      .setPoint(toPoint(pointName))
       .addTriggers(trigger)
     proto.build
   }
@@ -394,10 +392,14 @@ object ProtoUtils {
     proto.build
   }
 
-  def toPoint(name: String, entity: Entity): Point = {
+  def toPoint(name: String): Point = Point.newBuilder.setName(name).build
+
+  def toPoint(name: String, entity: Entity, pointType: PointTypeProto, unit: String): Point = {
     val proto = Point.newBuilder
       .setName(name)
       .setEntity(entity)
+      .setType(pointType)
+      .setUnit(unit)
 
     proto.build
   }

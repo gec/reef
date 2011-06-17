@@ -21,10 +21,11 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.loader.equipment._
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command }
 import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
+import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
+import org.totalgrid.reef.loader.equipment._
 
 /**
  * EquipmentLoader loads the logical model.
@@ -35,7 +36,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
   val equipmentProfiles = HashMap[String, EquipmentType]()
   val pointProfiles = HashMap[String, PointProfile]()
-  val commands = HashMap[String, Command]()
+  val commands = HashMap[String, CommandProto]()
   val commandEntities = HashMap[String, Entity]()
 
   // map of points to units
@@ -117,13 +118,16 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     // Commands are controls and setpoints
     logger.trace("load equipment: " + name + " commands")
     controls.map { c =>
-      val display = Option(c.getDisplayName) getOrElse c.getName
-      processCommand(childPrefix + c.getName, display, "Control" :: getTypeList(c.getType), entity)
+      processCommand(childPrefix, c, entity, CommandTypeProto.CONTROL)
+      //val display = Option(c.getDisplayName) getOrElse c.getName
+      //processCommand(childPrefix + c.getName, display, "Control" :: getTypeList(c.getType), entity)
     }
 
     setpoints.map { c =>
-      val display = Option(c.getDisplayName) getOrElse c.getName
-      processCommand(childPrefix + c.getName, display, "Setpoint" :: getTypeList(c.getType), entity)
+      // TODO: loader needs to handle setpoint int
+      processCommand(childPrefix, c, entity, CommandTypeProto.SETPOINT_DOUBLE)
+      //val display = Option(c.getDisplayName) getOrElse c.getName
+      //processCommand(childPrefix + c.getName, display, "Setpoint" :: getTypeList(c.getType), entity)
     }
 
     // Points
@@ -141,13 +145,19 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Process controls defined under equipment.
    */
-  def processCommand(name: String, displayName: String, types: List[String], equipmentEntity: Entity) = {
+  def processCommand(childPrefix: String, c: Command, equipmentEntity: Entity, commandType: CommandTypeProto) = {
     import ProtoUtils._
+
+    val name = childPrefix + c.getName
+    val displayName = Option(c.getDisplayName) getOrElse c.getName
+
+    val baseType = if (commandType == CommandTypeProto.CONTROL) "Control" else "Setpoint"
+    val types = baseType :: getTypeList(c.getType)
 
     logger.trace("processControl: " + name)
     loadCache.addControl(name)
     val commandEntity = toEntityType(name, "Command" :: types)
-    val command = toCommand(name, displayName, commandEntity)
+    val command = toCommand(name, displayName, commandEntity, commandType)
     commandEntities += (name -> commandEntity)
     commands += (name -> command)
 
@@ -173,23 +183,25 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   def processPointType(pointT: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
-    val types = "Point" :: (pointT match {
-      case c: equipment.Analog => "Analog"
-      case c: equipment.Status => "Status"
-      case c: equipment.Counter => "Counter"
+    val (baseType, pointProtoType) = pointT match {
+      case c: equipment.Analog => ("Analog", PointTypeProto.ANALOG)
+      case c: equipment.Status => ("Status", PointTypeProto.STATUS)
+      case c: equipment.Counter => ("Counter", PointTypeProto.COUNTER)
       case _ => throw new LoadingException("Bad point type")
-    }) :: getTypeList(pointT.getType)
+    }
 
     val name = childPrefix + pointT.getName
-    logger.trace("processPointType: " + name)
-    val pointEntity = toEntityType(name, types)
-    val point = toPoint(name, pointEntity)
-    client.putOrThrow(pointEntity)
-    client.putOrThrow(point)
-    client.putOrThrow(toEntityEdge(equipmentEntity, pointEntity, "owns"))
+    val types = "Point" :: baseType :: getTypeList(pointT.getType)
 
     val unit = getAttribute[String](name, pointT, _.isSetUnit, _.getUnit, "unit")
     equipmentPointUnits += (name -> unit)
+
+    logger.trace("processPointType: " + name)
+    val pointEntity = toEntityType(name, types)
+    val point = toPoint(name, pointEntity, pointProtoType, unit)
+    client.putOrThrow(pointEntity)
+    client.putOrThrow(point)
+    client.putOrThrow(toEntityEdge(equipmentEntity, pointEntity, "owns"))
 
     val controls = getElements[Control](name, pointT, _.getControl.toList)
     controls.map(c => client.putOrThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
@@ -296,11 +308,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Commands are controls and setpoints. TODO: setpoints
    */
-  def toCommand(name: String, displayName: String, entity: Entity): Command = {
-    val proto = Command.newBuilder
+  def toCommand(name: String, displayName: String, entity: Entity, commandType: CommandTypeProto): CommandProto = {
+    val proto = CommandProto.newBuilder
       .setName(name)
       .setDisplayName(displayName)
       .setEntity(entity)
+      .setType(commandType)
 
     proto.build
   }

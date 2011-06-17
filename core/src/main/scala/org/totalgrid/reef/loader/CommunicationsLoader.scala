@@ -443,7 +443,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
           case _ => // OK: the equipment point doesn't have to be in this config file. TODO: could check the database.
         }
 
-        val point = toPoint(name, toEntityType(name, List("Point")))
+        val point = toPoint(name)
 
         addTriggers(client, point, toTrigger(name, s) :: Nil)
       } else {
@@ -717,7 +717,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
       .setName(name)
       .setUnit(point.getUnit)
 
-    var triggerSet = client.getOrThrow(toTriggerSet(toPoint(name, toEntityType(name, List("Point"))))).headOption
+    var triggerSet = client.getOrThrow(toTriggerSet(toPoint(name))).headOption
 
     var inBoundsRatio = 0.85
     var changeChance = 1.0
