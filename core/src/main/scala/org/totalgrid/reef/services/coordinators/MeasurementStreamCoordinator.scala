@@ -35,7 +35,7 @@ class MeasurementStreamCoordinatorFactory(
   def model = {
     // we have to make our own copies of the other service models to break the cyclic dependencies
     val measProc = new MeasurementProcessingConnectionServiceModel(dependencies.pubs.getEventSink(classOf[MeasurementProcessingConnection]))
-    val fepModel = new CommunicationEndpointConnectionServiceModel(dependencies.pubs.getEventSink(classOf[CommEndpointConnection]))
+    val fepModel = new CommunicationEndpointConnectionServiceModel(dependencies.pubs.getEventSink(classOf[CommEndpointConnection]), dependencies.eventSink)
     val coord = new MeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
     measProc.setCoordinator(coord, false)
     fepModel.setCoordinator(coord, false)

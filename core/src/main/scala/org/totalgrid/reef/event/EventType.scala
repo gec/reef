@@ -60,6 +60,10 @@ object EventType {
     case object SetNotInService extends EventType
     case object RemoveOverride extends EventType
     case object RemoveNotInService extends EventType
+    case object CommEndpointOffline extends EventType
+    case object CommEndpointOnline extends EventType
+    case object CommEndpointDisabled extends EventType
+    case object CommEndpointEnabled extends EventType
   }
 
   object System {

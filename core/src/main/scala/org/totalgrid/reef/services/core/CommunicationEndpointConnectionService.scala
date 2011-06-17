@@ -33,6 +33,7 @@ import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -64,17 +65,20 @@ class CommunicationEndpointConnectionModelFactory(
     extends BasicModelFactory[ConnProto, CommunicationEndpointConnectionServiceModel](dependencies, classOf[ConnProto]) {
 
   def model = {
-    val csm = new CommunicationEndpointConnectionServiceModel(subHandler)
+    val csm = new CommunicationEndpointConnectionServiceModel(subHandler, dependencies.eventSink)
     csm.setCoordinator(coordinatorFac.model)
     csm
   }
 }
 
 import org.totalgrid.reef.services.coordinators._
-class CommunicationEndpointConnectionServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class CommunicationEndpointConnectionServiceModel(
+  protected val subHandler: ServiceSubscriptionHandler,
+  val eventSink: SystemEventSink)
     extends SquerylServiceModel[ConnProto, FrontEndAssignment]
     with EventedServiceModel[ConnProto, FrontEndAssignment]
-    with CommunicationEndpointConnectionConversion {
+    with CommunicationEndpointConnectionConversion
+    with ServiceModelSystemEventPublisher {
 
   var coordinator: MeasurementStreamCoordinator = null
   def setCoordinator(cr: MeasurementStreamCoordinator, linkModels: Boolean = true) = {
@@ -84,18 +88,26 @@ class CommunicationEndpointConnectionServiceModel(protected val subHandler: Serv
 
   override def updateFromProto(proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
 
-    val endpoint = existing.endpoint.value.get
+    lazy val endpoint = existing.endpoint.value.get
+    lazy val eventArgs = "name" -> endpoint.entityName :: Nil
+    lazy val eventFunc = postSystemEvent(_: String, args = eventArgs, entity = Some(endpoint.entity.value))
 
-    // changing enabled flag has precendence, then connection state changes
+    // changing enabled flag has precedence, then connection state changes
     val currentlyEnabled = existing.enabled
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
+
+      val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
+      eventFunc(code)
+
       update(existing.copy(enabled = proto.getEnabled), existing)
     } else if (proto.hasState && proto.getState.getNumber != existing.state) {
       val newState = proto.getState.getNumber
       val online = newState == ConnProto.State.COMMS_UP.getNumber
       val updated = if (online) {
+        eventFunc(EventType.Scada.CommEndpointOnline)
         existing.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
       } else {
+        eventFunc(EventType.Scada.CommEndpointOffline)
         existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
       }
       update(updated, existing)

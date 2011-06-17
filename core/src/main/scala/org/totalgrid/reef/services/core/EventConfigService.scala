@@ -65,7 +65,12 @@ object EventConfigService {
           EventConfigStore(Scada.SetOverride, 8, ALARM, UNACK_SILENT, "Point overridden"),
           EventConfigStore(Scada.SetNotInService, 8, ALARM, UNACK_SILENT, "Point removed from service"),
           EventConfigStore(Scada.RemoveOverride, 8, ALARM, UNACK_SILENT, "Removed override on point"),
-          EventConfigStore(Scada.RemoveNotInService, 8, ALARM, UNACK_SILENT, "Returned point to service"))
+          EventConfigStore(Scada.RemoveNotInService, 8, ALARM, UNACK_SILENT, "Returned point to service"),
+          // comm endpoint events
+          EventConfigStore(Scada.CommEndpointOffline, 8, ALARM, UNACK_SILENT, "Endpoint {name} offline"),
+          EventConfigStore(Scada.CommEndpointOnline, 8, ALARM, UNACK_SILENT, "Endpoint {name} online"),
+          EventConfigStore(Scada.CommEndpointDisabled, 8, ALARM, UNACK_SILENT, "Endpoint {name} disabled"),
+          EventConfigStore(Scada.CommEndpointEnabled, 8, ALARM, UNACK_SILENT, "Endpoint {name} enabled"))
 
         ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
       }

@@ -41,9 +41,10 @@ import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.service.AsyncService
 
-import client.Event
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services._
+import org.totalgrid.reef.event.SystemEventSink
+import org.totalgrid.reef.proto.Events.Event
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 
@@ -62,11 +63,39 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
 
   }
 
+  class CountingEventSink extends SystemEventSink {
+    import scala.collection.mutable.{ Map, ListBuffer }
+    val received = Map.empty[String, ListBuffer[Event]]
+
+    def publishSystemEvent(evt: Event) = this.synchronized {
+      val eventName = evt.getEventType
+      received.get(eventName) match {
+        case Some(l) => l.append(evt)
+        case None =>
+          val lb = new ListBuffer[Event]
+          lb.append(evt)
+          received.put(eventName, lb)
+      }
+    }
+
+    def getTotalEventCount(): Int = {
+      received.foldLeft(0) { (sum, e) => sum + e._2.size }
+    }
+
+    def getEventCount(eventName: String): Int = {
+      received.get(eventName) match {
+        case Some(l) => l.size
+        case None => 0
+      }
+    }
+
+  }
+
   class MockMeasProc(measProcConnection: MeasurementProcessingConnectionService, rtDb: MeasurementStore, amqp: AMQPProtoFactory) {
 
     val mb = new SyncVar(Nil: List[(String, MeasurementBatch)])
 
-    def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
+    def onMeasProcAssign(event: client.Event[MeasurementProcessingConnection]): Unit = {
 
       val measProcAssign = event.value
       if (event.event != Envelope.Event.ADDED) return
@@ -97,7 +126,11 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val connection = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
     val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
-    val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb))
+    val eventSink = new CountingEventSink
+    val headers = new RequestEnv
+    headers.setUserName("user")
+
+    val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb, eventSink))
 
     def attachServices(endpoints: Seq[AsyncService[_]]): Unit = endpoints.foreach { ep =>
       amqp.bindService(ep.descriptor.id, ep.respond, competing = true)
@@ -170,7 +203,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
 
       val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env).expectMany()
 
-      conns.foreach(c => mockMeas.onMeasProcAssign(new Event(Envelope.Event.ADDED, c)))
+      conns.foreach(c => mockMeas.onMeasProcAssign(new client.Event(Envelope.Event.ADDED, c)))
 
       measProcMap += (name -> mockMeas)
 
@@ -247,6 +280,18 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
       frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
       updates.size should equal(0)
       updates
+    }
+
+    def setEndpointEnabled(ce: CommEndpointConnection, enabled: Boolean) = {
+      val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build, headers).expectOne()
+      ret.getEnabled should equal(enabled)
+      ret
+    }
+
+    def setEndpointState(ce: CommEndpointConnection, state: CommEndpointConnection.State) = {
+      val ret = frontEndConnection.put(ce.toBuilder.setState(state).build, headers).expectOne()
+      ret.getState should equal(state)
+      ret
     }
   }
 }
