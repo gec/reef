@@ -26,10 +26,10 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.sapi.{ Destination, RequestEnv }
-import org.totalgrid.reef.japi.{Envelope, ServiceIOException}
+import org.totalgrid.reef.japi.{ Envelope, ServiceIOException }
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.util.Conversion.convertIntToTimes
-import org.totalgrid.reef.promise.{SynchronizedPromise, Promise}
+import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 import scala.actors.Actor._
 
 @RunWith(classOf[JUnitRunner])
@@ -46,7 +46,7 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
 
     private val queue = new scala.collection.mutable.Queue[Envelope.Status]
 
-    def queueResponse(num: Int, status : Envelope.Status) = num.times(queue.enqueue(status))
+    def queueResponse(num: Int, status: Envelope.Status) = num.times(queue.enqueue(status))
     def queueSuccess(num: Int = 1) = queueResponse(num, Envelope.Status.OK)
     def queueFailure(num: Int = 1) = queueResponse(num, Envelope.Status.BUS_UNAVAILABLE)
 
@@ -54,7 +54,7 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
 
     final override def request[A](verb: Verb, payload: A, env: RequestEnv, destination: Destination): Promise[Response[A]] = queue.synchronized {
       numRequests += 1
-      val rsp = if(queue.size > 0) Response(queue.dequeue(), payload :: Nil) else Failure()
+      val rsp = if (queue.size > 0) Response(queue.dequeue(), payload :: Nil) else Failure()
       val promise = new SynchronizedPromise[Response[A]]
       actor { promise.onResponse(rsp) }
       promise
@@ -100,8 +100,8 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
   }
 
   test("Threading stress test") {
-     val count = 10000
-     fixture { (session, ost) =>
+    val count = 10000
+    fixture { (session, ost) =>
       session.queueSuccess(count)
       val results = (1 to count).map(i => ost.publish(99)).map(f => f.await)
       results.find(_ == false) should equal(None)
