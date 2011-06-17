@@ -50,7 +50,7 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
   def publish(value: Any,
     verb: Envelope.Verb = Envelope.Verb.POST,
     address: Destination = AnyNodeDestination,
-    maxRetries: Int = 3): Promise[Boolean] = queue.synchronized {
+    maxRetries: Int = 0): Promise[Boolean] = queue.synchronized {
 
     if (queue.size >= maxQueueSize) queue.wait
 

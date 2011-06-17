@@ -24,39 +24,89 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.japi.ServiceIOException
 import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, RequestEnv }
-import org.totalgrid.reef.sapi.client.{ Response, Subscription, ClientSession }
-import org.totalgrid.reef.promise.{ FixedPromise, Promise }
-import org.totalgrid.reef.sapi.client.SingleSuccess
+import org.totalgrid.reef.sapi.{ Destination, RequestEnv }
+import org.totalgrid.reef.japi.{Envelope, ServiceIOException}
+import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import org.totalgrid.reef.promise.{SynchronizedPromise, Promise}
+import scala.actors.Actor._
 
 @RunWith(classOf[JUnitRunner])
 class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
 
-  class EchoingClientSession extends ClientSession {
+  class QueuedResponseClientSession extends ClientSession {
 
     var numRequests = 0
+
     private var open = true
 
     final override def isOpen = open
     final override def close() = open = false
 
+    private val queue = new scala.collection.mutable.Queue[Envelope.Status]
+
+    def queueResponse(num: Int, status : Envelope.Status) = num.times(queue.enqueue(status))
+    def queueSuccess(num: Int = 1) = queueResponse(num, Envelope.Status.OK)
+    def queueFailure(num: Int = 1) = queueResponse(num, Envelope.Status.BUS_UNAVAILABLE)
+
     def addSubscription[A](klass: Class[_]): Subscription[A] = throw new ServiceIOException("Unimplemented")
 
-    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
+    final override def request[A](verb: Verb, payload: A, env: RequestEnv, destination: Destination): Promise[Response[A]] = queue.synchronized {
       numRequests += 1
-      new FixedPromise(SingleSuccess(single = payload))
+      val rsp = if(queue.size > 0) Response(queue.dequeue(), payload :: Nil) else Failure()
+      val promise = new SynchronizedPromise[Response[A]]
+      actor { promise.onResponse(rsp) }
+      promise
     }
 
   }
 
-  test("Construction") {
-    val session = new EchoingClientSession
+  def fixture(test: (QueuedResponseClientSession, OrderedServiceTransmitter) => Unit) = {
+    val session = new QueuedResponseClientSession
     val pool = new org.totalgrid.reef.messaging.mock.MockSessionPool(session)
     val ost = new OrderedServiceTransmitter(pool)
+    test(session, ost)
+  }
 
-    ost.publish(4).await should equal(true)
+  test("Success on first attempt") {
+    fixture { (session, ost) =>
+      session.queueSuccess(1)
+      ost.publish(99).await should equal(true)
+      session.numRequests should equal(1)
+    }
+  }
+
+  test("Retry until failure") {
+    fixture { (session, ost) =>
+
+      ost.publish(99).await should equal(false)
+      session.numRequests should equal(1)
+
+      session.numRequests = 0
+      ost.publish(99, maxRetries = 3).await should equal(false)
+      session.numRequests should equal(4)
+    }
+  }
+
+  test("Retry until success") {
+    fixture { (session, ost) =>
+
+      session.queueFailure(5)
+      session.queueSuccess(1)
+      ost.publish(99, maxRetries = 5).await should equal(true)
+      session.numRequests should equal(6)
+    }
+  }
+
+  test("Threading stress test") {
+     val count = 10000
+     fixture { (session, ost) =>
+      session.queueSuccess(count)
+      val results = (1 to count).map(i => ost.publish(99)).map(f => f.await)
+      results.find(_ == false) should equal(None)
+      session.numRequests should equal(count)
+    }
   }
 
 }
