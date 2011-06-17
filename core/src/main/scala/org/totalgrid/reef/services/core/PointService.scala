@@ -147,7 +147,9 @@ trait PointServiceConversion extends MessageModelConversion[PointProto, Point] w
     b.setUuid(makeUuid(sql))
     b.setName(sql.entityName)
     sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
-    sql.logicalNode.asOption.foreach(_.foreach(ln => b.setLogicalNode(EntityProto.newBuilder.setUuid(makeUuid(ln)).setName(ln.name))))
+
+    sql.logicalNode.value // autoload logicalNode
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EQ.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)

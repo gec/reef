@@ -377,10 +377,12 @@ trait EntityQueries extends EntityTreeQueries {
   val deriveds = ApplicationSchema.derivedEdges
   val entityTypes = ApplicationSchema.entityTypes
 
+  def minimalEntityToProto(entry: Entity): EntityProto.Builder = {
+    EntityProto.newBuilder.setUuid(makeUuid(entry)).setName(entry.name)
+  }
+
   def entityToProto(entry: Entity): EntityProto.Builder = {
-    val b = EntityProto.newBuilder
-      .setUuid(makeUuid(entry))
-      .setName(entry.name)
+    val b = minimalEntityToProto(entry)
     entry.types.value.foreach(t => b.addTypes(t))
     b
   }

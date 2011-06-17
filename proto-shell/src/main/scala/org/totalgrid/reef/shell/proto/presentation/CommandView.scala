@@ -25,11 +25,20 @@ import org.totalgrid.reef.proto.OptionalProtos._
 
 object CommandView {
 
-  def commandList(list: List[Command]) = {
-    val rows = list.map { cmd =>
-      ("[" + cmd.getUuid.getUuid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
-    }
-    Table.justifyColumns(rows).foreach { line => println(line mkString " ") }
+  def commandList(cmds: List[Command]) = {
+    Table.printTable(commandHeader, cmds.map(commandRow(_)))
+  }
+
+  def commandHeader = {
+    "Name" :: "DisplayName" :: "Type" :: "Endpoint" :: Nil
+  }
+
+  def commandRow(a: Command) = {
+    a.getName ::
+      a.getDisplayName ::
+      a.getType.toString ::
+      a.logicalNode.name.getOrElse("") ::
+      Nil
   }
 
   //def selectResponse(resp: CommandAccess)

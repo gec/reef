@@ -23,7 +23,6 @@ import presentation.EndpointView
 import org.apache.felix.gogo.commands.{ Argument, Command }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 
 @Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
 class EndpointListCommand extends ReefCommandSupport {
@@ -37,7 +36,7 @@ class EndpointListCommand extends ReefCommandSupport {
 class EndpointDisableCommand extends ReefCommandSupport with EndpointRetrieval {
 
   @Argument(index = 0, name = "name", description = "Endpoint name. Use \"*\" for all endpoints.", required = true, multiValued = false)
-  private var endpointName: String = null
+  var endpointName: String = null
 
   def doCommand() = {
     EndpointView.printTable(endpoints(endpointName).map { c => services.disableEndpointConnection(c.getUuid) })
@@ -48,7 +47,7 @@ class EndpointDisableCommand extends ReefCommandSupport with EndpointRetrieval {
 class EndpointEnableCommand extends ReefCommandSupport with EndpointRetrieval {
 
   @Argument(index = 0, name = "name", description = "Endpoint name. Use \"*\" for all endpoints.", required = true, multiValued = false)
-  private var endpointName: String = null
+  var endpointName: String = null
 
   def doCommand() = {
     EndpointView.printTable(endpoints(endpointName).map { c => services.enableEndpointConnection(c.getUuid) })

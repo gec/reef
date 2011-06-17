@@ -122,7 +122,8 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
       case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
-    sql.logicalNode.asOption.foreach(_.foreach(ln => EQ.entityToProto(ln)))
+    sql.logicalNode.value // autoload logicalNode
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EQ.minimalEntityToProto(ln).build) } }
     b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }
