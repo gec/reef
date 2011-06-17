@@ -31,7 +31,7 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler, Publisher }
 
-class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, reactor: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
+class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -44,7 +44,7 @@ class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: Si
   private var repeater: Option[Timer] = None
 
   override def afterStart() {
-    reactor.execute { update(measurements, true) }
+    exe.execute { update(measurements, true) }
     setUpdateParams(delay)
   }
   override def beforeStop() {
@@ -62,9 +62,7 @@ class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: Si
     logger.info("Updating parameters for simulator " + name + " delay = " + delay)
     this.synchronized {
       repeater.foreach(_.cancel)
-      repeater = if (delay == 0) None else Some(reactor.repeat(delay) {
-        update(measurements.toList)
-      })
+      repeater = if (delay == 0) None else Some(exe.repeat(delay)(update(measurements.toList)))
     }
   }
 

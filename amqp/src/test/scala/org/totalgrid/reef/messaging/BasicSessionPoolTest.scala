@@ -24,7 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 import scala.actors.Actor._
 import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, RequestEnv }

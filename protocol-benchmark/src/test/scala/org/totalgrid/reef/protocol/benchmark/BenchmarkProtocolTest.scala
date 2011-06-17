@@ -25,20 +25,20 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.proto.Commands.CommandResponse
 import org.totalgrid.reef.promise.FixedPromise
 import org.totalgrid.reef.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
+import org.totalgrid.reef.executor.mock.InstantExecutor
+import org.totalgrid.reef.executor.Executor
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
-  def makeSimpleMapping() = {
-    SimMapping.SimulatorMapping.newBuilder
+  val simpleMapping = SimMapping.SimulatorMapping.newBuilder
       .setDelay(100)
       .addMeasurements(makeAnalogSim())
       .addCommands(makeCommandSim("success", Commands.CommandStatus.SUCCESS))
       .addCommands(makeCommandSim("fail", Commands.CommandStatus.HARDWARE_ERROR))
       .build
-  }
+
   def makeAnalogSim(name: String = "test") = {
     SimMapping.MeasSim.newBuilder
       .setName(name)
@@ -53,7 +53,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
       .setResponseStatus(resp)
   }
 
-  def getConfigFiles(index: SimMapping.SimulatorMapping = makeSimpleMapping()) = {
+  def getConfigFiles(index: SimMapping.SimulatorMapping = simpleMapping) = {
     Model.ConfigFile.newBuilder().setName("mapping")
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(index.toByteString).build :: Nil
@@ -63,75 +63,72 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     Commands.CommandRequest.newBuilder.setName(name).build
   }
 
-  class MeasCallbacks extends Publisher[MeasurementBatch] {
-
-    val measurements = new SyncVar(List.empty[Measurements.MeasurementBatch])
-    final override def publish(m: Measurements.MeasurementBatch) = {
-      measurements.atomic(l => (m :: l).reverse)
+  class QueueingPublisher[A] extends Publisher[A] {
+    val queue = new scala.collection.mutable.Queue[A]
+    def publish(a: A) = {
+      queue.enqueue(a)
       new FixedPromise(true)
     }
-
   }
 
-  class CommandCallbacks extends Protocol.ResponsePublisher {
+  class BatchPublisher extends QueueingPublisher[Measurements.MeasurementBatch]
+  class ResponsePublisher extends QueueingPublisher[Commands.CommandResponse]
 
-    val cmdResponses = new SyncVar[Option[Commands.CommandResponse]](None: Option[Commands.CommandResponse])
-    def publish(c: Commands.CommandResponse) = {
-      cmdResponses.update(Some(c))
-      new FixedPromise(true)
-    }
-
+  def fixture(test: (InstantExecutor, Protocol, BatchPublisher, ResponsePublisher) => Unit) = {
+    val exe = new InstantExecutor
+    val protocol = new BenchmarkProtocol(exe)
+    val batch = new BatchPublisher
+    val responses = new ResponsePublisher
+    test(exe, protocol, batch, responses)
   }
+
 
   val endpointName = "endpoint"
 
-  test("add remove") {
-    val protocol = new BenchmarkProtocol
-    val measCB = new MeasCallbacks
-    protocol.addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointPublisher)
+  test("add/remove") {
+    fixture { (exe, protocol, batch, responses) =>
 
-    measCB.measurements.waitFor(_.size > 0)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      batch.queue.size should equal(1)
 
-    protocol.removeEndpoint(endpointName)
-
-    val atStop = measCB.measurements.lastValueAfter(50).size
-
-    def check(l: List[Measurements.MeasurementBatch]): Boolean = l.size != atStop
-    measCB.measurements.waitFor(check _, 100, false) should equal(false)
+      protocol.removeEndpoint(endpointName)
+      batch.queue.size should equal(1)
+    }
   }
 
   test("command responded to") {
-    val protocol = new BenchmarkProtocol
-    val measCB = new MeasCallbacks
-    val cmdBC = new CommandCallbacks
-    val cmdHandler = protocol.addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointPublisher)
+    fixture { (exe, protocol, batch, responses) =>
 
-    cmdHandler.issue(getCmdRequest("success"), cmdBC)
+      val cmd = protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
 
-    cmdBC.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.SUCCESS }.getOrElse(false))
+      cmd.issue(getCmdRequest("success"), responses)
+      responses.queue.size should equal(1)
+      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.SUCCESS)
 
-    cmdHandler.issue(getCmdRequest("fail"), cmdBC)
+      cmd.issue(getCmdRequest("fail"), responses)
+      responses.queue.size should equal(1)
+      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.HARDWARE_ERROR)
 
-    cmdBC.cmdResponses.waitFor(_.map { _.getStatus == Commands.CommandStatus.HARDWARE_ERROR }.getOrElse(false))
-
-    protocol.removeEndpoint(endpointName)
+      protocol.removeEndpoint(endpointName)
+    }
   }
 
   test("Adding twice causes exception") {
-    val protocol = new BenchmarkProtocol
-    val measCB = new MeasCallbacks
-    // need to call the NVII functions or else we are only testing the BaseProtocol code
-    protocol._addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointPublisher)
-    intercept[IllegalArgumentException] {
-      protocol._addEndpoint(endpointName, "", getConfigFiles(), measCB, NullEndpointPublisher)
+    fixture { (exe, protocol, batch, responses) =>
+      // need to call the NVII functions or else we are only testing the BaseProtocol code
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      intercept[IllegalArgumentException] {
+        protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      }
     }
   }
 
   test("Removing unknown causes exception") {
-    val protocol = new BenchmarkProtocol
-    // need to call the NVII functions or else we are only testing the BaseProtocol code
-    intercept[IllegalArgumentException] {
-      protocol._removeEndpoint(endpointName)
+    fixture { (exe, protocol, batch, responses) =>
+      // need to call the NVII functions or else we are only testing the BaseProtocol code
+      intercept[IllegalArgumentException] {
+        protocol.removeEndpoint(endpointName)
+      }
     }
   }
 }

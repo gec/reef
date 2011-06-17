@@ -20,12 +20,12 @@ package org.totalgrid.reef.protocol.benchmark
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.executor.{ Executor, ReactActorExecutor }
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
@@ -48,57 +48,38 @@ trait ControllableSimulator {
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class BenchmarkProtocol extends ProtocolWithoutChannel with EndpointAlwaysOnline with ChannelAlwaysOnline with SimulatorManagement with Logging {
+class BenchmarkProtocol(exe: Executor) extends ProtocolWithoutChannel with EndpointAlwaysOnline with ChannelAlwaysOnline with SimulatorManagement with Logging {
 
   import Protocol._
 
   override def name: String = "benchmark"
 
   private var map = immutable.Map.empty[String, Simulator]
-  private var reactor: Option[ReactActorExecutor] = None
 
   def getSimulators(names: List[String]): Map[String, ControllableSimulator] =
     if (names.isEmpty) map else map.filterKeys(k => names.contains(k))
 
-  // get or create and start the shared reactor
-  private def getReactor: ReactActorExecutor = reactor match {
-    case Some(r) => r
-    case None =>
-      val r = new ReactActorExecutor {}
-      r.start
-      reactor = Some(r)
-      r
-  }
-
-  def _addEndpoint(endpoint: String,
+  def _addEndpoint(
+    endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
     endpointPublisher: EndpointPublisher): CommandHandler = {
 
-    if (map.get(endpoint).isDefined) throw new IllegalArgumentException("Trying to re-add endpoint" + endpoint)
-
-    val mapping = SimMapping.SimulatorMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile)
-    val sim = new Simulator(endpoint, batchPublisher, mapping, getReactor)
+    val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
+    val mapping = SimMapping.SimulatorMapping.parseFrom(file)
+    val sim = new Simulator(endpoint, batchPublisher, mapping, exe)
     sim.start
     map += endpoint -> sim
     sim
   }
 
-  def _removeEndpoint(endpoint: String) = {
-    map.get(endpoint) match {
-      case Some(sim) =>
-        sim.stop
-        map -= endpoint
-      case None =>
-        throw new IllegalArgumentException("Trying to remove endpoint" + endpoint)
-    }
-    if (map.size == 0) {
-      reactor.foreach {
-        _.stop
-      }
-      reactor = None
-    }
+  def _removeEndpoint(endpoint: String) = map.get(endpoint) match {
+    case Some(sim) =>
+      sim.stop
+      map -= endpoint
+    case None =>
+      throw new IllegalArgumentException("Trying to remove endpoint" + endpoint)
   }
 
 }

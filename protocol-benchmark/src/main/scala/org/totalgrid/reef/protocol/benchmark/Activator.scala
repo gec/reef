@@ -20,17 +20,22 @@ package org.totalgrid.reef.protocol.benchmark
 
 import org.osgi.framework.{ ServiceRegistration, BundleActivator, BundleContext }
 import org.totalgrid.reef.protocol.api.Protocol
-import scala.collection.mutable.Map
-import scala.collection.JavaConversions._
+import org.totalgrid.reef.executor.ReactActorExecutor
+
+import com.weiglewilczek.scalamodules._
 
 class Activator extends BundleActivator {
+
+  val exe = new ReactActorExecutor {}
   var reg: Option[ServiceRegistration] = None
 
-  override def start(context: BundleContext) {
-    val protocol = new BenchmarkProtocol
-    reg = Some(context.registerService(classOf[Protocol].getName, protocol, Map("protocol" -> protocol.name)))
+  final override def start(context: BundleContext) {
+    val protocol = new BenchmarkProtocol(exe)
+    val registration = context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+    reg = Some(registration)
+    exe.start()
   }
 
-  override def stop(context: BundleContext) {}
+  final override def stop(context: BundleContext) = exe.stop()
 
 }

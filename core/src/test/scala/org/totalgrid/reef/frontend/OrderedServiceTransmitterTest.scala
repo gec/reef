@@ -28,7 +28,7 @@ import org.totalgrid.reef.japi.Envelope.Verb
 import org.totalgrid.reef.sapi.{ Destination, RequestEnv }
 import org.totalgrid.reef.japi.{ Envelope, ServiceIOException }
 import org.totalgrid.reef.sapi.client._
-import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 import scala.actors.Actor._
 

@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 
 @RunWith(classOf[JUnitRunner])
 class ReactActorExecutorTest extends ExecutorTestBase {
