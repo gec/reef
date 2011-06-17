@@ -63,7 +63,8 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
   private def checkForTransmit(): Boolean = {
     if (queue.size > 0) {
       transmitting = true
-      publish(queue.dequeue())
+      val record = queue.dequeue()
+      publish(record, record.maxRetries)
       true
     } else false
   }
