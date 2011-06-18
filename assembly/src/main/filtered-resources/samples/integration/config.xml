@@ -144,8 +144,8 @@
                     
                 </cm:equipment>
                 <cm:equipment name="Line02">
-                <cm:setpoint name="VoltageSetpoint" index="0" unit="A"/>
-                    <cm:analog name="Current" index="0"/>
+                <cm:setpoint name="VoltageSetpoint" index="0"/>
+                    <cm:analog name="Current" index="0" unit="A"/>
                 </cm:equipment>
             </cm:equipment>
         </cm:endpoint>

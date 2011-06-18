@@ -24,8 +24,8 @@ import org.totalgrid.reef.shell.proto.presentation.{ AlarmView }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.ReefUUID
 
-@Command(scope = "alarm", name = "alarm", description = "Prints alarms.")
-class AlarmCommand extends ReefCommandSupport {
+@Command(scope = "alarm", name = "list", description = "List alarms.")
+class AlarmListCommand extends ReefCommandSupport {
 
   @GogoOption(name = "-t", description = "Show alarms of type.", required = false, multiValued = true)
   var types: java.util.List[String] = null
@@ -36,7 +36,7 @@ class AlarmCommand extends ReefCommandSupport {
   def doCommand() = {
     val typList = Option(types).map(_.toList) getOrElse Nil
 
-    val alarms = services.getActiveAlarms(typList, limit).toList.reverse
+    val alarms = services.getActiveAlarms(typList, limit).toList
 
     AlarmView.printTable(alarms)
   }

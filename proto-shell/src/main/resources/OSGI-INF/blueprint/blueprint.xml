@@ -108,8 +108,8 @@
         <command name="event-config/delete">
             <action class="org.totalgrid.reef.shell.proto.EventConfigDeleteCommand"/>
         </command>
-        <command name="alarm/alarm">
-            <action class="org.totalgrid.reef.shell.proto.AlarmCommand"/>
+        <command name="alarm/list">
+            <action class="org.totalgrid.reef.shell.proto.AlarmListCommand"/>
         </command>
         <command name="alarm/silence">
             <action class="org.totalgrid.reef.shell.proto.AlarmSilenceCommand"/>
