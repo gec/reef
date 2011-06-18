@@ -149,6 +149,7 @@ class MeasOverrideCommand extends ReefCommandSupport {
           // TODO: We'll do better when Point has the type information.
           throw new Exception("Point " + name + " has no measurements. Type is unknown. Measurement not overridden.")
       }
+      m.setUnit(measurement.getUnit)
       services.setPointOverride(point, m.build)
       MeasView.printInspect(services.getMeasurementByPoint(point))
     } catch {
