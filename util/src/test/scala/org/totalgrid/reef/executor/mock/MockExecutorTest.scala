@@ -26,13 +26,13 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 
 @RunWith(classOf[JUnitRunner])
-class ExecutorTestBase extends FunSuite with ShouldMatchers {
+class MockExecutorTest extends FunSuite with ShouldMatchers {
 
   test("exceptions thrown when queue is empty") {
     val exe = new MockExecutor
-    intercept[Exception](exe.executeNext())
-    intercept[Exception](exe.delayNext())
-    intercept[Exception](exe.repeatNext())
+    intercept[Exception](exe.executeNext(1, 0))
+    intercept[Exception](exe.delayNext(1, 0))
+    intercept[Exception](exe.repeatNext(1, 0))
   }
 
   test("executes are defered") {
@@ -40,7 +40,7 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     var count = 0
     exe.execute(count += 1)
     count should equal(0)
-    exe.executeNext()
+    exe.executeNext(1, 0)
     count should equal(1)
   }
 
@@ -48,10 +48,10 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     val exe = new MockExecutor
     var count = 0
     exe.execute(count += 1)
-    intercept[Exception](exe.delayNext())
-    intercept[Exception](exe.repeatNext())
+    intercept[Exception](exe.delayNext(1, 0))
+    intercept[Exception](exe.repeatNext(1, 0))
     count should equal(0)
-    exe.executeNext()
+    exe.executeNext(1, 0)
     count should equal(1)
   }
 
@@ -60,7 +60,7 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     var count = 0
     exe.delay(100)(count += 1)
     count should equal(0)
-    exe.delayNext() should equal(100)
+    exe.delayNext(1, 0) should equal(100)
     count should equal(1)
   }
 
@@ -74,8 +74,8 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     val iter = 1001
 
     iter.count { i =>
-      if (i.isOdd) exe.repeatNext() should equal(100)
-      else exe.repeatNext() should equal(50)
+      if (i.isOdd) exe.repeatNext(2, 2) should equal(100)
+      else exe.repeatNext(2, 2) should equal(50)
     }
 
     count should equal(iter)
@@ -86,15 +86,15 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     var count = 0
     exe.delay(50)(count += 1).cancel()
     count should equal(0)
-    intercept[Exception](exe.delayNext())
+    intercept[Exception](exe.delayNext(1, 0))
   }
 
-  test("Delay timer now executes and removes from queue") {
+  test("Delay timer Now() executes and removes from queue") {
     val exe = new MockExecutor
     var count = 0
     exe.delay(50)(count += 1).now()
     count should equal(1)
-    intercept[Exception](exe.delayNext())
+    intercept[Exception](exe.delayNext(1, 0))
   }
 
   test("Repeat timer cancel removes from queue") {
@@ -102,7 +102,7 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     var count = 0
     exe.repeat(50)(count += 1).cancel()
     count should equal(0)
-    intercept[Exception](exe.repeatNext())
+    intercept[Exception](exe.repeatNext(1, 1))
   }
 
   test("Repeat timer now executes and returns to queue") {
@@ -110,7 +110,7 @@ class ExecutorTestBase extends FunSuite with ShouldMatchers {
     var count = 0
     exe.repeat(50)(count += 1).now()
     count should equal(1)
-    exe.repeatNext() should equal(50)
+    exe.repeatNext(1, 1) should equal(50)
     count should equal(2)
   }
 

@@ -43,10 +43,10 @@ class MeasurementStreamProcessingNode(
   overCache: ObjectCache[Measurement],
   stateCache: ObjectCache[Boolean],
   connection: MeasurementProcessingConnection,
-  reactor: Executor with Lifecycle)
+  executor: Executor with Lifecycle)
     extends Logging with MetricsHookContainer {
   // the main actor 
-  val provider = new ServiceHandlerProvider(registry, new ServiceHandler { def execute(fun: => Unit) = reactor.execute(fun) })
+  val provider = new ServiceHandlerProvider(registry, new ServiceHandler(executor))
 
   val eventSink = amqp.publish(connection.getRouting.getRawEventDest, RoutingKeys.event, Descriptors.event.serialize)
 
@@ -64,7 +64,7 @@ class MeasurementStreamProcessingNode(
   // once all the components have the pieces they need to process, we subscribe to measurements
   // we'll process them on the chainActor 
   private def startProcessing() {
-    MeasurementStreamProcessingNode.attachNode(processor, connection, amqp, reactor)
+    MeasurementStreamProcessingNode.attachNode(processor, connection, amqp, executor)
     val client = registry.newSession()
 
     val connectionBuilder = connection.toBuilder.setReadyTime(System.currentTimeMillis)
@@ -72,8 +72,8 @@ class MeasurementStreamProcessingNode(
     client.put(connectionBuilder.build).await().expectOne
   }
 
-  def start() = reactor.start
-  def stop() = reactor.stop
+  def start() = executor.start
+  def stop() = executor.stop
 
   addHookedObject(processor)
 }

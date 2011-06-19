@@ -25,7 +25,7 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
-import org.totalgrid.reef.frontend.{ FrontEndActor }
+import org.totalgrid.reef.frontend.FrontEndManager
 import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
 import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.util.Logging
@@ -82,16 +82,19 @@ class FepActivator extends BundleActivator with Logging {
 
   private def create(protocols: Seq[Protocol], components: CoreApplicationComponents): Lifecycle = {
 
-    // the actor does all the work of announcing the system, retrieving resources and starting/stopping
+    val exe = new ReactActorExecutor {}
+
+    // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events
-    val fepActor = new FrontEndActor(
+    val fem = new FrontEndManager(
       components.registry,
+      exe,
       protocols,
       components.logger,
       components.appConfig,
-      FrontEndActor.retryms) with ReactActorExecutor
+      5000)
 
-    new LifecycleWrapper(components.heartbeatActor :: fepActor :: Nil)
+    new LifecycleWrapper(components.heartbeatActor :: exe :: fem :: Nil)
   }
 
 }

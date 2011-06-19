@@ -18,104 +18,100 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.messaging.Connection
-import org.totalgrid.reef.sapi.client.{ Response, Event }
-import org.totalgrid.reef.messaging.mock.MockConnection
-import org.totalgrid.reef.proto.{ Processing }
-import org.totalgrid.reef.proto.Model.Point
-
-import Processing._
-
-import org.totalgrid.reef.executor.ReactActorExecutor
-import scala.concurrent.MailBox
+import org.totalgrid.reef.messaging.mock.synchronous.MockConnection
 
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.executor.mock.MockExecutor
+import scala.collection.mutable._
 
-class ServiceHandlerMock(conn: Connection, retryMS: Long) {
-
-  val act = new ReactActorExecutor with ServiceHandler
-
-  def start() = act.start
-
-  val query = MeasOverride.newBuilder.setPoint(Point.newBuilder.setName("*")).build
-  val tranClient = act.addService(conn, retryMS, MeasOverride.parseFrom, query, this.onResponse, this.onEvent)
-
-  val box = new MailBox
-
-  def onResponse(result: List[MeasOverride]) = box.send(result)
-  def onEvent(event: Envelope.Event, result: MeasOverride) = box.send((event, result))
-}
-import org.scalatest.Suite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.scalatest.matchers.ShouldMatchers
+
+import org.totalgrid.reef.sapi.client.{ Success, Failure, Event }
+import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 
 @RunWith(classOf[JUnitRunner])
-class ServiceHandlerTest extends Suite with ShouldMatchers {
+class ServiceHandlerTest extends FunSuite with ShouldMatchers {
 
-  def testServiceRetry {
-    val conn = new MockConnection {}
-    val tester = new ServiceHandlerMock(conn, 50)
+  class EventReceiver[A] {
+    val responses = new Queue[List[A]]
+    val events = new Queue[(Envelope.Event, A)]
 
-    val queueEvent = conn.getEvent(classOf[MeasOverride])
-    val notify: String => Unit = queueEvent.observer match {
-      case None => assert(false); null
-      case Some(note) => note
-    }
-    val eventAccept = queueEvent.accept
+    def onResponse(result: List[A]) = responses.enqueue(result)
+    def onEvent(event: Envelope.Event, result: A) = events.enqueue((event, result))
+  }
 
-    tester.start()
+  def fixture(test: (MockExecutor, MockConnection, ServiceHandler, EventReceiver[Int]) => Unit) = {
+    val exe = new MockExecutor
+    val conn = new MockConnection
+    val receiver = new EventReceiver[Int]
 
-    notify("queue01")
-    val cons = conn.getMockClient
-    cons.respond[MeasOverride] { request =>
-      request.verb should equal(Envelope.Verb.GET)
-      request.env.subQueue should equal(Some("queue01"))
-      request.payload.getPoint.getName should equal("*")
-      None
-    }
-    cons.respond[MeasOverride] { request =>
-      request.verb should equal(Envelope.Verb.GET)
-      request.env.subQueue should equal(Some("queue01"))
-      request.payload.getPoint.getName should equal("*")
-      Some(Response[MeasOverride](Envelope.Status.OK))
-    }
+    val handler = new ServiceHandler(exe)
+    handler.addService(conn, 5000, _ => 99, 3, receiver.onResponse, receiver.onEvent)
 
-    tester.box.receiveWithin(5000) {
-      case Nil =>
+    test(exe, conn, handler, receiver)
+  }
+
+  test("Service subscriptions are retried") {
+    fixture { (exe, conn, handler, receiver) =>
+
+      conn.eventQueueSize should equal(1)
+      val record = conn.expectEventQueueRecord[Int]
+      conn.eventQueueSize should equal(0)
+      record.onNewQueue("queue01")
+      exe.numActionsPending should equal(0)
+
+      3.times {
+        conn.session.respond[Int] { request =>
+          request.verb should equal(Envelope.Verb.GET)
+          request.env.subQueue should equal(Some("queue01"))
+          request.payload should equal(3)
+          Failure(Envelope.Status.INTERNAL_ERROR)
+        }
+        exe.delayNext(1, 0) should equal(5000)
+      }
+
     }
   }
 
-  def testRouting {
-    val conn = new MockConnection {}
-    val tester = new ServiceHandlerMock(conn, 5000)
+  test("Successful response causes correct notifications") {
+    fixture { (exe, conn, handler, receiver) =>
 
-    val queueEvent = conn.getEvent(classOf[MeasOverride])
-    val notify: String => Unit = queueEvent.observer.get
-    val eventAccept = queueEvent.accept
+      conn.eventQueueSize should equal(1)
+      val record = conn.expectEventQueueRecord[Int]
+      conn.eventQueueSize should equal(0)
+      record.onNewQueue("queue01")
 
-    tester.start()
+      conn.session.respond[Int](request => Success(Envelope.Status.OK, List(1, 2, 3)))
+      conn.session.numRequestsPending should equal(0)
 
-    notify("queue01")
-    val cons = conn.getMockClient
-    cons.respond[MeasOverride] { request =>
-      request.verb should equal(Envelope.Verb.GET)
-      request.env.subQueue should equal(Some("queue01"))
-      request.payload.getPoint.getName should equal("*")
-      Some(Response[MeasOverride](Envelope.Status.OK))
+      receiver.responses.size should equal(0) //posting the successful response is deferred
+      exe.executeNext(1, 0)
+      receiver.responses.size should equal(1)
+      receiver.events.size should equal(0)
+      receiver.responses.dequeue() should equal(List(1, 2, 3))
     }
+  }
 
-    tester.box.receiveWithin(5000) {
-      case Nil => //tests for empty list       
-    }
+  test("Correct event routing") {
+    fixture { (exe, conn, handler, receiver) =>
+      conn.eventQueueSize should equal(1)
+      val record = conn.expectEventQueueRecord[Int]
+      conn.eventQueueSize should equal(0)
+      record.onNewQueue("queue01")
 
-    val trans = MeasOverride.newBuilder.setPoint(Point.newBuilder.setName("meas01"))
+      conn.session.respond[Int](request => Success(Envelope.Status.OK, Nil))
+      exe.numActionsPending should equal(0)
+      receiver.responses.size should equal(0)
 
-    eventAccept(Event(Envelope.Event.ADDED, trans.build))
+      record.onEvent(Event(Envelope.Event.ADDED, 4))
+      exe.executeNext(1, 0)
 
-    tester.box.receiveWithin(5000) {
-      case (event, result) =>
-        event should equal(Envelope.Event.ADDED)
+      receiver.events.size should equal(1)
+      receiver.events.dequeue() should equal((Envelope.Event.ADDED, 4))
+
     }
   }
 

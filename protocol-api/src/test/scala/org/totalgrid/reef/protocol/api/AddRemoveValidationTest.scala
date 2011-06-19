@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.protocol.api
 
+import mock.{ NullProtocol, RecordingProtocol }
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -26,67 +27,73 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.FEP
 
 @RunWith(classOf[JUnitRunner])
-class BaseProtocolTest extends FunSuite with ShouldMatchers {
+class AddRemoveValidationTest extends FunSuite with ShouldMatchers {
 
-  import MockProtocol._
+  import RecordingProtocol._
 
-  val port = FEP.CommChannel.newBuilder.setName("port1").build()
+  val channel = FEP.CommChannel.newBuilder.setName("port1").build()
+
+  // ordering here is important as there are stacking traits.
+  // AddRemove gets called first, then the recoding happens
+  def getProtocol = new NullProtocol with RecordingProtocol with AddRemoveValidation
 
   test("RemoveExceptions") {
-    val m = new MockProtocol
-    intercept[IllegalArgumentException] { m.removeChannel("foo") }
-    intercept[IllegalArgumentException] { m.removeEndpoint("foo") }
+    val m = getProtocol
+    intercept[IllegalArgumentException](m.removeChannel("foo"))
+    m.next() should equal(None)
+    intercept[IllegalArgumentException](m.removeEndpoint("foo"))
+    m.next() should equal(None)
   }
 
   test("AddEndpointWithoutPort") {
-    val m = new MockProtocol
+    val m = getProtocol
 
-    intercept[IllegalArgumentException] { m.addEndpoint("ep", "unknown", Nil, NullBatchPublisher, NullEndpointPublisher) }
+    intercept[IllegalArgumentException](m.addEndpoint("ep", "unknown", Nil, NullBatchPublisher, NullEndpointPublisher))
   }
 
   test("EndpointAlreadyExists") {
-    val m = new MockProtocol
-    m.addChannel(port, NullChannelPublisher)
+    val m = getProtocol
+    m.addChannel(channel, NullChannelPublisher)
     m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher)
-    intercept[IllegalArgumentException] { m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher) }
+    intercept[IllegalArgumentException](m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher))
   }
 
-  def addPortAndTwoEndpoints(m: MockProtocol) {
-    m.addChannel(port, NullChannelPublisher)
-    m.checkFor { case AddPort(p) => p should equal(port) }
+  def addPortAndTwoEndpoints(m: RecordingProtocol) {
+    m.addChannel(channel, NullChannelPublisher)
+    m.next() should equal(Some(AddChannel(channel.getName)))
     m.addEndpoint("ep1", "port1", Nil, NullBatchPublisher, NullEndpointPublisher)
-    m.checkFor { case AddEndpoint("ep1", "port1", Nil) => }
+    m.next() should equal(Some(AddEndpoint("ep1", "port1", Nil)))
     m.addEndpoint("ep2", "port1", Nil, NullBatchPublisher, NullEndpointPublisher)
-    m.checkFor { case AddEndpoint("ep2", "port1", Nil) => }
-    m.checkForNothing
+    m.next() should equal(Some(AddEndpoint("ep2", "port1", Nil)))
+    m.next() should equal(None)
   }
 
   test("RemovePortWithEndpoints") {
-    val m = new MockProtocol
+    val m = getProtocol
     addPortAndTwoEndpoints(m)
     m.removeChannel("port1")
-    m.checkForNothing
+    m.next() should equal(None)
     m.removeEndpoint("ep1")
     m.removeEndpoint("ep2")
-    m.checkFor { case RemoveEndpoint("ep1") => }
-    m.checkFor { case RemoveEndpoint("ep2") => }
+    m.next() should equal(Some(RemoveEndpoint("ep1")))
+    m.next() should equal(Some(RemoveEndpoint("ep2")))
     m.removeChannel("port1")
-    m.checkFor { case RemovePort("port1") => }
-    m.checkForNothing
+    m.next() should equal(Some(RemoveChannel("port1")))
+    m.next() should equal(None)
   }
 
   test("TracksEndpointsCorrectly") {
-    val m = new MockProtocol
+    val m = getProtocol
     addPortAndTwoEndpoints(m)
     m.removeEndpoint("ep1")
-    m.checkFor { case RemoveEndpoint("ep1") => }
+    m.next() should equal(Some(RemoveEndpoint("ep1")))
     m.removeChannel("port1")
-    m.checkForNothing
+    m.next() should equal(None)
     m.removeEndpoint("ep2")
-    m.checkFor { case RemoveEndpoint("ep2") => }
+    m.next() should equal(Some(RemoveEndpoint("ep2")))
     m.removeChannel("port1")
-    m.checkFor { case RemovePort("port1") => }
-    m.checkForNothing
+    m.next() should equal(Some(RemoveChannel("port1")))
+    m.next() should equal(None)
   }
 }
 

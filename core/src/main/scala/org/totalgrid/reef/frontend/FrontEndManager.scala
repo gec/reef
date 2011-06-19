@@ -24,26 +24,24 @@ import org.totalgrid.reef.app.ServiceContext
 
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.sapi.client.{ SingleSuccess }
-
 import org.totalgrid.reef.protocol.api.Protocol
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
-import org.totalgrid.reef.app.{ ServiceHandler }
-import javax.jms.Session
+import org.totalgrid.reef.app.ServiceHandler
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
+import java.io.File
+import org.totalgrid.reef.sapi.client.{ ScatterGather, Response, ClientSession, SingleSuccess }
+import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.loader.sx.communications.Endpoint
 
-object FrontEndActor {
-  val retryms = 5000
-}
+class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
+    extends Lifecycle with ServiceContext[ConnProto] with Logging {
 
-abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
-    extends Executor with Lifecycle with ServiceHandler with ServiceContext[ConnProto] with Logging {
+  val serviceHandler = new ServiceHandler(exe)
 
   //helper objects that sets up all of the services/publishers from abstract registries
   val pool = conn.getSessionPool()
@@ -54,7 +52,7 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
   def add(ep: ConnProto) = retrieve(ep) { c =>
-    tryWrap("Error adding connProto: " + c) {
+    tryWrap("Error adding connProto: " + ep) {
       // the coordinator assigns FEPs when available but meas procs may not be online yet
       // re sends with routing information when meas_proc is online
       if (c.hasRouting && c.hasEnabled && c.getEnabled) connections.add(c)
@@ -86,19 +84,15 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
     cp.setEndpoint(endpoint).build()
   }
 
-  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = {
-    fun(pool.borrow(loadOrThrow(_, conn)))
-  }
+  private def retrieve(conn: ConnProto)(fun: ConnProto => Unit) = fun(pool.borrow(loadOrThrow(_, conn)))
 
   def subscribed(list: List[ConnProto]) = list.foreach(add)
 
   /* ---- Done implementing ServiceContext[Endpoint] ---- */
 
-  override def afterStart() = {
-    annouce
-  }
+  final override def afterStart() = annouce()
 
-  override def beforeStop() = {
+  final override def beforeStop() = {
     logger.info("Clearing connections")
     connections.clear()
   }
@@ -112,23 +106,19 @@ abstract class FrontEndActor(conn: Connection, protocols: Seq[Protocol], eventLo
       msg.addProtocols(p.name)
     }.setAppConfig(appConfig).build
 
-    pool.borrow { session =>
-      session.put(msg).listen { rsp =>
-        rsp match {
-          case SingleSuccess(_, fep) =>
-            eventLog.event(EventType.System.SubsystemStarted)
-            logger.info("Got uid: " + fep.getUuid.getUuid)
-            val query = ConnProto.newBuilder.setFrontEnd(fep).build
-            // this is where we actually bind up the service calls
-            this.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
-          case _ =>
-            logger.warn("Unexpected response: " + rsp.toString)
-            delay(retryms) {
-              annouce
-            }
-        }
-      }
+    def handleAnnounceRsp(rsp: Response[FrontEndProcessor]) = rsp match {
+      case SingleSuccess(_, fep) =>
+        eventLog.event(EventType.System.SubsystemStarted)
+        logger.info("Got uid: " + fep.getUuid.getUuid)
+        val query = ConnProto.newBuilder.setFrontEnd(fep).build
+        // this is where we actually bind up the service calls
+        serviceHandler.addServiceContext(conn, retryms, ConnProto.parseFrom, query, this)
+      case _ =>
+        logger.warn("Unexpected response: " + rsp.toString)
+        exe.delay(retryms)(annouce)
     }
+
+    pool.borrow(_.put(msg).listen(handleAnnounceRsp))
   }
 
   /**

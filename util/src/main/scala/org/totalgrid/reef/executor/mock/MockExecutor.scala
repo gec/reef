@@ -21,6 +21,8 @@ package org.totalgrid.reef.executor.mock
 
 import org.totalgrid.reef.executor._
 import org.totalgrid.reef.util.Timer
+import scala.collection.mutable.Queue
+import javax.management.remote.rmi._RMIConnection_Stub
 
 /**
  * Mock executor that fully simulates all executor behaviors, but allows
@@ -35,30 +37,58 @@ class MockExecutor extends Executor {
   final override def repeat(msec: Long)(fun: => Unit): Timer = addTimerAction(Repeat(() => fun, msec))
   final override def request[A](fun: => A): A = throw new Exception("Not implemented")
 
-  class Action(fun: () => Unit) { def execute = fun() }
-  case class Execution(fun: () => Unit) extends Action(fun)
-  class TimerAction(fun: () => Unit) extends Action(fun)
-  case class Delay(fun: () => Unit, ms: Long) extends TimerAction(fun)
-  case class Repeat(fun: () => Unit, ms: Long) extends TimerAction(fun)
+  final def numActionsPending = queue.size
 
-  private val queue = new scala.collection.mutable.Queue[Action]
+  //final def executeNext() : Unit = executeNext(None, None)
+  final def executeNext(preSize: Int, postsize: Int): Unit = executeNext(Some(preSize), Some(postsize))
 
-  class ActionTimer(action: TimerAction) extends Timer {
+  //final def delayNext() : Long = delayNext(None, None)
+  final def delayNext(preSize: Int, postsize: Int): Long = delayNext(Some(preSize), Some(postsize))
 
-    def cancel() = {
-      queue.dequeueFirst(_.equals(action))
+  //final def repeatNext() : Long = repeatNext(None, None)
+  final def repeatNext(preSize: Int, postsize: Int): Long = repeatNext(Some(preSize), Some(postsize))
+
+  private val queue = new Queue[Action]
+
+  private trait Action { def perform(): Unit }
+
+  private case class Execution(fun: () => Unit) extends Action { def perform() = fun() }
+
+  private trait TimerAction extends Action
+
+  private case class Delay(fun: () => Unit, ms: Long) extends TimerAction {
+    def perform() = fun()
+  }
+
+  private def performNext[A](preSize: Option[Int], postSize: Option[Int], expected: String)(x: PartialFunction[Action, A]): A = {
+
+    if (queue.isEmpty) throw new Exception("Expected the execution queue to have an action, but it was empty")
+
+    def checkSize(size: Int, prefix: String) = if (queue.size != size) {
+      throw new Exception(prefix + ": expected queue of size " + size + " but it was " + queue.size)
     }
 
-    def now() = queue.dequeueFirst(_.equals(action)) match {
-      case Some(action) => {
-        action.execute
-        action match {
-          case Delay(fun, _) =>
-          case Repeat(fun, _) => queue.enqueue(action)
-        }
-      }
-      case None =>
+    val action = queue.front
+    if (x.isDefinedAt(action)) {
+      preSize.foreach(checkSize(_, "Precondition"))
+      queue.dequeue()
+      action.perform()
+      postSize.foreach(checkSize(_, "Postcondition"))
+      x.apply(action)
+    } else throw new Exception("Expected type " + expected + " but front of queue was " + action.getClass)
+  }
+
+  private case class Repeat(fun: () => Unit, ms: Long) extends TimerAction {
+    def perform() = {
+      fun()
+      queue.enqueue(this)
     }
+  }
+
+  private class ActionTimer(action: TimerAction) extends Timer {
+
+    def cancel() = queue.dequeueFirst(_.equals(action))
+    def now() = queue.dequeueFirst(_.equals(action)).foreach(_.perform())
 
   }
 
@@ -67,41 +97,8 @@ class MockExecutor extends Executor {
     new ActionTimer(action)
   }
 
-  def exceptionText(expected: String, actual: String = "empty") =
-    "Expected " + expected + " at front of queue, but it was " + actual
-
-  def executeNext() {
-    if (queue.isEmpty) throw new Exception(exceptionText("Execute"))
-    else queue.front match {
-      case x: Execution =>
-        queue.dequeue()
-        x.execute
-      case y: Action => throw new Exception(exceptionText("Execute", y.toString))
-    }
-  }
-
-  def delayNext(): Long = {
-    if (queue.isEmpty) throw new Exception(exceptionText("Delay"))
-    else queue.front match {
-      case Delay(fun, ms) =>
-        queue.dequeue()
-        fun()
-        ms
-      case y: Action =>
-        throw new Exception(exceptionText("Delay", y.toString))
-    }
-  }
-
-  def repeatNext(): Long = {
-    if (queue.isEmpty) throw new Exception(exceptionText("Repeat"))
-    else queue.front match {
-      case Repeat(fun, ms) =>
-        queue.enqueue(queue.dequeue())
-        fun()
-        ms
-      case y: Action =>
-        throw new Exception(exceptionText("Repeat", y.toString))
-    }
-  }
+  private def executeNext(preSize: Option[Int], postSize: Option[Int]): Unit = performNext(preSize, postSize, "Execute") { case x: Execution => }
+  private def delayNext(preSize: Option[Int], postSize: Option[Int]): Long = performNext(preSize, postSize, "Delay") { case x: Delay => x.ms }
+  private def repeatNext(preSize: Option[Int], postSize: Option[Int]): Long = performNext(preSize, postSize, "Repeat") { case x: Repeat => x.ms }
 
 }

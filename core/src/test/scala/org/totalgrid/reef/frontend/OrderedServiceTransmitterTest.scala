@@ -54,7 +54,7 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
 
     final override def request[A](verb: Verb, payload: A, env: RequestEnv, destination: Destination): Promise[Response[A]] = queue.synchronized {
       numRequests += 1
-      val rsp = if (queue.size > 0) Response(queue.dequeue(), payload :: Nil) else Failure()
+      val rsp = if (queue.size > 0) Response(queue.dequeue(), payload) else Failure()
       val promise = new SynchronizedPromise[Response[A]]
       actor { promise.onResponse(rsp) }
       promise

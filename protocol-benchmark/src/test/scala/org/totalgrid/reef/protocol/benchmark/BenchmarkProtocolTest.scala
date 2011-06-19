@@ -87,10 +87,10 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
 
       protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
       batch.queue.size should equal(0)
-      exe.executeNext() // integrity poll
+      exe.executeNext(2, 1) // integrity poll
       batch.queue.size should equal(1)
       batch.queue.front.getMeasCount() should equal(2) // integrity poll
-      exe.repeatNext() should equal(100) // random measurement at 100 ms interval
+      exe.repeatNext(1, 1) should equal(100) // random measurement at 100 ms interval
 
       protocol.removeEndpoint(endpointName)
 
@@ -116,9 +116,8 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
 
   test("Adding twice causes exception") {
     fixture { (exe, protocol, batch, responses) =>
-      // need to call the NVII functions or else we are only testing the BaseProtocol code
       protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
-      intercept[IllegalArgumentException] {
+      intercept[IllegalStateException] {
         protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
       }
     }
@@ -127,7 +126,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   test("Removing unknown causes exception") {
     fixture { (exe, protocol, batch, responses) =>
       // need to call the NVII functions or else we are only testing the BaseProtocol code
-      intercept[IllegalArgumentException] {
+      intercept[IllegalStateException] {
         protocol.removeEndpoint(endpointName)
       }
     }

@@ -96,7 +96,7 @@ trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
       case Some(info) =>
         new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
       case None =>
-        Response(Envelope.Status.LOCAL_ERROR, error = "Proto not registered: " + klass)
+        Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + klass)
     }
     new SynchronizedPromise(rsp)
   }

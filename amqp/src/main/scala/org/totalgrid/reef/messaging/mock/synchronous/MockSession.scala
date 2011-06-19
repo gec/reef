@@ -19,17 +19,56 @@
 package org.totalgrid.reef.messaging.mock.synchronous
 
 import org.totalgrid.reef.sapi.{ Destination, RequestEnv }
-import java.lang.Exception
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.client._
+import java.lang.Exception
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
-class MockSession extends ClientSession with AsyncRestAdapter {
+object MockSession {
+  type RequestHandler[A] = Request[A] => Response[A]
+}
 
-  // implement the ClientSession trait
+class MockSession extends ClientSession {
 
-  final override def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: Destination)(callback: Response[A] => Unit) = {
+  import MockSession._
+
+  private case class Record[A](request: Request[A], promise: SimplePromise[Response[A]])
+
+  class SimplePromise[A](default: A) extends Promise[A] {
+
+    private var option: Option[A] = None
+    private var list: List[A => Unit] = Nil
+
+    def set(value: A) = option match {
+      case Some(x) => throw new Exception("Value has already been set to: " + value)
+      case None =>
+        option = Some(value)
+        list.foreach(_.apply(value))
+    }
+
+    def await(): A = option match {
+      case Some(x) => x
+      case None => default
+    }
+
+    def listen(fun: A => Unit): Unit = option match {
+      case Some(x) => fun(x)
+      case None => list = fun :: list
+    }
+
+    def isComplete: Boolean = option.isDefined
+  }
+
+  final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination): Promise[Response[A]] = {
     if (!open) throw new IllegalStateException("Session is not open")
-    queue.enqueue(Record[A](Request(verb, payload, env, dest), callback))
+    val request = Request[A](verb, payload, env, dest)
+    nextHandler[A]() match {
+      case Some(handler) => new FixedPromise[Response[A]](handler(request))
+      case None =>
+        val promise = new SimplePromise[Response[A]](Failure(Envelope.Status.RESPONSE_TIMEOUT))
+        requests.enqueue(Record[A](request, promise))
+        promise
+    }
   }
 
   final override def close() = open = false
@@ -41,15 +80,29 @@ class MockSession extends ClientSession with AsyncRestAdapter {
   // Testing functions
 
   private var open = true
-  case class Record[A](request: Request[A], callback: Response[A] => Unit)
-  private val queue = new scala.collection.mutable.Queue[Any]
 
-  def size = queue.size
+  private val requests = new scala.collection.mutable.Queue[Record[_]]
 
-  def respond[A](fun: Request[A] => Response[A]) = {
-    if (queue.size == 0) throw new Exception("No requests, so can't respond")
-    val record = queue.dequeue().asInstanceOf[Record[A]]
-    record.callback(fun(record.request))
+  private val responses = new scala.collection.mutable.Queue[RequestHandler[_]]
+
+  private def nextHandler[A](): Option[RequestHandler[A]] = {
+    if (responses.isEmpty) None
+    else {
+      if (responses.front.isInstanceOf[RequestHandler[A]]) Some(responses.dequeue().asInstanceOf[RequestHandler[A]])
+      else throw new Exception("Synchronous response types do not match, found" + responses.front)
+    }
+  }
+
+  def numResponsesPending = responses.size
+  def numRequestsPending = requests.size
+
+  def queueResponse[A](fun: RequestHandler[A]): Unit = responses.enqueue(fun)
+
+  def respond[A](fun: RequestHandler[A]): Request[A] = {
+    if (requests.size == 0) throw new Exception("No requests, so can't respond")
+    val record = requests.dequeue().asInstanceOf[Record[A]]
+    record.promise.set(fun(record.request))
+    record.request
   }
 
 }

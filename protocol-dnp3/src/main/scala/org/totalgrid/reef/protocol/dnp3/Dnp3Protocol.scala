@@ -24,19 +24,17 @@ import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandle
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
-import org.totalgrid.reef.util.XMLHelper
-
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.util.{ Logging, XMLHelper }
 
-class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
+class Dnp3Protocol extends Protocol with Logging {
 
   import Protocol._
 
-  override def name = "dnp3"
-
-  override def requiresChannel = true
+  final override def name = "dnp3"
+  final override def requiresChannel = true
 
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
@@ -48,7 +46,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
+  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -66,13 +64,13 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     logger.info("Added channel with name: " + p.getName)
   }
 
-  override def _removeChannel(channel: String) = {
-    logger.debug("removing channel with name: " + channel)
+  override def removeChannel(channel: String) = {
+    logger.debug("Removing channel with name: " + channel)
     dnp3.RemovePort(channel)
     logger.info("Removed channel with name: " + channel)
   }
 
-  override def _addEndpoint(endpoint: String,
+  override def addEndpoint(endpoint: String,
     channelName: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
@@ -94,7 +92,7 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     new CommandAdapter(mapping, cmd)
   }
 
-  override def _removeEndpoint(endpoint: String) = {
+  override def removeEndpoint(endpoint: String) = {
 
     logger.debug("Not removing stack " + endpoint + " as per workaround")
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll

@@ -16,15 +16,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.api
+package org.totalgrid.reef.protocol.api.mock
 
-import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.protocol.api.Protocol._
+import org.totalgrid.reef.protocol.api._
+import org.totalgrid.reef.proto.{ FEP, Model }
 
-trait ProtocolWithoutChannel extends BaseProtocol {
+class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {
 
-  import Protocol.ChannelPublisher
+  final override def name = protocolName
 
-  final def requiresChannel = false
-  final def _addChannel(channel: CommChannel, publisher: ChannelPublisher) = {}
-  final def _removeChannel(channel: String) = {}
+  override def requiresChannel = false
+
+  override def addEndpoint(endpoint: String,
+    channelName: String,
+    config: List[Model.ConfigFile],
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler = NullCommandHandler
+
+  override def removeEndpoint(endpoint: String) = {}
+
+  override def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher) = {}
+
+  override def removeChannel(channel: String) = {}
+
 }

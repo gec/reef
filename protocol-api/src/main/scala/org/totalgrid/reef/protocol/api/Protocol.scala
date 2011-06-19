@@ -54,25 +54,20 @@ trait NullPublisher[A] extends Publisher[A] {
 case object NullBatchPublisher extends NullPublisher[MeasurementBatch]
 case object NullEndpointPublisher extends NullPublisher[FEP.CommEndpointConnection.State]
 case object NullChannelPublisher extends NullPublisher[CommChannel.State]
+case object NullCommandHandler extends CommandHandler {
+  def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) = {}
+}
+
+import Protocol._
 
 trait Protocol {
-
-  import Protocol._
 
   /**
    * @return Unique name, i.e. 'dnp3'
    */
   def name: String
 
-  /**
-   * if true the protocol trait will verify that the each device is associated with a port, if false we dont care
-   * if there is a port or not.
-   */
   def requiresChannel: Boolean
-
-  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit
-
-  def removeChannel(channel: String): ChannelPublisher
 
   def addEndpoint(endpoint: String,
     channelName: String,
@@ -80,5 +75,14 @@ trait Protocol {
     batchPublisher: BatchPublisher,
     endpointPublisher: EndpointPublisher): CommandHandler
 
-  def removeEndpoint(endpoint: String): EndpointPublisher
+  def removeEndpoint(endpoint: String): Unit
+
+  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit
+  def removeChannel(channel: String): Unit
+
+}
+
+trait ChannelIgnoringProtocol extends Protocol {
+  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit = {}
+  def removeChannel(channel: String): Unit = {}
 }

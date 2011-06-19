@@ -26,6 +26,7 @@ import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.executor.{ Executor, ReactActorExecutor }
+import java.lang.{ IllegalStateException, Override }
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
@@ -48,38 +49,42 @@ trait ControllableSimulator {
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class BenchmarkProtocol(exe: Executor) extends ProtocolWithoutChannel with EndpointAlwaysOnline with ChannelAlwaysOnline with SimulatorManagement with Logging {
+class BenchmarkProtocol(exe: Executor) extends ChannelIgnoringProtocol with SimulatorManagement with Logging {
 
   import Protocol._
 
-  override def name: String = "benchmark"
+  final override def name: String = "benchmark"
+  final override def requiresChannel = false
 
   private var map = immutable.Map.empty[String, Simulator]
 
   def getSimulators(names: List[String]): Map[String, ControllableSimulator] =
     if (names.isEmpty) map else map.filterKeys(k => names.contains(k))
 
-  def _addEndpoint(
+  override def addEndpoint(
     endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = {
+    endpointPublisher: EndpointPublisher): CommandHandler = map.get(endpoint) match {
 
-    val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
-    val mapping = SimMapping.SimulatorMapping.parseFrom(file)
-    val sim = new Simulator(endpoint, batchPublisher, mapping, exe)
-    sim.start
-    map += endpoint -> sim
-    sim
+    case Some(x) =>
+      throw new IllegalStateException("Endpoint has already been added: " + endpoint)
+    case None =>
+      val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
+      val mapping = SimMapping.SimulatorMapping.parseFrom(file)
+      val sim = new Simulator(endpoint, batchPublisher, mapping, exe)
+      sim.start
+      map += endpoint -> sim
+      sim
   }
 
-  def _removeEndpoint(endpoint: String) = map.get(endpoint) match {
+  override def removeEndpoint(endpoint: String) = map.get(endpoint) match {
     case Some(sim) =>
-      sim.stop
+      sim.stop()
       map -= endpoint
     case None =>
-      throw new IllegalArgumentException("Trying to remove endpoint" + endpoint)
+      throw new IllegalStateException("Trying to remove endpoint that doesn't exist: " + endpoint)
   }
 
 }

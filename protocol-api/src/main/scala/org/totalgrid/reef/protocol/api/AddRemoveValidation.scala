@@ -18,15 +18,12 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ FEP, Model, Measurements }
+import org.totalgrid.reef.proto.{ FEP, Model }
 import scala.collection.immutable
-
-import FEP.CommChannel
-import Measurements.MeasurementBatch
 
 import org.totalgrid.reef.util.Logging
 
-trait BaseProtocol extends Protocol with Logging {
+trait AddRemoveValidation extends Protocol with Logging {
 
   import Protocol._
 
@@ -37,17 +34,17 @@ trait BaseProtocol extends Protocol with Logging {
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
   private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher): Unit = {
+  abstract override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher): Unit = {
     channels.get(p.getName) match {
       case None =>
         channels = channels + (p.getName -> Channel(p, publisher))
-        _addChannel(p, publisher)
+        super.addChannel(p, publisher)
       case Some(x) =>
         logger.info("Ignoring duplicate channel " + p)
     }
   }
 
-  override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher, endpointPublisher: EndpointPublisher): CommandHandler = {
+  abstract override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher, endpointPublisher: EndpointPublisher): CommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
@@ -55,16 +52,14 @@ trait BaseProtocol extends Protocol with Logging {
         channels.get(channelName) match {
           case Some(p) =>
             endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, endpointPublisher)
-            _addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher)
+            super.addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher)
           case None =>
-            if (requiresChannel) throw new IllegalArgumentException("Port not registered " + channelName)
-            endpoints += endpoint -> Endpoint(endpoint, None, config, endpointPublisher)
-            _addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher)
+            throw new IllegalArgumentException("Required channel not registered " + channelName)
         }
     }
   }
 
-  override def removeChannel(channel: String): ChannelPublisher = {
+  abstract override def removeChannel(channel: String): Unit = {
     channels.get(channel) match {
       case Some(Channel(_, listener)) =>
         // if a channel is removed, check to see that all of the endpoints using the channel have been removed
@@ -76,7 +71,7 @@ trait BaseProtocol extends Protocol with Logging {
         }.isEmpty
         if (noUsingEndpoints) {
           channels -= channel
-          _removeChannel(channel)
+          super.removeChannel(channel)
         }
         listener
       case None =>
@@ -85,28 +80,15 @@ trait BaseProtocol extends Protocol with Logging {
   }
 
   /// remove the device from the map and its channel's device list
-  override def removeEndpoint(endpoint: String): EndpointPublisher = {
+  abstract override def removeEndpoint(endpoint: String): Unit = {
     endpoints.get(endpoint) match {
       case Some(Endpoint(_, _, _, listener)) =>
         endpoints -= endpoint
-        _removeEndpoint(endpoint)
+        super.removeEndpoint(endpoint)
         listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown endpoint " + endpoint)
     }
   }
-
-  /// These get implemented by the parent
-  protected def _addChannel(p: FEP.CommChannel, publisher: ChannelPublisher)
-
-  protected def _removeChannel(channel: String)
-
-  protected def _addEndpoint(endpoint: String,
-    channel: String,
-    config: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler
-
-  protected def _removeEndpoint(endpoint: String)
 
 }
