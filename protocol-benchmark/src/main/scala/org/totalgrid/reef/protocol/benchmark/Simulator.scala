@@ -90,13 +90,17 @@ class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: Si
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) = cmdMap.get(cr.getName) match {
-    case Some(x) =>
-      logger.info("handled command: " + cr)
-      val rsp = Commands.CommandResponse.newBuilder
-      rsp.setCorrelationId(cr.getCorrelationId).setStatus(x)
-      publisher.publish(rsp.build)
-    case None =>
+  def issue(cr: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) = {
+    val status = cmdMap.get(cr.getName) match {
+      case Some(x) =>
+        logger.info("Found response for command: " + cr)
+        x
+      case None =>
+        logger.warn("Response for command not found, returning default")
+        Commands.CommandStatus.NOT_SUPPORTED
+    }
+    val rsp = Commands.CommandResponse.newBuilder.setStatus(status).setCorrelationId(cr.getCorrelationId).build
+    publisher.publish(rsp)
   }
 
   /////////////////////////////////////////////////
