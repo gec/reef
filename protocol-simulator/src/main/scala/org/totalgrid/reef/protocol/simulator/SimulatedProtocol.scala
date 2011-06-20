@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protocol.simulator
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.benchmark
-
 import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.util.{ Logging }
 
@@ -48,7 +48,7 @@ trait ControllableSimulator {
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class BenchmarkProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
+class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
 
   import Protocol._
 

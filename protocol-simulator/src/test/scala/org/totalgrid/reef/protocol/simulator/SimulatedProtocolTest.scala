@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.benchmark
+package org.totalgrid.reef.protocol.simulator
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -30,7 +30,7 @@ import org.totalgrid.reef.executor.Executor
 import java.lang.Exception
 
 @RunWith(classOf[JUnitRunner])
-class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
+class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
 
   val simpleMapping = SimMapping.SimulatorMapping.newBuilder
     .setDelay(100)
@@ -75,9 +75,9 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   class BatchPublisher extends QueueingPublisher[Measurements.MeasurementBatch]
   class ResponsePublisher extends QueueingPublisher[Commands.CommandResponse]
 
-  def fixture(test: (MockExecutor, BenchmarkProtocol, BatchPublisher, ResponsePublisher) => Unit) = {
+  def fixture(test: (MockExecutor, SimulatedProtocol, BatchPublisher, ResponsePublisher) => Unit) = {
     val exe = new MockExecutor
-    val protocol = new BenchmarkProtocol(exe)
+    val protocol = new SimulatedProtocol(exe)
     val batch = new BatchPublisher
     val responses = new ResponsePublisher
     test(exe, protocol, batch, responses)

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protocol.simulator
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.benchmark
-
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
@@ -27,7 +27,7 @@ import com.weiglewilczek.scalamodules._
 class Activator extends BundleActivator {
 
   val exe = new ReactActorExecutor {}
-  val protocol = new BenchmarkProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
+  val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
 
   final override def start(context: BundleContext) {
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])

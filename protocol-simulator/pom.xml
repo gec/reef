@@ -7,7 +7,7 @@
         <version>0.3.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
-    <artifactId>reef-protocol-benchmark</artifactId>
+    <artifactId>reef-protocol-simulator</artifactId>
     <packaging>bundle</packaging>
 
     <licenses>
@@ -26,9 +26,9 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Benchmark Protocol</Bundle-Name>
-                        <Bundle-Activator>org.totalgrid.reef.protocol.benchmark.Activator</Bundle-Activator>
-                        <Export-Package>org.totalgrid.reef.protocol.benchmark.*</Export-Package>
+                        <Bundle-Name>Reef Protocol Simulator</Bundle-Name>
+                        <Bundle-Activator>org.totalgrid.reef.protocol.simulator.Activator</Bundle-Activator>
+                        <Export-Package>org.totalgrid.reef.protocol.simulator.*</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>
@@ -50,14 +50,6 @@
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-core</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>

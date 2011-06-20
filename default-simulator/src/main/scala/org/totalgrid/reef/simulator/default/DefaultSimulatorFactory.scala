@@ -22,7 +22,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.proto.{ Measurements, SimMapping }
-import org.totalgrid.reef.protocol.benchmark.{ SimulatorPlugin, SimulatorPluginFactory }
+import org.totalgrid.reef.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
 
 object DefaultSimulatorFactory extends SimulatorPluginFactory with Logging {
 

@@ -50,9 +50,9 @@
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-protocol-benchmark</artifactId>
+            <artifactId>reef-protocol-simulator</artifactId>
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>		
