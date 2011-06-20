@@ -126,7 +126,7 @@ class FrontEndManagerTests extends FunSuite with ShouldMatchers {
       val fep = respondToAnnounce(conn)
       initEventQueue(conn)
       conn.session.respond[ConnProto](request => Success(Envelope.Status.OK, Nil))
-      exe.numActionsPending should equal(0)
+      exe.executeNext(1, 0)
     }
   }
 
@@ -152,7 +152,7 @@ class FrontEndManagerTests extends FunSuite with ShouldMatchers {
       val record = initEventQueue(conn)
 
       conn.session.respond[ConnProto](request => Success(Envelope.Status.OK, Nil))
-      exe.numActionsPending should equal(0)
+      exe.executeNext(1, 0)
       record.onEvent(Event(Envelope.Event.ADDED, getConnProto(fep)))
       conn.session.queueResponse(responseToConfigProto("channel1"))
       conn.session.queueResponse(responseToCommChannel)

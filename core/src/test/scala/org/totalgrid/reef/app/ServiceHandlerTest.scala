@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.messaging.mock.synchronous.MockConnection
-
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.executor.mock.MockExecutor
 import scala.collection.mutable._
@@ -31,19 +29,20 @@ import org.scalatest.matchers.ShouldMatchers
 
 import org.totalgrid.reef.sapi.client.{ Success, Failure, Event }
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
+import org.totalgrid.reef.messaging.mock.synchronous.{ MockSession, MockConnection }
 
 @RunWith(classOf[JUnitRunner])
 class ServiceHandlerTest extends FunSuite with ShouldMatchers {
 
   class EventReceiver[A] {
     val responses = new Queue[List[A]]
-    val events = new Queue[(Envelope.Event, A)]
+    val events = new Queue[Event[A]]
 
     def onResponse(result: List[A]) = responses.enqueue(result)
-    def onEvent(event: Envelope.Event, result: A) = events.enqueue((event, result))
+    def onEvent(event: Envelope.Event, result: A) = events.enqueue(Event(event, result))
   }
 
-  def fixture(test: (MockExecutor, MockConnection, ServiceHandler, EventReceiver[Int]) => Unit) = {
+  def fixture(test: (MockExecutor, MockConnection, EventReceiver[Int]) => Unit) = {
     val exe = new MockExecutor
     val conn = new MockConnection
     val receiver = new EventReceiver[Int]
@@ -51,11 +50,11 @@ class ServiceHandlerTest extends FunSuite with ShouldMatchers {
     val handler = new ServiceHandler(exe)
     handler.addService(conn, 5000, _ => 99, 3, receiver.onResponse, receiver.onEvent)
 
-    test(exe, conn, handler, receiver)
+    test(exe, conn, receiver)
   }
 
   test("Service subscriptions are retried") {
-    fixture { (exe, conn, handler, receiver) =>
+    fixture { (exe, conn, receiver) =>
 
       conn.eventQueueSize should equal(1)
       val record = conn.expectEventQueueRecord[Int]
@@ -76,22 +75,41 @@ class ServiceHandlerTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("Successful response causes correct notifications") {
-    fixture { (exe, conn, handler, receiver) =>
-
+  def testSuccessfulResponse(list: List[Int]) {
+    fixture { (exe, conn, receiver) =>
       conn.eventQueueSize should equal(1)
       val record = conn.expectEventQueueRecord[Int]
       conn.eventQueueSize should equal(0)
       record.onNewQueue("queue01")
 
-      conn.session.respond[Int](request => Success(Envelope.Status.OK, List(1, 2, 3)))
+      conn.session.respond[Int](request => Success(Envelope.Status.OK, list))
       conn.session.numRequestsPending should equal(0)
 
       receiver.responses.size should equal(0) //posting the successful response is deferred
       exe.executeNext(1, 0)
       receiver.responses.size should equal(1)
       receiver.events.size should equal(0)
-      receiver.responses.dequeue() should equal(List(1, 2, 3))
+      receiver.responses.dequeue() should equal(list)
+    }
+  }
+
+  test("Non-empty successful response causes correct notifications") { testSuccessfulResponse(List(1, 2, 3)) }
+
+  test("Empty successful response still causes notification") { testSuccessfulResponse(Nil) }
+
+  test("Correct event routing") {
+    fixture { (exe, conn, receiver) =>
+
+      conn.eventQueueSize should equal(1)
+      val record = conn.expectEventQueueRecord[Int]
+      conn.eventQueueSize should equal(0)
+      record.onNewQueue("queue01")
+
+      val event = Event(Envelope.Event.ADDED, 99)
+      record.onEvent(event)
+      exe.executeNext(1, 0)
+      receiver.events.size should equal(1)
+      receiver.events.dequeue() should equal(event)
     }
   }
 
