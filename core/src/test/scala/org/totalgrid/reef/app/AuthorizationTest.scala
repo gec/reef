@@ -67,27 +67,27 @@ class AuthorizationTest extends FunSuite with ShouldMatchers with BeforeAndAfter
 
   test("Success") {
 
-    conn.session.size should equal(1)
+    conn.session.numRequestsPending should equal(1)
 
     conn.session.respond[AuthToken] { request =>
       val rsp = AuthToken.newBuilder(request.payload).setToken("magic").build
-      Response(Envelope.Status.OK, List(rsp))
+      Response(Envelope.Status.OK, rsp)
     }
 
-    conn.session.size should equal(0)
+    conn.session.numRequestsPending should equal(0)
 
     env should equal(Some("magic"))
   }
 
   test("Retry on failure") {
 
-    conn.session.size should equal(1)
+    conn.session.numRequestsPending should equal(1)
 
     conn.session.respond[AuthToken] { request =>
       Failure(Envelope.Status.INTERNAL_ERROR)
     }
 
-    conn.session.size should equal(1)
+    conn.session.numRequestsPending should equal(1)
 
     env should equal(None)
   }

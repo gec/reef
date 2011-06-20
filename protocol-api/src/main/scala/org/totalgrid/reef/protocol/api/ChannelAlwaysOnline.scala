@@ -19,19 +19,27 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.util.Logging
 
-trait ChannelAlwaysOnline extends IProtocol {
+trait ChannelAlwaysOnline extends Protocol with Logging {
 
-  abstract override def addChannel(p: CommChannel, listener: IListener[CommChannel.State]): Unit = {
-    super.addChannel(p, listener)
-    listener.onUpdate(CommChannel.State.OPENING)
-    listener.onUpdate(CommChannel.State.OPEN)
+  import Protocol._
+
+  private val channelMap = scala.collection.mutable.Map.empty[String, ChannelPublisher]
+
+  abstract override def addChannel(p: CommChannel, publisher: ChannelPublisher): Unit = {
+    super.addChannel(p, publisher)
+    channelMap += p.getName -> publisher
+    publisher.publish(CommChannel.State.OPENING)
+    publisher.publish(CommChannel.State.OPEN)
   }
 
-  abstract override def removeChannel(name: String): IListener[CommChannel.State] = {
+  abstract override def removeChannel(name: String): Unit = {
     val ret = super.removeChannel(name)
-    ret.onUpdate(CommChannel.State.CLOSED)
-    ret
+    channelMap.remove(name) match {
+      case Some(x) => x.publish(CommChannel.State.CLOSED)
+      case None => logger.error("Referenced channel not in map: " + name)
+    }
   }
 
 }

@@ -30,7 +30,8 @@
 	</feature>    
 	<feature name="reef" version="0.3.1-SNAPSHOT">
 		<feature>reef-core</feature>
-		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-benchmark/0.3.1-SNAPSHOT</bundle>
+		<bundle start-level='89'>mvn:org.totalgrid.reef/reef-protocol-simulator/0.3.1-SNAPSHOT</bundle>
+        <bundle start-level='90'>mvn:org.totalgrid.reef/reef-default-simulator/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='99'>mvn:org.totalgrid.reef/reef-processing/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-fep/0.3.1-SNAPSHOT</bundle>
@@ -38,5 +39,9 @@
 	<feature name="reef-dnp3" version="0.3.1-SNAPSHOT">
 		<feature>reef-core</feature>
 		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-dnp3/0.3.1-SNAPSHOT</bundle>
+	</feature>
+    <feature name="reef-example-simulator" version="0.3.1-SNAPSHOT">
+		<feature>reef-core</feature>
+		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-example-simulator/0.3.1-SNAPSHOT</bundle>
 	</feature>
 </features>

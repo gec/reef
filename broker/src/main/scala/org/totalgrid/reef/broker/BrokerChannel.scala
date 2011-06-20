@@ -66,6 +66,8 @@ trait BrokerChannel {
 
   def close()
 
+  def isOpen: Boolean
+
   private val listeners = scala.collection.mutable.Set.empty[BrokerChannelCloseListener]
 
   def addCloseListener(listener: BrokerChannelCloseListener) = listeners.synchronized {

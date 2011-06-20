@@ -70,9 +70,8 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
 @Command(scope = "reef", name = "login", description = "Authorizes a user with the local Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefLoginCommandBase {
 
-  def setupReefSession() = {
-    (new OSGISession(getBundleContext), "local")
-  }
+  def setupReefSession() = (new OsgiClientSession(getBundleContext), "local")
+
 }
 
 @Command(scope = "reef", name = "remote-login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
@@ -98,7 +97,7 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
     import org.totalgrid.reef.executor.ReactActorExecutor
     import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
     import org.totalgrid.reef.broker.BrokerConnectionInfo
-    import org.totalgrid.reef.messaging.{ ProtoClient, AMQPProtoFactory }
+    import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
     import org.totalgrid.reef.proto.ReefServicesList
 
     val connectionInfo = new BrokerConnectionInfo(host, port, brokerUser, brokerPassword, brokerVirtualHost)
@@ -107,7 +106,7 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
     }
 
     amqp.connect(5000)
-    val client = new ProtoClient(amqp, ReefServicesList, 5000) {
+    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
       override def close() {
         super.close()
         amqp.disconnect(5000)

@@ -42,8 +42,9 @@ import xml.Node
 import scala.collection.mutable.Queue
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
 /**
  * the interaction recorder is a wrapper we can add around a SyncOperations client to collect a set of
@@ -91,6 +92,6 @@ trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
       explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, promise.await)
     }
 
-    new BasicPromise(promise.await)
+    new FixedPromise(promise.await)
   }
 }

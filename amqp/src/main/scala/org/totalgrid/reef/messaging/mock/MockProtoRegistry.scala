@@ -69,6 +69,8 @@ class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends Clien
 
   private val in = new MailBox
 
+  private var open = true
+
   def respond[A](f: Request[A] => Option[Response[A]]): Unit = respondWithTimeout(timeout)(f)
 
   def respondWithTimeout[A](timeout: Long)(f: Request[A] => Option[Response[A]]): Unit = {
@@ -78,9 +80,11 @@ class MockClientSession(timeout: Long = MockProtoRegistry.timeout) extends Clien
     }
   }
 
-  def close(): Unit = throw new Exception("Unimplemented")
+  final override def isOpen = open
 
-  def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) = {
+  final override def close(): Unit = open = false
+
+  final override def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) = {
     in send Req(callback, Request(verb, payload, env))
     Timer.delay(timeout) {
       in.receiveWithin(1) {
@@ -204,27 +208,30 @@ class MockConnection extends Connection {
     }
   }
 
+  private val session = new MockClientSession
+
   private lazy val pool = {
-    val session = new MockClientSession
     mockclient = Some(session)
     new MockSessionPool(session)
   }
 
   final override def getSessionPool() = pool
 
+  final override def newSession = session
+
   val closeable = new CloseableChannel {
     def close() = {}
   }
 
-  override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
+  final override def defineEventQueue[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, None))
   }
 
-  override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
+  final override def defineEventQueueWithNotifier[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit)(notify: String => Unit): Unit = {
     eventmail send EventSub(OneArgFunc.getReturnClass(deserialize, classOf[Array[Byte]]), MockEvent[A](accept, Some(notify)))
   }
 
-  override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): CloseableChannel = {
+  final override def bindService(service: AsyncService[_], destination: Destination, competing: Boolean, reactor: Option[Executor]): CloseableChannel = {
     servicemail send ServiceBinding(service, destination, competing, reactor)
     closeable
   }

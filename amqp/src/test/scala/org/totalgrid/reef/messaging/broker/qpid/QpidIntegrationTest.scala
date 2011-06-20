@@ -43,7 +43,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.mock._
 import org.totalgrid.reef.messaging.{ TestDescriptors, HeadersX2 }
 import org.totalgrid.reef.broker.BrokerConnectionInfo
-import org.totalgrid.reef.util.Conversion.convertIntToTimes
+import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope

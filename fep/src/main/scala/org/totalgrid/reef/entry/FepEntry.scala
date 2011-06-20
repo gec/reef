@@ -25,9 +25,9 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
-import org.totalgrid.reef.frontend.{ FrontEndActor }
+import org.totalgrid.reef.frontend.FrontEndManager
 import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
-import org.totalgrid.reef.protocol.api.IProtocol
+import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
@@ -37,7 +37,7 @@ import org.totalgrid.reef.broker.BrokerProperties
 
 class FepActivator extends BundleActivator with Logging {
 
-  private var map = Map.empty[IProtocol, Lifecycle]
+  private var map = Map.empty[Protocol, Lifecycle]
   private var amqp: Option[AMQPProtoFactory] = None
   private val manager = new LifecycleManager
 
@@ -51,7 +51,7 @@ class FepActivator extends BundleActivator with Logging {
 
     manager.add(amqp.get)
 
-    context watchServices withInterface[IProtocol] andHandle {
+    context watchServices withInterface[Protocol] andHandle {
       case AddingService(p, _) => addProtocol(p)
       case ServiceRemoved(p, _) => removeProtocol(p)
     }
@@ -61,7 +61,7 @@ class FepActivator extends BundleActivator with Logging {
 
   def stop(context: BundleContext) = manager.stop()
 
-  private def addProtocol(p: IProtocol) = map.synchronized {
+  private def addProtocol(p: Protocol) = map.synchronized {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
@@ -71,7 +71,7 @@ class FepActivator extends BundleActivator with Logging {
     }
   }
 
-  private def removeProtocol(p: IProtocol) = map.synchronized {
+  private def removeProtocol(p: Protocol) = map.synchronized {
     map.get(p) match {
       case Some(lifecycle) =>
         map = map - p
@@ -80,18 +80,21 @@ class FepActivator extends BundleActivator with Logging {
     }
   }
 
-  private def create(protocols: Seq[IProtocol], components: CoreApplicationComponents): Lifecycle = {
+  private def create(protocols: Seq[Protocol], components: CoreApplicationComponents): Lifecycle = {
 
-    // the actor does all the work of announcing the system, retrieving resources and starting/stopping
+    val exe = new ReactActorExecutor {}
+
+    // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events
-    val fepActor = new FrontEndActor(
+    val fem = new FrontEndManager(
       components.registry,
+      exe,
       protocols,
       components.logger,
       components.appConfig,
-      FrontEndActor.retryms) with ReactActorExecutor
+      5000)
 
-    new LifecycleWrapper(components.heartbeatActor :: fepActor :: Nil)
+    new LifecycleWrapper(components.heartbeatActor :: exe :: fem :: Nil)
   }
 
 }

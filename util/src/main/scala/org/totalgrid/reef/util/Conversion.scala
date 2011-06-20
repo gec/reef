@@ -21,8 +21,11 @@ package org.totalgrid.reef.util
 import scala.collection.immutable
 import scala.annotation.tailrec
 
-class Times(num: Int) {
+class DecoratedInt(num: Int) {
   assert(num >= 0)
+
+  def isEven = (num % 2) == 0
+  def isOdd = (num % 2) != 0
 
   def times(f: => Unit): Unit = count(_ => f)
 
@@ -55,7 +58,7 @@ class TakeRand[A](l: List[A]) {
 
 object Conversion {
 
-  implicit def convertIntToTimes(num: Int): Times = new Times(num)
+  implicit def convertIntToDecoratedInt(num: Int): DecoratedInt = new DecoratedInt(num)
   implicit def convertIterableToMapified[A](i: Iterable[A]) = new Mapified(i)
   implicit def convertAnyToOption[A <: Any](x: A): Option[A] = Option(x)
   implicit def convertListToRandList[A](l: List[A]): TakeRand[A] = new TakeRand[A](l)

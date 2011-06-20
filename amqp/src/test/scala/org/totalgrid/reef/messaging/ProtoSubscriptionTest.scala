@@ -41,7 +41,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
-  def setupTest(test: ProtoClient => Unit) {
+  def setupTest(test: AmqpClientSession => Unit) {
 
     // TODO: fix setupTest to use all async and all sync
 
@@ -54,7 +54,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
       amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, competing = true)
 
       AMQPFixture.sync(mock, true) { syncAmqp =>
-        val client = new ProtoClient(syncAmqp, servicelist, 10000)
+        val client = new AmqpClientSession(syncAmqp, servicelist, 10000)
 
         test(client)
       }

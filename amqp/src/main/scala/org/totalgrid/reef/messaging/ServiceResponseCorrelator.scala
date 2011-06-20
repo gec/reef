@@ -38,6 +38,8 @@ class ServiceResponseCorrelator(timeoutms: Long, channel: ProtoServiceChannel) e
 
   channel.setResponseHandler(this)
 
+  def isOpen = channel.isOpen
+
   def close() = channel.close()
 
   private var seq = 0

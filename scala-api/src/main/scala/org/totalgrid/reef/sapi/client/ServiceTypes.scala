@@ -60,6 +60,8 @@ object Response {
     }
     else Failure(status, error)
   }
+
+  def apply[A](status: Envelope.Status, single: A): Response[A] = apply(status, single :: Nil, "")
 }
 
 object ResponseTimeout extends Failure(Envelope.Status.RESPONSE_TIMEOUT)

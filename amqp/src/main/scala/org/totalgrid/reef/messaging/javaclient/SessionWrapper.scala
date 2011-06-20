@@ -18,9 +18,10 @@
  */
 package org.totalgrid.reef.messaging.javaclient
 
-import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.client._
-import client.{ ClientSession, Promise => IScalaPromise, Response => ScalaResponse }
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.promise.{ Promise => ScalaPromise }
+import org.totalgrid.reef.sapi.client.{ ClientSession, Response => ScalaResponse }
 import org.totalgrid.reef.japi.TypeDescriptor
 
 /**
@@ -28,7 +29,7 @@ import org.totalgrid.reef.japi.TypeDescriptor
  */
 class SessionWrapper(val client: ClientSession) extends Session {
 
-  private implicit def convert[A](promise: IScalaPromise[ScalaResponse[A]]): Promise[Response[A]] = new PromiseWrapper[A](promise)
+  private implicit def convert[A](promise: ScalaPromise[ScalaResponse[A]]): Promise[Response[A]] = new PromiseWrapper[A](promise)
 
   final override def get[A](request: A): Promise[Response[A]] = client.get(request)
   final override def delete[A](request: A): Promise[Response[A]] = client.delete(request)

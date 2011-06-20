@@ -40,6 +40,7 @@ package org.totalgrid.reef.sapi.client
  */
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
 trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 
@@ -47,7 +48,7 @@ trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 
   // Implement request in terms of an abstract asynchronous request
   override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination): Promise[Response[A]] = {
-    val promise = new BasicPromise[Response[A]]
+    val promise = new SynchronizedPromise[Response[A]]
     this.asyncRequest(verb, payload, env, dest)(promise.onResponse(_))
     promise
   }

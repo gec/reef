@@ -20,33 +20,33 @@ package org.totalgrid.reef.protocol.dnp3
 
 import org.totalgrid.reef.protocol.api._
 
-import org.totalgrid.reef.protocol.api.{ ICommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
-import org.totalgrid.reef.util.XMLHelper
-
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.util.{ Logging, XMLHelper }
 
-class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAlwaysOnline {
+class Dnp3Protocol extends Protocol with Logging {
 
-  override def name = "dnp3"
+  import Protocol._
 
-  override def requiresChannel = true
+  final override def name = "dnp3"
+  final override def requiresChannel = true
 
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, IListener[MeasurementBatch])]
+  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch])]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
   private val dnp3 = new StackManager(true)
   dnp3.AddLogHook(log)
 
-  override def _addChannel(p: FEP.CommChannel, listener: IListener[FEP.CommChannel.State]) = {
+  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
     val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
@@ -64,35 +64,35 @@ class Dnp3Protocol extends BaseProtocol with EndpointAlwaysOnline with ChannelAl
     logger.info("Added channel with name: " + p.getName)
   }
 
-  override def _removeChannel(channel: String) = {
-    logger.debug("removing channel with name: " + channel)
+  override def removeChannel(channel: String) = {
+    logger.debug("Removing channel with name: " + channel)
     dnp3.RemovePort(channel)
     logger.info("Removed channel with name: " + channel)
   }
 
-  override def _addEndpoint(endpoint: String,
+  override def addEndpoint(endpoint: String,
     channelName: String,
     files: List[Model.ConfigFile],
-    publisher: IListener[MeasurementBatch],
-    listener: IListener[FEP.CommEndpointConnection.State]): ProtocolCommandHandler = {
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
 
     logger.info("Adding device with uid: " + endpoint + " onto channel " + channelName)
 
-    val configFile = IProtocol.find(files, "text/xml") //there is should be only one XML file
+    val configFile = Protocol.find(files, "text/xml") //there is should be only one XML file
     val xml = XMLHelper.read(configFile.getFile.toByteArray, classOf[Master])
     val master = getMasterConfig(xml)
 
     val filterLevel = Option(xml.getLog).map { logElem => configure(logElem.getFilter) }.getOrElse(FilterLevel.LEV_WARNING)
 
-    val mapping = Mapping.IndexMapping.parseFrom(IProtocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
+    val mapping = Mapping.IndexMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
-    val meas_adapter = new MeasAdapter(mapping, publisher.onUpdate)
-    map += endpoint -> (meas_adapter, publisher)
+    val meas_adapter = new MeasAdapter(mapping, batchPublisher.publish)
+    map += endpoint -> (meas_adapter, batchPublisher)
     val cmd = dnp3.AddMaster(channelName, endpoint, filterLevel, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
 
-  override def _removeEndpoint(endpoint: String) = {
+  override def removeEndpoint(endpoint: String) = {
 
     logger.debug("Not removing stack " + endpoint + " as per workaround")
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll

@@ -45,7 +45,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
 
-    val client = registry.getClientSession()
+    val client = registry.newSession()
 
     val parentEntity = client.put(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build).await().expectOne
 
