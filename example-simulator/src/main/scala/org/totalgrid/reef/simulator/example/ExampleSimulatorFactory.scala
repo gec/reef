@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.{ Commands, Measurements, SimMapping }
 import org.totalgrid.reef.util.Logging
 import scala.collection.JavaConversions._
 
-object ExampleSimulatorFactory extends SimulatorPluginFactory {
+object ExampleSimulatorFactory extends SimulatorPluginFactory with Logging {
 
   case class SimNames(status: String,
     trip: String,
@@ -36,12 +36,13 @@ object ExampleSimulatorFactory extends SimulatorPluginFactory {
 
   def getSimNames(config: SimMapping.SimulatorMapping): Option[SimNames] = {
 
-    val status = config.getMeasurementsList.find(m => m.getName.endsWith("Status")).map(_.getName)
-    val trip = config.getCommandsList.find(m => m.getName.endsWith("Trip")).map(_.getName)
-    val close = config.getCommandsList.find(m => m.getName.endsWith("Close")).map(_.getName)
-    val kwA = config.getMeasurementsList.find(m => m.getName.endsWith("kW_a")).map(_.getName)
-    val kwB = config.getCommandsList.find(m => m.getName.endsWith("kW_b")).map(_.getName)
-    val kwC = config.getCommandsList.find(m => m.getName.endsWith("kW_c")).map(_.getName)
+    val status = config.getMeasurementsList.find(m => m.getName.endsWith(".Status")).map(_.getName)
+    val kwA = config.getMeasurementsList.find(m => m.getName.endsWith(".kW_a")).map(_.getName)
+    val kwB = config.getMeasurementsList.find(m => m.getName.endsWith(".kW_b")).map(_.getName)
+    val kwC = config.getMeasurementsList.find(m => m.getName.endsWith(".kW_c")).map(_.getName)
+
+    val trip = config.getCommandsList.find(m => m.getName.endsWith(".Trip")).map(_.getName)
+    val close = config.getCommandsList.find(m => m.getName.endsWith(".Close")).map(_.getName)
 
     List(status, trip, close, kwA, kwB, kwC).flatten match {
       case List(a, b, c, d, e, f) => Some(SimNames(a, b, c, d, e, f))
@@ -55,7 +56,9 @@ object ExampleSimulatorFactory extends SimulatorPluginFactory {
   }
 
   def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
-    new ExampleBreakerSimulator(executor, publisher, getSimNames(config).get)
+    val names = getSimNames(config).get
+    logger.info("Binding new ExampleSimulator with config: " + names.toString)
+    new ExampleBreakerSimulator(executor, publisher, names)
   }
 
   def destroySimulator(plugin: SimulatorPlugin): Unit = {}
@@ -95,7 +98,7 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
       .addMeas(createAnalog(names.kwA, "kW", power))
       .addMeas(createAnalog(names.kwB, "kW", power))
       .addMeas(createAnalog(names.kwC, "kW", power))
-      .addMeas(createStatus(names.status, "", status)).build
+      .addMeas(createStatus(names.status, "status", status)).build
   }
 
   def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getName match {
@@ -104,7 +107,6 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
       Commands.CommandStatus.SUCCESS
     case names.close =>
       executor.execute(publisher.publish(createBreakerBatch(false)))
-      executor.execute()
       Commands.CommandStatus.SUCCESS
     case _ =>
       logger.error("Unknown command for example simulator: " + cr)

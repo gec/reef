@@ -94,15 +94,18 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
     }
     def add(endpoint: String, executor: Executor, publisher: BatchPublisher, mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
       val simulator = factory.createSimulator(endpoint, executor, publisher, mapping)
+      logger.info("Adding simulator for endpoint " + endpoint + " of type " + simulator.getClass.getName)
       endpoints += endpoint -> PluginRecord(endpoint, mapping, publisher, Some(simulator))
     }
 
     def checkResult(result: Result, record: PluginRecord) = result.current match {
       case Some(x) => if (!x.factory.equals(result.factory)) {
+        logger.info("Replacing simulator for endpoint " + result.endpoint + " of type " + x.getClass.getName)
         x.shutdown()
         add(record.endpoint, exe, record.publisher, record.mapping, result.factory)
       }
-      case None => add(record.endpoint, exe, record.publisher, record.mapping, result.factory)
+      case None =>
+        add(record.endpoint, exe, record.publisher, record.mapping, result.factory)
     }
 
     val results = factories.map(fac => Result(record.endpoint, fac.getSimLevel(record.endpoint, record.mapping), fac, record.current))
