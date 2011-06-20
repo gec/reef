@@ -100,4 +100,4 @@ class SimulatorConfig(simManager: SimulatorManagement) extends SimulatorControlC
     getSimulatorsList.foreach { sim => sim.setUpdateParams(delay) }
   }
 }
-*/
+*/ 

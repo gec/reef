@@ -29,9 +29,9 @@ import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
-import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler, Publisher }
+import org.totalgrid.reef.protocol.api.Publisher
 
-class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor) extends Lifecycle with CommandHandler with ControllableSimulator with Logging {
+class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor) extends Lifecycle with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -90,17 +90,11 @@ class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: Si
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) = {
-    val status = cmdMap.get(cr.getName) match {
-      case Some(x) =>
-        logger.info("Found response for command: " + cr)
-        x
-      case None =>
-        logger.warn("Response for command not found, returning default")
-        Commands.CommandStatus.NOT_SUPPORTED
-    }
-    val rsp = Commands.CommandResponse.newBuilder.setStatus(status).setCorrelationId(cr.getCorrelationId).build
-    publisher.publish(rsp)
+  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cmdMap.get(cr.getName) match {
+    case Some(status) => status
+    case None =>
+      logger.warn("Response for command not found, returning default")
+      Commands.CommandStatus.NOT_SUPPORTED
   }
 
   /////////////////////////////////////////////////

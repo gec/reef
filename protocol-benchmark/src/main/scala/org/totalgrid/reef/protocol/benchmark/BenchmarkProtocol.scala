@@ -18,21 +18,18 @@
  */
 package org.totalgrid.reef.protocol.benchmark
 
-import scala.collection.immutable
-
 import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.executor.Executor
 
-
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
  * the list of the running simulators
  */
 trait SimulatorManagement {
-  def getSimulators : List[ControllableSimulator]
+  def getSimulators: List[ControllableSimulator]
 }
 
 /**
@@ -55,15 +52,21 @@ class BenchmarkProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
   final override def name: String = "benchmark"
   final override def requiresChannel = false
 
-  private var map = immutable.Map.empty[String, Simulator]
+  private var map = Map.empty[String, Simulator]
 
-  def getSimulators : List[ControllableSimulator] = map.values.toList
+  def getSimulators: List[ControllableSimulator] = map.values.toList
 
-  class EndPointCommandHandler(endpoint: String) extends CommandHandler {
-     def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) : Unit = map.get(endpoint) match {
-       case Some(x) =>
-       case None =>
-     }
+  def getSimulator(endpoint: String): Option[Simulator] = map.get(endpoint)
+
+  class EndpointCommandHandler(endpoint: String) extends CommandHandler {
+
+    def buildResponse(cmd: Commands.CommandRequest, status: Commands.CommandStatus) =
+      Commands.CommandResponse.newBuilder.setCorrelationId(cmd.getCorrelationId).setStatus(status).build
+
+    def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher): Unit = getSimulator(endpoint) match {
+      case Some(sim) => publisher.publish(buildResponse(cmd, sim.issue(cmd)))
+      case None => logger.error("Benchmark protocol received command for unregistered endpoint: " + endpoint)
+    }
   }
 
   override def addEndpoint(
@@ -79,9 +82,9 @@ class BenchmarkProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
       val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
       val mapping = SimMapping.SimulatorMapping.parseFrom(file)
       val sim = new Simulator(endpoint, batchPublisher, mapping, exe)
-      sim.start
+      sim.start()
       map += endpoint -> sim
-      sim
+      new EndpointCommandHandler(endpoint)
   }
 
   override def removeEndpoint(endpoint: String) = map.get(endpoint) match {
