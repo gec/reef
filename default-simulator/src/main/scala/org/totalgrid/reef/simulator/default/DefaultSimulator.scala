@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.benchmark
+package org.totalgrid.reef.simulator.default
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
@@ -30,8 +30,9 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.protocol.api.Publisher
+import org.totalgrid.reef.protocol.benchmark.{ SimulatorPluginFactory, SimulatorPlugin }
 
-class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor) extends Lifecycle with ControllableSimulator with Logging {
+class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory) extends SimulatorPlugin with Lifecycle with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
@@ -90,7 +91,10 @@ class Simulator(name: String, publisher: Publisher[MeasurementBatch], config: Si
     point.build
   }
 
-  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cmdMap.get(cr.getName) match {
+  final override def factory = parent
+  final override def simLevel: Int = 0
+
+  final override def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cmdMap.get(cr.getName) match {
     case Some(status) => status
     case None =>
       logger.warn("Response for command not found, returning default")

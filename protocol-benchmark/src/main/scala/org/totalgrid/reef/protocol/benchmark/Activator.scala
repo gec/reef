@@ -20,9 +20,9 @@ package org.totalgrid.reef.protocol.benchmark
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import org.totalgrid.reef.executor.ReactActorExecutor
+import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 class Activator extends BundleActivator {
 
@@ -31,6 +31,12 @@ class Activator extends BundleActivator {
 
   final override def start(context: BundleContext) {
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+
+    context watchServices withInterface[SimulatorPluginFactory] andHandle {
+      case AddingService(plugin, properties) => protocol.addPluginFactory(plugin)
+      case ServiceRemoved(plugin, properties) => protocol.removePluginFactory(plugin)
+    }
+
     exe.start()
   }
 

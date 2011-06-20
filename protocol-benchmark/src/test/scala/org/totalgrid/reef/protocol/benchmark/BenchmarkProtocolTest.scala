@@ -26,9 +26,12 @@ import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.promise.FixedPromise
 import org.totalgrid.reef.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
 import org.totalgrid.reef.executor.mock.MockExecutor
+import org.totalgrid.reef.executor.Executor
+import java.lang.Exception
 
 @RunWith(classOf[JUnitRunner])
 class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
+
   val simpleMapping = SimMapping.SimulatorMapping.newBuilder
     .setDelay(100)
     .addMeasurements(makeAnalogSim("analog1"))
@@ -72,7 +75,7 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
   class BatchPublisher extends QueueingPublisher[Measurements.MeasurementBatch]
   class ResponsePublisher extends QueueingPublisher[Commands.CommandResponse]
 
-  def fixture(test: (MockExecutor, Protocol, BatchPublisher, ResponsePublisher) => Unit) = {
+  def fixture(test: (MockExecutor, BenchmarkProtocol, BatchPublisher, ResponsePublisher) => Unit) = {
     val exe = new MockExecutor
     val protocol = new BenchmarkProtocol(exe)
     val batch = new BatchPublisher
@@ -80,37 +83,119 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
     test(exe, protocol, batch, responses)
   }
 
-  val endpointName = "endpoint"
+  class MockSimulatorFactory(simLevel: Int) extends SimulatorPluginFactory {
 
-  test("add/remove") {
-    fixture { (exe, protocol, batch, responses) =>
+    var map = Map.empty[String, MockSimPlugin]
 
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
-      batch.queue.size should equal(0)
-      exe.executeNext(2, 1) // integrity poll
-      batch.queue.size should equal(1)
-      batch.queue.front.getMeasCount() should equal(2) // integrity poll
-      exe.repeatNext(1, 1) should equal(100) // random measurement at 100 ms interval
+    def name: String = "MockSimulatorFactory"
+    def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = simLevel
+    def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+      val mock = new MockSimPlugin(this)
+      map += endpointName -> mock
+      mock
+    }
 
-      protocol.removeEndpoint(endpointName)
+    def destroySimulator(plugin: SimulatorPlugin): Unit = map.find(x => x._2.equals(plugin)) match {
+      case Some((name, plugin)) =>
+        map -= name
+      case None => throw new Exception("Plugin not found")
+    }
 
+    class MockSimPlugin(parent: MockSimulatorFactory) extends SimulatorPlugin {
+      var response = Commands.CommandStatus.SUCCESS
+
+      def factory: SimulatorPluginFactory = parent
+      def simLevel: Int = simLevel
+      def issue(cr: Commands.CommandRequest): Commands.CommandStatus = response
     }
   }
 
-  test("command responded to") {
+  val endpointName = "endpoint"
+
+  test("add endpoint first") {
+    fixture { (exe, protocol, batch, responses) =>
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      val fac = new MockSimulatorFactory(0)
+      protocol.addPluginFactory(fac)
+      fac.map.size should equal(1)
+      protocol.removeEndpoint(endpointName)
+      fac.map.size should equal(0)
+    }
+  }
+
+  test("add simulator first") {
+    fixture { (exe, protocol, batch, responses) =>
+      val fac = new MockSimulatorFactory(0)
+      protocol.addPluginFactory(fac)
+      fac.map.size should equal(0)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      fac.map.size should equal(1)
+      protocol.removeEndpoint(endpointName)
+      fac.map.size should equal(0)
+    }
+  }
+
+  test("Removing factory destroys all simulators") {
+    fixture { (exe, protocol, batch, responses) =>
+      val fac = new MockSimulatorFactory(0)
+      protocol.addPluginFactory(fac)
+      fac.map.size should equal(0)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      fac.map.size should equal(1)
+      protocol.removePluginFactory(fac)
+      fac.map.size should equal(0)
+    }
+  }
+
+  test("Uses highest sim level") {
+    fixture { (exe, protocol, batch, responses) =>
+      val fac1 = new MockSimulatorFactory(1)
+      val fac2 = new MockSimulatorFactory(2)
+      val fac3 = new MockSimulatorFactory(3)
+      protocol.addPluginFactory(fac1)
+      protocol.addPluginFactory(fac2)
+      protocol.addPluginFactory(fac3)
+
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      fac1.map.size should equal(0)
+      fac2.map.size should equal(0)
+      fac3.map.size should equal(1)
+    }
+  }
+
+  test("Correctly substitues for highest sim level") {
+    fixture { (exe, protocol, batch, responses) =>
+      val fac1 = new MockSimulatorFactory(1)
+      val fac2 = new MockSimulatorFactory(2)
+
+      protocol.addPluginFactory(fac1)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      fac1.map.size should equal(1)
+      fac2.map.size should equal(0)
+
+      protocol.addPluginFactory(fac2)
+      fac1.map.size should equal(0)
+      fac2.map.size should equal(1)
+
+      protocol.removePluginFactory(fac2)
+      fac1.map.size should equal(1)
+      fac2.map.size should equal(0)
+    }
+  }
+
+  test("command responded to without plugin") {
     fixture { (exe, protocol, batch, responses) =>
 
       val cmd = protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
 
       cmd.issue(getCmdRequest("success"), responses)
       responses.queue.size should equal(1)
-      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.SUCCESS)
+      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.NOT_SUPPORTED)
 
-      cmd.issue(getCmdRequest("fail"), responses)
+      protocol.addPluginFactory(new MockSimulatorFactory(1))
+      cmd.issue(getCmdRequest("success"), responses)
       responses.queue.size should equal(1)
-      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.HARDWARE_ERROR)
-
-      protocol.removeEndpoint(endpointName)
+      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.SUCCESS)
     }
   }
 
@@ -131,4 +216,5 @@ class BenchmarkProtocolTest extends FunSuite with ShouldMatchers {
       }
     }
   }
+
 }

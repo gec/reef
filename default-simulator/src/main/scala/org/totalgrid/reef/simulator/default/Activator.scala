@@ -16,21 +16,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.benchmark
+package org.totalgrid.reef.simulator.default
 
-import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
-import org.totalgrid.reef.executor.Executor
+import org.osgi.framework.{ BundleActivator, BundleContext }
+import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.protocol.benchmark.SimulatorPluginFactory
 
-trait SimulatorPluginFactory {
-  def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int
-  def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin
-  def destroySimulator(plugin: SimulatorPlugin): Unit
-}
+class Activator extends BundleActivator {
 
-trait SimulatorPlugin {
-  def shutdown() = factory.destroySimulator(this)
-  def factory: SimulatorPluginFactory
-  def simLevel: Int
-  def issue(cr: Commands.CommandRequest): Commands.CommandStatus
+  final override def start(context: BundleContext) = {
+    context.createService(DefaultSimulatorFactory, interface1 = interface[SimulatorPluginFactory])
+  }
+
+  final override def stop(context: BundleContext) = {}
+
 }
