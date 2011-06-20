@@ -95,24 +95,4 @@ class ServiceHandlerTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("Correct event routing") {
-    fixture { (exe, conn, handler, receiver) =>
-      conn.eventQueueSize should equal(1)
-      val record = conn.expectEventQueueRecord[Int]
-      conn.eventQueueSize should equal(0)
-      record.onNewQueue("queue01")
-
-      conn.session.respond[Int](request => Success(Envelope.Status.OK, Nil))
-      exe.numActionsPending should equal(0)
-      receiver.responses.size should equal(0)
-
-      record.onEvent(Event(Envelope.Event.ADDED, 4))
-      exe.executeNext(1, 0)
-
-      receiver.events.size should equal(1)
-      receiver.events.dequeue() should equal((Envelope.Event.ADDED, 4))
-
-    }
-  }
-
 }
