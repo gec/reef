@@ -21,9 +21,10 @@ package org.totalgrid.reef.protocol.benchmark
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option }
 
+/*
 abstract class SimulatorControlCommands(simulator: SimulatorManagement) extends OsgiCommandSupport {
 
-  var javaEndpoints: java.util.List[String]
+  //var javaEndpoints: java.util.List[String]
 
   import scala.collection.JavaConversions._
   // helper function to turn java List into scala List
@@ -99,3 +100,4 @@ class SimulatorConfig(simManager: SimulatorManagement) extends SimulatorControlC
     getSimulatorsList.foreach { sim => sim.setUpdateParams(delay) }
   }
 }
+*/

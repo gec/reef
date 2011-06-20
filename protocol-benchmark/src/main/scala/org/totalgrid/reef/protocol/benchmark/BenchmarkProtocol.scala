@@ -20,20 +20,19 @@ package org.totalgrid.reef.protocol.benchmark
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.proto.{ FEP, SimMapping, Model }
+import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.protocol.api._
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.executor.{ Executor, ReactActorExecutor }
-import java.lang.{ IllegalStateException, Override }
+import org.totalgrid.reef.executor.Executor
+
 
 /**
  * interface the BenchmarkProtocol exposes to the simulator shell commands to get
  * the list of the running simulators
  */
 trait SimulatorManagement {
-  def getSimulators(names: List[String]): Map[String, ControllableSimulator]
+  def getSimulators : List[ControllableSimulator]
 }
 
 /**
@@ -58,8 +57,14 @@ class BenchmarkProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
 
   private var map = immutable.Map.empty[String, Simulator]
 
-  def getSimulators(names: List[String]): Map[String, ControllableSimulator] =
-    if (names.isEmpty) map else map.filterKeys(k => names.contains(k))
+  def getSimulators : List[ControllableSimulator] = map.values.toList
+
+  class EndPointCommandHandler(endpoint: String) extends CommandHandler {
+     def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) : Unit = map.get(endpoint) match {
+       case Some(x) =>
+       case None =>
+     }
+  }
 
   override def addEndpoint(
     endpoint: String,
