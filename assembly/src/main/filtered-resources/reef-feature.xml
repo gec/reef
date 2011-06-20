@@ -40,4 +40,8 @@
 		<feature>reef-core</feature>
 		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-protocol-dnp3/0.3.1-SNAPSHOT</bundle>
 	</feature>
+    <feature name="reef-example-simulator" version="0.3.1-SNAPSHOT">
+		<feature>reef-core</feature>
+		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-example-simulator/0.3.1-SNAPSHOT</bundle>
+	</feature>
 </features>

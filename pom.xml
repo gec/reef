@@ -37,6 +37,7 @@
         <module>protocol-api</module>
         <module>protocol-simulator</module>
         <module>default-simulator</module>
+        <module>example-simulator</module>
         <module>protocol-dnp3</module>
         <module>dependencies</module>
         <module>proto-shell</module>

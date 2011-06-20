@@ -1,4 +1,4 @@
-package org.totalgrid.reef.protocol.simulator
+package org.totalgrid.reef.simulator.example
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -19,32 +19,19 @@ package org.totalgrid.reef.protocol.simulator
  * the License.
  */
 import org.osgi.framework.{ BundleActivator, BundleContext }
-import org.totalgrid.reef.executor.ReactActorExecutor
-import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
-
 import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory
 import org.totalgrid.reef.util.Logging
 
 class Activator extends BundleActivator with Logging {
 
-  val exe = new ReactActorExecutor {}
-  val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
-
-  final override def start(context: BundleContext) {
-    context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
-
-    context watchServices withInterface[SimulatorPluginFactory] andHandle {
-      case AddingService(plugin, properties) =>
-        logger.info("Adding a new SimulatorPlugin: " + plugin.getClass.getName)
-        protocol.addPluginFactory(plugin)
-      case ServiceRemoved(plugin, properties) =>
-        logger.info("Removing a SimulatorPlugin: " + plugin.getClass.getName)
-        protocol.removePluginFactory(plugin)
-    }
-
-    exe.start()
+  final override def start(context: BundleContext) = {
+    logger.info("Starting ExampleSimulator")
+    context.createService(ExampleSimulatorFactory, interface1 = interface[SimulatorPluginFactory])
   }
 
-  final override def stop(context: BundleContext) = exe.stop()
+  final override def stop(context: BundleContext) = {
+    logger.info("Stopping ExampleSimulator")
+  }
 
 }
