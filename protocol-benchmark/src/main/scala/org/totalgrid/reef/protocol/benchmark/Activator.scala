@@ -19,10 +19,10 @@
 package org.totalgrid.reef.protocol.benchmark
 
 import org.osgi.framework.{ ServiceRegistration, BundleActivator, BundleContext }
-import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.executor.ReactActorExecutor
 
 import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 class Activator extends BundleActivator {
 
@@ -30,7 +30,7 @@ class Activator extends BundleActivator {
   var reg: Option[ServiceRegistration] = None
 
   final override def start(context: BundleContext) {
-    val protocol = new BenchmarkProtocol(exe)
+    val protocol = new BenchmarkProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
     val registration = context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
     reg = Some(registration)
     exe.start()
