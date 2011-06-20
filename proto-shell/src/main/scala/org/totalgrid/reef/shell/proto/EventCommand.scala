@@ -38,7 +38,7 @@ class EventListCommand extends ReefCommandSupport {
   def doCommand() = {
     val typList = Option(types).map(_.toList) getOrElse List("*")
 
-    EventView.printEventTable(services.getRecentEvents(typList, limit).toList.reverse)
+    EventView.printEventTable(services.getRecentEvents(typList, limit).toList)
   }
 }
 
