@@ -65,8 +65,8 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
       checkSame(m, overCache.putQueue.dequeue._2)
       measQueue.length should equal(0)
     }
-    def receiveAndCheckMeas(m: Measurement) = {
-      checkSame(m, measQueue.dequeue)
+    def receiveAndCheckMeas(orig: Measurement) = {
+      checkSameExceptTimeIsGreater(orig, measQueue.dequeue)
     }
     def receiveAndCheckOver(m: Measurement) = {
       checkSame(m, overCache.putQueue.dequeue._2)
@@ -106,21 +106,30 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     m.getQuality should equal(meas.getQuality)
   }
 
-  def sameExceptQual(orig: Measurement, pub: Measurement): Unit = {
+  def checkSameExceptTimeIsGreater(orig: Measurement, meas: Measurement): Unit = {
+    meas.getName should equal(orig.getName)
+    meas.getType should equal(orig.getType)
+    meas.getDoubleVal should equal(orig.getDoubleVal)
+    meas.getUnit should equal(orig.getUnit)
+    meas.getQuality should equal(orig.getQuality)
+    meas.getTime should be > (orig.getTime)
+  }
+
+  def sameExceptQualityAndTimeIsGreater(orig: Measurement, pub: Measurement): Unit = {
     pub.getName should equal(orig.getName)
     pub.getType should equal(orig.getType)
     pub.getDoubleVal should equal(orig.getDoubleVal)
     pub.getUnit should equal(orig.getUnit)
-    pub.getTime should equal(orig.getTime)
+    pub.getTime should be > (orig.getTime)
   }
   def checkNIS(orig: Measurement, pub: Measurement): Unit = {
-    sameExceptQual(orig, pub)
+    sameExceptQualityAndTimeIsGreater(orig, pub)
     pub.getQuality.getDetailQual.getOldData should equal(true)
     pub.getQuality.getOperatorBlocked should equal(true)
   }
 
   def checkReplaced(repl: Measurement, pub: Measurement): Unit = {
-    sameExceptQual(repl, pub)
+    sameExceptQualityAndTimeIsGreater(repl, pub)
     pub.getQuality.getDetailQual.getOldData should equal(false)
     pub.getQuality.getSource should equal(Quality.Source.SUBSTITUTED)
   }
