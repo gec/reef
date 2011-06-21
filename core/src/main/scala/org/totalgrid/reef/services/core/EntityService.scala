@@ -19,18 +19,16 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.Envelope
-
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.sapi.service.SyncServiceBase
-import org.totalgrid.reef.services.framework.SquerylModel
+import org.totalgrid.reef.japi.{ BadRequestException }
+import org.totalgrid.reef.japi.Envelope.Status
 
 class EntityService extends SyncServiceBase[EntityProto] {
 
@@ -39,16 +37,32 @@ class EntityService extends SyncServiceBase[EntityProto] {
   override def put(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
 
     inTransaction {
-      var ent = EQ.findOrCreateEntity(req.getName, req.getTypesList.head) // TODO: need better message if getTypesList is empty: "BAD_REQUEST with message: java.util.NoSuchElementException"
-      req.getTypesList.tail.foreach(t => if (ent.types.value.find(_ == t).isEmpty) ent = EQ.addTypeToEntity(ent, t))
-      Response(Envelope.Status.OK, EQ.entityToProto(ent).build :: Nil)
+      if (!req.hasName || req.getTypesCount == 0) throw new BadRequestException("Must include name and atleast one entity type to create entity.")
+
+      val typ = req.getTypesList.head
+      val name = req.getName
+      val list = EQ.nameTypeQuery(Some(name), Some(List(typ)))
+
+      var (status, ent) = list match {
+        case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " type:" + typ)
+        case List(ent) => (Status.NOT_MODIFIED, list.head)
+        case Nil => (Status.CREATED, EQ.addEntity(name, typ))
+      }
+
+      req.getTypesList.tail.foreach(t => {
+        if (ent.types.value.find(_ == t).isEmpty) {
+          ent = EQ.addTypeToEntity(ent, t)
+          if (status == Status.NOT_MODIFIED) status = Status.UPDATED
+        }
+      })
+      Response(status, EQ.entityToProto(ent).build :: Nil)
     }
   }
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     inTransaction {
       val result = EQ.fullQuery(req);
-      Response(Envelope.Status.OK, result)
+      Response(Status.OK, result)
     }
   }
 }
@@ -77,8 +91,8 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
       val existingEdge = EQ.findEdge(parentEntity, childEntity, req.getRelationship)
 
       val (edge, status) = existingEdge match {
-        case Some(edge) => (edge, Envelope.Status.NOT_MODIFIED)
-        case None => (EQ.addEdge(parentEntity, childEntity, req.getRelationship), Envelope.Status.CREATED)
+        case Some(edge) => (edge, Status.NOT_MODIFIED)
+        case None => (EQ.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
       }
       val proto = convertToProto(edge)
       Response(status, proto :: Nil)
@@ -89,7 +103,7 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
     inTransaction {
       // TODO: add edge searching
       val edges = EQ.edges.where(t => true === true).toList
-      Response(Envelope.Status.OK, edges.map { convertToProto(_) })
+      Response(Status.OK, edges.map { convertToProto(_) })
     }
   }
 }
