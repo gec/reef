@@ -23,10 +23,9 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.japi.ReefServiceException
-
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.models._
+import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException }
 
 trait CommandTestRig {
   val commandModel = new CommandServiceModel(new SilentServiceSubscriptionHandler)
@@ -116,7 +115,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
     // Can't select blocked command
     val expireTime = System.currentTimeMillis + 5000
-    intercept[ReefServiceException] {
+    intercept[UnauthorizedException] {
       r.model.selectCommands("user02", Some(expireTime), List("cmd01"))
     }
 
@@ -239,12 +238,12 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.model.userHasSelect(cmd, "user01", expireTime - 1000) should equal(true)
     r.model.userHasSelect(cmd, "user01", expireTime + 1000) should equal(false)
 
-    intercept[ReefServiceException] {
+    intercept[UnauthorizedException] {
       r.model.selectCommands("user02", Some(expireTime), List("cmd01"))
     }
 
     // Same user
-    intercept[ReefServiceException] {
+    intercept[UnauthorizedException] {
       r.model.selectCommands("user01", Some(expireTime), List("cmd01"))
     }
   }
@@ -277,5 +276,15 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.model.selectCommands("user01", Some(expireTime), List("cmd01", "cmd01"))
 
     checkAccess(AccessMode.ALLOWED.getNumber, Some(expireTime), Some("user01"))
+  }
+
+  test("Unknown command fails with good error message") {
+    val r = new TestRig
+
+    val expireTime = System.currentTimeMillis + 5000
+    val exception = intercept[BadRequestException] {
+      r.model.selectCommands("user01", Some(expireTime), List("cmd01"))
+    }
+    exception.getMessage should include("cmd01")
   }
 }
