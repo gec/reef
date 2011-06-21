@@ -1,3 +1,5 @@
+package org.totalgrid.reef.loader.helpers
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,23 +18,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.loader
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.japi.Envelope
 
-trait ModelLoader {
-  def putOrThrow(e: Entity)
-  def putOrThrow(e: EntityEdge)
-  def putOrThrow(e: Command)
-  def putOrThrow(e: Point)
-  def putOrThrow(e: EventConfig)
-  def putOrThrow(e: CommEndpointConfig)
-  def putOrThrow(e: ConfigFile)
-  def putOrThrow(e: CommChannel)
-
-  def putOrThrow(e: TriggerSet)
-  def getOrThrow(e: TriggerSet): List[TriggerSet]
+trait ResponseProgressRenderer {
+  def start(size: Int)
+  def update(status: Envelope.Status)
+  def finish
 }
+

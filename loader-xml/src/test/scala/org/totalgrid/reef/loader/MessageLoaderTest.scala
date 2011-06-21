@@ -28,6 +28,7 @@ import org.totalgrid.reef.proto.Alarms._
 
 import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Response }
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 @RunWith(classOf[JUnitRunner])
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {

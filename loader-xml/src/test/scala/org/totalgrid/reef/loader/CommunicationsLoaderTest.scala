@@ -28,6 +28,7 @@ import org.totalgrid.reef.loader.sx.communications._
 
 import collection.mutable.HashMap
 import org.totalgrid.reef.util.BuildEnv
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 // scala XML classes
 

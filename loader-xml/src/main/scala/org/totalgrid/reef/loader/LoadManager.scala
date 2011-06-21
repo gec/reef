@@ -26,6 +26,7 @@ import org.totalgrid.reef.sapi.client.RestOperations
 
 import org.totalgrid.reef.util.{ Logging, XMLHelper }
 import java.io.File
+import org.totalgrid.reef.loader.helpers.{ CachingModelLoader, SymbolResponseProgressRenderer }
 
 object LoadManager extends Logging {
 
@@ -50,8 +51,8 @@ object LoadManager extends Logging {
       if (!valid && !ignoreWarnings) {
         println("Configuration invalid, fix errors or add ignoreWarnings argument")
       } else if (!dryRun) {
-        println("Uploading: " + loader.size + " objects to server...")
-        loader.flush(client)
+        val progress = new SymbolResponseProgressRenderer(Console.out)
+        loader.flush(client, Some(progress))
         println("Configuration loaded.")
       } else {
         println("DRYRUN: Skipping upload of " + loader.size + " objects.")
