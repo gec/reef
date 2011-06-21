@@ -112,7 +112,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     meas.getDoubleVal should equal(orig.getDoubleVal)
     meas.getUnit should equal(orig.getUnit)
     meas.getQuality should equal(orig.getQuality)
-    meas.getTime should be > (orig.getTime)
+    meas.getTime should be >= (orig.getTime)
   }
 
   def sameExceptQualityAndTimeIsGreater(orig: Measurement, pub: Measurement): Unit = {
@@ -120,7 +120,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     pub.getType should equal(orig.getType)
     pub.getDoubleVal should equal(orig.getDoubleVal)
     pub.getUnit should equal(orig.getUnit)
-    pub.getTime should be > (orig.getTime)
+    pub.getTime should be >= (orig.getTime)
   }
   def checkNIS(orig: Measurement, pub: Measurement): Unit = {
     sameExceptQualityAndTimeIsGreater(orig, pub)
