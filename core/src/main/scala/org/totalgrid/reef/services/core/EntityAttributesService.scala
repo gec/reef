@@ -18,24 +18,21 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
-
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
 import org.totalgrid.reef.proto.Utils.Attribute
-import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.service.SyncServiceBase
-import com.google.protobuf.ByteString
+
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.squeryl.PrimitiveTypeMode._
+
+import org.squeryl.PrimitiveTypeMode.inTransaction
 import java.util.UUID
 
 class EntityAttributesService extends SyncServiceBase[AttrProto] {
@@ -46,19 +43,27 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
   override def put(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
-    /*if (req.getAttributesCount == 0)
-      throw new BadRequestException("Must specify at least one attribute.")*/
 
     inTransaction {
       val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
-      deleteAllFromEntity(entEntry.id)
+      val existingAttrs = entEntry.attributes.value
+      val withoutIds = existingAttrs.map { a => a.id = 0; a }
+      val newAtttributes = req.getAttributesList.map { convertProtoToEntry(entEntry.id, _) }.toList
 
-      val entries = req.getAttributesList.map { attr =>
-        createEntryFromProto(entEntry.id, attr)
+      val differences = newAtttributes.diff(withoutIds)
+
+      if (!differences.isEmpty || newAtttributes.size != existingAttrs.size) {
+        deleteAllFromEntity(entEntry.id)
+        ApplicationSchema.entityAttributes.insert(newAtttributes)
+        // since changed the entities we need to manually update the lazyyvar
+        entEntry.attributes.value = newAtttributes
+
+        val status = if (existingAttrs.isEmpty) Status.CREATED else Status.UPDATED
+        Response(status, protoFromEntity(entEntry) :: Nil)
+      } else {
+        Response(Status.NOT_MODIFIED, protoFromEntity(entEntry) :: Nil)
       }
-
-      Response(Envelope.Status.OK, protoFromEntity(entEntry) :: Nil)
     }
   }
 
@@ -68,9 +73,16 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
 
     inTransaction {
       val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
-      deleteAllFromEntity(entEntry.id)
 
-      Response(Envelope.Status.OK, protoFromEntity(entEntry, Nil) :: Nil)
+      val existingAttrs = entEntry.attributes.value
+
+      val status = if (!existingAttrs.isEmpty) {
+        deleteAllFromEntity(entEntry.id)
+        Status.DELETED
+      } else {
+        Status.NOT_MODIFIED
+      }
+      Response(status, protoFromEntity(entEntry) :: Nil)
     }
   }
 
@@ -79,13 +91,16 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
       throw new BadRequestException("Must specify Entity in request.")
 
     inTransaction {
-      Response(Envelope.Status.OK, queryEntities(req.getEntity))
+      Response(Status.OK, queryEntities(req.getEntity))
     }
   }
 
 }
 
 object EntityAttributesService {
+  import org.squeryl.PrimitiveTypeMode._
+  import org.totalgrid.reef.proto.OptionalProtos._
+  import com.google.protobuf.ByteString
 
   def deleteAllFromEntity(entityId: UUID) = {
     ApplicationSchema.entityAttributes.deleteWhere(t => t.entityId === entityId)

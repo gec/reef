@@ -72,7 +72,7 @@ class EntityAttributesRequestTest
     {
       client.addExplanation("Delete by entity uid", "Deletes the attributes associated with a particular entity.")
       val resp = client.delete(getForEntityUid(ent.getUuid)).await().expectOne
-      resp.getAttributesCount should equal(0)
+      resp.getAttributesCount should equal(2)
     }
 
     {
@@ -84,7 +84,7 @@ class EntityAttributesRequestTest
 
       client.addExplanation("Delete by entity name", "Deletes the attributes associated with a particular entity.")
       val resp = client.delete(getForEntityName(ent.getName)).await().expectOne
-      resp.getAttributesCount should equal(0)
+      resp.getAttributesCount should equal(2)
     }
   }
 
@@ -120,7 +120,7 @@ class EntityAttributesRequestTest
     }
 
     val attr = client.clearEntityAttributes(uid)
-    attr.getAttributesCount should equal(0)
+    attr.getAttributesCount should equal(1)
 
   }
 
