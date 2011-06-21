@@ -109,8 +109,7 @@ object LoadManager extends Logging {
       }
     } catch {
       case exception: Exception =>
-        println("Parsing halted by terminal error: " + exception.getMessage)
-        println("Fix Critical Errors and try again.")
+        ex.addError("Terminal parsing error: ", exception)
         logger.warn(exception.getStackTraceString)
     }
 
@@ -120,6 +119,7 @@ object LoadManager extends Logging {
       println
       println("Critical Errors found:")
       errors.foreach(println(_))
+      println("Fix Critical Errors and try again.")
       println
       false
     } else {
