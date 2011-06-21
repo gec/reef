@@ -32,6 +32,7 @@ import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +41,10 @@ import org.totalgrid.reef.integration.helpers.*;
 @SuppressWarnings("unchecked")
 public class TestMeasOverrideService extends ReefConnectionTestBase
 {
+    private Measurement clearTime( Measurement m )
+    {
+        return m.toBuilder().clearTime().build();
+    }
 
     /** Test that the measurement overrides work correctly */
     @Test
@@ -70,6 +75,14 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
         result.getSubscription().start( mock );
 
 
+        Comparator<Measurement> timeStrippedComparer = new Comparator<Measurement>() {
+            @Override
+            public int compare( Measurement m1, Measurement m2 )
+            {
+                return clearTime( m1 ).equals( clearTime( m2 ) ) ? 0 : 1;
+            }
+        };
+
         long now = System.currentTimeMillis();
 
         // create an override
@@ -78,11 +91,11 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
         MeasOverride override = overrideService.setPointOverride( p, m );
 
         // make sure we see it in the event stream
-        assertTrue( mock.waitFor( MeasurementRequestBuilders.makeSubstituted( m ), 5000 ) );
+        assertTrue( mock.waitFor( MeasurementRequestBuilders.makeSubstituted( m ), 5000, timeStrippedComparer ) );
 
         // verify that substitued value got to measurement database
         Measurement stored = measurementService.getMeasurementByPoint( p );
-        assertEquals( MeasurementRequestBuilders.makeSubstituted( m ), stored );
+        assertEquals( clearTime( MeasurementRequestBuilders.makeSubstituted( m ) ), clearTime( stored ) );
 
         List<Measurement> batch = new LinkedList<Measurement>();
 
@@ -110,15 +123,20 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
 
         // verify that last value got to measurement database
         Measurement lastValue = measurementService.getMeasurementByPoint( p );
-        assertEquals( finalValue, lastValue );
+        assertEquals( clearTime( finalValue ), clearTime( lastValue ) );
 
         // verify that we get that final value
-        assertTrue( mock.waitFor( finalValue, 5000 ) );
+        assertTrue( mock.waitFor( finalValue, 5000, timeStrippedComparer ) );
 
         // then verify that we never got the suppressed value
-        List<Measurement> measurements = mock.getPayloads();
-        assertTrue( measurements.contains( cachedValue ) );
-        assertFalse( measurements.contains( suppressedValue ) );
+        List<Measurement> measurementsWithTime = mock.getPayloads();
+        LinkedList<Measurement> measurements = new LinkedList<Measurement>();
+        for ( Measurement m1 : measurementsWithTime )
+        {
+            measurements.add( clearTime( m1 ) );
+        }
+        assertTrue( measurements.contains( clearTime( cachedValue ) ) );
+        assertFalse( measurements.contains( clearTime( suppressedValue ) ) );
 
         // put the original value back in
         batch.clear();
