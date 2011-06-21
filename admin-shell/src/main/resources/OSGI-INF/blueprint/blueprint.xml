@@ -24,9 +24,6 @@
         <command name="reef/resetdb">
             <action class="org.totalgrid.reef.shell.admin.ResetDatabaseCommand"/>
         </command>
-        <command name="reef/load">
-            <action class="org.totalgrid.reef.shell.admin.LoadConfigCommand"/>
-        </command>
         <command name="metrics/metrics">
             <action class="org.totalgrid.reef.shell.admin.MetricsShow"/>
         </command>

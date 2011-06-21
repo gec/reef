@@ -49,11 +49,6 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-loader-xml</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-core</artifactId>
             <version>0.3.1-SNAPSHOT</version>
         </dependency>

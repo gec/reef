@@ -120,6 +120,9 @@
         <command name="alarm/remove">
             <action class="org.totalgrid.reef.shell.proto.AlarmRemoveCommand"/>
         </command>
+        <command name="reef/load">
+            <action class="org.totalgrid.reef.shell.proto.LoadConfigCommand"/>
+        </command>
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
         </command>

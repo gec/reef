@@ -18,12 +18,34 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.apache.felix.gogo.commands.{ Argument, Command }
+import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 import org.totalgrid.reef.proto.Processing.TriggerSet
 import org.totalgrid.reef.proto.Model.Point
 
 import presentation.TriggerView
 import RequestFailure._
+
+@Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
+class LoadConfigCommand extends ReefCommandSupport {
+
+  @GogoOption(name = "-benchmark", aliases = Array[String](), description = "Override endpoint protocol to force all endpoints in configuration file to be simulated", required = false, multiValued = false)
+  var benchmark = false
+
+  @GogoOption(name = "-dryRun", description = "Just analyze file, don't actually send data to reef", required = false, multiValued = false)
+  var dryRun = false
+
+  @GogoOption(name = "-ignoreWarnings", description = "Still attempt upload even if configuration is invalid", required = false, multiValued = false)
+  var ignoreWarnings = false
+
+  @Argument(index = 0, name = "configFile", description = "Configuration file name with path", required = true, multiValued = false)
+  var configFile: String = null
+
+  override def doCommand(): Unit = {
+    import org.totalgrid.reef.loader.LoadManager
+    LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings)
+  }
+
+}
 
 @Command(scope = "trigger", name = "trigger", description = "Lists triggers")
 class TriggerCommand extends ReefCommandSupport {

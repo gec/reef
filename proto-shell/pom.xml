@@ -55,6 +55,11 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-loader-xml</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto</artifactId>
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>

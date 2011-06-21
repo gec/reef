@@ -40,23 +40,3 @@ class ResetDatabaseCommand extends ReefCommandSupport {
 
 }
 
-@Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
-class LoadConfigCommand extends ReefCommandSupport {
-
-  @GogoOption(name = "-benchmark", aliases = Array[String](), description = "Override endpoint protocol to force all endpoints in configuration file to be simulated", required = false, multiValued = false)
-  private var benchmark = false
-
-  @GogoOption(name = "-dryRun", description = "Just analyze file, don't actually send data to reef", required = false, multiValued = false)
-  private var dryRun = false
-
-  @GogoOption(name = "-ignoreWarnings", description = "Still attempt upload even if configuration is invalid", required = false, multiValued = false)
-  private var ignoreWarnings = false
-
-  @Argument(index = 0, name = "configFile", description = "Configuration file name with path", required = true, multiValued = false)
-  private var configFile: String = null
-
-  override def doCommand(): Unit = {
-    LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings)
-  }
-
-}
