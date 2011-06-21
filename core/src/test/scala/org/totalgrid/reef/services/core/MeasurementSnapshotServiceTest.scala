@@ -1,5 +1,3 @@
-package org.totalgrid.reef.services.core
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,19 +16,20 @@ package org.totalgrid.reef.services.core
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.services.core
+
 import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.measurementstore.MeasSink.Meas
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 
+import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+
 import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-
-import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.japi.ExpectationException
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -42,7 +41,7 @@ class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
 class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll // with RunTestsInsideTransaction
 {
 
-  def getMeas(name: String, time: Int) = {
+  def makeMeas(name: String, time: Int) = {
     val meas = Measurements.Measurement.newBuilder
     meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(0)
     meas.setQuality(Measurements.Quality.newBuilder.build)
@@ -50,25 +49,50 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
     meas.build
   }
 
+  def getMeas(names: String*) = {
+    import scala.collection.JavaConversions._
+    MeasurementSnapshot.newBuilder().addAllPointNames(names).build
+  }
+
   test("Get Measurements from RTDB") {
-    AMQPFixture.mock(true) { amqp =>
-      val points = Map("meas1" -> getMeas("meas1", 0), "meas2" -> getMeas("meas2", 0))
-      val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+    val points = Map("meas1" -> makeMeas("meas1", 0), "meas2" -> makeMeas("meas2", 0))
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
 
-      val info = ReefServicesList.getServiceInfo(classOf[MeasurementSnapshot])
+    val getMeas1 = service.get(getMeas("meas1")).expectOne()
+    getMeas1.getMeasurementsCount() should equal(1)
 
-      amqp.bindService(info.descriptor.id, service.respond)
+    val getMeas1and2 = service.get(getMeas("meas1", "meas2")).expectOne()
+    getMeas1and2.getMeasurementsCount() should equal(2)
 
-      val client = amqp.getProtoClientSession(ReefServicesList, 500000)
+    val getAllMeas = service.get(getMeas("*")).expectOne()
+    getAllMeas.getMeasurementsCount() should equal(0)
+  }
 
-      val getMeas1 = client.get(MeasurementSnapshot.newBuilder().addPointNames("meas1").build).await().expectOne()
-      getMeas1.getMeasurementsCount() should equal(1)
+  test("Bad Request for unknown points") {
+    val points = Map("meas" -> makeMeas("meas1", 0))
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
 
-      val getMeas1and2 = client.get(MeasurementSnapshot.newBuilder().addPointNames("meas1").addPointNames("meas2").build).await().expectOne()
-      getMeas1and2.getMeasurementsCount() should equal(2)
-
-      val getAllMeas = client.get(MeasurementSnapshot.newBuilder().addPointNames("*").build).await().expectOne()
-      getAllMeas.getMeasurementsCount() should equal(0)
+    val exception = intercept[ExpectationException] {
+      service.get(getMeas("crazyName")).expectOne()
     }
+    exception.getMessage should include("crazyName")
+  }
+
+  test("Bad Request for some unknown points") {
+    val points = Map("meas" -> makeMeas("meas1", 0))
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+
+    val exception = intercept[ExpectationException] {
+      service.get(getMeas("meas", "crazyName")).expectOne()
+    }
+    exception.getMessage should include("crazyName")
+  }
+
+  test("Blank Request returns ok") {
+    val points = Map("meas" -> makeMeas("meas1", 0))
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+
+    val result = service.get(getMeas()).expectOne()
+    result.getPointNamesCount should equal(0)
   }
 }

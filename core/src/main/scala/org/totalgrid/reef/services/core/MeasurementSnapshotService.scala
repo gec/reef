@@ -28,9 +28,9 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.japi.{ ExpectationException, BadRequestException, Envelope }
 
 class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementSnapshot] {
 
@@ -45,7 +45,7 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
     env.subQueue.foreach(subQueue => measList.map(_.replace("*", "#")).foreach(key => subHandler.bind(subQueue, key)))
 
     val searchList = if (measList.size == 1 && measList.head == "*") {
-      measList // TODO: get list of all points from other source
+      Nil // TODO: get list of all points from other source
     } else {
       measList
     }
@@ -53,9 +53,16 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
     val b = MeasurementSnapshot.newBuilder()
     // clients shouldn't ask for 0 measurements but if they do we should just return a blank rather than an error.
     if (searchList.size > 0) {
-      val measurements = cm.get(searchList)
-      b.addAllMeasurements(measurements.values())
-      b.addAllPointNames(measurements.values().map(_.getName).toList)
+      val measurements = cm.get(searchList).values()
+      val foundNames = measurements.map(_.getName).toList
+
+      val missing = searchList.diff(foundNames)
+      if (!missing.isEmpty) {
+        throw new ExpectationException("Couldn't find measurements: " + missing.mkString(", "))
+      }
+
+      b.addAllPointNames(foundNames)
+      b.addAllMeasurements(measurements)
     }
     Response(Envelope.Status.OK, b.build :: Nil)
   }
