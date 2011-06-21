@@ -44,6 +44,7 @@
         <module>admin-shell</module>
         <module>branding</module>
         <module>assembly</module>
+        <module>loader-xml</module>
     </modules>
 
     <repositories>

@@ -26,6 +26,7 @@
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-api/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-squeryl/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-api/0.3.1-SNAPSHOT</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-loader-xml/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='80'>mvn:org.totalgrid.reef/reef-admin-shell/0.3.1-SNAPSHOT</bundle>
 	</feature>    
 	<feature name="reef" version="0.3.1-SNAPSHOT">

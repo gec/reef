@@ -28,10 +28,10 @@
                     <instructions>
                         <Bundle-Name>Reef Core</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
-                        <Export-Package>org.totalgrid.reef.app, org.totalgrid.reef.event, org.totalgrid.reef.frontend.*,
+                        <Export-Package>org.totalgrid.reef.app, org.totalgrid.reef.event,
                             org.totalgrid.reef.measproc.*, org.totalgrid.reef.measurementstore.*,
                             org.totalgrid.reef.models, org.totalgrid.reef.persistence.*, org.totalgrid.reef.procstatus,
-                            org.totalgrid.reef.services.*, org.totalgrid.reef.loader.*
+                            org.totalgrid.reef.services.*
                         </Export-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>

@@ -36,7 +36,6 @@ class NullExceptionCollector extends ExceptionCollector {
 
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
-  import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   case class Fixture(client: MockSyncOperations, loader: EquipmentLoader, model: EquipmentModel)
   type FixtureParam = Fixture

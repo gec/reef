@@ -31,7 +31,6 @@ import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
-  import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   case class Fixture(client: MockSyncOperations, loader: ModelLoader, config: sx.Configuration)
   type FixtureParam = Fixture

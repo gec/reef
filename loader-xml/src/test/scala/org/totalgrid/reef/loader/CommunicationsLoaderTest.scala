@@ -36,7 +36,6 @@ import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
-  import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   val samplesPath = "assembly/src/main/filtered-resources/samples/"
 

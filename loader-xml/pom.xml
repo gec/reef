@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>reef-admin-shell</artifactId>
-    <packaging>bundle</packaging>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
         <version>0.3.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
+    <artifactId>reef-loader-xml</artifactId>
+    <packaging>bundle</packaging>
 
     <licenses>
         <license>
@@ -26,9 +26,12 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Admin Shell Extension</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.shell.admin.*</Export-Package>
+                        <Bundle-Name>Reef Xml Loader</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <Export-Package>
+                            org.totalgrid.reef.loader.*
+                        </Export-Package>
+                        <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
             </plugin>
@@ -44,38 +47,20 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto-shell</artifactId>
+            <artifactId>reef-amqp</artifactId>
             <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-loader-xml</artifactId>
+            <artifactId>reef-util</artifactId>
             <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-core</artifactId>
+            <artifactId>reef-xml</artifactId>
             <version>0.3.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_2.8.0</artifactId>
-            <version>2.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.karaf.shell</groupId>
-            <artifactId>org.apache.karaf.shell.console</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${felixCoreVersion}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
