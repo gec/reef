@@ -21,7 +21,7 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.event.EventType._
-import org.totalgrid.reef.frontend.KeyedMap
+import org.totalgrid.reef.app.KeyedMap
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle, LifecycleManager }
 import org.totalgrid.reef.proto.Measurements._

@@ -20,8 +20,6 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP.CommChannel
-import org.totalgrid.reef.messaging.Connection
-
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
@@ -31,6 +29,8 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.broker.CloseableChannel
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.messaging.{ OrderedServiceTransmitter, Connection }
+import org.totalgrid.reef.app.KeyedMap
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedMap[ConnProto] {

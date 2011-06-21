@@ -19,11 +19,10 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination }
-import org.totalgrid.reef.sapi.client.{ Failure, Response, SessionPool }
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.sapi.Destination
 import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
+import org.totalgrid.reef.promise.Promise
+import org.totalgrid.reef.messaging.OrderedServiceTransmitter
 
 class IdentityOrderedPublisher[A](
   tx: OrderedServiceTransmitter,
@@ -40,53 +39,3 @@ class OrderedPublisher[A, B](
   def publish(value: A): Promise[Boolean] = tx.publish(transform(value), verb, address, maxRetries)
 }
 
-class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) extends Logging {
-
-  private case class Record(value: Any, verb: Envelope.Verb, destination: Destination, maxRetries: Int, promise: SynchronizedPromise[Boolean])
-
-  private val queue = new scala.collection.mutable.Queue[Record]
-  private var transmitting = false
-
-  def publish(value: Any,
-    verb: Envelope.Verb = Envelope.Verb.POST,
-    address: Destination = AnyNodeDestination,
-    maxRetries: Int = 0): Promise[Boolean] = queue.synchronized {
-
-    if (queue.size >= maxQueueSize) queue.wait
-
-    val promise = new SynchronizedPromise[Boolean]
-    queue.enqueue(Record(value, verb, address, maxRetries, promise))
-    checkForTransmit()
-    promise
-  }
-
-  private def checkForTransmit(): Boolean = {
-    if (queue.size > 0) {
-      transmitting = true
-      val record = queue.dequeue()
-      publish(record, record.maxRetries)
-      true
-    } else false
-  }
-
-  private def publish(record: Record, retries: Int): Unit = pool.borrow { s =>
-    s.request(record.verb, record.value, destination = record.destination).listen(onResponse(record, retries))
-  }
-
-  private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {
-    case failure: Failure =>
-      if (retries > 0) publish(record, retries - 1)
-      else complete(record.promise, false)
-
-    case _ => complete(record.promise, true)
-  }
-
-  private def complete(promise: SynchronizedPromise[Boolean], result: Boolean) = {
-    promise.onResponse(result)
-    queue.synchronized {
-      transmitting = false
-      if (!checkForTransmit()) queue.notify()
-    }
-  }
-
-}

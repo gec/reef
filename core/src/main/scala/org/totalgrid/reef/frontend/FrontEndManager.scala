@@ -30,13 +30,9 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 import org.totalgrid.reef.app.ServiceHandler
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
-import java.io.File
-import org.totalgrid.reef.sapi.client.{ ScatterGather, Response, ClientSession, SingleSuccess }
-import org.totalgrid.reef.proto.Model.ConfigFile
-import org.totalgrid.reef.loader.sx.communications.Endpoint
+import org.totalgrid.reef.sapi.client.{ Response, ClientSession, SingleSuccess }
 
 class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
     extends Lifecycle with ServiceContext[ConnProto] with Logging {
