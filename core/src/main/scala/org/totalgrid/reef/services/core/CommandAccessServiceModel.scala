@@ -132,14 +132,20 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     accEntry
   }
 
-  def selectCommands(user: String, expireTime: Option[Long], commands: List[String]): AccessModel = {
-    val cmds = CommandModel.findByNames(commands)
+  def selectCommands(user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
 
-    if (cmds.size != commands.size)
-      throw new BadRequestException("Commands not found")
+    // just remove duplicate names from request
+    val commands = commandsRequested.distinct
 
-    val cmdIds = from(cmds)(t => select(t.id))
-    if (areAnyBlockedById(cmdIds.toList))
+    val cmds = CommandModel.findByNames(commands).toList
+
+    if (cmds.size != commands.size) {
+      val missing = commands.diff(cmds.map { _.entityName })
+      throw new BadRequestException("Not all commands were found: " + missing.mkString(", "))
+    }
+
+    val cmdIds = cmds.map { _.id }
+    if (areAnyBlockedById(cmdIds))
       throw new UnauthorizedException("One or more commands are blocked")
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))

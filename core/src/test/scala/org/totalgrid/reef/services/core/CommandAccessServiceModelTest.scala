@@ -269,4 +269,13 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
       existsJoinBetween(inserted.id, id) should equal(true)
   }
 
+  test("Same command name multiple times") {
+    val r = new TestRig
+    r.seed("cmd01")
+
+    val expireTime = System.currentTimeMillis + 5000
+    r.model.selectCommands("user01", Some(expireTime), List("cmd01", "cmd01"))
+
+    checkAccess(AccessMode.ALLOWED.getNumber, Some(expireTime), Some("user01"))
+  }
 }
