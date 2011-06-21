@@ -34,13 +34,13 @@ import org.totalgrid.reef.loader.equipment._
  */
 class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: ExceptionCollector) extends Logging {
 
-  val equipmentProfiles = HashMap[String, EquipmentType]()
-  val pointProfiles = HashMap[String, PointProfile]()
-  val commands = HashMap[String, CommandProto]()
-  val commandEntities = HashMap[String, Entity]()
+  val equipmentProfiles = LoaderMap[EquipmentType]("Equipment Profile")
+  val pointProfiles = LoaderMap[PointProfile]("Point Profile")
+  val commands = LoaderMap[CommandProto]("Command")
+  val commandEntities = LoaderMap[Entity]("Command Entitie")
 
   // map of points to units
-  val equipmentPointUnits = HashMap[String, String]()
+  val equipmentPointUnits = LoaderMap[String]("Point Unit")
 
   /**
    * Reset all class variables

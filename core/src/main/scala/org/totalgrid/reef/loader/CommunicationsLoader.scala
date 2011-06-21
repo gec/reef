@@ -46,12 +46,12 @@ object CommunicationsLoader {
  */
 class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: ExceptionCollector) extends Logging {
 
-  val controlProfiles = HashMap[String, ControlProfile]()
-  val pointProfiles = HashMap[String, PointProfile]()
-  val endpointProfiles = HashMap[String, EndpointType]()
-  val equipmentProfiles = HashMap[String, EquipmentType]()
+  val controlProfiles = LoaderMap[ControlProfile]("Control Profile")
+  val pointProfiles = LoaderMap[PointProfile]("Point Profile")
+  val endpointProfiles = LoaderMap[EndpointType]("Endpoint Profile")
+  val equipmentProfiles = LoaderMap[EquipmentType]("Equipment Profile")
 
-  val interfaces = HashMap[String, Interface]()
+  val interfaces = LoaderMap[Interface]("Interface (port)")
 
   /**
    * Reset all class variables
