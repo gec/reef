@@ -23,10 +23,10 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
-import org.totalgrid.reef.loader.communications.Scale
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
+import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, ConfigFile => ConfigFileProto }
+import java.io.File
 
 /**
  * Utility methods to crate protos
@@ -404,4 +404,22 @@ object ProtoUtils {
     proto.build
   }
 
+  /**
+   * Create a ConfigFile proto.
+   */
+  def toConfigFile(file: File, configFileName: String, ex: ExceptionCollector): ConfigFileProto = {
+    val proto = ConfigFileProto.newBuilder
+      .setName(configFileName)
+      .setMimeType("text/xml")
+
+    ex.collect("Config Files:") {
+      try {
+        proto.setFile(com.google.protobuf.ByteString.copyFrom(scala.io.Source.fromFile(file).mkString.getBytes))
+      } catch {
+        case f: Exception =>
+          throw new LoadingException("Error loading config file: " + file + " Message: " + f.getMessage)
+      }
+    }
+    proto.build
+  }
 }

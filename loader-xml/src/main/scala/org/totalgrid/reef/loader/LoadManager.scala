@@ -44,7 +44,7 @@ object LoadManager extends Logging {
 
       val loader = new CachingModelLoader(None)
 
-      val valid = loadConfiguration(loader, xml, benchmark, file.getParentFile)
+      val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
 
       logger.info("Finished analyzing configuration '" + filename + "'")
 
@@ -66,7 +66,7 @@ object LoadManager extends Logging {
 
   }
 
-  def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, path: File = new File(".")): Boolean = {
+  def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, configurationFile: Option[(File, String)] = None, path: File = new File(".")): Boolean = {
 
     var equipmentPointUnits = HashMap[String, String]()
     val actionModel = HashMap[String, ActionSet]()
@@ -99,6 +99,12 @@ object LoadManager extends Logging {
         val comModel = xml.getCommunicationsModel
         comLoader.load(comModel, path, equipmentPointUnits, benchmark)
       }
+
+      configurationFile.foreach {
+        case (thisFile, fileName) =>
+          client.putOrThrow(ProtoUtils.toConfigFile(thisFile, fileName, ex))
+      }
+
     } catch {
       case exception: Exception =>
         ex.addError("Terminal parsing error: ", exception)

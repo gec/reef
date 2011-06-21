@@ -272,7 +272,9 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   }
 
   def processConfigFiles(protocol: Protocol, path: File): List[Model.ConfigFile.Builder] = {
-    val cfs = protocol.getConfigFile.toList.map(toConfigFile(path, _).build)
+    val cfs = protocol.getConfigFile.toList.map(c => {
+      ProtoUtils.toConfigFile(new File(path, c.getName), c.getName, ex)
+    })
     cfs.foreach(cf => client.putOrThrow(cf))
     cfs.map(_.toBuilder)
   }
@@ -537,30 +539,6 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     commands.foreach(proto.addCommands(_))
     points.foreach(proto.addPoints(_))
-
-    proto
-  }
-
-  /**
-   * Create a ConfigFile proto.
-   * TODO: it would be nice if we did NOT put the same config file multiple times.
-   */
-  def toConfigFile(path: File, configFile: ConfigFile): Model.ConfigFile.Builder = {
-
-    val proto = Model.ConfigFile.newBuilder
-      .setName(configFile.getName)
-      .setMimeType("text/xml")
-
-    ex.collect("Config Files:") {
-      try {
-        val file = new File(path, configFile.getName)
-        proto.setFile(com.google.protobuf.ByteString.copyFrom(scala.io.Source.fromFile(file).mkString.getBytes))
-      } catch {
-        case f: Exception =>
-          throw new LoadingException("Error loading config file: " + path + " Message: " + f.getMessage)
-          logger.error(f.getMessage, f)
-      }
-    }
 
     proto
   }
