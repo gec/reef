@@ -37,14 +37,14 @@ object TestDescriptors {
     def serialize(typ: Envelope.RequestHeader): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
     def getKlass = classOf[Envelope.RequestHeader]
-    def id = getKlass.toString
+    def id = "request_headers"
   }
 
   def serviceNotification() = new TypeDescriptor[Envelope.ServiceNotification] {
     def serialize(typ: Envelope.ServiceNotification): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = Envelope.ServiceNotification.parseFrom(bytes)
     def getKlass = classOf[Envelope.ServiceNotification]
-    def id = getKlass.toString
+    def id = "service_notifcations"
   }
 }
 
