@@ -58,7 +58,7 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
 
       val missing = searchList.diff(foundNames)
       if (!missing.isEmpty) {
-        throw new ExpectationException("Couldn't find measurements: " + missing.mkString(", "))
+        throw new BadRequestException("Couldn't find measurements: " + missing.mkString(", "))
       }
 
       b.addAllPointNames(foundNames)
