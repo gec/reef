@@ -29,7 +29,7 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.japi.ExpectationException
+import org.totalgrid.reef.japi.BadRequestException
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -72,7 +72,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
     val points = Map("meas" -> makeMeas("meas1", 0))
     val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
 
-    val exception = intercept[ExpectationException] {
+    val exception = intercept[BadRequestException] {
       service.get(getMeas("crazyName")).expectOne()
     }
     exception.getMessage should include("crazyName")
@@ -82,7 +82,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
     val points = Map("meas" -> makeMeas("meas1", 0))
     val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
 
-    val exception = intercept[ExpectationException] {
+    val exception = intercept[BadRequestException] {
       service.get(getMeas("meas", "crazyName")).expectOne()
     }
     exception.getMessage should include("crazyName")
