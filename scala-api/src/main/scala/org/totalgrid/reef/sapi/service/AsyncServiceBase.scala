@@ -73,7 +73,7 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
       case x: Exception =>
         logger.error(x.getMessage, x)
         val msg = x.getMessage + "\n" + x.getStackTraceString
-        callback.onResponse(getFailure(req.getId, Envelope.Status.BAD_REQUEST, msg))
+        callback.onResponse(getFailure(req.getId, Envelope.Status.INTERNAL_ERROR, msg))
     }
   }
 

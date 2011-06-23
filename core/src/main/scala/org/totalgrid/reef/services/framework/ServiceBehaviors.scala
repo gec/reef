@@ -135,7 +135,8 @@ object ServiceBehaviors {
         model.setEnv(env)
         env.subQueue.foreach(subscribe(model, req, _))
         val deleted = doDelete(model, req, env)
-        Response(Envelope.Status.DELETED, deleted)
+        val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
+        Response(status, deleted)
       }
     }
 
