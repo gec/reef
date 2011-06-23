@@ -29,6 +29,7 @@ import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.japi.{ BadRequestException }
 import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.models.Entity
 
 class EntityService extends SyncServiceBase[EntityProto] {
 
@@ -61,8 +62,24 @@ class EntityService extends SyncServiceBase[EntityProto] {
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     inTransaction {
-      val result = EQ.fullQuery(req);
+      EQ.checkAllTypesInSystem(req)
+      val result = EQ.fullQuery(req)
       Response(Status.OK, result)
+    }
+  }
+
+  override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
+    // TODO: cannot delete entities with "built in types" repersentations still around
+    inTransaction {
+      val entities = EQ.fullQueryAsModels(req);
+
+      val (results, status) = entities match {
+        case Nil => (req :: Nil, Status.NOT_MODIFIED)
+        case l: List[Entity] =>
+          EQ.deleteEntities(entities)
+          (entities.map { EQ.entityToProto(_).build }, Status.DELETED)
+      }
+      Response(status, results)
     }
   }
 }
@@ -86,8 +103,8 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
   override def put(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
 
     inTransaction {
-      val parentEntity = EQ.findEntity(req.getParent).getOrElse(throw new Exception("cannot find parent"))
-      val childEntity = EQ.findEntity(req.getChild).getOrElse(throw new Exception("cannot find child"))
+      val parentEntity = EQ.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent"))
+      val childEntity = EQ.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child"))
       val existingEdge = EQ.findEdge(parentEntity, childEntity, req.getRelationship)
 
       val (edge, status) = existingEdge match {
@@ -95,6 +112,26 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
         case None => (EQ.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
       }
       val proto = convertToProto(edge)
+      Response(status, proto :: Nil)
+    }
+  }
+
+  override def delete(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
+
+    inTransaction {
+
+      val existingEdge: Option[EntityEdge] = EQ.findEntity(req.getParent).flatMap { parent =>
+        EQ.findEntity(req.getChild).flatMap { child =>
+          EQ.findEdge(parent, child, req.getRelationship)
+        }
+      }
+
+      val (proto, status) = existingEdge match {
+        case Some(edge) =>
+          EQ.deleteEdge(edge)
+          (convertToProto(edge), Status.DELETED)
+        case None => (req, Status.NOT_MODIFIED)
+      }
       Response(status, proto :: Nil)
     }
   }

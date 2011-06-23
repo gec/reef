@@ -26,6 +26,7 @@ object ApplicationSchema extends Schema {
   val edges = table[EntityEdge]
   val derivedEdges = table[EntityDerivedEdge]
   val entityTypes = table[EntityToTypeJoins]
+  val entityTypeMetaModel = table[EntityTypeMetaModel]
 
   val entityAttributes = table[EntityAttribute]
 
