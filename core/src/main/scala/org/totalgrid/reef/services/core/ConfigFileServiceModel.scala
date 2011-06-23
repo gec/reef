@@ -85,6 +85,16 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
     update(sql, existing)
   }
 
+  override def preDelete(sql: ConfigFile) {
+    // TODO: figure out how to break config file owner dependency, just allow delete for now
+    //if (!sql.owners.value.isEmpty)
+    //  throw new BadRequestException("Cannot delete config file that is owned by: " + sql.owners.value.map { _.name })
+  }
+
+  override def postDelete(sql: ConfigFile) {
+    EQ.deleteEntity(sql.entity.value)
+  }
+
   private def updateUsingEntities(req: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
     val updatedEntities = req.getEntitiesList.toList.map { e => EQ.findEntity(e).get }

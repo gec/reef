@@ -103,12 +103,7 @@ class MeasurementStreamCoordinator(
     measProcModel.delete(assignedMeasProc)
 
     val assignedFep = fepAssignmentTable.where(fep => fep.endpointId === ce.id).single
-    if (assignedFep.onlineTime.isDefined) {
-      val newAssign = assignedFep.copy(serviceRoutingKey = None)
-      fepConnection.update(newAssign, assignedFep)
-    } else {
-      fepConnection.delete(assignedFep)
-    }
+    fepConnection.delete(assignedFep)
   }
 
   /**
@@ -132,7 +127,7 @@ class MeasurementStreamCoordinator(
   private def determineFepAssignment(assign: FrontEndAssignment, ce: CommunicationEndpoint): Option[FrontEndAssignment] = {
 
     // if the measuremntProcessor has collected all its resources we can assign an fep by giving it a service routing key
-    val measAssign: MeasProcAssignment = assign.endpoint.value.get.measProcAssignment.value
+    val measAssign: MeasProcAssignment = ce.measProcAssignment.value
     val serviceRoutingKey = measAssign.readyTime.flatMap { x => measAssign.serviceRoutingKey }
 
     // lookup a compatible FEP only if the connection is enabled
@@ -173,6 +168,7 @@ class MeasurementStreamCoordinator(
   def onFepConnectionChange(sql: FrontEndAssignment, existing: FrontEndAssignment) {
 
     val endpoint = sql.endpoint.value.get
+    endpoint.entity.value // preload LazyVar entity since it may be deleted by the time event is rendered
 
     val online = sql.state == onlineState
     if (online) {
@@ -193,7 +189,7 @@ class MeasurementStreamCoordinator(
    * to either enable or disable them
    */
   def onMeasProcAssignmentChanged(meas: MeasProcAssignment) {
-    logger.info("MeasProc Change, rechecking: " + meas.endpoint.value.get.entityName + " readyTime: " + meas.readyTime + " key: " + meas.serviceRoutingKey)
+    logger.info("MeasProc Change, rechecking: " + meas.endpoint.value.map { _.entityName } + " readyTime: " + meas.readyTime + " key: " + meas.serviceRoutingKey)
     fepAssignmentTable.where(fep => fep.endpointId === meas.endpointId).headOption.foreach { assign =>
       checkFepAssignment(assign, assign.endpoint.value.get)
     }

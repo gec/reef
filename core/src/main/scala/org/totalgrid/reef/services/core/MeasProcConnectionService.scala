@@ -80,13 +80,7 @@ class MeasurementProcessingConnectionServiceModel(
     update(updated, existing)
   }
 
-  override def postCreate(sql: MeasProcAssignment) {
-    coordinator.onMeasProcAssignmentChanged(sql)
-  }
   override def postUpdate(sql: MeasProcAssignment, existing: MeasProcAssignment) {
-    coordinator.onMeasProcAssignmentChanged(sql)
-  }
-  override def postDelete(sql: MeasProcAssignment) {
     coordinator.onMeasProcAssignmentChanged(sql)
   }
 

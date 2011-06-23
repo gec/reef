@@ -81,7 +81,18 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
       EQ.addEdge(dataSource, p.entity.value, "source")
       update(p, p)
     })
+  }
 
+  override def preDelete(entry: Command) {
+    entry.logicalNode.value match {
+      case Some(parent) =>
+        throw new BadRequestException("Cannot delete command: " + entry.entityName + " while it is still assigned to logicalNode " + parent.name)
+      case None => // no endpoint so we are free to delete command
+    }
+  }
+
+  override def postDelete(entry: Command) {
+    EQ.deleteEntity(entry.entity.value)
   }
 }
 

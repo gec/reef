@@ -93,7 +93,18 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler)
       EQ.addEdge(dataSource, p.entity.value, "source")
       update(p, p)
     })
+  }
 
+  override def preDelete(entry: Point) {
+    entry.logicalNode.value match {
+      case Some(parent) =>
+        throw new BadRequestException("Cannot delete point: " + entry.entityName + " while it is still assigned to logicalNode " + parent.name)
+      case None => // no endpoint so we are free to delete point
+    }
+  }
+
+  override def postDelete(entry: Point) {
+    EQ.deleteEntity(entry.entity.value)
   }
 }
 

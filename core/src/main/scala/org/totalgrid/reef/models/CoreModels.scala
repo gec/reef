@@ -113,6 +113,8 @@ case class FrontEndPort(
     var proto: Array[Byte]) extends EntityBasedModel(_entityId) {
 
   def this() = this(new UUID(0, 0), Some(""), Some(""), 0, Array.empty[Byte])
+
+  val endpoints = LazyVar(ApplicationSchema.endpoints.where(ce => ce.frontEndPortId === Some(entityId)).toList)
 }
 
 case class ConfigFile(

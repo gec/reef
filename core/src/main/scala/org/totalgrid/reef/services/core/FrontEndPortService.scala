@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 import org.totalgrid.reef.services.framework._
 
@@ -70,6 +70,15 @@ class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHand
     extends SquerylServiceModel[ChannelProto, FrontEndPort]
     with EventedServiceModel[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {
+
+  override def preDelete(sql: FrontEndPort) {
+    if (!sql.endpoints.value.isEmpty)
+      throw new BadRequestException("Cannot delete communication channel that is used by: " + sql.endpoints.value.map { _.entityName })
+  }
+
+  override def postDelete(sql: FrontEndPort) {
+    EQ.deleteEntity(sql.entity.value)
+  }
 }
 
 object FrontEndPortConversion extends FrontEndPortConversion
