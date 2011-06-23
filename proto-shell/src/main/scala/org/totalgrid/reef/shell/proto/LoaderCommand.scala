@@ -34,6 +34,9 @@ class LoadConfigCommand extends ReefCommandSupport {
   @GogoOption(name = "-dryRun", description = "Just analyze file, don't actually send data to reef", required = false, multiValued = false)
   var dryRun = false
 
+  @GogoOption(name = "-d", description = "Delete all objects in configuration file from server", required = false, multiValued = false)
+  var delete = false
+
   @GogoOption(name = "-ignoreWarnings", description = "Still attempt upload even if configuration is invalid", required = false, multiValued = false)
   var ignoreWarnings = false
 
@@ -42,7 +45,7 @@ class LoadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
     import org.totalgrid.reef.loader.LoadManager
-    LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings)
+    LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings, !delete)
   }
 
 }

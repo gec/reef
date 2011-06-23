@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 
 object StandaloneLoader {
-  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean, username: String, password: String): Unit = {
+  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean, create: Boolean, username: String, password: String): Unit = {
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
@@ -53,7 +53,7 @@ object StandaloneLoader {
         client
       }
 
-      LoadManager.loadFile(client, filename, benchmark, dryRun)
+      LoadManager.loadFile(client, filename, benchmark, dryRun, false, create)
 
     } finally {
       amqp.disconnect(5000)
@@ -72,6 +72,7 @@ object StandaloneLoader {
     var filename: Option[String] = None
     var benchmark = false
     var dryRun = false
+    var create = true
     var username = "core"
     var password = "core"
 
@@ -90,6 +91,8 @@ object StandaloneLoader {
             filename = Some(args.head)
           case "-benchmark" =>
             benchmark = true
+          case "-d" =>
+            create = false
           case "-dryRun" =>
             dryRun = true
           case "-u" =>
@@ -117,7 +120,7 @@ object StandaloneLoader {
       val broker = new QpidBrokerConnection(dbInfo)
     }
 
-    run(amqp, filename.get, benchmark, dryRun, username, password)
+    run(amqp, filename.get, benchmark, dryRun, create, username, password)
   }
 
   /**
@@ -145,6 +148,7 @@ object StandaloneLoader {
     println("  -benchmark         Override endpoint protocol to force all endpoints in")
     println("                     configuration file to be simulated.")
     println("  -dryRun            Only validate the file, dont upload to server")
+    println("  -d                 Delete represented model from server")
     println("  -u <username>      Set the username to load as.")
     println("  -p <password>      Set the password for username")
     println("")

@@ -36,7 +36,7 @@ class SymbolResponseProgressRenderer(stream: PrintStream) extends ResponseProgre
     stream.flush()
   }
 
-  def update(status: Status) = {
+  def update(status: Status, request: AnyRef) = {
     val char = status match {
       case Status.OK => "o"
       case Status.CREATED => "+"
@@ -46,6 +46,7 @@ class SymbolResponseProgressRenderer(stream: PrintStream) extends ResponseProgre
       case _ => "!"
     }
     stream.print(char)
+    //stream.print(status.toString + "-" + request.getClass.getSimpleName + "\n")
     stream.flush()
 
     counts.get(status) match {

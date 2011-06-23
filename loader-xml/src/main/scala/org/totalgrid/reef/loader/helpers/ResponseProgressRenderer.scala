@@ -23,7 +23,7 @@ import org.totalgrid.reef.japi.Envelope
 
 trait ResponseProgressRenderer {
   def start(size: Int)
-  def update(status: Envelope.Status)
+  def update(status: Envelope.Status, request: AnyRef)
   def finish
 }
 

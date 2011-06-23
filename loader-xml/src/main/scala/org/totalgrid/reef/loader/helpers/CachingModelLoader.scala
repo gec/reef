@@ -26,7 +26,7 @@ import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.sapi.client.{ Response, RestOperations }
 import org.totalgrid.reef.loader.ModelLoader
 
-class CachingModelLoader(client: Option[RestOperations]) extends ModelLoader {
+class CachingModelLoader(client: Option[RestOperations], create: Boolean = true) extends ModelLoader {
 
   private var puts = List.empty[AnyRef]
 
@@ -56,14 +56,20 @@ class CachingModelLoader(client: Option[RestOperations]) extends ModelLoader {
   def flush(client: RestOperations, progressMeter: Option[ResponseProgressRenderer]) = {
     progressMeter.foreach(_.start(puts.size + triggers.size))
 
-    def handle[A <: AnyRef](promise: Promise[Response[A]]) {
+    def handle[A <: AnyRef](promise: Promise[Response[A]], request: AnyRef) {
       val rsp = promise.await
-      val results = rsp.expectMany()
-      progressMeter.foreach(_.update(rsp.status))
+
+      // check the response for any non-successful requests
+      rsp.expectMany()
+
+      progressMeter.foreach(_.update(rsp.status, request))
     }
 
-    puts.reverse.foreach { x => handle(client.put(x)) }
-    triggers.foreach { case (name, tset) => handle(client.put(tset)) }
+    val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
+
+    if (create) uploadOrder.foreach { x => handle(client.put(x), x) }
+    else uploadOrder.reverse.foreach { x => handle(client.delete(x), x) }
+
     puts = Nil
     triggers.clear
 

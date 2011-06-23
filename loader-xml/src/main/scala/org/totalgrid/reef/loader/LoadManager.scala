@@ -33,7 +33,7 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
+  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false, createConfiguration: Boolean = true) = {
 
     logger.info("Loading configuration file '" + filename + "'")
 
@@ -42,7 +42,7 @@ object LoadManager extends Logging {
 
       val xml = XMLHelper.read(file, classOf[Configuration])
 
-      val loader = new CachingModelLoader(None)
+      val loader = new CachingModelLoader(None, createConfiguration)
 
       val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
 
