@@ -20,7 +20,6 @@
 		<feature>reef-remote-shell</feature>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-metrics/0.3.1-SNAPSHOT</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-core/0.3.1-SNAPSHOT</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-xml/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-postgresql/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-api/0.3.1-SNAPSHOT</bundle>

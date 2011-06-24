@@ -31,6 +31,7 @@
                         <Export-Package>
                             org.totalgrid.reef.loader.*
                         </Export-Package>
+                        <Private-Package>org.totalgrid.reef.xml.*</Private-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
@@ -41,6 +42,27 @@
                 <configuration>
                     <header>../AGPL_FILE_HEADER</header>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                    <execution>
+                        <id>configuration</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>../schema/xsd</schemaDirectory>
+                            <schemaFiles>configuration.xsd</schemaFiles>
+                            <staleFile>${project.build.directory}/generated-sources/jaxb/.ConfigurationStaleFlag
+                            </staleFile>
+                            <clearOutputDir>false</clearOutputDir>
+                            <!-- don't remove the previous generated source -->
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -58,10 +80,14 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-xml</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.0.3</version>
         </dependency>
     </dependencies>
 </project>

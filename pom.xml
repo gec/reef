@@ -20,7 +20,6 @@
         <module>scala-api</module>
         <module>api-request</module>
         <module>java-rest-api</module>
-        <module>xml</module>
         <module>util</module>
         <module>metrics</module>
         <module>amqp</module>

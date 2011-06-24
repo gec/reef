@@ -1,3 +1,5 @@
+package org.totalgrid.reef.protocol.dnp3
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.util
-
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -26,9 +26,10 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.xml.dnp3.{ Master, Stack, AppLayer, LinkLayer }
 import java.io.{ FileWriter, File }
+import org.totalgrid.reef.util.XMLHelper
 
 @RunWith(classOf[JUnitRunner])
-class XMLHelperTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
+class XmlBindingTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
 
   val fname = "master.xml.tmp"
 
