@@ -18,14 +18,12 @@
  */
 package org.totalgrid.reef.shell.admin
 
-import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
+import org.apache.felix.gogo.commands.Command
 import org.totalgrid.reef.shell.proto.ReefCommandSupport
 
 import org.totalgrid.reef.services.Services
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-
-import org.totalgrid.reef.loader.LoadManager
 
 @Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
 class ResetDatabaseCommand extends ReefCommandSupport {

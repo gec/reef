@@ -4,6 +4,7 @@
 		<bundle start-level='60'>mvn:com.weiglewilczek.slf4s/slf4s_2.8.0/1.0.3</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/0.3.1-SNAPSHOT</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-util-osgi/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-broker/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-amqp/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-proto/0.3.1-SNAPSHOT</bundle>

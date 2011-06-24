@@ -21,6 +21,7 @@
         <module>api-request</module>
         <module>java-rest-api</module>
         <module>util</module>
+        <module>util-osgi</module>
         <module>metrics</module>
         <module>amqp</module>
         <module>broker</module>
