@@ -43,8 +43,10 @@ class ServiceContext(amqp: AMQPProtoFactory, measInfo: ConnInfo, serviceConfigur
 
   private val measStore = MeasurementStoreFinder.getInstance(measInfo, this.add)
 
+  private val coordinatorExecutor = new ReactActorExecutor {}
+  this.add(coordinatorExecutor)
   // all the actual services are created here
-  private val providers = new ServiceProviders(components, measStore, serviceConfiguration, auth)
+  private val providers = new ServiceProviders(components, measStore, serviceConfiguration, auth, coordinatorExecutor)
 
   val services = this.attachServices(providers.services)
 

@@ -31,16 +31,17 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.auth.AuthService
+import org.totalgrid.reef.executor.Executor
 
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: AuthService) {
+class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: AuthService, coordinatorExecutor: Executor) {
 
   private val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   private val summaries = new SummaryPointPublisher(components.amqp)
   private val eventPublisher = new LocalSystemEventSink
-  private val dependencies = ServiceDependencies(pubs, summaries, cm, eventPublisher)
+  private val dependencies = ServiceDependencies(pubs, summaries, cm, eventPublisher, coordinatorExecutor)
 
   private val modelFac = new ModelFactories(dependencies)
 

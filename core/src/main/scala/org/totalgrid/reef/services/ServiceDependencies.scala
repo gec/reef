@@ -22,8 +22,11 @@ import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, Measureme
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, ServiceEventPublishers }
 import org.totalgrid.reef.services.core.{ SilentSummaryPoints, SummaryPoints }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
+import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.executor.mock.InstantExecutor
 
 case class ServiceDependencies(pubs: ServiceEventPublishers = new SilentEventPublishers,
   summaries: SummaryPoints = new SilentSummaryPoints,
   cm: MeasurementStore = new InMemoryMeasurementStore,
-  eventSink: SystemEventSink = new SilentEventSink)
+  eventSink: SystemEventSink = new SilentEventSink,
+  coordinatorExecutor: Executor = new InstantExecutor)
