@@ -37,9 +37,9 @@ class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies
   val fep = new FrontEndProcessorModelFactory(dependencies, coordinator)
   val fepPort = new FrontEndPortModelFactory(dependencies)
 
-  val points = new PointServiceModelFactory(dependencies)
   val overrides = new OverrideConfigModelFactory(dependencies)
   val triggerSets = new TriggerSetServiceModelFactory(dependencies)
+  val points = new PointServiceModelFactory(dependencies, triggerSets, overrides)
 
   val configFiles = new ConfigFileServiceModelFactory(dependencies)
   val endpoints = new CommEndCfgServiceModelFactory(dependencies, cmds, configFiles, points, fepPort, coordinator)

@@ -44,7 +44,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
     logger.info("Marked: " + ce.entityName + " online. Commands: " + ce.commands.value.size)
   }
 
-  private def markPointsOffline(points: List[Point]) {
+  protected def markPointsOffline(points: List[Point]) {
     val names = points.map(_.entityName)
     val measurements = measurementStore.get(names)
     val missing = if (measurements.size != names.size) {

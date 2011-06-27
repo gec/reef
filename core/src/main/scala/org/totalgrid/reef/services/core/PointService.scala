@@ -33,6 +33,8 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.sapi.{ RequestEnv, AllMessages }
+import org.totalgrid.reef.measurementstore.MeasurementStore
+import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -57,16 +59,22 @@ class PointService(protected val modelTrans: ServiceTransactable[PointServiceMod
 
 }
 
-class PointServiceModelFactory(dependencies: ServiceDependencies)
+class PointServiceModelFactory(dependencies: ServiceDependencies,
+  triggerFac: ModelFactory[TriggerSetServiceModel],
+  overrideFac: ModelFactory[OverrideConfigServiceModel])
     extends BasicModelFactory[PointProto, PointServiceModel](dependencies, classOf[PointProto]) {
 
-  def model = new PointServiceModel(subHandler)
+  def model = new PointServiceModel(subHandler, triggerFac.model, overrideFac.model, dependencies.cm)
 }
 
-class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
+  triggerModel: TriggerSetServiceModel,
+  overrideModel: OverrideConfigServiceModel,
+  val measurementStore: MeasurementStore)
     extends SquerylServiceModel[PointProto, Point]
     with EventedServiceModel[PointProto, Point]
-    with PointServiceConversion {
+    with PointServiceConversion
+    with CommunicationEndpointOfflineBehaviors {
 
   /**
    * we override this function so we can publish events with the "abnormalUpdated" part of routing
@@ -95,6 +103,10 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     })
   }
 
+  override def postCreate(entry: Point) {
+    markPointsOffline(entry :: Nil)
+  }
+
   override def preDelete(entry: Point) {
     entry.logicalNode.value match {
       case Some(parent) =>
@@ -104,6 +116,12 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler)
   }
 
   override def postDelete(entry: Point) {
+
+    entry.triggers.value.foreach { t => triggerModel.delete(t) }
+    entry.overrides.value.foreach { o => overrideModel.delete(o) }
+
+    measurementStore.remove(entry.entityName :: Nil)
+
     EQ.deleteEntity(entry.entity.value)
   }
 }
