@@ -76,6 +76,9 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
     with PointServiceConversion
     with CommunicationEndpointOfflineBehaviors {
 
+  link(triggerModel)
+  link(overrideModel)
+
   /**
    * we override this function so we can publish events with the "abnormalUpdated" part of routing
    * key filled out from the transient field on the sql object

@@ -109,8 +109,8 @@ class PointServiceTest extends DatabaseUsingTestBase {
     val trigger = f.addTriggerSet()
     f.getTriggers() should equal(trigger :: Nil)
 
-    //val overrid = f.addOverride()
-    //f.getOverrides() should equal(overrid :: Nil)
+    val overrid = f.addOverride()
+    f.getOverrides() should equal(overrid :: Nil)
 
     f.deletePoint()
 
