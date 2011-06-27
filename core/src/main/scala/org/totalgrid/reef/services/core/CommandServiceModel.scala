@@ -54,14 +54,15 @@ class CommandService(protected val modelTrans: ServiceTransactable[CommandServic
 }
 
 class CommandServiceModelFactory(dependencies: ServiceDependencies,
-  commandHistory: UserCommandRequestServiceModelFactory,
+  commandHistoryFac: UserCommandRequestServiceModelFactory,
   accessFac: CommandAccessServiceModelFactory)
     extends BasicModelFactory[CommandProto, CommandServiceModel](dependencies, classOf[CommandProto]) {
 
   def model = {
     val m = new CommandServiceModel(subHandler)
-    m.commandSelectModel = accessFac.model(m)
-    m.commandHistoryModel = commandHistory.model(m, m.commandSelectModel)
+    val accessModel = accessFac.model(m)
+    m.setCommandSelectModel(accessModel)
+    m.setCommandHistoryModel(commandHistoryFac.model(accessModel))
     m
   }
 }
@@ -70,9 +71,6 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
     with CommandServiceConversion {
-
-  var commandHistoryModel: UserCommandRequestServiceModel = null
-  var commandSelectModel: CommandAccessServiceModel = null
 
   val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
@@ -118,6 +116,21 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 
     EQ.deleteEntity(entry.entity.value)
   }
+
+  // ugly link related bolierplate to break circular dependency
+  var commandHistoryModelOption: Option[UserCommandRequestServiceModel] = None
+  var commandSelectModelOption: Option[CommandAccessServiceModel] = None
+  def setCommandHistoryModel(m: UserCommandRequestServiceModel) {
+    link(m)
+    commandHistoryModelOption = Some(m)
+  }
+  def setCommandSelectModel(m: CommandAccessServiceModel) {
+    link(m)
+    commandSelectModelOption = Some(m)
+  }
+
+  def commandHistoryModel = commandHistoryModelOption.get
+  def commandSelectModel = commandSelectModelOption.get
 }
 
 trait CommandServiceConversion extends MessageModelConversion[CommandProto, Command] with UniqueAndSearchQueryable[CommandProto, Command] {

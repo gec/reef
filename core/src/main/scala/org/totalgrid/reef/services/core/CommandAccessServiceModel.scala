@@ -36,7 +36,12 @@ class CommandAccessServiceModelFactory(
   dependencies: ServiceDependencies)
     extends BasicModelFactory[AccessProto, CommandAccessServiceModel](dependencies, classOf[AccessProto]) {
 
-  def model = new CommandAccessServiceModel(subHandler, commandFac.get.model)
+  def model = {
+    val commandService = commandFac.get.model
+    val m = new CommandAccessServiceModel(subHandler, commandService)
+    m.link(commandService)
+    m
+  }
   def model(commandModel: CommandServiceModel) = new CommandAccessServiceModel(subHandler, commandModel)
 
   private var commandFac: Option[ModelFactory[CommandServiceModel]] = None
@@ -49,8 +54,6 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     with CommandAccessConversion {
 
   import org.squeryl.PrimitiveTypeMode._
-
-  link(commandModel)
 
   val table = ApplicationSchema.commandAccess
 

@@ -35,17 +35,20 @@ class UserCommandRequestServiceModelFactory(
   accessFac: ModelFactory[CommandAccessServiceModel])
     extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](dependencies, classOf[UserCommandRequest]) {
 
-  def model = new UserCommandRequestServiceModel(subHandler, commandFac.get.model, accessFac.model, dependencies.eventSink)
-  def model(commandModel: CommandServiceModel, accessModel: CommandAccessServiceModel) =
-    new UserCommandRequestServiceModel(subHandler, commandModel, accessModel, dependencies.eventSink)
+  def model = {
+    val accessModel = accessFac.model
+    val m = new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
+    m.link(accessModel)
+    m
 
-  private var commandFac: Option[ModelFactory[CommandServiceModel]] = None
-  def setCommandsFactory(commands: ModelFactory[CommandServiceModel]) = commandFac = Some(commands)
+  }
+  def model(accessModel: CommandAccessServiceModel) =
+    new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
+
 }
 
 class UserCommandRequestServiceModel(
   protected val subHandler: ServiceSubscriptionHandler,
-  commandModel: CommandServiceModel,
   accessModel: CommandAccessServiceModel,
   val eventSink: SystemEventSink)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]

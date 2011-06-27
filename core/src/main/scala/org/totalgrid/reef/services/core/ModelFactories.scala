@@ -27,7 +27,6 @@ class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies
   val userRequests = new UserCommandRequestServiceModelFactory(dependencies, accesses)
   val cmds = new CommandServiceModelFactory(dependencies, userRequests, accesses)
   accesses.setCommandsFactory(cmds)
-  userRequests.setCommandsFactory(cmds)
 
   val coordinator = new MeasurementStreamCoordinatorFactory(dependencies)
 
