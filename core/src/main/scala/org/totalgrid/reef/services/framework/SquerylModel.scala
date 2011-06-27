@@ -31,7 +31,7 @@ import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId 
  */
 trait SquerylServiceModel[ServiceType <: GeneratedMessage, SqlType <: ModelWithId]
     extends ServiceModel[ServiceType, SqlType]
-    with BasicSquerylModel[SqlType] { self: ModelObserver[SqlType] =>
+    with BasicSquerylModel[SqlType] { self: ModelObserver[SqlType] with LinkedBufferLike =>
 }
 
 /**

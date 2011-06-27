@@ -46,7 +46,7 @@ trait BufferLike {
  *
  */
 trait LinkedBufferLike extends BufferLike {
-  private var links = immutable.List.empty[BufferLike]
+  protected var links = immutable.List.empty[BufferLike]
 
   /**
    * Link buffers to be flush/cleared together

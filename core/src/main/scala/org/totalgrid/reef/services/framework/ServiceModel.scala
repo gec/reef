@@ -29,7 +29,7 @@ import org.totalgrid.reef.japi.Envelope
  */
 trait ServiceModel[MessageType, ModelType]
     extends ModelCrud[ModelType]
-    with EnvHolder {
+    with EnvHolder { self: LinkedBufferLike =>
 
   /**
    * Subscribe to model events
@@ -80,13 +80,18 @@ trait ServiceModel[MessageType, ModelType]
   def findRecords(req: MessageType): List[ModelType]
 }
 
-trait EnvHolder extends QueuedEvaluation {
+trait EnvHolder extends QueuedEvaluation { self: LinkedBufferLike =>
   var envOption: Option[RequestEnv] = None
   def env: RequestEnv = {
     envOption.get
   }
-  def setEnv(s: RequestEnv) = {
+  def setEnv(s: RequestEnv) {
     envOption = Some(s)
+    // TODO: when services have requestEnv replacement passed into all calls this will be unnecessary, remove self typing
+    links.foreach(l => l match {
+      case x: EnvHolder => x.setEnv(s)
+      case _ =>
+    })
     queueInTransaction { envOption = None }
   }
 }
