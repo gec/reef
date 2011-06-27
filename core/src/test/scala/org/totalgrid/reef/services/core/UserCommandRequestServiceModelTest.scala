@@ -20,48 +20,46 @@ package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.squeryl.{ Schema, Table, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandAccess }
 import CommandAccess._
 
-import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
-import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
-import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Command => FepCommandModel, UserCommandModel, CommandAccessModel, CommandBlockJoin }
-import org.totalgrid.reef.event.SilentEventSink
+import org.totalgrid.reef.models._
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
-  trait UserCommandTestRig extends CommandTestRig with AccessTestRig {
-    val userCommands = new UserCommandRequestServiceModel(new SilentServiceSubscriptionHandler, commandModel, accessModel, new SilentEventSink)
-  }
-  class TestRig extends UserCommandTestRig with AccessTestRig {
-    val model = userCommands
-    val cmd = seed("cmd01")
+  class TestRig extends CommandTestRig {
 
-    def scenario(mode: AccessMode, time: Long, user: String) {
+    val cid = seed("cmd01").id
+    def cmd = ApplicationSchema.commands.where(c => c.id === cid).single
+
+    def scenario(mode: AccessMode, time: Long, user: String) = {
       val env = new RequestEnv
       env.setUserName(user)
-      model.setEnv(env)
+      userRequests.setEnv(env)
 
-      val selectId = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user))).id
-      ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(cmd.id, selectId))
-      cmd.lastSelectId = Some(selectId)
-      ApplicationSchema.commands.update(cmd)
+      val updated = cmd
+      val select = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user)))
+      ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(updated.id, select.id))
+
+      updated.lastSelectId = Some(select.id)
+      ApplicationSchema.commands.update(updated)
+      select
     }
+
   }
 
   def markCompleted(status: CommandStatus) {
     val r = new TestRig
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
-    val inserted = r.model.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
+    val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
 
-    r.model.markCompleted(inserted, status)
+    r.userRequests.markCompleted(inserted, status)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -82,9 +80,9 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val r = new TestRig
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
-    val inserted = r.model.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
+    val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
 
-    r.model.findAndMarkExpired
+    r.userRequests.findAndMarkExpired
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -101,7 +99,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
     intercept[ReefServiceException] {
-      r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+      r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
     }
   }
 
@@ -112,7 +110,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
-    r.model.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -134,4 +132,52 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     failScenario(AccessMode.ALLOWED, System.currentTimeMillis + 40000, "user02")
   }
 
+  test("Cannot delete command with outstanding select") {
+    val r = new TestRig
+    val time = System.currentTimeMillis + 40000
+    val select = r.scenario(AccessMode.ALLOWED, time, "user01")
+
+    intercept[BadRequestException] {
+      r.commands.delete(r.cmd)
+    }
+
+    r.accesses.removeAccess(select)
+
+    r.commands.delete(r.cmd)
+  }
+
+  test("Can delete command with expired select") {
+    val r = new TestRig
+    val time = System.currentTimeMillis - 40000
+    val select = r.scenario(AccessMode.ALLOWED, time, "user01")
+
+    r.commands.delete(r.cmd)
+  }
+
+  test("Deleting command removes history and select") {
+    val r = new TestRig
+    val now = System.currentTimeMillis
+
+    val select1 = r.scenario(AccessMode.ALLOWED, now - 40000, "user01")
+    val select2 = r.scenario(AccessMode.ALLOWED, now - 20000, "user01")
+    val select3 = r.scenario(AccessMode.ALLOWED, now + 40000, "user01")
+
+    val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
+
+    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+    r.accesses.removeAccess(select3)
+
+    val requests = ApplicationSchema.userRequests.where(t => true === true).toList
+    requests.length should equal(3)
+
+    val selects = ApplicationSchema.commandAccess.where(t => true === true).toList
+    selects.length should equal(2)
+
+    r.commands.delete(r.cmd)
+
+    ApplicationSchema.userRequests.where(t => true === true).toList.size should equal(0)
+    ApplicationSchema.commandAccess.where(t => true === true).toList.size should equal(0)
+  }
 }

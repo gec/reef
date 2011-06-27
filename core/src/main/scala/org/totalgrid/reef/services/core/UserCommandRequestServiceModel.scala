@@ -32,13 +32,15 @@ import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 class UserCommandRequestServiceModelFactory(
   dependencies: ServiceDependencies,
-  commands: ModelFactory[CommandServiceModel],
   accessFac: ModelFactory[CommandAccessServiceModel])
     extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](dependencies, classOf[UserCommandRequest]) {
 
-  def model = new UserCommandRequestServiceModel(subHandler, commands.model, accessFac.model, dependencies.eventSink)
+  def model = new UserCommandRequestServiceModel(subHandler, commandFac.get.model, accessFac.model, dependencies.eventSink)
   def model(commandModel: CommandServiceModel, accessModel: CommandAccessServiceModel) =
     new UserCommandRequestServiceModel(subHandler, commandModel, accessModel, dependencies.eventSink)
+
+  private var commandFac: Option[ModelFactory[CommandServiceModel]] = None
+  def setCommandsFactory(commands: ModelFactory[CommandServiceModel]) = commandFac = Some(commands)
 }
 
 class UserCommandRequestServiceModel(

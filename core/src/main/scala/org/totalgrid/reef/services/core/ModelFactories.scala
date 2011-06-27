@@ -23,11 +23,11 @@ import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFact
 
 class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies) {
 
-  val cmds = new CommandServiceModelFactory(dependencies)
-
-  val triggerSets = new TriggerSetServiceModelFactory(dependencies)
-  val accesses = new CommandAccessServiceModelFactory(dependencies, cmds)
-  val userRequests = new UserCommandRequestServiceModelFactory(dependencies, cmds, accesses)
+  val accesses = new CommandAccessServiceModelFactory(dependencies)
+  val userRequests = new UserCommandRequestServiceModelFactory(dependencies, accesses)
+  val cmds = new CommandServiceModelFactory(dependencies, userRequests, accesses)
+  accesses.setCommandsFactory(cmds)
+  userRequests.setCommandsFactory(cmds)
 
   val coordinator = new MeasurementStreamCoordinatorFactory(dependencies)
 
@@ -39,6 +39,7 @@ class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies
 
   val points = new PointServiceModelFactory(dependencies)
   val overrides = new OverrideConfigModelFactory(dependencies)
+  val triggerSets = new TriggerSetServiceModelFactory(dependencies)
 
   val configFiles = new ConfigFileServiceModelFactory(dependencies)
   val endpoints = new CommEndCfgServiceModelFactory(dependencies, cmds, configFiles, points, fepPort, coordinator)

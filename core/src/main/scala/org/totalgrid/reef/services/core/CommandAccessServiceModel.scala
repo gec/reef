@@ -33,12 +33,14 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => Acce
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class CommandAccessServiceModelFactory(
-  dependencies: ServiceDependencies,
-  commands: ModelFactory[CommandServiceModel])
+  dependencies: ServiceDependencies)
     extends BasicModelFactory[AccessProto, CommandAccessServiceModel](dependencies, classOf[AccessProto]) {
 
-  def model = new CommandAccessServiceModel(subHandler, commands.model)
+  def model = new CommandAccessServiceModel(subHandler, commandFac.get.model)
   def model(commandModel: CommandServiceModel) = new CommandAccessServiceModel(subHandler, commandModel)
+
+  private var commandFac: Option[ModelFactory[CommandServiceModel]] = None
+  def setCommandsFactory(commands: ModelFactory[CommandServiceModel]) = commandFac = Some(commands)
 }
 
 class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHandler, commandModel: CommandServiceModel)

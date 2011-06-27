@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
@@ -34,6 +33,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.models.{ UserCommandModel, Command, ApplicationSchema, Entity }
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -53,16 +53,26 @@ class CommandService(protected val modelTrans: ServiceTransactable[CommandServic
   }
 }
 
-class CommandServiceModelFactory(dependencies: ServiceDependencies)
+class CommandServiceModelFactory(dependencies: ServiceDependencies,
+  commandHistory: UserCommandRequestServiceModelFactory,
+  accessFac: CommandAccessServiceModelFactory)
     extends BasicModelFactory[CommandProto, CommandServiceModel](dependencies, classOf[CommandProto]) {
 
-  def model = new CommandServiceModel(subHandler)
+  def model = {
+    val m = new CommandServiceModel(subHandler)
+    m.commandSelectModel = accessFac.model(m)
+    m.commandHistoryModel = commandHistory.model(m, m.commandSelectModel)
+    m
+  }
 }
 
 class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
     with CommandServiceConversion {
+
+  var commandHistoryModel: UserCommandRequestServiceModel = null
+  var commandSelectModel: CommandAccessServiceModel = null
 
   val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
@@ -89,9 +99,23 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
         throw new BadRequestException("Cannot delete command: " + entry.entityName + " while it is still assigned to logicalNode " + parent.name)
       case None => // no endpoint so we are free to delete command
     }
+    entry.currentActiveSelect.value match {
+      case Some(select) =>
+        throw new BadRequestException("Cannot delete command: " + entry.entityName + " while there is an active select or block " + select)
+      case None => // no selection on command
+    }
   }
 
   override def postDelete(entry: Command) {
+
+    val selects = entry.selectHistory.value
+    val commandHistory = entry.commandHistory.value
+
+    logger.info("Deleting Command: " + entry.entityName + " selects: " + selects.size + " history: " + commandHistory.size)
+
+    selects.foreach(s => commandSelectModel.removeAccess(s))
+    commandHistory.foreach(s => commandHistoryModel.delete(s))
+
     EQ.deleteEntity(entry.entity.value)
   }
 }
