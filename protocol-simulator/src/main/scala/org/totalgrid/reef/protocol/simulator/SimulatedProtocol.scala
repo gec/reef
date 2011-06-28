@@ -145,9 +145,9 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
       case None =>
         val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
         val mapping = SimMapping.SimulatorMapping.parseFrom(file)
-        val record = new PluginRecord(endpoint, mapping, batchPublisher, None)
-        endpoints += endpoint -> record
-        checkEndpoint(record)
+        val emptyRecord = new PluginRecord(endpoint, mapping, batchPublisher, None)
+        endpoints += endpoint -> emptyRecord
+        checkEndpoint(emptyRecord)
         new EndpointCommandHandler(endpoint)
     }
   }

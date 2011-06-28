@@ -36,7 +36,10 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     address: Destination = AnyNodeDestination,
     maxRetries: Int = 0): Promise[Boolean] = queue.synchronized {
 
-    if (queue.size >= maxQueueSize) queue.wait
+    if (queue.size >= maxQueueSize) {
+      logger.info("Publisher waiting. " + this)
+      queue.wait
+    }
 
     val promise = new SynchronizedPromise[Boolean]
     queue.enqueue(Record(value, verb, address, maxRetries, promise))
@@ -59,6 +62,7 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
 
   private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {
     case failure: Failure =>
+      logger.warn("ordered publisher failure: " + failure)
       if (retries > 0) publish(record, retries - 1)
       else complete(record.promise, false)
 
@@ -73,5 +77,8 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     }
   }
 
+  override def toString = {
+    "OrderedServiceTransmitter queue: " + queue.size + " max: " + maxQueueSize + " trans: " + transmitting
+  }
 }
 

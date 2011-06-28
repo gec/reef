@@ -70,11 +70,10 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
-    val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
-
-    commandAdapters += c.getEndpoint.getName -> service
-
     logger.info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
+
+    val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
+    commandAdapters += c.getEndpoint.getName -> service
   }
 
   def removeEntry(c: ConnProto) {
