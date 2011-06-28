@@ -123,6 +123,9 @@
         <command name="reef/load">
             <action class="org.totalgrid.reef.shell.proto.LoadConfigCommand"/>
         </command>
+        <command name="reef/unload">
+            <action class="org.totalgrid.reef.shell.proto.UnloadConfigCommand"/>
+        </command>
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
         </command>
