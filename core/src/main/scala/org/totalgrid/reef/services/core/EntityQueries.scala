@@ -618,6 +618,11 @@ trait EntityQueries extends EntityTreeQueries {
     ApplicationSchema.derivedEdges.deleteWhere(_.edgeId in edgeIds)
     ApplicationSchema.edges.deleteWhere(_.id in edgeIds)
 
+    // TODO: evaluate if we should be deleting events when entities get deleted
+    val events = ApplicationSchema.events.where(e => e.entityId in entityIds)
+    ApplicationSchema.alarms.deleteWhere(a => a.eventUid in events.map { _.id })
+    ApplicationSchema.events.deleteWhere(e => e.entityId in entityIds)
+
     ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
     ApplicationSchema.entityTypes.deleteWhere(et => et.entityId in entityIds)
     ApplicationSchema.entities.deleteWhere(_.id in entityIds)
