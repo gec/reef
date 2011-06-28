@@ -58,6 +58,9 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
     intercept[BadRequestException] {
       service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.EVENT), None)).expectOne
     }
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.EVENT), Some("Resource"), builtIn = Some(true))).expectOne
+    }
   }
 
   test("Incomplete alarm event configs") {
@@ -88,24 +91,52 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
     val created = service.put(sent).expectOne
 
     created.getResource should equal(longString)
+  }
 
-    sent should equal(created)
+  test("Delete custom event") {
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+
+    val sent = makeEc(Some("Custom.Event"), Some(1), Some(Designation.EVENT), Some("ss"))
+    val created = service.put(sent).expectOne
+    created.getBuiltIn should equal(false)
+
+    val gotten = service.get(makeEc(builtIn = Some(false))).expectOne
+    gotten should equal(created)
+
+    // can delete custom event
+    service.delete(created)
+  }
+
+  test("Can't delete builtIn event") {
+
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+    EventConfigService.seed()
+
+    val gotten = service.get(makeEc(builtIn = Some(true))).expectMany().head
+
+    intercept[BadRequestException] {
+      service.delete(gotten)
+    }
   }
 
   ////////////////////////////////////////////////////////
   // Utilities
 
-  private def makeEc(event: Option[String],
+  private def makeEc(event: Option[String] = None,
     severity: Option[Int] = None,
     designation: Option[EventConfig.Designation] = None,
     resource: Option[String] = None,
-    alarmState: Option[Alarm.State] = None) = {
+    alarmState: Option[Alarm.State] = None,
+    builtIn: Option[Boolean] = None) = {
     val b = EventConfig.newBuilder
     event.foreach(b.setEventType(_))
     severity.foreach(b.setSeverity(_))
     designation.foreach(b.setDesignation(_))
     resource.foreach(b.setResource(_))
     alarmState.foreach(b.setAlarmState(_))
+    builtIn.foreach(b.setBuiltIn(_))
     b.build
   }
 

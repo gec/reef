@@ -28,6 +28,10 @@ trait EventConfigServiceImpl extends ReefServiceBaseClass with EventConfigServic
     _.get(EventConfig.newBuilder.setEventType("*").build).await().expectMany
   }
 
+  override def getAllEventConfigurations(builtIn: Boolean) = ops("Couldn't get all " + (if (builtIn) "builtIn" else "custom") + " event configs") {
+    _.get(EventConfig.newBuilder.setBuiltIn(builtIn).build).await().expectMany
+  }
+
   override def getEventConfiguration(eventType: String) = ops("Couldn't get event config with type: " + eventType) {
     _.get(EventConfig.newBuilder.setEventType(eventType).build).await().expectOne
   }

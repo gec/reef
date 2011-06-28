@@ -62,7 +62,8 @@ case class EventConfigStore(
   val severity: Int, // Severity level
   val designation: Int, // Alarm, Event, or Log
   val alarmState: Int, // Initial alarm start state: UNACK_AUDIBLE, UNACK_SILENT, or ACKNOWLEDGED
-  val resource: String) extends ModelWithId // rendering string
+  val resource: String,
+  val builtIn: Boolean) extends ModelWithId // rendering string
 
 /**
  * The Model for the Alarm. It's part DB map and part Model.

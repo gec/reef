@@ -49,28 +49,34 @@ object EventConfigService {
         val ALARM = EventConfig.Designation.ALARM.getNumber
         val UNACK_SILENT = Alarm.State.UNACK_SILENT.getNumber
 
-        val ecs = List[EventConfigStore](
-          EventConfigStore(System.UserLogin, 8, ALARM, UNACK_SILENT, "User logged in"),
-          EventConfigStore(System.UserLoginFailure, 8, ALARM, UNACK_SILENT, "User login failed {reason}"),
-          EventConfigStore(System.UserLogout, 8, ALARM, UNACK_SILENT, "User logged out"),
-          EventConfigStore(System.SubsystemStarting, 8, ALARM, UNACK_SILENT, "Subsystem is starting"),
-          EventConfigStore(System.SubsystemStarted, 8, ALARM, UNACK_SILENT, "Subsystem has started"),
-          EventConfigStore(System.SubsystemStopping, 8, ALARM, UNACK_SILENT, "Subsystem is stopping"),
-          EventConfigStore(System.SubsystemStopped, 8, ALARM, UNACK_SILENT, "Subsystem has stopped"),
+        def makeBuiltIn(name: String, resource: String) = {
+          EventConfigStore(name, 8, ALARM, UNACK_SILENT, resource, true)
+        }
 
-          EventConfigStore(Scada.ControlExe, 8, ALARM, UNACK_SILENT, "Executed control {command}"),
-          EventConfigStore(Scada.UpdatedSetpoint, 8, ALARM, UNACK_SILENT, "Updated setpoint {command} to {value}"),
-          EventConfigStore(Scada.OutOfNominal, 8, ALARM, UNACK_SILENT, "Measurement not in nominal range: {value}"),
-          EventConfigStore(Scada.OutOfReasonable, 8, ALARM, UNACK_SILENT, "Measurement not reasonable: {value}"),
-          EventConfigStore(Scada.SetOverride, 8, ALARM, UNACK_SILENT, "Point overridden"),
-          EventConfigStore(Scada.SetNotInService, 8, ALARM, UNACK_SILENT, "Point removed from service"),
-          EventConfigStore(Scada.RemoveOverride, 8, ALARM, UNACK_SILENT, "Removed override on point"),
-          EventConfigStore(Scada.RemoveNotInService, 8, ALARM, UNACK_SILENT, "Returned point to service"),
+        // TODO: make a default event config for handling unknown events
+
+        val ecs = List[EventConfigStore](
+          makeBuiltIn(System.UserLogin, "User logged in"),
+          makeBuiltIn(System.UserLoginFailure, "User login failed {reason}"),
+          makeBuiltIn(System.UserLogout, "User logged out"),
+          makeBuiltIn(System.SubsystemStarting, "Subsystem is starting"),
+          makeBuiltIn(System.SubsystemStarted, "Subsystem has started"),
+          makeBuiltIn(System.SubsystemStopping, "Subsystem is stopping"),
+          makeBuiltIn(System.SubsystemStopped, "Subsystem has stopped"),
+
+          makeBuiltIn(Scada.ControlExe, "Executed control {command}"),
+          makeBuiltIn(Scada.UpdatedSetpoint, "Updated setpoint {command} to {value}"),
+          makeBuiltIn(Scada.OutOfNominal, "Measurement not in nominal range: {value}"),
+          makeBuiltIn(Scada.OutOfReasonable, "Measurement not reasonable: {value}"),
+          makeBuiltIn(Scada.SetOverride, "Point overridden"),
+          makeBuiltIn(Scada.SetNotInService, "Point removed from service"),
+          makeBuiltIn(Scada.RemoveOverride, "Removed override on point"),
+          makeBuiltIn(Scada.RemoveNotInService, "Returned point to service"),
           // comm endpoint events
-          EventConfigStore(Scada.CommEndpointOffline, 8, ALARM, UNACK_SILENT, "Endpoint {name} offline"),
-          EventConfigStore(Scada.CommEndpointOnline, 8, ALARM, UNACK_SILENT, "Endpoint {name} online"),
-          EventConfigStore(Scada.CommEndpointDisabled, 8, ALARM, UNACK_SILENT, "Endpoint {name} disabled"),
-          EventConfigStore(Scada.CommEndpointEnabled, 8, ALARM, UNACK_SILENT, "Endpoint {name} enabled"))
+          makeBuiltIn(Scada.CommEndpointOffline, "Endpoint {name} offline"),
+          makeBuiltIn(Scada.CommEndpointOnline, "Endpoint {name} online"),
+          makeBuiltIn(Scada.CommEndpointDisabled, "Endpoint {name} disabled"),
+          makeBuiltIn(Scada.CommEndpointEnabled, "Endpoint {name} enabled"))
 
         ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
       }
@@ -87,6 +93,9 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
   override def preCreate(proto: EventConfig, headers: RequestEnv): EventConfig = {
     if (!proto.hasDesignation || !proto.hasEventType || !proto.hasSeverity || !proto.hasResource) {
       throw new BadRequestException("Must fill in designation, eventType, severity and resource fields.")
+    }
+    if (proto.hasBuiltIn && proto.getBuiltIn) {
+      throw new BadRequestException("Cannot create an event configuration with \"builtIn\" flag set.")
     }
     if (proto.getDesignation == EventConfig.Designation.ALARM) {
       if (!proto.hasAlarmState) throw new BadRequestException("Must set initial alarm state if designation is alarm")
@@ -128,6 +137,15 @@ class EventConfigServiceModel(protected val subHandler: ServiceSubscriptionHandl
     // otherwise we have to assume it's an alarm.
     result.headOption getOrElse (1, EventConfig.Designation.ALARM.getNumber, Alarm.State.UNACK_SILENT.getNumber, "")
   }
+
+  override def updateModelEntry(proto: EventConfig, existing: EventConfigStore): EventConfigStore = {
+    createModelEntry(proto, existing.builtIn)
+  }
+
+  override def preDelete(entry: EventConfigStore) {
+    if (entry.builtIn)
+      throw new BadRequestException("Cannot delete \"builtIn\" event configurations, only update destination and message: " + entry.eventType)
+  }
 }
 
 trait EventConfigConversion
@@ -141,7 +159,7 @@ trait EventConfigConversion
   }
 
   def searchQuery(proto: EventConfig, sql: EventConfigStore) = {
-    Nil
+    proto.builtIn.asParam(sql.builtIn === _) :: Nil
   }
 
   def uniqueQuery(proto: EventConfig, sql: EventConfigStore) = {
@@ -152,7 +170,8 @@ trait EventConfigConversion
     true
   }
 
-  def createModelEntry(proto: EventConfig): EventConfigStore = {
+  def createModelEntry(proto: EventConfig): EventConfigStore = createModelEntry(proto, false)
+  def createModelEntry(proto: EventConfig, builtIn: Boolean): EventConfigStore = {
     // If it's not an alarm, set the state to 0.
     val state = proto.getDesignation match {
       case EventConfig.Designation.ALARM => proto.getAlarmState.getNumber
@@ -163,7 +182,8 @@ trait EventConfigConversion
       proto.getSeverity,
       proto.getDesignation.getNumber,
       state,
-      proto.getResource)
+      proto.getResource,
+      builtIn)
   }
 
   def convertToProto(entry: EventConfigStore): EventConfig = {
@@ -172,6 +192,7 @@ trait EventConfigConversion
       .setSeverity(entry.severity)
       .setDesignation(EventConfig.Designation.valueOf(entry.designation))
       .setResource(entry.resource)
+      .setBuiltIn(entry.builtIn)
 
     if (entry.alarmState != -1)
       ec.setAlarmState(Alarm.State.valueOf(entry.alarmState))

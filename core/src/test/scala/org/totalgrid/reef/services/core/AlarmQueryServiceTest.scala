@@ -93,13 +93,13 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
       val ecs = List[EventConfigStore](
         //               EventType    SEVERITY  DESIGNATION ALARM_STATE RESOURCE
-        EventConfigStore(System.UserLogin, 7, EVENT, 0, "User logged in"),
-        EventConfigStore(System.UserLogout, 7, EVENT, 0, "User logged out"),
-        EventConfigStore(System.SubsystemStarting, 8, LOG, 0, "Subsystem is starting"),
-        EventConfigStore(System.SubsystemStarted, 8, LOG, 0, "Subsystem has started"),
-        EventConfigStore(System.SubsystemStopping, 8, LOG, 0, "Subsystem is stapping"),
-        EventConfigStore(System.SubsystemStopped, 8, LOG, 0, "Subsystem has stopped"),
-        EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}"))
+        EventConfigStore(System.UserLogin, 7, EVENT, 0, "User logged in", true),
+        EventConfigStore(System.UserLogout, 7, EVENT, 0, "User logged out", true),
+        EventConfigStore(System.SubsystemStarting, 8, LOG, 0, "Subsystem is starting", true),
+        EventConfigStore(System.SubsystemStarted, 8, LOG, 0, "Subsystem has started", true),
+        EventConfigStore(System.SubsystemStopping, 8, LOG, 0, "Subsystem is stapping", true),
+        EventConfigStore(System.SubsystemStopped, 8, LOG, 0, "Subsystem has stopped", true),
+        EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}", true))
 
       transaction {
         ApplicationSchema.eventConfigs.deleteWhere(e => true === true)

@@ -84,7 +84,7 @@ object EventView {
   }
 
   def configHeader = {
-    "EventType" :: "Dest" :: "Sev" :: "Audible" :: "Resources" :: Nil
+    "EventType" :: "Dest" :: "Sev" :: "Audible" :: "Resources" :: "BuiltIn" :: Nil
   }
 
   def configRow(e: EventConfig) = {
@@ -92,6 +92,7 @@ object EventView {
       e.getDesignation.toString ::
       e.getSeverity.toString ::
       (e.getAlarmState == Alarm.State.UNACK_AUDIBLE).toString ::
-      e.getResource :: Nil
+      e.getResource ::
+      e.getBuiltIn.toString :: Nil
   }
 }

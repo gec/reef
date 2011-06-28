@@ -68,8 +68,9 @@ class UnloadConfigCommand extends ReefCommandSupport {
     // TODO: delete should just use uuid or uid searching if set
     val points: List[GeneratedMessage] = services.getAllPoints().toList.map { _.toBuilder.clearLogicalNode.build }
     val commands: List[GeneratedMessage] = services.getCommands().toList.map { _.toBuilder.clearLogicalNode.build }
+    val messages: List[GeneratedMessage] = services.getAllEventConfigurations(false).toList
 
-    val protos: List[GeneratedMessage] = endpoints ::: entities ::: channels ::: cfs ::: points ::: commands
+    val protos: List[GeneratedMessage] = endpoints ::: entities ::: channels ::: cfs ::: points ::: commands ::: messages
 
     val renderer = new SymbolResponseProgressRenderer(Console.out)
     renderer.start(protos.size)
