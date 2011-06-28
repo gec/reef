@@ -27,6 +27,9 @@
  * import "ApplicationManagement.proto";
  * option java_package = "org.totalgrid.reef.proto";
  * 
+ * // To place a point in the OperatorBlocked state (aka. Not In Service),
+ * // send a MeasOverride without a Measurement.
+ * //
  * message MeasOverride {
  *   required org.totalgrid.reef.proto.Model.Point point = 1;
  *   optional org.totalgrid.reef.proto.Measurements.Measurement meas = 2;
