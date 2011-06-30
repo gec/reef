@@ -23,6 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.request.CommandService;
+import org.totalgrid.reef.japi.request.PointService;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
@@ -36,8 +38,9 @@ public class TestPointService extends ReefConnectionTestBase
     @Test
     public void somePointsReturned() throws ReefServiceException
     {
-        // System.out.println(SampleRequests.getAllPoints(clients));
-        List<Point> allPoints = SampleRequests.getAllPoints( client );
+        PointService ps = helpers;
+
+        List<Point> allPoints = ps.getAllPoints();
         assertTrue( "expected at least one point: " + allPoints.size(), allPoints.size() > 0 );
     }
 
@@ -69,8 +72,9 @@ public class TestPointService extends ReefConnectionTestBase
     @Test
     public void pointFeedback() throws ReefServiceException
     {
+        CommandService cs = helpers;
         // Get a command from the command service
-        List<Command> commands = helpers.getCommands();
+        List<Command> commands = cs.getCommands();
         assertTrue( commands.size() > 0 );
         Command cmd = commands.get( 0 );
 

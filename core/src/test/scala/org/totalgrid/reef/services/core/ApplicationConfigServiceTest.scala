@@ -32,7 +32,7 @@ class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
 
   test("GetPutDelete") {
 
-    val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val modelFac = new ModelFactories()
 
     val service = new ApplicationConfigService(modelFac.appConfig)
 

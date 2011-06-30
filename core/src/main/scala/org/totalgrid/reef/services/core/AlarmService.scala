@@ -27,12 +27,12 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._
@@ -50,7 +50,7 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
   }
 
   // If they don't have a state, what are they doing with an update?
-  override def preUpdate(proto: ServiceType, existing: ModelType) = {
+  override def preUpdate(proto: ServiceType, existing: ModelType, headers: RequestEnv) = {
     if (!proto.hasState)
       throw new BadRequestException("AlarmService update is for changing alarm state, but there is no state field in this proto.")
 
@@ -58,10 +58,11 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
   }
 }
 
-class AlarmServiceModelFactory(pub: ServiceEventPublishers, summary: SummaryPoints)
-    extends BasicModelFactory[Alarm, AlarmServiceModel](pub, classOf[Alarm]) {
+class AlarmServiceModelFactory(
+  dependencies: ServiceDependencies)
+    extends BasicModelFactory[Alarm, AlarmServiceModel](dependencies, classOf[Alarm]) {
 
-  def model = new AlarmServiceModel(subHandler, summary)
+  def model = new AlarmServiceModel(subHandler, dependencies.summaries)
 
 }
 

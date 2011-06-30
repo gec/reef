@@ -42,6 +42,7 @@ import org.totalgrid.reef.japi.Envelope
 import client.Response
 
 import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.proto.Model.{ CommandType, Command }
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -64,7 +65,11 @@ class CommandRequestServicesIntegration
     def addCommands(commands: List[String]) {
 
       val owns = EndpointOwnership.newBuilder
-      commands.foreach { c => owns.addCommands(c) }
+      commands.foreach { c =>
+        val cmdProto = Command.newBuilder().setName(c).setDisplayName(c).setType(CommandType.CONTROL).build
+        command.put(cmdProto).expectOne()
+        owns.addCommands(c)
+      }
 
       val send = CommEndpointConfig.newBuilder()
         .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
@@ -171,7 +176,7 @@ class CommandRequestServicesIntegration
     val conn = fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectOne()
 
     // act like the FEP and mark the endpoint as comms_up
-    fixture.frontEndConnection.put(conn.toBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne
+    fixture.setEndpointState(conn, CommEndpointConnection.State.COMMS_UP)
 
     //bind the 'proxied' service that will handle the call
     fixture.connection.bindService(service, AddressableDestination(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantExecutor {}))

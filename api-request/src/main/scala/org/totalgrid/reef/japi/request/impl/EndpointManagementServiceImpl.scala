@@ -21,11 +21,11 @@ package org.totalgrid.reef.japi.request.impl
 import org.totalgrid.reef.japi.request.EndpointManagementService
 
 import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig, CommEndpointConnection }
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
 
@@ -64,6 +64,18 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
 
   override def getEndpointConnection(endpointUuid: ReefUUID) = ops("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).await().expectOne
+  }
+
+  override def getAllCommunicationChannels = ops("Couldn't get list of all channels") {
+    _.get(CommChannel.newBuilder().setName("*").build).await.expectMany
+  }
+
+  override def getCommunicationChannelByName(channelName: String) = ops("Couldn't get channel with name: " + channelName) {
+    _.get(CommChannel.newBuilder().setName(channelName).build).await.expectOne
+  }
+
+  override def getCommunicationChannel(channelUuid: ReefUUID) = ops("Couldn't get channel with uuid: " + channelUuid) {
+    _.get(CommChannel.newBuilder().setUuid(channelUuid).build).await.expectOne
   }
 
 }

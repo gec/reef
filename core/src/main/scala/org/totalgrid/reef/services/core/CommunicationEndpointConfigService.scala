@@ -20,17 +20,16 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
-
-import org.totalgrid.reef.services.ProtoRoutingKeys
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -40,13 +39,13 @@ class CommunicationEndpointService(protected val modelTrans: ServiceTransactable
 }
 
 class CommEndCfgServiceModelFactory(
-  pub: ServiceEventPublishers,
+  dependencies: ServiceDependencies,
   commandFac: ModelFactory[CommandServiceModel],
   configFac: ModelFactory[ConfigFileServiceModel],
   pointFac: ModelFactory[PointServiceModel],
   portModelFac: ModelFactory[FrontEndPortServiceModel],
   coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[CommEndCfgProto, CommEndCfgServiceModel](pub, classOf[CommEndCfgProto]) {
+    extends BasicModelFactory[CommEndCfgProto, CommEndCfgServiceModel](dependencies, classOf[CommEndCfgProto]) {
 
   def model = new CommEndCfgServiceModel(subHandler, commandFac.model, configFac.model, pointFac.model, portModelFac.model, coordinatorFac.model)
 }
@@ -92,8 +91,22 @@ class CommEndCfgServiceModel(
   }
 
   override def preDelete(sql: CommunicationEndpoint) {
+
+    val frontEndAssignment = sql.frontEndAssignment.value
+    if (frontEndAssignment.enabled)
+      throw new BadRequestException("Cannot delete endpoint that is still enabled, disable before deleting.")
+
+    if (frontEndAssignment.state != ConnProto.State.COMMS_DOWN.getNumber)
+      throw new BadRequestException("Cannot delete endpoint that is not in COMMS_DOWN state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
+
+    sql.entity.value // preload lazy entity since it will be deleted by the time event is rendered
     coordinator.onEndpointDeleted(sql)
   }
+
+  override def postDelete(sql: CommunicationEndpoint) {
+    EQ.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
+  }
+
   import org.totalgrid.reef.proto.OptionalProtos._
   def setLinkedObjects(sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
     pointModel.createAndSetOwningNode(request.ownerships.points.getOrElse(Nil), ent)
@@ -143,7 +156,7 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
   def createModelEntry(proto: CommEndCfgProto): CommunicationEndpoint = throw new Exception("Not using this interface")
 
   def isModified(entry: CommunicationEndpoint, existing: CommunicationEndpoint) = {
-    true
+    true // we always consider it to have changed to force coordinator to re-check fep assignment
   }
 
   def convertToProto(sql: CommunicationEndpoint): CommEndCfgProto = {

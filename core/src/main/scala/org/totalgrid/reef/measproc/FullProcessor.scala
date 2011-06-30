@@ -21,7 +21,7 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.event.EventType._
-import org.totalgrid.reef.frontend.KeyedMap
+import org.totalgrid.reef.app.KeyedMap
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle, LifecycleManager }
 import org.totalgrid.reef.proto.Measurements._
@@ -34,8 +34,10 @@ import org.totalgrid.reef.persistence.{ InMemoryObjectCache }
 import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheAdapter, MeasurementStoreFinder }
 
 abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNode)
-    extends ServiceHandler with ServiceContext[ConnProto] with KeyedMap[ConnProto]
+    extends ServiceContext[ConnProto] with KeyedMap[ConnProto]
     with Executor with Lifecycle {
+
+  val serviceHandler = new ServiceHandler(this)
 
   protected override def getKey(c: ConnProto) = c.getUid
 
@@ -98,7 +100,7 @@ class FullProcessor(components: CoreApplicationComponents, measStoreConfig: Conn
 
   def subscribeToStreams() = {
     val connection = ConnProto.newBuilder.setMeasProc(components.appConfig).build
-    connectionHandler.addServiceContext(components.registry, 5000, ConnProto.parseFrom, connection, connectionHandler)
+    connectionHandler.serviceHandler.addServiceContext(components.registry, 5000, ConnProto.parseFrom, connection, connectionHandler)
     connectionHandler.start
   }
 }

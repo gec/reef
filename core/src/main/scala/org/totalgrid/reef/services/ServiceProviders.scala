@@ -31,15 +31,23 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.auth.AuthService
+import org.totalgrid.reef.executor.Executor
 
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: AuthService) {
+class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: AuthService, coordinatorExecutor: Executor) {
 
   private val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
   private val summaries = new SummaryPointPublisher(components.amqp)
-  private val modelFac = new ModelFactories(pubs, summaries, cm)
+  private val eventPublisher = new LocalSystemEventSink
+  private val dependencies = ServiceDependencies(pubs, summaries, cm, eventPublisher, coordinatorExecutor)
+
+  private val modelFac = new ModelFactories(dependencies)
+
+  // we have to fill in the event model after constructing the event service to break the circular
+  // dependency on ServiceDepenedencies, should clear up once we OSGI the services
+  eventPublisher.setEventModel(modelFac.events)
 
   private val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))

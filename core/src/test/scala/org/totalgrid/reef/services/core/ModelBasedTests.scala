@@ -44,13 +44,12 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
 
   def seedPoints {
     EQ.findEntitiesByType(List("Point")).foreach { ent =>
-      ApplicationSchema.points.insert(new Point(ent.id, false))
+      ApplicationSchema.points.insert(Point.newInstance(ent.name, false, None, 1, "raw"))
     }
   }
 
   test("Point model lookup") {
-    val pubs = new SilentEventPublishers
-    val models = new ModelFactories(pubs, new SilentSummaryPoints)
+    val models = new ModelFactories()
     val service = new PointService(models.points)
 
     val entReq =

@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.models
 
-import org.squeryl.Table
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
+import org.squeryl.{ KeyedEntity, Table }
 
-class Entity(
+case class Entity(
     val name: String) extends ModelWithUUID {
 
   val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
@@ -54,11 +54,15 @@ object Entity {
   }
 }
 
-class EntityToTypeJoins(
+case class EntityToTypeJoins(
   val entityId: UUID,
   val entType: String) {}
 
-class EntityEdge(
+case class EntityTypeMetaModel(id: String) extends KeyedEntity[String]() {
+  def entType = id
+}
+
+case class EntityEdge(
     val parentId: UUID,
     val childId: UUID,
     val relationship: String,
@@ -67,7 +71,7 @@ class EntityEdge(
   val parent = LazyVar(hasOneByUuid(ApplicationSchema.entities, parentId))
   val child = LazyVar(hasOneByUuid(ApplicationSchema.entities, childId))
 }
-class EntityDerivedEdge(
+case class EntityDerivedEdge(
     val edgeId: Long,
     val parentEdgeId: Long) extends ModelWithId {
 
@@ -75,7 +79,7 @@ class EntityDerivedEdge(
   val parent = LazyVar(hasOne(ApplicationSchema.edges, parentEdgeId))
 }
 
-class EntityAttribute(
+case class EntityAttribute(
     val entityId: UUID,
     val attrName: String,
     val stringVal: Option[String],

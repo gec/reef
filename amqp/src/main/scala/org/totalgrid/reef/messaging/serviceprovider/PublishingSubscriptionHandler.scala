@@ -21,11 +21,13 @@ package org.totalgrid.reef.messaging.serviceprovider
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.broker.{ BrokerObjectConsumer, BrokerChannel }
+import org.totalgrid.reef.broker.BrokerChannel
 import org.totalgrid.reef.japi.Envelope
 
-trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with BrokerObjectConsumer with Logging {
+trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with Logging {
   val exchange: String
+
+  def sendTo(func: BrokerChannel => _)
 
   private def describe(exchange: String, key: String) =
     exchange + ", w/ key = " + key

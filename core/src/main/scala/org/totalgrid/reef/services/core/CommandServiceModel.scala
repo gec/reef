@@ -18,12 +18,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.Model.{ Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
@@ -32,18 +29,42 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import java.util.UUID
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.models.{ UserCommandModel, Command, ApplicationSchema, Entity }
 
 class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.command
+
+  override def preCreate(proto: CommandProto, headers: RequestEnv) = {
+    if (!proto.hasName || !proto.hasType || !proto.hasDisplayName) {
+      throw new BadRequestException("Must specify name, type and displayName when creating command")
+    }
+    proto
+  }
+
+  override def preUpdate(request: CommandProto, existing: Command, headers: RequestEnv) = {
+    preCreate(request, headers)
+  }
 }
 
-class CommandServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[CommandProto, CommandServiceModel](pub, classOf[CommandProto]) {
+class CommandServiceModelFactory(dependencies: ServiceDependencies,
+  commandHistoryFac: UserCommandRequestServiceModelFactory,
+  accessFac: CommandAccessServiceModelFactory)
+    extends BasicModelFactory[CommandProto, CommandServiceModel](dependencies, classOf[CommandProto]) {
 
-  def model = new CommandServiceModel(subHandler)
+  def model = {
+    val m = new CommandServiceModel(subHandler)
+    val accessModel = accessFac.model(m)
+    m.setCommandSelectModel(accessModel)
+    m.setCommandHistoryModel(commandHistoryFac.model(accessModel))
+    m
+  }
 }
 
 class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
@@ -59,21 +80,57 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     if (commands.size == 0) return
 
     val allreadyExistingCommands = Entity.asType(ApplicationSchema.commands, EQ.findEntitiesByName(commands).toList, Some("Command"))
+    val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
+    if (!newCommands.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newCommands)
+
     val changeCommandOwner = allreadyExistingCommands.filter { c => c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true) }
     changeCommandOwner.foreach(p => {
       p.sourceEdge.value.foreach(EQ.deleteEdge(_))
       EQ.addEdge(dataSource, p.entity.value, "source")
       update(p, p)
     })
-
-    val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
-    newCommands.foreach(c => {
-      val ent = EQ.findOrCreateEntity(c, "Command")
-      EQ.addEdge(dataSource, ent, "source")
-      // TODO: cleaner way of doing entity bound models
-      create(Command.newInstance(ent))
-    })
   }
+
+  override def preDelete(entry: Command) {
+    entry.logicalNode.value match {
+      case Some(parent) =>
+        throw new BadRequestException("Cannot delete command: " + entry.entityName + " while it is still assigned to logicalNode " + parent.name)
+      case None => // no endpoint so we are free to delete command
+    }
+    entry.currentActiveSelect.value match {
+      case Some(select) =>
+        throw new BadRequestException("Cannot delete command: " + entry.entityName + " while there is an active select or block " + select)
+      case None => // no selection on command
+    }
+  }
+
+  override def postDelete(entry: Command) {
+
+    val selects = entry.selectHistory.value
+    val commandHistory = entry.commandHistory.value
+
+    logger.info("Deleting Command: " + entry.entityName + " selects: " + selects.size + " history: " + commandHistory.size)
+
+    selects.foreach(s => commandSelectModel.removeAccess(s))
+    commandHistory.foreach(s => commandHistoryModel.delete(s))
+
+    EQ.deleteEntity(entry.entity.value)
+  }
+
+  // ugly link related bolierplate to break circular dependency
+  var commandHistoryModelOption: Option[UserCommandRequestServiceModel] = None
+  var commandSelectModelOption: Option[CommandAccessServiceModel] = None
+  def setCommandHistoryModel(m: UserCommandRequestServiceModel) {
+    link(m)
+    commandHistoryModelOption = Some(m)
+  }
+  def setCommandSelectModel(m: CommandAccessServiceModel) {
+    link(m)
+    commandSelectModelOption = Some(m)
+  }
+
+  def commandHistoryModel = commandHistoryModelOption.get
+  def commandSelectModel = commandSelectModelOption.get
 }
 
 trait CommandServiceConversion extends MessageModelConversion[CommandProto, Command] with UniqueAndSearchQueryable[CommandProto, Command] {
@@ -92,7 +149,9 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
 
-  def createModelEntry(proto: CommandProto): Command = Command.newInstance(proto.getName, proto.getDisplayName)
+  def createModelEntry(proto: CommandProto): Command = {
+    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType.getNumber)
+  }
 
   def isModified(entry: Command, existing: Command) = {
     entry.lastSelectId != existing.lastSelectId
@@ -111,7 +170,9 @@ trait CommandServiceConversion extends MessageModelConversion[CommandProto, Comm
       case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
-    sql.logicalNode.asOption.foreach(_.foreach(ln => EQ.entityToProto(ln)))
+    sql.logicalNode.value // autoload logicalNode
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EQ.minimalEntityToProto(ln).build) } }
+    b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }
 }

@@ -93,6 +93,17 @@
  *   repeated org.totalgrid.reef.proto.Utils.Attribute attributes = 2;
  * }
  * 
+ * enum PointType {
+ *   ANALOG         = 1;
+ *   COUNTER        = 2;
+ *   STATUS         = 3;
+ * }
+ * enum CommandType {
+ *   CONTROL         = 1;
+ *   SETPOINT_INT    = 2;
+ *   SETPOINT_DOUBLE = 3;
+ * }
+ * 
  * /*
  *   Point
  * 
@@ -110,6 +121,8 @@
  *   optional Entity logicalNode = 5; // live state
  *   optional Entity entity   = 7;    // The point entity
  *   optional bool    abnormal = 6;   // live state
+ *   optional PointType type = 8;
+ *   optional string    unit = 9;
  * }
  * 
  * 
@@ -130,6 +143,7 @@
  *   optional string display_name = 3;
  *   optional Entity logicalNode = 5;
  *   optional Entity entity   = 6;
+ *   optional CommandType type = 7;
  * }
  * 
  * 

@@ -22,7 +22,6 @@ import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto, Entity => EntityProto }
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 
@@ -32,6 +31,7 @@ import org.totalgrid.reef.japi.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class ConfigFileService(protected val modelTrans: ServiceTransactable[ConfigFileServiceModel])
     extends SyncModeledServiceBase[ConfigProto, ConfigFile, ConfigFileServiceModel]
@@ -40,8 +40,8 @@ class ConfigFileService(protected val modelTrans: ServiceTransactable[ConfigFile
   override val descriptor = Descriptors.configFile
 }
 
-class ConfigFileServiceModelFactory(pub: ServiceEventPublishers)
-    extends BasicModelFactory[ConfigProto, ConfigFileServiceModel](pub, classOf[ConfigProto]) {
+class ConfigFileServiceModelFactory(dependencies: ServiceDependencies)
+    extends BasicModelFactory[ConfigProto, ConfigFileServiceModel](dependencies, classOf[ConfigProto]) {
 
   def model = new ConfigFileServiceModel(subHandler)
 }
@@ -83,6 +83,16 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
     val sql = createModelEntry(req, existing.entity.value)
     updateUsingEntities(req, sql, existing.owners.value) // add entity edges
     update(sql, existing)
+  }
+
+  override def preDelete(sql: ConfigFile) {
+    // TODO: figure out how to break config file owner dependency, just allow delete for now
+    //if (!sql.owners.value.isEmpty)
+    //  throw new BadRequestException("Cannot delete config file that is owned by: " + sql.owners.value.map { _.name })
+  }
+
+  override def postDelete(sql: ConfigFile) {
+    EQ.deleteEntity(sql.entity.value)
   }
 
   private def updateUsingEntities(req: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {

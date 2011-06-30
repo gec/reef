@@ -42,6 +42,8 @@ import org.totalgrid.reef.sapi.client.{ ClientSession, SessionPool }
 
 class MockSessionPool(session: ClientSession) extends SessionPool {
 
+  final override def size = 1
+
   final override def borrow[A](fun: ClientSession => A): A = fun(session)
 
   final override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow(fun)

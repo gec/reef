@@ -40,6 +40,7 @@ package org.totalgrid.reef.japi.request.builders
  */
 import org.totalgrid.reef.proto.Events.{ EventList, EventSelect }
 import org.totalgrid.reef.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
+import org.totalgrid.reef.proto.Model.Entity
 
 object AlarmListRequestBuilders {
   def getByAlarmSelect(select: AlarmSelect): AlarmList = AlarmList.newBuilder.setSelect(select).build
@@ -63,5 +64,9 @@ object AlarmListRequestBuilders {
 
   def getUnacknowledgedWithTypes(typs: java.util.List[String], limit: Int): AlarmList = {
     getByAlarmSelect(getUnacknowledgedSelector().setEventSelect(EventSelect.newBuilder.setLimit(limit).addAllEventType(typs)))
+  }
+
+  def getUnacknowledgedWithTypesAndEntity(typs: java.util.List[String], entity: Entity, limit: Int): AlarmList = {
+    getByAlarmSelect(getUnacknowledgedSelector().setEventSelect(EventSelect.newBuilder.setLimit(limit).addAllEventType(typs).addEntity(entity)))
   }
 }

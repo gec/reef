@@ -149,11 +149,12 @@
  *     LOG   = 3;
  *   }
  * 
- *   required string           event_type    = 1 ; // Type of event: UserLogin, BreakerTrip, etc.
+ *   optional string           event_type    = 1 ; // Type of event: UserLogin, BreakerTrip, etc.
  *   optional uint32           severity      = 2 ; // 1 is most severe. Number of severities is configurable (default is 1-8).
  *   optional Designation      designation   = 3 ; // Designate this message type as Alarm, Event, or Log
  *   optional Alarm.State      alarm_state   = 4 ; // Initial alarm start state: UNACK_AUDIBLE, UNACK_SILENT, or ACKNOWLEDGED.
  *   optional string           resource      = 5 ; // Use this to render the message (including attributes)
+ *   optional bool             built_in      = 6 ; // whether this message type is used by the system and cannot be deleted
  * }
  * </pre>
  */

@@ -32,6 +32,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.executor.mock.InstantExecutor
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
@@ -60,7 +61,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val serviceOptions = ServiceOptions.loadInfo
 
-      val provider = new ServiceProviders(components, measStore, serviceOptions, NullAuthService)
+      val provider = new ServiceProviders(components, measStore, serviceOptions, NullAuthService, new InstantExecutor)
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

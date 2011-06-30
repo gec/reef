@@ -34,13 +34,15 @@ import org.totalgrid.reef.metrics.{ MetricsHooks }
 object OverrideProcessor {
   def transformSubstituted(meas: Measurement): Measurement = {
     val q = Quality.newBuilder(meas.getQuality).setSource(Quality.Source.SUBSTITUTED).setOperatorBlocked(true)
-    Measurement.newBuilder(meas).setQuality(q).build
+    val now = System.currentTimeMillis
+    Measurement.newBuilder(meas).setQuality(q).setTime(now).build
   }
 
   def transformNIS(meas: Measurement): Measurement = {
     val dq = DetailQual.newBuilder(meas.getQuality.getDetailQual).setOldData(true)
     val q = Quality.newBuilder(meas.getQuality).setDetailQual(dq).setOperatorBlocked(true)
-    Measurement.newBuilder(meas).setQuality(q).build
+    val now = System.currentTimeMillis
+    Measurement.newBuilder(meas).setQuality(q).setTime(now).build
   }
 }
 
@@ -81,7 +83,7 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
 
       // new NIS request, replace specified
       case (false, Some(repl)) => {
-        cacheCurrent(name) /*getOrElse { throw new Exception("No current value associated with NIS point: " + over) }*/
+        cacheCurrent(name)
         map += (name -> replaceMeas)
         publish(transformSubstituted(repl), true)
       }
@@ -109,7 +111,9 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
     cache.get(name) match {
       case None => overridenCacheMiss(1)
       case Some(cached) => {
-        publish(cached, true)
+        val now = System.currentTimeMillis
+        val updatedMeasurement = Measurement.newBuilder(cached).setTime(now).build()
+        publish(updatedMeasurement, true)
         cache.delete(name)
       }
     }

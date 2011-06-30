@@ -35,7 +35,7 @@ object ServiceBootstrap {
    */
   def bootstrapComponents(amqp: AMQPProtoFactory): CoreApplicationComponents = {
     val pubs = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
-    val modelFac = new core.ModelFactories(pubs, new core.SilentSummaryPoints)
+    val modelFac = new core.ModelFactories(ServiceDependencies(pubs))
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
     val authService = new core.AuthTokenService(modelFac.authTokens)
 

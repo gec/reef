@@ -76,10 +76,4 @@ public interface EventService extends SubscriptionCreator
      * @return all matching events
      */
     SubscriptionResult<List<Event>, Event> subscribeToEvents( EventSelect selector ) throws ReefServiceException;
-
-    /**
-     * publish a new Event to the system
-     */
-    Event publishEvent( Event event ) throws ReefServiceException;
-
 }

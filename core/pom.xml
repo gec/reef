@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.0-SNAPSHOT</version>
+        <version>0.3.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -28,10 +28,10 @@
                     <instructions>
                         <Bundle-Name>Reef Core</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
-                        <Export-Package>org.totalgrid.reef.app, org.totalgrid.reef.event, org.totalgrid.reef.frontend.*,
+                        <Export-Package>org.totalgrid.reef.app, org.totalgrid.reef.event,
                             org.totalgrid.reef.measproc.*, org.totalgrid.reef.measurementstore.*,
                             org.totalgrid.reef.models, org.totalgrid.reef.persistence.*, org.totalgrid.reef.procstatus,
-                            org.totalgrid.reef.services.*, org.totalgrid.reef.loader.*
+                            org.totalgrid.reef.services.*
                         </Export-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
@@ -52,43 +52,43 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-squeryl</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-amqp</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

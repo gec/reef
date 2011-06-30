@@ -6,7 +6,7 @@
     <groupId>org.totalgrid.reef</groupId>
     <artifactId>reef</artifactId>
     <packaging>pom</packaging>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
 
     <properties>
         <mavenBundleVersion>2.1.0</mavenBundleVersion>
@@ -20,8 +20,8 @@
         <module>scala-api</module>
         <module>api-request</module>
         <module>java-rest-api</module>
-        <module>xml</module>
         <module>util</module>
+        <module>util-osgi</module>
         <module>metrics</module>
         <module>amqp</module>
         <module>broker</module>
@@ -35,13 +35,16 @@
         <module>processing</module>
         <module>fep</module>
         <module>protocol-api</module>
-        <module>protocol-benchmark</module>
+        <module>protocol-simulator</module>
+        <module>default-simulator</module>
+        <module>example-simulator</module>
         <module>protocol-dnp3</module>
         <module>dependencies</module>
         <module>proto-shell</module>
         <module>admin-shell</module>
         <module>branding</module>
         <module>assembly</module>
+        <module>loader-xml</module>
     </modules>
 
     <repositories>

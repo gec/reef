@@ -19,6 +19,12 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.OptionalProtos._
+import java.text.SimpleDateFormat
+
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.proto.Alarms.{ Alarm, EventConfig }
 
 object EventView {
 
@@ -27,13 +33,66 @@ object EventView {
   }
 
   def header = {
-    "Id" :: "Type" :: "Alarm" :: "Sev" :: "Subsystem" :: "User" :: "Time" :: "Message" :: Nil
+    "Uid" :: "Type" :: "Alarm" :: "Sev" :: "User" :: "Entity" :: "Message" :: "Time" :: Nil
   }
 
-  def timeString(e: Event) = new java.util.Date(e.getTime).toString
+  val dateFormat = new SimpleDateFormat("HH:mm:ss MM-dd-yy")
+  def timeString(time: Option[Long]) = time.map { t => dateFormat.format(new java.util.Date(t)) }.getOrElse("")
 
   def row(e: Event) = {
-    e.getUid :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getSubsystem :: e.getUserId :: timeString(e) :: e.getRendered :: Nil
+    e.getUid :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getUserId :: e.entity.name.getOrElse("") :: e.getRendered :: timeString(e.time) :: Nil
   }
 
+  private def getValueAsString(attr: Attribute): String = {
+    attr.getVtype match {
+      case Attribute.Type.BOOL => attr.getValueBool.toString
+      case Attribute.Type.SINT64 => attr.getValueSint64.toString
+      case Attribute.Type.DOUBLE => attr.getValueDouble.toString
+      case Attribute.Type.BYTES => "Data of length: " + attr.getValueBytes.size()
+      case Attribute.Type.STRING => attr.getValueString.toString
+    }
+  }
+
+  def printInspect(e: Event) = {
+
+    val argumentLines: List[List[String]] = e.args.attribute.map { jargs =>
+      val args = jargs.toList
+      ("Arguments" :: args.size.toString :: Nil) :: args.map { optAttr =>
+        val attr = optAttr.get
+        attr.getName :: getValueAsString(attr) :: attr.getVtype.toString :: Nil
+      }
+    }.getOrElse(Nil)
+
+    val lines: List[List[String]] =
+      ("Uid" :: e.getUid :: Nil) ::
+        ("Type" :: e.getEventType :: Nil) ::
+        ("Alarm" :: e.getAlarm.toString :: Nil) ::
+        ("Sev" :: e.getSeverity.toString :: Nil) ::
+        ("User" :: e.getUserId :: Nil) ::
+        ("Subsystem" :: e.getSubsystem :: Nil) ::
+        ("Entity" :: e.entity.name.getOrElse("") :: Nil) ::
+        ("Rendered" :: e.getRendered :: Nil) ::
+        ("Time" :: timeString(e.time) :: Nil) ::
+        ("Device Time" :: timeString(e.deviceTime) :: Nil) ::
+        argumentLines
+
+    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+  }
+
+  def printConfigTable(configs: List[EventConfig]) = {
+    Table.printTable(configHeader, configs.map(configRow(_)))
+  }
+
+  def configHeader = {
+    "EventType" :: "Dest" :: "Sev" :: "Audible" :: "Resources" :: "BuiltIn" :: Nil
+  }
+
+  def configRow(e: EventConfig) = {
+    e.getEventType ::
+      e.getDesignation.toString ::
+      e.getSeverity.toString ::
+      (e.getAlarmState == Alarm.State.UNACK_AUDIBLE).toString ::
+      e.getResource ::
+      e.getBuiltIn.toString :: Nil
+  }
 }

@@ -30,6 +30,7 @@ import org.totalgrid.reef.japi.Envelope.Event
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.event.EventType
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
@@ -178,9 +179,14 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(1)
       coord.checkAssignments(1, Some(fep), Some(meas))
 
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointDisabled) should equal(0)
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointEnabled) should equal(0)
+
       val connection = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build).expectOne()
-      val ret = coord.frontEndConnection.put(connection.toBuilder.setEnabled(false).build).expectOne()
-      ret.getEnabled should equal(false)
+      coord.setEndpointEnabled(connection, false)
+
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointDisabled) should equal(1)
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointEnabled) should equal(0)
 
       // check that we have unassigned the fep
       coord.checkAssignments(1, None, Some(meas))
@@ -189,7 +195,10 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(false).build).expectOne()
       coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build).expectNone()
 
-      coord.frontEndConnection.put(ret.toBuilder.setEnabled(true).build).expectOne()
+      coord.setEndpointEnabled(connection, true)
+
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointDisabled) should equal(1)
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointEnabled) should equal(1)
 
       coord.checkAssignments(1, Some(fep), Some(meas))
     }
@@ -208,11 +217,22 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(2)
       coord.checkAssignments(2, Some(fep), Some(meas))
 
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointOffline) should equal(0)
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointOnline) should equal(0)
+
       val connections = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build).expectMany(2)
-      coord.frontEndConnection.put(connections.head.toBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne()
+      coord.setEndpointState(connections.head, CommEndpointConnection.State.COMMS_UP)
+
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointOffline) should equal(0)
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointOnline) should equal(1)
 
       coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build).expectOne()
       coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne()
+
+      coord.setEndpointState(connections.head, CommEndpointConnection.State.COMMS_DOWN)
+
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointOffline) should equal(1)
+      coord.eventSink.getEventCount(EventType.Scada.CommEndpointOnline) should equal(1)
     }
   }
 

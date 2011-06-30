@@ -19,7 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.squeryl.PrimitiveTypeMode._
 
@@ -27,18 +26,35 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
+import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
-class UserCommandRequestServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel], accessFac: ModelFactory[CommandAccessServiceModel])
-    extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](pub, classOf[UserCommandRequest]) {
+class UserCommandRequestServiceModelFactory(
+  dependencies: ServiceDependencies,
+  accessFac: ModelFactory[CommandAccessServiceModel])
+    extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](dependencies, classOf[UserCommandRequest]) {
 
-  def model = new UserCommandRequestServiceModel(subHandler, commands.model, accessFac.model)
-  def model(commandModel: CommandServiceModel, accessModel: CommandAccessServiceModel) = new UserCommandRequestServiceModel(subHandler, commandModel, accessModel)
+  def model = {
+    val accessModel = accessFac.model
+    val m = new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
+    m.link(accessModel)
+    m
+
+  }
+  def model(accessModel: CommandAccessServiceModel) =
+    new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
+
 }
 
-class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscriptionHandler, commandModel: CommandServiceModel, accessModel: CommandAccessServiceModel)
+class UserCommandRequestServiceModel(
+  protected val subHandler: ServiceSubscriptionHandler,
+  accessModel: CommandAccessServiceModel,
+  val eventSink: SystemEventSink)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]
     with EventedServiceModel[UserCommandRequest, UserCommandModel]
-    with UserCommandRequestConversion {
+    with UserCommandRequestConversion
+    with ServiceModelSystemEventPublisher {
 
   val table = ApplicationSchema.userRequests
 
@@ -66,8 +82,8 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
     }
   }
 
-  def issueCommand(command: String, corrId: String, user: String, timeout: Long, serializedCmd: Array[Byte]): UserCommandModel = {
-    issueRequest(findCommand(command), corrId, user, timeout, serializedCmd)
+  def issueCommand(command: String, corrId: String, user: String, timeout: Long, cmdRequest: CommandRequest): UserCommandModel = {
+    issueRequest(findCommand(command), corrId, user, timeout, cmdRequest)
   }
 
   def findCommand(command: String) = {
@@ -79,12 +95,20 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
     cmds.head
   }
 
-  def issueRequest(cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, serializedCmd: Array[Byte], atTime: Long = System.currentTimeMillis): UserCommandModel = {
+  def issueRequest(cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
     if (accessModel.userHasSelect(cmd, user, atTime)) {
+
+      // TODO: move command SystemEvent publishing into async issuer
+      val (code, valueArg) = cmdRequest._type match {
+        case Some(ValType.NONE) | None => (EventType.Scada.ControlExe, "value" -> "")
+        case Some(ValType.INT) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
+        case Some(ValType.DOUBLE) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
+      }
+      postSystemEvent(code, args = "command" -> cmd.entityName :: valueArg :: Nil)
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
-      create(new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, serializedCmd))
+      create(new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray))
 
     } else {
       throw new BadRequestException("Command not selected")
@@ -95,11 +119,11 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
 
     val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
 
-    val (id, serialized) = if (req.commandRequest.correlationId.isEmpty) {
+    val (id, cmdProto) = if (req.commandRequest.correlationId.isEmpty) {
       val cid = System.currentTimeMillis + "-" + user
-      (cid, req.getCommandRequest.toBuilder.setCorrelationId(cid).build.toByteString.toByteArray)
+      (cid, req.getCommandRequest.toBuilder.setCorrelationId(cid).build)
     } else {
-      (req.getCommandRequest.getCorrelationId, req.getCommandRequest.toByteString.toByteArray)
+      (req.getCommandRequest.getCorrelationId, req.getCommandRequest)
     }
 
     issueRequest(
@@ -107,7 +131,7 @@ class UserCommandRequestServiceModel(protected val subHandler: ServiceSubscripti
       id,
       user,
       req.getTimeoutMs,
-      serialized)
+      cmdProto)
   }
 
   override def updateFromProto(req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {

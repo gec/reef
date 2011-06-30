@@ -23,6 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.assertEquals;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.request.MeasurementService;
+import org.totalgrid.reef.japi.request.PointService;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import java.util.List;
@@ -40,8 +42,10 @@ public class TestMeasSnapshotService extends ReefConnectionTestBase
     @Test
     public void measSnapshotCountMatches() throws ReefServiceException
     {
-        List<Point> plist = SampleRequests.getAllPoints( client );
-        List<Measurement> mlist = SampleRequests.getCurrentValues( client, plist );
+        PointService ps = helpers;
+        MeasurementService ms = helpers;
+        List<Point> plist = ps.getAllPoints();
+        List<Measurement> mlist = ms.getMeasurementsByPoints( plist );
         assertEquals( plist.size(), mlist.size() );
     }
 

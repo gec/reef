@@ -64,8 +64,12 @@ object MeasView {
     }
   }
 
-  def longQuality(m: Measurement) = {
+  def longQuality(m: Measurement): String = {
     val q = m.getQuality
+    longQuality(q)
+  }
+
+  def longQuality(q: Quality): String = {
     val dq = q.getDetailQual
 
     var list = List.empty[String]
@@ -104,6 +108,28 @@ object MeasView {
 
   def printTable(list: List[Measurement]) = {
     Table.printTable(header, list.sortBy(_.getName).map(row(_)))
+  }
+
+  /**
+   * Print all measurements that match the specified Quality fields. If two or
+   * more quality fields are set, both have to match for the measurement to be
+   * printed.
+   */
+  def printTableFilteredByQuality(measurements: List[Measurement], quality: Quality) = {
+    val filtered = measurements.filter(m => {
+      val q = m.getQuality
+
+      // Each of these are true if we're NOT looking for that property or it's a match
+      val validity = (!quality.hasValidity || quality.getValidity == q.getValidity)
+      val source = (!quality.hasSource || quality.getSource == q.getSource)
+      val blocked = (!quality.hasOperatorBlocked || quality.getOperatorBlocked == q.getOperatorBlocked)
+      //TODO: Add filters for DetailQual bits.
+
+      // If one didn't match, return false.
+      validity && source && blocked
+    })
+
+    Table.printTable(header, filtered.sortBy(_.getName).map(row(_)))
   }
 
   def printInspect(m: Measurement) = {

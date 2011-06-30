@@ -23,7 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.japi.ExpectationException
+import org.totalgrid.reef.japi.{ BadRequestException, ExpectationException }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementSnapshotTest
@@ -49,14 +49,14 @@ class MeasurementSnapshotTest
 
   test("Non existant measurement get") {
 
-    intercept[ExpectationException] {
+    intercept[BadRequestException] {
       client.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
       client.getMeasurementsByNames("UnknownPoint" :: Nil)
     }
 
     intercept[ExpectationException] {
       client.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")
-      client.get(PointRequestBuilders.getByName("UnknownPoint")).await().expectOne
+      client.getPointByName("UnknownPoint")
     }
   }
 }

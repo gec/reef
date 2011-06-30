@@ -28,7 +28,7 @@ case class EventStore(
     eventType: String,
     alarm: Boolean,
     time: Long,
-    deviceTime: Long,
+    deviceTime: Option[Long],
     severity: Int,
     subsystem: String,
     userId: String,
@@ -37,7 +37,7 @@ case class EventStore(
     rendered: String) extends ModelWithId {
 
   // extra constructor for squeryl type inference
-  def this() = this("", false, 0, 0, 0, "", "", Some(new UUID(0, 0)), Array[Byte](), "")
+  def this() = this("", false, 0, Some(0), 0, "", "", Some(new UUID(0, 0)), Array[Byte](), "")
 
   val associatedAlarm = LazyVar(ApplicationSchema.alarms.where(a => a.eventUid === id).single)
 
@@ -62,7 +62,8 @@ case class EventConfigStore(
   val severity: Int, // Severity level
   val designation: Int, // Alarm, Event, or Log
   val alarmState: Int, // Initial alarm start state: UNACK_AUDIBLE, UNACK_SILENT, or ACKNOWLEDGED
-  val resource: String) extends ModelWithId // rendering string
+  val resource: String,
+  val builtIn: Boolean) extends ModelWithId // rendering string
 
 /**
  * The Model for the Alarm. It's part DB map and part Model.

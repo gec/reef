@@ -42,7 +42,7 @@ public interface PointService
      *
      * @return all points
      */
-    List<Point> getAllPoints();
+    List<Point> getAllPoints() throws ReefServiceException;
 
     /**
      * retrieve a point by name, throws exception if point is unknown

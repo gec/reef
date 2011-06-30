@@ -76,32 +76,5 @@ class EntityChildrenCommand extends ReefCommandSupport {
       EntityView.printTreeSingleDepth(ents)
     }
   }
-
-}
-
-@Command(scope = "point", name = "list", description = "Lists points")
-class PointListCommand extends ReefCommandSupport {
-
-  def doCommand() = EntityView.printList(services.getAllEntitiesWithType("Point").toList)
-
-}
-
-@Command(scope = "point", name = "commands", description = "Lists points with associated commands.")
-class PointCommandsCommand extends ReefCommandSupport {
-
-  @Argument(index = 0, name = "pointName", description = "Point name.", required = false, multiValued = false)
-  var pointName: String = null
-
-  def doCommand() = {
-
-    import org.totalgrid.reef.proto.Model.Entity
-
-    val query = Option(pointName) match {
-      case Some(entName) => Entity.newBuilder().setName(pointName).addRelations(EntityRequestBuilders.getAllFeedBackCommands).build
-      case None => EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands
-    }
-    services.getEntities(query).foreach(EntityView.printTreeRecursively(_))
-  }
-
 }
 

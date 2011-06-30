@@ -30,6 +30,9 @@
         <command name="command/list">
             <action class="org.totalgrid.reef.shell.proto.CommandListCommand"/>
         </command>
+        <command name="command/hist">
+            <action class="org.totalgrid.reef.shell.proto.CommandHistoryCommand"/>
+        </command>
         <command name="command/issue">
             <action class="org.totalgrid.reef.shell.proto.CommandIssueCommand"/>
         </command>
@@ -60,8 +63,8 @@
         <command name="entity/entity">
             <action class="org.totalgrid.reef.shell.proto.EntityCommand"/>
         </command>
-        <command name="meas/meas">
-            <action class="org.totalgrid.reef.shell.proto.MeasCommand"/>
+        <command name="meas/list">
+            <action class="org.totalgrid.reef.shell.proto.MeasListCommand"/>
         </command>
         <command name="meas/from">
             <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
@@ -75,11 +78,38 @@
         <command name="meas/download">
             <action class="org.totalgrid.reef.shell.proto.MeasDownloadCommand"/>
         </command>
-        <command name="event/event">
-            <action class="org.totalgrid.reef.shell.proto.EventCommand"/>
+        <command name="meas/block">
+            <action class="org.totalgrid.reef.shell.proto.MeasBlockCommand"/>
         </command>
-        <command name="alarm/alarm">
-            <action class="org.totalgrid.reef.shell.proto.AlarmCommand"/>
+        <command name="meas/unblock">
+            <action class="org.totalgrid.reef.shell.proto.MeasUnblockCommand"/>
+        </command>
+        <command name="meas/override">
+            <action class="org.totalgrid.reef.shell.proto.MeasOverrideCommand"/>
+        </command>
+        <command name="event/list">
+            <action class="org.totalgrid.reef.shell.proto.EventListCommand"/>
+        </command>
+        <command name="event/view">
+            <action class="org.totalgrid.reef.shell.proto.EventViewCommand"/>
+        </command>
+        <command name="event/publish">
+            <action class="org.totalgrid.reef.shell.proto.EventPublishCommand"/>
+        </command>
+        <command name="event-config/list">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigListCommand"/>
+        </command>
+        <command name="event-config/view">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigViewCommand"/>
+        </command>
+        <command name="event-config/create">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigCreateCommand"/>
+        </command>
+        <command name="event-config/delete">
+            <action class="org.totalgrid.reef.shell.proto.EventConfigDeleteCommand"/>
+        </command>
+        <command name="alarm/list">
+            <action class="org.totalgrid.reef.shell.proto.AlarmListCommand"/>
         </command>
         <command name="alarm/silence">
             <action class="org.totalgrid.reef.shell.proto.AlarmSilenceCommand"/>
@@ -89,6 +119,12 @@
         </command>
         <command name="alarm/remove">
             <action class="org.totalgrid.reef.shell.proto.AlarmRemoveCommand"/>
+        </command>
+        <command name="reef/load">
+            <action class="org.totalgrid.reef.shell.proto.LoadConfigCommand"/>
+        </command>
+        <command name="reef/unload">
+            <action class="org.totalgrid.reef.shell.proto.UnloadConfigCommand"/>
         </command>
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>

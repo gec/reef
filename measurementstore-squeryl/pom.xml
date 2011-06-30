@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.0-SNAPSHOT</version>
+        <version>0.3.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-measurementstore-squeryl</artifactId>
@@ -48,23 +48,23 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-api</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.1-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

@@ -66,6 +66,9 @@ class MockBrokerChannel(parent: MockBrokerConnection) extends BrokerChannel {
     started = true
     parent.listen(queueName.get, messageConsumer.get)
   }
+
+  def isOpen = started
+
   def close() {
     val wasStarted = started
     started = false

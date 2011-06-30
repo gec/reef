@@ -526,7 +526,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
     val req = EntityProto.newBuilder.addTypes("ShouldHaveBeenSubstation")
 
     intercept[BadRequestException] {
-      EQ.fullQuery(req.build)
+      EQ.checkAllTypesInSystem(req.build)
     }
   }
 
@@ -540,7 +540,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
             EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
 
     intercept[BadRequestException] {
-      EQ.fullQuery(req.build)
+      EQ.checkAllTypesInSystem(req.build)
     }
   }
 

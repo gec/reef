@@ -47,7 +47,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
   }
 
   class Fixture {
-    val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val modelFac = new ModelFactories()
     val authService = new AuthTokenService(modelFac.authTokens)
 
     val agentService = new AgentService(modelFac.agents)

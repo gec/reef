@@ -21,10 +21,9 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
 import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 
@@ -44,8 +43,10 @@ class ApplicationConfigService(protected val modelTrans: ServiceTransactable[App
   override val descriptor = Descriptors.applicationConfig
 }
 
-class ApplicationConfigServiceModelFactory(pub: ServiceEventPublishers, procStatus: ModelFactory[ProcessStatusServiceModel])
-    extends BasicModelFactory[ApplicationConfig, ApplicationConfigServiceModel](pub, classOf[ApplicationConfig]) {
+class ApplicationConfigServiceModelFactory(
+  dependencies: ServiceDependencies,
+  procStatus: ModelFactory[ProcessStatusServiceModel])
+    extends BasicModelFactory[ApplicationConfig, ApplicationConfigServiceModel](dependencies, classOf[ApplicationConfig]) {
 
   def model = new ApplicationConfigServiceModel(subHandler, procStatus.model)
   def model(procStatusModel: ProcessStatusServiceModel) = new ApplicationConfigServiceModel(subHandler, procStatusModel)

@@ -45,10 +45,10 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model.{ Point, Entity }
-
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.proto.Model.{ PointType, Point, Entity }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
@@ -56,12 +56,12 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import ServiceResponseTestingHelpers._
 
   private def addPoint(pointName: String, devName: String): Entity = {
-    val modelFac = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+    val modelFac = new ModelFactories()
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
     val device = EQ.findOrCreateEntity(devName, "LogicalNode")
-    val pp = Point.newBuilder.setName(pointName).build
+    val pp = Point.newBuilder.setName(pointName).setUnit("raw").setType(PointType.ANALOG).build
 
     val point = service.put(pp).expectOne()
 
@@ -106,15 +106,24 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   }*/
 
   test("Exercise Overrides Service") {
-    val publisher = new SilentEventPublishers
+    val deps = new ServiceDependencies()
 
     val node = addPoint("meas01", "dev1")
     addPoint("meas02", "dev2")
-    val fac = new OverrideConfigModelFactory(publisher)
+    val fac = new OverrideConfigModelFactory(deps)
     val s = new OverrideConfigService(fac)
-    val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build).expectOne()
-    val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build).expectOne()
-    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build).expectOne()
+
+    val headers = new RequestEnv
+    headers.setUserName("user")
+
+    // first NIS the points
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build, headers).expectOne
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).build, headers).expectOne
+
+    // then override it a few times
+    val put1 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 100)).build, headers).expectOne()
+    val put2 = s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).setMeas(makeInt("meas01", 999)).build, headers).expectOne()
+    s.put(MeasOverride.newBuilder.setPoint(makePoint("meas02")).setMeas(makeInt("meas02", 888)).build, headers).expectOne()
 
     val gotten = s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build).expectOne()
     // make sure the object has had all of the point and node fields filled out

@@ -33,6 +33,7 @@ import org.totalgrid.reef.japi._
 import com.weiglewilczek.scalamodules._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.promise.{ Promise, SynchronizedPromise }
 
 class ServiceDispatcher[A](rh: AsyncService[A]) {
 
@@ -83,7 +84,7 @@ class ServiceDispatcher[A](rh: AsyncService[A]) {
 
 }
 
-trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
+trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
@@ -95,9 +96,9 @@ trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
       case Some(info) =>
         new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
       case None =>
-        Response(Envelope.Status.LOCAL_ERROR, error = "Proto not registered: " + klass)
+        Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + klass)
     }
-    new BasicPromise(rsp)
+    new SynchronizedPromise(rsp)
   }
 
   private def getService[A](exchange: String): AsyncService[A] = {
@@ -114,12 +115,14 @@ trait OSGiSyncOperations extends RestOperations with DefaultHeaders {
 
 }
 
-class OSGISession(bundleContext: BundleContext) extends OSGiSyncOperations with ClientSession {
+class OsgiClientSession(bundleContext: BundleContext) extends OsgiSyncOperations with ClientSession {
   def getBundleContext: BundleContext = bundleContext
 
   def addSubscription[A](klass: Class[_]) = {
     throw new IllegalArgumentException("Subscriptions not implemented for OSGISession.")
   }
+
+  def isOpen = true
 
   def close() {
     // nothing special to do

@@ -26,13 +26,12 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.japi.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFactory
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -46,9 +45,9 @@ class MeasurementProcessingConnectionService(protected val modelTrans: ServiceTr
 }
 
 class MeasurementProcessingConnectionModelFactory(
-  pub: ServiceEventPublishers,
+  dependencies: ServiceDependencies,
   coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[ConnProto, MeasurementProcessingConnectionServiceModel](pub, classOf[ConnProto]) {
+    extends BasicModelFactory[ConnProto, MeasurementProcessingConnectionServiceModel](dependencies, classOf[ConnProto]) {
 
   def model = {
     val csm = new MeasurementProcessingConnectionServiceModel(subHandler)
@@ -81,13 +80,7 @@ class MeasurementProcessingConnectionServiceModel(
     update(updated, existing)
   }
 
-  override def postCreate(sql: MeasProcAssignment) {
-    coordinator.onMeasProcAssignmentChanged(sql)
-  }
   override def postUpdate(sql: MeasProcAssignment, existing: MeasProcAssignment) {
-    coordinator.onMeasProcAssignmentChanged(sql)
-  }
-  override def postDelete(sql: MeasProcAssignment) {
     coordinator.onMeasProcAssignmentChanged(sql)
   }
 

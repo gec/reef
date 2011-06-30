@@ -39,10 +39,13 @@ package org.totalgrid.reef.japi.request
  * under the License.
  */
 
-import builders.{ EventRequestBuilders, EventConfigRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.proto.Utils.Attribute
+
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.proto.Alarms.EventConfig
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigRequestTest
@@ -74,26 +77,38 @@ class EventConfigRequestTest
     with ShouldMatchers {
 
   test("Create Log, Event, Alarm configurations") {
+
+    var configs = List.empty[EventConfig]
+
     client.addExplanation("Treat as Log", "When ")
-    client.put(EventConfigRequestBuilders.makeLog("Demo.AsLog", "Log Message", 1)).await().expectOne
+    configs ::= client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message")
 
     client.addExplanation("Treat as Event", "")
-    client.put(EventConfigRequestBuilders.makeEvent("Demo.AsEvent", "Event Message", 2)).await().expectOne
+    configs ::= client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message")
 
     client.addExplanation("Treat as Alarm", "")
-    client.put(EventConfigRequestBuilders.makeAudibleAlarm("Demo.AsAlarm", "Alarm Message", 3)).await().expectOne
+    configs ::= client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message")
 
     client.addExplanation("Post an Event", "Post an event that is configured to make an event entry in the table.")
-    client.put(EventRequestBuilders.makeNewEventForEntityByName("Demo.AsEvent", "StaticSubstation.Line02.Current")).await().expectOne
+    client.publishEvent("Demo.AsEvent", "Tests")
 
     client.addExplanation("Post a Log", "When we post an event that is downgraded to a log message the result doesn't have the UID field set since they werenot stored in database")
-    client.put(EventRequestBuilders.makeNewEventForEntityByName("Demo.AsLog", "StaticSubstation.Line02.Current")).await().expectOne
+    client.publishEvent("Demo.AsLog", "Tests")
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    client.put(EventConfigRequestBuilders.makeLog("Demo.Formatting", "Attributes name: {name} value: {value}", 1)).await().expectOne
+    configs ::= client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}")
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    client.put(EventRequestBuilders.makeNewEventWithAttributes("Demo.Formatting", "name" -> "abra", "value" -> "cadabra")).await().expectOne
+    client.publishEvent("Demo.Formatting", "Tests", makeAttributeList("name" -> "abra", "value" -> "cadabra"))
+
+    configs.foreach(client.deleteEventConfig(_))
+  }
+
+  def makeAttributeList(tuples: Tuple2[String, String]*): List[Attribute] = {
+    tuples.map {
+      case (name, value) =>
+        Attribute.newBuilder.setName(name).setValueString(value).setVtype(Attribute.Type.STRING).build
+    }.toList
   }
 
 }

@@ -118,10 +118,10 @@ lifecycle and package managment in OSGi.
 - **processing** : Provides an entry point to startup a set of measurement processors (one for each endpoint) under a
   single "process".
 - **fep** : An entry point that uses the OSGi "service watching" system to look for packages being added and removed
-  that implement the IProtocol interface. Starts a seperate "application" for each protocol in the system.
-- **protocol-benchmark** : A simple implementation of IProtocol that randomly simulates measurements and responds
+  that implement the Protocol interface. Starts a seperate "application" for each protocol in the system.
+- **protocol-benchmark** : A simple implementation of Protocol that randomly simulates measurements and responds
   to controls. Also provides some 'backdoor' karaf functions to alter the simulator charteristics.
-- **protocol-dnp3** : Implements IProtocol using java wrappers around gec's open source c++ dnp3 stack.
+- **protocol-dnp3** : Implements Protocol using java wrappers around gec's open source c++ dnp3 stack.
 
 Karaf Distribution
 ----------------------------------------

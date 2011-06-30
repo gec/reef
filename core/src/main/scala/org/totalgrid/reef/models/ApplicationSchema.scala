@@ -26,6 +26,7 @@ object ApplicationSchema extends Schema {
   val edges = table[EntityEdge]
   val derivedEdges = table[EntityDerivedEdge]
   val entityTypes = table[EntityToTypeJoins]
+  val entityTypeMetaModel = table[EntityTypeMetaModel]
 
   val entityAttributes = table[EntityAttribute]
 
@@ -60,11 +61,12 @@ object ApplicationSchema extends Schema {
 
   val events = table[EventStore]
   on(events)(s => declare(
-    s.time is (indexed)))
+    s.time is (indexed),
+    s.rendered is dbType("TEXT")))
 
   val eventConfigs = table[EventConfigStore]
+  on(eventConfigs)(s => declare(s.resource is dbType("TEXT")))
 
-  val triggers = table[TriggerConfig]
   val overrides = table[OverrideConfig]
 
   val triggerSets = table[TriggerSet]

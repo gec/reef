@@ -27,9 +27,9 @@ import java.util.UUID
 import org.squeryl.Query
 
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity]) = {
+  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String) = {
     val ent = EQ.findOrCreateEntity(name, "Point")
-    val p = new Point(ent.id, false)
+    val p = new Point(ent.id, _type, unit, abnormal)
     dataSource.foreach(ln => { EQ.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
     p.entity.value = ent
     p
@@ -43,6 +43,8 @@ object Point {
 
 case class Point(
     _entityId: UUID,
+    pointType: Int,
+    unit: String,
     var abnormal: Boolean) extends EntityBasedModel(_entityId) {
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
@@ -58,18 +60,17 @@ case class Point(
   var abnormalUpdated = false
 
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
+
+  val triggers = LazyVar(ApplicationSchema.triggerSets.where(t => t.pointId === id).toList.map { p => p.point.value = this; p })
+
+  val overrides = LazyVar(ApplicationSchema.overrides.where(t => t.pointId === id).toList.map { p => p.point.value = this; p })
 }
 
 object Command {
-  def newInstance(name: String, displayName: String) = {
+  def newInstance(name: String, displayName: String, _type: Int) = {
     val ent = EQ.findOrCreateEntity(name, "Command")
-    val c = new Command(ent.id, displayName, false, None, None)
+    val c = new Command(ent.id, displayName, _type, false, None, None)
     c.entity.value = ent
-    c
-  }
-  def newInstance(entity: Entity) = {
-    val c = new Command(entity.id, entity.name, false, None, None)
-    c.entity.value = entity
     c
   }
 
@@ -84,11 +85,12 @@ object Command {
 case class Command(
     _entityId: UUID,
     val displayName: String,
+    val commandType: Int,
     var connected: Boolean,
     var lastSelectId: Option[Long],
     var triggerId: Option[Long]) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", false, Some(0), Some(0))
+  def this() = this(new UUID(0, 0), "", -1, false, Some(0), Some(0))
 
   val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
 
@@ -96,6 +98,11 @@ case class Command(
 
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
+  val currentActiveSelect = LazyVar(CommandAccessModel.activeSelect(lastSelectId))
+
+  val selectHistory = LazyVar(CommandAccessModel.selectsForCommands(id :: Nil))
+
+  val commandHistory = LazyVar(ApplicationSchema.userRequests.where(u => u.commandId === id).toList)
 }
 
 object FrontEndPort {
@@ -115,6 +122,8 @@ case class FrontEndPort(
     var proto: Array[Byte]) extends EntityBasedModel(_entityId) {
 
   def this() = this(new UUID(0, 0), Some(""), Some(""), 0, Array.empty[Byte])
+
+  val endpoints = LazyVar(ApplicationSchema.endpoints.where(ce => ce.frontEndPortId === Some(entityId)).toList)
 }
 
 case class ConfigFile(

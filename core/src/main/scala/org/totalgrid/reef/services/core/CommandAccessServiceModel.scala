@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.squeryl.{ Table, Query }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
@@ -31,12 +30,22 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class CommandAccessServiceModelFactory(pub: ServiceEventPublishers, commands: ModelFactory[CommandServiceModel])
-    extends BasicModelFactory[AccessProto, CommandAccessServiceModel](pub, classOf[AccessProto]) {
+class CommandAccessServiceModelFactory(
+  dependencies: ServiceDependencies)
+    extends BasicModelFactory[AccessProto, CommandAccessServiceModel](dependencies, classOf[AccessProto]) {
 
-  def model = new CommandAccessServiceModel(subHandler, commands.model)
+  def model = {
+    val commandService = commandFac.get.model
+    val m = new CommandAccessServiceModel(subHandler, commandService)
+    m.link(commandService)
+    m
+  }
   def model(commandModel: CommandServiceModel) = new CommandAccessServiceModel(subHandler, commandModel)
+
+  private var commandFac: Option[ModelFactory[CommandServiceModel]] = None
+  def setCommandsFactory(commands: ModelFactory[CommandServiceModel]) = commandFac = Some(commands)
 }
 
 class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHandler, commandModel: CommandServiceModel)
@@ -45,8 +54,6 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     with CommandAccessConversion {
 
   import org.squeryl.PrimitiveTypeMode._
-
-  link(commandModel)
 
   val table = ApplicationSchema.commandAccess
 
@@ -130,14 +137,20 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     accEntry
   }
 
-  def selectCommands(user: String, expireTime: Option[Long], commands: List[String]): AccessModel = {
-    val cmds = CommandModel.findByNames(commands)
+  def selectCommands(user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
 
-    if (cmds.size != commands.size)
-      throw new BadRequestException("Commands not found")
+    // just remove duplicate names from request
+    val commands = commandsRequested.distinct
 
-    val cmdIds = from(cmds)(t => select(t.id))
-    if (areAnyBlockedById(cmdIds.toList))
+    val cmds = CommandModel.findByNames(commands).toList
+
+    if (cmds.size != commands.size) {
+      val missing = commands.diff(cmds.map { _.entityName })
+      throw new BadRequestException("Not all commands were found: " + missing.mkString(", "))
+    }
+
+    val cmdIds = cmds.map { _.id }
+    if (areAnyBlockedById(cmdIds))
       throw new UnauthorizedException("One or more commands are blocked")
 
     val accEntry = create(new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))

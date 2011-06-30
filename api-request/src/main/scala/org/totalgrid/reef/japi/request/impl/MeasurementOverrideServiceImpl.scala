@@ -33,7 +33,7 @@ trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with Measureme
     }
   }
 
-  override def setPointOverriden(point: Point, measurement: Measurement) = {
+  override def setPointOverride(point: Point, measurement: Measurement) = {
     ops("Couldn't override point uuid:" + point.uuid + " name: " + point.name + " to: " + measurement) {
       _.put(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)).await().expectOne
     }

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
@@ -33,21 +33,27 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
+import org.totalgrid.reef.sapi.RequestEnv
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   val pubs = new SilentEventPublishers
   val rtDb = new InMemoryMeasurementStore()
-  val modelFac = new core.ModelFactories(pubs, new SilentSummaryPoints, rtDb)
+  val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb))
 
   val endpointService = new CommunicationEndpointService(modelFac.endpoints)
+  val connectionService = new CommunicationEndpointConnectionService(modelFac.fepConn)
 
   val configFileService = new ConfigFileService(modelFac.configFiles)
   val pointService = new PointService(modelFac.points)
   val commandService = new CommandService(modelFac.cmds)
   val portService = new FrontEndPortService(modelFac.fepPort)
+
+  val headers = new RequestEnv
+  headers.setUserName("user")
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
     CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
@@ -65,10 +71,10 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     owners
   }
   def getPoint(name: String = "device.test_point") = {
-    Point.newBuilder.setName(name)
+    Point.newBuilder.setName(name).setUnit("raw").setType(PointType.ANALOG)
   }
   def getCommand(name: String = "device.test_command") = {
-    Command.newBuilder.setName(name)
+    Command.newBuilder.setName(name).setType(CommandType.CONTROL).setDisplayName(name)
   }
   def getConfigFile(name: Option[String] = Some("test1"), text: Option[String] = Some("Something"), mimeType: Option[String] = Some("text/xml")) = {
     val cf = ConfigFile.newBuilder
@@ -77,11 +83,27 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     mimeType.foreach(typ => cf.setMimeType(typ))
     cf
   }
+  def getConnection(name: String = "device", enabled: Option[Boolean] = None, state: Option[CommEndpointConnection.State] = None) = {
+    val b = CommEndpointConnection.newBuilder.setEndpoint(getEndpoint(name))
+    enabled.foreach(b.setEnabled(_))
+    state.foreach(b.setState(_))
+    b
+  }
+
+  def makeEndpoint(port: Option[CommChannel] = Some(getIPPort().build),
+    configFile: Option[ConfigFile] = Some(getConfigFile().build),
+    ownerships: EndpointOwnership = getOwnership().build) = {
+    val b = getEndpoint()
+    port.foreach(b.setChannel(_))
+    configFile.foreach(b.addConfigFiles(_))
+    b.setOwnerships(ownerships)
+    b.build
+  }
 
   test("Add parts seperatley (uid)") {
 
-    val pt = pointService.put(getPoint().build).expectOne()
-    val cmd = commandService.put(getCommand().build).expectOne()
+    pointService.put(getPoint().build).expectOne()
+    commandService.put(getCommand().build).expectOne()
     val cf = configFileService.put(getConfigFile().build).expectOne()
     val port = portService.put(getIPPort().build).expectOne()
 
@@ -102,25 +124,16 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     commandService.get(getCommand("*").build).expectOne()
   }
 
-  test("Endpoint put adds all needed entries") {
-    val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
-
-    val returned = endpointService.put(endpoint.build).expectOne()
-
-    returned.getConfigFilesCount should equal(1)
-    returned.hasChannel should equal(true)
-
-    returned.getChannel.hasUuid should equal(true)
-    returned.getConfigFiles(0).hasUuid should equal(true)
-
-    returned.getOwnerships.getPointsCount should equal(1)
-    returned.getOwnerships.getCommandsCount should equal(1)
-
-    pointService.get(getPoint("*").build).expectOne()
-    commandService.get(getCommand("*").build).expectOne()
+  test("Endpoint put with unkown points/commands fails") {
+    intercept[BadRequestException] {
+      val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
+      endpointService.put(endpoint.build).expectOne()
+    }
   }
 
   test("Add with no port") {
+    pointService.put(getPoint().build).expectOne()
+    commandService.put(getCommand().build).expectOne()
     val endpoint = getEndpoint().addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
 
     val returned = endpointService.put(endpoint.build).expectOne()
@@ -135,26 +148,30 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Config file without needed fields blows up") {
-    intercept[ReefServiceException] {
+    intercept[BadRequestException] {
       configFileService.put(getConfigFile(Some("test1"), None, None).build)
     }
-    intercept[ReefServiceException] {
+    intercept[BadRequestException] {
       configFileService.put(getConfigFile(Some("test1"), Some("data"), None).build)
     }
-    intercept[ReefServiceException] {
+    intercept[BadRequestException] {
       configFileService.put(getConfigFile(Some("test1"), None, Some("data")).build)
     }
-    intercept[ReefServiceException] {
+    intercept[BadRequestException] {
       configFileService.put(getConfigFile(None, Some("data"), Some("data")).build)
     }
-    intercept[ReefServiceException] {
+    intercept[BadRequestException] {
       endpointService.put(getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
     }
   }
 
   test("Shared Config file") {
-    val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
-    val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership())
+    pointService.put(getPoint("d1.test_point").build).expectOne()
+    pointService.put(getPoint("d2.test_point").build).expectOne()
+    commandService.put(getCommand("d1.test_command").build).expectOne()
+    commandService.put(getCommand("d2.test_command").build).expectOne()
+    val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership("d1"))
+    val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership("d2"))
 
     val returned1 = endpointService.put(endpoint1.build).expectOne()
     val returned2 = endpointService.put(endpoint2.build).expectOne()
@@ -166,8 +183,64 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Endpoint with no ownerships blows up") {
-    intercept[ReefServiceException] {
+    intercept[BadRequestException] {
       endpointService.put(getEndpoint().build)
     }
+  }
+
+  test("Can only delete disabled offline endpoints") {
+    val point = pointService.put(getPoint().build).expectOne()
+    val command = commandService.put(getCommand().build).expectOne()
+    val configFile = configFileService.put(getConfigFile().build).expectOne()
+    val port = portService.put(getIPPort().build).expectOne()
+
+    val endpoint = endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+
+    val initialConnectionState = connectionService.get(getConnection().build).expectOne()
+    initialConnectionState.getState should equal(CommEndpointConnection.State.COMMS_DOWN)
+    initialConnectionState.getEnabled should equal(true)
+
+    // cannot delete enabled endpoints
+    intercept[BadRequestException] { endpointService.delete(endpoint) }
+
+    // cannot delete endpoint because it is "enabled" and "online", would confuse Feps
+    connectionService.put(getConnection(state = Some(CommEndpointConnection.State.COMMS_UP)).build, headers)
+    intercept[BadRequestException] { endpointService.delete(endpoint) }
+
+    // cannot delete endpoint because even though it has been disabled it is still "online"
+    connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    intercept[BadRequestException] { endpointService.delete(endpoint) }
+
+    // we can now delete because endpoint is "disabled" and "offline"
+    connectionService.put(getConnection(state = Some(CommEndpointConnection.State.COMMS_DOWN)).build, headers)
+    endpointService.delete(endpoint).expectOne(Status.DELETED)
+  }
+
+  test("Can't remove points or commands owned by endpoint") {
+    val point = pointService.put(getPoint().build).expectOne()
+    val command = commandService.put(getCommand().build).expectOne()
+    val configFile = configFileService.put(getConfigFile().build).expectOne()
+    val port = portService.put(getIPPort().build).expectOne()
+
+    val endpoint = endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+
+    // cannot deleted resources used by endpoint
+    intercept[BadRequestException] { pointService.delete(point) }
+    intercept[BadRequestException] { commandService.delete(command) }
+    intercept[BadRequestException] { portService.delete(port) }
+
+    //intercept[BadRequestException] { configFileService.delete(configFile) }
+
+    // we can now delete because endpoint is "disabled" and "offline"
+    connectionService.put(getConnection(enabled = Some(false)).build, headers)
+
+    // now remove endpoint "unlocking" other resources
+    endpointService.delete(endpoint).expectOne(Status.DELETED)
+
+    // now that the endpoint is deleted we can remove the other objects
+    pointService.delete(point).expectOne(Status.DELETED)
+    commandService.delete(command).expectOne(Status.DELETED)
+    configFileService.delete(configFile).expectOne(Status.DELETED)
+    portService.delete(port).expectOne(Status.DELETED)
   }
 }

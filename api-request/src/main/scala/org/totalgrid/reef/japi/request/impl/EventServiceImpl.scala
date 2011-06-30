@@ -61,8 +61,4 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
     }
   }
 
-  override def publishEvent(event: Event) = ops("Couldn't publish event: " + event) {
-    _.put(event).await().expectOne
-  }
-
 }

@@ -36,6 +36,7 @@ import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -92,13 +93,13 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
       val ecs = List[EventConfigStore](
         //               EventType    SEVERITY  DESIGNATION ALARM_STATE RESOURCE
-        EventConfigStore(System.UserLogin, 7, EVENT, 0, "User logged in"),
-        EventConfigStore(System.UserLogout, 7, EVENT, 0, "User logged out"),
-        EventConfigStore(System.SubsystemStarting, 8, LOG, 0, "Subsystem is starting"),
-        EventConfigStore(System.SubsystemStarted, 8, LOG, 0, "Subsystem has started"),
-        EventConfigStore(System.SubsystemStopping, 8, LOG, 0, "Subsystem is stapping"),
-        EventConfigStore(System.SubsystemStopped, 8, LOG, 0, "Subsystem has stopped"),
-        EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}"))
+        EventConfigStore(System.UserLogin, 7, EVENT, 0, "User logged in", true),
+        EventConfigStore(System.UserLogout, 7, EVENT, 0, "User logged out", true),
+        EventConfigStore(System.SubsystemStarting, 8, LOG, 0, "Subsystem is starting", true),
+        EventConfigStore(System.SubsystemStarted, 8, LOG, 0, "Subsystem has started", true),
+        EventConfigStore(System.SubsystemStopping, 8, LOG, 0, "Subsystem is stapping", true),
+        EventConfigStore(System.SubsystemStopped, 8, LOG, 0, "Subsystem has stopped", true),
+        EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}", true))
 
       transaction {
         ApplicationSchema.eventConfigs.deleteWhere(e => true === true)
@@ -119,7 +120,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
         val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
-        val factories = new ModelFactories(new SilentEventPublishers, new SilentSummaryPoints)
+        val factories = new ModelFactories()
 
         val eventService = factories.events.model
 
@@ -148,9 +149,9 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
    */
   def getFixture() = {
 
-    val pubs = new SilentEventPublishers
-    val fac = new AlarmServiceModelFactory(pubs, new SilentSummaryPoints)
-    val service = new AlarmQueryService(pubs)
+    val deps = new ServiceDependencies()
+    val fac = new AlarmServiceModelFactory(deps)
+    val service = new AlarmQueryService(deps.pubs)
 
     Fixture(service)
   }

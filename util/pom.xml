@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.0-SNAPSHOT</version>
+        <version>0.3.1-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-util</artifactId>
@@ -29,7 +29,7 @@
                     <instructions>
                         <Bundle-Name>Reef Utility Library</Bundle-Name>
                         <Export-Package>org.totalgrid.reef.executor.*, org.totalgrid.reef.util.*,
-                            org.totalgrid.reef.osgi.*
+                            org.totalgrid.reef.osgi.*, org.totalgrid.reef.promise.*
                         </Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
@@ -46,29 +46,6 @@
         </plugins>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_2.8.0</artifactId>
-            <version>2.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.configadmin</artifactId>
-            <version>1.2.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${felixCoreVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-xml</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

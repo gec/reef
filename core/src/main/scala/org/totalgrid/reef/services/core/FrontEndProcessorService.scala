@@ -24,11 +24,10 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 import org.totalgrid.reef.services
 import java.util.UUID
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator, MeasurementStreamCoordinatorFactory }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
@@ -46,9 +45,9 @@ class FrontEndProcessorService(protected val modelTrans: ServiceTransactable[Fro
 }
 
 class FrontEndProcessorModelFactory(
-  pub: ServiceEventPublishers,
+  dependencies: ServiceDependencies,
   coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[FrontEndProcessor, FrontEndProcessorServiceModel](pub, classOf[FrontEndProcessor]) {
+    extends BasicModelFactory[FrontEndProcessor, FrontEndProcessorServiceModel](dependencies, classOf[FrontEndProcessor]) {
 
   def model = new FrontEndProcessorServiceModel(subHandler, coordinatorFac.model)
 }

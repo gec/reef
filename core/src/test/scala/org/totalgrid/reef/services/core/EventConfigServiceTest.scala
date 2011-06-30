@@ -23,52 +23,121 @@ import org.totalgrid.reef.proto.Alarms._
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-
 import org.totalgrid.reef.models._
+import org.totalgrid.reef.services.ServiceDependencies
 
-import org.totalgrid.reef.event._
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.sapi.{ ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
+import org.totalgrid.reef.japi.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Get and Put") {
-    import EventType._
-    import EventConfig.Designation
 
-    AMQPFixture.mock(true) { amqp =>
-      val fac = new EventConfigServiceModelFactory(new SilentEventPublishers)
-      val service = new EventConfigService(fac)
-      val exchange = Descriptors.eventConfig.id
-      amqp.bindService(exchange, service.respond) // listen for service requests with the echo service
-      val servicelist = new ServiceListOnMap(Map(classOf[EventConfig] -> ServiceInfo.get(Descriptors.eventConfig)))
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
 
-      val client = amqp.getProtoClientSession(servicelist, 5000)
+    val sent = makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.EVENT), Some("Resource"))
+    val created = service.put(sent).expectOne
+    val gotten = service.get(makeEc(Some("Scada.ControlExe"))).expectOne
 
-      val sent = makeEC(Scada.ControlExe, 1, Designation.ALARM)
-      val created = client.put(sent).await().expectOne
-      val gotten = client.get(makeEC(Scada.ControlExe)).await().expectOne
+    gotten should equal(created)
+  }
 
-      gotten should equal(created)
+  test("Incomplete event configs") {
+
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), None, Some(Designation.EVENT), Some("Resource"))).expectOne
+    }
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), None, Some("Resource"))).expectOne
+    }
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.EVENT), None)).expectOne
+    }
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.EVENT), Some("Resource"), builtIn = Some(true))).expectOne
+    }
+  }
+
+  test("Incomplete alarm event configs") {
+
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.ALARM), Some("Resource"))).expectOne
+    }
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.ALARM), Some("Resource"), Some(Alarm.State.ACKNOWLEDGED))).expectOne
+    }
+    intercept[BadRequestException] {
+      service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.ALARM), Some("Resource"), Some(Alarm.State.REMOVED))).expectOne
+    }
+  }
+
+  test("Create large string") {
+
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+
+    // resources is by default 128 chars max
+    val longString = "hello!" * 50
+
+    val sent = makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.ALARM), Some(longString), Some(Alarm.State.UNACK_AUDIBLE))
+    val created = service.put(sent).expectOne
+
+    created.getResource should equal(longString)
+  }
+
+  test("Delete custom event") {
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+
+    val sent = makeEc(Some("Custom.Event"), Some(1), Some(Designation.EVENT), Some("ss"))
+    val created = service.put(sent).expectOne
+    created.getBuiltIn should equal(false)
+
+    val gotten = service.get(makeEc(builtIn = Some(false))).expectOne
+    gotten should equal(created)
+
+    // can delete custom event
+    service.delete(created)
+  }
+
+  test("Can't delete builtIn event") {
+
+    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
+    val service = new EventConfigService(fac)
+    EventConfigService.seed()
+
+    val gotten = service.get(makeEc(builtIn = Some(true))).expectMany().head
+
+    intercept[BadRequestException] {
+      service.delete(gotten)
     }
   }
 
   ////////////////////////////////////////////////////////
   // Utilities
 
-  def makeEC(event: EventType, severity: Int, designation: EventConfig.Designation) =
-    EventConfig.newBuilder
-      .setEventType(event)
-      .setSeverity(severity)
-      .setDesignation(designation)
-      .build
-
-  def makeEC(event: EventType) =
-    EventConfig.newBuilder
-      .setEventType(event)
-      .build
+  private def makeEc(event: Option[String] = None,
+    severity: Option[Int] = None,
+    designation: Option[EventConfig.Designation] = None,
+    resource: Option[String] = None,
+    alarmState: Option[Alarm.State] = None,
+    builtIn: Option[Boolean] = None) = {
+    val b = EventConfig.newBuilder
+    event.foreach(b.setEventType(_))
+    severity.foreach(b.setSeverity(_))
+    designation.foreach(b.setDesignation(_))
+    resource.foreach(b.setResource(_))
+    alarmState.foreach(b.setAlarmState(_))
+    builtIn.foreach(b.setBuiltIn(_))
+    b.build
+  }
 
 }

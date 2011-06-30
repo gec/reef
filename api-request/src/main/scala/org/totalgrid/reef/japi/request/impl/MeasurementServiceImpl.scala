@@ -54,8 +54,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
 
   override def getMeasurementByName(name: String): Measurement = {
     ops("Couldn't get measurement with name: " + name) { session =>
-      val measSnapshot = getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByName(name))
-      val meas = checkAndReturnByNames(name :: Nil, measSnapshot.getMeasurementsList)
+      val meas = getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByName(name)).getMeasurementsList
       meas.get(0)
     }
   }
@@ -63,30 +62,26 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
 
   override def getMeasurementsByNames(names: java.util.List[String]): java.util.List[Measurement] = {
     ops("Couldn't get measurements with names: " + names) { session =>
-      val measSnapshot = getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByNames(names))
-      checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
+      getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByNames(names)).getMeasurementsList
     }
   }
   override def getMeasurementsByPoints(points: java.util.List[Point]): java.util.List[Measurement] = {
     ops("Couldn't get measurements by points: " + points) { session =>
-      val measSnapshot = getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByPoints(points))
-      checkAndReturn(points, measSnapshot.getMeasurementsList)
+      getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByPoints(points)).getMeasurementsList
     }
   }
 
   override def subscribeToMeasurementsByNames(names: java.util.List[String]) = {
     ops("Couldn't subscribe to measurements by names: " + names) { session =>
       useSubscription(session, Descriptors.measurementSnapshot.getKlass) { sub =>
-        val measSnapshot = getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByNames(names), sub)
-        checkAndReturnByNames(names, measSnapshot.getMeasurementsList)
+        getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByNames(names), sub).getMeasurementsList
       }
     }
   }
   override def subscribeToMeasurementsByPoints(points: java.util.List[Point]) = {
     ops("Couldn't subscribe to measurements by points: " + points) { session =>
       useSubscription(session, Descriptors.measurementSnapshot.getKlass) { sub =>
-        val measSnapshot = getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByPoints(points), sub)
-        checkAndReturn(points, measSnapshot.getMeasurementsList)
+        getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByPoints(points), sub).getMeasurementsList
       }
     }
   }
@@ -138,19 +133,19 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     session.get(meas, sub).await().expectOne
   }
 
-  private def checkAndReturn(points: java.util.List[Point], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
-    checkAndReturnByNames(points.map { _.getName }, retrievedMeas)
-  }
-  private def checkAndReturnByNames(names: java.util.List[String], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
-    // TODO: measurement snapshot service should except on unknown point	 reef_techdebt-6
-    if (names.length != retrievedMeas.length) {
-      val retrievedNames = retrievedMeas.map { _.getName }
-      val missing = names.diff(retrievedNames)
-      throw new ExpectationException("Measurement service didn't have values for: " + missing.toList)
-    }
-
-    retrievedMeas
-  }
+  //  private def checkAndReturn(points: java.util.List[Point], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
+  //    checkAndReturnByNames(points.map { _.getName }, retrievedMeas)
+  //  }
+  //  private def checkAndReturnByNames(names: java.util.List[String], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
+  //    // TODO: measurement snapshot service should except on unknown point	 reef_techdebt-6
+  //    if (names.length != retrievedMeas.length) {
+  //      val retrievedNames = retrievedMeas.map { _.getName }
+  //      val missing = names.diff(retrievedNames)
+  //      throw new ExpectationException("Measurement service didn't have values for: " + missing.toList)
+  //    }
+  //
+  //    retrievedMeas
+  //  }
 
   private def getMeasurementHistory(session: RestOperations, request: MeasurementHistory) = {
     session.get(request).await().expectOne.getMeasurementsList

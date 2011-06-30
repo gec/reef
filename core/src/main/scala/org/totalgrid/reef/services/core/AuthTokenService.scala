@@ -24,7 +24,6 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
 import org.totalgrid.reef.proto.Descriptors
 
@@ -34,6 +33,8 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 // Implicit squeryl list -> query conversion
 
@@ -122,19 +123,24 @@ trait AuthTokenConversions
   def createModelEntry(proto: AuthToken): AuthTokenModel = throw new Exception
 }
 
-class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, eventSink: Event => EventStore)
+class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)
     extends SquerylServiceModel[AuthToken, AuthTokenModel]
     with EventedServiceModel[AuthToken, AuthTokenModel]
-    with AuthTokenConversions {
+    with AuthTokenConversions
+    with ServiceModelSystemEventPublisher {
 
   override def createFromProto(req: AuthToken): AuthTokenModel = {
 
     val currentTime = System.currentTimeMillis // need one time for authToken DB entry and posted event.
 
+    val agentName: String = req.agent.name.getOrElse(postLoginException(Status.BAD_REQUEST, "Cannot login without setting agent name."))
+    // set the user name for systemEvent publishing
+    env.setUserName(agentName)
+
     // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
-    val agent: AgentModel = AgentConversions.findRecord(req.getAgent).getOrElse(postLoginException("", currentTime, Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
+    val agent: AgentModel = AgentConversions.findRecord(req.getAgent).getOrElse(postLoginException(Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
     if (!agent.checkPassword(req.getAgent.getPassword)) {
-      postLoginException(agent.entityName, currentTime, Status.UNAUTHORIZED, "Invalid agent or password")
+      postLoginException(Status.UNAUTHORIZED, "Invalid agent or password")
     }
 
     val availableSets = agent.permissionSets.value.toList // permissions we can have
@@ -145,7 +151,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     val permissionSets = if (setQuerySize > 0) {
       val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(ps)).flatten.distinct
       val unavailableSets = askedForSets.diff(availableSets)
-      if (unavailableSets.size > 0) postLoginException(agent.entityName, currentTime, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+      if (unavailableSets.size > 0) postLoginException(Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
       askedForSets
     } else {
       availableSets
@@ -155,7 +161,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // most restrictive permissionset 
     val expirationTime = if (req.hasExpirationTime) {
       val time = req.getExpirationTime
-      if (time <= currentTime) postLoginException(agent.entityName, currentTime, Status.BAD_REQUEST, "Expiration time cannot be in the past")
+      if (time <= currentTime) postLoginException(Status.BAD_REQUEST, "Expiration time cannot be in the past")
       time
     } else {
       currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
@@ -169,28 +175,15 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // link the token to all of the permisisonsSet they have checked out access to
     permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, authToken.id)))
 
-    postLoginEvent(agent.entityName, currentTime)
+    postSystemEvent(EventType.System.UserLogin)
+
     authToken
   }
 
-  def postLoginEvent(agentName: String, currentTime: Long, status: Status = Status.OK, reason: String = ""): Unit = {
-    import org.totalgrid.reef.event.EventType._
+  def postLoginException[A](status: Status, reason: String): A = {
 
-    val alist = new AttributeList
-    alist += ("status" -> AttributeString(status.toString))
-    alist += ("reason" -> AttributeString(reason))
+    postSystemEvent(EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
 
-    eventSink(Event.newBuilder
-      .setTime(currentTime)
-      .setEventType(System.UserLogin)
-      .setSubsystem("Core") // TODO: Should access a constant somewhere for this.
-      .setUserId(agentName)
-      .setArgs(alist.toProto)
-      .build)
-  }
-
-  def postLoginException(agentName: String, currentTime: Long, status: Status, reason: String): AgentModel = {
-    postLoginEvent(agentName, currentTime, status, reason)
     throw new BadRequestException(reason, status)
   }
 
@@ -200,26 +193,25 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
   // we are faking the delete operation, we actually want to keep the row around forever as an audit log
   override def delete(entry: AuthTokenModel): AuthTokenModel = {
-    import org.totalgrid.reef.event.EventType._
 
     entry.expirationTime = -1
     table.update(entry)
-    eventSink(Event.newBuilder
-      .setTime(java.lang.System.currentTimeMillis)
-      .setEventType(System.UserLogout)
-      .setSubsystem("Core") // TODO: Should access a constant somewhere for this.
-      .setUserId(entry.agent.value.entityName)
-      .build)
+
+    env.setUserName(entry.agent.value.entityName)
+    postSystemEvent(EventType.System.UserLogout)
+
     onUpdated(entry)
     postDelete(entry)
     entry
   }
+
 }
 
-class AuthTokenServiceModelFactory(pub: ServiceEventPublishers, eventSink: Event => EventStore)
-    extends BasicModelFactory[AuthToken, AuthTokenServiceModel](pub, classOf[AuthToken]) {
+class AuthTokenServiceModelFactory(
+  dependencies: ServiceDependencies)
+    extends BasicModelFactory[AuthToken, AuthTokenServiceModel](dependencies, classOf[AuthToken]) {
 
-  def model = new AuthTokenServiceModel(subHandler, eventSink)
+  def model = new AuthTokenServiceModel(subHandler, dependencies.eventSink)
 }
 
 import ServiceBehaviors._

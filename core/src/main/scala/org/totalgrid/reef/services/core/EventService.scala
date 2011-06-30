@@ -23,17 +23,17 @@ import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Ev
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Utils.AttributeList
+import org.totalgrid.reef.proto.Utils.{ AttributeList => AttributeListProto }
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
+import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.sapi.RequestEnv
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.services.core.util.MessageFormatter
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
+import org.totalgrid.reef.services.core.util.{ MessageFormatter, AttributeList }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
@@ -52,10 +52,22 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
     with DeleteEnabled {
 
   override val descriptor = Descriptors.event
+
+  override def preCreate(proto: Event, header: RequestEnv): Event = {
+    val b = proto.toBuilder
+
+    // we will clear any user given userId so we can apply auth token name
+    b.clearUserId()
+    b.setTime(System.currentTimeMillis)
+    b.build
+  }
 }
 
-class EventServiceModelFactory(pub: ServiceEventPublishers, eventConfig: ModelFactory[EventConfigServiceModel], alarmServiceModel: ModelFactory[AlarmServiceModel])
-    extends BasicModelFactory[Event, EventServiceModel](pub, classOf[Event]) {
+class EventServiceModelFactory(
+  dependencies: ServiceDependencies,
+  eventConfig: ModelFactory[EventConfigServiceModel],
+  alarmServiceModel: ModelFactory[AlarmServiceModel])
+    extends BasicModelFactory[Event, EventServiceModel](dependencies, classOf[Event]) {
 
   def model = new EventServiceModel(subHandler, eventConfig.model, alarmServiceModel.model)
 }
@@ -83,7 +95,17 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
    */
   override def createFromProto(req: Event): EventStore = {
 
-    if (!req.hasEventType) { throw new BadRequestException("Unknown EventType: '" + req.getEventType + "'", Envelope.Status.BAD_REQUEST) }
+    if (!req.hasEventType) { throw new BadRequestException("Must set EventType.", Envelope.Status.BAD_REQUEST) }
+    if (!req.hasTime) { throw new BadRequestException("Must include time.", Envelope.Status.BAD_REQUEST) }
+    if (!req.hasSubsystem) { throw new BadRequestException("Must include subsystem.", Envelope.Status.BAD_REQUEST) }
+
+    // in the case of the "thunked events" or "server generated events" we are not creating the event
+    // in a standard request/response cycle so we dont have access to the username via the headers
+    val userId = if (!req.hasUserId) {
+      env.userName.getOrElse(throw new BadRequestException("Must be logged in user."))
+    } else {
+      req.getUserId
+    }
 
     val (severity, designation, alarmState, resource) = eventConfig.getProperties(req.getEventType)
 
@@ -93,7 +115,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
     designation match {
       case EventConfigStore.ALARM =>
         // Create event and alarm instances. Post them to the bus.
-        val event = create(createModelEntry(req, true, severity, entity, resource)) // true: is an alarm
+        val event = create(createModelEntry(req, true, severity, entity, resource, userId)) // true: is an alarm
         val alarm = new AlarmModel(alarmState, event.id)
         alarm.event.value = event // so we don't lookup the event again
         alarmServiceModel.create(alarm)
@@ -102,13 +124,13 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
 
       case EventConfigStore.EVENT =>
         // Create the event instance and post it to the bus.
-        val event = create(createModelEntry(req, false, severity, entity, resource)) // false: not an alarm
+        val event = create(createModelEntry(req, false, severity, entity, resource, userId)) // false: not an alarm
         log(req, event, entity)
         event
 
       case EventConfigStore.LOG =>
         // Instead of returning a "Message", return an EventStore without a UID. Not great, but it will do for now.
-        val event = createModelEntry(req, false, severity, entity, resource)
+        val event = createModelEntry(req, false, severity, entity, resource, userId)
         log(req, event, entity)
         event
 
@@ -208,24 +230,28 @@ trait EventConversion
     throw new Exception("wrong interface")
   }
 
-  def createModelEntry(proto: Event, isAlarm: Boolean, severity: Int, entity: Option[Entity], resource: String): EventStore = {
+  def createModelEntry(proto: Event, isAlarm: Boolean, severity: Int, entity: Option[Entity], resource: String, userId: String): EventStore = {
 
-    var rendered = ""
-    val args = if (proto.hasArgs) {
-      val alist = proto.getArgs
-      rendered = MessageFormatter.format(resource, alist)
-      alist.toByteArray
+    val (args, attributeList) = if (proto.hasArgs) {
+      (proto.getArgs.toByteArray, new AttributeList(proto.getArgs))
     } else {
-      Array[Byte]()
+      (Array[Byte](), new AttributeList)
+    }
+
+    val rendered = try {
+      MessageFormatter.format(resource, attributeList)
+    } catch {
+      case x: Exception =>
+        "Error rendering event string: " + resource + " with attributes: " + attributeList + " error: " + x
     }
 
     val es = EventStore(proto.getEventType,
       isAlarm,
       proto.getTime,
-      proto.getDeviceTime,
+      proto.deviceTime,
       severity,
       proto.getSubsystem,
-      proto.getUserId,
+      userId,
       entity.map { _.id },
       args,
       rendered)
@@ -240,15 +266,16 @@ trait EventConversion
       .setAlarm(entry.alarm)
       .setEventType(entry.eventType)
       .setTime(entry.time)
-      .setDeviceTime(entry.deviceTime)
       .setSeverity(entry.severity)
       .setSubsystem(entry.subsystem)
       .setUserId(entry.userId)
       .setRendered(entry.rendered)
+
+    entry.deviceTime.foreach(b.setDeviceTime(_))
     entry.entity.value // force it to try to load the related entity for now
     entry.entity.asOption.foreach(_.foreach(x => b.setEntity(EQ.entityToProto(x).build)))
     if (entry.args.length > 0) {
-      b.setArgs(AttributeList.parseFrom(entry.args))
+      b.setArgs(AttributeListProto.parseFrom(entry.args))
     }
     //TODO: could set rendered here!
 

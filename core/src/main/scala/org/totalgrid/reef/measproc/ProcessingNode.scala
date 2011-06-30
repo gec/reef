@@ -73,10 +73,17 @@ class MeasurementProcessor(
     stateCache: ObjectCache[Boolean],
     eventSubsystem: String,
     eventSink: Events.Event => Unit) extends ProcessingNode with MetricsHookContainer {
-  val triggerFactory = new processing.TriggerProcessingFactory(eventSubsystem, eventSink)
 
   // List of measurements that get built during a batch process
   var list: List[Measurement] = Nil
+  var eventList: List[Events.Event] = Nil
+
+  def delayedEventSink(e: Events.Event.Builder) {
+    e.setSubsystem(eventSubsystem)
+    e.setTime(System.currentTimeMillis)
+    e.setUserId("system")
+    eventList = e.build :: eventList
+  }
 
   // function that builds the list and publishes to the bus
   def pubMeas(m: Measurement) = {
@@ -87,9 +94,12 @@ class MeasurementProcessor(
   def flushCache() = {
     val revlist = list.reverse
     val publist = revlist.map { m => KeyValue(m.getName, m) }
+    val pubEvents = eventList.reverse
+    eventList = Nil
     list = Nil
     measCache.put(publist)
     revlist.foreach(publish(_))
+    pubEvents.foreach(eventSink(_))
   }
 
   def overrideFlush(m: Measurement, flushNow: Boolean) {
@@ -97,6 +107,8 @@ class MeasurementProcessor(
     triggerProc.process(m)
     if (flushNow) flushCache()
   }
+
+  val triggerFactory = new processing.TriggerProcessingFactory(delayedEventSink)
 
   val triggerProc = new processing.TriggerProcessor(pubMeas, triggerFactory, stateCache)
   val overProc = new processing.OverrideProcessor(overrideFlush, overCache, measCache.get)

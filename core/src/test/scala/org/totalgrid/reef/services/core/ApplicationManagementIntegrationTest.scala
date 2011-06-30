@@ -34,7 +34,7 @@ import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistr
 
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
-import org.totalgrid.reef.services.ServiceBootstrap
+import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
@@ -47,7 +47,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
 
     val start = System.currentTimeMillis
 
-    val modelFac = new ModelFactories(new ServiceEventPublisherRegistry(amqp, ReefServicesList), new SilentSummaryPoints)
+    val modelFac = new ModelFactories(ServiceDependencies(new ServiceEventPublisherRegistry(amqp, ReefServicesList)))
 
     val processStatusService = new ProcessStatusService(modelFac.procStatus)
 
@@ -83,7 +83,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
       val eventQueueName = new SyncVar("")
       val hbeatSource = amqp.getEventQueue(StatusSnapshot.parseFrom, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.value)) }, { q => eventQueueName.update(q) })
 
-      // wait for the queue name to get populated (actor startup delay)
+      // wait for the queue name to get populated (actor srtup delay)
       eventQueueName.waitWhile("")
 
       val env = new RequestEnv

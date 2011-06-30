@@ -51,10 +51,16 @@ trait BasicServiceTransactable[+ModelType <: BufferLike]
 
   def transaction[R](fun: ModelType => R): R = {
     val m = model
+    BasicServiceTransactable.doTransaction(m, fun)
+  }
+}
+
+object BasicServiceTransactable {
+  def doTransaction[ModelType <: BufferLike, Output](m: ModelType, fun: ModelType => Output): Output = {
     try {
-      val result: R = PrimitiveTypeMode.inTransaction {
+      val result: Output = PrimitiveTypeMode.inTransaction {
         // Run logic inside sql transaction
-        val resultInner = fun(m)
+        val resultInner: Output = fun(m)
 
         // Success, render all event notifications that were waiting for the end of the model
         // transaction to be able to read a consistent state, multi model adds for example

@@ -25,12 +25,12 @@ import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 
 import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.Model.{ Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.Event
+import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 
 //implicits
 import org.squeryl.PrimitiveTypeMode._
@@ -45,7 +45,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
 
-    val client = registry.getClientSession()
+    val client = registry.newSession()
 
     val parentEntity = client.put(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build).await().expectOne
 
@@ -67,7 +67,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
     val changedPoints = new BlockingQueue[PointProto]
 
     def namedPoint(name: String) = {
-      PointProto.newBuilder.setName(name).build
+      PointProto.newBuilder.setName(name).setUnit("raw").setType(PointType.ANALOG).build
     }
     def abnormalPoint(abnormal: Boolean) = {
       PointProto.newBuilder.setAbnormal(abnormal).build

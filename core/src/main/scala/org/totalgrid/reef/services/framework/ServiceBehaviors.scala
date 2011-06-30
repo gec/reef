@@ -79,7 +79,7 @@ object ServiceBehaviors {
       Response(status, value :: Nil)
     }
 
-    override def preUpdate(proto: ServiceType, existing: ModelType): ServiceType = merge(proto, existing)
+    override def preUpdate(proto: ServiceType, existing: ModelType, headers: RequestEnv): ServiceType = merge(proto, existing)
 
     protected def merge(req: ServiceType, current: ModelType): ServiceType
 
@@ -135,7 +135,8 @@ object ServiceBehaviors {
         model.setEnv(env)
         env.subQueue.foreach(subscribe(model, req, _))
         val deleted = doDelete(model, req, env)
-        Response(Envelope.Status.DELETED, deleted)
+        val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
+        Response(status, deleted)
       }
     }
 

@@ -42,6 +42,8 @@ class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], raw
 
   def handleEventMessage(msg: Event) {
     try {
+      // notice we are skipping the event service preCreate step that strips time and userId
+      // because our local trusted service components have already set those values correctly
       eventModel.transaction { _.createFromProto(msg) }
     } catch {
       case e: ReefServiceException =>

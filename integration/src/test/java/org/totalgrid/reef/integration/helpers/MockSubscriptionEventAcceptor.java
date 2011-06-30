@@ -22,15 +22,16 @@ import org.totalgrid.reef.japi.*;
 import org.totalgrid.reef.japi.client.SubscriptionEvent;
 import org.totalgrid.reef.japi.client.SubscriptionEventAcceptor;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAcceptor<T>
 {
 
-    private boolean storeResults;
-    private BlockingQueue<SubscriptionEvent<T>> queue = new BlockingQueue<SubscriptionEvent<T>>();
-    private List<SubscriptionEvent<T>> results = new LinkedList<SubscriptionEvent<T>>();
+    private final boolean storeResults;
+    private final BlockingQueue<SubscriptionEvent<T>> queue = new BlockingQueue<SubscriptionEvent<T>>();
+    private final List<SubscriptionEvent<T>> results = new LinkedList<SubscriptionEvent<T>>();
 
     /**
      *
@@ -69,6 +70,17 @@ public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAccept
 
     public boolean waitFor( T value, long timeoutms )
     {
+        return waitFor( value, timeoutms, new Comparator<T>() {
+            @Override
+            public int compare( T t1, T t2 )
+            {
+                return t1.equals( t2 ) ? 0 : 1;
+            }
+        } );
+    }
+
+    public boolean waitFor( T value, long timeoutms, Comparator<T> comparator )
+    {
         long start = System.currentTimeMillis();
         do
         {
@@ -77,7 +89,7 @@ public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAccept
                 SubscriptionEvent<T> ret = queue.pop( timeoutms );
                 if ( storeResults )
                     results.add( ret );
-                if ( ret.getValue().equals( value ) )
+                if ( comparator.compare( ret.getValue(), value ) == 0 )
                     return true;
             }
             catch ( Exception ex )
@@ -117,6 +129,6 @@ public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAccept
 
     public void clearResults()
     {
-        results = new LinkedList<SubscriptionEvent<T>>();
+        results.clear();
     }
 }
