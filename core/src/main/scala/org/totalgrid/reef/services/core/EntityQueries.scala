@@ -407,7 +407,7 @@ trait EntityQueries extends EntityTreeQueries {
   def entityIdsFromTypes(types: List[String]) = {
     from(entityTypes)(typ =>
       where(typ.entType in types)
-        select (&(typ.entityId)))
+        select (typ.entityId))
   }
 
   def noneIfEmpty(listO: Option[List[String]]) = {
@@ -579,7 +579,7 @@ trait EntityQueries extends EntityTreeQueries {
     from(entities, entityTypes)((ent, typ) =>
       where(ent.name in names and
         typ.entityId === ent.id and (typ.entType in types))
-        select (&(ent.id))).distinct
+        select (ent.id)).distinct
   }
 
   def populateRelations(builder: EntityProto.Builder, entity: Entity, relation: String, descendant: Boolean) = {
@@ -594,7 +594,7 @@ trait EntityQueries extends EntityTreeQueries {
   def entityIdsFromType(typ: String) = {
     from(entityTypes)(t =>
       where(t.entType === typ)
-        select (&(t.entityId)))
+        select (t.entityId))
   }
 
   def findIdsOfChildren(rootNode: EntityProto, relation: String, childType: String): Query[UUID] = {
@@ -602,8 +602,8 @@ trait EntityQueries extends EntityTreeQueries {
       entityIdsFromType(childType)
     } else {
       EntitySearches.findRecord(rootNode).map { rootEnt =>
-        from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(&(ent.id)))
-      }.getOrElse(from(entities)(e => where(true === false) select (&(e.id))))
+        from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
+      }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }
   }
 
