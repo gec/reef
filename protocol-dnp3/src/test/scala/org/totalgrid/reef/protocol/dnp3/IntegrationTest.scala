@@ -27,10 +27,12 @@ import org.totalgrid.reef.proto.FEP.IpPort
 import org.totalgrid.reef.xml.dnp3.{ LinkLayer, AppLayer, Stack, Master }
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.proto.{ Model, FEP }
-import org.totalgrid.reef.protocol.api.{ IListener, ICommandHandler => CommandHandler }
+
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
 import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
+import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
 @RunWith(classOf[JUnitRunner])
 class IntegrationTest extends FunSuite with ShouldMatchers with Logging {
@@ -109,19 +111,21 @@ class IntegrationTest extends FunSuite with ShouldMatchers with Logging {
     }
   }
 
-  class LastValueListener[A](verbose: Boolean = true) extends IListener[A] {
+  class LastValueListener[A](verbose: Boolean = true) extends Publisher[A] {
     val lastValue = new EmptySyncVar[A]
-    def onUpdate(proto: A) {
+    def publish(proto: A): Promise[Boolean] = {
       if (verbose) logger.info(proto.toString)
       lastValue.update(proto)
+      new FixedPromise(true)
     }
   }
 
   def issueAndWaitForCommandResponse(cmdAcceptor: CommandHandler, commandRequest: CommandRequestProto) {
     val response = new EmptySyncVar[CommandStatusProto]
-    val rspHandler = new IListener[CommandResponseProto] {
-      def onUpdate(proto: CommandResponseProto): Unit = {
+    val rspHandler = new Publisher[CommandResponseProto] {
+      def publish(proto: CommandResponseProto): Promise[Boolean] = {
         response.update(proto.getStatus)
+        new FixedPromise(true)
       }
     }
     cmdAcceptor.issue(commandRequest, rspHandler)

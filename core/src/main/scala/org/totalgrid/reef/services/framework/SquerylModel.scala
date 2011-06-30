@@ -229,9 +229,9 @@ object SquerylModel {
       }
     }
   }
-  implicit def makeListAsParam[A](list: List[A]): ListFilterStars[A] = new ListFilterStars(list)
+  implicit def makeListAsParam1[A](list: List[A]): ListFilterStars[A] = new ListFilterStars(list)
   import scala.collection.JavaConversions._
-  implicit def makeListAsParam[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList.toList)
+  implicit def makeListAsParam2[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList.toList)
 
   def routingOption[A, R](jList: java.util.List[A])(f: List[A] => List[R]): List[R] = {
     import scala.collection.JavaConversions._

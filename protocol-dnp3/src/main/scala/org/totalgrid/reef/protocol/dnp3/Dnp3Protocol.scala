@@ -41,7 +41,7 @@ class Dnp3Protocol extends Protocol with Logging {
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch])]
+  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch], IMasterObserver)]
 
   private var physMonitorMap = immutable.Map.empty[String, IPhysMonitor]
 
@@ -53,8 +53,8 @@ class Dnp3Protocol extends Protocol with Logging {
   override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
     val physMonitor = new IPhysMonitor {
-      override def OnStateChange(state: IPhysMonitor.State) = safeExecute {
-        listener.onUpdate(translate(state))
+      override def OnStateChange(state: IPhysMonitor.State) = {
+        publisher.publish(translate(state))
       }
     }
 
@@ -96,8 +96,8 @@ class Dnp3Protocol extends Protocol with Logging {
     val master = getMasterConfig(xml)
 
     val observer = new IMasterObserver() {
-      override def OnStateChange(state: MasterStates) = safeExecute {
-        listener.onUpdate(translate(state))
+      override def OnStateChange(state: MasterStates) = {
+        endpointPublisher.publish(translate(state))
       }
     }
     master.getMaster.setMpObserver(observer)
