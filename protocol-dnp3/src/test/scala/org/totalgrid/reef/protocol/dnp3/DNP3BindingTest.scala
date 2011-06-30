@@ -28,39 +28,11 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
   val startPort = 32323
 
-  class MockStateObserver {
-    import scala.collection.mutable.{ Queue, Map }
-    val states = Map.empty[String, Queue[MasterStates]]
-
-    var observers = List.empty[IMasterObserver]
-    def getObserver(name: String): IMasterObserver = {
-      val obs = new IMasterObserver() {
-        override def OnStateChange(state: MasterStates) {
-          states.get(name) match {
-            case Some(l: Queue[MasterStates]) => l.enqueue(state)
-            case None => states += name -> Queue(state)
-          }
-        }
-      }
-      // need to keep a reference to the observer so it doesn't get GCed
-      observers ::= obs
-      obs
-    }
-
-    def checkStates(names: List[String], expected: List[MasterStates]) {
-      names.foreach { name =>
-        states.get(name).map { _.toList }.getOrElse(List.empty[MasterStates]) should equal(expected)
-      }
-    }
-  }
-
   /// This test shows that the startup/teardown behavior is working without crashing
   test("StartupTeardownOnJVM") {
     val num_port = 100
     val num_stack = 10
     val sm = new StackManager(true) // the stack will start running as soon as a master is added		
-
-    val stateObserver = new MockStateObserver
 
     var names = List.empty[String]
 
@@ -79,20 +51,13 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
         cfg.getLink.setLocalAddr(stack)
 
-        cfg.getMaster.setMpObserver(stateObserver.getObserver(name))
-
         // the masters won't get any data, so setting the IPublisher to null is OK
         sm.AddMaster(port.toString, name, FilterLevel.LEV_WARNING, null, cfg)
       }
     }
 
-    stateObserver.checkStates(names, List(MasterStates.MS_COMMS_DOWN))
-
     // the manager is already running at this point, so let's stop it explicitly
     sm.Stop
-
-    // make sure we didnt get a second update
-    stateObserver.checkStates(names, List(MasterStates.MS_COMMS_DOWN))
   }
 
   test("MasterToSlaveOnJVM") {
@@ -103,7 +68,6 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     val sm = new StackManager(false)
     val a = new CountingPublisherActor
 
-    val stateObserver = new MockStateObserver
     var names = List.empty[String]
 
     val master = new MasterStackConfig
@@ -119,7 +83,6 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
       sm.AddTCPClient(client, s, "127.0.0.1", port)
       sm.AddTCPServer(server, s, "0.0.0.0", port)
 
-      master.getMaster.setMpObserver(stateObserver.getObserver(server))
       names ::= server
 
       sm.AddMaster(client, client, lev, a.addPub, master)
@@ -129,9 +92,6 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     sm.Start
     assert(a.waitForMinMessages(300, 10000))
     sm.Stop
-
-    // make sure we got the down-up-down callbacks we expected
-    stateObserver.checkStates(names, List(MasterStates.MS_COMMS_DOWN, MasterStates.MS_COMMS_UP, MasterStates.MS_COMMS_DOWN))
   }
 
 }

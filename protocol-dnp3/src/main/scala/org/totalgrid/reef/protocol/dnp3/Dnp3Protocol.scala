@@ -41,9 +41,7 @@ class Dnp3Protocol extends Protocol with Logging {
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch], IMasterObserver)]
-
-  private var physMonitorMap = immutable.Map.empty[String, IPhysMonitor]
+  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch])]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
@@ -52,15 +50,7 @@ class Dnp3Protocol extends Protocol with Logging {
 
   override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
-    val physMonitor = new IPhysMonitor {
-      override def OnStateChange(state: IPhysMonitor.State) = {
-        publisher.publish(translate(state))
-      }
-    }
-
-    physMonitorMap += p.getName -> physMonitor
-
-    val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000, physMonitor)
+    val settings = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
 
     if (p.hasIp) {
       val ip = p.getIp
@@ -79,7 +69,6 @@ class Dnp3Protocol extends Protocol with Logging {
   override def removeChannel(channel: String) = {
     logger.debug("Removing channel with name: " + channel)
     dnp3.RemovePort(channel)
-    physMonitorMap -= channel
     logger.info("Removed channel with name: " + channel)
   }
 
@@ -95,19 +84,12 @@ class Dnp3Protocol extends Protocol with Logging {
     val xml = XMLHelper.read(configFile.getFile.toByteArray, classOf[Master])
     val master = getMasterConfig(xml)
 
-    val observer = new IMasterObserver() {
-      override def OnStateChange(state: MasterStates) = {
-        endpointPublisher.publish(translate(state))
-      }
-    }
-    master.getMaster.setMpObserver(observer)
-
     val filterLevel = Option(xml.getLog).map { logElem => configure(logElem.getFilter) }.getOrElse(FilterLevel.LEV_WARNING)
 
     val mapping = Mapping.IndexMapping.parseFrom(Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping").getFile)
 
     val meas_adapter = new MeasAdapter(mapping, batchPublisher.publish)
-    map += endpoint -> (meas_adapter, batchPublisher, observer)
+    map += endpoint -> (meas_adapter, batchPublisher)
     val cmd = dnp3.AddMaster(channelName, endpoint, filterLevel, meas_adapter, master)
     new CommandAdapter(mapping, cmd)
   }
@@ -214,22 +196,4 @@ class Dnp3Protocol extends Protocol with Logging {
     ss
   }
 
-  private def translate(state: MasterStates): FEP.CommEndpointConnection.State = {
-    state match {
-      case MasterStates.MS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
-      case MasterStates.MS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
-      case MasterStates.MS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
-    }
-  }
-
-  private def translate(state: IPhysMonitor.State): FEP.CommChannel.State = {
-    state match {
-      case IPhysMonitor.State.Closed => FEP.CommChannel.State.CLOSED
-      case IPhysMonitor.State.Open => FEP.CommChannel.State.OPEN
-      case IPhysMonitor.State.Opening => FEP.CommChannel.State.OPENING
-      // TODO: which state CommChannel.State is stopped and waiting
-      case IPhysMonitor.State.Stopped => FEP.CommChannel.State.CLOSED
-      case IPhysMonitor.State.Waiting => FEP.CommChannel.State.ERROR
-    }
-  }
 }
