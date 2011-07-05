@@ -26,6 +26,7 @@ trait SimulatorPluginFactory {
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int
   def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin
   def destroySimulator(plugin: SimulatorPlugin): Unit
+  def name: String
 }
 
 trait SimulatorPlugin {
@@ -33,4 +34,14 @@ trait SimulatorPlugin {
   def factory: SimulatorPluginFactory
   def simLevel: Int
   def issue(cr: Commands.CommandRequest): Commands.CommandStatus
+}
+
+trait ControllableSimulator {
+  def getRepeatDelay: Long
+
+  def setUpdateParams(newDelay: Long)
+}
+
+trait SimulatorManagement {
+  def getSimulators: Map[String, Option[SimulatorPlugin]]
 }

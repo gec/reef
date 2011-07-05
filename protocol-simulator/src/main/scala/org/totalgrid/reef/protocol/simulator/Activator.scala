@@ -32,6 +32,7 @@ class Activator extends BundleActivator with Logging {
 
   final override def start(context: BundleContext) {
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+    context.createService(protocol, "protocol" -> protocol.name, interface[SimulatorManagement])
 
     context watchServices withInterface[SimulatorPluginFactory] andHandle {
       case AddingService(plugin, properties) =>

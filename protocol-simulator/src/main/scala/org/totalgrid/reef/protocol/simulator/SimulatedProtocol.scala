@@ -24,31 +24,12 @@ import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
-import org.totalgrid.reef.proto.Measurements.Quality.Validity
-import concurrent.pilib.Sum
-
-/**
- * interface the BenchmarkProtocol exposes to the simulator shell commands to get
- * the list of the running simulators
- */
-trait SimulatorManagement {
-  def getSimulators: List[ControllableSimulator]
-}
-
-/**
- * controllable parts of the simulators for shell adjustment
- */
-trait ControllableSimulator {
-  def getRepeatDelay: Long
-
-  def setUpdateParams(newDelay: Long)
-}
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
+class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with SimulatorManagement with Logging {
 
   import Protocol._
 
@@ -162,5 +143,8 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
     }
   }
 
-}
+  override def getSimulators() = {
+    endpoints.map { case (n, r) => n -> r.current }.toMap
+  }
 
+}
