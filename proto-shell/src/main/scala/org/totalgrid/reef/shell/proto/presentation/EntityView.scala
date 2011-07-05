@@ -21,6 +21,8 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.Model.{ Entity }
 import scala.collection.JavaConversions._
 
+import org.totalgrid.reef.util.Table
+
 object EntityView {
 
   def printInspect(ent: Entity) = {

@@ -19,6 +19,7 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.util.Table
 
 object ChannelView {
   def printTable(channels: List[CommChannel]) = {

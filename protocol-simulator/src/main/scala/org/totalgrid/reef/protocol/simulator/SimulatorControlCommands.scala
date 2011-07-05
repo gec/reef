@@ -22,6 +22,7 @@ import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 
 import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.util.Table
 
 trait SimulatorControlCommands { self: OsgiCommandSupport =>
 
@@ -33,8 +34,7 @@ trait SimulatorControlCommands { self: OsgiCommandSupport =>
   }
 
   def displaySimulators(sims: Map[String, Option[SimulatorPlugin]]) = {
-    println(headers.mkString(" | "))
-    println(rows(sims).map(_.mkString(" | ")).mkString("\n"))
+    Table.printTable(headers, rows(sims))
   }
 
   def headers = "Endpoint" :: "SimType" :: "SimLevel" :: "UpdateRate" :: Nil
@@ -44,10 +44,10 @@ trait SimulatorControlCommands { self: OsgiCommandSupport =>
       case (name, sim) =>
         name ::
           sim.map { _.factory.name }.getOrElse("None") ::
-          sim.map { _.simLevel }.getOrElse("-") ::
+          sim.map { _.simLevel.toString }.getOrElse("-") ::
           sim.map { getRate(_).getOrElse("-") }.getOrElse("-").toString ::
           Nil
-    }
+    }.toList
   }
 
   def getRate(sim: SimulatorPlugin) = {
