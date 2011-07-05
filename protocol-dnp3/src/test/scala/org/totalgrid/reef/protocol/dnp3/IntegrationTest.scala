@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.{ Model, FEP }
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
 import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
-import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, CommandHandler, Publisher }
+import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
 @RunWith(classOf[JUnitRunner])
@@ -60,7 +60,7 @@ class IntegrationTest extends FunSuite with ShouldMatchers with Logging {
 
     val configFiles = makeMappingFile(10, 10, 10, 10, 10, 10, 10) :: makeConfigFile() :: Nil
 
-    val protocol = new Dnp3Protocol() with EndpointAlwaysOnline with ChannelAlwaysOnline
+    val protocol = new Dnp3Protocol()
     val listeners = (portStart to portEnd).map { port =>
       val channelName = "port" + port
 
