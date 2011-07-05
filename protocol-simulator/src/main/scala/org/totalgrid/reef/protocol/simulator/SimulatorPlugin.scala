@@ -1,5 +1,3 @@
-package org.totalgrid.reef.protocol.simulator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.protocol.simulator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.protocol.simulator
+
 import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
 import org.totalgrid.reef.executor.Executor

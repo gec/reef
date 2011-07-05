@@ -1,5 +1,3 @@
-package org.totalgrid.reef.shell.proto.presentation
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.shell.proto.presentation
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.shell.proto.presentation
+
 import org.totalgrid.reef.proto.Model.{ Entity, Point }
 import org.totalgrid.reef.proto.OptionalProtos._
 import scala.collection.JavaConversions._
