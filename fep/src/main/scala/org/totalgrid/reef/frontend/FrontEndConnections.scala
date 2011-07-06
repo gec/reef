@@ -41,7 +41,9 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
 
   val protocols = comms.mapify { _.name }
 
-  var commandAdapters = Map.empty[String, CloseableChannel]
+  case class EndpointComponent(commandAdapter: CloseableChannel, transmitter: OrderedServiceTransmitter)
+
+  var endpointComponents = Map.empty[String, EndpointComponent]
 
   val pool = conn.getSessionPool
 
@@ -73,22 +75,30 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     logger.info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
 
     val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
-    commandAdapters += c.getEndpoint.getName -> service
+    endpointComponents += c.getEndpoint.getName -> EndpointComponent(service, transmitter)
   }
 
   def removeEntry(c: ConnProto) {
     logger.debug("Removing endpoint " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
 
-    // need to make sure we close the addressable service
-    commandAdapters.get(c.getEndpoint.getName) match {
-      case Some(serviceBinding) => serviceBinding.close
+    // need to make sure we close the addressable service so no new commands
+    // are sent to endpoint while we are removing it
+    endpointComponents.get(c.getEndpoint.getName) match {
+      case Some(EndpointComponent(serviceBinding, t)) => serviceBinding.close
       case None =>
     }
-    commandAdapters -= c.getEndpoint.getName
 
     protocol.removeEndpoint(c.getEndpoint.getName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
+
+    // now that all of the endpoints callbacks should have fired we stop the transmitter and
+    // flush the pending messages
+    endpointComponents.get(c.getEndpoint.getName) match {
+      case Some(EndpointComponent(s, transmitter)) => transmitter.shutdown
+      case None =>
+    }
+    endpointComponents -= c.getEndpoint.getName
     logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
   }
 
