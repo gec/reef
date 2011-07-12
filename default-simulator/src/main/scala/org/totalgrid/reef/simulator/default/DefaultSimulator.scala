@@ -30,9 +30,9 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.protocol.simulator.{ SimulatorPluginFactory, SimulatorPlugin }
+import org.totalgrid.reef.protocol.simulator.{ ControllableSimulator, SimulatorPluginFactory, SimulatorPlugin }
 
-class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory) extends SimulatorPlugin with Lifecycle with Logging {
+class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory) extends SimulatorPlugin with ControllableSimulator with Lifecycle with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 

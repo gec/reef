@@ -1,5 +1,3 @@
-package org.totalgrid.reef.protocol.dnp3
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.protocol.dnp3
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.protocol.dnp3
+
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

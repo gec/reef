@@ -1,5 +1,3 @@
-package org.totalgrid.reef.protocol.simulator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.protocol.simulator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.protocol.simulator
+
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
@@ -32,6 +32,7 @@ class Activator extends BundleActivator with Logging {
 
   final override def start(context: BundleContext) {
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+    context.createService(protocol, "protocol" -> protocol.name, interface[SimulatorManagement])
 
     context watchServices withInterface[SimulatorPluginFactory] andHandle {
       case AddingService(plugin, properties) =>

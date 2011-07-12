@@ -1,5 +1,3 @@
-package org.totalgrid.reef.promise
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.promise
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.promise
 
 class FixedPromise[A](value: A) extends Promise[A] {
 

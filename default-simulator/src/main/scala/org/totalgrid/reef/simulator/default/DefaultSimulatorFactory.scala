@@ -26,6 +26,8 @@ import org.totalgrid.reef.protocol.simulator.{ SimulatorPlugin, SimulatorPluginF
 
 object DefaultSimulatorFactory extends SimulatorPluginFactory with Logging {
 
+  def name = "benchmark"
+
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = 0
 
   def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {

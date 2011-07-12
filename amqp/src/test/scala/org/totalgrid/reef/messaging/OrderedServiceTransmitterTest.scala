@@ -108,4 +108,29 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("Flush is same as await all") {
+    val count = 10000
+    fixture { (session, ost) =>
+      session.queueSuccess(count)
+      val promises = (1 to count).map(i => ost.publish(99))
+      ost.flush()
+      promises.find(_.isComplete == false) should equal(None)
+      val results = promises.map { _.await }
+      results.find(_ == false) should equal(None)
+      session.numRequests should equal(count)
+    }
+  }
+
+  test("Instant failure if shutdown") {
+    fixture { (session, ost) =>
+      session.queueSuccess(1)
+      ost.shutdown
+      val promise = ost.publish(99)
+      promise.isComplete should equal(true)
+      promise.await should equal(false)
+
+      session.numRequests should equal(0)
+    }
+  }
+
 }

@@ -21,6 +21,8 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.proto.OptionalProtos._
 
+import org.totalgrid.reef.util.Table
+
 object EndpointView {
   def printTable(endpoints: List[CommEndpointConnection]) = {
     Table.printTable(header, endpoints.map(row(_)))

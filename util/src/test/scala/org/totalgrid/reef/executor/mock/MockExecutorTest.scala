@@ -1,5 +1,3 @@
-package org.totalgrid.reef.executor.mock
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.executor.mock
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.executor.mock
+
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

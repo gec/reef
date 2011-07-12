@@ -1,5 +1,3 @@
-package org.totalgrid.reef.protocol.simulator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.protocol.simulator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.protocol.simulator
+
 import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
 import org.totalgrid.reef.executor.Executor
@@ -26,6 +26,7 @@ trait SimulatorPluginFactory {
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int
   def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin
   def destroySimulator(plugin: SimulatorPlugin): Unit
+  def name: String
 }
 
 trait SimulatorPlugin {
@@ -33,4 +34,14 @@ trait SimulatorPlugin {
   def factory: SimulatorPluginFactory
   def simLevel: Int
   def issue(cr: Commands.CommandRequest): Commands.CommandStatus
+}
+
+trait ControllableSimulator {
+  def getRepeatDelay: Long
+
+  def setUpdateParams(newDelay: Long)
+}
+
+trait SimulatorManagement {
+  def getSimulators: Map[String, Option[SimulatorPlugin]]
 }

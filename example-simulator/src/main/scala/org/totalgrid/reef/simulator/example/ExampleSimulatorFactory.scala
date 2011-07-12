@@ -27,6 +27,8 @@ import scala.collection.JavaConversions._
 
 object ExampleSimulatorFactory extends SimulatorPluginFactory with Logging {
 
+  def name = "Breaker Sim"
+
   case class SimNames(status: String,
     trip: String,
     close: String,

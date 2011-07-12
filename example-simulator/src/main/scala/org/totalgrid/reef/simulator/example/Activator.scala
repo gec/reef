@@ -1,5 +1,3 @@
-package org.totalgrid.reef.simulator.example
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.simulator.example
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.simulator.example
+
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory

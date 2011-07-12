@@ -1,5 +1,3 @@
-package org.totalgrid.reef.services.core
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.services.core
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.services.core
+
 import org.totalgrid.reef.measurementstore.Historian
 import org.totalgrid.reef.measurementstore.MeasSink.Meas
 import org.totalgrid.reef.proto.Measurements
