@@ -24,7 +24,6 @@ import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandle
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
-import org.totalgrid.reef.util.XMLHelper
 
 import scala.collection.immutable
 import scala.collection.JavaConversions._
@@ -41,7 +40,7 @@ class Dnp3Protocol extends Protocol with Logging {
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch], IMasterObserver)]
+  private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch], IStackObserver)]
 
   private var physMonitorMap = immutable.Map.empty[String, IPhysMonitor]
 
@@ -53,7 +52,7 @@ class Dnp3Protocol extends Protocol with Logging {
   override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
     val physMonitor = new IPhysMonitor {
-      override def OnStateChange(state: IPhysMonitor.State) = {
+      override def OnStateChange(state: PhysLayerState) = {
         publisher.publish(translate(state))
       }
     }
@@ -95,8 +94,8 @@ class Dnp3Protocol extends Protocol with Logging {
     val xml = XMLHelper.read(configFile.getFile.toByteArray, classOf[Master])
     val master = getMasterConfig(xml)
 
-    val observer = new IMasterObserver() {
-      override def OnStateChange(state: MasterStates) = {
+    val observer = new IStackObserver {
+      override def OnStateChange(state: StackStates) = {
         endpointPublisher.publish(translate(state))
       }
     }
@@ -214,22 +213,18 @@ class Dnp3Protocol extends Protocol with Logging {
     ss
   }
 
-  private def translate(state: MasterStates): FEP.CommEndpointConnection.State = {
-    state match {
-      case MasterStates.MS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
-      case MasterStates.MS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
-      case MasterStates.MS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
-    }
+  private def translate(state: StackStates): FEP.CommEndpointConnection.State = state match {
+    case StackStates.SS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
+    case StackStates.SS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
+    case StackStates.SS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
   }
 
-  private def translate(state: IPhysMonitor.State): FEP.CommChannel.State = {
-    state match {
-      case IPhysMonitor.State.Closed => FEP.CommChannel.State.CLOSED
-      case IPhysMonitor.State.Open => FEP.CommChannel.State.OPEN
-      case IPhysMonitor.State.Opening => FEP.CommChannel.State.OPENING
-      // TODO: which state CommChannel.State is stopped and waiting
-      case IPhysMonitor.State.Stopped => FEP.CommChannel.State.CLOSED
-      case IPhysMonitor.State.Waiting => FEP.CommChannel.State.ERROR
-    }
+  private def translate(state: PhysLayerState): FEP.CommChannel.State = state match {
+    case PhysLayerState.PLS_CLOSED => FEP.CommChannel.State.CLOSED
+    case PhysLayerState.PLS_OPEN => FEP.CommChannel.State.OPEN
+    case PhysLayerState.PLS_OPENING => FEP.CommChannel.State.OPENING
+    // TODO: which state CommChannel.State is stopped and waiting
+    case PhysLayerState.PLS_STOPPED => FEP.CommChannel.State.CLOSED
+    case PhysLayerState.PLS_WAITING => FEP.CommChannel.State.ERROR
   }
 }

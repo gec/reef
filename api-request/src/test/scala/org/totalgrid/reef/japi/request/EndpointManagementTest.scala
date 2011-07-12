@@ -44,7 +44,7 @@ class EndpointManagementTest
 
     endpoints.isEmpty should equal(false)
 
-    val syncVar = new EmptySyncVar[CommEndpointConnection]()
+    val syncVar = new EmptySyncVar[CommEndpointConnection]
 
     client.addExplanation("Get all endpoint connections", "")
     val result = client.subscribeToAllEndpointConnections()
@@ -68,10 +68,7 @@ class EndpointManagementTest
     def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
       syncVar.waitFor(x => x.getEnabled == enabled &&
         x.getState == state &&
-        x.getEndpoint.getUuid.getUuid == endpointUuid.getUuid,
-        customException = Some((c: CommEndpointConnection) => throw new Exception(
-          "Expected enabled: " + enabled + " state: " + state + " uuid: " + endpointUuid.getUuid + " but got: " +
-            c.getEnabled + " " + c.getState + " " + c.getEndpoint.getUuid.getUuid + "\n " + c)))
+        x.getEndpoint.getUuid.getUuid == endpointUuid.getUuid)
     }
 
     client.disableEndpointConnection(endpointUuid)

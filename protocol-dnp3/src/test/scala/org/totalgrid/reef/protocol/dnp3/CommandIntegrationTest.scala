@@ -24,6 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.util.{ EmptySyncVar }
 import org.totalgrid.reef.executor.{ ReactActorExecutor, Executor }
+import java.lang.Number
 
 @RunWith(classOf[JUnitRunner]) //disabled because it hangs under eclipse
 class CommandIntegrationTest extends FunSuite with ShouldMatchers {
@@ -35,7 +36,7 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
     val port_start = startPort
     val port_end = port_start + num_pairs - 1
     val lev = FilterLevel.LEV_WARNING
-    val sm = new StackManager(false)
+    val sm = new StackManager(true)
     val a = new CountingPublisherActor
 
     val master = new MasterStackConfig
@@ -60,35 +61,31 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
       commandAcceptor
     }
 
-    sm.Start
     assert(a.waitForMinMessages(1, 10000))
 
-    val responder = new CachingResponseAcceptor()
+    val responder = new CachingResponseAcceptor
 
     var seq: Int = 999
     (1 to (150 / num_pairs)).foreach { i =>
       acceptors.foreach { ac =>
-        seq += 1;
-        { // putting this into its own frame to try to make garbage collector reap the BinaryOutput and Setpoint objects
-          ac.AcceptCommand(new BinaryOutput(ControlCode.CC_PULSE_TRIP, 1, seq, seq), 0, seq, responder)
-        }
+        seq += 1
+        val numControls: Short = 1
+
+        ac.AcceptCommand(new BinaryOutput(ControlCode.CC_PULSE_TRIP, numControls, 100, 100), 0, seq, responder)
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
 
-        seq += 1;
-        {
-          ac.AcceptCommand(new Setpoint(seq.toDouble * 100), 0, seq, responder)
-        }
+        seq += 1
+        ac.AcceptCommand(new Setpoint(seq.toDouble * 100), 0, seq, responder)
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
 
-        seq += 1;
-        {
-          ac.AcceptCommand(new Setpoint(seq.toInt * 100), 0, seq, responder)
-        }
+        seq += 1
+        ac.AcceptCommand(new Setpoint(seq.toInt * 100), 0, seq, responder)
+
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
       }
     }
 
-    sm.Stop
+    sm.Stop()
   }
 
   class CachingResponseAcceptor extends IResponseAcceptor {

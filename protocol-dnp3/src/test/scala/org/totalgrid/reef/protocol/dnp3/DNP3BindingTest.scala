@@ -18,26 +18,41 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 @RunWith(classOf[JUnitRunner])
-class DNP3BindingTest extends FunSuite with ShouldMatchers {
+class DNP3BindingTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   val startPort = 32323
+  val lev = FilterLevel.LEV_INFO
+  var option : Option[StackManager] = None
+  def getManager = option match {
+    case Some(x) => x
+    case None =>
+      val ret = new StackManager(true)
+      ret.AddLogHook(new LogAdapter)
+      option = Some(ret)
+      ret
+  }
+
+  override def afterEach() = option.foreach { x=>
+    x.Stop()
+    option = None
+  }
 
   class MockStateObserver {
     import scala.collection.mutable.{ Queue, Map }
-    val states = Map.empty[String, Queue[MasterStates]]
+    val states = Map.empty[String, Queue[StackStates]]
 
-    var observers = List.empty[IMasterObserver]
-    def getObserver(name: String): IMasterObserver = {
-      val obs = new IMasterObserver() {
-        override def OnStateChange(state: MasterStates) {
+    var observers = List.empty[IStackObserver]
+    def getObserver(name: String): IStackObserver = {
+      val obs = new IStackObserver {
+        override def OnStateChange(state: StackStates) {
           states.get(name) match {
-            case Some(l: Queue[MasterStates]) => l.enqueue(state)
+            case Some(l: Queue[StackStates]) => l.enqueue(state)
             case None => states += name -> Queue(state)
           }
         }
@@ -47,18 +62,19 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
       obs
     }
 
-    def checkStates(names: List[String], expected: List[MasterStates]) {
+    def checkStates(names: List[String], expected: List[StackStates]) {
       names.foreach { name =>
-        states.get(name).map { _.toList }.getOrElse(List.empty[MasterStates]) should equal(expected)
+        states.get(name).map { _.toList }.getOrElse(List.empty[StackStates]) should equal(expected)
       }
     }
   }
 
+  /*
   /// This test shows that the startup/teardown behavior is working without crashing
   test("StartupTeardownOnJVM") {
     val num_port = 100
     val num_stack = 10
-    val sm = new StackManager(true) // the stack will start running as soon as a master is added		
+    val sm = getManager
 
     val stateObserver = new MockStateObserver
 
@@ -86,21 +102,23 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
       }
     }
 
-    stateObserver.checkStates(names, List(MasterStates.MS_COMMS_DOWN))
+    stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
 
     // the manager is already running at this point, so let's stop it explicitly
-    sm.Stop
+    sm.Stop()
 
     // make sure we didnt get a second update
-    stateObserver.checkStates(names, List(MasterStates.MS_COMMS_DOWN))
+    stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
   }
+  */
 
   test("MasterToSlaveOnJVM") {
     val num_pairs = 100
     val port_start = startPort
     val port_end = port_start + num_pairs - 1
-    val lev = FilterLevel.LEV_WARNING
-    val sm = new StackManager(false)
+    val sm = new StackManager(true)
+    val adapter = new LogAdapter
+    sm.AddLogHook(adapter)
     val a = new CountingPublisherActor
 
     val stateObserver = new MockStateObserver
@@ -111,8 +129,9 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     val slave = new SlaveStackConfig
 
     slave.setDevice(new DeviceTemplate(100, 100, 100))
+    adapter.logger.warn("Begining to log")
 
-    val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
+    val s = new PhysLayerSettings(lev, 1000)
     (port_start to port_end).foreach { port =>
       val client = "client-" + port
       val server = "server-" + port
@@ -126,12 +145,11 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
       sm.AddSlave(server, server, lev, null, slave)
     }
 
-    sm.Start
-    assert(a.waitForMinMessages(300, 10000))
-    sm.Stop
+    a.waitForMinMessages(300, 10000) should equal(true)
+    sm.Stop()
 
     // make sure we got the down-up-down callbacks we expected
-    stateObserver.checkStates(names, List(MasterStates.MS_COMMS_DOWN, MasterStates.MS_COMMS_UP, MasterStates.MS_COMMS_DOWN))
+    stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN, StackStates.SS_COMMS_UP, StackStates.SS_COMMS_DOWN))
   }
 
 }

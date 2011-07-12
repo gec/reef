@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -33,34 +32,42 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, 
 import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 @RunWith(classOf[JUnitRunner])
-class IntegrationTest extends FunSuite with ShouldMatchers with Logging {
-  test("Endpoints online/offline") {
+class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
 
-    val numSlaves = 10
-    val portStart = 50000
-    val portEnd = portStart + numSlaves - 1
+  val sm = new StackManager(true)
+  val numSlaves = 10
+  val portStart = 50000
+  val portEnd = portStart + numSlaves - 1
 
-    val sm = new StackManager(false)
-
+  final override def beforeAll()
+  {
+    logger.info("starting slave")
     val slave = new SlaveStackConfig
     slave.setDevice(new DeviceTemplate(10, 10, 10, 10, 10, 10, 10))
-
     val commandAcceptor = new CommandResponser
-
     val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
     val dataSinks = (portStart to portEnd).map { port =>
       val server = "server-" + port
       sm.AddTCPServer(server, s, "0.0.0.0", port)
       sm.AddSlave(server, server, FilterLevel.LEV_WARNING, commandAcceptor, slave)
     }
-
     sm.Start()
+  }
+
+  final override def afterAll()
+  {
+    logger.info("stopping slave")
+    sm.Stop()
+  }
+
+  test("Endpoints online/offline") {
 
     val configFiles = makeMappingFile(10, 10, 10, 10, 10, 10, 10) :: makeConfigFile() :: Nil
 
-    val protocol = new Dnp3Protocol()
+    val protocol = new Dnp3Protocol
     val listeners = (portStart to portEnd).map { port =>
       val channelName = "port" + port
 
@@ -74,6 +81,8 @@ class IntegrationTest extends FunSuite with ShouldMatchers with Logging {
 
       (portListener, endpointListener, measListener, commandAdapter)
     }
+
+    Thread.sleep(30000)
 
     listeners.foreach {
       case (portListener, endpointListener, measListener, commandAdapter) =>

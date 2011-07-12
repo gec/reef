@@ -28,13 +28,15 @@ class LogAdapter extends ILogBase with Logging with SafeExecution {
   // DNPLOG is common logger name for all dnp log messages
   val customLogger = LoggerFactory("DNPLOG")
 
-  final override def Log(level: FilterLevel, loggerName: String, location: String, message: String, code: Int): Unit = safeExecute {
+  final override def SetVar(source: String, variable: String, value: Int) {}
 
-    def getMsg: String = level + " - " + loggerName + " - " + message
+  final override def Log(entry: LogEntry): Unit = safeExecute {
+
+    def getMsg: String = entry.GetFilterLevel + " - " + entry.GetDeviceName + " - " + entry.GetMessage
 
     // we need to upgrade all of the messages up to a usable logging level, we let the
     // filter settings we pass into the stack determine how much info we see
-    level match {
+    entry.GetFilterLevel match {
       case FilterLevel.LEV_COMM => customLogger.info(getMsg)
       case FilterLevel.LEV_DEBUG => customLogger.info(getMsg)
       case FilterLevel.LEV_ERROR => customLogger.error(getMsg)

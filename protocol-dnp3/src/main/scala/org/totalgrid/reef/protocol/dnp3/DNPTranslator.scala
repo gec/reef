@@ -17,10 +17,6 @@
  * the License.
  */
 package org.totalgrid.reef.protocol.dnp3
-/*
-import org.totalgrid.reef.protocol.dnp3.{ Binary, Analog, Counter, SetpointStatus, CommandStatus, DataPoint }
-import org.totalgrid.reef.protocol.dnp3.{ BinaryQuality, AnalogQuality, CounterQuality, ControlQuality }
-import org.totalgrid.reef.protocol.dnp3.{ BinaryOutput, Setpoint, ControlCode, CommandResponse, ControlStatus }    */
 
 import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
 
@@ -90,28 +86,25 @@ object DNPTranslator {
   /* Translation functions from bus CommandRequests to DNP3 types */
 
   def translateBinaryOutput(c: Mapping.CommandMap) = {
-    new BinaryOutput(translate(c.getType), c.getCount.toShort, c.getOnTime, c.getOffTime)
+    // TODO - Make the mapping types shorts
+    new BinaryOutput(translate(c.getType), c.getCount.toShort, c.getOnTime.toShort, c.getOffTime.toShort)
   }
 
-  def translateSetpoint(c: Commands.CommandRequest) = {
-    c.getType match {
-      case Commands.CommandRequest.ValType.INT => new Setpoint(c.getIntVal)
-      case Commands.CommandRequest.ValType.DOUBLE => new Setpoint(c.getDoubleVal)
-      case _ => throw new Exception("wrong type for setpoint")
-    }
+  def translateSetpoint(c: Commands.CommandRequest) = c.getType match {
+    case Commands.CommandRequest.ValType.INT => new Setpoint(c.getIntVal)
+    case Commands.CommandRequest.ValType.DOUBLE => new Setpoint(c.getDoubleVal)
+    case _ => throw new Exception("wrong type for setpoint")
   }
 
   /* private helper functions */
 
-  private def translate(c: Mapping.CommandType) = {
-    c match {
-      case Mapping.CommandType.LATCH_ON => ControlCode.CC_LATCH_ON
-      case Mapping.CommandType.LATCH_OFF => ControlCode.CC_LATCH_OFF
-      case Mapping.CommandType.PULSE => ControlCode.CC_PULSE
-      case Mapping.CommandType.PULSE_CLOSE => ControlCode.CC_PULSE_CLOSE
-      case Mapping.CommandType.PULSE_TRIP => ControlCode.CC_PULSE_TRIP
-      case _ => throw new Exception("Invalid Command code")
-    }
+  private def translate(c: Mapping.CommandType) = c match {
+    case Mapping.CommandType.LATCH_ON => ControlCode.CC_LATCH_ON
+    case Mapping.CommandType.LATCH_OFF => ControlCode.CC_LATCH_OFF
+    case Mapping.CommandType.PULSE => ControlCode.CC_PULSE
+    case Mapping.CommandType.PULSE_CLOSE => ControlCode.CC_PULSE_CLOSE
+    case Mapping.CommandType.PULSE_TRIP => ControlCode.CC_PULSE_TRIP
+    case _ => throw new Exception("Invalid Command code")
   }
 
   private def translateCommon(v: DataPoint, name: String, unit: String, q: Short => Measurements.Quality.Builder)(f: Measurements.Measurement.Builder => Unit) = {
