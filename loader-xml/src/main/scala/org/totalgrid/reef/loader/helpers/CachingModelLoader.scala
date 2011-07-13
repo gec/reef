@@ -25,6 +25,7 @@ import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.sapi.client.{ Response, RestOperations }
 import org.totalgrid.reef.loader.ModelLoader
+import org.totalgrid.reef.japi.ReefServiceException
 
 class CachingModelLoader(client: Option[RestOperations], create: Boolean = true) extends ModelLoader {
 
@@ -60,7 +61,14 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
       val rsp = promise.await
 
       // check the response for any non-successful requests
-      rsp.expectMany()
+      try {
+        rsp.expectMany()
+      } catch {
+        case rse: ReefServiceException =>
+          // attach a helpful error message with exact data that caused failure
+          val errorMessage = "Error processing object: " + request.getClass.getSimpleName + " with data: " + request
+          throw new ReefServiceException(errorMessage, rse.getStatus, rse)
+      }
 
       progressMeter.foreach(_.update(rsp.status, request))
     }
