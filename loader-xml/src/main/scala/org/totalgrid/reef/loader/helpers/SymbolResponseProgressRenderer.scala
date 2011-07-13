@@ -21,7 +21,7 @@ package org.totalgrid.reef.loader.helpers
 import org.totalgrid.reef.japi.Envelope.Status
 import java.io.PrintStream
 
-class SymbolResponseProgressRenderer(stream: PrintStream) extends ResponseProgressRenderer {
+class SymbolResponseProgressRenderer(stream: PrintStream, width: Int = 50) extends ResponseProgressRenderer {
 
   class Counter {
     var sum = 1
@@ -29,9 +29,16 @@ class SymbolResponseProgressRenderer(stream: PrintStream) extends ResponseProgre
   }
 
   var counts = Map.empty[Status, Counter]
+  var handled: Int = 0
+  var total: Int = 0
 
   def start(size: Int) = {
-    stream.println("Uploading " + size + " objects to server")
+    total = size
+    handled = 0
+
+    stream.println("Uploading " + total + " objects to server")
+
+    stream.print("%6d of %6d ".format(handled, total))
     stream.print("|")
     stream.flush()
   }
@@ -46,6 +53,12 @@ class SymbolResponseProgressRenderer(stream: PrintStream) extends ResponseProgre
       case _ => "!"
     }
     stream.print(char)
+
+    handled += 1
+    if (handled % width == 0) {
+      stream.print("\n%6d of %6d  ".format(handled, total))
+    }
+
     //stream.print(status.toString + "-" + request.getClass.getSimpleName + "\n")
     stream.flush()
 
@@ -57,7 +70,7 @@ class SymbolResponseProgressRenderer(stream: PrintStream) extends ResponseProgre
 
   def finish = {
     stream.println("|")
-    stream.println("Load Statistics: ")
+    stream.println("Statistics: ")
     counts.foreach { case (status, count) => stream.println(status.toString + " : " + count.sum) }
     stream.println
   }
