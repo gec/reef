@@ -167,7 +167,10 @@ trait EventConfigConversion
   }
 
   def isModified(entry: EventConfigStore, existing: EventConfigStore): Boolean = {
-    true
+    entry.alarmState != existing.alarmState ||
+      entry.designation != existing.designation ||
+      entry.resource != existing.resource ||
+      entry.severity != existing.severity
   }
 
   def createModelEntry(proto: EventConfig): EventConfigStore = createModelEntry(proto, false)
