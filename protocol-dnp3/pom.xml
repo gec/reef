@@ -107,7 +107,7 @@
         <dependency>
             <groupId>org.totalgrid.reef.protocol.dnp3</groupId>
             <artifactId>dnp3java</artifactId>
-            <version>0.9.4</version>
+            <version>0.9.5-RC1</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
