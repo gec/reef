@@ -22,33 +22,46 @@ import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination }
 import org.totalgrid.reef.sapi.client.{ Failure, Response, SessionPool }
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
+import org.totalgrid.reef.promise.{ FixedPromise, SynchronizedPromise, Promise }
 
+/**
+ * allows for the ordered publishing of service requests to multiple services to be completed in the order
+ * they were inserted into the publishing buffer. Producers are throttled when the more than maxQueueSize
+ * messages are in the buffer already. When the ordered transmitter is no longer needed shutdown should be
+ * called to flush all of the pending messages and stop any more being queued.
+ */
 class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) extends Logging {
 
   private case class Record(value: Any, verb: Envelope.Verb, destination: Destination, maxRetries: Int, promise: SynchronizedPromise[Boolean])
 
   private val queue = new scala.collection.mutable.Queue[Record]
   private var transmitting = false
+  private var isShutdown = false
 
   def publish(value: Any,
     verb: Envelope.Verb = Envelope.Verb.POST,
     address: Destination = AnyNodeDestination,
     maxRetries: Int = 0): Promise[Boolean] = queue.synchronized {
 
-    if (queue.size >= maxQueueSize) {
-      logger.info("Publisher waiting. " + this)
-      queue.wait
-    }
+    if (isShutdown) {
+      // could throw exception instead if all producers are guaranteed to be shutdown before
+      // the transmitter is stopped
+      new FixedPromise[Boolean](false)
+    } else {
+      while (queue.size >= maxQueueSize) {
+        logger.info("Publisher waiting. " + this)
+        queue.wait
+      }
 
-    val promise = new SynchronizedPromise[Boolean]
-    queue.enqueue(Record(value, verb, address, maxRetries, promise))
-    checkForTransmit()
-    promise
+      val promise = new SynchronizedPromise[Boolean]
+      queue.enqueue(Record(value, verb, address, maxRetries, promise))
+      checkForTransmit()
+      promise
+    }
   }
 
   private def checkForTransmit(): Boolean = {
-    if (queue.size > 0) {
+    if (!transmitting && !queue.isEmpty) {
       transmitting = true
       val record = queue.dequeue()
       publish(record, record.maxRetries)
@@ -73,8 +86,24 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     promise.onResponse(result)
     queue.synchronized {
       transmitting = false
-      if (!checkForTransmit()) queue.notify()
+      if (!checkForTransmit()) queue.notifyAll()
     }
+  }
+
+  /**
+   * waits until all messages have been sent successfully or failed out
+   */
+  def flush() = queue.synchronized {
+    assert(transmitting || queue.isEmpty)
+    while (transmitting || !queue.isEmpty) queue.wait()
+  }
+
+  /**
+   * stop new messages from being queued and wait for flush to complete
+   */
+  def shutdown() = queue.synchronized {
+    isShutdown = true
+    flush()
   }
 
   override def toString = {

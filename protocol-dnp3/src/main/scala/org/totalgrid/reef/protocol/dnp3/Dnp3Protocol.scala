@@ -24,6 +24,8 @@ import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandle
 
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.xml.dnp3.{ Master, AppLayer, LinkLayer, LogLevel }
+import org.totalgrid.reef.util.XMLHelper
+
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
@@ -97,6 +99,7 @@ class Dnp3Protocol extends Protocol with Logging {
     logger.debug("Not removing stack " + endpoint + " as per workaround")
     /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll
     times out.
+    stack will get removed when port is removed
      */
 
     /*info { "removing stack with name: " + endpoint }
@@ -192,4 +195,5 @@ class Dnp3Protocol extends Protocol with Logging {
     ss.setMStopBits(channel.getStopBits)
     ss
   }
+
 }

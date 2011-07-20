@@ -21,6 +21,7 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.Model.ConfigFile
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.util.Table
 
 object ConfigFileView {
   def printTable(apps: List[ConfigFile]) = {

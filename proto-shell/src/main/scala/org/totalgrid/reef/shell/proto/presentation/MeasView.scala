@@ -19,6 +19,7 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.Measurements.{ Measurement, Quality }
+import org.totalgrid.reef.util.Table
 
 object MeasView {
 

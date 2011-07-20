@@ -22,6 +22,7 @@ import org.totalgrid.reef.proto.Model.EntityAttributes
 import org.totalgrid.reef.proto.Utils.Attribute
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.util.Table
 
 object AttributeView {
 

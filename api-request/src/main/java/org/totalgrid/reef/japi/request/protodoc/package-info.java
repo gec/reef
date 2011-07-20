@@ -16,7 +16,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 /**
  * There is currently no standard way of documenting protobuf so we embed
  * the protobuf source files into javadoc package-info files. This allows

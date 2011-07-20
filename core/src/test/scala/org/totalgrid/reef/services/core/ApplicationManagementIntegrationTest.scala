@@ -97,7 +97,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     }
 
     /// wait up to 5 seconds for the condition to be satisfied (for actor messaging delays)
-    def waitUntilSnapshot(f: StatusSnapshot => Boolean) {
+    def waitUntilSnapshot(f: StatusSnapshot => Boolean): Boolean = {
       val wrap = { o: Option[StatusSnapshot] => if (o.isDefined) f(o.get) else false }
       if (wrap(lastSnapShot.current)) return true
       lastSnapShot.waitFor(wrap)

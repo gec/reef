@@ -166,7 +166,7 @@ trait CommunicationEndpointConnectionConversion
     val b = ConnProto.newBuilder.setUid(makeUid(entry))
 
     entry.application.value.foreach(app => b.setFrontEnd(FrontEndProcessor.newBuilder.setUuid(makeUuid(app)).setAppConfig(ApplicationConfig.newBuilder.setInstanceName(app.instanceName))))
-    entry.endpoint.value.foreach(endpoint => b.setEndpoint(CommEndpointConfig.newBuilder.setUuid(makeUuid(endpoint.entity.value)).setName(endpoint.entity.value.name).setProtocol(endpoint.protocol)))
+    entry.endpoint.value.foreach(endpoint => b.setEndpoint(makeSparseEndpointProto(endpoint)))
     entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
     b.setState(ConnProto.State.valueOf(entry.state))
     b.setEnabled(entry.enabled)
@@ -176,5 +176,18 @@ trait CommunicationEndpointConnectionConversion
     b.setLastUpdate(times.flatten.max)
 
     b.build
+  }
+
+  // we add some interesting data about the endpoint in the connection proto but we dont want to
+  // include the list of all points/commands in these communication related protos
+  private def makeSparseEndpointProto(endpoint: CommunicationEndpoint) = {
+    val b = CommEndpointConfig.newBuilder
+      .setUuid(makeUuid(endpoint.entity.value))
+      .setName(endpoint.entity.value.name)
+      .setProtocol(endpoint.protocol)
+
+    endpoint.port.value.foreach(p => b.setChannel(FrontEndPortConversion.convertToProto(p)))
+
+    b
   }
 }

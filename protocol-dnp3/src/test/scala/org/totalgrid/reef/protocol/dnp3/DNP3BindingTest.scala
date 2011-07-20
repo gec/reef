@@ -18,14 +18,12 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.totalgrid.reef.proto.{ Mapping, Measurements }
-
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-@RunWith(classOf[JUnitRunner]) //disabled because it hangs under eclipse
+@RunWith(classOf[JUnitRunner])
 class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
   val startPort = 32323
@@ -36,7 +34,7 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     val num_stack = 10
     val sm = new StackManager(true) // the stack will start running as soon as a master is added		
 
-    val cfg = new MasterStackConfig
+    var names = List.empty[String]
 
     // startup <num_stack> masters on <num_port> ports
     (1 to num_port).foreach { port =>
@@ -46,6 +44,11 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
       (1 to num_stack).foreach { stack =>
         val name = "port-" + port + "-stack" + stack
+
+        names ::= name
+
+        val cfg = new MasterStackConfig
+
         cfg.getLink.setLocalAddr(stack)
 
         // the masters won't get any data, so setting the IPublisher to null is OK
@@ -65,6 +68,8 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     val sm = new StackManager(false)
     val a = new CountingPublisherActor
 
+    var names = List.empty[String]
+
     val master = new MasterStackConfig
     master.getMaster.setIntegrityRate(60000)
     val slave = new SlaveStackConfig
@@ -77,6 +82,8 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
       val server = "server-" + port
       sm.AddTCPClient(client, s, "127.0.0.1", port)
       sm.AddTCPServer(server, s, "0.0.0.0", port)
+
+      names ::= server
 
       sm.AddMaster(client, client, lev, a.addPub, master)
       sm.AddSlave(server, server, lev, null, slave)

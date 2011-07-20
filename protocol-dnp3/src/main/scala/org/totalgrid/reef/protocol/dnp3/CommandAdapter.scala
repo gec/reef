@@ -48,7 +48,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
   override def AcceptResponse(rsp: CommandResponse, seq: Int) = safeExecute {
     idMap.get(seq) match {
       case Some(ResponseInfo(id, pub, obj)) =>
-        logger.info("Got command response: " + rsp.toString + " seq: " + seq)
+        logger.info("Got command response: " + rsp.getMResult.toString + " seq: " + seq)
         idMap -= seq //remove from the map
         pub.publish(DNPTranslator.translate(rsp, id)) //send the response to the sender
       case None => logger.warn("Unknown command response with sequence " + seq)

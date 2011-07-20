@@ -26,6 +26,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.proto.Alarms.{ Alarm, EventConfig }
 
+import org.totalgrid.reef.util.Table
+
 object EventView {
 
   def printEventTable(events: List[Event]) = {

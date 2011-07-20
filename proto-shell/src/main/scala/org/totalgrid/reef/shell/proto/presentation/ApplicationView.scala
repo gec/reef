@@ -21,6 +21,7 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.Application._
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.util.Table
 
 object ApplicationView {
   def printTable(apps: List[ApplicationConfig]) = {

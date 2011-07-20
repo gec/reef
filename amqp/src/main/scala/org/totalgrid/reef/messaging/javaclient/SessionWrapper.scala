@@ -29,14 +29,14 @@ import org.totalgrid.reef.japi.TypeDescriptor
  */
 class SessionWrapper(val client: ClientSession) extends Session {
 
-  private implicit def convert[A](promise: ScalaPromise[ScalaResponse[A]]): Promise[Response[A]] = new PromiseWrapper[A](promise)
+  private implicit def convertPromise[A](promise: ScalaPromise[ScalaResponse[A]]): Promise[Response[A]] = new PromiseWrapper[A](promise)
 
   final override def get[A](request: A): Promise[Response[A]] = client.get(request)
   final override def delete[A](request: A): Promise[Response[A]] = client.delete(request)
   final override def post[A](request: A): Promise[Response[A]] = client.post(request)
   final override def put[A](request: A): Promise[Response[A]] = client.put(request)
 
-  private implicit def convert[A](sub: Subscription[A]): RequestEnv = {
+  private implicit def convertSubscription[A](sub: Subscription[A]): RequestEnv = {
     val headers = new RequestEnv
     headers.setSubscribeQueue(sub.getId)
     headers
