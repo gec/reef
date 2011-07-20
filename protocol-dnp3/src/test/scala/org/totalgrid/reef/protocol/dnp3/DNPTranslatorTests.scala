@@ -20,13 +20,13 @@ package org.totalgrid.reef.protocol.dnp3
 
 import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
 
-import org.scalatest.Suite
+import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
-class DNPTranslatorTests extends Suite with ShouldMatchers {
+class DNPTranslatorTests extends FunSuite with ShouldMatchers {
 
   def testAnything[A, B](obj: DataPoint, value: B, protoType: Measurements.Measurement.Type,
     setVal: (B) => Unit,
@@ -41,34 +41,38 @@ class DNPTranslatorTests extends Suite with ShouldMatchers {
     proto.getName() should equal("obj1")
   }
 
-  def testBinary() {
+  test("Binary") {
     val obj = new Binary()
     testAnything[Binary, Boolean](obj, true, Measurements.Measurement.Type.BOOL,
       obj.SetValue, DNPTranslator.translate, (m: Measurements.Measurement) => m.getBoolVal())
   }
-  def testAnalog() {
+
+  test("Analog") {
     val obj = new Analog()
     testAnything[Analog, Double](obj, 35, Measurements.Measurement.Type.DOUBLE,
       obj.SetValue, DNPTranslator.translate, (m: Measurements.Measurement) => m.getDoubleVal())
   }
-  def testCounter() {
+
+  test("Counter") {
     val obj = new Counter()
     testAnything[Counter, Long](obj, 35, Measurements.Measurement.Type.INT,
       obj.SetValue, DNPTranslator.translate, (m: Measurements.Measurement) => m.getIntVal())
   }
-  def testCommandStatus() {
+
+  test("CommandStatus") {
     val obj = new ControlStatus()
     testAnything[ControlStatus, Boolean](obj, true, Measurements.Measurement.Type.BOOL,
       obj.SetValue, DNPTranslator.translate, (m: Measurements.Measurement) => m.getBoolVal())
   }
-  def testSetpointStatus() {
+
+  test("SetpointStatus") {
     val obj = new SetpointStatus()
     testAnything[SetpointStatus, Double](obj, 35, Measurements.Measurement.Type.DOUBLE,
       obj.SetValue, DNPTranslator.translate, (m: Measurements.Measurement) => m.getDoubleVal())
   }
 
   // Test the translation of DNP command responses to proto equivalents
-  def testCommandResponses() {
+  test("CommandResponses") {
     // Build a map of DNP -> Proto
     val map = Map(CommandStatus.CS_SUCCESS -> Commands.CommandStatus.SUCCESS,
       CommandStatus.CS_TIMEOUT -> Commands.CommandStatus.TIMEOUT,
@@ -91,7 +95,7 @@ class DNPTranslatorTests extends Suite with ShouldMatchers {
   }
 
   // Test the two types of commands, Commands and setpoints, from proto types to DNP codes
-  def testCommandRequest() {
+  test("CommandRequest") {
     // Build a map of conversions from DNP Command typs to proto
     val map = Map(
       Mapping.CommandType.LATCH_ON -> ControlCode.CC_LATCH_ON,
@@ -118,7 +122,8 @@ class DNPTranslatorTests extends Suite with ShouldMatchers {
       dnpCmd.getMOffTimeMS() should equal(600)
     })
   }
-  def testSetpointRequest() {
+
+  test("SetpointRequest") {
     val protoCmd = Commands.CommandRequest.newBuilder
       .setType(Commands.CommandRequest.ValType.INT)
       .setIntVal(500)

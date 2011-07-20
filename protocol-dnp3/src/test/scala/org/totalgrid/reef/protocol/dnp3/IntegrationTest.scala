@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
+import mock.InstantCommandResponder
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -28,39 +29,36 @@ import com.google.protobuf.ByteString
 import org.totalgrid.reef.proto.{ Model, FEP }
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
 import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.{ BeforeAndAfterAll, FunSuite }
+import org.totalgrid.reef.proto.Commands.{CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto}
 
 @RunWith(classOf[JUnitRunner])
 class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
 
-  val sm = new StackManager(true)
-  val numSlaves = 10
+  val slave = new StackManager
+  val commandAcceptor = new InstantCommandResponder(CommandStatus.CS_SUCCESS)
+  val numSlaves = 1
   val portStart = 50000
   val portEnd = portStart + numSlaves - 1
 
-  final override def beforeAll()
-  {
+  final override def beforeAll() {
     logger.info("starting slave")
-    val slave = new SlaveStackConfig
-    slave.setDevice(new DeviceTemplate(10, 10, 10, 10, 10, 10, 10))
-    val commandAcceptor = new CommandResponser
+    val config = new SlaveStackConfig
+    config.setDevice(new DeviceTemplate(10, 10, 10, 10, 10, 10, 10))
     val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
     val dataSinks = (portStart to portEnd).map { port =>
       val server = "server-" + port
-      sm.AddTCPServer(server, s, "0.0.0.0", port)
-      sm.AddSlave(server, server, FilterLevel.LEV_WARNING, commandAcceptor, slave)
+      slave.AddTCPServer(server, s, "0.0.0.0", port)
+      slave.AddSlave(server, server, FilterLevel.LEV_WARNING, commandAcceptor, config)
     }
-    sm.Start()
   }
 
-  final override def afterAll()
-  {
+  final override def afterAll() {
     logger.info("stopping slave")
-    sm.Stop()
+    slave.Shutdown()
   }
 
   test("Endpoints online/offline") {
@@ -81,8 +79,6 @@ class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAl
 
       (portListener, endpointListener, measListener, commandAdapter)
     }
-
-    Thread.sleep(30000)
 
     listeners.foreach {
       case (portListener, endpointListener, measListener, commandAdapter) =>
@@ -107,17 +103,6 @@ class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAl
         portListener.lastValue.waitUntil(FEP.CommChannel.State.CLOSED)
     }
 
-    sm.Stop()
-  }
-
-  class CommandResponser extends ICommandAcceptor {
-    override def AcceptCommand(obj: BinaryOutput, index: Long, seq: Int, accept: IResponseAcceptor) {
-      accept.AcceptResponse(new CommandResponse(CommandStatus.CS_SUCCESS), seq)
-    }
-
-    override def AcceptCommand(obj: Setpoint, index: Long, seq: Int, accept: IResponseAcceptor) {
-      accept.AcceptResponse(new CommandResponse(CommandStatus.CS_SUCCESS), seq)
-    }
   }
 
   class LastValueListener[A](verbose: Boolean = true) extends Publisher[A] {

@@ -87,7 +87,7 @@ object DNPTranslator {
 
   def translateBinaryOutput(c: Mapping.CommandMap) = {
     // TODO - Make the mapping types shorts
-    new BinaryOutput(translate(c.getType), c.getCount.toShort, c.getOnTime.toShort, c.getOffTime.toShort)
+    new BinaryOutput(translate(c.getType), c.getCount.toShort, c.getOnTime, c.getOffTime)
   }
 
   def translateSetpoint(c: Commands.CommandRequest) = c.getType match {

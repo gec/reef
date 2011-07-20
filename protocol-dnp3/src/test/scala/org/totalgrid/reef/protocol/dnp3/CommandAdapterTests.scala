@@ -18,21 +18,12 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
+import mock.MockCommandAcceptor
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 import scala.collection.mutable
 import org.totalgrid.reef.promise.FixedPromise
 
-class MockCommandAcceptor extends ICommandAcceptor {
-  val commands = new mutable.Queue[Tuple3[BinaryOutput, Long, Int]]
-  val setpoints = new mutable.Queue[Tuple3[Setpoint, Long, Int]]
 
-  override def AcceptCommand(obj: BinaryOutput, index: Long, seq: Int, accept: IResponseAcceptor) {
-    commands += Tuple3(obj, index, seq)
-  }
-  override def AcceptCommand(obj: Setpoint, index: Long, seq: Int, accept: IResponseAcceptor) {
-    setpoints += Tuple3(obj, index, seq)
-  }
-}
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers

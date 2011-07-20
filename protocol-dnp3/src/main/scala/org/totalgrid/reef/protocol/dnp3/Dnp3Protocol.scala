@@ -42,17 +42,18 @@ class Dnp3Protocol extends Protocol with Logging {
   // this object. Keep a map of meas adapters around by name to prevent this.
   private var map = immutable.Map.empty[String, (MeasAdapter, Publisher[MeasurementBatch], IStackObserver)]
 
-  private var physMonitorMap = immutable.Map.empty[String, IPhysMonitor]
+  private var physMonitorMap = immutable.Map.empty[String, IPhysicalLayerObserver]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
   private val log = new LogAdapter
-  private val dnp3 = new StackManager(true)
+  private val dnp3 = new StackManager
   dnp3.AddLogHook(log)
 
   override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
-    val physMonitor = new IPhysMonitor {
-      override def OnStateChange(state: PhysLayerState) = {
+    val physMonitor = new IPhysicalLayerObserver {
+      override def OnStateChange(state: PhysicalLayerState) = {
+        logger.error("Transition: " + state)
         publisher.publish(translate(state))
       }
     }
@@ -219,12 +220,12 @@ class Dnp3Protocol extends Protocol with Logging {
     case StackStates.SS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
   }
 
-  private def translate(state: PhysLayerState): FEP.CommChannel.State = state match {
-    case PhysLayerState.PLS_CLOSED => FEP.CommChannel.State.CLOSED
-    case PhysLayerState.PLS_OPEN => FEP.CommChannel.State.OPEN
-    case PhysLayerState.PLS_OPENING => FEP.CommChannel.State.OPENING
+  private def translate(state: PhysicalLayerState): FEP.CommChannel.State = state match {
+    case PhysicalLayerState.PLS_CLOSED => FEP.CommChannel.State.CLOSED
+    case PhysicalLayerState.PLS_OPEN => FEP.CommChannel.State.OPEN
+    case PhysicalLayerState.PLS_OPENING => FEP.CommChannel.State.OPENING
     // TODO: which state CommChannel.State is stopped and waiting
-    case PhysLayerState.PLS_STOPPED => FEP.CommChannel.State.CLOSED
-    case PhysLayerState.PLS_WAITING => FEP.CommChannel.State.ERROR
+    case PhysicalLayerState.PLS_SHUTDOWN => FEP.CommChannel.State.CLOSED
+    case PhysicalLayerState.PLS_WAITING => FEP.CommChannel.State.ERROR
   }
 }

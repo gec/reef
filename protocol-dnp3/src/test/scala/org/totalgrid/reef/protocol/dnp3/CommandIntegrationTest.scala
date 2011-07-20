@@ -18,13 +18,12 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
+import org.totalgrid.reef.protocol.dnp3.mock._
+
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.util.{ EmptySyncVar }
-import org.totalgrid.reef.executor.{ ReactActorExecutor, Executor }
-import java.lang.Number
 
 @RunWith(classOf[JUnitRunner]) //disabled because it hangs under eclipse
 class CommandIntegrationTest extends FunSuite with ShouldMatchers {
@@ -36,8 +35,10 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
     val port_start = startPort
     val port_end = port_start + num_pairs - 1
     val lev = FilterLevel.LEV_WARNING
-    val sm = new StackManager(true)
-    val a = new CountingPublisherActor
+    val sm = new StackManager
+    val adapter = new LogAdapter
+    sm.AddLogHook(adapter)
+    val counter = new CountingPublisher
 
     val master = new MasterStackConfig
     master.getMaster.setIntegrityRate(60000)
@@ -45,9 +46,7 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
 
     slave.setDevice(new DeviceTemplate(100, 100, 100, 0, 0, 1, 1))
 
-    val executor = new ReactActorExecutor {}
-    executor.start
-    val commandHandler = new InstantCommandResponder(CommandStatus.CS_SUCCESS, executor)
+    val commandHandler = new InstantCommandResponder(CommandStatus.CS_SUCCESS)
 
     val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
     val acceptors = (port_start to port_end).map { port =>
@@ -56,64 +55,41 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
       sm.AddTCPClient(client, s, "127.0.0.1", port)
       sm.AddTCPServer(server, s, "0.0.0.0", port)
 
-      val commandAcceptor = sm.AddMaster(client, client, lev, a.addPub, master)
+      val commandAcceptor = sm.AddMaster(client, client, lev, counter.newPublisher, master)
       sm.AddSlave(server, server, lev, commandHandler, slave)
       commandAcceptor
     }
 
-    assert(a.waitForMinMessages(1, 10000))
+    counter.waitForMinMessages(1, 10000) should equal(true)
 
     val responder = new CachingResponseAcceptor
 
+    val bo = new BinaryOutput(ControlCode.CC_PULSE_TRIP, 1, 100, 100)
+    val spInt = new Setpoint(100)
+    val spDbl = new Setpoint(99.8)
+
     var seq: Int = 999
+    def next() = {
+      seq += 1
+      seq
+    }
+
     (1 to (150 / num_pairs)).foreach { i =>
       acceptors.foreach { ac =>
-        seq += 1
-        val numControls: Short = 1
 
-        ac.AcceptCommand(new BinaryOutput(ControlCode.CC_PULSE_TRIP, numControls, 100, 100), 0, seq, responder)
+        ac.AcceptCommand(bo, 0, next(), responder)
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
 
-        seq += 1
-        ac.AcceptCommand(new Setpoint(seq.toDouble * 100), 0, seq, responder)
+        ac.AcceptCommand(spInt, 0, next(), responder)
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
 
-        seq += 1
-        ac.AcceptCommand(new Setpoint(seq.toInt * 100), 0, seq, responder)
-
+        ac.AcceptCommand(spDbl, 0, next(), responder)
         responder.waitFor(seq, CommandStatus.CS_SUCCESS)
       }
     }
 
-    sm.Stop()
+    sm.Shutdown()
   }
 
-  class CachingResponseAcceptor extends IResponseAcceptor {
 
-    val responsesRecieved = new EmptySyncVar[(Int, CommandStatus)]
-    override def AcceptResponse(response: CommandResponse, sequence: Int) {
-      responsesRecieved.update((sequence, response.getMResult))
-    }
-
-    def waitFor(sequence: Int, status: CommandStatus) = {
-      responsesRecieved.waitFor({ r => r._1 == sequence && r._2 == status })
-    }
-  }
-
-  class InstantCommandResponder(status: CommandStatus, executor: Executor) extends ICommandAcceptor {
-
-    override def AcceptCommand(obj: BinaryOutput, index: Long, seq: Int, accept: IResponseAcceptor) {
-      executor.delay(10) {
-        accept.AcceptResponse(response, seq)
-      }
-    }
-
-    override def AcceptCommand(obj: Setpoint, index: Long, seq: Int, accept: IResponseAcceptor) {
-      executor.delay(10) {
-        accept.AcceptResponse(response, seq)
-      }
-    }
-
-    private def response = new CommandResponse(status)
-  }
 }

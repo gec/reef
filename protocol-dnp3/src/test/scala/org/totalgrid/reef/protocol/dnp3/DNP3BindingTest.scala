@@ -18,30 +18,18 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
+import org.totalgrid.reef.protocol.dnp3.mock._
+
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterEach, FunSuite}
+import org.scalatest.FunSuite
 
 @RunWith(classOf[JUnitRunner])
-class DNP3BindingTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
   val startPort = 32323
   val lev = FilterLevel.LEV_INFO
-  var option : Option[StackManager] = None
-  def getManager = option match {
-    case Some(x) => x
-    case None =>
-      val ret = new StackManager(true)
-      ret.AddLogHook(new LogAdapter)
-      option = Some(ret)
-      ret
-  }
-
-  override def afterEach() = option.foreach { x=>
-    x.Stop()
-    option = None
-  }
 
   class MockStateObserver {
     import scala.collection.mutable.{ Queue, Map }
@@ -69,12 +57,11 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     }
   }
 
-  /*
   /// This test shows that the startup/teardown behavior is working without crashing
   test("StartupTeardownOnJVM") {
     val num_port = 100
     val num_stack = 10
-    val sm = getManager
+    val sm = new StackManager
 
     val stateObserver = new MockStateObserver
 
@@ -104,22 +91,18 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers with BeforeAndAfterEa
 
     stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
 
-    // the manager is already running at this point, so let's stop it explicitly
-    sm.Stop()
 
-    // make sure we didnt get a second update
-    stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
+    // We don't shutdown explicitly in this test to make sure that destructing via the finalizer is OK
   }
-  */
 
   test("MasterToSlaveOnJVM") {
     val num_pairs = 100
     val port_start = startPort
     val port_end = port_start + num_pairs - 1
-    val sm = new StackManager(true)
+    val sm = new StackManager
     val adapter = new LogAdapter
     sm.AddLogHook(adapter)
-    val a = new CountingPublisherActor
+    val counter = new CountingPublisher
 
     val stateObserver = new MockStateObserver
     var names = List.empty[String]
@@ -141,12 +124,12 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers with BeforeAndAfterEa
       master.getMaster.setMpObserver(stateObserver.getObserver(server))
       names ::= server
 
-      sm.AddMaster(client, client, lev, a.addPub, master)
+      sm.AddMaster(client, client, lev, counter.newPublisher, master)
       sm.AddSlave(server, server, lev, null, slave)
     }
 
-    a.waitForMinMessages(300, 10000) should equal(true)
-    sm.Stop()
+    counter.waitForMinMessages(300, 10000) should equal(true)
+    sm.Shutdown()
 
     // make sure we got the down-up-down callbacks we expected
     stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN, StackStates.SS_COMMS_UP, StackStates.SS_COMMS_DOWN))
