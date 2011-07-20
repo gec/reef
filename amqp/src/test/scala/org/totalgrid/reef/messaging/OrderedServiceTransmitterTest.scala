@@ -39,11 +39,15 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
     var numRequests = 0
 
     private var open = true
+    private var autoRespond = true
 
     final override def isOpen = open
     final override def close() = open = false
 
+    final def setAutoRespond(b: Boolean) = autoRespond = b
+
     private val queue = new scala.collection.mutable.Queue[Envelope.Status]
+    private val pending = new scala.collection.mutable.Queue[() => Unit]
 
     def queueResponse(num: Int, status: Envelope.Status) = num.times(queue.enqueue(status))
     def queueSuccess(num: Int = 1) = queueResponse(num, Envelope.Status.OK)
@@ -55,8 +59,16 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
       numRequests += 1
       val rsp = if (queue.size > 0) Response(queue.dequeue(), payload) else Failure()
       val promise = new SynchronizedPromise[Response[A]]
-      actor { promise.onResponse(rsp) }
+      pending.enqueue(() => actor { promise.onResponse(rsp) })
+      if (autoRespond) respondOne()
       promise
+    }
+
+    def respondOne(): Int = queue.synchronized {
+      if (!pending.isEmpty) {
+        pending.dequeue()()
+      }
+      pending.size
     }
 
   }
@@ -133,4 +145,30 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("Only one message in flight at time") {
+    fixture { (session, ost) =>
+      session.queueSuccess(2)
+      // disable the instant repsponses, they are queued until we call respondOne
+      session.setAutoRespond(false)
+
+      // try to send 2 messages, first one will be sent, second will wait for first to complete
+      val promise1 = ost.publish(99)
+      val promise2 = ost.publish(98)
+
+      // only one request has been sent, no responses have been sent
+      session.numRequests should equal(1)
+      promise1.isComplete should equal(false)
+      promise2.isComplete should equal(false)
+
+      // respond to first message, first request is satisfied, second request should be cleared to send
+      session.respondOne()
+      promise1.await should equal(true)
+      promise2.isComplete should equal(false)
+      session.numRequests should equal(2)
+
+      // respond to second message
+      session.respondOne()
+      promise2.await should equal(true)
+    }
+  }
 }

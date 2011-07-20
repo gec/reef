@@ -61,7 +61,7 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
   }
 
   private def checkForTransmit(): Boolean = {
-    if (queue.size > 0) {
+    if (!transmitting && !queue.isEmpty) {
       transmitting = true
       val record = queue.dequeue()
       publish(record, record.maxRetries)
@@ -94,8 +94,8 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
    * waits until all messages have been sent successfully or failed out
    */
   def flush() = queue.synchronized {
-    assert(transmitting || queue.size == 0)
-    while (transmitting || queue.size > 0) queue.wait()
+    assert(transmitting || queue.isEmpty)
+    while (transmitting || !queue.isEmpty) queue.wait()
   }
 
   /**
