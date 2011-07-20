@@ -64,25 +64,20 @@ class CountingPublisher {
   def waitForMinMessages(min: Int, wait: Long): Boolean = map.synchronized {
     val end = System.currentTimeMillis + wait
     @tailrec
-    def waitForMinMessages : Boolean = {
-      if(getMin >= min) true
+    def waitForMinMessages: Boolean = {
+      if (getMin >= min) true
       else {
         val remaining = end - System.currentTimeMillis
-        if(remaining > 0) {
+        if (remaining > 0) {
           map.wait(remaining)
           waitForMinMessages
-        }
-        else false
+        } else false
       }
     }
     waitForMinMessages
   }
 
-
-
   private def getMin: Int = map.values.foldLeft(Int.MaxValue)((x, y) => if (y < x) y else x)
 
-
 }
-
 

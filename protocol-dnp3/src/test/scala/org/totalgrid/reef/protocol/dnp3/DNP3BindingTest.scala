@@ -91,7 +91,6 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
     stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
 
-
     // We don't shutdown explicitly in this test to make sure that destructing via the finalizer is OK
   }
 

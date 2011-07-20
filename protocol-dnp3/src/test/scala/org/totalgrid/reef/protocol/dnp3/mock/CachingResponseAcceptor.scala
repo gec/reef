@@ -19,16 +19,16 @@
 package org.totalgrid.reef.protocol.dnp3.mock
 
 import org.totalgrid.reef.util.EmptySyncVar
-import org.totalgrid.reef.protocol.dnp3.{CommandResponse, CommandStatus, IResponseAcceptor}
+import org.totalgrid.reef.protocol.dnp3.{ CommandResponse, CommandStatus, IResponseAcceptor }
 
 class CachingResponseAcceptor extends IResponseAcceptor {
 
-    val responsesRecieved = new EmptySyncVar[(Int, CommandStatus)]
-    override def AcceptResponse(response: CommandResponse, sequence: Int) {
-      responsesRecieved.update((sequence, response.getMResult))
-    }
-
-    def waitFor(sequence: Int, status: CommandStatus) = {
-      responsesRecieved.waitFor({ r => r._1 == sequence && r._2 == status })
-    }
+  val responsesRecieved = new EmptySyncVar[(Int, CommandStatus)]
+  override def AcceptResponse(response: CommandResponse, sequence: Int) {
+    responsesRecieved.update((sequence, response.getMResult))
   }
+
+  def waitFor(sequence: Int, status: CommandStatus) = {
+    responsesRecieved.waitFor({ r => r._1 == sequence && r._2 == status })
+  }
+}

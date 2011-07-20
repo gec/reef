@@ -33,7 +33,7 @@ import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.Commands.{CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto}
+import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
 
 @RunWith(classOf[JUnitRunner])
 class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {

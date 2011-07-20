@@ -91,5 +91,4 @@ class CommandIntegrationTest extends FunSuite with ShouldMatchers {
     sm.Shutdown()
   }
 
-
 }

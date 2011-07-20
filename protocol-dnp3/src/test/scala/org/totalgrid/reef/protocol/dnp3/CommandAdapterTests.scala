@@ -23,8 +23,6 @@ import org.totalgrid.reef.proto.{ Mapping, Commands }
 import scala.collection.mutable
 import org.totalgrid.reef.promise.FixedPromise
 
-
-
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
