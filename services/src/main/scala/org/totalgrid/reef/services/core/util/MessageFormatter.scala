@@ -43,6 +43,8 @@ import org.totalgrid.reef.proto.Utils
  * @author flint
  */
 
+import org.totalgrid.reef.event.AttributeList
+
 object MessageFormatter {
 
   /**

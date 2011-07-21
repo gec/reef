@@ -20,7 +20,6 @@ package org.totalgrid.reef.event
 
 import EventType.eventTypeToString
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.services.core.util.AttributeList
 import org.totalgrid.reef.proto.{ Descriptors, RoutingKeys, Events }
 
 /**

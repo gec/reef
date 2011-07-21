@@ -18,13 +18,14 @@
  */
 package org.totalgrid.reef.loader
 
-import equipment._
+import equipment.Transform
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
+import org.totalgrid.reef.loader.equipment._
 import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, ConfigFile => ConfigFileProto }
 import java.io.File
 

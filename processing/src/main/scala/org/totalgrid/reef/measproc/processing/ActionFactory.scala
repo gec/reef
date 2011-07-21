@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Processing.{ Action => ActionProto, ActivationType => TypeProto, LinearTransform => LinearProto, EventGeneration }
-import org.totalgrid.reef.services.core.util._
+import org.totalgrid.reef.event._
 
 /**
  * Trigger/Action factory with constructor dependencies.

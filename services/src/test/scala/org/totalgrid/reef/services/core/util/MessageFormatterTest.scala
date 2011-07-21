@@ -23,6 +23,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
+import org.totalgrid.reef.event._
+
 @RunWith(classOf[JUnitRunner])
 class MessageFormatterTest extends FunSuite with ShouldMatchers {
 

@@ -33,7 +33,8 @@ import org.totalgrid.reef.sapi.RequestEnv
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.services.core.util.{ MessageFormatter, AttributeList }
+import org.totalgrid.reef.event.AttributeList
+import org.totalgrid.reef.services.core.util.MessageFormatter
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.measproc.activator
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,45 +18,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.entry
-
 import org.osgi.framework._
 
-import org.totalgrid.reef.sapi.service.AsyncService
-
-import org.totalgrid.reef.services.{ Services, ServiceOptions, SqlAuthzService }
+import org.totalgrid.reef.executor.{ LifecycleWrapper }
+import org.totalgrid.reef.measproc.ProcessorEntryPoint
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
-import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.osgi.OsgiConfigReader
-
-import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.broker.BrokerProperties
 
-class ServiceActivator extends BundleActivator {
+class ProcessingActivator extends BundleActivator {
 
-  var services: Option[Lifecycle] = None
+  var wrapper: Option[LifecycleWrapper] = None
 
   def start(context: BundleContext) {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val amqp = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val options = ServiceOptions.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
+    val processor = ProcessorEntryPoint.makeContext(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")), SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
 
-    val srvContext = Services.makeContext(amqp, sql, sql, options, SqlAuthzService)
-
-    // publish all of the services using the exchange as the filter
-    srvContext.services.foreach { x =>
-      context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
-    }
-
-    services = Some(srvContext)
-    services.get.start
+    wrapper = Some(new LifecycleWrapper(processor))
+    wrapper.get.start
   }
 
-  def stop(context: BundleContext) = services.foreach { _.stop }
+  def stop(context: BundleContext) = wrapper.foreach { _.stop }
 
 }
-
