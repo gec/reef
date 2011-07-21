@@ -47,6 +47,12 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-persistence-postgresql</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-core</artifactId>
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
@@ -55,13 +61,13 @@
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-processing</artifactId>
             <version>0.3.1-SNAPSHOT</version>
-            <type>test-jar</type>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-processing</artifactId>
             <version>0.3.1-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
