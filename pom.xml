@@ -29,7 +29,7 @@
         <module>persistence-postgresql</module>
         <module>measurementstore-api</module>
         <module>measurementstore-squeryl</module>
-        <module>core</module>
+        <module>application-framework</module>
         <module>integration</module>
         <module>services</module>
         <module>processing</module>
