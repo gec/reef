@@ -56,7 +56,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
       if (!differences.isEmpty || newAtttributes.size != existingAttrs.size) {
         deleteAllFromEntity(entEntry.id)
         ApplicationSchema.entityAttributes.insert(newAtttributes)
-        // since changed the entities we need to manually update the lazyyvar
+        // since changed the entities we need to manually update the lazy var
         entEntry.attributes.value = newAtttributes
 
         val status = if (existingAttrs.isEmpty) Status.CREATED else Status.UPDATED

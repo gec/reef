@@ -111,10 +111,12 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     attr.getValueSint64 should equal(56)
 
     val updateRequest = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute.toBuilder.setValueSint64(23)).build
-    val result2 = service.put(updateRequest).expectOne(Status.UPDATED)
+    val response2 = service.put(updateRequest)
+    val result2 = response2.expectOne()
 
     result2.getAttributesCount should equal(1)
     result2.getAttributesList.get(0).getValueSint64 should equal(23)
+    response2.status should equal(Status.UPDATED)
   }
 
   test("Put fully replaces") {
