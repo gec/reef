@@ -57,11 +57,23 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  def fixture(testFun : StackManager => Unit) = {
+    val sm = new StackManager
+    try {
+      testFun(sm)
+    }
+    finally {
+      sm.Shutdown()
+    }
+
+  }
+
   /// This test shows that the startup/teardown behavior is working without crashing
   test("StartupTeardownOnJVM") {
     val num_port = 100
     val num_stack = 10
-    val sm = new StackManager
+
+    fixture { sm =>
 
     val stateObserver = new MockStateObserver
 
@@ -91,44 +103,46 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
     stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
 
-    sm.Shutdown()
+    }
   }
 
   test("MasterToSlaveOnJVM") {
     val num_pairs = 100
     val port_start = startPort
     val port_end = port_start + num_pairs - 1
-    val sm = new StackManager
     val adapter = new LogAdapter
-    sm.AddLogHook(adapter)
     val counter = new CountingPublisher
-
     val stateObserver = new MockStateObserver
     var names = List.empty[String]
 
-    val master = new MasterStackConfig
-    master.getMaster.setIntegrityRate(60000)
-    val slave = new SlaveStackConfig
+    fixture { sm =>
 
-    slave.setDevice(new DeviceTemplate(100, 100, 100))
-    adapter.logger.warn("Begining to log")
+      sm.AddLogHook(adapter)
 
-    val s = new PhysLayerSettings(lev, 1000)
-    (port_start to port_end).foreach { port =>
-      val client = "client-" + port
-      val server = "server-" + port
-      sm.AddTCPClient(client, s, "127.0.0.1", port)
-      sm.AddTCPServer(server, s, "0.0.0.0", port)
+      val master = new MasterStackConfig
+      master.getMaster.setIntegrityRate(60000)
+      val slave = new SlaveStackConfig
 
-      master.getMaster.setMpObserver(stateObserver.getObserver(server))
-      names ::= server
+      slave.setDevice(new DeviceTemplate(100, 100, 100))
+      adapter.logger.warn("Begining to log")
 
-      sm.AddMaster(client, client, lev, counter.newPublisher, master)
-      sm.AddSlave(server, server, lev, null, slave)
+      val s = new PhysLayerSettings(lev, 1000)
+      (port_start to port_end).foreach { port =>
+        val client = "client-" + port
+        val server = "server-" + port
+        sm.AddTCPClient(client, s, "127.0.0.1", port)
+        sm.AddTCPServer(server, s, "0.0.0.0", port)
+
+        master.getMaster.setMpObserver(stateObserver.getObserver(server))
+        names ::= server
+
+        sm.AddMaster(client, client, lev, counter.newPublisher, master)
+        sm.AddSlave(server, server, lev, null, slave)
+      }
+
+      counter.waitForMinMessages(300, 10000) should equal(true)
+
     }
-
-    counter.waitForMinMessages(300, 10000) should equal(true)
-    sm.Shutdown()
 
     // make sure we got the down-up-down callbacks we expected
     stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN, StackStates.SS_COMMS_UP, StackStates.SS_COMMS_DOWN))
