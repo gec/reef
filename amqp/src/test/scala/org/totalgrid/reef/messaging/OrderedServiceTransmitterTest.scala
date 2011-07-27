@@ -59,9 +59,9 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
       numRequests += 1
       val rsp = if (queue.size > 0) Response(queue.dequeue(), payload) else Failure()
       val promise = new SynchronizedPromise[Response[A]]
-      if(autoRespond){
-        actor{promise.onResponse(rsp)}
-      }else{
+      if (autoRespond) {
+        actor { promise.onResponse(rsp) }
+      } else {
         pending.enqueue(() => { promise.onResponse(rsp) })
       }
       promise
