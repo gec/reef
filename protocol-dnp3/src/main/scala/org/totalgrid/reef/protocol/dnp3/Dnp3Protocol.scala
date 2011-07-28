@@ -49,6 +49,8 @@ class Dnp3Protocol extends Protocol with Logging {
   private val dnp3 = new StackManager
   dnp3.AddLogHook(log)
 
+  final def Shutdown() = dnp3.Shutdown()
+
   override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
 
     val physMonitor = new IPhysicalLayerObserver {

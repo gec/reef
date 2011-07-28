@@ -57,12 +57,11 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def fixture(testFun : StackManager => Unit) = {
+  def fixture(testFun: StackManager => Unit) = {
     val sm = new StackManager
     try {
       testFun(sm)
-    }
-    finally {
+    } finally {
       sm.Shutdown()
     }
 
@@ -75,33 +74,33 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
 
     fixture { sm =>
 
-    val stateObserver = new MockStateObserver
+      val stateObserver = new MockStateObserver
 
-    var names = List.empty[String]
+      var names = List.empty[String]
 
-    // startup <num_stack> masters on <num_port> ports
-    (1 to num_port).foreach { port =>
+      // startup <num_stack> masters on <num_port> ports
+      (1 to num_port).foreach { port =>
 
-      val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
-      sm.AddTCPClient(port.toString, s, "127.0.0.1", startPort)
+        val s = new PhysLayerSettings(FilterLevel.LEV_WARNING, 1000)
+        sm.AddTCPClient(port.toString, s, "127.0.0.1", startPort)
 
-      (1 to num_stack).foreach { stack =>
-        val name = "port-" + port + "-stack" + stack
+        (1 to num_stack).foreach { stack =>
+          val name = "port-" + port + "-stack" + stack
 
-        names ::= name
+          names ::= name
 
-        val cfg = new MasterStackConfig
+          val cfg = new MasterStackConfig
 
-        cfg.getLink.setLocalAddr(stack)
+          cfg.getLink.setLocalAddr(stack)
 
-        cfg.getMaster.setMpObserver(stateObserver.getObserver(name))
+          cfg.getMaster.setMpObserver(stateObserver.getObserver(name))
 
-        // the masters won't get any data, so setting the IPublisher to null is OK
-        sm.AddMaster(port.toString, name, FilterLevel.LEV_WARNING, null, cfg)
+          // the masters won't get any data, so setting the IPublisher to null is OK
+          sm.AddMaster(port.toString, name, FilterLevel.LEV_WARNING, null, cfg)
+        }
       }
-    }
 
-    stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
+      stateObserver.checkStates(names, List(StackStates.SS_COMMS_DOWN))
 
     }
   }

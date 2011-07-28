@@ -18,24 +18,24 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
-import org.osgi.framework.{ ServiceRegistration, BundleActivator, BundleContext }
+import org.osgi.framework.{ BundleActivator, BundleContext }
 import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
 import com.weiglewilczek.scalamodules._
 
 class Activator extends BundleActivator {
-  var reg: Option[ServiceRegistration] = None
+
+  // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
+  System.loadLibrary("dnp3java")
+  System.setProperty("reef.protocol.dnp3.nostaticload", "")
+  val protocol = new Dnp3Protocol with AddRemoveValidation
 
   override def start(context: BundleContext) {
-    // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
-    System.loadLibrary("dnp3java")
-    System.setProperty("reef.protocol.dnp3.nostaticload", "")
-    val protocol = new Dnp3Protocol with AddRemoveValidation
-    reg = Some(context.createService(protocol, "protocol" -> protocol.name, interface[Protocol]))
+    context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
   }
 
   override def stop(context: BundleContext) {
-    reg.foreach(_.unregister)
+    protocol.Shutdown()
   }
 
 }
