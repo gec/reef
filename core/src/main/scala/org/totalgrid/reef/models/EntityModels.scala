@@ -91,4 +91,22 @@ case class EntityAttribute(
   val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
 
   def this() = this(new UUID(0, 0), "", Some(""), Some(true), Some(50L), Some(84.33), Some(Array.empty[Byte]))
+
+  /**
+   * case class equals has some sort of odd issue that sometimes fails:
+   * http://stackoverflow.com/questions/6860163/scala-case-class-equals-implementation
+   */
+  override def equals(other : Any) : Boolean = {
+    other match{
+      case x : EntityAttribute =>
+        this.attrName == x.attrName &&
+        this.entityId == x.entityId &&
+        this.stringVal == x.stringVal &&
+        this.boolVal == x.boolVal &&
+        this.longVal == x.longVal &&
+        this.doubleVal == x.doubleVal &&
+        this.byteVal == x.byteVal
+      case _ => false
+    }
+  }
 }

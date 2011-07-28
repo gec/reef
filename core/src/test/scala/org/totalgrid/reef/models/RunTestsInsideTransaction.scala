@@ -50,14 +50,22 @@ trait RunTestsInsideTransaction extends FunSuite with BeforeAndAfterEach {
     configMap: Map[String, Any],
     tracker: Tracker): Unit = {
 
-    try {
-      // each test occur from within a transaction, that way when the test completes _all_ changes
-      // made during the test are reverted so each test gets a clean enviroment to test against
-      transaction {
-        beforeEachInTransaction()
-        super.runTest(testName, reporter, stopper, configMap, tracker)
-        afterEachInTransaction()
+    // transaction will always be rolledback
+    neverCompletingTransaction{
+      beforeEachInTransaction()
+      super.runTest(testName, reporter, stopper, configMap, tracker)
+      afterEachInTransaction()
+    }
+  }
 
+  /**
+   * each test occur from within a transaction, that way when the test completes _all_ changes
+   * made during the test are reverted so each test gets a clean environment to test against
+   */
+  def neverCompletingTransaction[A](func: => A) = {
+    try {
+      transaction {
+        func
         // we abort the transaction if we get to here, so changes get rolled back
         throw TransactionAbortException
       }
