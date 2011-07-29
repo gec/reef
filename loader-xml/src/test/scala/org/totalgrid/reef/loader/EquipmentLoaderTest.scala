@@ -169,7 +169,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   def makeActionSetNominal(): sx.ActionSet = {
     val as = new sx.ActionSet("Nominal")
     val rising = new configuration.Rising()
-    rising.getMessage.add(new sx.Message("Scada.OutOfNominal"))
+    rising.setMessage(new sx.Message("Scada.OutOfNominal"))
     val high = new configuration.High
     high.setSetAbnormal(new Object)
     as.setRising(rising)

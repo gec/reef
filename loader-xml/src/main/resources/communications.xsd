@@ -277,10 +277,10 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="common:configFile" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="simOptions" minOccurs="0" maxOccurs="1"/>
-            </xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="simOptions"/>
+                <xs:element ref="common:configFile"/>
+            </xs:choice>
             <xs:attribute name="name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
@@ -433,10 +433,10 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="IndexType">
-                <xs:sequence>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
                     <xs:element ref="controlProfile" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element ref="optionsDnp3" minOccurs="0" maxOccurs="1"/>
-                </xs:sequence>
+                </xs:choice>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -731,13 +731,14 @@
     </xs:element>
     <!-- ___________________ Endpoint ___________________ -->
     <xs:complexType name="endpointType" abstract="true">
-        <xs:sequence>
-            <xs:element ref="endpointProfile" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
-            <xs:element ref="protocol" minOccurs="0" maxOccurs="1"/>
-            <xs:element ref="interface" minOccurs="0" maxOccurs="1"/>
-            <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="protocol"/>
+            <xs:element ref="interface"/>
+            <xs:element ref="endpointProfile"/>
+            <xs:element ref="type"/>
+            <xs:element ref="equipment"/>
+            <xs:element ref="common:configFile"/>
+        </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
     <xs:element name="endpointProfile">
@@ -845,11 +846,11 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="profiles" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="interface" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="endpoint" minOccurs="1" maxOccurs="unbounded"/>
-            </xs:sequence>
+            </xs:choice>
         </xs:complexType>
     </xs:element>
 </xs:schema>

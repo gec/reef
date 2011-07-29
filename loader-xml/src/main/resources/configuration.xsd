@@ -570,14 +570,13 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
                 <p class="elementDef">Future</p>
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element ref="message" minOccurs="0" maxOccurs="unbounded"/>
-            <!-- future: <xs:element ref="quality" minOccurs="0" maxOccurs="unbounded"/> -->
-            <xs:element ref="stripValue" minOccurs="0" maxOccurs="1"/>
-            <xs:element ref="setAbnormal" minOccurs="0" maxOccurs="1"/>
-            <xs:element ref="setBool" minOccurs="0" maxOccurs="1"/>
-            <xs:element ref="setUnit" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
+        <xs:all>
+            <xs:element ref="message" minOccurs="0"/>
+            <xs:element ref="stripValue" minOccurs="0"/>
+            <xs:element ref="setAbnormal" minOccurs="0"/>
+            <xs:element ref="setBool" minOccurs="0"/>
+            <xs:element ref="setUnit" minOccurs="0"/>
+        </xs:all>
         <xs:attribute name="moreActions" type="xs:boolean" default="true"/>
     </xs:complexType>
     <xs:element name="high">
@@ -712,13 +711,13 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="common:configFiles" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="messageModel" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="actionModel" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="equ:equipmentModel" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="com:communicationsModel" minOccurs="0" maxOccurs="1"/>
-            </xs:sequence>
+            <xs:all>
+                <xs:element ref="common:configFiles" minOccurs="0"/>
+                <xs:element ref="messageModel" minOccurs="0"/>
+                <xs:element ref="actionModel" minOccurs="0"/>
+                <xs:element ref="equ:equipmentModel" minOccurs="0"/>
+                <xs:element ref="com:communicationsModel" minOccurs="0"/>
+            </xs:all>
             <xs:attribute name="version" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">

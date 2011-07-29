@@ -28,6 +28,7 @@ import java.io.File
 import org.totalgrid.reef.proto._
 
 import EnhancedXmlClasses._
+import org.totalgrid.reef.loader.common.ConfigFile
 
 object CommunicationsLoader {
   val MAPPING_STATUS = Mapping.DataType.valueOf("BINARY")
@@ -74,8 +75,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     logger.info("Start")
     // Collect all the profiles in name->profile maps.
-    val profiles: Profiles = model.getProfiles
-    if (profiles != null) {
+    model.getProfiles.foreach { profiles =>
       profiles.getControlProfile.toList.foreach(controlProfile => controlProfiles += (controlProfile.getName -> controlProfile))
       profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
       profiles.getEndpointProfile.toList.foreach(endpointProfile => endpointProfiles += (endpointProfile.getName -> endpointProfile))
@@ -136,7 +136,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     //var (protocol, configFiles) = processProtocol(profiles, path: File, benchmark)
 
     val protocol = findProtocol(profiles)
-    var configFiles = processConfigFiles(protocol, path)
+    var configFiles = processConfigFiles(endpoint.getConfigFile, path) ::: processConfigFiles(protocol.getConfigFile, path)
 
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
@@ -191,7 +191,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
           configFiles ::= processIndexMapping(endpointName, controls, setpoints, points)
         }
       case BENCHMARK => {
-        val delay = if (protocol.isSetSimOptions && protocol.getSimOptions.isSetDelay) Some(protocol.getSimOptions.getDelay) else None
+        val delay = protocol.getSimOptions.map { _.getDelay }
         ex.collect("Simulator Mapping:" + endpointName) {
           configFiles ::= createSimulatorMapping(endpointName, controls, setpoints, points, delay)
         }
@@ -208,8 +208,8 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     if (a.isSetOptionsDnp3 != b.isSetOptionsDnp3) return false
     if (!a.isSetOptionsDnp3) return false
 
-    val optA = a.getOptionsDnp3
-    val optB = b.getOptionsDnp3
+    val optA = a.getOptionsDnp3.get
+    val optB = b.getOptionsDnp3.get
 
     return (optA.isSetCount == optB.isSetCount && (!optA.isSetCount || optA.getCount == optB.getCount)) &&
       (optA.isSetType == optB.isSetType && (!optA.isSetType || optA.getType == optB.getType)) &&
@@ -260,7 +260,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     // Walk the endpointTypes backwards to find the first protocol element
     val protocol: Protocol = profiles.reverse.find(_.isSetProtocol) match {
-      case Some(endpoint) => endpoint.getProtocol
+      case Some(endpoint) => endpoint.getProtocol.get
       case None =>
         profiles.size match {
           case 1 => throw new LoadingException("Endpoint '" + endpointName + "' has no protocol element specified.")
@@ -273,10 +273,10 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     protocol
   }
 
-  def processConfigFiles(protocol: Protocol, path: File): List[Model.ConfigFile.Builder] = {
+  def processConfigFiles(configFiles: List[ConfigFile], path: File): List[Model.ConfigFile.Builder] = {
     var cfs = List.empty[Model.ConfigFile.Builder]
     ex.collect("Loading config files for endpoint: ") {
-      val configs = protocol.getConfigFile.toList.map(c => ProtoUtils.toConfigFile(c, path))
+      val configs = configFiles.toList.map(c => ProtoUtils.toConfigFile(c, path))
       configs.foreach(cf => client.putOrThrow(cf))
       cfs = configs.map(_.toBuilder)
     }
@@ -306,7 +306,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     // Walk the endpointTypes backwards to find the first interface specified. The list of profiles
     // includes this endpoint as the last "profile".
     val interface: Interface = profiles.reverse.find(_.isSetInterface) match {
-      case Some(endpoint) => endpoint.getInterface
+      case Some(endpoint) => endpoint.getInterface.get
       case None =>
         profiles.size match {
           case 1 => throw new LoadingException("Endpoint '" + endpointName + "' has no interface element specified.")
@@ -638,7 +638,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     // Find the first optionsDNP3 in the reverse profile list.
     // TODO: We get all attributes from a single optionsDnp3. Could "find" each attribute in the first optionsDnp3 that has that attribute.
     val options: OptionsDnp3 = reverseProfiles.find(_.isSetOptionsDnp3) match {
-      case Some(ct) => ct.getOptionsDnp3
+      case Some(ct) => ct.getOptionsDnp3.get
       case None =>
         reverseProfiles.size match {
           case 1 => throw new LoadingException("Control '" + name + "' has no optionsDnp3 element specified.")

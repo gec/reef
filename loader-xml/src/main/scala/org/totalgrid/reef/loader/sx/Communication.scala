@@ -19,6 +19,8 @@
 package org.totalgrid.reef.loader.sx.communications
 
 import org.totalgrid.reef.loader.communications
+
+import org.totalgrid.reef.loader.EnhancedXmlClasses._
 import org.totalgrid.reef.loader.sx.ConfigFile
 
 // jaxb java classes
@@ -27,12 +29,8 @@ class Type(_name: String) extends communications.Type {
   setName(_name)
 }
 
-class Protocol(_name: String, _configFileName: Option[String]) extends communications.Protocol {
+class Protocol(_name: String) extends communications.Protocol {
   setName(_name)
-  if (_configFileName.isDefined)
-    add(new ConfigFile(_configFileName.get))
-
-  def add(x: ConfigFile) = { getConfigFile.add(x); this }
 }
 
 class SimOptions(_value: Int) extends communications.SimOptions {
@@ -63,8 +61,8 @@ class Scale() extends communications.Scale {
 }
 
 trait ControlType[A] { self: communications.ControlType =>
-  def add(x: ControlProfile): A = { getControlProfile.add(x); this.asInstanceOf[A] }
-  def set(x: OptionsDnp3): A = { setOptionsDnp3(x); this.asInstanceOf[A] }
+  def add(x: ControlProfile): A = { getControlProfileOrOptionsDnp3.add(x); this.asInstanceOf[A] }
+  def set(x: OptionsDnp3): A = { getControlProfileOrOptionsDnp3.add(x); this.asInstanceOf[A] }
 }
 
 class ControlProfile(_name: String) extends communications.ControlProfile with ControlType[ControlProfile] {
@@ -150,15 +148,15 @@ class Equipment(_name: String) extends communications.Equipment with EquipmentTy
 trait EndpointType[A] { self: communications.EndpointType =>
   def init(_name: String, _protocolName: Option[String], _configFileName: Option[String]): Unit = {
     setName(_name)
-    add(new Type("Endpoint"))
-    if (_protocolName.isDefined) {
-      setProtocol(new Protocol(_protocolName.get, _configFileName))
-    }
+    _protocolName.foreach { n => add(new Protocol(n)) }
+    _configFileName.foreach { n => add(new ConfigFile(n)) }
   }
-  def add(x: EndpointProfile) = { getEndpointProfile.add(x); this.asInstanceOf[A] }
-  def add(x: Type) = { getType.add(x); this.asInstanceOf[A] }
-  def add(x: Equipment) = { getEquipment.add(x); this.asInstanceOf[A] }
-  def set(x: Interface) = { setInterface(x); this.asInstanceOf[A] }
+  def add(x: EndpointProfile) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
+  def add(x: Type) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
+  def add(x: Equipment) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
+  def add(x: ConfigFile) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
+  def add(x: Protocol) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
+  def set(x: Interface) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
 }
 class EndpointProfile(_name: String, _protocolName: Option[String] = Some("benchmark"), _configFileName: Option[String] = None) extends communications.EndpointProfile with EndpointType[EndpointProfile] {
   init(_name, _protocolName, _configFileName)
@@ -187,13 +185,12 @@ class Interface(
 }
 
 class CommunicationsModel extends communications.CommunicationsModel {
-  def add(e: Interface) = { getInterface.add(e); this }
-  def add(e: Endpoint) = { getEndpoint.add(e); this }
-  def set(p: Profiles) = { setProfiles(p); this }
+  def add(e: Interface) = { getProfilesOrInterfaceOrEndpoint.add(e); this }
+  def add(e: Endpoint) = { getProfilesOrInterfaceOrEndpoint.add(e); this }
+  def set(p: Profiles) = { getProfilesOrInterfaceOrEndpoint.add(p); this }
+
   def reset: Unit = {
-    setProfiles(new Profiles)
-    getInterface.clear
-    getEndpoint.clear
+    getProfilesOrInterfaceOrEndpoint.clear
   }
 }
 

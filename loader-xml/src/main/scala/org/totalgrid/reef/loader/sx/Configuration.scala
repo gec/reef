@@ -82,7 +82,7 @@ class ActionModel extends configuration.ActionModel {
 
   def addNominal(name: String): ActionModel = {
     val set = new ActionSet(name)
-    set.getRising.getMessage.add(new Message("Scada.OutOfNominal"))
+    set.getRising.setMessage(new Message("Scada.OutOfNominal"))
     set.getHigh.setSetAbnormal(new Object)
     getActionSet.add(set)
     this

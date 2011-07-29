@@ -225,7 +225,8 @@ object ProtoUtils {
     if (!actions.isMoreActions)
       trigger.setStopProcessingWhen(aType)
 
-    actions.getMessage.toList.foreach(m => trigger.addActions(toActionMessage(name, aType, m)))
+    if (actions.isSetMessage)
+      trigger.addActions(toActionMessage(name, aType, actions.getMessage))
 
     if (actions.isSetStripValue)
       trigger.addActions(toActionStripValue(name, aType))

@@ -21,8 +21,16 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 
 object MixedClassListHelpers {
-  def withClass[T](list: List[Any], clazz: Class[T]): List[T] = {
+  def withClass[T <: AnyRef](list: List[Any], clazz: Class[T]): List[T] = {
     list.filter { clazz.isInstance(_) }.map { _.asInstanceOf[T] }
+  }
+
+  def one[T <: AnyRef](list: List[Any], clazz: Class[T]): Option[T] = {
+    withClass(list, clazz) match {
+      case List(one) => Some(one)
+      case Nil => None
+      case _ => throw new LoadingException("More than one " + clazz.getSimpleName + " defined, should be 0 or 1")
+    }
   }
 }
 import MixedClassListHelpers._
@@ -54,6 +62,14 @@ object EnhancedEquipmentElements {
     def getTransform = withClass(parts, classOf[Transform])
     def getSetpoint = withClass(parts, classOf[Setpoint])
   }
+
+  class EnhancedProfiles(pt: Profiles) {
+
+    lazy val parts = pt.getPointProfileOrEquipmentProfile.toList
+
+    def getPointProfile = withClass(parts, classOf[PointProfile])
+    def getEquipmentProfile = withClass(parts, classOf[EquipmentProfile])
+  }
 }
 
 object EnhancedCommunicationElements {
@@ -81,14 +97,74 @@ object EnhancedCommunicationElements {
     def getEquipmentProfile = withClass(parts, classOf[EquipmentProfile])
     def getEndpointProfile = withClass(parts, classOf[EndpointProfile])
   }
+
+  class EnhancedEndpointType(e: EndpointType) {
+    lazy val parts = e.getProtocolOrInterfaceOrEndpointProfile.toList
+
+    def getEndpointProfile = withClass(parts, classOf[EndpointProfile])
+    def getEquipment = withClass(parts, classOf[Equipment])
+    def getConfigFile = withClass(parts, classOf[common.ConfigFile])
+
+    def isSetProtocol = withClass(parts, classOf[Protocol]).size > 0
+    def getProtocol = one(parts, classOf[Protocol])
+
+    def isSetInterface = withClass(parts, classOf[Interface]).size > 0
+    def getInterface = one(parts, classOf[Interface])
+  }
+
+  class EnhancedCommunicationsModel(cm: CommunicationsModel) {
+    lazy val parts = cm.getProfilesOrInterfaceOrEndpoint.toList
+
+    def getProfiles = withClass(parts, classOf[Profiles])
+    def getEndpoint = withClass(parts, classOf[Endpoint])
+    def getInterface = withClass(parts, classOf[Interface])
+
+    //    def getInterface = withClass(parts, classOf[Interface]) match{
+    //      case List(one) => Some(one)
+    //      case Nil => None
+    //      case _ => throw new LoadingException("More than one interface defined, should be 0 or 1")
+    //    }
+  }
+
+  //  class EnhancedPointProfile(pt: PointProfile) {
+  //
+  //    lazy val parts = pt.get.toList
+  //
+  //    def getPointProfile = withClass(parts, classOf[PointProfile])
+  //    def getControlProfile = withClass(parts, classOf[ControlProfile])
+  //    def getEquipmentProfile = withClass(parts, classOf[EquipmentProfile])
+  //    def getEndpointProfile = withClass(parts, classOf[EndpointProfile])
+  //  }
+
+  class EnhancedControlType(c: ControlType) {
+    lazy val parts = c.getControlProfileOrOptionsDnp3.toList
+
+    def getControlProfile = withClass(parts, classOf[ControlProfile])
+
+    def isSetOptionsDnp3 = withClass(parts, classOf[OptionsDnp3]).size > 0
+    def getOptionsDnp3 = one(parts, classOf[OptionsDnp3])
+  }
+
+  class EnhancedProtocol(c: Protocol) {
+    lazy val parts = c.getSimOptionsOrConfigFile.toList
+
+    def getConfigFile = withClass(parts, classOf[common.ConfigFile])
+
+    def isSetSimOptions = withClass(parts, classOf[SimOptions]).size > 0
+    def getSimOptions = one(parts, classOf[SimOptions])
+  }
 }
 
 object EnhancedXmlClasses {
-  implicit def enhanceEquipment(et: equipment.EquipmentType) = new EnhancedEquipmentElements.EnhancedEquipment(et)
-
-  implicit def enhancePointType(et: equipment.PointType) = new EnhancedEquipmentElements.EnhancedPointType(et)
+  implicit def enhanceEquEquipment(et: equipment.EquipmentType) = new EnhancedEquipmentElements.EnhancedEquipment(et)
+  implicit def enhanceEquPointType(et: equipment.PointType) = new EnhancedEquipmentElements.EnhancedPointType(et)
+  implicit def enhanceEquProfiles(et: equipment.Profiles) = new EnhancedEquipmentElements.EnhancedProfiles(et)
 
   implicit def enhanceCommsEquipment(et: communications.EquipmentType) = new EnhancedCommunicationElements.EnhancedEquipment(et)
-
   implicit def enhanceCommsProfiles(et: communications.Profiles) = new EnhancedCommunicationElements.EnhancedProfiles(et)
+  implicit def enhanceCommsEndpointType(et: communications.EndpointType) = new EnhancedCommunicationElements.EnhancedEndpointType(et)
+  implicit def enhanceCommsCommunicationModel(et: communications.CommunicationsModel) = new EnhancedCommunicationElements.EnhancedCommunicationsModel(et)
+  implicit def enhanceCommsControlType(et: communications.ControlType) = new EnhancedCommunicationElements.EnhancedControlType(et)
+  implicit def enhanceCommsProtocol(et: communications.Protocol) = new EnhancedCommunicationElements.EnhancedProtocol(et)
+  //  implicit def enhanceCommsPointProfile(et: communications.PointProfile) = new EnhancedCommunicationElements.EnhancedPointProfile(et)
 }

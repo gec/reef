@@ -123,8 +123,8 @@ class Equipment(_name: String) extends equipment.Equipment with EquipmentType[Eq
 }
 
 class Profiles extends equipment.Profiles {
-  def add(p: PointProfile) = { getPointProfile.add(p); this }
-  def add(p: EquipmentProfile) = { getEquipmentProfile.add(p); this }
+  def add(p: PointProfile) = { getPointProfileOrEquipmentProfile.add(p); this }
+  def add(p: EquipmentProfile) = { getPointProfileOrEquipmentProfile.add(p); this }
 }
 class EquipmentModel extends equipment.EquipmentModel {
   def add(e: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipment.add(e); this }
