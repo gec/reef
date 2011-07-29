@@ -96,16 +96,16 @@ case class EntityAttribute(
    * case class equals has some sort of odd issue that sometimes fails:
    * http://stackoverflow.com/questions/6860163/scala-case-class-equals-implementation
    */
-  override def equals(other : Any) : Boolean = {
-    other match{
-      case x : EntityAttribute =>
+  override def equals(other: Any): Boolean = {
+    other match {
+      case x: EntityAttribute =>
         this.attrName == x.attrName &&
-        this.entityId == x.entityId &&
-        this.stringVal == x.stringVal &&
-        this.boolVal == x.boolVal &&
-        this.longVal == x.longVal &&
-        this.doubleVal == x.doubleVal &&
-        this.byteVal == x.byteVal
+          this.entityId == x.entityId &&
+          this.stringVal == x.stringVal &&
+          this.boolVal == x.boolVal &&
+          this.longVal == x.longVal &&
+          this.doubleVal == x.doubleVal &&
+          this.byteVal == x.byteVal
       case _ => false
     }
   }

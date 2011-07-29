@@ -51,7 +51,7 @@ trait RunTestsInsideTransaction extends FunSuite with BeforeAndAfterEach {
     tracker: Tracker): Unit = {
 
     // transaction will always be rolledback
-    neverCompletingTransaction{
+    neverCompletingTransaction {
       beforeEachInTransaction()
       super.runTest(testName, reporter, stopper, configMap, tracker)
       afterEachInTransaction()
