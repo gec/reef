@@ -34,12 +34,12 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   val client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
 
   test("samples/integration") {
-    LoadManager.loadFile(client, samplesPath + "integration/config.xml", false, false, false, true)
+    LoadManager.loadFile(client, samplesPath + "integration/config.xml", false, false, false, true) should equal(true)
   }
   test("samples/demo") {
-    LoadManager.loadFile(client, samplesPath + "demo/configuration.demo.xml", false, false, false, true)
+    LoadManager.loadFile(client, samplesPath + "demo/configuration.demo.xml", false, false, false, true) should equal(true)
   }
   test("samples/two_substations") {
-    LoadManager.loadFile(client, samplesPath + "two_substations/config.xml", false, false, false, true)
+    LoadManager.loadFile(client, samplesPath + "two_substations/config.xml", false, false, false, true) should equal(true)
   }
 }

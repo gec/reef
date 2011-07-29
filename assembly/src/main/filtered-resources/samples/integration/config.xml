@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!--
-  profile and statusProfile
--->
 <configuration version="1.0"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               targetNamespace="configuration.loader.reef"
                xmlns="configuration.loader.reef.totalgrid.org"
                xmlns:eq="equipment.loader.reef.totalgrid.org"
                xmlns:cm="communications.loader.reef.totalgrid.org"
-               xsi:noNamespaceSchemaLocation="configuration.xsd">
+               xmlns:common="common.loader.reef.totalgrid.org">
 
 
     <actionModel>
 
         <actionSet name="Nominal">
-            <rising>
+            
+        <rising>
                 <message name="Scada.OutOfNominal"/>
             </rising>
             <high>

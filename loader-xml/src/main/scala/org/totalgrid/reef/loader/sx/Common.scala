@@ -20,6 +20,6 @@ package org.totalgrid.reef.loader.sx
 
 import org.totalgrid.reef.loader.common
 
-class ConfigFile(_name: String) extends common.ConfigFile {
-  setName(_name)
+class ConfigFile(_fileName: String) extends common.ConfigFile {
+  setFileName(_fileName)
 }

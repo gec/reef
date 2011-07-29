@@ -26,6 +26,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import java.io.File
 
 @RunWith(classOf[JUnitRunner])
 class CommonsLoaderTest extends FunSuite with ShouldMatchers {
@@ -58,7 +59,7 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     //cf.isSetValue should equal(false) // BUG in JAXB equals true always
     cf.getValue.trim.size should equal(0)
 
-    val cfProto = ProtoUtils.toConfigFile(cf)
+    val cfProto = ProtoUtils.toConfigFile(cf, new File("."))
 
     cfProto.getFile.toStringUtf8 should include("</project>")
     cfProto.getName should equal("test.xml")
@@ -72,7 +73,7 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     """
     val cf = getConfigFile(testSnip)
 
-    val cfProto = ProtoUtils.toConfigFile(cf)
+    val cfProto = ProtoUtils.toConfigFile(cf, new File("."))
 
     cfProto.getFile.toStringUtf8 should include("</project>")
     cfProto.getName should equal("pom.xml")
@@ -94,7 +95,7 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     cf.getName should equal("test.xml")
     cf.getValue.trim.size should (be > (0))
 
-    val cfProto = ProtoUtils.toConfigFile(cf)
+    val cfProto = ProtoUtils.toConfigFile(cf, new File("."))
 
     cfProto.getFile.toStringUtf8 should include("ns2:Master")
   }

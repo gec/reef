@@ -406,7 +406,7 @@ object ProtoUtils {
     proto.build
   }
 
-  def toConfigFile(cf: ConfigFile): ConfigFileProto = {
+  def toConfigFile(cf: ConfigFile, rootDir: File): ConfigFileProto = {
 
     if (!cf.isSetName && !cf.isSetFileName) throw new LoadingException("Need to set either fileName or name for configFile.")
 
@@ -417,16 +417,25 @@ object ProtoUtils {
 
     if (hasFilename && hasCData) throw new LoadingException("Cannot have both filename and inline-data for configFile: " + name)
 
-    if (!hasFilename && !hasCData) throw new LoadingException("ConfigFile must specify either fileName include inline-data: " + name)
+    if (!hasFilename && !hasCData) throw new LoadingException("ConfigFile must specify either fileName or include inline-data: " + name)
 
-    if (!cf.isSetMimeType) throw new LoadingException("Must specify mime-type for configfile: " + name)
+    val mimeType = if (!cf.isSetMimeType) {
+
+      name match {
+        case s: String if (s.endsWith(".xml")) => "text/xml"
+        case _ => throw new LoadingException("Cannot guess mimeType for configfile, must be explictly included: " + name)
+      }
+
+    } else {
+      cf.getMimeType
+    }
 
     val proto = ConfigFileProto.newBuilder
       .setName(name)
-      .setMimeType(cf.getMimeType)
+      .setMimeType(mimeType)
 
     val bytes = if (hasFilename) {
-      val file = new File(cf.getFileName)
+      val file = new File(rootDir, cf.getFileName)
       if (!file.exists()) throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " doesn't exist.")
       scala.io.Source.fromFile(file).mkString.getBytes
     } else {

@@ -27,6 +27,8 @@ import org.totalgrid.reef.util.Logging
 import java.io.File
 import org.totalgrid.reef.proto._
 
+import EnhancedXmlClasses._
+
 object CommunicationsLoader {
   val MAPPING_STATUS = Mapping.DataType.valueOf("BINARY")
   val MAPPING_ANALOG = Mapping.DataType.valueOf("ANALOG")
@@ -72,7 +74,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     logger.info("Start")
     // Collect all the profiles in name->profile maps.
-    val profiles = model.getProfiles
+    val profiles: Profiles = model.getProfiles
     if (profiles != null) {
       profiles.getControlProfile.toList.foreach(controlProfile => controlProfiles += (controlProfile.getName -> controlProfile))
       profiles.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
@@ -274,7 +276,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def processConfigFiles(protocol: Protocol, path: File): List[Model.ConfigFile.Builder] = {
     var cfs = List.empty[Model.ConfigFile.Builder]
     ex.collect("Loading config files for endpoint: ") {
-      val configs = protocol.getConfigFile.toList.map(c => ProtoUtils.toConfigFile(c))
+      val configs = protocol.getConfigFile.toList.map(c => ProtoUtils.toConfigFile(c, path))
       configs.foreach(cf => client.putOrThrow(cf))
       cfs = configs.map(_.toBuilder)
     }

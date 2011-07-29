@@ -647,13 +647,13 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:sequence>
+            <xs:all>
                 <xs:element ref="high" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="low" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="rising" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="falling" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="transition" minOccurs="0" maxOccurs="1"/>
-            </xs:sequence>
+            </xs:all>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="priority" type="xs:unsignedShort"/>
         </xs:complexType>

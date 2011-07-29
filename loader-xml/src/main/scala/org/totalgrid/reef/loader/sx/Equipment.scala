@@ -82,17 +82,17 @@ trait PointType[A] { self: equipment.PointType =>
     if (_pointProfile.length > 0)
       setPointProfile(_pointProfile)
   }
-  def add(x: Range): A = { getRange.add(x); this.asInstanceOf[A] }
-  def add(x: Control): A = { getControl.add(x); this.asInstanceOf[A] }
-  def add(x: Unexpected): A = { getUnexpected.add(x); this.asInstanceOf[A] }
-  def add(x: Transform): A = { getTransform.add(x); this.asInstanceOf[A] }
+  def add(x: Range): A = { getTransformOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Control): A = { getTransformOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Unexpected): A = { getTransformOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Transform): A = { getTransformOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
 }
 class PointProfile(_name: String) extends equipment.PointProfile {
   setName(_name)
-  def add(x: Range) = { getRange.add(x); this }
-  def add(x: Control) = { getControl.add(x); this }
-  def add(x: Unexpected) = { getUnexpected.add(x); this }
-  def add(x: Transform) = { getTransform.add(x); this }
+  def add(x: Range) = { getTransformOrControlOrSetpoint.add(x); this }
+  def add(x: Control) = { getTransformOrControlOrSetpoint.add(x); this }
+  def add(x: Unexpected) = { getTransformOrControlOrSetpoint.add(x); this }
+  def add(x: Transform) = { getTransformOrControlOrSetpoint.add(x); this }
 }
 class Status(_name: String, _unit: String = "", _pointProfile: Option[PointProfile] = None) extends equipment.Status with PointType[Status] {
   init(_name, _unit, if (_pointProfile.isDefined) _pointProfile.get.getName else "")
@@ -105,13 +105,13 @@ class Counter(_name: String, _unit: String = "", _pointProfile: String = "") ext
 }
 
 trait EquipmentType[A] { self: equipment.EquipmentType =>
-  def add(x: org.totalgrid.reef.loader.equipment.EquipmentProfile) = { getEquipmentProfile.add(x); this.asInstanceOf[A] }
-  def add(x: org.totalgrid.reef.loader.equipment.Type) = { getType.add(x); this.asInstanceOf[A] }
-  def add(x: org.totalgrid.reef.loader.equipment.Control) = { getControl.add(x); this.asInstanceOf[A] }
-  def add(x: org.totalgrid.reef.loader.equipment.Status) = { getStatus.add(x); this.asInstanceOf[A] }
-  def add(x: org.totalgrid.reef.loader.equipment.Analog) = { getAnalog.add(x); this.asInstanceOf[A] }
-  def add(x: org.totalgrid.reef.loader.equipment.Counter) = { getCounter.add(x); this.asInstanceOf[A] }
-  def add(x: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipment.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.EquipmentProfile) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Type) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Control) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Status) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Analog) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Counter) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
 }
 
 class EquipmentProfile(_name: String) extends equipment.EquipmentProfile with EquipmentType[EquipmentProfile] {

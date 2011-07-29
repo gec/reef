@@ -434,17 +434,17 @@
     <!-- ___________________ Point Types ___________________ -->
     <!-- Meta data for point types that have values (i.e. not controls) -->
     <xs:complexType name="PointType" abstract="true">
-        <xs:sequence>
-            <xs:element ref="transform" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="range" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="unexpected" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="transform"/>
+            <xs:element ref="control"/>
+            <xs:element ref="setpoint"/>
+            <xs:element ref="range"/>
+            <xs:element ref="unexpected"/>
+            <xs:element ref="type"/>
+        </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="displayName" type="xs:string"/>
-        <xs:attribute name="unit" type="xs:string" use="required"/>
+        <xs:attribute name="unit" type="xs:string" />
         <xs:attribute name="pointProfile" type="xs:string"/>
     </xs:complexType>
     <xs:element name="pointProfile">
@@ -557,17 +557,17 @@
       Multiple equipmentProfile elements can be specified.
     -->
     <xs:complexType name="EquipmentType" abstract="true">
-        <xs:sequence>
-            <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="type" minOccurs="0" maxOccurs="100"/>
-            <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="common:configFile" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="equipmentProfile"/>
+            <xs:element ref="type"/>
+            <xs:element ref="control"/>
+            <xs:element ref="setpoint"/>
+            <xs:element ref="status"/>
+            <xs:element ref="analog"/>
+            <xs:element ref="counter"/>
+            <xs:element ref="equipment"/>
+            <xs:element ref="common:configFile"/>
+        </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
     <xs:element name="equipmentProfile">

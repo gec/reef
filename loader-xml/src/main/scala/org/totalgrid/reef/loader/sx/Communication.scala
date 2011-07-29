@@ -124,19 +124,19 @@ class Counter(_name: String, _index: Option[Int], _unit: Option[String], _pointP
 }
 
 class Profiles extends communications.Profiles {
-  def add(p: ControlProfile) = { getControlProfile.add(p); this }
-  def add(p: PointProfile) = { getPointProfile.add(p); this }
-  def add(p: EndpointProfile) = { getEndpointProfile.add(p); this }
-  def add(p: EquipmentProfile) = { getEquipmentProfile.add(p); this }
+  def add(p: ControlProfile) = { getControlProfileOrPointProfileOrEndpointProfile.add(p); this }
+  def add(p: PointProfile) = { getControlProfileOrPointProfileOrEndpointProfile.add(p); this }
+  def add(p: EndpointProfile) = { getControlProfileOrPointProfileOrEndpointProfile.add(p); this }
+  def add(p: EquipmentProfile) = { getControlProfileOrPointProfileOrEndpointProfile.add(p); this }
 }
 
 trait EquipmentType[A] { self: communications.EquipmentType =>
-  def add(x: EquipmentProfile) = { getEquipmentProfile.add(x); this.asInstanceOf[A] }
-  def add(x: Control) = { getControl.add(x); this.asInstanceOf[A] }
-  def add(x: Status) = { getStatus.add(x); this.asInstanceOf[A] }
-  def add(x: Analog) = { getAnalog.add(x); this.asInstanceOf[A] }
-  def add(x: Counter) = { getCounter.add(x); this.asInstanceOf[A] }
-  def add(x: Equipment) = { getEquipment.add(x); this.asInstanceOf[A] }
+  def add(x: EquipmentProfile) = { getEquipmentProfileOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Control) = { getEquipmentProfileOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Status) = { getEquipmentProfileOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Analog) = { getEquipmentProfileOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Counter) = { getEquipmentProfileOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
+  def add(x: Equipment) = { getEquipmentProfileOrControlOrSetpoint.add(x); this.asInstanceOf[A] }
 }
 
 class EquipmentProfile(_name: String) extends communications.EquipmentProfile with EquipmentType[EquipmentProfile] {

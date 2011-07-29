@@ -171,6 +171,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
     loader.load(model, path, equipmentPointUnits, true) // T: benchmark
     val protos = client.getPutQueue.clone
+    println(protos)
     //println( "no profiles protos.length = "+protos.length); protos.foreach( protoPrintln); println(" \n ");
     protos.length should equal(3)
 

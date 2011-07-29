@@ -57,5 +57,5 @@ class LoadingExceptionCollector extends ExceptionCollector {
   def getErrors: List[String] = errors.map { _._1 }
 
   def addError(name: String, ex: Exception) =
-    errors ::= (name + " - " + ex.getMessage, ex)
+    errors = errors ::: ((name + " - " + ex.getMessage, ex) :: Nil)
 }

@@ -27,6 +27,8 @@ import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command => CommandPr
 import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 import org.totalgrid.reef.loader.equipment._
 
+import org.totalgrid.reef.loader.EnhancedXmlClasses._
+
 /**
  * EquipmentLoader loads the logical model.
  *

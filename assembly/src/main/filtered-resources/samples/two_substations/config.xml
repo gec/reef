@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!--
-  profile and statusProfile
--->
-<configuration version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="configuration.loader.reef" xmlns="configuration.loader.reef.totalgrid.org" xmlns:eq="equipment.loader.reef.totalgrid.org" xmlns:cm="communications.loader.reef.totalgrid.org" xsi:noNamespaceSchemaLocation="configuration.xsd">
+<configuration version="1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="configuration.loader.reef.totalgrid.org"
+               xmlns:eq="equipment.loader.reef.totalgrid.org"
+               xmlns:cm="communications.loader.reef.totalgrid.org"
+               xmlns:common="common.loader.reef.totalgrid.org">
+
   <messageModel>
     <messageSet name="System" severity="8" type="LOG">
       <message name="UserLogin" type="EVENT">User login {status} {reason}</message>
@@ -209,9 +212,9 @@
     <cm:interface name="351-2_IP" ip="192.168.100.30" netmask="255.255.255.0" port="8004" network="any" />
     <!--start ioBrick configuration-->
     <cm:endpoint name="Stn_C212">
-      <cm:type name="Endpoint" />
+
       <cm:protocol name="dnp3">
-        <cm:configFile name="comms/io_brick_endpoint.xml" />
+        <common:configFile fileName="comms/io_brick_endpoint.xml" />
       </cm:protocol>
       <cm:interface name="C212_IP" />
       <cm:equipment name="Apex">
@@ -236,9 +239,8 @@
     <!--end ioBrick configuration-->
     <!--start NIM configuration-->
     <cm:endpoint name="Nim">
-      <cm:type>Endpoint</cm:type>
       <cm:protocol name="dnp3">
-        <cm:configFile name="comms/tasnet_nim_endpoint.xml" />
+        <common:configFile fileName="comms/tasnet_nim_endpoint.xml" />
       </cm:protocol>
       <cm:interface name="Nim_IP" />
       <cm:equipment name="Apex">
@@ -259,9 +261,8 @@
     <!--end NIM configuration-->
     <!--start SEL351-1 configuration-->
     <cm:endpoint name="SEL351-1">
-      <cm:type>Endpoint</cm:type>
       <cm:protocol name="dnp3">
-        <cm:configFile name="comms/sel_351_endpoint1.xml" />
+        <common:configFile fileName="comms/sel_351_endpoint1.xml" />
       </cm:protocol>
       <cm:interface name="351-1_IP" />
       <cm:equipment name="Apex">
@@ -297,9 +298,8 @@
     <!--end SEL351-1 configuration-->
     <!--start SEL351-2 configuration-->
     <cm:endpoint name="SEL351-2">
-      <cm:type>Endpoint</cm:type>
       <cm:protocol name="dnp3">
-        <cm:configFile name="comms/sel_351_endpoint2.xml" />
+        <common:configFile fileName="comms/sel_351_endpoint2.xml" />
       </cm:protocol>
       <cm:interface name="351-2_IP" />
       <cm:equipment name="Apex">
@@ -331,7 +331,6 @@
     <!--end SEL351-1 configuration-->
     <!-- Simulated Data-->
     <cm:endpoint name="Simulated">
-      <cm:type>Endpoint</cm:type>
       <cm:protocol name="benchmark">
         <cm:simOptions delay="10000" />
       </cm:protocol>
