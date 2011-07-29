@@ -123,7 +123,8 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
 
   test("Bad Credentials fails fast") {
     val default = BrokerConnectionInfo.loadInfo("test")
-    val badPassword = BrokerConnectionInfo(default.host, default.port, default.user, "asdjaiosduuasdasd", default.virtualHost)
+    val badPassword = new BrokerConnectionInfo(default.host, default.port, 
+      default.user, "asdjaiosduuasdasd", default.virtualHost)
 
     val broker = new QpidBrokerConnection(badPassword)
     broker.connect() should equal(false)
