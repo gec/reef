@@ -272,11 +272,13 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   }
 
   def processConfigFiles(protocol: Protocol, path: File): List[Model.ConfigFile.Builder] = {
-    val cfs = protocol.getConfigFile.toList.map(c => {
-      ProtoUtils.toConfigFile(new File(path, c.getName), c.getName, ex)
-    })
-    cfs.foreach(cf => client.putOrThrow(cf))
-    cfs.map(_.toBuilder)
+    var cfs = List.empty[Model.ConfigFile.Builder]
+    ex.collect("Loading config files for endpoint: ") {
+      val configs = protocol.getConfigFile.toList.map(c => ProtoUtils.toConfigFile(c))
+      configs.foreach(cf => client.putOrThrow(cf))
+      cfs = configs.map(_.toBuilder)
+    }
+    cfs
   }
 
   /**

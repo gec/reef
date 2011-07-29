@@ -27,6 +27,8 @@ import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
 import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, ConfigFile => ConfigFileProto }
 import java.io.File
+import org.totalgrid.reef.loader.common.ConfigFile
+import com.google.protobuf.ByteString
 
 /**
  * Utility methods to crate protos
@@ -404,22 +406,33 @@ object ProtoUtils {
     proto.build
   }
 
-  /**
-   * Create a ConfigFile proto.
-   */
-  def toConfigFile(file: File, configFileName: String, ex: ExceptionCollector): ConfigFileProto = {
-    val proto = ConfigFileProto.newBuilder
-      .setName(configFileName)
-      .setMimeType("text/xml")
+  def toConfigFile(cf: ConfigFile): ConfigFileProto = {
 
-    ex.collect("Config Files:") {
-      try {
-        proto.setFile(com.google.protobuf.ByteString.copyFrom(scala.io.Source.fromFile(file).mkString.getBytes))
-      } catch {
-        case f: Exception =>
-          throw new LoadingException("Error loading config file: " + file + " Message: " + f.getMessage)
-      }
+    if (!cf.isSetName && !cf.isSetFileName) throw new LoadingException("Need to set either fileName or name for configFile.")
+
+    val name = if (cf.isSetName) cf.getName else cf.getFileName
+
+    val hasCData = cf.isSetValue && cf.getValue.size > 0
+    val hasFilename = cf.isSetFileName
+
+    if (hasFilename && hasCData) throw new LoadingException("Cannot have both filename and inline-data for configFile: " + name)
+
+    if (!hasFilename && !hasCData) throw new LoadingException("ConfigFile must specify either fileName include inline-data: " + name)
+
+    if (!cf.isSetMimeType) throw new LoadingException("Must specify mime-type for configfile: " + name)
+
+    val proto = ConfigFileProto.newBuilder
+      .setName(name)
+      .setMimeType(cf.getMimeType)
+
+    val bytes = if (hasFilename) {
+      val file = new File(cf.getFileName)
+      if (!file.exists()) throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " doesn't exist.")
+      scala.io.Source.fromFile(file).mkString.getBytes
+    } else {
+      cf.getValue.getBytes
     }
+    proto.setFile(ByteString.copyFrom(bytes))
     proto.build
   }
 }

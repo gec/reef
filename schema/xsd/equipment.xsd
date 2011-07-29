@@ -3,9 +3,13 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="equipment.loader.reef.totalgrid.org"
            xmlns="equipment.loader.reef.totalgrid.org"
+           xmlns:common="common.loader.reef.totalgrid.org"
            elementFormDefault="qualified"
            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
            jaxb:version="1.0">
+           
+    <xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
+    
     <xs:annotation>
         <xs:documentation>
             <blockquote>
@@ -562,6 +566,7 @@
             <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="common:configFile" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

@@ -27,6 +27,7 @@ import org.totalgrid.reef.sapi.client.RestOperations
 import org.totalgrid.reef.util.{ Logging, XMLHelper }
 import java.io.File
 import org.totalgrid.reef.loader.helpers.{ CachingModelLoader, SymbolResponseProgressRenderer }
+import org.totalgrid.reef.loader.common.ConfigFile
 
 object LoadManager extends Logging {
 
@@ -102,7 +103,10 @@ object LoadManager extends Logging {
 
       configurationFile.foreach {
         case (thisFile, fileName) =>
-          client.putOrThrow(ProtoUtils.toConfigFile(thisFile, fileName, ex))
+          val cf = new ConfigFile()
+          cf.setMimeType("text/xml")
+          cf.setFileName(fileName)
+          client.putOrThrow(ProtoUtils.toConfigFile(cf))
       }
 
     } catch {

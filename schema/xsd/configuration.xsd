@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="configuration.loader.reef.totalgrid.org"
-           xmlns:equ="equipment.loader.reef.totalgrid.org" xmlns:com="communications.loader.reef.totalgrid.org"
-           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" targetNamespace="configuration.loader.reef.totalgrid.org"
+           xmlns:equ="equipment.loader.reef.totalgrid.org"
+           xmlns:com="communications.loader.reef.totalgrid.org"
+           xmlns:common="common.loader.reef.totalgrid.org"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           targetNamespace="configuration.loader.reef.totalgrid.org"
            elementFormDefault="unqualified" jaxb:version="1.0">
     <xs:import namespace="equipment.loader.reef.totalgrid.org" schemaLocation="equipment.xsd"/>
     <xs:import namespace="communications.loader.reef.totalgrid.org" schemaLocation="communications.xsd"/>
+    <xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
 
     <!--
       Reef configuration XSD
@@ -673,6 +677,8 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    
+    
     <!-- ___________________ root element  ___________________ -->
     <xs:element name="configuration">
         <xs:annotation>
@@ -687,6 +693,7 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="common:configFiles" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="messageModel" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="actionModel" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="equ:equipmentModel" minOccurs="0" maxOccurs="1"/>

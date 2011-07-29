@@ -2,9 +2,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="communications.loader.reef.totalgrid.org"
            xmlns="communications.loader.reef.totalgrid.org"
+           xmlns:common="common.loader.reef.totalgrid.org"
            elementFormDefault="qualified"
            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
            jaxb:version="1.0">
+
+    <xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
     <xs:annotation>
         <xs:documentation>
             <blockquote>
@@ -245,95 +248,6 @@
             <xs:attribute name="name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="configFile">
-        <xs:annotation>
-            <xs:documentation>
-                <p class="elementDef">
-                    The xml file that contains the DNP3 communications configuration for a specific endpoint. This file
-                    is referenced in the
-                    <span class="elementStyle">communicationModule</span>
-                    for each endpoint. The
-                    <span class="elementStyle">configFile</span>
-                    element is a child of the protocol element. The configuration file is referenced using the name
-                    attribute. Name must reference the filename. Name can also include the path of the filename as it
-                    relates to the communications.xml directory.
-                    The following are the attributes contained in the protocol configuration file:
-                    <blockquote>
-                        <span class="elementStyle">RemoteBuffFullTimeoutMS</span>
-                        - Time in milliseconds the link will wait if the remote buffer is full.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">NumRetries</span>
-                        (Link) - The number of retry attempts the link will attempt after the initial try.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">AckTimeoutMS</span>
-                        - The response timeout in milliseconds for confirmed requests.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">Use Confirmations</span>
-                        - If true, the link layer will send data requesting confirmation.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">RemoteAddress</span>
-                        - DNP address of the remote device.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">LocalAddress</span>
-                        - DNP address of the local device.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">isMaster</span>
-                        - Configures the link layer for master or slave mode, and sets the master/slave bit on all
-                        messages accordingly. (true/false)
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">numRetries</span>
-                        (App) - The number of retry attempts the link will attempt after the initial try.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">MaxFragSize</span>
-                        - The maximum allowed size of received application layer fragments.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">TimeoutMS</span>
-                        - The application response/confirm timeout in milliseconds.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">IntegrityPeriodMS</span>
-                        - Period in milliseconds for integrity (class 0) scans.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">TaskRetryMS</span>
-                        - The time delay in milliseconds between task retries.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">AllowTimeSync</span>
-                        - When this attribute is set to “true”, the master will perform time syncs when
-                        it sees the time IIN bit from the slave.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">Unsol.ClassX</span>
-                        - Determines which data classes are enabled/disabled for unsolicited reporting on
-                        master startup.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">Unsol.Enable</span>
-                        - Enables or disables unsolicited reporting. The master only uses this attribute if the
-                        <span class="elementStyle">UnsolDoTask</span>
-                        bit equals true.
-                    </blockquote>
-                    <blockquote>
-                        <span class="elementStyle">Unsol.DoTask</span>
-                        - If true, the master will enable or disable unsolicited reporting.
-                    </blockquote>
-                </p>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-        </xs:complexType>
-    </xs:element>
     <xs:element name="protocol">
         <xs:annotation>
             <xs:documentation>
@@ -344,7 +258,7 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="configFile" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element ref="common:configFile" minOccurs="1" maxOccurs="unbounded"/>
                 <xs:element ref="simOptions" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>

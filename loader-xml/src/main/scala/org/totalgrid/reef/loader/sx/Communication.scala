@@ -18,13 +18,12 @@
  */
 package org.totalgrid.reef.loader.sx.communications
 
-import org.totalgrid.reef.loader.communications // jaxb java classes
+import org.totalgrid.reef.loader.communications
+import org.totalgrid.reef.loader.sx.ConfigFile
+
+// jaxb java classes
 
 class Type(_name: String) extends communications.Type {
-  setName(_name)
-}
-
-class ConfigFile(_name: String) extends communications.ConfigFile {
   setName(_name)
 }
 
