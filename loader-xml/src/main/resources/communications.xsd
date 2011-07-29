@@ -1,4 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="communications.loader.reef.totalgrid.org"
            xmlns="communications.loader.reef.totalgrid.org"
@@ -131,7 +151,7 @@
                     &lt;cm:scale rawLow="-50" rawHigh="50" engLow="100.0" engHigh="200.0" engUnit="Mw"/&gt;
                     &lt;/cm:pointProfile&gt;
 
-                    &lt;cm:controlProfile name="CB_cntl”&gt;
+                    &lt;cm:controlProfile name="CB_cntl?&gt;
                     &lt;cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/&gt;
                     &lt;/cm:controlProfile&gt;</p>
             </pre>
@@ -327,7 +347,7 @@
         <xs:annotation>
             <xs:documentation>
                 <p class="elementDef">Analog measurement scaling can also be assigned to a point profile using the
-                    “scale” element. Scaling can be done using either of two methods, by
+                    “scale? element. Scaling can be done using either of two methods, by
                     assigning raw and engineering values, or by assigning slope and offset values. The scale attributes
                     are the following.
                     <blockquote>
@@ -462,7 +482,7 @@
                     Defines a set of communication related attributes to a measurement. Once the profile is created, it
                     can be linked to any number of
                     measurements in the communication mapping section, all of which will share the profile’s attributes.
-                    Analog scaling is configured with the “scale” element.
+                    Analog scaling is configured with the “scale? element.
                     The following attributes can be assigned under<span class="elementStyle">pointProfile</span>.
                     <blockquote>
                         <span class="elementStyle">name</span>

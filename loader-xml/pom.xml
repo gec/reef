@@ -54,7 +54,7 @@
                             <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>../schema/xsd</schemaDirectory>
+                            <schemaDirectory>src/main/resources</schemaDirectory>
                             <schemaFiles>configuration.xsd</schemaFiles>
                             <staleFile>${project.build.directory}/generated-sources/jaxb/.ConfigurationStaleFlag
                             </staleFile>

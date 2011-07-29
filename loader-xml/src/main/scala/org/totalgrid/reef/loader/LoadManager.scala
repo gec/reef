@@ -135,54 +135,45 @@ object LoadManager extends Logging {
 
   def validateXml(filename: String) = {
 
-    //    import javax.xml.validation.SchemaFactory
-    //    import javax.xml.transform.stream.StreamSource
-    //    import org.xml.sax.{ SAXParseException, ErrorHandler, SAXException }
-    //
-    //    val sf = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
-    //
-    //    val schemaLocation = new File("schema/xsd/configuration.xsd")
-    //    if (!schemaLocation.exists()) throw new LoadingException("Cannot find schema to validate against: " + schemaLocation.getAbsolutePath)
-    //
-    //    val schema = sf.newSchema(schemaLocation)
-    //
-    //    val validator = schema.newValidator()
-    //
-    //    val source = new StreamSource(filename)
-    //
-    //    val ex = new LoadingExceptionCollector
-    //
-    //    val handler = new ErrorHandler {
-    //      def warning(exception: SAXParseException) {
-    //        ex.addError("Validation Warning: ", exception)
-    //      }
-    //
-    //      def error(exception: SAXParseException) {
-    //        ex.addError("Validation Error: ", exception)
-    //      }
-    //
-    //      def fatalError(exception: SAXParseException) {
-    //        ex.addError("Fatal Validation Error: ", exception)
-    //        throw exception
-    //      }
-    //    }
-    //
-    //    try {
-    //      validator.setErrorHandler(handler)
-    //      validator.validate(source)
-    //    } catch {
-    //      case e: SAXException =>
-    //        throw new LoadingException("error during validation: " + e.getMessage)
-    //    }
-    //
-    //    val errors = ex.getErrors
-    //
-    //    if (errors.size > 0) {
-    //      println
-    //      println("Validation errors found:")
-    //      errors.foreach(println(_))
-    //      throw new LoadingException("Fix Xml Validation errors and try again.")
-    //    }
+    import javax.xml.validation.SchemaFactory
+    import javax.xml.transform.stream.StreamSource
+    import org.xml.sax.{ SAXParseException, ErrorHandler, SAXException }
+
+    val sf = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
+
+    // load the schema definition out the jar file
+    val schemaLocation = this.getClass.getResource("/configuration.xsd")
+    val schema = sf.newSchema(schemaLocation)
+    val validator = schema.newValidator()
+
+    // load the xml file
+    val source = new StreamSource(filename)
+
+    val ex = new LoadingExceptionCollector
+    val handler = new ErrorHandler {
+      def warning(exception: SAXParseException) = ex.addError("Validation Warning", exception)
+      def error(exception: SAXParseException) = ex.addError("Validation Error", exception)
+      def fatalError(exception: SAXParseException) {
+        ex.addError("Fatal Validation Error", exception)
+        throw exception
+      }
+    }
+
+    try {
+      validator.setErrorHandler(handler)
+      validator.validate(source)
+    } catch {
+      case e: SAXException =>
+        throw new LoadingException("error during validation: " + e.getMessage)
+    }
+
+    val errors = ex.getErrors
+    if (errors.size > 0) {
+      println
+      println("Validation errors found:")
+      errors.foreach(println(_))
+      throw new LoadingException("Fix Xml Validation errors and try again.")
+    }
   }
 }
 

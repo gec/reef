@@ -1,4 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="configuration.loader.reef.totalgrid.org"
            xmlns:equ="equipment.loader.reef.totalgrid.org"
            xmlns:com="communications.loader.reef.totalgrid.org"
@@ -33,7 +53,7 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
                 <span class="elementStyle">configuration</span>
                 section of reef is where the root element for the entire configuration file is defined.
                 <span class="elementStyle">configuration</span>
-                includes the four main elements or “sections” of
+                includes the four main elements or “sections? of
                 the configuration.<span class="elementStyle">equipmentModel</span>,<span class="elementStyle">
                 messageModel</span>,<span class="elementStyle">actionModel</span>, and
                 <span class="elementStyle">communicationsModel</span>
@@ -124,7 +144,7 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
             </p>
             <pre>
                 <p class="exConfig">
-                    &lt;messageSet name="SCADA" severity="6" type="ALARM" state=”UNACK_SILENT”&gt;</p>
+                    &lt;messageSet name="SCADA" severity="6" type="ALARM" state=?UNACK_SILENT?&gt;</p>
             </pre>
             <p class="elementDef">
                 <blockquote>
@@ -171,14 +191,14 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
             </p>
             <pre>
                 <p class="exConfig">
-                    &lt;messageSet name="SCADA" severity="6" type="ALARM" state=”UNACK_SILENT”&gt;
+                    &lt;messageSet name="SCADA" severity="6" type="ALARM" state=?UNACK_SILENT?&gt;
                     &lt;message name="ControlExe"&gt;User executed control {control} on device {device}&lt;/message&gt;
                 </p>
             </pre>
             <p class="elementDef">
                 The message above is a SCADA message with a severity of 6, ALARM type, and UNACK_SILENT state. The alarm
                 message would read
-                “User executed control {control} on device {device}” The message string is also configurable. Messages
+                “User executed control {control} on device {device}? The message string is also configurable. Messages
                 can be passed arguments to make
                 the message more definitive. Arguments are designated with braces, as shown above.There are system
                 required messages that must be present
@@ -240,7 +260,7 @@ They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
                 <span class="elementStyle">actionSet</span>
                 was created called RLC, with a priority of 100. This
                 <span class="elementStyle">actionSet</span>
-                will execute the message defined as “Scada.OutOfReasonable”
+                will execute the message defined as “Scada.OutOfReasonable?
                 in the
                 <span class="elementStyle">messageModel</span>
                 section of the configuration xml. (see actionSet element documentation for more details)

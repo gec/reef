@@ -1,4 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
 <!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by Matt Homovich (Green Energy Corp) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="equipment.loader.reef.totalgrid.org"
@@ -21,7 +41,7 @@
                 section of the REEF configuration xml is the location where all of the SCADA measurements are
                 configured.
                 <span class="elementStyle">equipmentModel</span>
-                is one of the four main elements or “sections” of
+                is one of the four main elements or “sections? of
                 the overall parent
                 <span class="elementStyle">configuration</span>
                 element.<span class="elementStyle">equipmentModel</span>,<span class="elementStyle">messageModel</span>,
@@ -63,7 +83,7 @@
                 is dedicated to defining actual measurements and associating these measurements to stations and/or
                 equipment. The
                 <span class="elementStyle">equipment</span>
-                element is nested to provide the measurement “tag” in the form “equipment.equipment.point”,
+                element is nested to provide the measurement “tag? in the form “equipment.equipment.point?,
                 where point is analog/status/counter. The following is an example of defining equipment and
                 measurements:
             </p>
@@ -78,7 +98,7 @@
                     &lt;/eq:status&gt;
 
                     &lt;eq:analog name="Mw" unit="Mw"&gt;
-                    &lt;eq:range actionSet=”RLC” low=”10” high=”30”/&gt;
+                    &lt;eq:range actionSet=?RLC? low=?10? high=?30?/&gt;
                     &lt;/eq:analog&gt;
                     &lt;/eq:equipment&gt;
                     &lt;/eq:equipment&gt;
@@ -104,7 +124,7 @@
             </p>
             <pre>
                 <p class="exConfig">
-                    &lt;eq:pointProfile name=”
+                    &lt;eq:pointProfile name=?
                     <span class="nameStyle">CBStatus"&gt;</span>
                     &lt;eq:control name="Trip"/&gt;
                     &lt;eq:control name="Close"/&gt;
@@ -112,7 +132,7 @@
 
                     &lt;eq:pointProfile name="
                     <span class="nameStyle">CB_Mw&gt;</span>
-                    &lt;eq:range actionSet="RLC" low="10" high=”30”/&gt;
+                    &lt;eq:range actionSet="RLC" low="10" high=?30?/&gt;
                     &lt;/eq:pointProfile&gt;
                 </p>
             </pre>
@@ -126,8 +146,8 @@
                     &lt;eq:equipment name="ChapelHill"&gt;
                     &lt;eq:type name="Substation"/&gt;
                     &lt;eq:equipment name="CB11001"&gt;
-                    &lt;eq:status name="Bkr" unit="status" pointProfile=”<span class="nameStyle">CBStatus</span>”/&gt;
-                    &lt;eq:analog name="Mw" unit="Mw" pointProfile=”<span class="nameStyle">CB_Mw</span>”/&gt;
+                    &lt;eq:status name="Bkr" unit="status" pointProfile=?<span class="nameStyle">CBStatus</span>?/&gt;
+                    &lt;eq:analog name="Mw" unit="Mw" pointProfile=?<span class="nameStyle">CB_Mw</span>?/&gt;
                     &lt;/eq:equipment&gt;
                     &lt;/eq:equipment&gt;
                 </p>
@@ -137,7 +157,7 @@
                 equipment and measurements.
                 In this example we expand on our model by adding some additional status points, which use a
                 <span class="elementStyle">pointProfile</span>
-                named “NormallyOpen”. An additional Mvar analog was also added.
+                named “NormallyOpen?. An additional Mvar analog was also added.
             </p>
             <pre>
                 <p class="exConfig">
@@ -208,7 +228,7 @@
                 This profile can then be attached to all circuit breakers defined throughout the equipment
                 configuration.
 
-                For the previous example the measurements where individually specified under the “CB11001” equipment
+                For the previous example the measurements where individually specified under the “CB11001? equipment
                 element. To create multiple breakers with the same points as CB11001, we can use
                 the<span class="elementStyle">equipmentProfile</span>attribute as shown in the following:
             </p>
@@ -223,7 +243,7 @@
                     &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
                     &lt;/eq:equipment&gt;
                     &lt;eq:equipment name="CB11003"&gt;
-                    &lt;eq:equipmentProfile name=”<span class="nameStyle">FullBreaker</span>"/&gt;
+                    &lt;eq:equipmentProfile name=?<span class="nameStyle">FullBreaker</span>"/&gt;
                     &lt;/eq:equipment&gt;
                     &lt;eq:equipment name="CB11004"&gt;
                     &lt;eq:equipmentProfile name="<span class="nameStyle">FullBreaker</span>"/&gt;
