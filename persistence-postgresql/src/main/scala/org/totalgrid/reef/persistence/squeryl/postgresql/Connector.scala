@@ -21,12 +21,12 @@ package org.totalgrid.reef.persistence.squeryl.postgresql
 import org.squeryl.{ SessionFactory, Session }
 import org.squeryl.adapters.PostgreSqlAdapter
 
-import org.totalgrid.reef.persistence.squeryl.{ DbInfo, SlowQueryTracing, DbConnectorBase }
 import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.persistence.squeryl.{ DbConnectorBase, DbInfo, SlowQueryTracing }
 
 class Connector extends DbConnectorBase with Logging {
 
-  def _connect(dbInfo: DbInfo): Unit = {
+  protected def _connect(dbInfo: DbInfo): Unit = {
 
     if (dbInfo.dbType != "postgresql") {
       throw new IllegalArgumentException("Trying to use postgresql adapter to talk to database with type: " + dbInfo.dbType)

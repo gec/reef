@@ -1,3 +1,5 @@
+package org.totalgrid.reef.measurementstore.squeryl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.persistence.squeryl
-
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner

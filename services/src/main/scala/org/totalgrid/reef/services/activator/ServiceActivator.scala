@@ -22,39 +22,71 @@ import org.osgi.framework._
 
 import org.totalgrid.reef.sapi.service.AsyncService
 
-import org.totalgrid.reef.services.{ Services, ServiceOptions, SqlAuthzService }
-import org.totalgrid.reef.persistence.squeryl.SqlProperties
-import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.services._
+import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, Lifecycle }
+import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 
 class ServiceActivator extends BundleActivator {
 
-  var services: Option[Lifecycle] = None
+  var manager: Option[LifecycleManager] = None
 
   def start(context: BundleContext) {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
+    val mgr = new LifecycleManager
+    manager = Some(mgr)
+
     val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val amqp = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
+    val brokerConfig = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
     val options = ServiceOptions.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
 
-    val srvContext = Services.makeContext(amqp, sql, sql, options, SqlAuthzService)
+    val amqp = new AMQPProtoFactory with ReactActorExecutor {
+      val broker = new QpidBrokerConnection(brokerConfig)
+    }
 
-    // publish all of the services using the exchange as the filter
-    srvContext.services.foreach { x =>
+    mgr.add(amqp)
+
+    DbConnector.connect(sql, context)
+
+    val components = ServiceBootstrap.bootstrapComponents(amqp)
+    mgr.add(components.heartbeatActor)
+
+    val metrics = new MetricsServiceWrapper(components, options)
+
+    val measExecutor = new ReactActorExecutor {}
+    mgr.add(measExecutor)
+    val measStore = MeasurementStoreFinder.getInstance(sql, measExecutor, context)
+
+    val coordinatorExecutor = new ReactActorExecutor {}
+    mgr.add(coordinatorExecutor)
+
+    val providers = new ServiceProviders(components, measStore, options, SqlAuthzService, coordinatorExecutor)
+
+    val serviceContext = new ServiceContext(mgr, amqp, metrics)
+
+    serviceContext.addCoordinator(providers.coordinators)
+
+    val services = serviceContext.attachServices(providers.services)
+
+    services.foreach { x =>
       context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
     }
 
-    services = Some(srvContext)
-    services.get.start
+    mgr.start()
   }
 
-  def stop(context: BundleContext) = services.foreach { _.stop }
+  def stop(context: BundleContext) {
+    manager.foreach(_.stop())
+  }
 
 }
 

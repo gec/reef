@@ -20,26 +20,47 @@ package org.totalgrid.reef.measproc.activator
  */
 import org.osgi.framework._
 
-import org.totalgrid.reef.executor.{ LifecycleWrapper }
-import org.totalgrid.reef.measproc.ProcessorEntryPoint
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
+import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
+import org.totalgrid.reef.app.ApplicationEnroller
+import org.totalgrid.reef.measproc.FullProcessor
+import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, LifecycleWrapper }
 
 class ProcessingActivator extends BundleActivator {
 
-  var wrapper: Option[LifecycleWrapper] = None
+  var manager: Option[LifecycleManager] = None
 
   def start(context: BundleContext) {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val processor = ProcessorEntryPoint.makeContext(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")), SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
+    val mgr = new LifecycleManager
+    manager = Some(mgr)
 
-    wrapper = Some(new LifecycleWrapper(processor))
-    wrapper.get.start
+    val brokerInfo = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
+    val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
+
+    val amqp = new AMQPProtoFactory with ReactActorExecutor {
+      val broker = new QpidBrokerConnection(brokerInfo)
+    }
+    mgr.add(amqp)
+
+    val measExecutor = new ReactActorExecutor {}
+    val measStore = MeasurementStoreFinder.getInstance(dbInfo, measExecutor, context)
+    mgr.add(measExecutor)
+
+    val enroller = new ApplicationEnroller(amqp, None, List("Processing"), new FullProcessor(_, measStore)) with ReactActorExecutor
+    mgr.add(enroller)
+
+    mgr.start()
   }
 
-  def stop(context: BundleContext) = wrapper.foreach { _.stop }
+  def stop(context: BundleContext) {
+    manager.foreach(_.stop())
+  }
 
 }

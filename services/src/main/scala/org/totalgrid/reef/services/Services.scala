@@ -19,31 +19,15 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.util.BuildEnv.ConnInfo
-import org.totalgrid.reef.broker.BrokerConnectionInfo
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-
-import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
+import org.totalgrid.reef.executor.LifecycleManager
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 
-import org.totalgrid.reef.sapi.auth.AuthService
 
 object Services {
 
-  def makeContext(auth: AuthService): ServiceContext = makeContext(BrokerConnectionInfo.loadInfo, DbInfo.loadInfo, MeasurementStoreFinder.getConfig, ServiceOptions.loadInfo, auth)
-
-  def makeContext(bi: BrokerConnectionInfo, di: DbInfo, measInfo: ConnInfo, srvOpt: ServiceOptions, auth: AuthService): ServiceContext = {
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(bi)
-    }
-
-    DbConnector.connect(di)
-
-    new ServiceContext(amqp, measInfo, srvOpt, auth)
-  }
 
   def resetSystem(di: DbInfo, measInfo: ConnInfo) {
     DbConnector.connect(di)

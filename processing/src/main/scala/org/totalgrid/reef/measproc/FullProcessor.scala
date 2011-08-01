@@ -29,9 +29,8 @@ import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => 
 
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.app.{ ServiceHandler, CoreApplicationComponents, ServiceContext }
-import org.totalgrid.reef.util.BuildEnv.ConnInfo
 import org.totalgrid.reef.persistence.{ InMemoryObjectCache }
-import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheAdapter, MeasurementStoreFinder }
+import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreToMeasurementCacheAdapter, MeasurementStoreFinder }
 
 abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNode)
     extends ServiceContext[ConnProto] with KeyedMap[ConnProto]
@@ -62,12 +61,11 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
 /**
  *  Non-entry point meas processor setup
  */
-class FullProcessor(components: CoreApplicationComponents, measStoreConfig: ConnInfo) extends Logging with Lifecycle {
+class FullProcessor(components: CoreApplicationComponents, measStore: MeasurementStore) extends Logging with Lifecycle {
 
   var lifecycles = new LifecycleManager(List(components.heartbeatActor))
 
   // caches used to store measurements and overrides
-  val measStore = MeasurementStoreFinder.getInstance(measStoreConfig, lifecycles.add _)
   val measCache = new MeasurementStoreToMeasurementCacheAdapter(measStore)
 
   // TODO: make override caches configurable like measurement store
@@ -104,3 +102,4 @@ class FullProcessor(components: CoreApplicationComponents, measStoreConfig: Conn
     connectionHandler.start
   }
 }
+
