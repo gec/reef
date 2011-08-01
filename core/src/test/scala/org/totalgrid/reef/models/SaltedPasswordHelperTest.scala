@@ -32,7 +32,7 @@ class SaltedPasswordHelperTest extends FunSuite with ShouldMatchers {
 
   test("DigestHandling") {
 
-    100.count { i =>
+    100.foreach { i =>
       val (digest, salt) = makeDigestAndSalt(i + "password" + i)
 
       val roundTripDigest = dec64(enc64(digest))

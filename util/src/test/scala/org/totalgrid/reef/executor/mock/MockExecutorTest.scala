@@ -73,7 +73,7 @@ class MockExecutorTest extends FunSuite with ShouldMatchers {
 
     val iter = 1001
 
-    iter.count { i =>
+    iter.foreach { i =>
       if (i.isOdd) exe.repeatNext(2, 2) should equal(100)
       else exe.repeatNext(2, 2) should equal(50)
     }

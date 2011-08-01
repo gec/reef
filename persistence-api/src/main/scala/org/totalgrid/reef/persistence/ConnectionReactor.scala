@@ -43,7 +43,7 @@ import ConnectionReactor._
 /// Implements connection/reconnection behavior on a 
 trait ConnectionReactor[ConnType] extends Logging {
 
-  val reactor: Executor
+  val exe: Executor
 
   val connectOnStart: Boolean
 
@@ -68,20 +68,9 @@ trait ConnectionReactor[ConnType] extends Logging {
     onConnectionChange(connection)
   }
 
-  private def connect(delay: Long) {
-
-    if (true) {
-      reactor.execute {
-        val result = connectFun()
-        handleConnectionAttempt(result, delay)
-      }
-    } else {
-      val local = this
-      actor {
-        val result = connectFun()
-        reactor.execute { handleConnectionAttempt(result, delay) }
-      }
-    }
+  private def connect(delay: Long) = exe.execute {
+    val result = connectFun()
+    handleConnectionAttempt(result, delay)
   }
 
   private def handleConnectionAttempt(result: Option[ConnType], delayTime: Long) {
@@ -91,7 +80,7 @@ trait ConnectionReactor[ConnType] extends Logging {
         // for the connection result to be of a different type here
         setConnection(Some(c.asInstanceOf[ConnType]))
       case None =>
-        reactor.delay(delayTime) { connect(nextDelay(delayTime)) }
+        exe.delay(delayTime) { connect(nextDelay(delayTime)) }
     }
   }
 

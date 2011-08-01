@@ -49,7 +49,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     request {
       queue = queue.filter(handler == _)
       handler
-    }
+    }.apply()
   }
 
   def addConnectionListener(listener: ConnectionListener): Unit = this.synchronized {

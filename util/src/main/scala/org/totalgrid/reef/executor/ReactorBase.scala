@@ -48,8 +48,13 @@ trait ReactorBase extends Actor with Logging {
   protected val mainPartial: PartialFunction[Any, Unit] = {
     case Execute(fun) =>
       fun()
-    case Request(fun) =>
-      reply(fun())
+    case Request(calculate, set) => {
+      try {
+        set(Right(calculate()))
+      } catch {
+        case ex: Exception => set(Left(ex))
+      }
+    }
     case Link(a) =>
       link(a)
     case UnLink(a) =>
@@ -80,7 +85,7 @@ trait ReactorBase extends Actor with Logging {
         case Some(Stop) =>
         case None => logger.error("Actor deadlock detected on stop")
       }
-    } else throw new IllegalStateException("Executor not running")
+    }
   }
 
   override def start() = {

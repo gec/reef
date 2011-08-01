@@ -32,7 +32,7 @@ class RestAuthzMetrics(baseName: String = "") extends MetricsHooks {
   /// errors counted
   lazy val failHook = counterHook(baseName + "AuthFails")
   /// time of service requests
-  lazy val timerHook = timingHook[Option[Envelope.ServiceResponse]](baseName + "AuthLookup")
+  lazy val timerHook = timingHook(baseName + "AuthLookup")
 }
 
 /**
@@ -45,9 +45,7 @@ class RestAuthzWrapper[A](service: AsyncService[A], metrics: RestAuthzMetrics, a
 
   def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
     metrics.countHook(1)
-    metrics.timerHook {
-      checkAuth(req, env)
-    } match {
+    metrics.timerHook(checkAuth(req, env)) match {
       case Some(rsp) => callback.onResponse(rsp) //callback immediately with the failure
       case None => service.respond(req, env, callback) // invoke normally
     }

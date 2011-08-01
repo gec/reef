@@ -22,7 +22,7 @@ import org.totalgrid.reef.persistence.{ ObjectCache, KeyValue }
 import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.app.SubscriptionProvider
-import org.totalgrid.reef.proto.{ Measurements, Processing, FEP, Events, Model }
+import org.totalgrid.reef.proto.{ Measurements, Processing, Events, Model }
 
 import Measurements._
 import Processing._
@@ -44,20 +44,18 @@ trait ProcessingNode {
 class BasicProcessingNode(procFun: Measurement => Unit, flushCache: () => Unit)
     extends MetricsHooks with Logging {
 
-  protected lazy val measProcessingTime = timingHook[Unit]("measProcessingTime")
+  protected lazy val measProcessingTime = timingHook("measProcessingTime")
   protected lazy val measProcessed = counterHook("measProcessed")
 
-  protected lazy val batchProcessingTime = timingHook[Unit]("batchesProcessingTime")
+  protected lazy val batchProcessingTime = timingHook("batchesProcessingTime")
   protected lazy val batchProcessed = counterHook("batchesProcessed")
   protected lazy val batchSize = averageHook("batchSize")
 
   def process(b: MeasurementBatch) = {
-    batchProcessingTime {
+    batchProcessingTime[Unit] {
       ProcessingNode.debatch(b) { meas =>
-        measProcessingTime {
-          logger.debug("Processing: " + meas)
-          procFun(meas)
-        }
+        logger.debug("Processing: " + meas)
+        measProcessingTime(procFun(meas))
       }
       flushCache()
     }

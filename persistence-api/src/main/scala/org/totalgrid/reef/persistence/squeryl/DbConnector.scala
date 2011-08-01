@@ -65,8 +65,8 @@ abstract class DbConnectorBase extends Logging {
   }
 }
 
-class SimpleDbConnection(connInfo: DbInfo, reactor: Executor)(obs: Observer)
-    extends AsyncBufferReactor[Boolean](reactor, obs) {
+class SimpleDbConnection(connInfo: DbInfo, exe: Executor)(obs: Observer)
+    extends AsyncBufferReactor[Boolean](exe, obs) {
 
   override def connectFun() = DbConnector.connect(connInfo)
 }
