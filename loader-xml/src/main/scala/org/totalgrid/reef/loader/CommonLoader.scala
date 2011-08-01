@@ -102,6 +102,30 @@ class CommonLoader(client: ModelLoader, ex: ExceptionCollector, rootDir: File) {
       val configFileProtos = info.getConfigFile.map(cf => loadConfigFile(cf))
       val configFileUses = configFileProtos.map(cf => ProtoUtils.toEntityEdge(entity, ProtoUtils.toEntityType(cf.getName, "ConfigurationFile" :: Nil), "uses"))
       configFileUses.foreach(client.putOrThrow(_))
+
+      val attributeProto = toAttribute(entity, info.getAttribute)
+      attributeProto.foreach(client.putOrThrow(_))
     }
   }
+
+  def toAttribute(entity: Entity, attrElements: List[Attribute]): Option[EntityAttributes] = {
+    import org.totalgrid.reef.proto.Utils.{ Attribute => AttributeProto }
+    import org.totalgrid.reef.proto.Utils.Attribute.Type
+
+    if (attrElements.isEmpty) return None
+
+    val b = EntityAttributes.newBuilder.setEntity(entity)
+
+    attrElements.foreach { attrElement =>
+      val ab = AttributeProto.newBuilder.setName(attrElement.getName)
+      attrElement.doubleValue.foreach { v => ab.setValueDouble(v); ab.setVtype(Type.DOUBLE) }
+      attrElement.intValue.foreach { v => ab.setValueSint64(v); ab.setVtype(Type.SINT64) }
+      attrElement.booleanValue.foreach { v => ab.setValueBool(v); ab.setVtype(Type.BOOL) }
+      attrElement.stringValue.foreach { v => ab.setValueString(v); ab.setVtype(Type.STRING) }
+      b.addAttributes(ab)
+    }
+
+    Some(b.build)
+  }
+
 }

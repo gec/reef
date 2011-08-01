@@ -33,6 +33,7 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
 
   def putOrThrow(e: Entity) = { puts ::= e; autoFlush }
   def putOrThrow(e: EntityEdge) = { puts ::= e; autoFlush }
+  def putOrThrow(e: EntityAttributes) = { puts ::= e; autoFlush }
   def putOrThrow(e: Command) = { puts ::= e; autoFlush }
   def putOrThrow(e: Point) = { puts ::= e; autoFlush }
   def putOrThrow(e: EventConfig) = { puts ::= e; autoFlush }

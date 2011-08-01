@@ -54,6 +54,9 @@
                 </eq:control>
                 <eq:control name="Close">
                     <eq:type name = "bkrClose" />
+                    <common:info>
+                      <common:attribute name="display.hide" booleanValue="false" />
+                    </common:info>
                 </eq:control>
 
                 
@@ -76,6 +79,9 @@
                  <eq:analog name="Current" unit="A">
                     <eq:range actionSet="Nominal" low="10" high="20" deadband="0.5"/>
                     <eq:setpoint name="VoltageSetpoint"/>
+                    <common:info>
+                      <common:attribute name="display.hide" booleanValue="false" />
+                    </common:info>
                 </eq:analog>
             </eq:equipmentProfile>
 

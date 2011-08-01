@@ -36,7 +36,7 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   test("samples/integration") {
     val c = client
     LoadManager.loadFile(c, samplesPath + "integration/config.xml", false, false, false, true) should equal(true)
-    c.getPutQueue.size should equal(66)
+    c.getPutQueue.size should equal(72)
   }
   test("samples/demo") {
     val c = client
