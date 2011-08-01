@@ -44,12 +44,10 @@
 
             <eq:equipmentProfile name="Substation">
                 <eq:type name="Substation"/>
-                <eq:type name="EquipmentGroup"/>
             </eq:equipmentProfile>
 
             <eq:equipmentProfile name="MockBreaker">
                 <eq:type name="Breaker"/>
-                <eq:type name="Equipment"/>
 
                 <eq:control name="Trip">
                     <eq:type name = "bkrTrip" />
@@ -75,7 +73,6 @@
                 </eq:setpoint>
 
                 <eq:type name="Line"/>
-                <eq:type name="Equipment"/>
                  <eq:analog name="Current" unit="A">
                     <eq:range actionSet="Nominal" low="10" high="20" deadband="0.5"/>
                     <eq:setpoint name="VoltageSetpoint"/>
@@ -88,9 +85,18 @@
             <eq:equipmentProfile name="Substation"/>
             <eq:equipment name="Breaker01">
                 <eq:equipmentProfile name="MockBreaker"/>
+                <common:info>
+                  <common:configFile name="Notes.txt" mimeType="text/text"><![CDATA[
+                  This breaker is special.  
+                  ]]></common:configFile>
+                  <common:attribute name="display.icon" stringValue="circuit-breaker" />
+                </common:info>
             </eq:equipment>
             <eq:equipment name="Line01">
                 <eq:equipmentProfile name="MockLine"/>
+                <common:info>
+                  <common:attribute name="display.icon" stringValue="line-segment" />
+                </common:info>
             </eq:equipment>
         </eq:equipment>
 
@@ -109,7 +115,6 @@
 
     <cm:communicationsModel>
         <cm:endpoint name="SimulatedEndpoint">
-            <cm:type name="Endpoint"/>
             <cm:protocol name="benchmark">
                 <cm:simOptions delay="100"/>
             </cm:protocol>
@@ -128,7 +133,6 @@
             </cm:equipment>
         </cm:endpoint>
         <cm:endpoint name="StaticEndpoint">
-            <cm:type name="Endpoint"/>
             <cm:protocol name="benchmark">
                 <cm:simOptions delay="0"/>
             </cm:protocol>

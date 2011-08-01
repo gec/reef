@@ -82,6 +82,11 @@ object LoadManager extends Logging {
     val loadCache = new LoadCache
     val ex = new LoadingExceptionCollector
     try {
+
+      val commonLoader = new CommonLoader(client, ex, path)
+
+      if (xml.isSetConfigFiles) commonLoader.load(xml.getConfigFiles)
+
       if (xml.isSetMessageModel) {
         val messageLoader = new MessageLoader(client, ex)
         val messageModel = xml.getMessageModel
@@ -94,23 +99,24 @@ object LoadManager extends Logging {
       }
 
       if (xml.isSetEquipmentModel) {
-        val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu, ex)
+        val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu, ex, commonLoader)
         val equModel = xml.getEquipmentModel
         equipmentPointUnits = equLoader.load(equModel, actionModel)
       }
 
       if (xml.isSetCommunicationsModel) {
-        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom, ex)
+        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom, ex, commonLoader)
         val comModel = xml.getCommunicationsModel
-        comLoader.load(comModel, path, equipmentPointUnits, benchmark)
+        comLoader.load(comModel, equipmentPointUnits, benchmark)
       }
 
       configurationFile.foreach {
         case (thisFile, fileName) =>
           val cf = new ConfigFile()
           cf.setMimeType("text/xml")
-          cf.setFileName(fileName)
-          client.putOrThrow(ProtoUtils.toConfigFile(cf, new File(".")))
+          cf.setFileName(thisFile.getName)
+          cf.setName(fileName)
+          client.putOrThrow(commonLoader.loadConfigFile(cf))
       }
 
     } catch {

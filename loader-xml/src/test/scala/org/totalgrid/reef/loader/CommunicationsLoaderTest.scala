@@ -59,7 +59,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
     val ex = new NullExceptionCollector
-    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCom, ex)
+    val commonLoader = new CommonLoader(modelLoader, ex, new java.io.File(BuildEnv.configPath + samplesPath + "two_substations"))
+    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCom, ex, commonLoader)
 
     test(Fixture(client, loader, model))
   }
@@ -67,14 +68,12 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testInterfaces(fixture: Fixture) = {
     import fixture._
 
-    println("default path = " + new java.io.File(".").getAbsolutePath)
-    val path = new java.io.File(BuildEnv.configPath + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
 
     model.add(
       new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
         .set(new Interface("i1", "192.168.100.30", 8003)))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     val protos = client.getPutQueue.clone
     protos.length should equal(3)
 
@@ -84,7 +83,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(
       new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
         .set(new Interface("i1")))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     protos should equal(client.getPutQueue)
 
     reset
@@ -93,7 +92,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(
       new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
         .set(new Interface("i1", 8003)))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     protos should equal(client.getPutQueue)
 
     reset
@@ -102,14 +101,13 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(
       new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
         .set(new Interface("i1", "192.168.100.30", 8003)))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     protos should equal(client.getPutQueue)
   }
 
   def testCommunicationsPointProfiles(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -124,7 +122,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
               .set(new OptionsDnp3("PULSE_CLOSE", 1000, 1000, 1)))
             .add(new Analog("Mw", Some(3))
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     val protos = client.getPutQueue.clone
     //println( "no profiles protos.length = "+protos.length); protos.foreach( protoPrintln); println(" \n ");
     protos.length should equal(3)
@@ -145,7 +143,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
           .add(new Equipment("BigBkr")
             .add(new Control("trip", Some(1), controlProfile))
             .add(new Analog("Mw", Some(3), linePowerProfile)))))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     //val protos2 = client.getPutQueue
     //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
     protos should equal(client.getPutQueue)
@@ -154,7 +152,6 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsEndpointProfiles(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -169,7 +166,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
               .set(new OptionsDnp3("PULSE_CLOSE", 1000, 1000, 1)))
             .add(new Analog("Mw", Some(3))
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     val protos = client.getPutQueue.clone
     println(protos)
     //println( "no profiles protos.length = "+protos.length); protos.foreach( protoPrintln); println(" \n ");
@@ -193,7 +190,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(
       new Endpoint("Endpoint1")
         .add(new EndpointProfile("EndpointProfile1")))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     //val protos2 = client.getPutQueue
     //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
     protos should equal(client.getPutQueue)
@@ -216,7 +213,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
         .add(new Equipment("ChapelHill")
           .add(new Equipment("BigBkr")
             .add(new Analog("Mw", Some(3), linePowerProfile)))))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     //val protos2 = client.getPutQueue
     //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
     protos should equal(client.getPutQueue)
@@ -228,7 +225,6 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsBenchmarkWithoutIndexes(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -237,7 +233,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
         .add(new Equipment("ChapelHill")
           .add(new Equipment("BigBkr")
             .add(new Analog("Mw")))))
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     val protos = client.getPutQueue.clone
     protos.length should equal(2)
 
@@ -249,7 +245,6 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def testCommunicationsDnp3WithoutIndexes(fixture: Fixture) = {
     import fixture._
 
-    val path = new java.io.File("../" + samplesPath + "two_substations")
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
@@ -261,10 +256,10 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
             .add(new Analog("Mw")))))
 
     intercept[Exception] {
-      loader.load(model, path, equipmentPointUnits, false) // T: benchmark
+      loader.load(model, equipmentPointUnits, false) // T: benchmark
     }
 
-    loader.load(model, path, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true) // T: benchmark
     val protos = client.getPutQueue.clone
     protos.length should equal(3)
 

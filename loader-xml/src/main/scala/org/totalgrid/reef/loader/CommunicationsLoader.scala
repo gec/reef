@@ -47,7 +47,7 @@ object CommunicationsLoader {
  * TODO: Add serial interfaces
  *
  */
-class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: ExceptionCollector) extends Logging {
+class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
 
   val controlProfiles = LoaderMap[ControlProfile]("Control Profile")
   val pointProfiles = LoaderMap[PointProfile]("Point Profile")
@@ -65,13 +65,14 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     endpointProfiles.clear()
     equipmentProfiles.clear()
     interfaces.clear()
+    commonLoader.reset()
   }
 
   /**
    * Load this equipment node and all children. Create edges to connect the children.
    * path: Path prefix where config files should be.
    */
-  def load(model: CommunicationsModel, path: File, equipmentPointUnits: HashMap[String, String], benchmark: Boolean) = {
+  def load(model: CommunicationsModel, equipmentPointUnits: HashMap[String, String], benchmark: Boolean) = {
 
     logger.info("Start")
     // Collect all the profiles in name->profile maps.
@@ -95,7 +96,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     model.getEndpoint.toList.foreach(e => {
       println("Loading Communications: processing endpoint '" + e.getName + "'")
       ex.collect("Endpoint: " + e.getName) {
-        loadEndpoint(e, path, equipmentPointUnits, benchmark)
+        loadEndpoint(e, equipmentPointUnits, benchmark)
       }
     })
 
@@ -121,7 +122,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   /**
    * Load this endpoint node and all children. Create edges to connect the children.
    */
-  def loadEndpoint(endpoint: Endpoint, path: File, equipmentPointUnits: HashMap[String, String], benchmark: Boolean): Unit = {
+  def loadEndpoint(endpoint: Endpoint, equipmentPointUnits: HashMap[String, String], benchmark: Boolean): Unit = {
     import CommunicationsLoader._
 
     val endpointName = endpoint.getName
@@ -136,7 +137,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     //var (protocol, configFiles) = processProtocol(profiles, path: File, benchmark)
 
     val protocol = findProtocol(profiles)
-    var configFiles = processConfigFiles(endpoint.getConfigFile, path) ::: processConfigFiles(protocol.getConfigFile, path)
+    var configFiles = commonLoader.loadConfigFiles(protocol.getConfigFile.toList)
 
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
@@ -202,6 +203,9 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, port, controls, setpoints, points).build
     client.putOrThrow(endpointCfg)
 
+    val endpointEntity = ProtoUtils.toEntityType(endpointName, "CommunicationEndpoint" :: Nil)
+
+    endpoint.getInfo.foreach(i => commonLoader.addInfo(endpointEntity, i))
   }
 
   private def compareControls(a: Control, b: Control): Boolean = {
@@ -273,15 +277,15 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     protocol
   }
 
-  def processConfigFiles(configFiles: List[ConfigFile], path: File): List[Model.ConfigFile.Builder] = {
-    var cfs = List.empty[Model.ConfigFile.Builder]
-    ex.collect("Loading config files for endpoint: ") {
-      val configs = configFiles.toList.map(c => ProtoUtils.toConfigFile(c, path))
-      configs.foreach(cf => client.putOrThrow(cf))
-      cfs = configs.map(_.toBuilder)
-    }
-    cfs
-  }
+  //  def processConfigFiles(configFiles: List[ConfigFile], path: File): List[Model.ConfigFile.Builder] = {
+  //    var cfs = List.empty[Model.ConfigFile.Builder]
+  //    ex.collect("Loading config files for endpoint: ") {
+  //      val configs = configFiles.toList.map(c => commonLoader.toConfigFile(c))
+  //      configs.foreach(cf => client.putOrThrow(cf))
+  //      cfs = configs.map(_.toBuilder)
+  //    }
+  //    cfs
+  //  }
 
   /**
    * The endpoint may have an interface via:
@@ -396,7 +400,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     endpointName: String,
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
-    points: HashMap[String, PointType]): Model.ConfigFile.Builder = {
+    points: HashMap[String, PointType]): Model.ConfigFile = {
 
     logger.debug(endpointName + " CONTROLS:")
     val controlProtos = for ((key, value) <- controls) yield controlToCommandMap(endpointName, key, value)
@@ -411,7 +415,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     val cf = toConfigFile(endpointName, indexMap).build
     client.putOrThrow(cf)
-    cf.toBuilder
+    cf
   }
 
   /**
@@ -518,7 +522,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def toCommunicationEndpointConfig(
     name: String,
     protocol: String,
-    configFiles: List[Model.ConfigFile.Builder],
+    configFiles: List[Model.ConfigFile],
     port: Option[CommChannel.Builder],
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
@@ -666,7 +670,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType],
-    delay: Option[Int]): Model.ConfigFile.Builder = {
+    delay: Option[Int]): Model.ConfigFile = {
 
     val controlProtos = for ((key, value) <- controls) yield toCommandSim(key).build
     val setpointProtos = for ((key, value) <- setpoints) yield toCommandSim(key).build
@@ -681,7 +685,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     val cf = toConfigFile(name, simMap.build).build
     client.putOrThrow(cf)
-    cf.toBuilder
+    cf
   }
 
   def toCommandSim(name: String): SimMapping.CommandSim.Builder = {

@@ -737,7 +737,7 @@
             <xs:element ref="endpointProfile"/>
             <xs:element ref="type"/>
             <xs:element ref="equipment"/>
-            <xs:element ref="common:configFile"/>
+            <xs:element ref="common:info"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

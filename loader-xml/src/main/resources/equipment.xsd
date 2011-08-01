@@ -420,9 +420,10 @@
     <!-- ___________________ Commands ___________________ -->
 
     <xs:complexType name="command" abstract="true">
-        <xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+            <xs:element ref="common:info" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="displayName" type="xs:string"/>
     </xs:complexType>
@@ -461,6 +462,7 @@
             <xs:element ref="range"/>
             <xs:element ref="unexpected"/>
             <xs:element ref="type"/>
+            <xs:element ref="common:info"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="displayName" type="xs:string"/>
@@ -586,7 +588,7 @@
             <xs:element ref="analog"/>
             <xs:element ref="counter"/>
             <xs:element ref="equipment"/>
-            <xs:element ref="common:configFile"/>
+            <xs:element ref="common:info"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

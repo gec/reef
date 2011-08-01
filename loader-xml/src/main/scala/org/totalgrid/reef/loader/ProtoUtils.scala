@@ -22,13 +22,10 @@ import equipment._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model.{ Point, Command, Entity }
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, ConfigFile => ConfigFileProto }
-import java.io.File
-import org.totalgrid.reef.loader.common.ConfigFile
-import com.google.protobuf.ByteString
+
+import org.totalgrid.reef.proto.Model.{ EntityEdge, Point, Entity, PointType => PointTypeProto }
 
 /**
  * Utility methods to crate protos
@@ -407,42 +404,12 @@ object ProtoUtils {
     proto.build
   }
 
-  def toConfigFile(cf: ConfigFile, rootDir: File): ConfigFileProto = {
+  def toEntityEdge(parent: Entity, child: Entity, relationship: String): EntityEdge = {
+    val proto = EntityEdge.newBuilder
+      .setParent(parent)
+      .setChild(child)
+      .setRelationship(relationship)
 
-    if (!cf.isSetName && !cf.isSetFileName) throw new LoadingException("Need to set either fileName or name for configFile.")
-
-    val name = if (cf.isSetName) cf.getName else cf.getFileName
-
-    val hasCData = cf.isSetValue && cf.getValue.size > 0
-    val hasFilename = cf.isSetFileName
-
-    if (hasFilename && hasCData) throw new LoadingException("Cannot have both filename and inline-data for configFile: " + name)
-
-    if (!hasFilename && !hasCData) throw new LoadingException("ConfigFile must specify either fileName or include inline-data: " + name)
-
-    val mimeType = if (!cf.isSetMimeType) {
-
-      name match {
-        case s: String if (s.endsWith(".xml")) => "text/xml"
-        case _ => throw new LoadingException("Cannot guess mimeType for configfile, must be explictly included: " + name)
-      }
-
-    } else {
-      cf.getMimeType
-    }
-
-    val proto = ConfigFileProto.newBuilder
-      .setName(name)
-      .setMimeType(mimeType)
-
-    val bytes = if (hasFilename) {
-      val file = new File(rootDir, cf.getFileName)
-      if (!file.exists()) throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " doesn't exist.")
-      scala.io.Source.fromFile(file).mkString.getBytes
-    } else {
-      cf.getValue.getBytes
-    }
-    proto.setFile(ByteString.copyFrom(bytes))
     proto.build
   }
 }
