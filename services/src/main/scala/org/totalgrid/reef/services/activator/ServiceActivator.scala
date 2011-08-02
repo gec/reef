@@ -45,9 +45,9 @@ class ServiceActivator extends BundleActivator {
     val mgr = new LifecycleManager
     manager = Some(mgr)
 
-    val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val brokerConfig = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val options = ServiceOptions.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
+    val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
+    val brokerConfig = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val options = ServiceOptions.get(new OsgiConfigReader(context, "org.totalgrid.reef.services"))
 
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(brokerConfig)

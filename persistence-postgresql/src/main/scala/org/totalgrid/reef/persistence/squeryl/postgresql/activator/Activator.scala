@@ -30,11 +30,6 @@ class Activator extends BundleActivator {
   def start(context: BundleContext) {
     ctx = Some(context)
 
-    /*val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val postgres = new Connector
-    if (dbInfo.dbType == "postgresql") {
-      postgres.connect(dbInfo)
-    }*/
     val postgres = new Connector
     context.createService(postgres, "org.totalgrid.reef.sql.type" -> "postgresql", interface[DbConnector])
   }

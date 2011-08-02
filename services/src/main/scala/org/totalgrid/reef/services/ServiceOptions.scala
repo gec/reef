@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.{ ConfigReader, BuildEnv }
 
 object ServiceOptions {
 
-  def loadInfo(env: String): ServiceOptions = get(BuildEnv.cfgFileReader(env))
+  def loadInfo(env: String): ServiceOptions = get(BuildEnv.cfgFileReader("services", env))
 
   def loadInfo(): ServiceOptions = loadInfo(BuildEnv.environment)
 
@@ -44,19 +44,19 @@ object ServiceOptions {
 
 case class ServiceOptions(
   /// whether to instrument service requests at all
-  val metrics: Boolean,
+  metrics: Boolean,
   /// track verbs separately(false => 3 pts/service; true => 15 pts/service)
-  val metricsSplitByVerb: Boolean,
+  metricsSplitByVerb: Boolean,
   /// track services separately (true => N verbs * M service; or N verbs * 1)  
-  val metricsSplitByService: Boolean,
+  metricsSplitByService: Boolean,
 
   /// whether we are turning on "auth checking" for all services, only optional during transitory phase
   // val auth: Boolean,
 
   /// threshold for when a request took too long and should be logged
-  val slowQueryThreshold: Long,
+  slowQueryThreshold: Long,
   /// maximum # of measurements to allow in the history table
-  val maxMeasurements: Long,
+  maxMeasurements: Long,
   /// how often to clean excess measurements from history table
-  val trimPeriodMinutes: Long)
+  trimPeriodMinutes: Long)
 

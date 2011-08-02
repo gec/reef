@@ -41,8 +41,8 @@ class ProcessingActivator extends BundleActivator {
     val mgr = new LifecycleManager
     manager = Some(mgr)
 
-    val brokerInfo = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
-    val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef"))
+    val brokerInfo = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
 
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(brokerInfo)
