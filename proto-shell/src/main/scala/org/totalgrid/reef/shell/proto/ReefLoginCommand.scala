@@ -37,7 +37,7 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
   private var password: String = null
 
-  def doCommand() = {
+  def doCommand() {
 
     if (isLoggedIn) {
       System.out.println(getLoginString)
@@ -69,15 +69,8 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
   def setupReefSession(): (ClientSession, String)
 }
 
-@Command(scope = "reef", name = "login", description = "Authorizes a user with the local Reef node, asks for password interactively")
+@Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefLoginCommandBase {
-
-  def setupReefSession() = (new OsgiClientSession(getBundleContext), "local")
-
-}
-
-@Command(scope = "reef", name = "remote-login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
-class ReefRemoteLoginCommand extends ReefLoginCommandBase {
 
   def setupReefSession() = {
 

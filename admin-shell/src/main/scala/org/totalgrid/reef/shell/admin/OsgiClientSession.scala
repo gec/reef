@@ -1,3 +1,5 @@
+package org.totalgrid.reef.shell.admin
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.shell.proto
-
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.japi.Envelope.Verb
