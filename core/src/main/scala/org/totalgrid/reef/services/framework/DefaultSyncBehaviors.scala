@@ -29,9 +29,9 @@ trait DefaultSyncBehaviors
     with DeleteEnabled
     with SubscribeEnabled
     with AsyncContextRestService {
-  //override def getAsync(context : RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(get(context, req,env))
+  //override def getAsync(context : RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(get(context, req,env))
 
-  //override def deleteAsync(context : RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(delete(context, req,env))
+  //override def deleteAsync(context : RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(delete(context, req,env))
 
-  //override def putAsync(context : RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(put(context, req,env))
+  //override def putAsync(context : RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(put(context, req,env))
 }

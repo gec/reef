@@ -25,18 +25,18 @@ import org.totalgrid.reef.japi.Envelope
  * Component that observes model changes in order to queue service events
  */
 trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
-    extends ModelObserver[A] { self: MessageModelConversion[ServiceType, A] with QueuedEvaluation =>
+    extends ModelObserver[A] { self: MessageModelConversion[ServiceType, A] =>
 
   protected def publishEvent(event: Envelope.Event, resp: ServiceType, key: String): Unit
 
-  protected def onCreated(context: RequestContext[_], entry: A): Unit = {
-    queueEvent(Envelope.Event.ADDED, entry, false)
+  protected def onCreated(context: RequestContext, entry: A): Unit = {
+    queueEvent(context, Envelope.Event.ADDED, entry, false)
   }
-  protected def onUpdated(context: RequestContext[_], entry: A): Unit = {
-    queueEvent(Envelope.Event.MODIFIED, entry, false)
+  protected def onUpdated(context: RequestContext, entry: A): Unit = {
+    queueEvent(context, Envelope.Event.MODIFIED, entry, false)
   }
-  protected def onDeleted(context: RequestContext[_], entry: A): Unit = {
-    queueEvent(Envelope.Event.REMOVED, entry, true)
+  protected def onDeleted(context: RequestContext, entry: A): Unit = {
+    queueEvent(context, Envelope.Event.REMOVED, entry, true)
   }
 
   /**
@@ -48,14 +48,14 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
    *      sql object will been deleted and lost access to all linked resources at end of
    *      transaction, if adding, child objects are not generally ready till end of transaction
    */
-  def queueEvent(event: Envelope.Event, entry: A, currentSnapshot: Boolean) = {
+  def queueEvent(context: RequestContext, event: Envelope.Event, entry: A, currentSnapshot: Boolean) = {
     if (currentSnapshot) {
       val (proto, keys) = getEventProtoAndKey(entry)
-      queueInTransaction { keys.foreach(queuePublishEvent(event, proto, _)) }
+      context.events.queueInTransaction { keys.foreach(queuePublishEvent(context, event, proto, _)) }
     } else
-      queueInTransaction {
+      context.events.queueInTransaction {
         val (proto, keys) = getEventProtoAndKey(entry)
-        keys.foreach(queuePublishEvent(event, proto, _))
+        keys.foreach(queuePublishEvent(context, event, proto, _))
       }
   }
 
@@ -64,8 +64,8 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
    * that way if the reciever of a subscription update immediatley asks for the object he should find it.
    * (It might still be missing if some other process has deleted the object but that is a seperate issue)
    */
-  private def queuePublishEvent(event: Envelope.Event, resp: ServiceType, key: String): Unit = {
-    queuePostTransaction { publishEvent(event, resp, key) }
+  private def queuePublishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit = {
+    context.events.queuePostTransaction { publishEvent(event, resp, key) }
   }
 
   /**

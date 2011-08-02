@@ -142,7 +142,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         val factories = new ModelFactories()
 
         val eventService = factories.events.model
-        val context = new SimpleRequestContext[EventStore]
+        val context = new SimpleRequestContext
 
         eventService.createFromProto(context, makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))
         eventService.createFromProto(context, makeEvent(Scada.ControlExe, DAYS_AGO_2 + 1000, USER1, Some(entity1.id.toString)))

@@ -87,3 +87,5 @@ trait LinkedBufferedEvaluation
     postTransaction.clear
   }
 }
+
+trait OperationBuffer extends QueuedEvaluation with LinkedBufferLike

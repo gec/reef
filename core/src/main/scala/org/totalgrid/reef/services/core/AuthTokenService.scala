@@ -129,18 +129,18 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     with AuthTokenConversions
     with ServiceModelSystemEventPublisher {
 
-  override def createFromProto(context: RequestContext[_], req: AuthToken): AuthTokenModel = {
+  override def createFromProto(context: RequestContext, req: AuthToken): AuthTokenModel = {
 
     val currentTime = System.currentTimeMillis // need one time for authToken DB entry and posted event.
 
-    val agentName: String = req.agent.name.getOrElse(postLoginException(Status.BAD_REQUEST, "Cannot login without setting agent name."))
+    val agentName: String = req.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
     // set the user name for systemEvent publishing
-    env.setUserName(agentName)
+    context.headers.setUserName(agentName)
 
     // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
-    val agent: AgentModel = AgentConversions.findRecord(context, req.getAgent).getOrElse(postLoginException(Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
+    val agent: AgentModel = AgentConversions.findRecord(context, req.getAgent).getOrElse(postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
     if (!agent.checkPassword(req.getAgent.getPassword)) {
-      postLoginException(Status.UNAUTHORIZED, "Invalid agent or password")
+      postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
     }
 
     val availableSets = agent.permissionSets.value.toList // permissions we can have
@@ -151,7 +151,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     val permissionSets = if (setQuerySize > 0) {
       val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
       val unavailableSets = askedForSets.diff(availableSets)
-      if (unavailableSets.size > 0) postLoginException(Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+      if (unavailableSets.size > 0) postLoginException(context, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
       askedForSets
     } else {
       availableSets
@@ -161,7 +161,7 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // most restrictive permissionset 
     val expirationTime = if (req.hasExpirationTime) {
       val time = req.getExpirationTime
-      if (time <= currentTime) postLoginException(Status.BAD_REQUEST, "Expiration time cannot be in the past")
+      if (time <= currentTime) postLoginException(context, Status.BAD_REQUEST, "Expiration time cannot be in the past")
       time
     } else {
       currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
@@ -175,30 +175,30 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
     // link the token to all of the permisisonsSet they have checked out access to
     permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, authToken.id)))
 
-    postSystemEvent(EventType.System.UserLogin)
+    postSystemEvent(context, EventType.System.UserLogin)
 
     authToken
   }
 
-  def postLoginException[A](status: Status, reason: String): A = {
+  def postLoginException[A](context: RequestContext, status: Status, reason: String): A = {
 
-    postSystemEvent(EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
+    postSystemEvent(context, EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
 
     throw new BadRequestException(reason, status)
   }
 
-  override def updateFromProto(context: RequestContext[_], req: AuthToken, existing: AuthTokenModel): (AuthTokenModel, Boolean) = {
+  override def updateFromProto(context: RequestContext, req: AuthToken, existing: AuthTokenModel): (AuthTokenModel, Boolean) = {
     throw new Exception("cannot update auth tokens")
   }
 
   // we are faking the delete operation, we actually want to keep the row around forever as an audit log
-  override def delete(context: RequestContext[_], entry: AuthTokenModel): AuthTokenModel = {
+  override def delete(context: RequestContext, entry: AuthTokenModel): AuthTokenModel = {
 
     entry.expirationTime = -1
     table.update(entry)
 
-    env.setUserName(entry.agent.value.entityName)
-    postSystemEvent(EventType.System.UserLogout)
+    context.headers.setUserName(entry.agent.value.entityName)
+    postSystemEvent(context, EventType.System.UserLogout)
 
     onUpdated(context, entry)
     postDelete(context, entry)

@@ -26,19 +26,19 @@ import org.totalgrid.reef.sapi.service._
 import org.totalgrid.reef.util.Logging
 
 trait AsyncContextRestGet extends HasServiceType {
-  def getAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
+  def getAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
 }
 
 trait AsyncContextRestDelete extends HasServiceType {
-  def deleteAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
+  def deleteAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
 }
 
 trait AsyncContextRestPost extends HasServiceType {
-  def postAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPost[ServiceType])
+  def postAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPost[ServiceType])
 }
 
 trait AsyncContextRestPut extends HasServiceType {
-  def putAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
+  def putAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
 }
 
 trait AsyncContextRestService extends AsyncContextRestGet with AsyncContextRestDelete with AsyncContextRestPost with AsyncContextRestPut
@@ -65,7 +65,7 @@ trait ServiceEntryPoint[A <: AnyRef] extends ServiceTypeIs[A] with ServiceDescri
 
     val value = descriptor.deserialize(request.getPayload.toByteArray)
 
-    val context = new SimpleRequestContext[A]
+    val context = new SimpleRequestContext
 
     request.getVerb match {
       case Envelope.Verb.GET => getAsync(context, value, env)(onResponse)
@@ -73,6 +73,7 @@ trait ServiceEntryPoint[A <: AnyRef] extends ServiceTypeIs[A] with ServiceDescri
       case Envelope.Verb.DELETE => deleteAsync(context, value, env)(onResponse)
       case Envelope.Verb.POST => postAsync(context, value, env)(onResponse)
     }
+
   }
 
 }

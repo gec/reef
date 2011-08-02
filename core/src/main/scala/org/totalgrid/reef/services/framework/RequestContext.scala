@@ -21,10 +21,11 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.sapi.auth.AuthService
+import com.google.protobuf.Descriptors.EnumValueDescriptor
 
-trait RequestContext[X <: AnyRef] {
+trait RequestContext {
 
-  //def serviceEventQueue : Any
+  def events: OperationBuffer
 
   //def request : X
   def headers: RequestEnv
@@ -34,14 +35,20 @@ trait RequestContext[X <: AnyRef] {
   //def setResponse : (Status, X) {}
 }
 
-class SimpleRequestContext[X <: AnyRef] extends RequestContext[X] {
+class Buffer extends OperationBuffer with LinkedBufferedEvaluation {
+  override def onFlushInTransaction = {
+    super.onFlushInTransaction
+  }
+  override def onFlushPostTransaction = {
+    super.onFlushPostTransaction
+  }
+}
+
+class SimpleRequestContext extends RequestContext {
   def headers: RequestEnv = throw new Exception
+  val events = new Buffer
 }
 
-class HeadersRequestContext[X <: AnyRef](val headers: RequestEnv) extends RequestContext[X] {
-
-}
-
-class ConcreteRequestContext[X <: AnyRef](val request: X, val headers: RequestEnv) extends RequestContext[X] {
-
+class HeadersRequestContext(val headers: RequestEnv) extends RequestContext {
+  val events = new Buffer
 }

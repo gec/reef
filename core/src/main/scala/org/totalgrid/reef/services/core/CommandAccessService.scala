@@ -45,7 +45,7 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
 
   def deserialize(bytes: Array[Byte]) = AccessProto.parseFrom(bytes)
 
-  override protected def preCreate(context: RequestContext[_], proto: AccessProto, headers: RequestEnv): AccessProto = {
+  override protected def preCreate(context: RequestContext, proto: AccessProto, headers: RequestEnv): AccessProto = {
     // Simple proto validity check
     if (proto.getCommandsList.length == 0)
       throw new BadRequestException("Must specify at least one command")
@@ -64,7 +64,7 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
     } else proto
   }
 
-  final override protected def performDelete(context: RequestContext[_], model: ServiceModelType, req: ServiceType): List[AccessModel] = {
+  final override protected def performDelete(context: RequestContext, model: ServiceModelType, req: ServiceType): List[AccessModel] = {
     val existing = model.findRecords(context, req)
     existing.foreach(model.removeAccess(context, _))
     existing

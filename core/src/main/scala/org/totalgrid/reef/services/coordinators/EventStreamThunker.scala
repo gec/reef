@@ -36,12 +36,12 @@ class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], raw
 
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     // shift the processing of the event onto another thread
-    val context = new SimpleRequestContext[Event]
+    val context = new SimpleRequestContext
     val callback = (e: Event) => reactor.execute { handleEventMessage(context, e) }
     rawEventExchanges.foreach(exchange => amqp.listen(exchange + "_server", exchange, Event.parseFrom(_), callback))
   }
 
-  def handleEventMessage(context: RequestContext[_], msg: Event) {
+  def handleEventMessage(context: RequestContext, msg: Event) {
     try {
       // notice we are skipping the event service preCreate step that strips time and userId
       // because our local trusted service components have already set those values correctly

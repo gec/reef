@@ -41,14 +41,14 @@ class CommandService(protected val modelTrans: ServiceTransactable[CommandServic
 
   override val descriptor = Descriptors.command
 
-  override def preCreate(context: RequestContext[_], proto: CommandProto, headers: RequestEnv) = {
+  override def preCreate(context: RequestContext, proto: CommandProto, headers: RequestEnv) = {
     if (!proto.hasName || !proto.hasType || !proto.hasDisplayName) {
       throw new BadRequestException("Must specify name, type and displayName when creating command")
     }
     proto
   }
 
-  override def preUpdate(context: RequestContext[_], request: CommandProto, existing: Command, headers: RequestEnv) = {
+  override def preUpdate(context: RequestContext, request: CommandProto, existing: Command, headers: RequestEnv) = {
     preCreate(context, request, headers)
   }
 }
@@ -76,7 +76,7 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
   def getCommands(names: List[String]): Query[Command] = {
     Command.findByNames(names)
   }
-  def createAndSetOwningNode(context: RequestContext[_], commands: List[String], dataSource: Entity): Unit = {
+  def createAndSetOwningNode(context: RequestContext, commands: List[String], dataSource: Entity): Unit = {
     if (commands.size == 0) return
 
     val allreadyExistingCommands = Entity.asType(ApplicationSchema.commands, EQ.findEntitiesByName(commands).toList, Some("Command"))
@@ -91,7 +91,7 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     })
   }
 
-  override def preDelete(context: RequestContext[_], entry: Command) {
+  override def preDelete(context: RequestContext, entry: Command) {
     entry.logicalNode.value match {
       case Some(parent) =>
         throw new BadRequestException("Cannot delete command: " + entry.entityName + " while it is still assigned to logicalNode " + parent.name)
@@ -104,7 +104,7 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     }
   }
 
-  override def postDelete(context: RequestContext[_], entry: Command) {
+  override def postDelete(context: RequestContext, entry: Command) {
 
     val selects = entry.selectHistory.value
     val commandHistory = entry.commandHistory.value
@@ -121,11 +121,11 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
   var commandHistoryModelOption: Option[UserCommandRequestServiceModel] = None
   var commandSelectModelOption: Option[CommandAccessServiceModel] = None
   def setCommandHistoryModel(m: UserCommandRequestServiceModel) {
-    link(m)
+
     commandHistoryModelOption = Some(m)
   }
   def setCommandSelectModel(m: CommandAccessServiceModel) {
-    link(m)
+
     commandSelectModelOption = Some(m)
   }
 

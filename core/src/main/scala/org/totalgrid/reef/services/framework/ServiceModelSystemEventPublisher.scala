@@ -62,16 +62,16 @@ trait SystemEventCreator {
  * a trait to be mixed into the model classes to make creating and publishing events as simple as possible
  * so we will be more inclined to add them everywhere necessary.
  */
-trait ServiceModelSystemEventPublisher extends SystemEventCreator { self: EnvHolder =>
+trait ServiceModelSystemEventPublisher extends SystemEventCreator {
 
   def eventSink: SystemEventSink
 
-  def postSystemEvent(eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil, deviceTime: Option[Long] = None) {
+  def postSystemEvent(context: RequestContext, eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil, deviceTime: Option[Long] = None) {
 
     // TODO: put name of services instance handling request on RequestContext, attach to events
     val b = createSystemEvent(eventType, "services", entity, None, args, deviceTime)
 
-    b.setUserId(env.userName.getOrElse(throw new InternalServiceException("No user during event generation")))
+    b.setUserId(context.headers.userName.getOrElse(throw new InternalServiceException("No user during event generation")))
     b.setTime(System.currentTimeMillis())
 
     eventSink.publishSystemEvent(b.build)

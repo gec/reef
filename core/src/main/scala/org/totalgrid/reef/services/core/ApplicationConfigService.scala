@@ -57,9 +57,7 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
     with EventedServiceModel[ApplicationConfig, ApplicationInstance]
     with ApplicationConfigConversion {
 
-  link(procStatusModel)
-
-  override def createFromProto(context: RequestContext[_], req: ApplicationConfig): ApplicationInstance = {
+  override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
     val sql = create(context, createModelEntry(req))
 
     val caps = req.getCapabilitesList.toList
@@ -72,7 +70,7 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
     sql
   }
 
-  override def updateFromProto(context: RequestContext[_], req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
+  override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
     val (sql, updated) = update(context, createModelEntry(req), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
@@ -91,7 +89,7 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
     (sql, updated)
   }
 
-  override def postDelete(context: RequestContext[_], sql: ApplicationInstance) {
+  override def postDelete(context: RequestContext, sql: ApplicationInstance) {
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
   }
 }

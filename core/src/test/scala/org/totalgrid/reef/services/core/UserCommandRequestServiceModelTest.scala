@@ -46,8 +46,7 @@ import CommandAccess._
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
-
-import org.totalgrid.reef.services.framework.SimpleRequestContext
+import org.totalgrid.reef.services.framework.{ HeadersRequestContext, SimpleRequestContext }
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
@@ -58,9 +57,6 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     def cmd = ApplicationSchema.commands.where(c => c.id === cid).single
 
     def scenario(mode: AccessMode, time: Long, user: String) = {
-      val env = new RequestEnv
-      env.setUserName(user)
-      userRequests.setEnv(env)
 
       val updated = cmd
       val select = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user)))
@@ -73,7 +69,9 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
   }
 
-  val context = new SimpleRequestContext[CommandStatus]
+  val env = new RequestEnv
+  env.setUserName("user01")
+  val context = new HeadersRequestContext(env)
 
   def markCompleted(status: CommandStatus) {
     val r = new TestRig

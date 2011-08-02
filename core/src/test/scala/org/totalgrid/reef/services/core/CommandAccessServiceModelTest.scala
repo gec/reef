@@ -70,7 +70,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   import AccessProto._
 
-  val context = new HeadersRequestContext[Command](new RequestEnv())
+  val context = new HeadersRequestContext(new RequestEnv())
 
   def lastSelectFor(cmd: String) = {
     Command.findByNames(cmd :: Nil).head.lastSelectId

@@ -26,8 +26,7 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
-import org.totalgrid.reef.services.framework.SimpleRequestContext
-import org.totalgrid.reef.proto.Auth.AuthToken
+import org.totalgrid.reef.services.framework.HeadersRequestContext
 
 object ServiceBootstrap {
   /**
@@ -41,8 +40,9 @@ object ServiceBootstrap {
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
     val authService = new core.AuthTokenService(modelFac.authTokens)
 
-    val context = new SimpleRequestContext[AuthToken]
+
     val requestEnv = new RequestEnv
+    val context = new HeadersRequestContext(requestEnv)
 
     val login = ApplicationEnroller.buildLogin()
     val authToken = authService.put(context, login, requestEnv).expectOne

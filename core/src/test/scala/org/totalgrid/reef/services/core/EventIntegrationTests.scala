@@ -41,7 +41,7 @@ import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.services.framework.{ ServiceEntryPoint, RequestContext, SimpleRequestContext, AsyncContextRestService }
 import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
-import SyncServiceShims._
+import org.totalgrid.reef.services.core.SyncServiceShims._
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

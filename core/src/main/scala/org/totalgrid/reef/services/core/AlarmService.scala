@@ -45,12 +45,12 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
   override val descriptor = Descriptors.alarm
 
   // Alarms are created by events. No create via an Alarm proto.
-  override def preCreate(context: RequestContext[_], req: Alarm, headers: RequestEnv) = {
+  override def preCreate(context: RequestContext, req: Alarm, headers: RequestEnv) = {
     throw new BadRequestException("Create on alarms not allowed via this service.")
   }
 
   // If they don't have a state, what are they doing with an update?
-  override def preUpdate(context: RequestContext[_], proto: ServiceType, existing: ModelType, headers: RequestEnv) = {
+  override def preUpdate(context: RequestContext, proto: ServiceType, existing: ModelType, headers: RequestEnv) = {
     if (!proto.hasState)
       throw new BadRequestException("AlarmService update is for changing alarm state, but there is no state field in this proto.")
 
@@ -88,7 +88,7 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
   // Update an Alarm. Currently, only the state can be updated.
   // Enforce valid state transitions.
   //
-  override def updateFromProto(context: RequestContext[_], proto: Alarm, existing: AlarmModel): (AlarmModel, Boolean) = {
+  override def updateFromProto(context: RequestContext, proto: Alarm, existing: AlarmModel): (AlarmModel, Boolean) = {
 
     if (existing.isNextStateValid(proto.getState.getNumber))
       update(context, updateModelEntry(proto, existing), existing)
@@ -99,11 +99,11 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
   }
 
   /// hooks to feed the populated models to the summary counter
-  override def postCreate(context: RequestContext[_], created: AlarmModel): Unit = {
+  override def postCreate(context: RequestContext, created: AlarmModel): Unit = {
     super.postCreate(context, created)
     updateSummaries(created, None, summary.incrementSummary _)
   }
-  override def postUpdate(context: RequestContext[_], updated: AlarmModel, original: AlarmModel): Unit = {
+  override def postUpdate(context: RequestContext, updated: AlarmModel, original: AlarmModel): Unit = {
     super.postUpdate(context, updated, original)
     updateSummaries(updated, Some(original), summary.incrementSummary _)
   }
@@ -258,7 +258,7 @@ trait AlarmQueries {
     select.map(EventConversion.uniqueQuery(_, event).flatten) getOrElse (Nil)
   }
 
-  def findRecords(context: RequestContext[_], req: Alarm): List[AlarmModel] = {
+  def findRecords(context: RequestContext, req: Alarm): List[AlarmModel] = {
 
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
       where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
@@ -286,7 +286,7 @@ trait AlarmQueries {
     results.map { case (a, evt) => { if (evt.entityId.isDefined) { evt.entity.value = entities.find(_.id == evt.entityId.get) }; a.event.value = evt; a } }
   }
 
-  def findRecord(context: RequestContext[_], req: Alarm): Option[AlarmModel] = {
+  def findRecord(context: RequestContext, req: Alarm): Option[AlarmModel] = {
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
       where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
         uniqueEventQuery(event, req.event)) and

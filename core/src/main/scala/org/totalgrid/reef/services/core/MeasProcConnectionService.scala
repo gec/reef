@@ -65,10 +65,10 @@ class MeasurementProcessingConnectionServiceModel(
   var coordinator: MeasurementStreamCoordinator = null
   def setCoordinator(cr: MeasurementStreamCoordinator, linkModels: Boolean = true) = {
     coordinator = cr
-    if (linkModels) link(coordinator)
+
   }
 
-  override def updateFromProto(context: RequestContext[_], proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
+  override def updateFromProto(context: RequestContext, proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
 
     if (!proto.hasReadyTime) throw new BadRequestException("Measurement processor being updated without ready set!")
 
@@ -80,7 +80,7 @@ class MeasurementProcessingConnectionServiceModel(
     update(context, updated, existing)
   }
 
-  override def postUpdate(context: RequestContext[_], sql: MeasProcAssignment, existing: MeasProcAssignment) {
+  override def postUpdate(context: RequestContext, sql: MeasProcAssignment, existing: MeasProcAssignment) {
     coordinator.onMeasProcAssignmentChanged(context, sql)
   }
 

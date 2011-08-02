@@ -35,7 +35,7 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
       // we rollback the rest of the transaction because of an error
       PrimitiveTypeMode.transaction {
         eventModelFactory.get.transaction {
-          val context = new SimpleRequestContext[org.totalgrid.reef.proto.Events.Event]
+          val context = new SimpleRequestContext
           // notice we are skipping the event service preCreate step that strips time and userId
           // because our local trusted service components have already set those values correctly
           _.createFromProto(context, evt)

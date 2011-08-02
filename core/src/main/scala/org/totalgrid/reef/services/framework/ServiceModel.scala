@@ -28,8 +28,7 @@ import org.totalgrid.reef.japi.Envelope
  * Interface for generic use of models by simple REST services
  */
 trait ServiceModel[MessageType, ModelType]
-    extends ModelCrud[ModelType]
-    with EnvHolder { self: LinkedBufferLike =>
+    extends ModelCrud[ModelType] {
 
   /**
    * Subscribe to model events
@@ -38,9 +37,9 @@ trait ServiceModel[MessageType, ModelType]
    */
   def subscribe(req: MessageType, queue: String): Unit
 
-  def createFromProto(context: RequestContext[_], req: MessageType): ModelType = create(context, createModelEntry(req))
+  def createFromProto(context: RequestContext, req: MessageType): ModelType = create(context, createModelEntry(req))
 
-  def updateFromProto(context: RequestContext[_], proto: MessageType, existing: ModelType): (ModelType, Boolean) =
+  def updateFromProto(context: RequestContext, proto: MessageType, existing: ModelType): (ModelType, Boolean) =
     update(context, updateModelEntry(proto, existing), existing)
 
   /**
@@ -70,30 +69,14 @@ trait ServiceModel[MessageType, ModelType]
    * @param req   Message type descriptor of model entries
    * @return      Optional model type, None if does not exist or more than one
    */
-  def findRecord(context: RequestContext[_], req: MessageType): Option[ModelType]
+  def findRecord(context: RequestContext, req: MessageType): Option[ModelType]
 
   /**
    * Find zero or more model entries given a message request
    * @param req   Message type descriptor of model entries
    * @return      List of model entries that much request
    */
-  def findRecords(context: RequestContext[_], req: MessageType): List[ModelType]
-}
-
-trait EnvHolder extends QueuedEvaluation { self: LinkedBufferLike =>
-  var envOption: Option[RequestEnv] = None
-  def env: RequestEnv = {
-    envOption.get
-  }
-  def setEnv(s: RequestEnv) {
-    envOption = Some(s)
-    // TODO: when services have requestEnv replacement passed into all calls this will be unnecessary, remove self typing
-    links.foreach(l => l match {
-      case x: EnvHolder => x.setEnv(s)
-      case _ =>
-    })
-    queueInTransaction { envOption = None }
-  }
+  def findRecords(context: RequestContext, req: MessageType): List[ModelType]
 }
 
 /**
@@ -110,8 +93,7 @@ trait EventedServiceModel[MessageType <: GeneratedMessage, ModelType]
  * Composed trait of model observing/event buffering component
  */
 trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
-    extends EventQueueingObserver[MessageType, ModelType]
-    with LinkedBufferedEvaluation { self: MessageModelConversion[MessageType, ModelType] =>
+    extends EventQueueingObserver[MessageType, ModelType] { self: MessageModelConversion[MessageType, ModelType] =>
 }
 
 /**

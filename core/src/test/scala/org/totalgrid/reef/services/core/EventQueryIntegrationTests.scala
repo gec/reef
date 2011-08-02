@@ -56,7 +56,7 @@ class EventQueryIntegrationTests extends EventIntegrationTestsBase {
 
       val event = fix.publishEvent(makeEvent("Test.Alarm", entityName = Some("SubA-DeviceA-PointA")))
 
-      expected.foreach(_.pop(500) should equal(event))
+      expected.foreach(_.pop(5000) should equal(event))
       not.foreach(_.size should equal(0))
     }
   }

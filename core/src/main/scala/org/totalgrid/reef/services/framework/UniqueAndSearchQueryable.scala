@@ -91,7 +91,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * implement the MessageModelConversion interface to use the uniqueQuery to
    * find a single record for updating/creating
    */
-  def findRecord(context: RequestContext[_], req: MessageType): Option[T] = {
+  def findRecord(context: RequestContext, req: MessageType): Option[T] = {
     val uniqueItems = uniqueQuery(req, { (sql, w) => w.select(sql) }).toList
     uniqueItems.size match {
       case 0 => None
@@ -104,7 +104,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * implement the MessageModelConversion interface to do a wildcard search for
    * all records matching the request proto
    */
-  def findRecords(context: RequestContext[_], req: MessageType): List[T] = {
+  def findRecords(context: RequestContext, req: MessageType): List[T] = {
     searchQuery(req, { (sql, w) => w.select(sql) }).toList
   }
 

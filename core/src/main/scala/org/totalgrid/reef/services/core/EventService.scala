@@ -53,7 +53,7 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
 
   override val descriptor = Descriptors.event
 
-  override def preCreate(context: RequestContext[_], proto: Event, header: RequestEnv): Event = {
+  override def preCreate(context: RequestContext, proto: Event, header: RequestEnv): Event = {
     val b = proto.toBuilder
 
     // we will clear any user given userId so we can apply auth token name
@@ -83,7 +83,6 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
 
   // linking means the bus notifications generated in the alarm service will be
   // sent at the same time as the notifications from this service.
-  link(alarmServiceModel)
 
   // TODO: figure out better way to get these functions in here without renaming
   override def getEventProtoAndKey(event: EventStore) = makeEventProtoAndKey(event)
@@ -93,7 +92,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
    * A raw Event comes in and we need to process it
    * into a real Event, Alarm, or Log.
    */
-  override def createFromProto(context: RequestContext[_], req: Event): EventStore = {
+  override def createFromProto(context: RequestContext, req: Event): EventStore = {
 
     if (!req.hasEventType) { throw new BadRequestException("Must set EventType.", Envelope.Status.BAD_REQUEST) }
     if (!req.hasTime) { throw new BadRequestException("Must include time.", Envelope.Status.BAD_REQUEST) }
@@ -102,7 +101,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
     val userId = if (!req.hasUserId) {
-      env.userName.getOrElse(throw new BadRequestException("Must be logged in user."))
+      context.headers.userName.getOrElse(throw new BadRequestException("Must be logged in user."))
     } else {
       req.getUserId
     }

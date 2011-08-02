@@ -39,7 +39,7 @@ class CommandAccessServiceModelFactory(
   def model = {
     val commandService = commandFac.get.model
     val m = new CommandAccessServiceModel(subHandler, commandService)
-    m.link(commandService)
+
     m
   }
   def model(commandModel: CommandServiceModel) = new CommandAccessServiceModel(subHandler, commandModel)
@@ -57,9 +57,9 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
 
   val table = ApplicationSchema.commandAccess
 
-  override def createFromProto(request: RequestContext[_], req: AccessProto): AccessModel = {
+  override def createFromProto(context: RequestContext, req: AccessProto): AccessModel = {
 
-    val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    val user = context.headers.userName getOrElse { throw new BadRequestException("User must be in header.") }
     req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }
 
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {
@@ -71,9 +71,9 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
         case None => None
       }
       // Do the select on the model, given the requested list of commands
-      selectCommands(request, user, time, req.getCommandsList.toList)
+      selectCommands(context, user, time, req.getCommandsList.toList)
     } else {
-      blockCommands(request, user, req.getCommandsList.toList)
+      blockCommands(context, user, req.getCommandsList.toList)
     }
   }
 
@@ -104,7 +104,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     lookup.size != 0
   }
 
-  protected def addEntryForAll(request: RequestContext[_], entry: AccessModel, cmds: List[CommandModel]) = {
+  protected def addEntryForAll(request: RequestContext, entry: AccessModel, cmds: List[CommandModel]) = {
     try {
       commandModel.exclusiveUpdate(request, cmds.toList, (cmd: CommandModel) => cmd.lastSelectId != Some(entry.id)) { cmdList =>
         // Update all commands to have this access id
@@ -122,7 +122,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     }
   }
 
-  def blockCommands(context: RequestContext[_], user: String, commands: List[String]): AccessModel = {
+  def blockCommands(context: RequestContext, user: String, commands: List[String]): AccessModel = {
     val foundCommands = CommandModel.findByNames(commands)
 
     if (foundCommands.size != commands.size) {
@@ -137,7 +137,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     accEntry
   }
 
-  def selectCommands(context: RequestContext[_], user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
+  def selectCommands(context: RequestContext, user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
 
     // just remove duplicate names from request
     val commands = commandsRequested.distinct
@@ -158,7 +158,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     accEntry
   }
 
-  def removeAccess(context: RequestContext[_], access: AccessModel): Unit = {
+  def removeAccess(context: RequestContext, access: AccessModel): Unit = {
     delete(context, access)
     ApplicationSchema.commandToBlocks.deleteWhere(t => t.accessId === access.id)
 

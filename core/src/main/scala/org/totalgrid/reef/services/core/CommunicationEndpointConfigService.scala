@@ -61,13 +61,7 @@ class CommEndCfgServiceModel(
     with EventedServiceModel[CommEndCfgProto, CommunicationEndpoint]
     with CommEndCfgServiceConversion {
 
-  link(commandModel)
-  link(pointModel)
-  link(configModel)
-  link(portModel)
-  link(coordinator)
-
-  override def createFromProto(context: RequestContext[_], proto: CommEndCfgProto): CommunicationEndpoint = {
+  override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     checkProto(proto)
     val ent = EQ.findOrCreateEntity(proto.getName, "CommunicationEndpoint")
     EQ.addTypeToEntity(ent, "LogicalNode")
@@ -77,7 +71,7 @@ class CommEndCfgServiceModel(
     sql
   }
 
-  override def updateFromProto(context: RequestContext[_], proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
+  override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
     checkProto(proto)
     val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
@@ -90,7 +84,7 @@ class CommEndCfgServiceModel(
       throw new BadRequestException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
   }
 
-  override def preDelete(context: RequestContext[_], sql: CommunicationEndpoint) {
+  override def preDelete(context: RequestContext, sql: CommunicationEndpoint) {
 
     val frontEndAssignment = sql.frontEndAssignment.value
     if (frontEndAssignment.enabled)
@@ -103,12 +97,12 @@ class CommEndCfgServiceModel(
     coordinator.onEndpointDeleted(context, sql)
   }
 
-  override def postDelete(context: RequestContext[_], sql: CommunicationEndpoint) {
+  override def postDelete(context: RequestContext, sql: CommunicationEndpoint) {
     EQ.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
   }
 
   import org.totalgrid.reef.proto.OptionalProtos._
-  def setLinkedObjects(context: RequestContext[_], sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
+  def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
     pointModel.createAndSetOwningNode(context, request.ownerships.points.getOrElse(Nil), ent)
 
     commandModel.createAndSetOwningNode(context, request.ownerships.commands.getOrElse(Nil), ent)
@@ -116,7 +110,7 @@ class CommEndCfgServiceModel(
     configModel.addOwningEntity(context, request.getConfigFilesList.toList, ent)
   }
 
-  def createModelEntry(context: RequestContext[_], proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
+  def createModelEntry(context: RequestContext, proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
 
     val linkedPort = proto.channel.map { portProto =>
       portModel.findRecord(context, portProto) match {

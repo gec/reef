@@ -38,7 +38,7 @@ class UserCommandRequestServiceModelFactory(
   def model = {
     val accessModel = accessFac.model
     val m = new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
-    m.link(accessModel)
+
     m
 
   }
@@ -61,9 +61,9 @@ class UserCommandRequestServiceModel(
   def findExecuting = table.where(t => t.status === CommandStatus.EXECUTING.getNumber).toList
   def findExpired = table.where(t => t.status === CommandStatus.EXECUTING.getNumber and (t.expireTime lte System.currentTimeMillis)).toList
 
-  def findAndMarkExpired(context: RequestContext[_]) = markExpired(context, findExpired)
+  def findAndMarkExpired(context: RequestContext) = markExpired(context, findExpired)
 
-  def markExpired(context: RequestContext[_], expired: List[UserCommandModel]) = {
+  def markExpired(context: RequestContext, expired: List[UserCommandModel]) = {
     def isExpired(cmd: UserCommandModel) =
       (cmd.expireTime < System.currentTimeMillis) &&
         (cmd.status != CommandStatus.TIMEOUT.getNumber)
@@ -73,7 +73,7 @@ class UserCommandRequestServiceModel(
     }
   }
 
-  def markCompleted(context: RequestContext[_], cmd: UserCommandModel, status: CommandStatus) = {
+  def markCompleted(context: RequestContext, cmd: UserCommandModel, status: CommandStatus) = {
     def isExecuting(cmd: UserCommandModel) = cmd.status == CommandStatus.EXECUTING.getNumber
 
     exclusiveUpdate(context, cmd, isExecuting _) { cmd =>
@@ -82,7 +82,7 @@ class UserCommandRequestServiceModel(
     }
   }
 
-  def issueCommand(context: RequestContext[_], command: String, corrId: String, user: String, timeout: Long, cmdRequest: CommandRequest): UserCommandModel = {
+  def issueCommand(context: RequestContext, command: String, corrId: String, user: String, timeout: Long, cmdRequest: CommandRequest): UserCommandModel = {
     issueRequest(context, findCommand(command), corrId, user, timeout, cmdRequest)
   }
 
@@ -95,7 +95,7 @@ class UserCommandRequestServiceModel(
     cmds.head
   }
 
-  def issueRequest(context: RequestContext[_], cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
+  def issueRequest(context: RequestContext, cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
     if (accessModel.userHasSelect(cmd, user, atTime)) {
 
       // TODO: move command SystemEvent publishing into async issuer
@@ -104,7 +104,7 @@ class UserCommandRequestServiceModel(
         case Some(ValType.INT) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
         case Some(ValType.DOUBLE) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
       }
-      postSystemEvent(code, args = "command" -> cmd.entityName :: valueArg :: Nil)
+      postSystemEvent(context, code, args = "command" -> cmd.entityName :: valueArg :: Nil)
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
@@ -115,9 +115,9 @@ class UserCommandRequestServiceModel(
     }
   }
 
-  override def createFromProto(context: RequestContext[_], req: UserCommandRequest): UserCommandModel = {
+  override def createFromProto(context: RequestContext, req: UserCommandRequest): UserCommandModel = {
 
-    val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    val user = context.headers.userName getOrElse { throw new BadRequestException("User must be in header.") }
 
     val (id, cmdProto) = if (req.commandRequest.correlationId.isEmpty) {
       val cid = System.currentTimeMillis + "-" + user
@@ -134,7 +134,7 @@ class UserCommandRequestServiceModel(
       cmdProto)
   }
 
-  override def updateFromProto(context: RequestContext[_], req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
+  override def updateFromProto(context: RequestContext, req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
       throw new BadRequestException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
 

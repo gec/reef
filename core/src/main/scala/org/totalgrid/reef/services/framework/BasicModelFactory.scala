@@ -27,7 +27,7 @@ import org.totalgrid.reef.services.ServiceDependencies
  * Implements ModelFactory/ServiceTransactable interfaces and handles subscription
  * wiring from ServiceEventPublishers
  */
-abstract class BasicModelFactory[MessageType <: GeneratedMessage, +ModelType <: BufferLike](
+abstract class BasicModelFactory[MessageType <: GeneratedMessage, +ModelType](
   dependencies: ServiceDependencies,
   msgType: Class[MessageType])
     extends ModelFactory[ModelType]

@@ -53,7 +53,7 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
 
   val table = ApplicationSchema.configFiles
 
-  def addOwningEntity(context: RequestContext[_], protos: List[ConfigProto], entity: Entity): Unit = {
+  def addOwningEntity(context: RequestContext, protos: List[ConfigProto], entity: Entity): Unit = {
     protos.foreach(proto => {
 
       // add the entity to the config file protos so if we need to create it the ownership is set
@@ -66,7 +66,7 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
     })
   }
 
-  override def createFromProto(context: RequestContext[_], req: ConfigProto): ConfigFile = {
+  override def createFromProto(context: RequestContext, req: ConfigProto): ConfigFile = {
     if (!req.hasMimeType || !req.hasFile || !req.hasName) {
       throw new BadRequestException("Cannot add config file without mimeType, file text and name set")
     }
@@ -79,23 +79,23 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
     sql
   }
 
-  override def updateFromProto(context: RequestContext[_], req: ConfigProto, existing: ConfigFile): Tuple2[ConfigFile, Boolean] = {
+  override def updateFromProto(context: RequestContext, req: ConfigProto, existing: ConfigFile): Tuple2[ConfigFile, Boolean] = {
     val sql = createModelEntry(req, existing.entity.value)
     updateUsingEntities(context, req, sql, existing.owners.value) // add entity edges
     update(context, sql, existing)
   }
 
-  override def preDelete(context: RequestContext[_], sql: ConfigFile) {
+  override def preDelete(context: RequestContext, sql: ConfigFile) {
     // TODO: figure out how to break config file owner dependency, just allow delete for now
     //if (!sql.owners.value.isEmpty)
     //  throw new BadRequestException("Cannot delete config file that is owned by: " + sql.owners.value.map { _.name })
   }
 
-  override def postDelete(context: RequestContext[_], sql: ConfigFile) {
+  override def postDelete(context: RequestContext, sql: ConfigFile) {
     EQ.deleteEntity(sql.entity.value)
   }
 
-  private def updateUsingEntities(context: RequestContext[_], req: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
+  private def updateUsingEntities(context: RequestContext, req: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
     val updatedEntities = req.getEntitiesList.toList.map { e => EQ.findEntity(e).get }
     val newEntitites = updatedEntities.diff(existingEntities)
@@ -106,7 +106,7 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
     if (!newEntitites.isEmpty) sql.changedOwners = true
   }
 
-  private def addUserEntity(context: RequestContext[_], configFile: Entity, user: Entity): Unit = {
+  private def addUserEntity(context: RequestContext, configFile: Entity, user: Entity): Unit = {
     EQ.addEdge(user, configFile, "uses")
   }
 }

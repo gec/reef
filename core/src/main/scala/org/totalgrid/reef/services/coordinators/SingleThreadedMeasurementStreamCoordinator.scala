@@ -19,8 +19,8 @@
 package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.models.{ CommunicationEndpoint, FrontEndAssignment, MeasProcAssignment, ApplicationInstance }
-import org.totalgrid.reef.services.framework.{ RequestContext, BasicServiceTransactable }
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.services.framework.{ OperationBuffer, SimpleRequestContext, RequestContext, BasicServiceTransactable }
 
 /**
  * shunts all updates to the measurement coordinator to a single executor so we only ever have one transaction
@@ -29,34 +29,29 @@ import org.totalgrid.reef.services.framework.{ RequestContext, BasicServiceTrans
  */
 class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, executor: Executor) extends MeasurementStreamCoordinator {
 
-  private var workQueue = List.empty[MeasurementStreamCoordinator => Unit]
-  private def handle(f: MeasurementStreamCoordinator => Unit): Unit = {
-    workQueue ::= f
-  }
-
-  def onMeasProcAppChanged(context: RequestContext[_], app: ApplicationInstance, added: Boolean) = handle { _.onMeasProcAppChanged(context, app, added) }
-
-  def onMeasProcAssignmentChanged(context: RequestContext[_], meas: MeasProcAssignment) = handle { _.onMeasProcAssignmentChanged(context, meas) }
-
-  def onFepConnectionChange(context: RequestContext[_], sql: FrontEndAssignment, existing: FrontEndAssignment) = handle { _.onFepConnectionChange(context, sql, existing) }
-
-  def onFepAppChanged(context: RequestContext[_], app: ApplicationInstance, added: Boolean) = handle { _.onFepAppChanged(context, app, added) }
-
-  def onEndpointDeleted(context: RequestContext[_], ce: CommunicationEndpoint) = handle { _.onEndpointDeleted(context, ce) }
-
-  def onEndpointUpdated(context: RequestContext[_], ce: CommunicationEndpoint) = handle { _.onEndpointUpdated(context, ce) }
-
-  def onEndpointCreated(context: RequestContext[_], ce: CommunicationEndpoint) = handle { _.onEndpointCreated(context, ce) }
-
-  def clear = { workQueue = Nil }
-
-  def flushPostTransaction = {
-    workQueue.reverse.foreach { f =>
+  private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
+    context.events.queuePostTransaction {
       executor.request {
-        BasicServiceTransactable.doTransaction(real, f)
+        val c2 = new SimpleRequestContext
+        BasicServiceTransactable.doTransaction(c2.events, { buffer: OperationBuffer =>
+          f(real, c2)
+        })
       }
     }
   }
 
-  def flushInTransaction = {}
+  def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) = handle(context) { (r, c) => r.onMeasProcAppChanged(c, app, added) }
+
+  def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) = handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, meas) }
+
+  def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) = handle(context) { (r, c) => r.onFepConnectionChange(c, sql, existing) }
+
+  def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) = handle(context) { (r, c) => r.onFepAppChanged(c, app, added) }
+
+  def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }
+
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointUpdated(c, ce) }
+
+  def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointCreated(c, ce) }
+
 }

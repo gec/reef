@@ -45,7 +45,7 @@ class UserCommandRequestService(
 
   override val descriptor = Descriptors.userCommandRequest
 
-  override def doAsyncPutPost(context: RequestContext[_], rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
+  override def doAsyncPutPost(context: RequestContext, rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
 
     val request = rsp.expectOne
 
@@ -89,7 +89,7 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
     proto
   }
 
-  override protected def preCreate(context: RequestContext[_], proto: UserCommandRequest, headers: RequestEnv) = {
+  override protected def preCreate(context: RequestContext, proto: UserCommandRequest, headers: RequestEnv) = {
 
     if (!proto.getCommandRequest.hasName)
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
@@ -100,7 +100,7 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
     super.preCreate(context, this.doCommonValidation(proto), headers)
   }
 
-  override protected def preUpdate(context: RequestContext[_], proto: UserCommandRequest, existing: UserCommandModel, headers: RequestEnv) = {
+  override protected def preUpdate(context: RequestContext, proto: UserCommandRequest, existing: UserCommandModel, headers: RequestEnv) = {
 
     if (!proto.hasStatus)
       throw new BadRequestException("Update must specify status", Envelope.Status.BAD_REQUEST)

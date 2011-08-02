@@ -90,7 +90,7 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
 
   override val descriptor = Descriptors.eventConfig
 
-  override def preCreate(context: RequestContext[_], proto: EventConfig, headers: RequestEnv): EventConfig = {
+  override def preCreate(context: RequestContext, proto: EventConfig, headers: RequestEnv): EventConfig = {
     if (!proto.hasDesignation || !proto.hasEventType || !proto.hasSeverity || !proto.hasResource) {
       throw new BadRequestException("Must fill in designation, eventType, severity and resource fields.")
     }
@@ -111,7 +111,7 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
     }
   }
 
-  override protected def preUpdate(context: RequestContext[_], request: EventConfig, existing: EventConfigStore, headers: RequestEnv): EventConfig = {
+  override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore, headers: RequestEnv): EventConfig = {
     preCreate(context, request, headers)
     // TODO: should we re-render all events with the same event type?
   }
@@ -142,7 +142,7 @@ class EventConfigServiceModel(protected val subHandler: ServiceSubscriptionHandl
     createModelEntry(proto, existing.builtIn)
   }
 
-  override def preDelete(context: RequestContext[_], entry: EventConfigStore) {
+  override def preDelete(context: RequestContext, entry: EventConfigStore) {
     if (entry.builtIn)
       throw new BadRequestException("Cannot delete \"builtIn\" event configurations, only update destination and message: " + entry.eventType)
   }

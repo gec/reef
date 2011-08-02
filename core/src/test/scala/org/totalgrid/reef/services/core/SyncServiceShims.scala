@@ -23,36 +23,36 @@ import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.promise.SynchronizedPromise
 import org.totalgrid.reef.services.framework.{ HeadersRequestContext, SimpleRequestContext, RequestContext, ServiceEntryPoint }
 
-object SyncServiceShims {
+class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], context: RequestContext) {
 
-  class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], context: RequestContext[A]) {
-
-    def get(req: A): Response[A] = get(req, context.headers)
-    def get(req: A, env: RequestEnv): Response[A] = {
-      val response = new SynchronizedPromise[Response[A]]()
-      service.getAsync(context, req, env)(response.onResponse)
-      response.await
-    }
-
-    def put(req: A): Response[A] = put(req, context.headers)
-    def put(req: A, env: RequestEnv): Response[A] = {
-      val response = new SynchronizedPromise[Response[A]]()
-      service.putAsync(context, req, env)(response.onResponse)
-      response.await
-    }
-    def delete(req: A): Response[A] = delete(req, context.headers)
-    def delete(req: A, env: RequestEnv): Response[A] = {
-      val response = new SynchronizedPromise[Response[A]]()
-      service.deleteAsync(context, req, env)(response.onResponse)
-      response.await
-    }
-    def post(req: A): Response[A] = post(req, context.headers)
-    def post(req: A, env: RequestEnv): Response[A] = {
-      val response = new SynchronizedPromise[Response[A]]()
-      service.postAsync(context, req, env)(response.onResponse)
-      response.await
-    }
+  def get(req: A): Response[A] = get(req, context.headers)
+  def get(req: A, env: RequestEnv): Response[A] = {
+    val response = new SynchronizedPromise[Response[A]]()
+    service.getAsync(context, req, env)(response.onResponse)
+    response.await
   }
+
+  def put(req: A): Response[A] = put(req, context.headers)
+  def put(req: A, env: RequestEnv): Response[A] = {
+    val response = new SynchronizedPromise[Response[A]]()
+    service.putAsync(context, req, env)(response.onResponse)
+    response.await
+  }
+  def delete(req: A): Response[A] = delete(req, context.headers)
+  def delete(req: A, env: RequestEnv): Response[A] = {
+    val response = new SynchronizedPromise[Response[A]]()
+    service.deleteAsync(context, req, env)(response.onResponse)
+    response.await
+  }
+  def post(req: A): Response[A] = post(req, context.headers)
+  def post(req: A, env: RequestEnv): Response[A] = {
+    val response = new SynchronizedPromise[Response[A]]()
+    service.postAsync(context, req, env)(response.onResponse)
+    response.await
+  }
+}
+
+object SyncServiceShims {
 
   implicit def getRequestEnv: RequestEnv = {
     val env = new RequestEnv
@@ -60,7 +60,13 @@ object SyncServiceShims {
     env
   }
 
-  implicit def getRequestContext[A <: AnyRef](implicit headers: RequestEnv) = new HeadersRequestContext[A](headers)
+  implicit def getRequestContext(implicit headers: RequestEnv) = {
+    new HeadersRequestContext(headers)
+  }
 
-  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit context: RequestContext[A]) = new SyncService[A](service, context)
+  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit context: RequestContext) = new SyncService[A](service, context)
+}
+
+object CustomServiceShims {
+  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit context: RequestContext) = new SyncService[A](service, context)
 }

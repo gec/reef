@@ -43,7 +43,7 @@ trait ServiceTransactable[+ModelType] {
  *  transactional/buffered behavior. Inherited classes provide the factory method for instantiating model objects
  *  given the ServiceSubscriptionHandler.
  */
-trait BasicServiceTransactable[+ModelType <: BufferLike]
+trait BasicServiceTransactable[+ModelType]
     extends ServiceTransactable[ModelType] {
 
   protected val subHandler: ServiceSubscriptionHandler
@@ -51,7 +51,8 @@ trait BasicServiceTransactable[+ModelType <: BufferLike]
 
   def transaction[R](fun: ModelType => R): R = {
     val m = model
-    BasicServiceTransactable.doTransaction(m, fun)
+    fun(m)
+    //BasicServiceTransactable.doTransaction(m, fun)
   }
 }
 

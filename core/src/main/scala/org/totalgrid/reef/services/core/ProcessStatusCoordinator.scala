@@ -61,18 +61,21 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
   }
 
   def checkTimeouts(now: Long) {
-    trans.transaction { model =>
-      val context = new SimpleRequestContext[HeartbeatStatus]
-      ApplicationSchema.heartbeats.where(h => h.isOnline === true and (h.timeoutAt lte now)).foreach(h => {
-        logger.info("App " + h.instanceName.value + ": has timed out at " + now + " (" + (h.timeoutAt - now) + ")")
-        model.takeApplicationOffline(context, h, now)
-      })
-    }
+    val context = new SimpleRequestContext
+    BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+      trans.transaction { model =>
+
+        ApplicationSchema.heartbeats.where(h => h.isOnline === true and (h.timeoutAt lte now)).foreach(h => {
+          logger.info("App " + h.instanceName.value + ": has timed out at " + now + " (" + (h.timeoutAt - now) + ")")
+          model.takeApplicationOffline(context, h, now)
+        })
+      }
+    })
   }
 
   def handleRawStatus(ss: StatusSnapshot): Unit = {
 
-    def update(context: RequestContext[_], model: ProcessStatusServiceModel, hbeat: HeartbeatStatus) {
+    def update(context: RequestContext, model: ProcessStatusServiceModel, hbeat: HeartbeatStatus) {
       if (hbeat.isOnline) {
         if (ss.getOnline) {
           logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
@@ -87,18 +90,20 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
         logger.warn("App " + ss.getInstanceName + ": is marked offline but got message!")
       }
     }
+    val context = new SimpleRequestContext
+    BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+      trans.transaction { model =>
 
-    trans.transaction { model =>
-      val context = new SimpleRequestContext[HeartbeatStatus]
-      if (!ss.hasProcessId) {
-        logger.warn("Malformed" + ss.getInstanceName + ": isn't configured!")
-      } else {
-        ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
-          case List(hbeat) => update(context, model, hbeat)
-          case _ => logger.warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
+        if (!ss.hasProcessId) {
+          logger.warn("Malformed" + ss.getInstanceName + ": isn't configured!")
+        } else {
+          ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
+            case List(hbeat) => update(context, model, hbeat)
+            case _ => logger.warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
+          }
         }
       }
-    }
+    })
   }
 }
 

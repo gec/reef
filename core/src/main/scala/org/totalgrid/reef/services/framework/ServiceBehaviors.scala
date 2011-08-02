@@ -31,24 +31,25 @@ object ServiceBehaviors {
    * Default REST "Get" behavior
    */
   trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasServiceTransactable with AsyncContextRestGet {
-    def get(context: RequestContext[_], req: ServiceType, env: RequestEnv): Response[ServiceType] = {
-      modelTrans.transaction { model: ServiceModelType =>
-        model.setEnv(env)
-        val results = read(context, model, req, env)
-        env.subQueue.foreach(subscribe(model, req, _))
-        Response(Envelope.Status.OK, results)
-      }
+    def get(context: RequestContext, req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        modelTrans.transaction { model: ServiceModelType =>
+          val results = read(context, model, req, env)
+          env.subQueue.foreach(subscribe(model, req, _))
+          Response(Envelope.Status.OK, results)
+        }
+      })
     }
-    override def getAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = {
-      val context = new SimpleRequestContext[ServiceType]
+    override def getAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = {
+      val context = new SimpleRequestContext
       callback(get(context, req, env))
     }
   }
 
   trait AsyncGetEnabled extends GetEnabled {
 
-    override def getAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = {
-      val context = new SimpleRequestContext[ServiceType]
+    override def getAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = {
+      val context = new SimpleRequestContext
       doAsyncGet(get(context, req, env), callback)
     }
 
@@ -61,36 +62,40 @@ object ServiceBehaviors {
 
   trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasServiceTransactable with AsyncContextRestPut {
 
-    def put(context: RequestContext[_], req: ServiceType, env: RequestEnv): Response[ServiceType] = {
-      modelTrans.transaction { model: ServiceModelType =>
-        model.setEnv(env)
-        val (value, status) = create(context, model, req, env)
-        env.subQueue.foreach(subscribe(model, value, _))
-        Response(status, value :: Nil)
-      }
+    def put(context: RequestContext, req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        modelTrans.transaction { model: ServiceModelType =>
+          val (value, status) = create(context, model, req, env)
+          env.subQueue.foreach(subscribe(model, value, _))
+          Response(status, value :: Nil)
+        }
+      })
     }
 
-    override def putAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
+    override def putAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       callback(put(context, req, env))
   }
 
   trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasServiceTransactable with AsyncContextRestPost {
 
-    def post(context: RequestContext[_], req: ServiceType, env: RequestEnv): Response[ServiceType] = modelTrans.transaction { model =>
-      model.setEnv(env)
-      val (value, status) = model.findRecord(context, req) match {
-        case Some(x) => update(context, model, req, x, env)
-        case None => throw new BadRequestException("Record not found: " + req)
-      }
-      env.subQueue.foreach(subscribe(model, value, _))
-      Response(status, value :: Nil)
+    def post(context: RequestContext, req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        modelTrans.transaction { model =>
+          val (value, status) = model.findRecord(context, req) match {
+            case Some(x) => update(context, model, req, x, env)
+            case None => throw new BadRequestException("Record not found: " + req)
+          }
+          env.subQueue.foreach(subscribe(model, value, _))
+          Response(status, value :: Nil)
+        }
+      })
     }
 
-    override def preUpdate(context: RequestContext[_], proto: ServiceType, existing: ModelType, headers: RequestEnv): ServiceType = merge(context, proto, existing)
+    override def preUpdate(context: RequestContext, proto: ServiceType, existing: ModelType, headers: RequestEnv): ServiceType = merge(context, proto, existing)
 
-    protected def merge(context: RequestContext[_], req: ServiceType, current: ModelType): ServiceType
+    protected def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType
 
-    override def postAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
+    override def postAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       callback(post(context, req, env))
   }
 
@@ -104,8 +109,7 @@ object ServiceBehaviors {
       with HasServiceTransactable
       with AsyncContextRestPut {
 
-    protected def doPut(context: RequestContext[_], req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
-      model.setEnv(env)
+    protected def doPut(context: RequestContext, req: ServiceType, env: RequestEnv, model: ServiceModelType): Response[ServiceType] = {
       val (proto, status) = try {
         model.findRecord(context, req) match {
           case None => create(context, model, req, env)
@@ -121,19 +125,23 @@ object ServiceBehaviors {
       Response(status, proto :: Nil)
     }
 
-    def put(context: RequestContext[_], req: ServiceType, env: RequestEnv): Response[ServiceType] =
-      modelTrans.transaction { doPut(context, req, env, _) }
+    def put(context: RequestContext, req: ServiceType, env: RequestEnv): Response[ServiceType] =
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        modelTrans.transaction { doPut(context, req, env, _) }
+      })
 
-    override def putAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
+    override def putAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       callback(put(context, req, env))
   }
 
   trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasServiceTransactable with AsyncContextRestPut {
 
-    override def putAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
-      modelTrans.transaction { model => doAsyncPutPost(context, doPut(context, req, env, model), callback) }
+    override def putAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        modelTrans.transaction { model => doAsyncPutPost(context, doPut(context, req, env, model), callback) }
+      })
 
-    protected def doAsyncPutPost(context: RequestContext[_], rsp: Response[ServiceType], callback: Response[ServiceType] => Unit)
+    protected def doAsyncPutPost(context: RequestContext, rsp: Response[ServiceType], callback: Response[ServiceType] => Unit)
   }
 
   /**
@@ -141,16 +149,17 @@ object ServiceBehaviors {
    */
   trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasServiceTransactable with AsyncContextRestDelete {
 
-    def delete(context: RequestContext[_], req: ServiceType, env: RequestEnv): Response[ServiceType] = {
-      modelTrans.transaction { model: ServiceModelType =>
-        model.setEnv(env)
-        env.subQueue.foreach(subscribe(model, req, _))
-        val deleted = doDelete(context, model, req, env)
-        val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
-        Response(status, deleted)
-      }
+    def delete(context: RequestContext, req: ServiceType, env: RequestEnv): Response[ServiceType] = {
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        modelTrans.transaction { model: ServiceModelType =>
+          env.subQueue.foreach(subscribe(model, req, _))
+          val deleted = doDelete(context, model, req, env)
+          val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
+          Response(status, deleted)
+        }
+      })
     }
-    override def deleteAsync(context: RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
+    override def deleteAsync(context: RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit =
       callback(delete(context, req, env))
   }
 

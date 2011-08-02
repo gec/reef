@@ -62,17 +62,17 @@ import client.Response
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
-
-import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.framework.SimpleRequestContext
+import org.totalgrid.reef.services.framework.HeadersRequestContext
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
     extends EndpointRelatedTestBase {
 
   import ServiceResponseTestingHelpers._
-  val context = new SimpleRequestContext[CommEndpointConfig]
+  val env = new RequestEnv()
+  env.setUserName("user01")
+  implicit val context = new HeadersRequestContext(env)
+  import org.totalgrid.reef.services.core.CustomServiceShims._
 
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
 
@@ -181,11 +181,10 @@ class CommandRequestServicesIntegration
   }
 
   def testCommandSequence(fixture: CommandFixture) = {
-    val reqEnv = new RequestEnv(Map("USER" -> List("user01")))
 
     // Send a select (access request)
     val select = commandAccess()
-    val selectResult = fixture.access.put(select, reqEnv).expectOne()
+    val selectResult = fixture.access.put(select).expectOne()
     val selectId = selectResult.getUid
 
     // the 'remote' service that will handle the call
@@ -208,7 +207,7 @@ class CommandRequestServicesIntegration
     // Send the user command request
     val cmdReq = userRequest()
     val result = new EmptySyncVar[Response[UserCommandRequest]]
-    fixture.commandRequest.putAsync(context, cmdReq, reqEnv) { x => result.update(x) }
+    fixture.commandRequest.putAsync(context, cmdReq, context.headers) { x => result.update(x) }
 
     val correctResponse = Response(
       Envelope.Status.OK,

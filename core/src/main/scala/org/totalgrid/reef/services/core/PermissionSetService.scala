@@ -50,7 +50,7 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     with EventedServiceModel[PermissionSetProto, PermissionSet]
     with PermissionSetConversions {
 
-  override def createFromProto(context: RequestContext[_], req: PermissionSetProto): PermissionSet = {
+  override def createFromProto(context: RequestContext, req: PermissionSetProto): PermissionSet = {
 
     if (!req.hasName) throw new BadRequestException("Must include name and password when creating a PermissionSet.")
     if (req.getPermissionsCount == 0) throw new BadRequestException("Must specify atleast 1 Permission when creating a PermissionSet.")
@@ -68,13 +68,13 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     permissionSet
   }
 
-  def createPermissions(context: RequestContext[_], req: PermissionSetProto, existing: PermissionSet) = {
+  def createPermissions(context: RequestContext, req: PermissionSetProto, existing: PermissionSet) = {
     val permissions = req.getPermissionsList.toList.map { p => ApplicationSchema.permissions.insert(PermissionConversions.createModelEntry(p)) }
     val joins = permissions.map { p => new PermissionSetJoin(existing.id, p.id) }
     ApplicationSchema.permissionSetJoins.insert(joins)
   }
 
-  override def updateFromProto(context: RequestContext[_], req: PermissionSetProto, existing: PermissionSet) = {
+  override def updateFromProto(context: RequestContext, req: PermissionSetProto, existing: PermissionSet) = {
 
     if (req.getPermissionsCount == 0) throw new BadRequestException("Must specify atleast 1 Permission when updating a PermissionSet.")
 
@@ -98,7 +98,7 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     }
   }
 
-  override def preDelete(context: RequestContext[_], existing: PermissionSet) {
+  override def preDelete(context: RequestContext, existing: PermissionSet) {
     val currentPermissions = existing.permissions.value.toList
     ApplicationSchema.permissionSetJoins.deleteWhere(_.permissionSetId === existing.id)
     ApplicationSchema.permissions.deleteWhere(_.id in currentPermissions.map { _.id })

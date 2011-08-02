@@ -64,9 +64,7 @@ class ProcessStatusServiceModel(
     with ProcessStatusConversion
     with Logging {
 
-  link(coordinator)
-
-  def addApplication(context: RequestContext[_], app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
+  def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
 
     // give the app twice as long to come online
     val firstCheck = now + periodMS * 2
@@ -88,7 +86,7 @@ class ProcessStatusServiceModel(
     ret
   }
 
-  def takeApplicationOffline(context: RequestContext[_], hbeat: HeartbeatStatus, now: Long) {
+  def takeApplicationOffline(context: RequestContext, hbeat: HeartbeatStatus, now: Long) {
 
     logger.debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
     val ret = update(context, new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)
@@ -98,7 +96,7 @@ class ProcessStatusServiceModel(
     ret
   }
 
-  def notifyModels(context: RequestContext[_], app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
+  def notifyModels(context: RequestContext, app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
     capabilities.foreach(_ match {
       case "Processing" => coordinator.onMeasProcAppChanged(context, app, online)
       case "FEP" => coordinator.onFepAppChanged(context, app, online)
