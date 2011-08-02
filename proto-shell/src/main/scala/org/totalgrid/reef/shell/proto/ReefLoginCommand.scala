@@ -21,6 +21,8 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
 import org.totalgrid.reef.sapi.client.ClientSession
+import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.osgi.OsgiConfigReader
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to
@@ -77,30 +79,15 @@ class ReefLoginCommand extends ReefLoginCommandBase {
 @Command(scope = "reef", name = "remote-login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefRemoteLoginCommand extends ReefLoginCommandBase {
 
-  @Argument(index = 1, name = "host", description = "broker ip address or dns name", required = true, multiValued = false)
-  private var host: String = "127.0.0.1"
-
-  @Argument(index = 2, name = "port", description = "broker port", required = false, multiValued = false)
-  private var port: Int = 5672
-
-  @Argument(index = 3, name = "brokerUser", description = "broker username", required = false, multiValued = false)
-  private var brokerUser: String = "guest"
-
-  @Argument(index = 4, name = "brokerPassword", description = "broker password", required = false, multiValued = false)
-  private var brokerPassword: String = "guest"
-
-  @Argument(index = 5, name = "brokerVirtualHost", description = "broker virtual host", required = false, multiValued = false)
-  private var brokerVirtualHost: String = "test"
-
   def setupReefSession() = {
 
     import org.totalgrid.reef.executor.ReactActorExecutor
     import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.broker.BrokerConnectionInfo
     import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
     import org.totalgrid.reef.proto.ReefServicesList
 
-    val connectionInfo = new BrokerConnectionInfo(host, port, brokerUser, brokerPassword, brokerVirtualHost)
+    val connectionInfo = BrokerProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
+
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(connectionInfo)
     }
