@@ -34,17 +34,12 @@ object MeasurementStoreFinder extends Logging {
    * @param lifecyleSink if the store generates any Lifecycle objects throw them here TODO: fix with with DI?
    * @return measurement store
    */
-  /*def getInstance(config: ConnInfo, lifecyleSink: Lifecycle => Unit): MeasurementStore = {
-    null
-  }*/
 
   def getInstance(config: ConnInfo, executor: Executor, context: BundleContext): MeasurementStore = {
     config match {
       case di: DbInfo =>
-
-        //val services = Option(context.getServiceReferences(classOf[MeasurementStoreFactory].getName, "(org.totalgrid.reef.mstore=sql)")).getOrElse(Nil)
         val services: List[ServiceReference] = Option(context.getServiceReferences(classOf[MeasurementStoreFactory].getName, "(org.totalgrid.reef.mstore=sql)")).map(_.toList).getOrElse(Nil)
-        println("Services: " + services)
+
         services.headOption match {
           case Some(srvRef) =>
             val factory = context.getService(srvRef).asInstanceOf[MeasurementStoreFactory]

@@ -24,7 +24,6 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
 import org.totalgrid.reef.util.{ Logging }
 
-
 /**
  * sets up the "production" ServiceContainer for the service providers
  */
