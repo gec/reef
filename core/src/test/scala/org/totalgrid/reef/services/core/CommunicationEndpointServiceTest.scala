@@ -37,6 +37,8 @@ import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
 import org.totalgrid.reef.sapi.RequestEnv
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 

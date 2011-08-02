@@ -16,6 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
@@ -28,6 +46,8 @@ import CommandAccess._
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
+
+import org.totalgrid.reef.services.framework.SimpleRequestContext
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
@@ -53,13 +73,15 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
   }
 
+  val context = new SimpleRequestContext[CommandStatus]
+
   def markCompleted(status: CommandStatus) {
     val r = new TestRig
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
     val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
 
-    r.userRequests.markCompleted(inserted, status)
+    r.userRequests.markCompleted(context, inserted, status)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -82,7 +104,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
     val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
 
-    r.userRequests.findAndMarkExpired
+    r.userRequests.findAndMarkExpired(context)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -99,7 +121,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
     intercept[ReefServiceException] {
-      r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+      r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
     }
   }
 
@@ -110,7 +132,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
-    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
@@ -138,12 +160,12 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val select = r.scenario(AccessMode.ALLOWED, time, "user01")
 
     intercept[BadRequestException] {
-      r.commands.delete(r.cmd)
+      r.commands.delete(context, r.cmd)
     }
 
-    r.accesses.removeAccess(select)
+    r.accesses.removeAccess(context, select)
 
-    r.commands.delete(r.cmd)
+    r.commands.delete(context, r.cmd)
   }
 
   test("Can delete command with expired select") {
@@ -151,7 +173,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val time = System.currentTimeMillis - 40000
     val select = r.scenario(AccessMode.ALLOWED, time, "user01")
 
-    r.commands.delete(r.cmd)
+    r.commands.delete(context, r.cmd)
   }
 
   test("Deleting command removes history and select") {
@@ -164,10 +186,10 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
     val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
-    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
-    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
-    r.userRequests.issueCommand("cmd01", "", "user01", 5000, cmdReq)
-    r.accesses.removeAccess(select3)
+    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
+    r.accesses.removeAccess(context, select3)
 
     val requests = ApplicationSchema.userRequests.where(t => true === true).toList
     requests.length should equal(3)
@@ -175,7 +197,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val selects = ApplicationSchema.commandAccess.where(t => true === true).toList
     selects.length should equal(2)
 
-    r.commands.delete(r.cmd)
+    r.commands.delete(context, r.cmd)
 
     ApplicationSchema.userRequests.where(t => true === true).toList.size should equal(0)
     ApplicationSchema.commandAccess.where(t => true === true).toList.size should equal(0)

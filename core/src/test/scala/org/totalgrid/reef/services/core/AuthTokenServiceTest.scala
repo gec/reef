@@ -39,6 +39,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   override def beforeAll() {

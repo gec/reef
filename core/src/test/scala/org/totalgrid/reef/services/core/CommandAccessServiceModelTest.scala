@@ -16,6 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
@@ -25,6 +43,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException }
+import org.totalgrid.reef.services.framework.HeadersRequestContext
+import org.totalgrid.reef.sapi.RequestEnv
 
 class CommandTestRig {
   val modelFactories = new ModelFactories()
@@ -49,6 +69,8 @@ class CommandTestRig {
 class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
   import AccessProto._
+
+  val context = new HeadersRequestContext[Command](new RequestEnv())
 
   def lastSelectFor(cmd: String) = {
     Command.findByNames(cmd :: Nil).head.lastSelectId
@@ -89,7 +111,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.seed("cmd02")
 
     // Do the block
-    val inserted = r.accesses.blockCommands("user01", List("cmd01"))
+    val inserted = r.accesses.blockCommands(context, "user01", List("cmd01"))
 
     // Check for block in sql
     val entry = checkAccess(AccessMode.BLOCKED.getNumber, None, Some("user01"))
@@ -111,10 +133,10 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     // Can't select blocked command
     val expireTime = System.currentTimeMillis + 5000
     intercept[UnauthorizedException] {
-      r.accesses.selectCommands("user02", Some(expireTime), List("cmd01"))
+      r.accesses.selectCommands(context, "user02", Some(expireTime), List("cmd01"))
     }
 
-    r.accesses.removeAccess(entry)
+    r.accesses.removeAccess(context, entry)
     r.accesses.areAnyBlocked(List("cmd01")) should equal(false)
     ApplicationSchema.commandToBlocks.where(t => true === true).size should equal(0)
     ApplicationSchema.commands.where(t => true === true).head.lastSelectId should equal(None)
@@ -126,7 +148,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.seed("cmd02")
 
     // Do the block
-    val block1 = r.accesses.blockCommands("user01", List("cmd01", "cmd02"))
+    val block1 = r.accesses.blockCommands(context, "user01", List("cmd01", "cmd02"))
 
     // Check for block in sql
     checkAccess(AccessMode.BLOCKED.getNumber, None, Some("user01"))
@@ -144,7 +166,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.accesses.areAnyBlocked(List("cmd02")) should equal(true)
 
     // Insert second block
-    val block2 = r.accesses.blockCommands("user01", List("cmd01"))
+    val block2 = r.accesses.blockCommands(context, "user01", List("cmd01"))
 
     lastSelectFor("cmd01") should equal(Some(block2.id))
     lastSelectFor("cmd02") should equal(Some(block1.id))
@@ -157,7 +179,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.accesses.areAnyBlocked(List("cmd02")) should equal(true)
 
     // Remove first block, show second still applies
-    r.accesses.removeAccess(block1)
+    r.accesses.removeAccess(context, block1)
     lastSelectFor("cmd01") should equal(Some(block2.id))
     lastSelectFor("cmd02") should equal(None)
 
@@ -180,7 +202,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
     val blockedCmds = List("cmd01", "cmd02", "cmd03")
 
-    val inserted = r.accesses.blockCommands("user01", blockedCmds)
+    val inserted = r.accesses.blockCommands(context, "user01", blockedCmds)
 
     // Check for block in sql
     checkAccess(AccessMode.BLOCKED.getNumber, None, Some("user01"))
@@ -200,7 +222,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
-    val inserted = r.accesses.selectCommands("user01", Some(expireTime), List("cmd01"))
+    val inserted = r.accesses.selectCommands(context, "user01", Some(expireTime), List("cmd01"))
 
     val entry = checkAccess(AccessMode.ALLOWED.getNumber, Some(expireTime), Some("user01"))
 
@@ -216,7 +238,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.accesses.userHasSelect(cmd, "user01", expireTime - 1000) should equal(true)
     r.accesses.userHasSelect(cmd, "user01", expireTime + 1000) should equal(false)
 
-    r.accesses.removeAccess(entry)
+    r.accesses.removeAccess(context, entry)
     r.accesses.userHasSelect(cmd, "user01", expireTime - 1000) should equal(false)
     ApplicationSchema.commands.where(t => true === true).head.lastSelectId should equal(None)
   }
@@ -226,7 +248,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     val cmd = r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
-    val inserted = r.accesses.selectCommands("user01", Some(expireTime), List("cmd01"))
+    val inserted = r.accesses.selectCommands(context, "user01", Some(expireTime), List("cmd01"))
 
     val entry = checkAccess(AccessMode.ALLOWED.getNumber, Some(expireTime), Some("user01"))
 
@@ -234,12 +256,12 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.accesses.userHasSelect(cmd, "user01", expireTime + 1000) should equal(false)
 
     intercept[UnauthorizedException] {
-      r.accesses.selectCommands("user02", Some(expireTime), List("cmd01"))
+      r.accesses.selectCommands(context, "user02", Some(expireTime), List("cmd01"))
     }
 
     // Same user
     intercept[UnauthorizedException] {
-      r.accesses.selectCommands("user01", Some(expireTime), List("cmd01"))
+      r.accesses.selectCommands(context, "user01", Some(expireTime), List("cmd01"))
     }
   }
 
@@ -250,7 +272,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.seed("cmd03")
 
     val expireTime = System.currentTimeMillis + 5000
-    val inserted = r.accesses.selectCommands("user01", Some(expireTime), List("cmd01", "cmd02", "cmd03"))
+    val inserted = r.accesses.selectCommands(context, "user01", Some(expireTime), List("cmd01", "cmd02", "cmd03"))
 
     checkAccess(AccessMode.ALLOWED.getNumber, Some(expireTime), Some("user01"))
 
@@ -268,7 +290,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
     r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
-    r.accesses.selectCommands("user01", Some(expireTime), List("cmd01", "cmd01"))
+    r.accesses.selectCommands(context, "user01", Some(expireTime), List("cmd01", "cmd01"))
 
     checkAccess(AccessMode.ALLOWED.getNumber, Some(expireTime), Some("user01"))
   }
@@ -278,7 +300,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
     val expireTime = System.currentTimeMillis + 5000
     val exception = intercept[BadRequestException] {
-      r.accesses.selectCommands("user01", Some(expireTime), List("cmd01"))
+      r.accesses.selectCommands(context, "user01", Some(expireTime), List("cmd01"))
     }
     exception.getMessage should include("cmd01")
   }

@@ -68,7 +68,7 @@ class MeasurementProcessingConnectionServiceModel(
     if (linkModels) link(coordinator)
   }
 
-  override def updateFromProto(proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
+  override def updateFromProto(context: RequestContext[_], proto: ConnProto, existing: MeasProcAssignment): (MeasProcAssignment, Boolean) = {
 
     if (!proto.hasReadyTime) throw new BadRequestException("Measurement processor being updated without ready set!")
 
@@ -77,11 +77,11 @@ class MeasurementProcessingConnectionServiceModel(
     // only update we should get is from the measproc when it is ready to handle measurements
 
     val updated = existing.copy(readyTime = Some(proto.getReadyTime))
-    update(updated, existing)
+    update(context, updated, existing)
   }
 
-  override def postUpdate(sql: MeasProcAssignment, existing: MeasProcAssignment) {
-    coordinator.onMeasProcAssignmentChanged(sql)
+  override def postUpdate(context: RequestContext[_], sql: MeasProcAssignment, existing: MeasProcAssignment) {
+    coordinator.onMeasProcAssignmentChanged(context, sql)
   }
 
 }

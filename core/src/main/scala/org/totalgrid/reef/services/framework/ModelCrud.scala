@@ -29,7 +29,7 @@ trait ModelCrud[A] {
    * @param entry   Object to be created
    * @return        Result of store creation/insertion
    */
-  def create(entry: A): A
+  def create(context: RequestContext[_], entry: A): A
 
   /**
    * Update an existing model entry
@@ -38,7 +38,7 @@ trait ModelCrud[A] {
    * @param existing    Existing entry to be replaced
    * @return            Result stored in data base and whether it was modified
    */
-  def update(entry: A, existing: A): (A, Boolean)
+  def update(context: RequestContext[_], entry: A, existing: A): (A, Boolean)
 
   /**
    * Delete an existing entry
@@ -46,7 +46,7 @@ trait ModelCrud[A] {
    * @param entry       Existing entry to be deleted
    * @return            Result of store delete
    */
-  def delete(entry: A): A
+  def delete(context: RequestContext[_], entry: A): A
 }
 
 /**
@@ -60,13 +60,13 @@ trait ModelHooks[A] {
    * @param entry   Object to be created
    * @return        Verified/modified object
    */
-  protected def preCreate(entry: A): A = entry
+  protected def preCreate(context: RequestContext[_], entry: A): A = entry
 
   /**
    * Called after successful create
    * @param entry   Created entry
    */
-  protected def postCreate(entry: A): Unit = {}
+  protected def postCreate(context: RequestContext[_], entry: A): Unit = {}
 
   /**
    * Called before update
@@ -74,26 +74,26 @@ trait ModelHooks[A] {
    * @param existing    Existing entry to be replaced
    * @return            Verified/modified object
    */
-  protected def preUpdate(entry: A, existing: A): A = entry
+  protected def preUpdate(context: RequestContext[_], entry: A, existing: A): A = entry
 
   /**
    * Called after successful update
    * @param entry       Updated (current) entry
    * @param previous    Previous entry
    */
-  protected def postUpdate(entry: A, previous: A): Unit = {}
+  protected def postUpdate(context: RequestContext[_], entry: A, previous: A): Unit = {}
 
   /**
    * Called before delete
    * @param entry       Existing entry to be deleted
    */
-  protected def preDelete(entry: A): Unit = {}
+  protected def preDelete(context: RequestContext[_], entry: A): Unit = {}
 
   /**
    * Called after successful delete
    * @param previous    Previous entry
    */
-  protected def postDelete(previous: A): Unit = {}
+  protected def postDelete(context: RequestContext[_], previous: A): Unit = {}
 
   /**
    * checks whether a new entry that is going to override a current entry
@@ -107,7 +107,7 @@ trait ModelHooks[A] {
  * Interface for observing model changes
  */
 trait ModelObserver[A] {
-  protected def onCreated(entry: A): Unit
-  protected def onUpdated(entry: A): Unit
-  protected def onDeleted(entry: A): Unit
+  protected def onCreated(context: RequestContext[_], entry: A): Unit
+  protected def onUpdated(context: RequestContext[_], entry: A): Unit
+  protected def onDeleted(context: RequestContext[_], entry: A): Unit
 }

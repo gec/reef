@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services.coordinators
 
-import org.totalgrid.reef.services.framework.ServiceTransactable
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
@@ -27,6 +26,7 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.services.core.EventServiceModel
+import org.totalgrid.reef.services.framework.{ SimpleRequestContext, RequestContext, ServiceTransactable }
 
 /**
  * simple thunker that takes "raw events" from the bus and calls the "put" method from the EventService
@@ -36,15 +36,16 @@ class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], raw
 
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     // shift the processing of the event onto another thread
-    val callback = (e: Event) => reactor.execute { handleEventMessage(e) }
+    val context = new SimpleRequestContext[Event]
+    val callback = (e: Event) => reactor.execute { handleEventMessage(context, e) }
     rawEventExchanges.foreach(exchange => amqp.listen(exchange + "_server", exchange, Event.parseFrom(_), callback))
   }
 
-  def handleEventMessage(msg: Event) {
+  def handleEventMessage(context: RequestContext[_], msg: Event) {
     try {
       // notice we are skipping the event service preCreate step that strips time and userId
       // because our local trusted service components have already set those values correctly
-      eventModel.transaction { _.createFromProto(msg) }
+      eventModel.transaction { _.createFromProto(context, msg) }
     } catch {
       case e: ReefServiceException =>
         logger.warn("Service Exception thunking event: " + e.getMessage)

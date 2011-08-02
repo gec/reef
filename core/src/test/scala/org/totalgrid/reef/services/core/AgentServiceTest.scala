@@ -26,6 +26,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.ApplicationSchema
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class AgentServiceTest extends AuthSystemTestBase {
 

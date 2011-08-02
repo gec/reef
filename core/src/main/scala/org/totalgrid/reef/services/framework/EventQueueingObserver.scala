@@ -29,13 +29,13 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
 
   protected def publishEvent(event: Envelope.Event, resp: ServiceType, key: String): Unit
 
-  protected def onCreated(entry: A): Unit = {
+  protected def onCreated(context: RequestContext[_], entry: A): Unit = {
     queueEvent(Envelope.Event.ADDED, entry, false)
   }
-  protected def onUpdated(entry: A): Unit = {
+  protected def onUpdated(context: RequestContext[_], entry: A): Unit = {
     queueEvent(Envelope.Event.MODIFIED, entry, false)
   }
-  protected def onDeleted(entry: A): Unit = {
+  protected def onDeleted(context: RequestContext[_], entry: A): Unit = {
     queueEvent(Envelope.Event.REMOVED, entry, true)
   }
 

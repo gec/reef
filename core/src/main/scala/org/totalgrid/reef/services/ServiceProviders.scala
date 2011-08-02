@@ -32,6 +32,7 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.auth.AuthService
 import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.services.framework.HasAuthService
 
 /**
  * list of all of the service providers in the system
@@ -74,7 +75,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new EventQueryService(modelFac.events, pubs),
     new AlarmQueryService(pubs)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
 
-  private val crudAuthorizedServices = List(
+  private val crudAuthorizedServices: List[AsyncService[_] with HasAuthService] = List(
 
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),

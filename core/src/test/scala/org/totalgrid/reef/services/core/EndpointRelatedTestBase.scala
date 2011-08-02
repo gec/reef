@@ -46,6 +46,8 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.proto.Events.Event
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 
   override def beforeEach() {

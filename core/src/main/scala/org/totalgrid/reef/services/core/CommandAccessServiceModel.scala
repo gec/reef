@@ -57,7 +57,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
 
   val table = ApplicationSchema.commandAccess
 
-  override def createFromProto(req: AccessProto): AccessModel = {
+  override def createFromProto(request: RequestContext[_], req: AccessProto): AccessModel = {
 
     val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
     req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }
@@ -71,9 +71,9 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
         case None => None
       }
       // Do the select on the model, given the requested list of commands
-      selectCommands(user, time, req.getCommandsList.toList)
+      selectCommands(request, user, time, req.getCommandsList.toList)
     } else {
-      blockCommands(user, req.getCommandsList.toList)
+      blockCommands(request, user, req.getCommandsList.toList)
     }
   }
 
@@ -104,9 +104,9 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     lookup.size != 0
   }
 
-  protected def addEntryForAll(entry: AccessModel, cmds: List[CommandModel]) = {
+  protected def addEntryForAll(request: RequestContext[_], entry: AccessModel, cmds: List[CommandModel]) = {
     try {
-      commandModel.exclusiveUpdate(cmds.toList, (cmd: CommandModel) => cmd.lastSelectId != Some(entry.id)) { cmdList =>
+      commandModel.exclusiveUpdate(request, cmds.toList, (cmd: CommandModel) => cmd.lastSelectId != Some(entry.id)) { cmdList =>
         // Update all commands to have this access id
         cmdList.map { cmd =>
           ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(cmd.id, entry.id))
@@ -122,7 +122,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     }
   }
 
-  def blockCommands(user: String, commands: List[String]): AccessModel = {
+  def blockCommands(context: RequestContext[_], user: String, commands: List[String]): AccessModel = {
     val foundCommands = CommandModel.findByNames(commands)
 
     if (foundCommands.size != commands.size) {
@@ -132,12 +132,12 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
       throw new BadRequestException("Commands not found: " + commands)
     }
 
-    val accEntry = create(new AccessModel(AccessProto.AccessMode.BLOCKED.getNumber, None, Some(user)))
-    addEntryForAll(accEntry, foundCommands.toList)
+    val accEntry = create(context, new AccessModel(AccessProto.AccessMode.BLOCKED.getNumber, None, Some(user)))
+    addEntryForAll(context, accEntry, foundCommands.toList)
     accEntry
   }
 
-  def selectCommands(user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
+  def selectCommands(context: RequestContext[_], user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
 
     // just remove duplicate names from request
     val commands = commandsRequested.distinct
@@ -153,20 +153,20 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
     if (areAnyBlockedById(cmdIds))
       throw new UnauthorizedException("One or more commands are blocked")
 
-    val accEntry = create(new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))
-    addEntryForAll(accEntry, cmds.toList)
+    val accEntry = create(context, new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))
+    addEntryForAll(context, accEntry, cmds.toList)
     accEntry
   }
 
-  def removeAccess(access: AccessModel): Unit = {
-    delete(access)
+  def removeAccess(context: RequestContext[_], access: AccessModel): Unit = {
+    delete(context, access)
     ApplicationSchema.commandToBlocks.deleteWhere(t => t.accessId === access.id)
 
     val cmds = commandModel.table.where(cmd => cmd.lastSelectId === access.id).toList
     if (cmds.length > 0) {
 
       // Remove last select (since it doesn't refer to anything real) on all commands
-      commandModel.exclusiveUpdate(cmds, (cmd: CommandModel) => cmd.lastSelectId == Some(access.id)) { cmdList =>
+      commandModel.exclusiveUpdate(context, cmds, (cmd: CommandModel) => cmd.lastSelectId == Some(access.id)) { cmdList =>
         cmdList.map { cmd =>
           cmd.lastSelectId = None
           cmd

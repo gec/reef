@@ -18,20 +18,30 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.services.framework.ServiceBehaviors._
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.{ RestResponses, HasServiceType }
+import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.sapi.auth.AuthService
 
-trait DefaultSyncBehaviors
-    extends GetEnabled
-    with PutCreatesOrUpdates
-    with DeleteEnabled
-    with SubscribeEnabled
-    with AsyncContextRestService {
-  //override def getAsync(context : RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(get(context, req,env))
+trait RequestContext[X <: AnyRef] {
 
-  //override def deleteAsync(context : RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(delete(context, req,env))
+  //def serviceEventQueue : Any
 
-  //override def putAsync(context : RequestContext[_], req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(put(context, req,env))
+  //def request : X
+  def headers: RequestEnv
+
+  //def authService : AuthService
+
+  //def setResponse : (Status, X) {}
+}
+
+class SimpleRequestContext[X <: AnyRef] extends RequestContext[X] {
+  def headers: RequestEnv = throw new Exception
+}
+
+class HeadersRequestContext[X <: AnyRef](val headers: RequestEnv) extends RequestContext[X] {
+
+}
+
+class ConcreteRequestContext[X <: AnyRef](val request: X, val headers: RequestEnv) extends RequestContext[X] {
+
 }

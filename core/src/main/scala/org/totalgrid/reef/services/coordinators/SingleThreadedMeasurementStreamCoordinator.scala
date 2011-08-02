@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.models.{ CommunicationEndpoint, FrontEndAssignment, MeasProcAssignment, ApplicationInstance }
-import org.totalgrid.reef.services.framework.BasicServiceTransactable
+import org.totalgrid.reef.services.framework.{ RequestContext, BasicServiceTransactable }
 
 /**
  * shunts all updates to the measurement coordinator to a single executor so we only ever have one transaction
@@ -34,19 +34,19 @@ class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementS
     workQueue ::= f
   }
 
-  def onMeasProcAppChanged(app: ApplicationInstance, added: Boolean) = handle { _.onMeasProcAppChanged(app, added) }
+  def onMeasProcAppChanged(context: RequestContext[_], app: ApplicationInstance, added: Boolean) = handle { _.onMeasProcAppChanged(context, app, added) }
 
-  def onMeasProcAssignmentChanged(meas: MeasProcAssignment) = handle { _.onMeasProcAssignmentChanged(meas) }
+  def onMeasProcAssignmentChanged(context: RequestContext[_], meas: MeasProcAssignment) = handle { _.onMeasProcAssignmentChanged(context, meas) }
 
-  def onFepConnectionChange(sql: FrontEndAssignment, existing: FrontEndAssignment) = handle { _.onFepConnectionChange(sql, existing) }
+  def onFepConnectionChange(context: RequestContext[_], sql: FrontEndAssignment, existing: FrontEndAssignment) = handle { _.onFepConnectionChange(context, sql, existing) }
 
-  def onFepAppChanged(app: ApplicationInstance, added: Boolean) = handle { _.onFepAppChanged(app, added) }
+  def onFepAppChanged(context: RequestContext[_], app: ApplicationInstance, added: Boolean) = handle { _.onFepAppChanged(context, app, added) }
 
-  def onEndpointDeleted(ce: CommunicationEndpoint) = handle { _.onEndpointDeleted(ce) }
+  def onEndpointDeleted(context: RequestContext[_], ce: CommunicationEndpoint) = handle { _.onEndpointDeleted(context, ce) }
 
-  def onEndpointUpdated(ce: CommunicationEndpoint) = handle { _.onEndpointUpdated(ce) }
+  def onEndpointUpdated(context: RequestContext[_], ce: CommunicationEndpoint) = handle { _.onEndpointUpdated(context, ce) }
 
-  def onEndpointCreated(ce: CommunicationEndpoint) = handle { _.onEndpointCreated(ce) }
+  def onEndpointCreated(context: RequestContext[_], ce: CommunicationEndpoint) = handle { _.onEndpointCreated(context, ce) }
 
   def clear = { workQueue = Nil }
 

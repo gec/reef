@@ -31,6 +31,8 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 

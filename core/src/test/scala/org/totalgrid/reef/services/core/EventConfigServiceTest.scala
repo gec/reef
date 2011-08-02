@@ -29,6 +29,8 @@ import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
 import org.totalgrid.reef.japi.BadRequestException
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends DatabaseUsingTestBase {
 

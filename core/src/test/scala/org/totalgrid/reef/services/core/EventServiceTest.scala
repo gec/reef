@@ -30,6 +30,8 @@ import org.totalgrid.reef.services.framework.SystemEventCreator
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.ReefServiceException
 
+import SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 

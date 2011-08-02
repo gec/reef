@@ -27,6 +27,8 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.ReefUUID
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class PermissionSetServiceTest extends AuthSystemTestBase {
 

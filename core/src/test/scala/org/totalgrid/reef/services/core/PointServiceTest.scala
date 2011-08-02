@@ -28,6 +28,8 @@ import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.proto.Measurements.Quality.Validity
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class PointServiceTest extends DatabaseUsingTestBase {
 
@@ -39,20 +41,17 @@ class PointServiceTest extends DatabaseUsingTestBase {
     val triggerService = new TriggerSetService(modelFactories.triggerSets)
     val overrideService = new OverrideConfigService(modelFactories.overrides)
 
-    val requestEnv = new RequestEnv
-    requestEnv.setUserName("user")
-
     def addPoint(name: String = "point01", unit: String = "amps", typ: PointType = PointType.ANALOG) = {
       val p = Point.newBuilder.setName(name).setUnit(unit).setType(typ)
-      pointService.put(p.build, requestEnv).expectOne
+      pointService.put(p.build).expectOne
     }
     def addTriggerSet(name: String = "point01") = {
       val t = TriggerSet.newBuilder.setPoint(Point.newBuilder.setName(name))
-      triggerService.put(t.build, requestEnv).expectOne
+      triggerService.put(t.build).expectOne
     }
     def addOverride(name: String = "point01") = {
       val o = MeasOverride.newBuilder.setPoint(Point.newBuilder.setName(name))
-      overrideService.put(o.build, requestEnv).expectOne
+      overrideService.put(o.build).expectOne
     }
 
     def getMeasurement(name: String = "point01") = {
@@ -76,7 +75,7 @@ class PointServiceTest extends DatabaseUsingTestBase {
 
     def deletePoint(name: String = "point01") = {
       val p = Point.newBuilder.setName(name)
-      pointService.delete(p.build, requestEnv).expectOne
+      pointService.delete(p.build).expectOne
     }
   }
 

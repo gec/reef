@@ -16,6 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
@@ -44,11 +62,17 @@ import client.Response
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
+import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.services.framework.SimpleRequestContext
+
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
     extends EndpointRelatedTestBase {
 
   import ServiceResponseTestingHelpers._
+  val context = new SimpleRequestContext[CommEndpointConfig]
 
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
 
@@ -184,7 +208,7 @@ class CommandRequestServicesIntegration
     // Send the user command request
     val cmdReq = userRequest()
     val result = new EmptySyncVar[Response[UserCommandRequest]]
-    fixture.commandRequest.putAsync(cmdReq, reqEnv) { x => result.update(x) }
+    fixture.commandRequest.putAsync(context, cmdReq, reqEnv) { x => result.update(x) }
 
     val correctResponse = Response(
       Envelope.Status.OK,

@@ -38,10 +38,10 @@ trait ServiceModel[MessageType, ModelType]
    */
   def subscribe(req: MessageType, queue: String): Unit
 
-  def createFromProto(req: MessageType): ModelType = create(createModelEntry(req))
+  def createFromProto(context: RequestContext[_], req: MessageType): ModelType = create(context, createModelEntry(req))
 
-  def updateFromProto(proto: MessageType, existing: ModelType): (ModelType, Boolean) =
-    update(updateModelEntry(proto, existing), existing)
+  def updateFromProto(context: RequestContext[_], proto: MessageType, existing: ModelType): (ModelType, Boolean) =
+    update(context, updateModelEntry(proto, existing), existing)
 
   /**
    * Convert message type to model type when creating
@@ -70,14 +70,14 @@ trait ServiceModel[MessageType, ModelType]
    * @param req   Message type descriptor of model entries
    * @return      Optional model type, None if does not exist or more than one
    */
-  def findRecord(req: MessageType): Option[ModelType]
+  def findRecord(context: RequestContext[_], req: MessageType): Option[ModelType]
 
   /**
    * Find zero or more model entries given a message request
    * @param req   Message type descriptor of model entries
    * @return      List of model entries that much request
    */
-  def findRecords(req: MessageType): List[ModelType]
+  def findRecords(context: RequestContext[_], req: MessageType): List[ModelType]
 }
 
 trait EnvHolder extends QueuedEvaluation { self: LinkedBufferLike =>

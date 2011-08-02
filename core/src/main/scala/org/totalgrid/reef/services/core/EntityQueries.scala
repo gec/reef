@@ -601,7 +601,7 @@ trait EntityQueries extends EntityTreeQueries {
     if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      EntitySearches.findRecord(rootNode).map { rootEnt =>
+      EntitySearches.findRecord(new SimpleRequestContext[EntityProto], rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }

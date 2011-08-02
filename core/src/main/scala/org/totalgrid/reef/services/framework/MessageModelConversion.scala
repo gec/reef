@@ -56,12 +56,12 @@ trait MessageModelConversion[MessageType, T] {
    * @param req   Message type descriptor of model entries
    * @return      Optional model type, None if does not exist or more than one
    */
-  def findRecord(req: MessageType): Option[T]
+  def findRecord(context: RequestContext[_], req: MessageType): Option[T]
 
   /**
    * Find zero or more model entries given a message request
    * @param req   Message type descriptor of model entries
    * @return      List of model entries that much request
    */
-  def findRecords(req: MessageType): List[T]
+  def findRecords(context: RequestContext[_], req: MessageType): List[T]
 }

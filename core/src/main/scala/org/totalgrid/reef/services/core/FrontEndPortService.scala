@@ -46,7 +46,7 @@ class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEnd
     with PostPartialUpdate
     with SubscribeEnabled {
 
-  override def merge(req: ServiceType, current: ModelType): ServiceType = {
+  override def merge(context: RequestContext[_], req: ServiceType, current: ModelType): ServiceType = {
 
     import org.totalgrid.reef.proto.OptionalProtos._
 
@@ -71,12 +71,12 @@ class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHand
     with EventedServiceModel[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {
 
-  override def preDelete(sql: FrontEndPort) {
+  override def preDelete(context: RequestContext[_], sql: FrontEndPort) {
     if (!sql.endpoints.value.isEmpty)
       throw new BadRequestException("Cannot delete communication channel that is used by: " + sql.endpoints.value.map { _.entityName })
   }
 
-  override def postDelete(sql: FrontEndPort) {
+  override def postDelete(context: RequestContext[_], sql: FrontEndPort) {
     EQ.deleteEntity(sql.entity.value)
   }
 }

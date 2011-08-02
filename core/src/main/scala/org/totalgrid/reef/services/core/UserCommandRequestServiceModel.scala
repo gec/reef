@@ -61,29 +61,29 @@ class UserCommandRequestServiceModel(
   def findExecuting = table.where(t => t.status === CommandStatus.EXECUTING.getNumber).toList
   def findExpired = table.where(t => t.status === CommandStatus.EXECUTING.getNumber and (t.expireTime lte System.currentTimeMillis)).toList
 
-  def findAndMarkExpired = markExpired(findExpired)
+  def findAndMarkExpired(context: RequestContext[_]) = markExpired(context, findExpired)
 
-  def markExpired(expired: List[UserCommandModel]) = {
+  def markExpired(context: RequestContext[_], expired: List[UserCommandModel]) = {
     def isExpired(cmd: UserCommandModel) =
       (cmd.expireTime < System.currentTimeMillis) &&
         (cmd.status != CommandStatus.TIMEOUT.getNumber)
 
-    exclusiveUpdate(expired, isExpired _) { cmds =>
+    exclusiveUpdate(context, expired, isExpired _) { cmds =>
       cmds.map(cmd => { cmd.status = CommandStatus.TIMEOUT.getNumber; cmd })
     }
   }
 
-  def markCompleted(cmd: UserCommandModel, status: CommandStatus) = {
+  def markCompleted(context: RequestContext[_], cmd: UserCommandModel, status: CommandStatus) = {
     def isExecuting(cmd: UserCommandModel) = cmd.status == CommandStatus.EXECUTING.getNumber
 
-    exclusiveUpdate(cmd, isExecuting _) { cmd =>
+    exclusiveUpdate(context, cmd, isExecuting _) { cmd =>
       cmd.status = status.getNumber
       cmd
     }
   }
 
-  def issueCommand(command: String, corrId: String, user: String, timeout: Long, cmdRequest: CommandRequest): UserCommandModel = {
-    issueRequest(findCommand(command), corrId, user, timeout, cmdRequest)
+  def issueCommand(context: RequestContext[_], command: String, corrId: String, user: String, timeout: Long, cmdRequest: CommandRequest): UserCommandModel = {
+    issueRequest(context, findCommand(command), corrId, user, timeout, cmdRequest)
   }
 
   def findCommand(command: String) = {
@@ -95,7 +95,7 @@ class UserCommandRequestServiceModel(
     cmds.head
   }
 
-  def issueRequest(cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
+  def issueRequest(context: RequestContext[_], cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
     if (accessModel.userHasSelect(cmd, user, atTime)) {
 
       // TODO: move command SystemEvent publishing into async issuer
@@ -108,14 +108,14 @@ class UserCommandRequestServiceModel(
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
-      create(new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray))
+      create(context, new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray))
 
     } else {
       throw new BadRequestException("Command not selected")
     }
   }
 
-  override def createFromProto(req: UserCommandRequest): UserCommandModel = {
+  override def createFromProto(context: RequestContext[_], req: UserCommandRequest): UserCommandModel = {
 
     val user = env.userName getOrElse { throw new BadRequestException("User must be in header.") }
 
@@ -126,7 +126,7 @@ class UserCommandRequestServiceModel(
       (req.getCommandRequest.getCorrelationId, req.getCommandRequest)
     }
 
-    issueRequest(
+    issueRequest(context,
       findCommand(req.getCommandRequest.getName),
       id,
       user,
@@ -134,11 +134,11 @@ class UserCommandRequestServiceModel(
       cmdProto)
   }
 
-  override def updateFromProto(req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
+  override def updateFromProto(context: RequestContext[_], req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
       throw new BadRequestException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
 
-    update(existing.copy(status = req.getStatus.getNumber), existing)
+    update(context, existing.copy(status = req.getStatus.getNumber), existing)
   }
 }
 

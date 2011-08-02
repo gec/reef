@@ -46,15 +46,15 @@ class PointService(protected val modelTrans: ServiceTransactable[PointServiceMod
 
   override val descriptor = Descriptors.point
 
-  override def preCreate(proto: PointProto, headers: RequestEnv) = {
+  override def preCreate(context: RequestContext[_], proto: PointProto, headers: RequestEnv) = {
     if (!proto.hasName || !proto.hasUnit || !proto.hasType) {
       throw new BadRequestException("Must specify name, type and unit when creating point")
     }
     proto
   }
 
-  override def preUpdate(request: PointProto, existing: Point, headers: RequestEnv) = {
-    preCreate(request, headers)
+  override def preUpdate(context: RequestContext[_], request: PointProto, existing: Point, headers: RequestEnv) = {
+    preCreate(context, request, headers)
   }
 
 }
@@ -89,7 +89,7 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
     (proto, key :: Nil)
   }
 
-  def createAndSetOwningNode(points: List[String], dataSource: Entity): Unit = {
+  def createAndSetOwningNode(context: RequestContext[_], points: List[String], dataSource: Entity): Unit = {
     if (points.size == 0) return
     //TODO: combine the createAndSet for points and commands
     val alreadyExistingPoints = Entity.asType(ApplicationSchema.points, EQ.findEntitiesByName(points).toList, Some("Point"))
@@ -102,15 +102,15 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
     changePointOwner.foreach(p => {
       p.sourceEdge.value.foreach(EQ.deleteEdge(_))
       EQ.addEdge(dataSource, p.entity.value, "source")
-      update(p, p)
+      update(context, p, p)
     })
   }
 
-  override def postCreate(entry: Point) {
+  override def postCreate(context: RequestContext[_], entry: Point) {
     markPointsOffline(entry :: Nil)
   }
 
-  override def preDelete(entry: Point) {
+  override def preDelete(context: RequestContext[_], entry: Point) {
     entry.logicalNode.value match {
       case Some(parent) =>
         throw new BadRequestException("Cannot delete point: " + entry.entityName + " while it is still assigned to logicalNode " + parent.name)
@@ -118,10 +118,10 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
     }
   }
 
-  override def postDelete(entry: Point) {
+  override def postDelete(context: RequestContext[_], entry: Point) {
 
-    entry.triggers.value.foreach { t => triggerModel.delete(t) }
-    entry.overrides.value.foreach { o => overrideModel.delete(o) }
+    entry.triggers.value.foreach { t => triggerModel.delete(context, t) }
+    entry.overrides.value.foreach { o => overrideModel.delete(context, o) }
 
     measurementStore.remove(entry.entityName :: Nil)
 
@@ -265,11 +265,12 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
     val currentlyAbnormal = m.getQuality.getValidity != Quality.Validity.GOOD
 
     if (currentlyAbnormal != point.abnormal) {
+      val context = new SimpleRequestContext[Point]
       trans.transaction { model =>
         logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
         val updated = point.copy(abnormal = currentlyAbnormal)
         updated.abnormalUpdated = true
-        model.update(updated, point)
+        model.update(context, updated, point)
         point.abnormal = currentlyAbnormal
         summary.incrementSummary("summary.abnormals", if (point.abnormal) 1 else -1)
       }

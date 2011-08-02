@@ -26,6 +26,8 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
+import org.totalgrid.reef.services.framework.SimpleRequestContext
+import org.totalgrid.reef.proto.Auth.AuthToken
 
 object ServiceBootstrap {
   /**
@@ -39,18 +41,21 @@ object ServiceBootstrap {
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
     val authService = new core.AuthTokenService(modelFac.authTokens)
 
+    val context = new SimpleRequestContext[AuthToken]
+    val requestEnv = new RequestEnv
+
     val login = ApplicationEnroller.buildLogin()
-    val authToken = authService.put(login).expectOne
+    val authToken = authService.put(context, login, requestEnv).expectOne
 
     val config = ApplicationEnroller.buildConfig(List("Services"))
-    val appConfig = applicationConfigService.put(config).expectOne
+    val appConfig = applicationConfigService.put(context, config, requestEnv).expectOne
 
     // the measurement batch service acts as a type of manual FEP
     val msg = FrontEndProcessor.newBuilder
     msg.setAppConfig(appConfig)
     msg.addProtocols("null")
     val fepService = new core.FrontEndProcessorService(modelFac.fep)
-    fepService.put(msg.build)
+    fepService.put(context, msg.build, requestEnv)
 
     val env = new RequestEnv
     env.addAuthToken(authToken.getToken)

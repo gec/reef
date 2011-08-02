@@ -30,6 +30,8 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTesting
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.proto.Model.{ PointType, Point, Entity }
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._

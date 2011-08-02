@@ -20,11 +20,11 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.services.core.{ CommunicationEndpointConnectionServiceModel, MeasurementProcessingConnectionServiceModel }
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.services.framework.LinkedBufferedEvaluation
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.models._
 
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.services.framework.{ RequestContext, LinkedBufferedEvaluation }
 
 class SquerylBackedMeasurementStreamCoordinator(
   measProcModel: MeasurementProcessingConnectionServiceModel,
@@ -44,7 +44,7 @@ class SquerylBackedMeasurementStreamCoordinator(
   val measProcTable = ApplicationSchema.measProcAssignments
   val fepAssignmentTable = ApplicationSchema.frontEndAssignments
 
-  def onEndpointCreated(ce: CommunicationEndpoint) {
+  def onEndpointCreated(context: RequestContext[_], ce: CommunicationEndpoint) {
     val now = System.currentTimeMillis
 
     val measProcId = getMeasProc().map { _.id }
@@ -55,32 +55,32 @@ class SquerylBackedMeasurementStreamCoordinator(
     val offlineTime = Some(now)
     markOffline(ce)
 
-    measProcModel.create(new MeasProcAssignment(ce.id, serviceRoutingKey, measProcId, measProcAssignedTime, None))
-    fepConnection.create(new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
+    measProcModel.create(context, new MeasProcAssignment(ce.id, serviceRoutingKey, measProcId, measProcAssignedTime, None))
+    fepConnection.create(context, new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
   }
 
-  def onEndpointUpdated(ce: CommunicationEndpoint) {
+  def onEndpointUpdated(context: RequestContext[_], ce: CommunicationEndpoint) {
     val measProcAssignment = measProcTable.where(measProc => measProc.endpointId === ce.id).single
-    checkMeasProcAssignment(measProcAssignment)
+    checkMeasProcAssignment(context, measProcAssignment)
 
     // when there is any change, delete the current assignment
     val fepProcAssignment = fepAssignmentTable.where(fep => fep.endpointId === ce.id).single
-    fepConnection.delete(fepProcAssignment)
+    fepConnection.delete(context, fepProcAssignment)
 
     // then either assign the endpoint to a compatible FEP or no FEP
     val assigned = determineFepAssignment(fepProcAssignment.copy(applicationId = None), ce)
-    fepConnection.create(assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, None, None, None, Some(System.currentTimeMillis), None)))
+    fepConnection.create(context, assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, None, None, None, Some(System.currentTimeMillis), None)))
   }
 
-  def onEndpointDeleted(ce: CommunicationEndpoint) {
+  def onEndpointDeleted(context: RequestContext[_], ce: CommunicationEndpoint) {
     val assignedMeasProc = measProcTable.where(measProc => measProc.endpointId === ce.id).single
-    measProcModel.delete(assignedMeasProc)
+    measProcModel.delete(context, assignedMeasProc)
 
     val assignedFep = fepAssignmentTable.where(fep => fep.endpointId === ce.id).single
-    fepConnection.delete(assignedFep)
+    fepConnection.delete(context, assignedFep)
   }
 
-  def onFepAppChanged(app: ApplicationInstance, added: Boolean) {
+  def onFepAppChanged(context: RequestContext[_], app: ApplicationInstance, added: Boolean) {
 
     val rechecks = if (added) {
       fepAssignmentTable.where(fep => fep.applicationId.isNull).toList
@@ -88,7 +88,7 @@ class SquerylBackedMeasurementStreamCoordinator(
       fepAssignmentTable.where(fep => fep.applicationId === app.id).toList
     }
     logger.info("FEP: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName })
-    rechecks.foreach { a => checkFepAssignment(a, a.endpoint.value.get) }
+    rechecks.foreach { a => checkFepAssignment(context, a, a.endpoint.value.get) }
   }
 
   /**
@@ -126,13 +126,13 @@ class SquerylBackedMeasurementStreamCoordinator(
   /**
    * checks the fep assignment and sends out an update if there was a change
    */
-  private def checkFepAssignment(assign: FrontEndAssignment, ce: CommunicationEndpoint) {
+  private def checkFepAssignment(context: RequestContext[_], assign: FrontEndAssignment, ce: CommunicationEndpoint) {
     val newAssign = determineFepAssignment(assign, ce)
     // update the fep assignment if it changed
-    newAssign.foreach(newAssignment => fepConnection.update(newAssignment, assign))
+    newAssign.foreach(newAssignment => fepConnection.update(context, newAssignment, assign))
   }
 
-  def onFepConnectionChange(sql: FrontEndAssignment, existing: FrontEndAssignment) {
+  def onFepConnectionChange(context: RequestContext[_], sql: FrontEndAssignment, existing: FrontEndAssignment) {
 
     val endpoint = sql.endpoint.value.get
     endpoint.entity.value // preload LazyVar entity since it may be deleted by the time event is rendered
@@ -147,7 +147,7 @@ class SquerylBackedMeasurementStreamCoordinator(
       markOffline(endpoint)
     }
     if (sql.enabled != existing.enabled) {
-      checkFepAssignment(sql, endpoint)
+      checkFepAssignment(context, sql, endpoint)
     }
   }
 
@@ -155,10 +155,10 @@ class SquerylBackedMeasurementStreamCoordinator(
    * whenever the meas proc table is updated we want to sure we re-evaluate the fep assignments
    * to either enable or disable them
    */
-  def onMeasProcAssignmentChanged(meas: MeasProcAssignment) {
+  def onMeasProcAssignmentChanged(context: RequestContext[_], meas: MeasProcAssignment) {
     logger.info("MeasProc Change, rechecking: " + meas.endpoint.value.map { _.entityName } + " readyTime: " + meas.readyTime + " key: " + meas.serviceRoutingKey)
     fepAssignmentTable.where(fep => fep.endpointId === meas.endpointId).headOption.foreach { assign =>
-      checkFepAssignment(assign, assign.endpoint.value.get)
+      checkFepAssignment(context, assign, assign.endpoint.value.get)
     }
   }
 
@@ -167,20 +167,20 @@ class SquerylBackedMeasurementStreamCoordinator(
    * that were unassigned (added==true) or were assigned to a now defunct measProc (added==false)
    *
    */
-  def onMeasProcAppChanged(app: ApplicationInstance, added: Boolean) {
+  def onMeasProcAppChanged(context: RequestContext[_], app: ApplicationInstance, added: Boolean) {
     val rechecks = if (added) {
       measProcTable.where(measProc => measProc.applicationId.isNull).toList
     } else {
       measProcTable.where(measProc => measProc.applicationId === app.id).toList
     }
     logger.info("Meas Proc: " + app.instanceName + " added: " + added + " rechecking: " + rechecks.map { _.endpoint.value.get.entityName })
-    rechecks.foreach { checkMeasProcAssignment(_) }
+    rechecks.foreach { checkMeasProcAssignment(context, _) }
   }
 
   /**
    * looks for the least loaded meas proc instance
    */
-  private def checkMeasProcAssignment(assign: MeasProcAssignment) {
+  private def checkMeasProcAssignment(context: RequestContext[_], assign: MeasProcAssignment) {
     val applicationId = getMeasProc().map { _.id }
     logger.info(assign.endpoint.value.get.entityName + " assigned MeasProc: " + applicationId)
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
@@ -191,7 +191,7 @@ class SquerylBackedMeasurementStreamCoordinator(
         assignedTime = assignedTime,
         serviceRoutingKey = serviceRoutingKey,
         readyTime = None)
-      measProcModel.update(newAssign, assign)
+      measProcModel.update(context, newAssign, assign)
     }
   }
 

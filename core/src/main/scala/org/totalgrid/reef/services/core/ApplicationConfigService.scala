@@ -59,21 +59,21 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
 
   link(procStatusModel)
 
-  override def createFromProto(req: ApplicationConfig): ApplicationInstance = {
-    val sql = create(createModelEntry(req))
+  override def createFromProto(context: RequestContext[_], req: ApplicationConfig): ApplicationInstance = {
+    val sql = create(context, createModelEntry(req))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
 
     // TODO: make heartbeating a capability
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
-    procStatusModel.addApplication(sql, time, req.getProcessId, caps)
+    procStatusModel.addApplication(context, sql, time, req.getProcessId, caps)
 
     sql
   }
 
-  override def updateFromProto(req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
-    val (sql, updated) = update(createModelEntry(req), existing)
+  override def updateFromProto(context: RequestContext[_], req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
+    val (sql, updated) = update(context, createModelEntry(req), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
     val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }
@@ -82,16 +82,16 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
     val removedCaps = oldCaps.diff(newCaps)
 
     ApplicationSchema.capabilities.insert(addedCaps.map { x => new ApplicationCapability(sql.id, x) })
-    procStatusModel.notifyModels(sql, false, removedCaps)
+    procStatusModel.notifyModels(context, sql, false, removedCaps)
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id and (c.capability in removedCaps.map { _.id }))
 
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
-    procStatusModel.addApplication(sql, time, req.getProcessId, newCaps)
+    procStatusModel.addApplication(context, sql, time, req.getProcessId, newCaps)
 
     (sql, updated)
   }
 
-  override def postDelete(sql: ApplicationInstance) {
+  override def postDelete(context: RequestContext[_], sql: ApplicationInstance) {
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
   }
 }

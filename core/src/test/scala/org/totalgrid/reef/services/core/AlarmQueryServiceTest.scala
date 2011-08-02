@@ -16,6 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
@@ -37,6 +55,7 @@ import org.totalgrid.reef.services.core.util._
 import java.util.{ Date, Calendar }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
 import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.services.framework.SimpleRequestContext
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -115,7 +134,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
       transaction {
 
-        // Post events to create alarms, events, and logs 
+        // Post events to create alarms, events, and logs
 
         val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
         val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
@@ -123,19 +142,20 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         val factories = new ModelFactories()
 
         val eventService = factories.events.model
+        val context = new SimpleRequestContext[EventStore]
 
-        eventService.createFromProto(makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))
-        eventService.createFromProto(makeEvent(Scada.ControlExe, DAYS_AGO_2 + 1000, USER1, Some(entity1.id.toString)))
+        eventService.createFromProto(context, makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))
+        eventService.createFromProto(context, makeEvent(Scada.ControlExe, DAYS_AGO_2 + 1000, USER1, Some(entity1.id.toString)))
 
-        eventService.createFromProto(makeEvent(System.UserLogin, HOURS_AGO_2, USER2, None))
-        eventService.createFromProto(makeEvent(Scada.ControlExe, HOURS_AGO_2 + 1000, USER2, Some(entity2.id.toString)))
-        eventService.createFromProto(makeEvent(System.UserLogout, HOURS_AGO_2 + 2000, USER2, None))
+        eventService.createFromProto(context, makeEvent(System.UserLogin, HOURS_AGO_2, USER2, None))
+        eventService.createFromProto(context, makeEvent(Scada.ControlExe, HOURS_AGO_2 + 1000, USER2, Some(entity2.id.toString)))
+        eventService.createFromProto(context, makeEvent(System.UserLogout, HOURS_AGO_2 + 2000, USER2, None))
 
-        eventService.createFromProto(makeEvent(System.UserLogin, HOURS_AGO_1, USER3, None))
-        eventService.createFromProto(makeEvent(Scada.ControlExe, HOURS_AGO_1 + 1000, USER3, Some(entity2.id.toString)))
-        eventService.createFromProto(makeEvent(System.UserLogout, HOURS_AGO_1 + 2000, USER3, None))
+        eventService.createFromProto(context, makeEvent(System.UserLogin, HOURS_AGO_1, USER3, None))
+        eventService.createFromProto(context, makeEvent(Scada.ControlExe, HOURS_AGO_1 + 1000, USER3, Some(entity2.id.toString)))
+        eventService.createFromProto(context, makeEvent(System.UserLogout, HOURS_AGO_1 + 2000, USER3, None))
 
-        eventService.createFromProto(makeEvent(System.UserLogout, NOW, USER1, None))
+        eventService.createFromProto(context, makeEvent(System.UserLogout, NOW, USER1, None))
 
       }
     }

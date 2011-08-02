@@ -27,6 +27,8 @@ import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.ReefUUID
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
+
 @RunWith(classOf[JUnitRunner])
 class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
 

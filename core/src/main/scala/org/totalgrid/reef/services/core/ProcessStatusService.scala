@@ -66,7 +66,7 @@ class ProcessStatusServiceModel(
 
   link(coordinator)
 
-  def addApplication(app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
+  def addApplication(context: RequestContext[_], app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
 
     // give the app twice as long to come online
     val firstCheck = now + periodMS * 2
@@ -77,31 +77,31 @@ class ProcessStatusServiceModel(
 
     val ret = if (existing.size == 1) {
       logger.info("App " + hbSql.instanceName.value + ": is being marked back online at " + now + " id: " + processId)
-      update(hbSql, existing.head)
+      update(context, hbSql, existing.head)
     } else {
       logger.info("App " + hbSql.instanceName.value + ": is added and marked online at " + now + " id: " + processId)
-      create(hbSql)
+      create(context, hbSql)
     }
 
-    notifyModels(app, true, capabilities)
+    notifyModels(context, app, true, capabilities)
 
     ret
   }
 
-  def takeApplicationOffline(hbeat: HeartbeatStatus, now: Long) {
+  def takeApplicationOffline(context: RequestContext[_], hbeat: HeartbeatStatus, now: Long) {
 
     logger.debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
-    val ret = update(new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)
+    val ret = update(context, new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)
 
-    notifyModels(hbeat.application.value, false, hbeat.application.value.capabilities.value.toList.map { _.capability })
+    notifyModels(context, hbeat.application.value, false, hbeat.application.value.capabilities.value.toList.map { _.capability })
 
     ret
   }
 
-  def notifyModels(app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
+  def notifyModels(context: RequestContext[_], app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
     capabilities.foreach(_ match {
-      case "Processing" => coordinator.onMeasProcAppChanged(app, online)
-      case "FEP" => coordinator.onFepAppChanged(app, online)
+      case "Processing" => coordinator.onMeasProcAppChanged(context, app, online)
+      case "FEP" => coordinator.onFepAppChanged(context, app, online)
       case _ =>
     })
   }

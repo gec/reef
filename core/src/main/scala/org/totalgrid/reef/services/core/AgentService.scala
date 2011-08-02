@@ -50,22 +50,22 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     with EventedServiceModel[Agent, AgentModel]
     with AgentConversions {
 
-  override def createFromProto(req: Agent): AgentModel = {
+  override def createFromProto(context: RequestContext[_], req: Agent): AgentModel = {
 
     if (!req.hasName || !req.hasPassword) throw new BadRequestException("Must include name and password when creating an Agent.")
     if (req.getPermissionSetsCount == 0) throw new BadRequestException("Must specify atleast 1 PermissionSet when creating an Agent.")
 
     validatePassword(req.getPassword)
 
-    val permissionSets = findRequestedPermissionSets(req)
+    val permissionSets = findRequestedPermissionSets(context, req)
 
-    val agent = create(AgentModel.createAgentWithPassword(req.getName, req.getPassword))
+    val agent = create(context, AgentModel.createAgentWithPassword(req.getName, req.getPassword))
     permissionSets.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, agent.id)) }
 
     agent
   }
 
-  override def updateFromProto(req: Agent, existing: AgentModel) = {
+  override def updateFromProto(context: RequestContext[_], req: Agent, existing: AgentModel) = {
 
     val changingPassword = if (req.hasPassword) {
       // if a password was included but it was correct we are not changing anything
@@ -76,7 +76,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 
     val (removed, added) = if (req.getPermissionSetsCount > 0) {
 
-      val requestedSets = findRequestedPermissionSets(req)
+      val requestedSets = findRequestedPermissionSets(context, req)
       val currentSets = existing.permissionSets.value.toList
 
       (currentSets.diff(requestedSets), requestedSets.diff(currentSets))
@@ -90,7 +90,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 
     if (changingPassword) {
       validatePassword(req.getPassword)
-      update(existing.copyWithUpdatedPassword(req.getPassword), existing)
+      update(context, existing.copyWithUpdatedPassword(req.getPassword), existing)
     } else {
       if (removed.size > 0 || added.size > 0) {
         added.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, existing.id)) }
@@ -102,7 +102,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     }
   }
 
-  override def preDelete(entry: AgentModel) {
+  override def preDelete(context: RequestContext[_], entry: AgentModel) {
     if (entry.authTokens.value.size > 0) {
       ApplicationSchema.authTokens.deleteWhere(at => at.id in entry.authTokens.value.map(_.id))
     }
@@ -115,12 +115,12 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     }
   }
 
-  def findRequestedPermissionSets(req: Agent) = {
+  def findRequestedPermissionSets(context: RequestContext[_], req: Agent) = {
     val requestedPermissions = req.getPermissionSetsList.toList
     if (requestedPermissions.exists { p => p.getName == "*" || p.getUuid == "*" }) {
       throw new BadRequestException("Cannot use wildcard in PermissionSet specifiers, must use UUIDs or names: " + requestedPermissions)
     }
-    val permissionSets = requestedPermissions.map(PermissionSetConversions.findRecords(_)).flatten
+    val permissionSets = requestedPermissions.map(PermissionSetConversions.findRecords(context, _)).flatten
 
     if (permissionSets.isEmpty) throw new BadRequestException("No PermissionSets were found with names: " + requestedPermissions)
 

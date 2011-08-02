@@ -50,7 +50,7 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     with EventedServiceModel[PermissionSetProto, PermissionSet]
     with PermissionSetConversions {
 
-  override def createFromProto(req: PermissionSetProto): PermissionSet = {
+  override def createFromProto(context: RequestContext[_], req: PermissionSetProto): PermissionSet = {
 
     if (!req.hasName) throw new BadRequestException("Must include name and password when creating a PermissionSet.")
     if (req.getPermissionsCount == 0) throw new BadRequestException("Must specify atleast 1 Permission when creating a PermissionSet.")
@@ -61,29 +61,29 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     } else {
       18144000000L // one month
     }
-    val permissionSet = create(PermissionSet.newInstance(req.getName, expirationTime))
+    val permissionSet = create(context, PermissionSet.newInstance(req.getName, expirationTime))
 
-    createPermissions(req, permissionSet)
+    createPermissions(context, req, permissionSet)
 
     permissionSet
   }
 
-  def createPermissions(req: PermissionSetProto, existing: PermissionSet) = {
+  def createPermissions(context: RequestContext[_], req: PermissionSetProto, existing: PermissionSet) = {
     val permissions = req.getPermissionsList.toList.map { p => ApplicationSchema.permissions.insert(PermissionConversions.createModelEntry(p)) }
     val joins = permissions.map { p => new PermissionSetJoin(existing.id, p.id) }
     ApplicationSchema.permissionSetJoins.insert(joins)
   }
 
-  override def updateFromProto(req: PermissionSetProto, existing: PermissionSet) = {
+  override def updateFromProto(context: RequestContext[_], req: PermissionSetProto, existing: PermissionSet) = {
 
     if (req.getPermissionsCount == 0) throw new BadRequestException("Must specify atleast 1 Permission when updating a PermissionSet.")
 
     // TODO: add a find all function to UniqueAndSearchQueryable
-    val requestedPermissions = req.getPermissionsList.toList.map(PermissionConversions.findRecords(_)).flatten
+    val requestedPermissions = req.getPermissionsList.toList.map(PermissionConversions.findRecords(context, _)).flatten
     val currentPermissions = existing.permissions.value.toList
 
     val updated = if (requestedPermissions != currentPermissions) {
-      createPermissions(req, existing)
+      createPermissions(context, req, existing)
       ApplicationSchema.permissionSetJoins.deleteWhere(_.permissionId in currentPermissions.map { _.id })
       ApplicationSchema.permissions.deleteWhere(_.id in currentPermissions.map { _.id })
       true
@@ -92,13 +92,13 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
     }
 
     if (req.hasDefaultExpirationTime && req.getDefaultExpirationTime != existing.defaultExpirationTime) {
-      update(existing.copy(defaultExpirationTime = req.getDefaultExpirationTime), existing)
+      update(context, existing.copy(defaultExpirationTime = req.getDefaultExpirationTime), existing)
     } else {
       (existing, updated)
     }
   }
 
-  override def preDelete(existing: PermissionSet) {
+  override def preDelete(context: RequestContext[_], existing: PermissionSet) {
     val currentPermissions = existing.permissions.value.toList
     ApplicationSchema.permissionSetJoins.deleteWhere(_.permissionSetId === existing.id)
     ApplicationSchema.permissions.deleteWhere(_.id in currentPermissions.map { _.id })

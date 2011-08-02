@@ -53,7 +53,7 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
 
   override val descriptor = Descriptors.event
 
-  override def preCreate(proto: Event, header: RequestEnv): Event = {
+  override def preCreate(context: RequestContext[_], proto: Event, header: RequestEnv): Event = {
     val b = proto.toBuilder
 
     // we will clear any user given userId so we can apply auth token name
@@ -93,7 +93,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
    * A raw Event comes in and we need to process it
    * into a real Event, Alarm, or Log.
    */
-  override def createFromProto(req: Event): EventStore = {
+  override def createFromProto(context: RequestContext[_], req: Event): EventStore = {
 
     if (!req.hasEventType) { throw new BadRequestException("Must set EventType.", Envelope.Status.BAD_REQUEST) }
     if (!req.hasTime) { throw new BadRequestException("Must include time.", Envelope.Status.BAD_REQUEST) }
@@ -115,16 +115,16 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
     designation match {
       case EventConfigStore.ALARM =>
         // Create event and alarm instances. Post them to the bus.
-        val event = create(createModelEntry(req, true, severity, entity, resource, userId)) // true: is an alarm
+        val event = create(context, createModelEntry(req, true, severity, entity, resource, userId)) // true: is an alarm
         val alarm = new AlarmModel(alarmState, event.id)
         alarm.event.value = event // so we don't lookup the event again
-        alarmServiceModel.create(alarm)
+        alarmServiceModel.create(context, alarm)
         log(req, event, entity)
         event
 
       case EventConfigStore.EVENT =>
         // Create the event instance and post it to the bus.
-        val event = create(createModelEntry(req, false, severity, entity, resource, userId)) // false: not an alarm
+        val event = create(context, createModelEntry(req, false, severity, entity, resource, userId)) // false: not an alarm
         log(req, event, entity)
         event
 

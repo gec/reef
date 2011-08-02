@@ -67,21 +67,21 @@ class CommEndCfgServiceModel(
   link(portModel)
   link(coordinator)
 
-  override def createFromProto(proto: CommEndCfgProto): CommunicationEndpoint = {
+  override def createFromProto(context: RequestContext[_], proto: CommEndCfgProto): CommunicationEndpoint = {
     checkProto(proto)
     val ent = EQ.findOrCreateEntity(proto.getName, "CommunicationEndpoint")
     EQ.addTypeToEntity(ent, "LogicalNode")
-    val sql = create(createModelEntry(proto, ent))
-    setLinkedObjects(sql, proto, ent)
-    coordinator.onEndpointCreated(sql)
+    val sql = create(context, createModelEntry(context, proto, ent))
+    setLinkedObjects(context, sql, proto, ent)
+    coordinator.onEndpointCreated(context, sql)
     sql
   }
 
-  override def updateFromProto(proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
+  override def updateFromProto(context: RequestContext[_], proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
     checkProto(proto)
-    val (sql, changed) = update(createModelEntry(proto, existing.entity.value), existing)
-    setLinkedObjects(sql, proto, existing.entity.value)
-    coordinator.onEndpointUpdated(sql)
+    val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
+    setLinkedObjects(context, sql, proto, existing.entity.value)
+    coordinator.onEndpointUpdated(context, sql)
     (sql, changed)
   }
 
@@ -90,7 +90,7 @@ class CommEndCfgServiceModel(
       throw new BadRequestException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
   }
 
-  override def preDelete(sql: CommunicationEndpoint) {
+  override def preDelete(context: RequestContext[_], sql: CommunicationEndpoint) {
 
     val frontEndAssignment = sql.frontEndAssignment.value
     if (frontEndAssignment.enabled)
@@ -100,28 +100,28 @@ class CommEndCfgServiceModel(
       throw new BadRequestException("Cannot delete endpoint that is not in COMMS_DOWN state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
 
     sql.entity.value // preload lazy entity since it will be deleted by the time event is rendered
-    coordinator.onEndpointDeleted(sql)
+    coordinator.onEndpointDeleted(context, sql)
   }
 
-  override def postDelete(sql: CommunicationEndpoint) {
+  override def postDelete(context: RequestContext[_], sql: CommunicationEndpoint) {
     EQ.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
   }
 
   import org.totalgrid.reef.proto.OptionalProtos._
-  def setLinkedObjects(sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
-    pointModel.createAndSetOwningNode(request.ownerships.points.getOrElse(Nil), ent)
+  def setLinkedObjects(context: RequestContext[_], sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
+    pointModel.createAndSetOwningNode(context, request.ownerships.points.getOrElse(Nil), ent)
 
-    commandModel.createAndSetOwningNode(request.ownerships.commands.getOrElse(Nil), ent)
+    commandModel.createAndSetOwningNode(context, request.ownerships.commands.getOrElse(Nil), ent)
 
-    configModel.addOwningEntity(request.getConfigFilesList.toList, ent)
+    configModel.addOwningEntity(context, request.getConfigFilesList.toList, ent)
   }
 
-  def createModelEntry(proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
+  def createModelEntry(context: RequestContext[_], proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
 
     val linkedPort = proto.channel.map { portProto =>
-      portModel.findRecord(portProto) match {
+      portModel.findRecord(context, portProto) match {
         case Some(p) => p
-        case None => portModel.createFromProto(portProto)
+        case None => portModel.createFromProto(context, portProto)
       }
     }
     // TODO: create "using" edge between port and endpoint

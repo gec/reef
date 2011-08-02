@@ -46,7 +46,7 @@ trait AuthorizesCreate extends CanAuthorizeCreate with AuthTranslator {
   override def actions = actionForCreate :: super.actions
   protected val actionForCreate = "create"
 
-  final override def authorizeCreate(request: ServiceType, headers: RequestEnv): ServiceType = {
+  final override def authorizeCreate(context: RequestContext[_], request: ServiceType, headers: RequestEnv): ServiceType = {
     authorize(componentId, actionForCreate, headers)
     request
   }
@@ -57,7 +57,7 @@ trait AuthorizesRead extends CanAuthorizeRead with AuthTranslator {
   override def actions = actionForRead :: super.actions
   protected val actionForRead = "read"
 
-  final override def authorizeRead(request: ServiceType, headers: RequestEnv): ServiceType = {
+  final override def authorizeRead(context: RequestContext[_], request: ServiceType, headers: RequestEnv): ServiceType = {
     authorize(componentId, actionForRead, headers)
     request
   }
@@ -68,7 +68,7 @@ trait AuthorizesUpdate extends CanAuthorizeUpdate with AuthTranslator {
   override def actions = actionForUpdate :: super.actions
   protected val actionForUpdate = "update"
 
-  final override def authorizeUpdate(request: ServiceType, headers: RequestEnv): ServiceType = {
+  final override def authorizeUpdate(context: RequestContext[_], request: ServiceType, headers: RequestEnv): ServiceType = {
     authorize(componentId, actionForUpdate, headers)
     request
   }
@@ -79,7 +79,7 @@ trait AuthorizesDelete extends CanAuthorizeDelete with AuthTranslator {
   override def actions = actionForDelete :: super.actions
   protected val actionForDelete = "delete"
 
-  final override def authorizeDelete(request: ServiceType, headers: RequestEnv): ServiceType = {
+  final override def authorizeDelete(context: RequestContext[_], request: ServiceType, headers: RequestEnv): ServiceType = {
     authorize(componentId, actionForDelete, headers)
     request
   }

@@ -58,11 +58,11 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param entry   Object to be created
    * @return        Result of store creation/insertion
    */
-  def create(entry: SqlType): SqlType = {
-    val sql = preCreate(entry)
+  def create(context: RequestContext[_], entry: SqlType): SqlType = {
+    val sql = preCreate(context, entry)
     val inserted = table.insert(sql)
-    onCreated(inserted)
-    postCreate(inserted)
+    onCreated(context, inserted)
+    postCreate(context, inserted)
     inserted
   }
 
@@ -73,13 +73,13 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param existing    Existing entry to be replaced
    * @return            Result stored in data base and whether it was modified
    */
-  def update(entry: SqlType, existing: SqlType): (SqlType, Boolean) = {
-    val sql = preUpdate(entry, existing)
+  def update(context: RequestContext[_], entry: SqlType, existing: SqlType): (SqlType, Boolean) = {
+    val sql = preUpdate(context, entry, existing)
     if (isModified(entry, existing)) {
       sql.id = existing.id
       table.update(sql)
-      onUpdated(sql)
-      postUpdate(sql, existing)
+      onUpdated(context, sql)
+      postUpdate(context, sql, existing)
       (sql, true)
     } else {
       logger.info(entry + " not modified")
@@ -93,11 +93,11 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param entry       Existing entry to be deleted
    * @return            Result of store delete
    */
-  def delete(entry: SqlType): SqlType = {
-    preDelete(entry)
+  def delete(context: RequestContext[_], entry: SqlType): SqlType = {
+    preDelete(context, entry)
     table.delete(entry.id)
-    onDeleted(entry)
-    postDelete(entry)
+    onDeleted(context, entry)
+    postDelete(context, entry)
     entry
   }
 
@@ -109,7 +109,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param fun                 Update logic to be performed during lock, transforms acquired entries to list of updated entries
    * @return                    Entries that result from update
    */
-  def exclusiveUpdate(existing: List[SqlType], acquireCondition: SqlType => Boolean)(fun: List[SqlType] => List[SqlType]): List[SqlType] = {
+  def exclusiveUpdate(context: RequestContext[_], existing: List[SqlType], acquireCondition: SqlType => Boolean)(fun: List[SqlType] => List[SqlType]): List[SqlType] = {
 
     val ids = existing.map(_.id)
 
@@ -139,7 +139,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
           throw new Exception("Updated entries must be 1 to 1 map from input list")
 
         // Perform the update
-        val (sql, updated) = update(entry, previous)
+        val (sql, updated) = update(context, entry, previous)
         if (!updated) throw new Exception("Entry not updated!")
         sql
     }
@@ -155,9 +155,9 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param fun                 Update logic to be performed during lock, transforms acquired entry to updated entry
    * @return                    Entry that results from update
    */
-  def exclusiveUpdate(existing: SqlType, acquireCondition: SqlType => Boolean)(fun: SqlType => SqlType): SqlType = {
+  def exclusiveUpdate(context: RequestContext[_], existing: SqlType, acquireCondition: SqlType => Boolean)(fun: SqlType => SqlType): SqlType = {
     // Wraps/unwraps in list for special case of a single update
-    val result = exclusiveUpdate(List(existing), acquireCondition) { list =>
+    val result = exclusiveUpdate(context, List(existing), acquireCondition) { list =>
       List(fun(list.head))
     }
     result.head

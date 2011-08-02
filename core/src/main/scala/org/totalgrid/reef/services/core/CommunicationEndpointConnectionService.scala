@@ -49,7 +49,7 @@ class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTr
 
   override val descriptor = Descriptors.commEndpointConnection
 
-  override def merge(req: ServiceType, current: ModelType): ServiceType = {
+  override def merge(context: RequestContext[_], req: ServiceType, current: ModelType): ServiceType = {
     import org.totalgrid.reef.proto.OptionalProtos._
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
@@ -86,7 +86,7 @@ class CommunicationEndpointConnectionServiceModel(
     if (linkModels) link(coordinator)
   }
 
-  override def updateFromProto(proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
+  override def updateFromProto(context: RequestContext[_], proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
 
     lazy val endpoint = existing.endpoint.value.get
     lazy val eventArgs = "name" -> endpoint.entityName :: Nil
@@ -99,7 +99,7 @@ class CommunicationEndpointConnectionServiceModel(
       val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
       eventFunc(code)
 
-      update(existing.copy(enabled = proto.getEnabled), existing)
+      update(context, existing.copy(enabled = proto.getEnabled), existing)
     } else if (proto.hasState && proto.getState.getNumber != existing.state) {
       val newState = proto.getState.getNumber
       val online = newState == ConnProto.State.COMMS_UP.getNumber
@@ -110,15 +110,15 @@ class CommunicationEndpointConnectionServiceModel(
         eventFunc(EventType.Scada.CommEndpointOffline)
         existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
       }
-      update(updated, existing)
+      update(context, updated, existing)
     } else {
       // state and enabled weren't altered, return NOT_MODIFIED
       (existing, false)
     }
   }
 
-  override def postUpdate(sql: FrontEndAssignment, existing: FrontEndAssignment) {
-    coordinator.onFepConnectionChange(sql, existing)
+  override def postUpdate(context: RequestContext[_], sql: FrontEndAssignment, existing: FrontEndAssignment) {
+    coordinator.onFepConnectionChange(context, sql, existing)
   }
 }
 

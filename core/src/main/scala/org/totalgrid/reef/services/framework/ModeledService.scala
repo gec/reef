@@ -38,7 +38,7 @@ trait HasSubscribe extends HasAllTypes {
 
 }
 
-trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with AsyncServiceBase[ST]
+trait AsyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with ServiceEntryPoint[ST]
 
-trait SyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with SyncServiceBase[ST]
+trait SyncModeledServiceBase[ST <: AnyRef, MT, SMT <: ServiceModel[ST, MT]] extends AllTypesAre[ST, MT, SMT] with ServiceEntryPoint[ST]
 

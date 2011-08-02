@@ -55,24 +55,24 @@ class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHa
     with OverrideConfigConversion
     with ServiceModelSystemEventPublisher {
 
-  override protected def preCreate(entry: OverrideConfig): OverrideConfig = {
+  override protected def preCreate(context: RequestContext[_], entry: OverrideConfig): OverrideConfig = {
     if (entry.isOperatorBlockRequest)
       entry
     else
       throw new BadRequestException("Cannot override a point that is in service. First block the point, then override it.")
   }
 
-  override protected def postCreate(entry: OverrideConfig) {
+  override protected def postCreate(context: RequestContext[_], entry: OverrideConfig) {
     val code = if (entry.proto.value.meas.isDefined) EventType.Scada.SetOverride else EventType.Scada.SetNotInService
     postSystemEvent(code, entity = Some(entry.point.value.entity.value))
   }
 
-  override protected def postUpdate(entry: OverrideConfig, previous: OverrideConfig) {
+  override protected def postUpdate(context: RequestContext[_], entry: OverrideConfig, previous: OverrideConfig) {
     val code = if (entry.proto.value.meas.isDefined) EventType.Scada.SetOverride else EventType.Scada.SetNotInService
     postSystemEvent(code, entity = Some(entry.point.value.entity.value))
   }
 
-  override protected def postDelete(entry: OverrideConfig) {
+  override protected def postDelete(context: RequestContext[_], entry: OverrideConfig) {
     val code = if (entry.proto.value.meas.isDefined) EventType.Scada.RemoveOverride else EventType.Scada.RemoveNotInService
     postSystemEvent(code, entity = Some(entry.point.value.entity.value))
   }

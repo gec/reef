@@ -36,6 +36,12 @@ import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => Eve
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.client.Response
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.services.framework.{ ServiceEntryPoint, RequestContext, SimpleRequestContext, AsyncContextRestService }
+import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
+
+import SyncServiceShims._
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -52,11 +58,8 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     val eventQuery = new EventQueryService(factories.events, publishers)
     val alarmQuery = new AlarmQueryService(publishers)
 
-    val headers = new RequestEnv
-    headers.setUserName("user")
-
     def publishEvent(evt: EventProto): EventProto = {
-      events.put(evt, headers).expectOne()
+      events.put(evt).expectOne()
     }
 
     seed()
