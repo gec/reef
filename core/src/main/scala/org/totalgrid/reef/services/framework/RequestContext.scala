@@ -65,7 +65,7 @@ class DependenciesRequestContext(dependencies: ServiceDependencies) extends Requ
       dependencies.pubs.getEventSink(resp.getClass).publish(event, resp, key)
     }
 
-    def bind(subQueue: String, key: String, request: GeneratedMessage) = {
+    def bind(subQueue: String, key: String, request: AnyRef) = {
       dependencies.pubs.getEventSink(request.getClass).bind(subQueue, key, request)
     }
   }

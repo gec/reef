@@ -19,26 +19,29 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementHistory }
-
 import org.totalgrid.reef.measurementstore.Historian
-
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.services.framework.{RequestContext, ServiceEntryPoint}
+import org.totalgrid.reef.proto.Measurements.{Measurement, MeasurementHistory}
 
-class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementHistory] {
 
-  def this(cm: Historian, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementHistory]))
+class MeasurementHistoryService(cm: Historian)
+    extends ServiceEntryPoint[MeasurementHistory]
+    with SimpleRead {
 
   val HISTORY_LIMIT = 10000
 
   override val descriptor = Descriptors.measurementHistory
 
-  override def get(req: MeasurementHistory, env: RequestEnv): Response[MeasurementHistory] = {
+  override def getSubscribeKeys(req: ServiceType): List[String] = {
+    if (req.hasEndTime) throw new BadRequestException("Cannot subscribe to measurement when endTime has been set.")
+    if (req.hasSampling && req.getSampling != MeasurementHistory.Sampling.NONE)
+      throw new BadRequestException("Cannot subscribe to \"sampled\" data stream, leave sampling field blank or NONE")
+    req.getPointName :: Nil
+  }
+
+  override def doGet(context: RequestContext, req: ServiceType): ServiceType = {
 
     val pointName = req.getPointName()
 
@@ -53,13 +56,6 @@ class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHa
 
     if (limit > HISTORY_LIMIT)
       throw new BadRequestException("Maximum number of measurements available through this interface is " + HISTORY_LIMIT + ". Reduce limit parameter.")
-
-    env.subQueue.foreach { subQueue =>
-      if (req.hasEndTime) throw new BadRequestException("Cannot subscribe to measurement when endTime has been set.")
-      if (req.hasSampling && req.getSampling != MeasurementHistory.Sampling.NONE)
-        throw new BadRequestException("Cannot subscribe to \"sampled\" data stream, leave sampling field blank or NONE")
-      subHandler.bind(subQueue, pointName, req)
-    }
 
     // read values out of the historian
     var history = cm.getInRange(pointName, begin, end, limit, !keepNewest)
@@ -76,7 +72,7 @@ class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHa
     val b = MeasurementHistory.newBuilder(req)
     history.foreach { m => b.addMeasurements(m) }
 
-    Response(Envelope.Status.OK, b.build :: Nil)
+    b.build
   }
 
   private def sampleExtremes(meases: Seq[Measurement]): Seq[Measurement] = {

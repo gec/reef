@@ -40,7 +40,7 @@ trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with Logg
     })
   }
 
-  def bind(subQueue: String, key: String, request: GeneratedMessage) = {
+  def bind(subQueue: String, key: String, request: AnyRef) = {
     sendTo((b: BrokerChannel) => {
       b.bindQueue(subQueue, exchange, key)
       logger.debug("binding queue: " + subQueue + " to " + describe(exchange, key))

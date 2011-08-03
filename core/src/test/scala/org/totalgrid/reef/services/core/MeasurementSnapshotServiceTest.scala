@@ -23,13 +23,12 @@ import org.totalgrid.reef.measurementstore.MeasSink.Meas
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 
-import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.services.core.SyncServiceShims._
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -38,8 +37,7 @@ class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
 }
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll // with RunTestsInsideTransaction
-{
+class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase {
 
   def makeMeas(name: String, time: Int) = {
     val meas = Measurements.Measurement.newBuilder
@@ -56,7 +54,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
 
   test("Get Measurements from RTDB") {
     val points = Map("meas1" -> makeMeas("meas1", 0), "meas2" -> makeMeas("meas2", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
 
     val getMeas1 = service.get(getMeas("meas1")).expectOne()
     getMeas1.getMeasurementsCount() should equal(1)
@@ -70,7 +68,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
 
   test("Bad Request for unknown points") {
     val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
 
     val exception = intercept[BadRequestException] {
       service.get(getMeas("crazyName")).expectOne()
@@ -80,7 +78,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
 
   test("Bad Request for some unknown points") {
     val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
 
     val exception = intercept[BadRequestException] {
       service.get(getMeas("meas", "crazyName")).expectOne()
@@ -90,7 +88,7 @@ class MeasurementSnapshotServiceTest extends FunSuite with ShouldMatchers with B
 
   test("Blank Request returns ok") {
     val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points), new SilentServiceSubscriptionHandler {})
+    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
 
     val result = service.get(getMeas()).expectOne()
     result.getPointNamesCount should equal(0)

@@ -25,24 +25,22 @@ import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.measurementstore.RTDatabase
+import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
+import org.totalgrid.reef.services.framework.{RequestContext, ServiceEntryPoint}
+import org.totalgrid.reef.japi.BadRequestException
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.SyncServiceBase
-import org.totalgrid.reef.japi.{ ExpectationException, BadRequestException, Envelope }
-
-class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[MeasurementSnapshot] {
-
-  def this(cm: RTDatabase, pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[MeasurementSnapshot]))
+class MeasurementSnapshotService(cm: RTDatabase)
+    extends ServiceEntryPoint[MeasurementSnapshot]
+    with SimpleRead {
 
   override val descriptor = Descriptors.measurementSnapshot
 
-  override def get(req: MeasurementSnapshot, env: RequestEnv): Response[MeasurementSnapshot] = {
+  override def getSubscribeKeys(req: MeasurementSnapshot): List[String] = {
+    req.getPointNamesList().toList.map(_.replace("*", "#"))
+  }
 
+  override def doGet(context: RequestContext, req: MeasurementSnapshot): MeasurementSnapshot = {
     val measList = req.getPointNamesList().toList
-
-    env.subQueue.foreach(subQueue => measList.map(_.replace("*", "#")).foreach(key => subHandler.bind(subQueue, key, req)))
 
     val searchList = if (measList.size == 1 && measList.head == "*") {
       Nil // TODO: get list of all points from other source
@@ -64,7 +62,6 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
       b.addAllPointNames(foundNames)
       b.addAllMeasurements(measurements)
     }
-    Response(Envelope.Status.OK, b.build :: Nil)
+    b.build
   }
-
 }

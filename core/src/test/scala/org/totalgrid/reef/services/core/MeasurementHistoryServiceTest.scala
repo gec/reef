@@ -23,14 +23,11 @@ import org.totalgrid.reef.measurementstore.MeasSink.Meas
 import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.proto.Measurements.MeasurementHistory
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
+import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.services.core.SyncServiceShims._
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1
@@ -50,7 +47,7 @@ class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
 }
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
+class MeasurementHistoryServiceTest extends DatabaseUsingTestBase {
 
   def getMeas(name: String, time: Int, value: Int) = {
     val meas = Measurements.Measurement.newBuilder
@@ -68,26 +65,20 @@ class MeasurementHistoryServiceTest extends FunSuite with ShouldMatchers with Be
   }
 
   test("History Service defaults are sensible") {
-    AMQPFixture.mock(true) { amqp =>
-      val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
-      val historian = new FakeHistorian(points)
-      val service = new MeasurementHistoryService(historian, new SilentServiceSubscriptionHandler)
-      val info = ReefServicesList.getServiceInfo(classOf[MeasurementHistory])
+    val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
+    val historian = new FakeHistorian(points)
+    val service = new MeasurementHistoryService(historian)
 
-      amqp.bindService(info.descriptor.id, service.respond)
+    val getMeas1 = service.get(MeasurementHistory.newBuilder.setPointName("meas1").build).expectOne()
+    getMeas1.getMeasurementsCount() should equal(2)
 
-      val client = amqp.getProtoClientSession(ReefServicesList, 500000)
+    validateHistorian(historian, 0, Long.MaxValue, service.HISTORY_LIMIT, false)
 
-      val getMeas1 = client.get(MeasurementHistory.newBuilder.setPointName("meas1").build).await().expectOne()
-      getMeas1.getMeasurementsCount() should equal(2)
+    service.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).expectOne()
+    validateHistorian(historian, 10, 1000, service.HISTORY_LIMIT, false)
 
-      validateHistorian(historian, 0, Long.MaxValue, service.HISTORY_LIMIT, false)
+    service.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).expectOne()
+    validateHistorian(historian, 0, Long.MaxValue, 99, false)
 
-      client.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).await().expectOne()
-      validateHistorian(historian, 10, 1000, service.HISTORY_LIMIT, false)
-
-      client.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).await().expectOne()
-      validateHistorian(historian, 0, Long.MaxValue, 99, false)
-    }
   }
 }

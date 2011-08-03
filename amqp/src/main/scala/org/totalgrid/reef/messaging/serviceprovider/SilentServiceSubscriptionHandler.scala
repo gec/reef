@@ -26,6 +26,6 @@ class SilentServiceSubscriptionHandler extends ServiceSubscriptionHandler {
 
   def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = {}
 
-  def bind(subQueue: String, key: String, request: GeneratedMessage) = {}
+  def bind(subQueue: String, key: String, request: AnyRef) = {}
 }
 

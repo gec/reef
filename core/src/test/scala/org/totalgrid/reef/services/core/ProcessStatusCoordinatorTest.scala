@@ -53,7 +53,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
       count.update(count.current + 1)
     }
 
-    def bind(subQueue: String, key: String, resp: GeneratedMessage) {}
+    def bind(subQueue: String, key: String, resp: AnyRef) {}
 
     def waitForNEvents(n: Int): Boolean = {
       // TODO: remove precondition check when syncvar is fixed
