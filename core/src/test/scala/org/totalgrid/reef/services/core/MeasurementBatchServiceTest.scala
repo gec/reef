@@ -47,6 +47,13 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       addMeasProc("meas")
     }
 
+    def publishMeas(meas: MeasurementBatch): MeasurementBatch = {
+      val result = new AsyncValue[Response[MeasurementBatch]]
+      contextSource.transaction { context =>
+        batchService.putAsync(context, meas)(result.set)
+      }
+      result.await().expectOne()
+    }
   }
 
   test("Putting Batch when no FEP Fails") {
@@ -56,7 +63,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.addDevice("dev1")
 
       intercept[ReefServiceException] {
-        coord.batchService.putAsync(makeBatch(makeInt("dev1.test_point", 10))) { _ => }
+        coord.publishMeas(makeBatch(makeInt("dev1.test_point", 10)))
       }
     }
   }
@@ -71,13 +78,9 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(1)
       coord.pointsWithBadQuality should equal(1)
 
-      var mb = coord.listenForMeasurements("meas")
+      val mb = coord.listenForMeasurements("meas")
 
-      val result = new AsyncValue[Response[MeasurementBatch]]
-
-      coord.batchService.putAsync(makeBatch(makeInt("dev1.test_point", 10)))(result.set)
-
-      result.await().expectOne()
+      coord.publishMeas(makeBatch(makeInt("dev1.test_point", 10)))
 
       mb.waitFor({ _.size == 1 }, 1000)
 
@@ -104,13 +107,11 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.pointsInDatabase should equal(2)
       coord.pointsWithBadQuality should equal(2)
 
-      var mb = coord.listenForMeasurements("meas")
+      val mb = coord.listenForMeasurements("meas")
 
       val batch = makeBatch(makeInt("dev1.test_point", 10) :: makeInt("dev2.test_point", 10) :: Nil)
 
-      val result = new AsyncValue[Response[MeasurementBatch]]
-      coord.batchService.putAsync(batch)(result.set)
-      result.await().expectOne()
+      coord.publishMeas(batch)
 
       mb.waitFor({ _.size == 2 }, 1000)
 

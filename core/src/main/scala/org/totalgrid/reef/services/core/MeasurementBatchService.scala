@@ -31,15 +31,18 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
+import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContext, ServiceEntryPoint }
 
 class MeasurementBatchService(pool: SessionPool)
-    extends AsyncServiceBase[MeasurementBatch] {
+    extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def putAsync(req: MeasurementBatch, env: RequestEnv)(callback: Response[MeasurementBatch] => Unit) = {
+  override def putAsync(context: RequestContext, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
 
-    val requests: List[Request[MeasurementBatch]] = inTransaction {
+    authorizeCreate(context, req)
+
+    val requests: List[Request[MeasurementBatch]] = {
       // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName)
       val points = Point.findByNames(names).toList
@@ -55,7 +58,6 @@ class MeasurementBatchService(pool: SessionPool)
         case 1 => Request(Envelope.Verb.PUT, req, destination = convertEndpointToDestination(commEndpoints.head._1)) :: Nil
         case _ => getRequests(req, commEndpoints)
       }
-
     }
 
     val promises = pool.borrow { client =>
