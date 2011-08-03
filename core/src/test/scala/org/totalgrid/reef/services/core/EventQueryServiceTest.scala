@@ -35,7 +35,7 @@ import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 
 import java.util.{ Calendar }
-import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.services.core.SyncServiceShims._
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryServiceTest extends DatabaseUsingTestBase {
@@ -118,32 +118,17 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     cal.getTimeInMillis
   }
 
-  case class Fixture(service: EventQueryService)
-  type FixtureParam = Fixture
-
-  def getFixture(): Fixture = {
-    val deps = new ServiceDependencies()
-    val alarms = new AlarmServiceModelFactory(deps)
-    val eventConfig = new EventConfigServiceModelFactory(deps)
-    val fac = new EventServiceModelFactory(deps, eventConfig, alarms)
-    val service = new EventQueryService(fac, deps.pubs)
-
-    Fixture(service)
-  }
-
   import EventType._
 
   test("FailPutEventList") {
-    val fixture = getFixture
-    import fixture._
+    val service = new EventQueryService
 
     val resp = service.put(makeEL(0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
     resp.status should equal(Envelope.Status.NOT_ALLOWED)
   }
 
   test("SimpleQueries") {
-    val fixture = getFixture
-    import fixture._
+    val service = new EventQueryService
 
     // Select EventType only.
     //
@@ -186,8 +171,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
   }
 
   test("QueriesWithSets") {
-    val fixture = getFixture
-    import fixture._
+    val service = new EventQueryService
 
     val empty = List[String]()
     val anyEventType = List[EventType]()
@@ -210,8 +194,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
   }
 
   test("QueriesWithTime") {
-    val fixture = getFixture
-    import fixture._
+    val service = new EventQueryService
 
     var resp = service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(9)

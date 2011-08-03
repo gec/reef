@@ -19,8 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity, EntityToTypeJoins }
-import org.totalgrid.reef.sapi.client.Response
+import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity }
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.framework._
@@ -29,15 +28,12 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
+import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.services.ProtoRoutingKeys
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 
@@ -72,13 +68,27 @@ object AlarmQueryService {
   }
 }
 
-class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[AlarmList] {
+class AlarmQueryService
+    extends ServiceEntryPoint[AlarmList]
+    with SimpleRead {
 
-  def this(pubs: ServiceEventPublishers) = this(pubs.getEventSink(classOf[Alarm]))
+  import AlarmQueryService._
 
   override val descriptor = Descriptors.alarmList
 
-  override def get(req: AlarmList, env: RequestEnv): Response[AlarmList] = {
+  override def getSubscribeKeys(req: AlarmList) = {
+    createSubscriptionPermutations(makeSubscriptionKeyParts(req.getSelect)).map { ProtoRoutingKeys.generateRoutingKey(_) }
+  }
+
+  override def subscribe(context: RequestContext, req: ServiceType) = {
+    context.headers.subQueue.foreach { subQueue =>
+      val keys = getSubscribeKeys(req)
+      // have to pass an alarm object so the binding is done to the correct queue
+      keys.foreach(context.subHandler.bind(subQueue, _, Alarm.newBuilder.build))
+    }
+  }
+
+  override def doGet(context: RequestContext, req: AlarmList): AlarmList = {
     import ApplicationSchema._
     import AlarmQueryService._
 
@@ -86,52 +96,46 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServ
 
     val select = req.getSelect
 
-    inTransaction {
-      env.subQueue.foreach { queueName =>
-        val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
-        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts), req))
-      }
-
-      // default all queries to max of 1000 events.
-      val limit = select.eventSelect.limit getOrElse 1000
-      if (limit < 0) {
-        throw new BadRequestException("Limit must be non-negative")
-      }
-
-      val results =
-        from(alarms, events)((alarm, event) =>
-          where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
-            alarm.eventUid === event.id)
-            select ((alarm, event))
-            orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList
-
-      val entIds = results.map { case (_, event) => event.entityId }.flatten.distinct
-
-      val entToTypes: List[(Entity, Option[String])] =
-        join(entities, entityTypes.leftOuter)((e, t) =>
-          where(e.id in entIds)
-            select (e, t.map(_.entType))
-            on (Some(e.id) === t.map(_.entityId))).toList
-
-      val typMap = AlarmQueryService.tupleGroup(entToTypes)
-
-      typMap.foreach { case (ent, typList) => ent.types.value = typList.flatten }
-
-      val entMap = typMap.keys.map(e => (e.id, e)).toMap
-
-      val alarmProtos =
-        results.map {
-          case (alarm, event) =>
-            event.entityId.foreach { entId =>
-              event.entity.value = entMap.get(entId)
-            }
-            AlarmConversion.convertToProto(alarm, event)
-        }
-
-      val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
-
-      Response(Envelope.Status.OK, alarmList :: Nil)
+    // default all queries to max of 1000 events.
+    val limit = select.eventSelect.limit getOrElse 1000
+    if (limit < 0) {
+      throw new BadRequestException("Limit must be non-negative")
     }
+
+    val results =
+      from(alarms, events)((alarm, event) =>
+        where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
+          alarm.eventUid === event.id)
+          select ((alarm, event))
+          orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList
+
+    val entIds = results.map { case (_, event) => event.entityId }.flatten.distinct
+
+    val entToTypes: List[(Entity, Option[String])] =
+      join(entities, entityTypes.leftOuter)((e, t) =>
+        where(e.id in entIds)
+          select (e, t.map(_.entType))
+          on (Some(e.id) === t.map(_.entityId))).toList
+
+    val typMap = AlarmQueryService.tupleGroup(entToTypes)
+
+    typMap.foreach { case (ent, typList) => ent.types.value = typList.flatten }
+
+    val entMap = typMap.keys.map(e => (e.id, e)).toMap
+
+    val alarmProtos =
+      results.map {
+        case (alarm, event) =>
+          event.entityId.foreach { entId =>
+            event.entity.value = entMap.get(entId)
+          }
+          AlarmConversion.convertToProto(alarm, event)
+      }
+
+    val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
+
+    alarmList
+
   }
 
   def timeOrder(time: ExpressionNode, ascending: Option[Boolean]) = {

@@ -71,14 +71,13 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new EntityService,
     new EntityEdgeService,
     new EntityAttributesService,
-    new MeasurementBatchService(sessionPool),
-
-    new EventQueryService(modelFac.events, pubs),
-    new AlarmQueryService(pubs)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
+    new MeasurementBatchService(sessionPool)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
 
   private val crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),
+    new EventQueryService,
+    new AlarmQueryService,
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
 

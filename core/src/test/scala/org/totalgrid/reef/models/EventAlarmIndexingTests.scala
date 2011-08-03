@@ -28,6 +28,7 @@ import org.scalatest.junit.JUnitRunner
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.mutable.ListBuffer
 
+import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.core.AlarmQueryService
 import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.proto.Alarms._
@@ -155,7 +156,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
     val alarms = ApplicationSchema.alarms
     val events = ApplicationSchema.events
 
-    val alarmQueryService = new AlarmQueryService(new SilentServiceSubscriptionHandler())
+    val alarmQueryService = new AlarmQueryService
 
     val query = AlarmList.newBuilder.setSelect(
       AlarmSelect.newBuilder.setEventSelect(

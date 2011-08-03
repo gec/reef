@@ -20,27 +20,22 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.sapi.client.Response
 
 import org.totalgrid.reef.services.framework._
 
-import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
-
+import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode, LogicalBoolean }
 import org.squeryl.PrimitiveTypeMode._
+
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.service.SyncServiceBase
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, ServiceEventPublishers }
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
+import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
+import org.totalgrid.reef.japi.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
-import _root_.scala.collection.JavaConversions._
 
-import org.squeryl.dsl.ast.LogicalBoolean
+import scala.collection.JavaConversions._
 
 object EventQueryService {
 
@@ -90,38 +85,41 @@ object EventQueryService {
   }
 }
 
-class EventQueryService(protected val modelTrans: ServiceTransactable[EventServiceModel], subHandler: ServiceSubscriptionHandler)
-    extends SyncServiceBase[EventList] {
-
-  def this(cm: ServiceTransactable[EventServiceModel], pubs: ServiceEventPublishers) = this(cm, pubs.getEventSink(classOf[Event]))
+class EventQueryService
+    extends ServiceEntryPoint[EventList]
+    with SimpleRead {
 
   import EventQueryService._
 
   final override val descriptor = Descriptors.eventList
 
-  final override def get(req: EventList, env: RequestEnv): Response[EventList] = {
+  override def getSubscribeKeys(req: EventList) = {
+    createSubscriptionPermutations(makeSubscriptionKeyParts(req.getSelect)).map { ProtoRoutingKeys.generateRoutingKey(_) }
+  }
+
+  override def subscribe(context: RequestContext, req: ServiceType) = {
+    context.headers.subQueue.foreach { subQueue =>
+      val keys = getSubscribeKeys(req)
+      // have to pass an event object so the binding is done to the correct queue
+      keys.foreach(context.subHandler.bind(subQueue, _, Event.newBuilder.build))
+    }
+  }
+
+  override def doGet(context: RequestContext, req: EventList): EventList = {
 
     if (!req.hasSelect) throw new BadRequestException("Must include select")
     val select = req.getSelect
 
-    inTransaction {
+    val limit = select.limit.getOrElse(1000) // default all queries to max of 1000 events.
 
-      env.subQueue.foreach { queueName =>
-        val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
-        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts), req))
-      }
+    val entries =
+      from(ApplicationSchema.events)(row =>
+        where(SquerylModel.combineExpressions(buildQuery(row, select).flatten))
+          select (row)
+          orderBy timeOrder(row.time, select.ascending)).page(0, limit)
 
-      val limit = select.limit.getOrElse(1000) // default all queries to max of 1000 events.
-
-      val entries =
-        from(ApplicationSchema.events)(row =>
-          where(SquerylModel.combineExpressions(buildQuery(row, select).flatten))
-            select (row)
-            orderBy timeOrder(row.time, select.ascending)).page(0, limit)
-
-      val respList = EventList.newBuilder.addAllEvents(entries.toList.map(EventConversion.convertToProto(_))).build
-      Response(Envelope.Status.OK, respList :: Nil)
-    }
+    val respList = EventList.newBuilder.addAllEvents(entries.toList.map(EventConversion.convertToProto(_))).build
+    respList
   }
 
   def timeOrder(time: ExpressionNode, ascending: Option[Boolean]) = {

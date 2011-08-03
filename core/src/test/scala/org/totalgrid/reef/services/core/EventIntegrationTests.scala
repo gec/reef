@@ -56,8 +56,8 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     val events = new SyncService(new EventService(factories.events), contextSource)
     val eventConfigs = new SyncService(new EventConfigService(factories.eventConfig), contextSource)
 
-    val eventQuery = new EventQueryService(factories.events, publishers)
-    val alarmQuery = new AlarmQueryService(publishers)
+    val eventQuery = new SyncService(new EventQueryService, contextSource)
+    val alarmQuery = new SyncService(new AlarmQueryService, contextSource)
 
     def publishEvent(evt: EventProto): EventProto = {
       events.put(evt).expectOne()
