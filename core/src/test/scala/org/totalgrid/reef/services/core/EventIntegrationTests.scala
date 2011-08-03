@@ -35,7 +35,9 @@ import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
-import org.totalgrid.reef.services.core.SyncServiceShims._
+
+import org.totalgrid.reef.services.framework.DependenciesSource
+import org.totalgrid.reef.sapi.RequestEnv
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -43,11 +45,16 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   class AlarmTestFixture(amqp: AMQPProtoFactory) {
     val publishers = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
     val summaries = new SilentSummaryPoints
-    val factories = new ModelFactories(ServiceDependencies(publishers, summaries))
+    val deps = ServiceDependencies(publishers, summaries)
+    val env = new RequestEnv()
+    env.setUserName("user")
+    val contextSource = new MockRequestContextSource(deps, env)
 
-    val alarms = new AlarmService(factories.alarms)
-    val events = new EventService(factories.events)
-    val eventConfigs = new EventConfigService(factories.eventConfig)
+    val factories = new ModelFactories(deps, contextSource)
+
+    val alarms = new SyncService(new AlarmService(factories.alarms), contextSource)
+    val events = new SyncService(new EventService(factories.events), contextSource)
+    val eventConfigs = new SyncService(new EventConfigService(factories.eventConfig), contextSource)
 
     val eventQuery = new EventQueryService(factories.events, publishers)
     val alarmQuery = new AlarmQueryService(publishers)

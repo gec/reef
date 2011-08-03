@@ -32,7 +32,7 @@ import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 import org.totalgrid.reef.japi.Envelope
 
-class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceModel]) extends ProtoServiceCoordinator with Logging {
+class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceModel], contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
 
   def startTimeoutChecks(react: Executor) {
     // we need to delay the timeout check a bit to make sure any already queued heartbeat messages are waiting
@@ -61,8 +61,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
   }
 
   def checkTimeouts(now: Long) {
-    val context = new SimpleRequestContext
-    BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+    contextSource.transaction { context =>
       trans.transaction { model =>
 
         ApplicationSchema.heartbeats.where(h => h.isOnline === true and (h.timeoutAt lte now)).foreach(h => {
@@ -70,7 +69,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
           model.takeApplicationOffline(context, h, now)
         })
       }
-    })
+    }
   }
 
   def handleRawStatus(ss: StatusSnapshot): Unit = {
@@ -90,8 +89,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
         logger.warn("App " + ss.getInstanceName + ": is marked offline but got message!")
       }
     }
-    val context = new SimpleRequestContext
-    BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+    contextSource.transaction { context =>
       trans.transaction { model =>
 
         if (!ss.hasProcessId) {
@@ -103,7 +101,7 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
           }
         }
       }
-    })
+    }
   }
 }
 

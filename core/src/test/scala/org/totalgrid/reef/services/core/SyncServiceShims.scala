@@ -21,48 +21,57 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.promise.SynchronizedPromise
-import org.totalgrid.reef.services.framework.{ HeadersRequestContext, SimpleRequestContext, RequestContext, ServiceEntryPoint }
+import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.services.ServiceDependencies
 
-class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], context: RequestContext) {
+class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
+  def get(req: A): Response[A] = get(req, new RequestEnv)
   def get(req: A, env: RequestEnv): Response[A] = {
-    context.headers.merge(env)
-    get(req)
-  }
-  def get(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.getAsync(context, req)(response.onResponse)
-    response.await
+    contextSource.transaction { context =>
+      context.headers.merge(env)
+      service.getAsync(context, req)(response.onResponse)
+      response.await
+    }
   }
 
+  def put(req: A): Response[A] = put(req, new RequestEnv)
   def put(req: A, env: RequestEnv): Response[A] = {
-    context.headers.merge(env)
-    put(req)
-  }
-  def put(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.putAsync(context, req)(response.onResponse)
-    response.await
+    contextSource.transaction { context =>
+      context.headers.merge(env)
+      service.putAsync(context, req)(response.onResponse)
+      response.await
+    }
   }
 
-  def delete(req: A, env: RequestEnv): Response[A] = {
-    context.headers.merge(env)
-    delete(req)
-  }
-  def delete(req: A): Response[A] = {
-    val response = new SynchronizedPromise[Response[A]]()
-    service.deleteAsync(context, req)(response.onResponse)
-    response.await
-  }
-
+  def post(req: A): Response[A] = post(req, new RequestEnv)
   def post(req: A, env: RequestEnv): Response[A] = {
-    context.headers.merge(env)
-    post(req)
-  }
-  def post(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.postAsync(context, req)(response.onResponse)
-    response.await
+    contextSource.transaction { context =>
+      context.headers.merge(env)
+      service.postAsync(context, req)(response.onResponse)
+      response.await
+    }
+  }
+
+  def delete(req: A): Response[A] = delete(req, new RequestEnv)
+  def delete(req: A, env: RequestEnv): Response[A] = {
+    val response = new SynchronizedPromise[Response[A]]()
+    contextSource.transaction { context =>
+      context.headers.merge(env)
+      service.deleteAsync(context, req)(response.onResponse)
+      response.await
+    }
+  }
+}
+
+class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders: RequestEnv) extends RequestContextSource {
+  def transaction[A](f: RequestContext => A) = {
+    val context = new DependenciesRequestContext(dependencies)
+    context.headers.merge(commonHeaders)
+    BasicServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
   }
 }
 
@@ -74,13 +83,13 @@ object SyncServiceShims {
     env
   }
 
-  implicit def getRequestContext(implicit headers: RequestEnv) = {
-    new HeadersRequestContext(headers)
+  implicit def getRequestContextSource(implicit headers: RequestEnv) = {
+    new MockRequestContextSource(new ServiceDependencies, headers)
   }
 
-  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit context: RequestContext) = new SyncService[A](service, context)
+  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit contextSource: RequestContextSource) = new SyncService[A](service, contextSource)
 }
 
 object CustomServiceShims {
-  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit context: RequestContext) = new SyncService[A](service, context)
+  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit contextSource: RequestContextSource) = new SyncService[A](service, contextSource)
 }

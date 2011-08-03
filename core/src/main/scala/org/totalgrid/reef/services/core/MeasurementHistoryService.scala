@@ -58,7 +58,7 @@ class MeasurementHistoryService(cm: Historian, subHandler: ServiceSubscriptionHa
       if (req.hasEndTime) throw new BadRequestException("Cannot subscribe to measurement when endTime has been set.")
       if (req.hasSampling && req.getSampling != MeasurementHistory.Sampling.NONE)
         throw new BadRequestException("Cannot subscribe to \"sampled\" data stream, leave sampling field blank or NONE")
-      subHandler.bind(subQueue, pointName)
+      subHandler.bind(subQueue, pointName, req)
     }
 
     // read values out of the historian

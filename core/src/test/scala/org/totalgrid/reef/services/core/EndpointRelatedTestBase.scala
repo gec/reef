@@ -46,8 +46,6 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.proto.Events.Event
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
-
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 
   override def beforeEach() {
@@ -93,7 +91,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
 
   }
 
-  class MockMeasProc(measProcConnection: MeasurementProcessingConnectionService, rtDb: MeasurementStore, amqp: AMQPProtoFactory) {
+  class MockMeasProc(measProcConnection: SyncService[MeasurementProcessingConnection], rtDb: MeasurementStore, amqp: AMQPProtoFactory) {
 
     val mb = new SyncVar(Nil: List[(String, MeasurementBatch)])
 
@@ -116,7 +114,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
       }
       MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantExecutor {})
 
-      info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
+      logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
 
       measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
     }
@@ -132,37 +130,23 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val headers = new RequestEnv
     headers.setUserName("user")
 
-    val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb, eventSink))
+    val deps = ServiceDependencies(pubs, new SilentSummaryPoints, rtDb, eventSink)
+    val contextSource = new MockRequestContextSource(deps, headers)
 
-    def attachServices(endpoints: Seq[AsyncService[_]]): Unit = endpoints.foreach { ep =>
-      amqp.bindService(ep.descriptor.id, ep.respond, competing = true)
-    }
+    val modelFac = new core.ModelFactories(deps, contextSource)
 
-    val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus)
+    val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
-    val processStatusService = new ProcessStatusService(modelFac.procStatus)
-    val appService = new ApplicationConfigService(modelFac.appConfig)
-    val frontendService = new FrontEndProcessorService(modelFac.fep)
-    val portService = new FrontEndPortService(modelFac.fepPort)
-    val commEndpointService = new core.CommunicationEndpointService(modelFac.endpoints)
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
+    val appService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
+    val frontendService = new SyncService(new FrontEndProcessorService(modelFac.fep), contextSource)
+    val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
+    val commEndpointService = new SyncService(new core.CommunicationEndpointService(modelFac.endpoints), contextSource)
     val entityService = new EntityService
-    val pointService = new core.PointService(modelFac.points)
-    val commandService = new core.CommandService(modelFac.cmds)
-    val frontEndConnection = new CommunicationEndpointConnectionService(modelFac.fepConn)
-    val measProcConnection = new MeasurementProcessingConnectionService(modelFac.measProcConn)
-
-    val services = List(
-      processStatusService,
-      appService,
-      frontendService,
-      portService,
-      commEndpointService,
-      entityService,
-      pointService,
-      frontEndConnection,
-      measProcConnection)
-
-    attachServices(services)
+    val pointService = new SyncService(new core.PointService(modelFac.points), contextSource)
+    val commandService = new SyncService(new core.CommandService(modelFac.cmds), contextSource)
+    val frontEndConnection = new SyncService(new CommunicationEndpointConnectionService(modelFac.fepConn), contextSource)
+    val measProcConnection = new SyncService(new MeasurementProcessingConnectionService(modelFac.measProcConn), contextSource)
 
     var measProcMap = Map.empty[String, MockMeasProc]
 

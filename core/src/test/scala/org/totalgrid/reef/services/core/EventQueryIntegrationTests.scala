@@ -31,7 +31,6 @@ import org.totalgrid.reef.japi.BadRequestException
 class EventQueryIntegrationTests extends EventIntegrationTestsBase {
 
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-  import SyncServiceShims._
 
   test("Subscribe via EventQuery") {
     AMQPFixture.mock(true) { amqp =>

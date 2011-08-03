@@ -20,15 +20,16 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFactory
+import org.totalgrid.reef.services.framework.{ SimpleRequestContextSource, RequestContextSource }
 
-class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies) {
+class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies, contextSource: RequestContextSource = new SimpleRequestContextSource) {
 
   val accesses = new CommandAccessServiceModelFactory(dependencies)
   val userRequests = new UserCommandRequestServiceModelFactory(dependencies, accesses)
   val cmds = new CommandServiceModelFactory(dependencies, userRequests, accesses)
   accesses.setCommandsFactory(cmds)
 
-  val coordinator = new MeasurementStreamCoordinatorFactory(dependencies)
+  val coordinator = new MeasurementStreamCoordinatorFactory(dependencies, contextSource)
 
   val fepConn = new CommunicationEndpointConnectionModelFactory(dependencies, coordinator)
   val measProcConn = new MeasurementProcessingConnectionModelFactory(dependencies, coordinator)

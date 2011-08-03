@@ -19,13 +19,18 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.sapi.auth.AuthService
 import com.google.protobuf.Descriptors.EnumValueDescriptor
+import org.totalgrid.reef.messaging.serviceprovider.{ SilentServiceSubscriptionHandler, ServiceSubscriptionHandler }
+import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.japi.Envelope.{ Event, Status }
+import com.google.protobuf.GeneratedMessage
 
 trait RequestContext {
 
   def events: OperationBuffer
+
+  def subHandler: ServiceSubscriptionHandler
 
   //def request : X
   def headers: RequestEnv
@@ -33,22 +38,53 @@ trait RequestContext {
   //def authService : AuthService
 
   //def setResponse : (Status, X) {}
-}
 
-class Buffer extends OperationBuffer with LinkedBufferedEvaluation {
-  override def onFlushInTransaction = {
-    super.onFlushInTransaction
-  }
-  override def onFlushPostTransaction = {
-    super.onFlushPostTransaction
+  def transaction(f: Unit => Unit) {
+    BasicServiceTransactable.doTransaction(events, { b: OperationBuffer => f })
   }
 }
 
-class SimpleRequestContext extends RequestContext {
-  val headers = new RequestEnv
-  val events = new Buffer
-}
+class Buffer extends OperationBuffer with LinkedBufferedEvaluation
+
+class SimpleRequestContext extends HeadersRequestContext(new RequestEnv)
 
 class HeadersRequestContext(val headers: RequestEnv) extends RequestContext {
   val events = new Buffer
+
+  val subHandler = new SilentServiceSubscriptionHandler
+}
+
+class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
+
+  val headers = new RequestEnv
+
+  val events = new Buffer
+
+  val subHandler = new ServiceSubscriptionHandler {
+    def publish(event: Event, resp: GeneratedMessage, key: String) = {
+      dependencies.pubs.getEventSink(resp.getClass).publish(event, resp, key)
+    }
+
+    def bind(subQueue: String, key: String, request: GeneratedMessage) = {
+      dependencies.pubs.getEventSink(request.getClass).bind(subQueue, key, request)
+    }
+  }
+}
+
+trait RequestContextSource {
+  def transaction[A](f: RequestContext => A): A
+}
+
+class SimpleRequestContextSource extends RequestContextSource {
+  def transaction[A](f: RequestContext => A) = {
+    val context = new SimpleRequestContext()
+    BasicServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
+  }
+}
+
+class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {
+  def transaction[A](f: RequestContext => A) = {
+    val context = new DependenciesRequestContext(dependencies)
+    BasicServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
+  }
 }

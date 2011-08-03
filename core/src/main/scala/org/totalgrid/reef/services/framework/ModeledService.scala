@@ -25,15 +25,15 @@ import org.totalgrid.reef.japi.BadRequestException
  * Shared dependencies for generic service implementations
  */
 trait HasServiceTransactable extends HasAllTypes {
-
   protected val modelTrans: ServiceTransactable[ServiceModelType]
+  lazy val model: ServiceModelType = modelTrans.model
 
 }
 
 trait HasSubscribe extends HasAllTypes {
 
   /* default behavior is disabled */
-  def subscribe(model: ServiceModelType, req: ServiceType, queue: String): Unit =
+  def subscribe(context: RequestContext, model: ServiceModelType, req: ServiceType, queue: String): Unit =
     throw new BadRequestException("Subscribe not allowed")
 
 }

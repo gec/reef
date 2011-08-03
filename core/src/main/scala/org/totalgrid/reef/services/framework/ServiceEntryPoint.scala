@@ -18,12 +18,13 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.{ ReefServiceException, Envelope }
-
 import org.totalgrid.reef.sapi.service._
 import org.totalgrid.reef.util.Logging
+import com.google.protobuf.ByteString
+import org.totalgrid.reef.sapi.client.Failure._
+import org.totalgrid.reef.sapi.client.{ Failure, Response }
+import org.totalgrid.reef.japi.{ TypeDescriptor, ReefServiceException, Envelope }
 
 trait AsyncContextRestGet extends HasServiceType {
   def getAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
@@ -43,7 +44,11 @@ trait AsyncContextRestPut extends HasServiceType {
 
 trait AsyncContextRestService extends AsyncContextRestGet with AsyncContextRestDelete with AsyncContextRestPost with AsyncContextRestPut
 
-trait ServiceEntryPoint[A <: AnyRef] extends ServiceTypeIs[A] with ServiceDescriptor[A] with AsyncContextRestService with Logging with ServiceHelpers[A] with AsyncService[A] {
+trait ServiceEntryPoint[A <: AnyRef] extends ServiceTypeIs[A] with ServiceDescriptor[A] with AsyncContextRestService
+
+class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, service: ServiceEntryPoint[A]) extends AsyncService[A] with Logging with ServiceHelpers[A] {
+
+  val descriptor: TypeDescriptor[A] = service.descriptor
 
   def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
     try {
@@ -61,19 +66,21 @@ trait ServiceEntryPoint[A <: AnyRef] extends ServiceTypeIs[A] with ServiceDescri
 
   private def handleRequest(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
 
-    def onResponse(response: Response[ServiceType]) = callback.onResponse(getResponse(request.getId, response))
+    def onResponse(response: Response[A]) = callback.onResponse(getResponse(request.getId, response))
 
     val value = descriptor.deserialize(request.getPayload.toByteArray)
 
-    val context = new HeadersRequestContext(env)
-
-    request.getVerb match {
-      case Envelope.Verb.GET => getAsync(context, value)(onResponse)
-      case Envelope.Verb.PUT => putAsync(context, value)(onResponse)
-      case Envelope.Verb.DELETE => deleteAsync(context, value)(onResponse)
-      case Envelope.Verb.POST => postAsync(context, value)(onResponse)
+    contextSource.transaction { context =>
+      context.headers.merge(env)
+      request.getVerb match {
+        case Envelope.Verb.GET => service.getAsync(context, value)(onResponse)
+        case Envelope.Verb.PUT => service.putAsync(context, value)(onResponse)
+        case Envelope.Verb.DELETE => service.deleteAsync(context, value)(onResponse)
+        case Envelope.Verb.POST => service.postAsync(context, value)(onResponse)
+      }
     }
 
   }
 
 }
+

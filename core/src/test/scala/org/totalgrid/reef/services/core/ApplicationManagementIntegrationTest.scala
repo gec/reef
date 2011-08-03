@@ -35,6 +35,7 @@ import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistr
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
+import org.totalgrid.reef.services.framework.{ DependenciesSource, ServiceMiddleware }
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
@@ -47,13 +48,16 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
 
     val start = System.currentTimeMillis
 
-    val modelFac = new ModelFactories(ServiceDependencies(new ServiceEventPublisherRegistry(amqp, ReefServicesList)))
+    val deps = ServiceDependencies(new ServiceEventPublisherRegistry(amqp, ReefServicesList))
+    val contextSource = new DependenciesSource(deps)
 
-    val processStatusService = new ProcessStatusService(modelFac.procStatus)
+    val modelFac = new ModelFactories(deps)
 
-    val applicationConfigService = new ApplicationConfigService(modelFac.appConfig)
+    val processStatusService = new ServiceMiddleware(contextSource, new ProcessStatusService(modelFac.procStatus))
 
-    val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus)
+    val applicationConfigService = new ServiceMiddleware(contextSource, new ApplicationConfigService(modelFac.appConfig))
+
+    val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
     amqp.bindService(applicationConfigService.descriptor.id, applicationConfigService.respond)
     amqp.bindService(processStatusService.descriptor.id, processStatusService.respond)

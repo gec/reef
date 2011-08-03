@@ -35,7 +35,7 @@ import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.ServiceDependencies
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.services.framework.DependenciesSource
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
@@ -53,7 +53,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
       count.update(count.current + 1)
     }
 
-    def bind(subQueue: String, key: String) {}
+    def bind(subQueue: String, key: String, resp: GeneratedMessage) {}
 
     def waitForNEvents(n: Int): Boolean = {
       // TODO: remove precondition check when syncvar is fixed
@@ -71,14 +71,16 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
   class ProcessStatusFixture {
 
     val pubs = new CountingEventPublishers
+    val deps = ServiceDependencies(pubs)
+    val contextSource = new DependenciesSource(deps)
 
-    val modelFac = new ModelFactories(ServiceDependencies(pubs))
+    val modelFac = new ModelFactories()
 
-    val service = new ProcessStatusService(modelFac.procStatus)
+    val service = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
 
-    val appService = new ApplicationConfigService(modelFac.appConfig)
+    val appService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
 
-    val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus)
+    val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
     val eventSink = pubs.getEventSink(classOf[StatusSnapshot]).asInstanceOf[CountingSubscriptionHandler]
 

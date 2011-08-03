@@ -69,7 +69,7 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
     private var entries = List.empty[Envelope.RequestHeader]
 
     private def handleSub(req: Envelope.RequestHeader, env: RequestEnv) =
-      env.subQueue.foreach(subHandler.bind(_, req.getKey))
+      env.subQueue.foreach(subHandler.bind(_, req.getKey, req))
 
     private def publish(evt: Envelope.Event, changes: List[Envelope.RequestHeader]) =
       changes.foreach(msg => subHandler.publish(evt, msg, msg.getKey))

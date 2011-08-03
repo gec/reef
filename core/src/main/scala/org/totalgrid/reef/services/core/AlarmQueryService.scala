@@ -89,7 +89,7 @@ class AlarmQueryService(subHandler: ServiceSubscriptionHandler) extends SyncServ
     inTransaction {
       env.subQueue.foreach { queueName =>
         val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
-        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts)))
+        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts), req))
       }
 
       // default all queries to max of 1000 events.

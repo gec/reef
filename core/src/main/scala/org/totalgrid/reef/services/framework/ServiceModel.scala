@@ -35,7 +35,7 @@ trait ServiceModel[MessageType, ModelType]
    *  @param req      Specifies events to be routed
    *  @param queue    Queue provided by the messaging system
    */
-  def subscribe(req: MessageType, queue: String): Unit
+  def subscribe(context: RequestContext, req: MessageType, queue: String): Unit
 
   def createFromProto(context: RequestContext, req: MessageType): ModelType = create(context, createModelEntry(req))
 
@@ -102,15 +102,15 @@ trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
 trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
   protected val subHandler: ServiceSubscriptionHandler
 
-  protected def publishEvent(event: Envelope.Event, resp: MessageType, key: String): Unit = {
-    subHandler.publish(event, resp, key)
+  protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: MessageType, key: String): Unit = {
+    context.subHandler.publish(event, resp, key)
   }
 }
 
 /**
  * Implementation of passing subscribe requests to the subscription handler with routing information
  */
-trait ServiceEventSubscribing[MessageType] {
+trait ServiceEventSubscribing[MessageType <: GeneratedMessage] {
   def getRoutingKey(req: MessageType): String
   protected val subHandler: ServiceSubscriptionHandler
 
@@ -125,9 +125,9 @@ trait ServiceEventSubscribing[MessageType] {
    *  @param req      Specifies events to be routed
    *  @param queue    Queue provided by the messaging system
    */
-  def subscribe(req: MessageType, queue: String): Unit = {
+  def subscribe(context: RequestContext, req: MessageType, queue: String): Unit = {
     val keys = getSubscribeKeys(req)
-    keys.foreach(subHandler.bind(queue, _))
+    keys.foreach(context.subHandler.bind(queue, _, req))
   }
 }
 

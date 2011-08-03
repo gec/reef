@@ -225,7 +225,7 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
  * Watches the measurement stream looking for transitions in the abnormal value of points
  * TODO: move to its own file
  */
-class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summary: SummaryPoints) extends ProtoServiceCoordinator with Logging {
+class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summary: SummaryPoints, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
 
   val pointMap = scala.collection.mutable.Map.empty[String, Point]
 
@@ -262,8 +262,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
     val currentlyAbnormal = m.getQuality.getValidity != Quality.Validity.GOOD
 
     if (currentlyAbnormal != point.abnormal) {
-      val context = new SimpleRequestContext
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+      contextSource.transaction { context =>
         trans.transaction { model =>
           logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
           val updated = point.copy(abnormal = currentlyAbnormal)
@@ -272,7 +271,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
           point.abnormal = currentlyAbnormal
           summary.incrementSummary("summary.abnormals", if (point.abnormal) 1 else -1)
         }
-      })
+      }
     }
   }
 }

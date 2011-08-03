@@ -43,11 +43,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
   class PointFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp, true) {
 
-    val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
-
-    val client = registry.newSession()
-
-    val parentEntity = client.put(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build).await().expectOne
+    val parentEntity = entityService.put(EntityProto.newBuilder.setName("test").addTypes("LogicalNode").build).expectOne
 
     val measPublish = amqp.send("measurement", Descriptors.measurement.serialize)
 
@@ -58,11 +54,11 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
     val syncs = listenForMeasurements("meas")
 
-    val abnormalThunker = new PointAbnormalsThunker(modelFac.points, new SummaryPointPublisher(amqp))
+    val abnormalThunker = new PointAbnormalsThunker(modelFac.points, new SummaryPointPublisher(amqp), contextSource)
     abnormalThunker.addAMQPConsumers(amqp, new InstantExecutor {})
 
     def addPoint(proto: PointProto) = {
-      client.put(proto.toBuilder.setLogicalNode(parentEntity).build).await().expectOne
+      pointService.put(proto.toBuilder.setLogicalNode(parentEntity).build).expectOne
     }
     val changedPoints = new BlockingQueue[PointProto]
 
@@ -82,7 +78,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
       val env = new RequestEnv
       env.setSubscribeQueue(eventQueueName.current)
-      client.get(req, env).await().expectMany()
+      pointService.get(req, env).expectMany()
     }
 
     def nextNotification(timeout: Int = 5000) = {

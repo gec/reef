@@ -32,7 +32,7 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.auth.AuthService
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.services.framework.HasAuthService
+import org.totalgrid.reef.services.framework._
 
 /**
  * list of all of the service providers in the system
@@ -44,7 +44,9 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
   private val eventPublisher = new LocalSystemEventSink
   private val dependencies = ServiceDependencies(pubs, summaries, cm, eventPublisher, coordinatorExecutor)
 
-  private val modelFac = new ModelFactories(dependencies)
+  private val contextSource = new DependenciesSource(dependencies)
+
+  private val modelFac = new ModelFactories(dependencies, contextSource)
 
   // we have to fill in the event model after constructing the event service to break the circular
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services
@@ -63,7 +65,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     hooks
   }
 
-  private val unauthorizedServices: List[AsyncService[_]] = new AuthTokenService(modelFac.authTokens) :: Nil
+  private val unauthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = new AuthTokenService(modelFac.authTokens) :: Nil
 
   private val restAuthorizedServices: List[AsyncService[_]] = List(
     new EntityService,
@@ -75,7 +77,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new EventQueryService(modelFac.events, pubs),
     new AlarmQueryService(pubs)).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
 
-  private val crudAuthorizedServices: List[AsyncService[_] with HasAuthService] = List(
+  private val crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
 
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
@@ -105,10 +107,11 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   crudAuthorizedServices.foreach(s => s.authService = authzService)
 
-  val services = unauthorizedServices ::: restAuthorizedServices ::: crudAuthorizedServices
+  val rawServices = unauthorizedServices ::: crudAuthorizedServices
+  val services = rawServices.map { s => new ServiceMiddleware(contextSource, s) } ::: restAuthorizedServices
 
   val coordinators = List(
-    new ProcessStatusCoordinator(modelFac.procStatus),
+    new ProcessStatusCoordinator(modelFac.procStatus, contextSource),
     new HistoryTrimmer(cm, serviceConfiguration.trimPeriodMinutes * 1000 * 60, serviceConfiguration.maxMeasurements),
     //serviceContainer.addCoordinator(new PointAbnormalsThunker(modelFac.points, summaries))
     //serviceContainer.addCoordinator(new AlarmSummaryInitializer(modelFac.alarms, summaries))

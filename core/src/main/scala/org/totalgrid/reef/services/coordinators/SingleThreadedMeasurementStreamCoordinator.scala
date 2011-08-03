@@ -20,22 +20,21 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.services.framework.{ OperationBuffer, SimpleRequestContext, RequestContext, BasicServiceTransactable }
+import org.totalgrid.reef.services.framework._
 
 /**
  * shunts all updates to the measurement coordinator to a single executor so we only ever have one transaction
  * on the coordinated components at a time avoiding race conditions when we are adding endpoints and applications
  * at the same time.
  */
-class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, executor: Executor) extends MeasurementStreamCoordinator {
+class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, contextSource: RequestContextSource, executor: Executor) extends MeasurementStreamCoordinator {
 
   private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
     context.events.queuePostTransaction {
       executor.request {
-        val c2 = new SimpleRequestContext
-        BasicServiceTransactable.doTransaction(c2.events, { buffer: OperationBuffer =>
+        contextSource.transaction { c2 =>
           f(real, c2)
-        })
+        }
       }
     }
   }

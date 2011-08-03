@@ -27,7 +27,7 @@ import org.totalgrid.reef.japi.Envelope
 trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
     extends ModelObserver[A] { self: MessageModelConversion[ServiceType, A] =>
 
-  protected def publishEvent(event: Envelope.Event, resp: ServiceType, key: String): Unit
+  protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit
 
   protected def onCreated(context: RequestContext, entry: A): Unit = {
     queueEvent(context, Envelope.Event.ADDED, entry, false)
@@ -65,7 +65,7 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
    * (It might still be missing if some other process has deleted the object but that is a seperate issue)
    */
   private def queuePublishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit = {
-    context.events.queuePostTransaction { publishEvent(event, resp, key) }
+    context.events.queuePostTransaction { publishEvent(context, event, resp, key) }
   }
 
   /**

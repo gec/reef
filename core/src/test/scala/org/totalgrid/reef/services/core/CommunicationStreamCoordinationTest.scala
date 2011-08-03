@@ -32,8 +32,6 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.event.EventType
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
-
 @RunWith(classOf[JUnitRunner])
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 

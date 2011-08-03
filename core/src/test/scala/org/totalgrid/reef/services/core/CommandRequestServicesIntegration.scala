@@ -71,7 +71,7 @@ class CommandRequestServicesIntegration
   import ServiceResponseTestingHelpers._
   val env = new RequestEnv()
   env.setUserName("user01")
-  implicit val context = new HeadersRequestContext(env)
+  implicit val contextSource = new MockRequestContextSource(new ServiceDependencies, env)
   import org.totalgrid.reef.services.core.CustomServiceShims._
 
   class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
@@ -206,18 +206,10 @@ class CommandRequestServicesIntegration
 
     // Send the user command request
     val cmdReq = userRequest()
-    val result = new EmptySyncVar[Response[UserCommandRequest]]
-    fixture.commandRequest.putAsync(context, cmdReq) { x => result.update(x) }
 
-    val correctResponse = Response(
-      Envelope.Status.OK,
-      UserCommandRequest.newBuilder(cmdReq).setStatus(CommandStatus.SUCCESS).build :: Nil)
+    val result = fixture.commandRequest.put(cmdReq).expectOne()
 
-    result.waitFor { rsp =>
-      rsp.status == Envelope.Status.OK &&
-        rsp.list.size == 1 &&
-        rsp.list.head.getStatus == CommandStatus.SUCCESS
-    }
+    result.getStatus should equal(CommandStatus.SUCCESS)
 
     fixture.access.delete(selectResult).expectOne()
   }

@@ -28,7 +28,8 @@ import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.framework._
 
 class MeasurementStreamCoordinatorFactory(
-    dependencies: ServiceDependencies) {
+    dependencies: ServiceDependencies,
+    contextSource: RequestContextSource) {
 
   def model = {
     // we have to make our own copies of the other service models to break the cyclic dependencies
@@ -37,7 +38,7 @@ class MeasurementStreamCoordinatorFactory(
     val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
     measProc.setCoordinator(coord, false)
     fepModel.setCoordinator(coord, false)
-    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, new InstantExecutor)
+    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource, new InstantExecutor)
     syncCoord
   }
 }

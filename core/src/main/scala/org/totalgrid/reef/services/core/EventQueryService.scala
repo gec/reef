@@ -108,7 +108,7 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
 
       env.subQueue.foreach { queueName =>
         val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
-        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts)))
+        keys.foreach(keyParts => subHandler.bind(queueName, ProtoRoutingKeys.generateRoutingKey(keyParts), req))
       }
 
       val limit = select.limit.getOrElse(1000) // default all queries to max of 1000 events.

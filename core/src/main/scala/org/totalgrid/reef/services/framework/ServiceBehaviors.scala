@@ -32,13 +32,9 @@ object ServiceBehaviors {
    */
   trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasServiceTransactable with AsyncContextRestGet {
     def get(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        modelTrans.transaction { model: ServiceModelType =>
-          val results = read(context, model, req)
-          context.headers.subQueue.foreach(subscribe(model, req, _))
-          Response(Envelope.Status.OK, results)
-        }
-      })
+      val results = read(context, model, req)
+      context.headers.subQueue.foreach(subscribe(context, model, req, _))
+      Response(Envelope.Status.OK, results)
     }
     override def getAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
       callback(get(context, req))
@@ -61,13 +57,9 @@ object ServiceBehaviors {
   trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasServiceTransactable with AsyncContextRestPut {
 
     def put(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        modelTrans.transaction { model: ServiceModelType =>
-          val (value, status) = create(context, model, req)
-          context.headers.subQueue.foreach(subscribe(model, value, _))
-          Response(status, value :: Nil)
-        }
-      })
+      val (value, status) = create(context, model, req)
+      context.headers.subQueue.foreach(subscribe(context, model, value, _))
+      Response(status, value :: Nil)
     }
 
     override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
@@ -77,16 +69,12 @@ object ServiceBehaviors {
   trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasServiceTransactable with AsyncContextRestPost {
 
     def post(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        modelTrans.transaction { model =>
-          val (value, status) = model.findRecord(context, req) match {
-            case Some(x) => update(context, model, req, x)
-            case None => throw new BadRequestException("Record not found: " + req)
-          }
-          context.headers.subQueue.foreach(subscribe(model, value, _))
-          Response(status, value :: Nil)
-        }
-      })
+      val (value, status) = model.findRecord(context, req) match {
+        case Some(x) => update(context, model, req, x)
+        case None => throw new BadRequestException("Record not found: " + req)
+      }
+      context.headers.subQueue.foreach(subscribe(context, model, value, _))
+      Response(status, value :: Nil)
     }
 
     override def preUpdate(context: RequestContext, proto: ServiceType, existing: ModelType): ServiceType = merge(context, proto, existing)
@@ -119,14 +107,11 @@ object ServiceBehaviors {
         // TODO: evaluate replacing NoSearchTermsException with flags
         case e: NoSearchTermsException => create(context, model, req)
       }
-      context.headers.subQueue.foreach(subscribe(model, proto, _))
+      context.headers.subQueue.foreach(subscribe(context, model, proto, _))
       Response(status, proto :: Nil)
     }
 
-    def put(context: RequestContext, req: ServiceType): Response[ServiceType] =
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        modelTrans.transaction { doPut(context, req, _) }
-      })
+    def put(context: RequestContext, req: ServiceType): Response[ServiceType] = doPut(context, req, model)
 
     override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
       callback(put(context, req))
@@ -135,9 +120,7 @@ object ServiceBehaviors {
   trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasServiceTransactable with AsyncContextRestPut {
 
     override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        modelTrans.transaction { model => doAsyncPutPost(context, doPut(context, req, model), callback) }
-      })
+      doAsyncPutPost(context, doPut(context, req, model), callback)
 
     protected def doAsyncPutPost(context: RequestContext, rsp: Response[ServiceType], callback: Response[ServiceType] => Unit)
   }
@@ -148,14 +131,10 @@ object ServiceBehaviors {
   trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasServiceTransactable with AsyncContextRestDelete {
 
     def delete(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        modelTrans.transaction { model: ServiceModelType =>
-          context.headers.subQueue.foreach(subscribe(model, req, _))
-          val deleted = doDelete(context, model, req)
-          val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
-          Response(status, deleted)
-        }
-      })
+      context.headers.subQueue.foreach(subscribe(context, model, req, _))
+      val deleted = doDelete(context, model, req)
+      val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
+      Response(status, deleted)
     }
     override def deleteAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
       callback(delete(context, req))
@@ -166,7 +145,7 @@ object ServiceBehaviors {
    */
   trait SubscribeEnabled extends HasAllTypes with HasSubscribe {
 
-    override def subscribe(model: ServiceModelType, req: ServiceType, queue: String) = model.subscribe(req, queue)
+    override def subscribe(context: RequestContext, model: ServiceModelType, req: ServiceType, queue: String) = model.subscribe(context, req, queue)
   }
 
 }

@@ -35,6 +35,7 @@ trait ModelFactory[+ModelType] {
  */
 trait ServiceTransactable[+ModelType] {
   def transaction[R](fun: ModelType => R): R
+  def model: ModelType
   def messageType: Class[_]
 }
 

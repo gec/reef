@@ -42,7 +42,7 @@ class MeasurementSnapshotService(cm: RTDatabase, subHandler: ServiceSubscription
 
     val measList = req.getPointNamesList().toList
 
-    env.subQueue.foreach(subQueue => measList.map(_.replace("*", "#")).foreach(key => subHandler.bind(subQueue, key)))
+    env.subQueue.foreach(subQueue => measList.map(_.replace("*", "#")).foreach(key => subHandler.bind(subQueue, key, req)))
 
     val searchList = if (measList.size == 1 && measList.head == "*") {
       Nil // TODO: get list of all points from other source
