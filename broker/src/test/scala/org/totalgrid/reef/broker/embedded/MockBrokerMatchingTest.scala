@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker.mock
+package org.totalgrid.reef.broker.embedded
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class MockBrokerMatchingTest extends FunSuite with ShouldMatchers {
 
-  val m = MockBrokerConnection.matches(_, _)
+  val m = EmbeddedBrokerConnection.matches(_, _)
   val r = "valA.valB.valC"
 
   test("Exact Match") { m(r, r) should equal(true) }

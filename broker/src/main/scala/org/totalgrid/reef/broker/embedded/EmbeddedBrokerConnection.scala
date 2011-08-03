@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker.mock
+package org.totalgrid.reef.broker.embedded
 
 import scala.collection.immutable
 
@@ -41,7 +41,7 @@ trait RoundRobinList[A] {
   }
 }
 
-object MockBrokerConnection {
+object EmbeddedBrokerConnection {
   def matches(routingKey: String, bindingKey: String): Boolean = {
     val r = routingKey.split('.')
     val b = bindingKey.split('.')
@@ -56,7 +56,7 @@ object MockBrokerConnection {
   }
 }
 
-class MockBrokerChannel(parent: MockBrokerConnection) extends BrokerChannel {
+class EmbeddedBrokerChannel(parent: EmbeddedBrokerConnection) extends BrokerChannel {
   var started = true
 
   var messageConsumer: Option[MessageConsumer] = None
@@ -109,14 +109,14 @@ class MockBrokerChannel(parent: MockBrokerConnection) extends BrokerChannel {
   }
 }
 
-class MockBrokerConnection(connectCorrectly: Boolean = true, reportCorrectClosure: Boolean = true) extends BrokerConnection {
-  import MockBrokerConnection._
+class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectClosure: Boolean = true) extends BrokerConnection {
+  import EmbeddedBrokerConnection._
 
-  private var channels = List.empty[MockBrokerChannel]
+  private var channels = List.empty[EmbeddedBrokerChannel]
 
   def newChannel(): BrokerChannel = {
     if (!isConnected) throw new Exception("Mock broker not connected")
-    val c = new MockBrokerChannel(this)
+    val c = new EmbeddedBrokerChannel(this)
     channels = c :: channels
     c
   }

@@ -109,15 +109,11 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
   /// Makes a connection attempt. Retries if with exponential backoff
   /// if the attempt fails
   private def attemptConnection(retryms: Long): Unit = {
-    try {
-      broker.connect()
+    if (broker.connect()) {
       queue.foreach { createChannel(_, broker.newChannel()) }
       //listeners.foreach { _.opened() }
-    } catch {
-      case t: Throwable =>
-        logger.error("Exception while attempting connection", t)
-        // if we fail, retry, use exponential backoff
-        delay(retryms) { attemptConnection(2 * retryms) }
+    } else {
+      delay(retryms) { attemptConnection(2 * retryms) }
     }
   }
 
