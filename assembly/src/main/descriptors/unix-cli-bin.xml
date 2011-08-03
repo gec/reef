@@ -54,7 +54,7 @@
         </fileSet>
 
         <fileSet>
-            <directory>target/reef-repo</directory>
+            <directory>target/reef-cli-repo</directory>
             <outputDirectory>${reef.default.repository}</outputDirectory>
         </fileSet>
         <fileSet>
@@ -69,7 +69,7 @@
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
-            <directory>target/classes/etc-srv</directory>
+            <directory>target/classes/etc-cli</directory>
             <outputDirectory>/etc/</outputDirectory>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
@@ -79,15 +79,6 @@
             <outputDirectory>/samples/</outputDirectory>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>target/classes/install</directory>
-            <includes>
-                <include>*.sh</include>
-            </includes>
-            <outputDirectory>.</outputDirectory>
-            <lineEnding>unix</lineEnding>
-            <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
             <directory>../</directory>

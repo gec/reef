@@ -152,6 +152,33 @@
                                     <finalName>${dist.name}-${project.version}</finalName>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>unix-cli-bin</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/main/descriptors/unix-cli-bin.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>${dist.name}-console-${project.version}</finalName>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>windows-cli-bin</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/main/descriptors/windows-cli-bin.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>${dist.name}-console-${project.version}</finalName>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -192,6 +219,23 @@
                                     </features>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/reef-repo</repository>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>add-reef-cli-bundles-to-repo</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>add-features-to-repo</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>file:${basedir}/target/classes/reef-feature.xml</descriptor>
+                                    </descriptors>
+                                    <features>
+                                        <feature>reef-remote-shell</feature>
+                                    </features>
+                                    <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
+                                    <repository>target/reef-cli-repo</repository>
                                 </configuration>
                             </execution>
                         </executions>
@@ -295,6 +339,33 @@
                                         <descriptor>src/main/descriptors/windows-bin.xml</descriptor>
                                     </descriptors>
                                     <finalName>${dist.name}-${project.version}</finalName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>unix-cli-bin</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/main/descriptors/unix-cli-bin.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>${dist.name}-console-${project.version}</finalName>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>windows-cli-bin</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/main/descriptors/windows-cli-bin.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>${dist.name}-console-${project.version}</finalName>
                                 </configuration>
                             </execution>
                         </executions>
