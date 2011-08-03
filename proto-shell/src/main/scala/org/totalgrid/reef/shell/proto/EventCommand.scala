@@ -62,7 +62,7 @@ class EventPublishCommand extends ReefCommandSupport {
   @GogoOption(name = "-s", description = "Subsystem", required = false, multiValued = false)
   var subsystem: String = "proto-shell"
 
-  @GogoOption(name = "-a", description = "Arguments, need to be of the form \"<name>:<value>\"", required = false, multiValued = true)
+  @GogoOption(name = "-a", description = "Arguments, need to be of the form \"name:value\"", required = false, multiValued = true)
   var arguments: java.util.List[String] = null
 
   @GogoOption(name = "-e", description = "Entity Name", required = false, multiValued = false)

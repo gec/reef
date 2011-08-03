@@ -19,6 +19,7 @@
 package org.totalgrid.reef.broker
 
 import org.totalgrid.reef.util.{ ConfigReader, BuildEnv }
+import java.lang.Boolean
 
 object BrokerConnectionInfo {
 
@@ -29,6 +30,22 @@ object BrokerConnectionInfo {
   def loadInfo(): BrokerConnectionInfo = loadInfo(BuildEnv.environment)
 }
 
-class BrokerConnectionInfo(val host: String, val port: Int, val user: String, val password: String, val virtualHost: String) {
-  override def toString() = "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost
+class BrokerConnectionInfo(
+    val host: String,
+    val port: Int,
+    val user: String,
+    val password: String,
+    val virtualHost: String,
+    val ssl: Boolean = false,
+    val trustStore: String = "",
+    val trustStorePassword: String = "",
+    val keyStore: String = "",
+    val keyStorePassword: String = "") {
+  override def toString() = {
+    if (ssl) {
+      "amqps:/" + user + "@" + host + ":" + port + "/" + virtualHost + "{" + trustStore + "," + keyStore + "}"
+    } else {
+      "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost
+    }
+  }
 }
