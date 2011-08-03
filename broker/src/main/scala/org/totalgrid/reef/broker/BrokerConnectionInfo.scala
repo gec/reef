@@ -24,7 +24,7 @@ object BrokerConnectionInfo {
 
   def loadInfo(cr: ConfigReader): BrokerConnectionInfo = BrokerProperties.get(cr)
 
-  def loadInfo(env: String): BrokerConnectionInfo = loadInfo(BuildEnv.cfgFileReader(env))
+  def loadInfo(env: String): BrokerConnectionInfo = loadInfo(BuildEnv.cfgFileReader("amqp", env))
 
   def loadInfo(): BrokerConnectionInfo = loadInfo(BuildEnv.environment)
 }

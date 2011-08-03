@@ -39,18 +39,18 @@ object BuildEnv {
     Option(System.getenv(name)) getOrElse configPath + name
   }
 
-  def cfgName(base: String, env: String): String = {
+  def cfgName(base: String, subPid: String, env: String): String = {
     env match {
       case "test" => base + ".test.cfg"
-      case "development" => base + ".cfg"
+      case "development" => base + "." + subPid + ".cfg"
     }
   }
 
   /**
    * common config file reader,
    */
-  def cfgFileReader(env: String) = {
-    new FileConfigReader(path(cfgName("org.totalgrid.reef", env)))
+  def cfgFileReader(subPid: String, env: String) = {
+    new FileConfigReader(path(cfgName("org.totalgrid.reef", subPid, env)))
   }
 
   /**

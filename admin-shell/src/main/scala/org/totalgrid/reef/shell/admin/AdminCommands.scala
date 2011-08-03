@@ -21,9 +21,11 @@ package org.totalgrid.reef.shell.admin
 import org.apache.felix.gogo.commands.Command
 import org.totalgrid.reef.shell.proto.ReefCommandSupport
 
-import org.totalgrid.reef.services.Services
-import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
+import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
+import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
+import org.totalgrid.reef.services.ServiceBootstrap
 
 @Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
 class ResetDatabaseCommand extends ReefCommandSupport {
@@ -31,9 +33,34 @@ class ResetDatabaseCommand extends ReefCommandSupport {
   override val requiresLogin = false
 
   override def doCommand(): Unit = {
-    val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef"))
+    val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql"))
     logout()
-    Services.resetSystem(sql, sql)
+
+    val bundleContext = getBundleContext()
+
+    DbConnector.connect(sql, bundleContext)
+
+    val exe = new ReactActorExecutor {}
+
+    val mstore = MeasurementStoreFinder.getInstance(sql, exe, bundleContext)
+
+    exe.start()
+    try {
+      ServiceBootstrap.resetDb()
+      ServiceBootstrap.seed()
+      println("Cleared and updated jvm database")
+
+      if (mstore.reset) {
+        println("Cleared measurement store")
+      } else {
+        println("NOTE: measurement store not reset, needs to be done manually")
+      }
+    } catch {
+      case ex => println("Reset failed: " + ex.toString)
+    }
+    finally {
+      exe.stop()
+    }
   }
 
 }
