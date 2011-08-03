@@ -53,7 +53,7 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
 
   override val descriptor = Descriptors.event
 
-  override def preCreate(context: RequestContext, proto: Event, header: RequestEnv): Event = {
+  override def preCreate(context: RequestContext, proto: Event): Event = {
     val b = proto.toBuilder
 
     // we will clear any user given userId so we can apply auth token name

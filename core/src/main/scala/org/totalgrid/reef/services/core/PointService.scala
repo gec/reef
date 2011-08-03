@@ -46,15 +46,15 @@ class PointService(protected val modelTrans: ServiceTransactable[PointServiceMod
 
   override val descriptor = Descriptors.point
 
-  override def preCreate(context: RequestContext, proto: PointProto, headers: RequestEnv) = {
+  override def preCreate(context: RequestContext, proto: PointProto) = {
     if (!proto.hasName || !proto.hasUnit || !proto.hasType) {
       throw new BadRequestException("Must specify name, type and unit when creating point")
     }
     proto
   }
 
-  override def preUpdate(context: RequestContext, request: PointProto, existing: Point, headers: RequestEnv) = {
-    preCreate(context, request, headers)
+  override def preUpdate(context: RequestContext, request: PointProto, existing: Point) = {
+    preCreate(context, request)
   }
 
 }

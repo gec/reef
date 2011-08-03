@@ -90,7 +90,7 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
 
   override val descriptor = Descriptors.eventConfig
 
-  override def preCreate(context: RequestContext, proto: EventConfig, headers: RequestEnv): EventConfig = {
+  override def preCreate(context: RequestContext, proto: EventConfig): EventConfig = {
     if (!proto.hasDesignation || !proto.hasEventType || !proto.hasSeverity || !proto.hasResource) {
       throw new BadRequestException("Must fill in designation, eventType, severity and resource fields.")
     }
@@ -111,8 +111,8 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
     }
   }
 
-  override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore, headers: RequestEnv): EventConfig = {
-    preCreate(context, request, headers)
+  override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore): EventConfig = {
+    preCreate(context, request)
     // TODO: should we re-render all events with the same event type?
   }
 }

@@ -45,7 +45,7 @@ class CommandAccessService(protected val modelTrans: ServiceTransactable[Command
 
   def deserialize(bytes: Array[Byte]) = AccessProto.parseFrom(bytes)
 
-  override protected def preCreate(context: RequestContext, proto: AccessProto, headers: RequestEnv): AccessProto = {
+  override protected def preCreate(context: RequestContext, proto: AccessProto): AccessProto = {
     // Simple proto validity check
     if (proto.getCommandsList.length == 0)
       throw new BadRequestException("Must specify at least one command")

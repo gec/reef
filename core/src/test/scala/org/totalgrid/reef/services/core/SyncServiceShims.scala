@@ -25,29 +25,43 @@ import org.totalgrid.reef.services.framework.{ HeadersRequestContext, SimpleRequ
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], context: RequestContext) {
 
-  def get(req: A): Response[A] = get(req, context.headers)
   def get(req: A, env: RequestEnv): Response[A] = {
+    context.headers.merge(env)
+    get(req)
+  }
+  def get(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.getAsync(context, req, env)(response.onResponse)
+    service.getAsync(context, req)(response.onResponse)
     response.await
   }
 
-  def put(req: A): Response[A] = put(req, context.headers)
   def put(req: A, env: RequestEnv): Response[A] = {
+    context.headers.merge(env)
+    put(req)
+  }
+  def put(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.putAsync(context, req, env)(response.onResponse)
+    service.putAsync(context, req)(response.onResponse)
     response.await
   }
-  def delete(req: A): Response[A] = delete(req, context.headers)
+
   def delete(req: A, env: RequestEnv): Response[A] = {
+    context.headers.merge(env)
+    delete(req)
+  }
+  def delete(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.deleteAsync(context, req, env)(response.onResponse)
+    service.deleteAsync(context, req)(response.onResponse)
     response.await
   }
-  def post(req: A): Response[A] = post(req, context.headers)
+
   def post(req: A, env: RequestEnv): Response[A] = {
+    context.headers.merge(env)
+    post(req)
+  }
+  def post(req: A): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    service.postAsync(context, req, env)(response.onResponse)
+    service.postAsync(context, req)(response.onResponse)
     response.await
   }
 }

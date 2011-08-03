@@ -94,7 +94,9 @@ trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
     val rsp = ReefServicesList.getServiceOption(klass) match {
       case Some(info) =>
-        new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env.merge(new RequestEnv))
+        val singleRequestEnv = new RequestEnv
+        singleRequestEnv.merge(env)
+        new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, singleRequestEnv)
       case None =>
         Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + klass)
     }

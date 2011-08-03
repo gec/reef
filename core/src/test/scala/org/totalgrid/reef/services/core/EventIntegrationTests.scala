@@ -35,12 +35,6 @@ import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.services.framework.{ ServiceEntryPoint, RequestContext, SimpleRequestContext, AsyncContextRestService }
-import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
-
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {

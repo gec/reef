@@ -27,7 +27,7 @@ trait CanAuthorizeCreate extends HasServiceType {
   /**
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeCreate(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType
+  protected def authorizeCreate(context: RequestContext, request: ServiceType): ServiceType
 }
 
 trait HasCreate extends CanAuthorizeCreate with HasAllTypes {
@@ -37,14 +37,14 @@ trait HasCreate extends CanAuthorizeCreate with HasAllTypes {
    * @param proto  Create request message
    * @return Verified/modified create request message
    */
-  protected def preCreate(context: RequestContext, proto: ServiceType, headers: RequestEnv): ServiceType = proto
+  protected def preCreate(context: RequestContext, proto: ServiceType): ServiceType = proto
 
   /**
    * Called after preCreate validation step. Default does no authorization
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  override protected def authorizeCreate(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeCreate(context: RequestContext, request: ServiceType): ServiceType = request
 
   protected def performCreate(context: RequestContext, model: ServiceModelType, request: ServiceType): ModelType = {
     model.createFromProto(context, request)
@@ -56,9 +56,9 @@ trait HasCreate extends CanAuthorizeCreate with HasAllTypes {
    */
   protected def postCreate(context: RequestContext, created: ModelType, request: ServiceType): Unit = {}
 
-  final def create(context: RequestContext, model: ServiceModelType, request: ServiceType, headers: RequestEnv): Tuple2[ServiceType, Envelope.Status] = {
-    val validated = preCreate(context, request, headers)
-    val authorized = authorizeCreate(context, validated, headers)
+  final def create(context: RequestContext, model: ServiceModelType, request: ServiceType): Tuple2[ServiceType, Envelope.Status] = {
+    val validated = preCreate(context, request)
+    val authorized = authorizeCreate(context, validated)
     val sql = performCreate(context, model, authorized)
     postCreate(context, sql, request)
     (model.convertToProto(sql), Envelope.Status.CREATED)
@@ -71,7 +71,7 @@ trait CanAuthorizeRead extends HasServiceType {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeRead(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType
+  protected def authorizeRead(context: RequestContext, request: ServiceType): ServiceType
 }
 
 trait HasRead extends CanAuthorizeRead with HasAllTypes {
@@ -86,16 +86,16 @@ trait HasRead extends CanAuthorizeRead with HasAllTypes {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  override protected def authorizeRead(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeRead(context: RequestContext, request: ServiceType): ServiceType = request
 
   /**
    * Called after read with results. Default implementation does nothing.
    */
   protected def postRead(context: RequestContext, results: List[ServiceType]): List[ServiceType] = results
 
-  final protected def read(context: RequestContext, model: ServiceModelType, request: ServiceType, headers: RequestEnv): List[ServiceType] = {
+  final protected def read(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
     val validated = preRead(context, request)
-    val authorized = authorizeRead(context, validated, headers)
+    val authorized = authorizeRead(context, validated)
     val results = performRead(context, model, authorized)
     postRead(context, results)
   }
@@ -111,7 +111,7 @@ trait CanAuthorizeUpdate extends HasServiceType {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeUpdate(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType
+  protected def authorizeUpdate(context: RequestContext, request: ServiceType): ServiceType
 }
 
 trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
@@ -121,7 +121,7 @@ trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  override protected def authorizeUpdate(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeUpdate(context: RequestContext, request: ServiceType): ServiceType = request
 
   /**
    * Called before update. Default implementation does nothing.
@@ -129,7 +129,7 @@ trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
    * @param existing   Existing model entry
    * @return Verified/modified update request message
    */
-  protected def preUpdate(context: RequestContext, request: ServiceType, existing: ModelType, headers: RequestEnv): ServiceType = request
+  protected def preUpdate(context: RequestContext, request: ServiceType, existing: ModelType): ServiceType = request
 
   /**
    * Called after successful update. Default implementation does nothing.
@@ -140,9 +140,9 @@ trait HasUpdate extends CanAuthorizeUpdate with HasAllTypes {
   /**
    * Performs an update operation first calling preUpdate, then updating, then calling postUpdate.
    */
-  final protected def update(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType, headers: RequestEnv): Tuple2[ServiceType, Envelope.Status] = {
-    val validated = preUpdate(context, request, existing, headers)
-    val authorized = authorizeUpdate(context, validated, headers)
+  final protected def update(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType): Tuple2[ServiceType, Envelope.Status] = {
+    val validated = preUpdate(context, request, existing)
+    val authorized = authorizeUpdate(context, validated)
     val (sql, updated) = performUpdate(context, model, authorized, existing)
     postUpdate(context, sql, validated)
     val status = if (updated) Envelope.Status.UPDATED else Envelope.Status.NOT_MODIFIED
@@ -160,7 +160,7 @@ trait CanAuthorizeDelete extends HasServiceType {
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  protected def authorizeDelete(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType
+  protected def authorizeDelete(context: RequestContext, request: ServiceType): ServiceType
 }
 
 trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
@@ -169,14 +169,14 @@ trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
    * Called before delete. Default implementation does nothing.
    *  @param proto    Delete request message
    */
-  protected def preDelete(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = request
+  protected def preDelete(context: RequestContext, request: ServiceType): ServiceType = request
 
   /**
    * Called after preDelete validation step. Default does no authorization
    *
    * @throws UnauthorizedException if authorization is rejected
    */
-  override protected def authorizeDelete(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = request
+  override protected def authorizeDelete(context: RequestContext, request: ServiceType): ServiceType = request
 
   /**
    * Called after successful delete. Default implementation does nothing.
@@ -184,10 +184,10 @@ trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
    */
   protected def postDelete(context: RequestContext, results: List[ServiceType]): List[ServiceType] = results
 
-  final protected def doDelete(context: RequestContext, model: ServiceModelType, request: ServiceType, headers: RequestEnv): List[ServiceType] = {
+  final protected def doDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
     // TODO: consider stripping off everything but UID if UID set on delete
-    val validated = preDelete(context, request, headers)
-    val authorized = authorizeDelete(context, validated, headers)
+    val validated = preDelete(context, request)
+    val authorized = authorizeDelete(context, validated)
     val existing = performDelete(context, model, authorized)
     postDelete(context, existing.map(model.convertToProto(_)))
   }

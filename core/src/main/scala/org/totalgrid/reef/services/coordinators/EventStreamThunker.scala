@@ -26,7 +26,7 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.services.core.EventServiceModel
-import org.totalgrid.reef.services.framework.{ SimpleRequestContext, RequestContext, ServiceTransactable }
+import org.totalgrid.reef.services.framework._
 
 /**
  * simple thunker that takes "raw events" from the bus and calls the "put" method from the EventService
@@ -45,7 +45,9 @@ class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], raw
     try {
       // notice we are skipping the event service preCreate step that strips time and userId
       // because our local trusted service components have already set those values correctly
-      eventModel.transaction { _.createFromProto(context, msg) }
+      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+        eventModel.transaction { _.createFromProto(context, msg) }
+      })
     } catch {
       case e: ReefServiceException =>
         logger.warn("Service Exception thunking event: " + e.getMessage)

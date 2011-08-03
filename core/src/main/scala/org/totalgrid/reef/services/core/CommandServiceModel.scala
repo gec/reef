@@ -41,15 +41,15 @@ class CommandService(protected val modelTrans: ServiceTransactable[CommandServic
 
   override val descriptor = Descriptors.command
 
-  override def preCreate(context: RequestContext, proto: CommandProto, headers: RequestEnv) = {
+  override def preCreate(context: RequestContext, proto: CommandProto) = {
     if (!proto.hasName || !proto.hasType || !proto.hasDisplayName) {
       throw new BadRequestException("Must specify name, type and displayName when creating command")
     }
     proto
   }
 
-  override def preUpdate(context: RequestContext, request: CommandProto, existing: Command, headers: RequestEnv) = {
-    preCreate(context, request, headers)
+  override def preUpdate(context: RequestContext, request: CommandProto, existing: Command) = {
+    preCreate(context, request)
   }
 }
 

@@ -207,7 +207,7 @@ class CommandRequestServicesIntegration
     // Send the user command request
     val cmdReq = userRequest()
     val result = new EmptySyncVar[Response[UserCommandRequest]]
-    fixture.commandRequest.putAsync(context, cmdReq, context.headers) { x => result.update(x) }
+    fixture.commandRequest.putAsync(context, cmdReq) { x => result.update(x) }
 
     val correctResponse = Response(
       Envelope.Status.OK,

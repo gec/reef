@@ -46,8 +46,8 @@ trait AuthorizesCreate extends CanAuthorizeCreate with AuthTranslator {
   override def actions = actionForCreate :: super.actions
   protected val actionForCreate = "create"
 
-  final override def authorizeCreate(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = {
-    authorize(componentId, actionForCreate, headers)
+  final override def authorizeCreate(context: RequestContext, request: ServiceType): ServiceType = {
+    authorize(componentId, actionForCreate, context.headers)
     request
   }
 }
@@ -57,8 +57,8 @@ trait AuthorizesRead extends CanAuthorizeRead with AuthTranslator {
   override def actions = actionForRead :: super.actions
   protected val actionForRead = "read"
 
-  final override def authorizeRead(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = {
-    authorize(componentId, actionForRead, headers)
+  final override def authorizeRead(context: RequestContext, request: ServiceType): ServiceType = {
+    authorize(componentId, actionForRead, context.headers)
     request
   }
 }
@@ -68,8 +68,8 @@ trait AuthorizesUpdate extends CanAuthorizeUpdate with AuthTranslator {
   override def actions = actionForUpdate :: super.actions
   protected val actionForUpdate = "update"
 
-  final override def authorizeUpdate(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = {
-    authorize(componentId, actionForUpdate, headers)
+  final override def authorizeUpdate(context: RequestContext, request: ServiceType): ServiceType = {
+    authorize(componentId, actionForUpdate, context.headers)
     request
   }
 }
@@ -79,8 +79,8 @@ trait AuthorizesDelete extends CanAuthorizeDelete with AuthTranslator {
   override def actions = actionForDelete :: super.actions
   protected val actionForDelete = "delete"
 
-  final override def authorizeDelete(context: RequestContext, request: ServiceType, headers: RequestEnv): ServiceType = {
-    authorize(componentId, actionForDelete, headers)
+  final override def authorizeDelete(context: RequestContext, request: ServiceType): ServiceType = {
+    authorize(componentId, actionForDelete, context.headers)
     request
   }
 }

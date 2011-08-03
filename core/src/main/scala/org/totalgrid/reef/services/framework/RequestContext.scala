@@ -45,7 +45,7 @@ class Buffer extends OperationBuffer with LinkedBufferedEvaluation {
 }
 
 class SimpleRequestContext extends RequestContext {
-  def headers: RequestEnv = throw new Exception
+  val headers = new RequestEnv
   val events = new Buffer
 }
 

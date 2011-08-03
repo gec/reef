@@ -23,7 +23,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.services.core.EventServiceModelFactory
 import org.totalgrid.reef.japi.ReefServiceException
 import org.squeryl.PrimitiveTypeMode
-import org.totalgrid.reef.services.framework.SimpleRequestContext
+import org.totalgrid.reef.services.framework.{ OperationBuffer, BasicServiceTransactable, SimpleRequestContext }
 
 class LocalSystemEventSink extends SystemEventSink with Logging {
 
@@ -34,12 +34,16 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error
       PrimitiveTypeMode.transaction {
-        eventModelFactory.get.transaction {
-          val context = new SimpleRequestContext
-          // notice we are skipping the event service preCreate step that strips time and userId
-          // because our local trusted service components have already set those values correctly
-          _.createFromProto(context, evt)
-        }
+        val context = new SimpleRequestContext
+        BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
+          eventModelFactory.get.transaction {
+
+            // notice we are skipping the event service preCreate step that strips time and userId
+            // because our local trusted service components have already set those values correctly
+            _.createFromProto(context, evt)
+
+          }
+        })
       }
     } catch {
       case e: ReefServiceException =>

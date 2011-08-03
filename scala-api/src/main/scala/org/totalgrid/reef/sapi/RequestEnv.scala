@@ -69,15 +69,15 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
     }
   }
 
-  def merge(defaults: RequestEnv): RequestEnv = {
+  def merge(defaults: RequestEnv) = {
     val k1 = Set(headers.keysIterator.toList: _*)
     val k2 = Set(defaults.headers.keysIterator.toList: _*)
     val intersection = k1 & k2
 
     val r1 = (for (key <- intersection) yield (key -> headers(key))).toMap
     val r2 = headers.filterKeys(!intersection.contains(_)) ++ defaults.headers.filterKeys(!intersection.contains(_))
-    new RequestEnv(r2 ++ r1)
-
+    val r3 = new RequestEnv(r2 ++ r1)
+    headers = r3.headers
   }
 
   def clear(): Unit = headers = Map.empty[String, List[String]]

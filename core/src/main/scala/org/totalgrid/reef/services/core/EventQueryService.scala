@@ -19,7 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.models.EventStore
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.sapi.client.Response
 
@@ -34,6 +33,7 @@ import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, ServiceEventPublishers }
 import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -104,7 +104,7 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
     if (!req.hasSelect) throw new BadRequestException("Must include select")
     val select = req.getSelect
 
-    modelTrans.transaction { (model: EventServiceModel) =>
+    inTransaction {
 
       env.subQueue.foreach { queueName =>
         val keys = createSubscriptionPermutations(makeSubscriptionKeyParts(select))
@@ -114,12 +114,12 @@ class EventQueryService(protected val modelTrans: ServiceTransactable[EventServi
       val limit = select.limit.getOrElse(1000) // default all queries to max of 1000 events.
 
       val entries =
-        from(model.table)(row =>
+        from(ApplicationSchema.events)(row =>
           where(SquerylModel.combineExpressions(buildQuery(row, select).flatten))
             select (row)
             orderBy timeOrder(row.time, select.ascending)).page(0, limit)
 
-      val respList = EventList.newBuilder.addAllEvents(entries.toList.map(model.convertToProto(_))).build
+      val respList = EventList.newBuilder.addAllEvents(entries.toList.map(EventConversion.convertToProto(_))).build
       Response(Envelope.Status.OK, respList :: Nil)
     }
   }
