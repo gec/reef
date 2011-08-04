@@ -19,7 +19,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.broker.mock.MockBrokerConnection
+import org.totalgrid.reef.broker.embedded.EmbeddedBrokerConnection
 import com.google.protobuf.ByteString
 
 import org.scalatest.FunSuite
@@ -77,7 +77,7 @@ class AmqpClientSessionTest extends FunSuite with ShouldMatchers {
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
 
   def setupTest(addServices: Boolean)(test: (AmqpClientSession, AMQPProtoFactory) => Unit) {
-    val connection = new MockBrokerConnection
+    val connection = new EmbeddedBrokerConnection
 
     // TODO: fix setupTest to use all async and all sync
 

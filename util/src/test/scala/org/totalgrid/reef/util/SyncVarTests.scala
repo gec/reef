@@ -29,17 +29,6 @@ import org.totalgrid.reef.util.Conversion._
 @RunWith(classOf[JUnitRunner])
 class SyncVarTests extends FunSuite with ShouldMatchers {
 
-  test("lazy evaluation") {
-    def evaluate(fun: => String) = {
-      println("Evaluating: ")
-      println(fun)
-    }
-
-    def getSomeText = println("getting text"); "Foo"
-
-    evaluate("Hello! " + getSomeText)
-
-  }
   test("TestInitialValue") {
     val sv = new SyncVar(0)
     sv.waitFor(_ == 0, 0)
@@ -59,7 +48,7 @@ class SyncVarTests extends FunSuite with ShouldMatchers {
     val num = 1000
 
     actor {
-      num.count(i => sv.update(i))
+      num.foreach(i => sv.update(i))
     }
 
     num.count { i =>
@@ -89,7 +78,7 @@ class SyncVarTests extends FunSuite with ShouldMatchers {
     val num = 1000
 
     actor {
-      num.count(i => sv.update(i))
+      num.foreach(i => sv.update(i))
     }
 
     sv.waitFor(_ == num, 5000)

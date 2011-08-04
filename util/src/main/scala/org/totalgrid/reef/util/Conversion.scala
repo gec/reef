@@ -21,17 +21,20 @@ package org.totalgrid.reef.util
 import scala.collection.immutable
 import scala.annotation.tailrec
 
-class DecoratedInt(num: Int) {
+class DecoratedInt(num: Int) extends Traversable[Int] {
   assert(num >= 0)
 
   def isEven = (num % 2) == 0
   def isOdd = (num % 2) != 0
 
-  def times(f: => Unit): Unit = count(_ => f)
+  def times(f: => Unit): Unit = foreach(_ => f)
 
-  def count(f: Int => Unit): Unit = {
+  def foreach[U](f: Int => U): Unit = {
     @tailrec
-    def times(i: Int): Unit = if (i <= num) { f(i); times(i + 1) }
+    def times(i: Int): Unit = if (i <= num) {
+      f(i)
+      times(i + 1)
+    }
     if (num > 0) times(1)
   }
 }

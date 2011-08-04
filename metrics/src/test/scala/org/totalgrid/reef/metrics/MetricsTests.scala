@@ -29,7 +29,7 @@ class MetricsTests extends FunSuite with ShouldMatchers {
 
   class TestObject extends MetricsHooks {
     lazy val hook1 = valueHook("hook1")
-    lazy val timehook1 = timingHook[Unit]("timingHook")
+    lazy val timehook1 = timingHook("timingHook")
 
     def doSomething(t: Int) = {
       hook1(t)

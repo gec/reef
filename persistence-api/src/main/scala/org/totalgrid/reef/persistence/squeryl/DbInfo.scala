@@ -22,10 +22,10 @@ import org.totalgrid.reef.util.BuildEnv
 
 object DbInfo {
 
-  def loadInfo(env: String): DbInfo = SqlProperties.get(BuildEnv.cfgFileReader(env))
+  def loadInfo(env: String): DbInfo = SqlProperties.get(BuildEnv.cfgFileReader("sql", env))
 
   def loadInfo(): DbInfo = loadInfo(BuildEnv.environment)
 }
 
-case class DbInfo(val dbType: String, val host: String, val port: Int, val database: String, val user: String, val password: String,
-  val slowQueryTimeMilli: Long) extends BuildEnv.ConnInfo
+case class DbInfo(dbType: String, host: String, port: Int, database: String, user: String, password: String,
+  slowQueryTimeMilli: Long) extends BuildEnv.ConnInfo

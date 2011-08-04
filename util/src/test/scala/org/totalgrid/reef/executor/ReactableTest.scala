@@ -18,13 +18,14 @@
  */
 package org.totalgrid.reef.executor
 
-import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
+import org.scalatest.FunSuite
+import parallel.Future
 
 @RunWith(classOf[JUnitRunner])
 class ReactActorExecutorTest extends ExecutorTestBase {
@@ -43,6 +44,17 @@ class ReceiveActorExecutorTest extends ExecutorTestBase {
 abstract class ExecutorTestBase extends FunSuite with ShouldMatchers {
 
   val maxActorPowerOf2: Int
+
+  def fixture(test: TestActorBase with ActorExecutor => Unit): Unit = {
+    val actor = getActor
+    try {
+      test(actor)
+    } finally {
+      actor.stop()
+    }
+  }
+
+  def fixture(repeats: Int)(test: TestActorBase with ActorExecutor => Unit): Unit = repeats.times(fixture(test))
 
   abstract class TestActorBase extends Executor with Lifecycle {
     var running = new SyncVar[Option[Boolean]](None: Option[Boolean])
@@ -91,134 +103,149 @@ abstract class ExecutorTestBase extends FunSuite with ShouldMatchers {
     a
   }
 
-  test("unrevoked delay") {
-    val a = getActor
-    val revoker = a.delay(1) { a.increment() }
+  test("stop and start calls are idempotent") {
+    fixture(5) { a =>
+      a.start()
+      a.start()
 
-    a.waitForIncrement(1)
+      a.stop()
+      a.stop()
+    }
+  }
+
+  test("unrevoked delay") {
+    fixture { a =>
+      a.delay(1)(a.increment())
+      a.waitForIncrement(1)
+    }
   }
 
   test("revoked delay") {
-    val a = getActor
-    val revoker = a.delay(500) { a.increment() }
-    revoker.cancel
+    fixture { a =>
+      val revoker = a.delay(500)(a.increment())
+      revoker.cancel()
 
-    // make sure it didn't execute
-    a.waitForIncrement(0, 0, 1000)
+      // make sure it didn't execute
+      a.waitForIncrement(0, 0, 1000)
+    }
   }
 
   test("delay done now") {
-    val a = getActor
-    val revoker = a.delay(5000) { a.increment() }
-
-    revoker.now
-    a.waitForIncrement(1)
+    fixture { a =>
+      val revoker = a.delay(5000)(a.increment())
+      revoker.now()
+      a.waitForIncrement(1)
+    }
   }
 
   test("repeat called initially") {
-    val a = getActor
-    val revoker = a.repeat(5000) { a.increment() }
-
-    a.waitForIncrement(1)
+    fixture { a =>
+      a.repeat(5000)(a.increment())
+      a.waitForIncrement(1)
+    }
   }
 
   test("repeat") {
-    val a = getActor
-    val revoker = a.repeat(1) { a.increment() }
-
-    a.waitForAtleastIncrement(5)
+    fixture { a =>
+      a.repeat(1)(a.increment())
+      a.waitForAtleastIncrement(5)
+    }
   }
 
   test("canceled repeat") {
-    val a = getActor
-    val revoker = a.repeat(1) { a.increment() }
-
-    a.waitForAtleastIncrement(5)
-
-    revoker.cancel()
-    val stoppedVal = a.called.lastValueAfter(500)
-    a.checkUnchanged(stoppedVal)
+    fixture { a =>
+      val revoker = a.repeat(1) { a.increment() }
+      a.waitForAtleastIncrement(5)
+      revoker.cancel()
+      val stoppedVal = a.called.lastValueAfter(500)
+      a.checkUnchanged(stoppedVal)
+    }
   }
 
   test("outstanding repeat on stop") {
-    5.times {
-      val a = getActor
-      val revoker = a.repeat(10000) { a.increment() }
+    fixture(5) { a =>
+      a.repeat(10000)(a.increment())
       a.waitForIncrement(1)
-      a.stop
+      a.stop()
       a.waitForIncrement(1)
     }
   }
 
   test("canceled outstanding repeat on stop") {
-    5.times {
-      val a = getActor
-      val revoker = a.repeat(10000) { a.increment() }
-      revoker.cancel
+    fixture(5) { a =>
+      val revoker = a.repeat(10000)(a.increment())
+      revoker.cancel()
       a.waitForIncrement(1)
-      a.stop
+      a.stop()
       a.waitForIncrement(1)
     }
   }
 
-  test("stop and start calls are idempotent") {
-    val a = getActor
+  test("Request marshalls exceptions") {
+    fixture { a =>
+      5.times {
+        val future: Future[Int] = a.request(1 / 0)
+        intercept[ArithmeticException](future())
+      }
+    }
+  }
 
-    a.start
-    a.start
-
-    a.stop
-    a.stop
+  test("Futures can be parallelized") {
+    fixture { a =>
+      fixture { b =>
+        val f1 = a.request(4)
+        val f2 = b.request(5)
+        (f1() + f2()) should equal(9)
+      }
+    }
   }
 
   test("timer doesnt kill parent") {
     // race condition on the unlink, need to repeat to make error occur
-    5.times {
-      val a = getActor
+    fixture(5) { a =>
+      a.delay(0)(1)
+      a.request(1)()
       a.waitForStarted
-      a.request { 1 }
-      a.delay(0) { 1 }
-      a.request { 1 }
-      a.waitForStarted
-      a.stop
+      a.stop()
     }
   }
 
   test("bind kills linked actors") {
     5.times {
-      val a = getActor
-      val b = getActor
+      fixture { a =>
+        fixture { b =>
+          a.bind(b.getActor)
 
-      a.bind(b.getActor)
+          a.waitForStarted
+          b.waitForStarted
 
-      a.waitForStarted
-      b.waitForStarted
+          a.stop()
 
-      a.stop
-
-      a.waitForStopped
-      b.waitForStopped
+          a.waitForStopped
+          b.waitForStopped
+        }
+      }
     }
   }
 
-  test("restart actor") {
-    val a = getActor
-    a.request { 1 }
-    a.stop
-    a.start
-    a.request { 1 }
-    a.stop
+  test("restart executor") {
+    fixture { a =>
+      a.request(1)()
+      a.stop()
+      a.start()
+      a.request(1)()
+      a.stop()
+    }
   }
 
   test("killing parent kills timers") {
 
     // race condition on the unlink, need to repeat to make error occur
-    2.times {
-      val a = getActor
+    fixture(2) { a =>
       a.waitForStarted
-      a.repeat(1) { a.increment() }
+      a.repeat(1)(a.increment())
       a.waitForAtleastIncrement(5)
-      a.stop
+      a.stop()
       a.waitForStopped
       val atStop = a.called.lastValueAfter(500)
       a.checkUnchanged(atStop)
