@@ -58,6 +58,8 @@ class UnloadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
 
+    services.session.getDefaultHeaders.setResultLimit(50000)
+
     // needed to add explict typing to this list, scala compiler eats up all memory in system and never completes
     val endpoints: List[GeneratedMessage] = services.getAllEndpoints().toList
     val entities: List[GeneratedMessage] = services.getAllEntitiesWithTypes("Equipment" :: "EquipmentGroup" :: Nil).toList

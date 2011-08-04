@@ -23,6 +23,7 @@ import dsl.ast.LogicalBoolean
 import dsl.fsm.{ Conditioned, SelectState, WhereState }
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.QueryYield
+import org.totalgrid.reef.japi.BadRequestException
 
 /**
  * defines a simple to integrate implementation of the findRecord and findRecords functions
@@ -37,9 +38,13 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   val table: Table[T]
 
   /**
-   * limit results to stop denial of service, TODO: make this per query overridable
+   * limit results to stop denial of service
    */
-  def getResultLimit: Int = 100
+  def getResultLimit(context: RequestContext) = {
+    val limit = context.headers.getResultLimit.getOrElse(100)
+    if (limit < 0) throw new BadRequestException("RESULT_LIMIT header needs to be integer larger than 0")
+    limit
+  }
 
   /**
    * to enforce an order on the returned rows override this function with something like:
@@ -92,7 +97,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * find a single record for updating/creating
    */
   def findRecord(context: RequestContext, req: MessageType): Option[T] = {
-    val uniqueItems = uniqueQuery(req, { (sql, w) => w.select(sql) }).toList
+    val uniqueItems = uniqueQuery(req, { (sql, w) => w.select(sql) }, getResultLimit(context)).toList
     uniqueItems.size match {
       case 0 => None
       case 1 => Some(uniqueItems.head)
@@ -105,7 +110,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * all records matching the request proto
    */
   def findRecords(context: RequestContext, req: MessageType): List[T] = {
-    searchQuery(req, { (sql, w) => w.select(sql) }).toList
+    searchQuery(req, { (sql, w) => w.select(sql) }, getResultLimit(context)).toList
   }
 
   /**
@@ -130,11 +135,11 @@ trait UniqueAndSearchQueryable[MessageType, T] {
 
   /// internal (for now) functions that minimize code duplication but aren't needed externally yet
   /// though as the system grows that may change
-  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R]): Query[R] = {
-    from(table)(sql => selectFun(sql, where(uniqueParams(req, sql)))).page(0, getResultLimit)
+  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R], resultLimit: Int): Query[R] = {
+    from(table)(sql => selectFun(sql, where(uniqueParams(req, sql)))).page(0, resultLimit)
   }
-  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R]): Query[R] = {
-    from(table)(sql => getOrdering(selectFun(sql, where(searchParams(req, sql))), sql)).page(0, getResultLimit)
+  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R], resultLimit: Int): Query[R] = {
+    from(table)(sql => getOrdering(selectFun(sql, where(searchParams(req, sql))), sql)).page(0, resultLimit)
   }
   def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {
     SquerylModel.combineExpressions(uniqueQuery(req, sql).flatten)

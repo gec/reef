@@ -35,4 +35,14 @@ public interface ServiceHeaders
      */
     void clearAuthToken();
 
+    /**
+     * overrides the system default for maximum # of results to return at a time
+     * @param resultLimit must be a positive integer
+     */
+    void setResultLimit( int resultLimit );
+
+    /**
+     * unset the result limit to return to using the system default
+     */
+    void clearResultLimit();
 }

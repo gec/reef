@@ -23,14 +23,13 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.japi.Envelope.Status
 
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
 import org.totalgrid.reef.services.ServiceDependencies
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase {
@@ -127,6 +126,37 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     s.get(ConfigFile.newBuilder.addEntities(node1).addEntities(node2).build).expectMany(3)
 
     s.get(ConfigFile.newBuilder.addEntities(node3).build).expectNone()
+  }
+
+  test("Test ResultLimit") {
+    val deps = new ServiceDependencies()
+
+    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
+
+    (1 to 50).foreach { i =>
+      val configFile = makeConfigFile("testFile" + i, "text", "blah")
+      s.put(configFile).expectOne(Status.CREATED)
+    }
+
+    val query = ConfigFile.newBuilder.setName("*").build
+    val env = new RequestEnv()
+
+    env.setResultLimit(1000)
+    s.get(query, env).expectMany(50)
+
+    env.setResultLimit(0)
+    s.get(query, env).expectMany(0)
+
+    env.setResultLimit(1)
+    s.get(query, env).expectMany(1)
+
+    env.setResultLimit(45)
+    s.get(query, env).expectMany(45)
+
+    intercept[BadRequestException] {
+      env.setResultLimit(-1)
+      s.get(query, env)
+    }
   }
 
 }

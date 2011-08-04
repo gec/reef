@@ -23,6 +23,8 @@ import org.totalgrid.reef.japi.client.ServiceHeaders
 object RequestEnv {
   val subQueueName = "SUB_QUEUE_NAME"
   val authToken = "AUTH_TOKEN"
+  val user = "USER"
+  val resultLimit = "RESULT_LIMIT"
 }
 
 /**
@@ -59,6 +61,13 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
   def getString(key: String): Option[String] = {
     headers.get(key) match {
       case Some(List(a)) => Some(a)
+      case _ => None
+    }
+  }
+  def getInteger(key: String): Option[Int] = {
+    headers.get(key) match {
+      case Some(List(a)) =>
+        Some(a.toInt)
       case _ => None
     }
   }
@@ -105,9 +114,11 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
     ss.foreach(addHeader(RequestEnv.authToken, _))
   }
 
-  def userName = getString("USER")
+  def userName = getString(RequestEnv.user)
+  def setUserName(s: String) = setHeader(RequestEnv.user, s)
 
-  def setUserName(s: String) = setHeader("USER", s)
-
+  def getResultLimit() = getInteger(RequestEnv.resultLimit)
+  def setResultLimit(limit: Int) = setHeader(RequestEnv.resultLimit, limit.toString)
+  def clearResultLimit() = clearHeader(RequestEnv.resultLimit)
 }
 
