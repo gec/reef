@@ -69,6 +69,7 @@ class AlarmServiceModelFactory(
 class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, summary: SummaryPoints)
     extends SquerylServiceModel[Alarm, AlarmModel]
     with EventedServiceModel[Alarm, AlarmModel]
+    with SimpleModelEntryCreation[Alarm, AlarmModel]
     with AlarmConversion with AlarmSummaryCalculations {
 
   override def getEventProtoAndKey(alarm: AlarmModel) = {
@@ -79,6 +80,7 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
     (proto, keys)
   }
 
+  override def getRoutingKey(req: Alarm): String = throw new Exception("bad interface")
   override def getSubscribeKeys(req: Alarm): List[String] = {
     val eventKeys = EventConversion.makeSubscribeKeys(req.event.getOrElse(EventProto.newBuilder.build))
 
@@ -96,6 +98,12 @@ class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, su
       // TODO: access the proto to print the state names in the exception.
       throw new BadRequestException("Invalid state transistion from " + Alarm.State.valueOf(existing.state) + " to " + proto.getState, Envelope.Status.BAD_REQUEST)
     }
+  }
+  // Don't allow any updates except on the alarm state.
+  override def updateModelEntry(proto: Alarm, existing: AlarmModel): AlarmModel = {
+    new AlarmModel(
+      proto.getState.getNumber,
+      existing.eventUid) // Use the existing event so there's no possibility of an update.
   }
 
   /// hooks to feed the populated models to the summary counter
@@ -186,14 +194,9 @@ class AlarmSummaryInitializer(modelFac: AlarmServiceModelFactory, summary: Summa
  * Trait for coordinating between service message types and data model type
  */
 trait AlarmConversion
-    extends MessageModelConversion[Alarm, AlarmModel] with AlarmQueries {
+    extends AlarmQueries {
 
   val table = ApplicationSchema.alarms
-
-  def getRoutingKey(req: Alarm) = {
-    // TODO: get rid of this method from the message conversion interface
-    throw new Exception("wrong interface")
-  }
 
   // Did the update change anything that requires a notification to bus
   // subscribers.
@@ -209,13 +212,6 @@ trait AlarmConversion
     new AlarmModel(
       proto.getState.getNumber,
       proto.getEvent.getUid.toLong)
-  }
-
-  // Don't allow any updates except on the alarm state.
-  override def updateModelEntry(proto: Alarm, existing: AlarmModel): AlarmModel = {
-    new AlarmModel(
-      proto.getState.getNumber,
-      existing.eventUid) // Use the existing event so there's no possibility of an update.
   }
 
   def convertToProto(entry: AlarmModel): Alarm = {

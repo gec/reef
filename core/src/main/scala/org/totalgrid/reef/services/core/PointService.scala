@@ -73,6 +73,7 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
   val measurementStore: MeasurementStore)
     extends SquerylServiceModel[PointProto, Point]
     with EventedServiceModel[PointProto, Point]
+    with SimpleModelEntryCreation[PointProto, Point]
     with PointServiceConversion
     with CommunicationEndpointOfflineBehaviors {
 
@@ -126,7 +127,7 @@ class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
   }
 }
 
-trait PointServiceConversion extends MessageModelConversion[PointProto, Point] with UniqueAndSearchQueryable[PointProto, Point] {
+trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point] {
 
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._

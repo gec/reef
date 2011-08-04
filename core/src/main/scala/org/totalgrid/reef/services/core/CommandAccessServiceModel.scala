@@ -177,8 +177,7 @@ class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHan
 }
 
 trait CommandAccessConversion
-    extends MessageModelConversion[AccessProto, AccessModel]
-    with UniqueAndSearchQueryable[AccessProto, AccessModel] {
+    extends UniqueAndSearchQueryable[AccessProto, AccessModel] {
 
   import org.squeryl.PrimitiveTypeMode._
   import AccessProto._

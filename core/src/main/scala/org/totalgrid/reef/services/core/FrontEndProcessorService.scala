@@ -82,8 +82,7 @@ class FrontEndProcessorServiceModel(
 }
 
 trait FrontEndProcessorConversion
-    extends MessageModelConversion[FrontEndProcessor, ApplicationInstance]
-    with UniqueAndSearchQueryable[FrontEndProcessor, ApplicationInstance] {
+    extends UniqueAndSearchQueryable[FrontEndProcessor, ApplicationInstance] {
 
   val table = ApplicationSchema.apps
 

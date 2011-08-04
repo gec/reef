@@ -52,6 +52,7 @@ class OverrideConfigModelFactory(dependencies: ServiceDependencies)
 class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)
     extends SquerylServiceModel[MeasOverride, OverrideConfig]
     with EventedServiceModel[MeasOverride, OverrideConfig]
+    with SimpleModelEntryCreation[MeasOverride, OverrideConfig]
     with OverrideConfigConversion
     with ServiceModelSystemEventPublisher {
 
@@ -79,8 +80,7 @@ class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHa
 }
 
 trait OverrideConfigConversion
-    extends MessageModelConversion[MeasOverride, OverrideConfig]
-    with UniqueAndSearchQueryable[MeasOverride, OverrideConfig] {
+    extends UniqueAndSearchQueryable[MeasOverride, OverrideConfig] {
 
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._

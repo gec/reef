@@ -127,7 +127,7 @@ class CommEndCfgServiceModel(
   }
 }
 
-trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto, CommunicationEndpoint] with UniqueAndSearchQueryable[CommEndCfgProto, CommunicationEndpoint] {
+trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgProto, CommunicationEndpoint] {
 
   import org.squeryl.PrimitiveTypeMode._
   import org.totalgrid.reef.proto.OptionalProtos._
@@ -146,8 +146,6 @@ trait CommEndCfgServiceConversion extends MessageModelConversion[CommEndCfgProto
   }
 
   def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = Nil
-
-  def createModelEntry(proto: CommEndCfgProto): CommunicationEndpoint = throw new Exception("Not using this interface")
 
   def isModified(entry: CommunicationEndpoint, existing: CommunicationEndpoint) = {
     true // we always consider it to have changed to force coordinator to re-check fep assignment

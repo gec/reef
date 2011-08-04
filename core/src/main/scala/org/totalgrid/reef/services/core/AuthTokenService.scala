@@ -86,8 +86,7 @@ object AuthTokenService {
  * auth token specicic code for searching the sql table and converting from
  */
 trait AuthTokenConversions
-    extends MessageModelConversion[AuthToken, AuthTokenModel]
-    with UniqueAndSearchQueryable[AuthToken, AuthTokenModel] {
+    extends UniqueAndSearchQueryable[AuthToken, AuthTokenModel] {
 
   val table = ApplicationSchema.authTokens
 
@@ -119,8 +118,6 @@ trait AuthTokenConversions
     b.setToken(entry.token).build
   }
 
-  // TODO: remove createModelEntry from MessageModelConversion trait
-  def createModelEntry(proto: AuthToken): AuthTokenModel = throw new Exception
 }
 
 class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)

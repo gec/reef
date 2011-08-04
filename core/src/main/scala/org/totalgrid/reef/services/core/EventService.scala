@@ -154,8 +154,7 @@ class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, ev
 }
 
 trait EventConversion
-    extends MessageModelConversion[Event, EventStore]
-    with UniqueAndSearchQueryable[Event, EventStore] {
+    extends UniqueAndSearchQueryable[Event, EventStore] {
 
   val table = ApplicationSchema.events
 
@@ -222,11 +221,6 @@ trait EventConversion
 
   def isModified(entry: EventStore, existing: EventStore): Boolean = {
     true
-  }
-
-  def createModelEntry(proto: Event): EventStore = {
-    // TODO: get rid of this method from the message conversion interface
-    throw new Exception("wrong interface")
   }
 
   def createModelEntry(proto: Event, isAlarm: Boolean, severity: Int, entity: Option[Entity], resource: String, userId: String): EventStore = {

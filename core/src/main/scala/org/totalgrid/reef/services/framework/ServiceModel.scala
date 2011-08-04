@@ -21,8 +21,7 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 /**
  * Interface for generic use of models by simple REST services
@@ -37,25 +36,10 @@ trait ServiceModel[MessageType, ModelType]
    */
   def subscribe(context: RequestContext, req: MessageType, queue: String): Unit
 
-  def createFromProto(context: RequestContext, req: MessageType): ModelType = create(context, createModelEntry(req))
+  def createFromProto(context: RequestContext, req: MessageType): ModelType
 
   def updateFromProto(context: RequestContext, proto: MessageType, existing: ModelType): (ModelType, Boolean) =
-    update(context, updateModelEntry(proto, existing), existing)
-
-  /**
-   * Convert message type to model type when creating
-   * @param proto   Message type
-   * @return        Model type
-   */
-  def createModelEntry(proto: MessageType): ModelType
-
-  /**
-   * Create a modified model type using message type and existing model type
-   * @param proto     Message type
-   * @param existing  Existing model entry
-   * @return          Updated model entry
-   */
-  def updateModelEntry(proto: MessageType, existing: ModelType): ModelType
+    throw new BadRequestException("Cannot update this object")
 
   /**
    * Convert model entry to message type
@@ -80,20 +64,50 @@ trait ServiceModel[MessageType, ModelType]
 }
 
 /**
+ * this trait is used for models that don't need to do anything complicated during model creation,
+ * more complex models will implement createFromProto and updateFromProto directly
+ */
+trait SimpleModelEntryCreation[MessageType, ModelType] extends ServiceModel[MessageType, ModelType] {
+
+  def createFromProto(context: RequestContext, req: MessageType): ModelType =
+    create(context, createModelEntry(req))
+
+  override def updateFromProto(context: RequestContext, proto: MessageType, existing: ModelType): (ModelType, Boolean) =
+    update(context, updateModelEntry(proto, existing), existing)
+
+  /**
+   * Convert message type to model type when creating
+   * @param proto   Message type
+   * @return        Model type
+   */
+  def createModelEntry(proto: MessageType): ModelType
+
+  /**
+   * Create a modified model type using message type and existing model type
+   * @param proto     Message type
+   * @param existing  Existing model entry
+   * @return          Updated model entry
+   */
+  def updateModelEntry(proto: MessageType, existing: ModelType): ModelType =
+    createModelEntry(proto)
+}
+
+/**
  * Composed trait for the implementation of the service bridge of
  * models (event buffering/publishing, subscribe requests)
  */
 trait EventedServiceModel[MessageType <: GeneratedMessage, ModelType]
     extends ServiceEventBuffering[MessageType, ModelType]
     with ServiceEventPublishing[MessageType]
-    with ServiceEventSubscribing[MessageType] { self: MessageModelConversion[MessageType, ModelType] =>
+    with ServiceEventSubscribing[MessageType] {
 }
 
 /**
  * Composed trait of model observing/event buffering component
  */
 trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
-    extends EventQueueingObserver[MessageType, ModelType] { self: MessageModelConversion[MessageType, ModelType] =>
+    extends EventQueueingObserver[MessageType, ModelType]
+    with SubscribeEventCreation[MessageType, ModelType] {
 }
 
 /**
@@ -110,15 +124,9 @@ trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
 /**
  * Implementation of passing subscribe requests to the subscription handler with routing information
  */
-trait ServiceEventSubscribing[MessageType <: GeneratedMessage] {
-  def getRoutingKey(req: MessageType): String
-  protected val subHandler: ServiceSubscriptionHandler
+trait ServiceEventSubscribing[MessageType <: GeneratedMessage] extends SubscribeFunctions[MessageType] {
 
-  /**
-   * list of keys to bind to the sub handler with, models can override this
-   * function to return multiple binding keys.
-   */
-  def getSubscribeKeys(req: MessageType): List[String] = getRoutingKey(req) :: Nil
+  protected val subHandler: ServiceSubscriptionHandler
 
   /**
    * Subscribe to model events

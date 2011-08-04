@@ -95,8 +95,7 @@ class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptio
 }
 
 trait ApplicationConfigConversion
-    extends MessageModelConversion[ApplicationConfig, ApplicationInstance]
-    with UniqueAndSearchQueryable[ApplicationConfig, ApplicationInstance] {
+    extends UniqueAndSearchQueryable[ApplicationConfig, ApplicationInstance] {
 
   val table = ApplicationSchema.apps
 

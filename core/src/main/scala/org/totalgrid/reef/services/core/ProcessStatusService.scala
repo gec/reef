@@ -64,6 +64,9 @@ class ProcessStatusServiceModel(
     with ProcessStatusConversion
     with Logging {
 
+  def createFromProto(context: RequestContext, req: StatusSnapshot) =
+    throw new BadRequestException("Cannot create heartbeat status, register application first")
+
   def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
 
     // give the app twice as long to come online
@@ -106,8 +109,7 @@ class ProcessStatusServiceModel(
 }
 
 trait ProcessStatusConversion
-    extends MessageModelConversion[StatusSnapshot, HeartbeatStatus]
-    with UniqueAndSearchQueryable[StatusSnapshot, HeartbeatStatus] {
+    extends UniqueAndSearchQueryable[StatusSnapshot, HeartbeatStatus] {
 
   val table = ApplicationSchema.heartbeats
 
@@ -129,10 +131,6 @@ trait ProcessStatusConversion
 
   def isModified(entry: HeartbeatStatus, existing: HeartbeatStatus): Boolean = {
     entry.isOnline != existing.isOnline || entry.processId != existing.processId
-  }
-
-  def createModelEntry(proto: StatusSnapshot): HeartbeatStatus = {
-    throw new BadRequestException("can't put heartbeat configuations")
   }
 
   def convertToProto(entry: HeartbeatStatus): StatusSnapshot = {

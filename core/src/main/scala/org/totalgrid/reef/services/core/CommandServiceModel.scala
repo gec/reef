@@ -70,6 +70,7 @@ class CommandServiceModelFactory(dependencies: ServiceDependencies,
 class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
+    with SimpleModelEntryCreation[CommandProto, Command]
     with CommandServiceConversion {
 
   val table = ApplicationSchema.commands
@@ -133,7 +134,7 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
   def commandSelectModel = commandSelectModelOption.get
 }
 
-trait CommandServiceConversion extends MessageModelConversion[CommandProto, Command] with UniqueAndSearchQueryable[CommandProto, Command] {
+trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
     req.uuid.uuid :: req.name :: req.entity.uuid.uuid :: Nil

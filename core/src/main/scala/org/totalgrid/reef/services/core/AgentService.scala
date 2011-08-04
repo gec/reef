@@ -129,8 +129,7 @@ class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
 }
 
 trait AgentConversions
-    extends MessageModelConversion[Agent, AgentModel]
-    with UniqueAndSearchQueryable[Agent, AgentModel] {
+    extends UniqueAndSearchQueryable[Agent, AgentModel] {
 
   val table = ApplicationSchema.agents
 

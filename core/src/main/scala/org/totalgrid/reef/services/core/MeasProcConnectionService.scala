@@ -60,6 +60,7 @@ class MeasurementProcessingConnectionServiceModel(
   protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[ConnProto, MeasProcAssignment]
     with EventedServiceModel[ConnProto, MeasProcAssignment]
+    with SimpleModelEntryCreation[ConnProto, MeasProcAssignment]
     with MeasurementProcessingConnectionConversion {
 
   var coordinator: MeasurementStreamCoordinator = null
@@ -87,8 +88,7 @@ class MeasurementProcessingConnectionServiceModel(
 }
 
 trait MeasurementProcessingConnectionConversion
-    extends MessageModelConversion[ConnProto, MeasProcAssignment]
-    with UniqueAndSearchQueryable[ConnProto, MeasProcAssignment] {
+    extends UniqueAndSearchQueryable[ConnProto, MeasProcAssignment] {
 
   val table = ApplicationSchema.measProcAssignments
 

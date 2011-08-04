@@ -126,6 +126,7 @@ class EventConfigServiceModelFactory(dependencies: ServiceDependencies)
 class EventConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[EventConfig, EventConfigStore]
     with EventedServiceModel[EventConfig, EventConfigStore]
+    with SimpleModelEntryCreation[EventConfig, EventConfigStore]
     with EventConfigConversion {
 
   def getProperties(eventType: String) = {
@@ -149,8 +150,7 @@ class EventConfigServiceModel(protected val subHandler: ServiceSubscriptionHandl
 }
 
 trait EventConfigConversion
-    extends MessageModelConversion[EventConfig, EventConfigStore]
-    with UniqueAndSearchQueryable[EventConfig, EventConfigStore] {
+    extends UniqueAndSearchQueryable[EventConfig, EventConfigStore] {
 
   val table = ApplicationSchema.eventConfigs
 

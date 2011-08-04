@@ -21,11 +21,40 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.japi.Envelope
 
+trait SubscribeFunctions[ServiceType <: GeneratedMessage] {
+
+  def getRoutingKey(req: ServiceType): String
+
+  /**
+   * list of keys to bind to the sub handler with, models can override this
+   * function to return multiple binding keys.
+   */
+  def getSubscribeKeys(req: ServiceType): List[String] = getRoutingKey(req) :: Nil
+
+}
+
+trait SubscribeEventCreation[ServiceType <: GeneratedMessage, A]
+    extends SubscribeFunctions[ServiceType] {
+
+  /**
+   *  gets the notification proto and routing keys for a new/deleted/updated sql record, this can
+   * be overriden to allow having a publish routing key that uses information not contained
+   * in the proto.
+   */
+  def getEventProtoAndKey(entry: A): (ServiceType, List[String]) = {
+    val proto = convertToProto(entry)
+    val key = getRoutingKey(proto)
+    (proto, key :: Nil)
+  }
+
+  def convertToProto(entry: A): ServiceType
+}
+
 /**
  * Component that observes model changes in order to queue service events
  */
 trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
-    extends ModelObserver[A] { self: MessageModelConversion[ServiceType, A] =>
+    extends ModelObserver[A] with SubscribeEventCreation[ServiceType, A] {
 
   protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit
 
@@ -68,14 +97,4 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
     context.events.queuePostTransaction { publishEvent(context, event, resp, key) }
   }
 
-  /**
-   *  gets the notification proto and routing keys for a new/deleted/updated sql record, this can
-   * be overriden to allow having a publish routing key that uses information not contained
-   * in the proto.
-   */
-  def getEventProtoAndKey(entry: A): (ServiceType, List[String]) = {
-    val proto = convertToProto(entry)
-    val key = getRoutingKey(proto)
-    (proto, key :: Nil)
-  }
 }

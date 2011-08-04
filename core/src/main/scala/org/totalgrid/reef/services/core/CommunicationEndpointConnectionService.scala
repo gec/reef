@@ -34,6 +34,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
+import org.totalgrid.reef.japi.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -86,6 +87,9 @@ class CommunicationEndpointConnectionServiceModel(
 
   }
 
+  def createFromProto(context: RequestContext, req: ConnProto): FrontEndAssignment =
+    throw new BadRequestException("Cannot create frontend connections via the public interface")
+
   override def updateFromProto(context: RequestContext, proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
 
     lazy val endpoint = existing.endpoint.value.get
@@ -125,8 +129,7 @@ class CommunicationEndpointConnectionServiceModel(
 object CommunicationEndpointConnectionConversion extends CommunicationEndpointConnectionConversion
 
 trait CommunicationEndpointConnectionConversion
-    extends MessageModelConversion[ConnProto, FrontEndAssignment]
-    with UniqueAndSearchQueryable[ConnProto, FrontEndAssignment] {
+    extends UniqueAndSearchQueryable[ConnProto, FrontEndAssignment] {
 
   val table = ApplicationSchema.frontEndAssignments
 
@@ -155,10 +158,6 @@ trait CommunicationEndpointConnectionConversion
       entry.offlineTime != existing.offlineTime ||
       entry.onlineTime != existing.onlineTime ||
       entry.enabled != existing.enabled
-  }
-
-  def createModelEntry(proto: ConnProto): FrontEndAssignment = {
-    throw new Exception("bad interface")
   }
 
   def convertToProto(entry: FrontEndAssignment): ConnProto = {

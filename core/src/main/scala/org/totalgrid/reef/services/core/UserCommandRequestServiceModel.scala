@@ -142,7 +142,7 @@ class UserCommandRequestServiceModel(
   }
 }
 
-trait UserCommandRequestConversion extends MessageModelConversion[UserCommandRequest, UserCommandModel] with UniqueAndSearchQueryable[UserCommandRequest, UserCommandModel] {
+trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandRequest, UserCommandModel] {
 
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._ // Implicit squeryl list -> query conversion
@@ -170,9 +170,6 @@ trait UserCommandRequestConversion extends MessageModelConversion[UserCommandReq
   def isModified(existing: UserCommandModel, updated: UserCommandModel): Boolean = {
     existing.status != updated.status || existing.agent != updated.agent
   }
-
-  // TODO: remove createModelEntry from interface
-  def createModelEntry(proto: UserCommandRequest): UserCommandModel = throw new Exception("not using interface")
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
     UserCommandRequest.newBuilder

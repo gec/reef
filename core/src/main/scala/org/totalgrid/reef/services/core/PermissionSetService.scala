@@ -107,8 +107,7 @@ class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHan
 }
 
 trait PermissionSetConversions
-    extends MessageModelConversion[PermissionSetProto, PermissionSet]
-    with UniqueAndSearchQueryable[PermissionSetProto, PermissionSet] {
+    extends UniqueAndSearchQueryable[PermissionSetProto, PermissionSet] {
 
   val table = ApplicationSchema.permissionSets
 
@@ -134,8 +133,6 @@ trait PermissionSetConversions
     entry.permissions.value.foreach(p => b.addPermissions(PermissionConversions.convertToProto(p)))
     b.build
   }
-
-  def createModelEntry(proto: PermissionSetProto): PermissionSet = throw new Exception
 }
 object PermissionSetConversions extends PermissionSetConversions
 

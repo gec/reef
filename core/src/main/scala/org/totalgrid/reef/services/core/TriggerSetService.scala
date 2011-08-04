@@ -47,11 +47,11 @@ class TriggerSetServiceModelFactory(dependencies: ServiceDependencies)
 class TriggerSetServiceModel(protected val subHandler: ServiceSubscriptionHandler)
   extends SquerylServiceModel[TriggerProto, TriggerSet]
   with EventedServiceModel[TriggerProto, TriggerSet]
+  with SimpleModelEntryCreation[TriggerProto, TriggerSet]
   with TriggerSetConversion {}
 
 trait TriggerSetConversion
-    extends MessageModelConversion[TriggerProto, TriggerSet]
-    with UniqueAndSearchQueryable[TriggerProto, TriggerSet] {
+    extends UniqueAndSearchQueryable[TriggerProto, TriggerSet] {
 
   val table = ApplicationSchema.triggerSets
 

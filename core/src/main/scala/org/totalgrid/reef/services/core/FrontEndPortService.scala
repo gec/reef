@@ -69,6 +69,7 @@ class FrontEndPortModelFactory(dependencies: ServiceDependencies)
 class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     extends SquerylServiceModel[ChannelProto, FrontEndPort]
     with EventedServiceModel[ChannelProto, FrontEndPort]
+    with SimpleModelEntryCreation[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {
 
   override def preDelete(context: RequestContext, sql: FrontEndPort) {
@@ -84,8 +85,7 @@ class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHand
 object FrontEndPortConversion extends FrontEndPortConversion
 
 trait FrontEndPortConversion
-    extends MessageModelConversion[ChannelProto, FrontEndPort]
-    with UniqueAndSearchQueryable[ChannelProto, FrontEndPort] {
+    extends UniqueAndSearchQueryable[ChannelProto, FrontEndPort] {
 
   val table = ApplicationSchema.frontEndPorts
 

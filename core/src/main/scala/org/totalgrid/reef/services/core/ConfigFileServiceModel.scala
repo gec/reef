@@ -111,7 +111,7 @@ class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandle
   }
 }
 
-trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFile] with UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
+trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
   def getRoutingKey(req: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
     req.uuid.uuid :: req.name :: req.mimeType :: Nil
@@ -137,8 +137,6 @@ trait ConfigFileConversion extends MessageModelConversion[ConfigProto, ConfigFil
   def isModified(entry: ConfigFile, existing: ConfigFile): Boolean = {
     entry.mimeType.compareTo(existing.mimeType) != 0 || !entry.file.sameElements(existing.file) || entry.changedOwners
   }
-
-  def createModelEntry(proto: ConfigProto): ConfigFile = throw new Exception("Not implemented")
 
   def createModelEntry(proto: ConfigProto, entity: Entity): ConfigFile = {
     val sql = new ConfigFile(
