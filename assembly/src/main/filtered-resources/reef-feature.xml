@@ -14,26 +14,26 @@
 	</feature>
 	<feature name="reef-remote-shell" version="0.3.1-SNAPSHOT">
 		<feature>reef-api</feature>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-loader-xml/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='70'>mvn:org.totalgrid.reef/reef-proto-shell/0.3.1-SNAPSHOT</bundle>
 	</feature>
 	<feature name="reef-core" version="0.3.1-SNAPSHOT">
 		<feature>reef-api</feature>
 		<feature>reef-remote-shell</feature>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-metrics/0.3.1-SNAPSHOT</bundle>
-        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-core/0.3.1-SNAPSHOT</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-application-framework/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-postgresql/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-api/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-squeryl/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-api/0.3.1-SNAPSHOT</bundle>
-        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-loader-xml/0.3.1-SNAPSHOT</bundle>
-		<bundle start-level='80'>mvn:org.totalgrid.reef/reef-admin-shell/0.3.1-SNAPSHOT</bundle>
 	</feature>    
 	<feature name="reef" version="0.3.1-SNAPSHOT">
 		<feature>reef-core</feature>
 		<bundle start-level='89'>mvn:org.totalgrid.reef/reef-protocol-simulator/0.3.1-SNAPSHOT</bundle>
         <bundle start-level='90'>mvn:org.totalgrid.reef/reef-default-simulator/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/0.3.1-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-admin-shell/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='99'>mvn:org.totalgrid.reef/reef-processing/0.3.1-SNAPSHOT</bundle>
 		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-fep/0.3.1-SNAPSHOT</bundle>
 	</feature>

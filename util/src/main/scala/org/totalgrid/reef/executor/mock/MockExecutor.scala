@@ -21,7 +21,7 @@ package org.totalgrid.reef.executor.mock
 import org.totalgrid.reef.executor._
 import org.totalgrid.reef.util.Timer
 import scala.collection.mutable.Queue
-import javax.management.remote.rmi._RMIConnection_Stub
+import parallel.Future
 
 /**
  * Mock executor that fully simulates all executor behaviors, but allows
@@ -34,7 +34,7 @@ class MockExecutor extends Executor {
   final override def execute(fun: => Unit): Unit = queue.enqueue(Execution(() => fun))
   final override def delay(msec: Long)(fun: => Unit): Timer = addTimerAction(Delay(() => fun, msec))
   final override def repeat(msec: Long)(fun: => Unit): Timer = addTimerAction(Repeat(() => fun, msec))
-  final override def request[A](fun: => A): A = throw new Exception("Not implemented")
+  final override def request[A](fun: => A): Future[A] = throw new Exception("Not implemented")
 
   final def numActionsPending = queue.size
 

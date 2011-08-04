@@ -19,6 +19,7 @@
 package org.totalgrid.reef.executor
 
 import org.totalgrid.reef.util.Timer
+import parallel.Future
 
 /**
  * Concurrency pattern for abstracting the execution of work on some thread-like implementation.
@@ -26,7 +27,8 @@ import org.totalgrid.reef.util.Timer
 trait Executor {
 
   /**
-   * dispatches a unit of work immediately
+   * dispatches a unit of work immediately. If the fun throws, the executor catches the exception. This
+   * function is "fire-and-forget"
    */
   def execute(fun: => Unit): Unit
 
@@ -45,9 +47,16 @@ trait Executor {
   def repeat(msec: Long)(fun: => Unit): Timer
 
   /**
-   * dispatches a unit of work synchronously with a specific evaluation type A
+   * dispatches a unit of work, the result of which is returned as a future. If the fun throws,
+   * the future's apply method will throw the same exception
    */
-  def request[A](fun: => A): A
+  def request[A](fun: => A): Future[A]
+
+  /**
+   * Blocks until all previously made "execute/request" calls have completed
+   */
+  final def sync() = request {}()
+
 }
 
 object Executor {

@@ -29,6 +29,12 @@ object BrokerProperties {
     val password = cr.getString("org.totalgrid.reef.amqp.password", "guest")
     val virtualHost = cr.getString("org.totalgrid.reef.amqp.virtualHost", "test")
 
-    new BrokerConnectionInfo(host, port, user, password, virtualHost)
+    val ssl = cr.getBoolean("org.totalgrid.reef.amqp.ssl", false)
+    val trustStore = cr.getString("org.totalgrid.reef.amqp.trustStore", "")
+    val trustStorePassword = cr.getString("org.totalgrid.reef.amqp.trustStorePassword", "")
+    val keyStore = cr.getString("org.totalgrid.reef.amqp.keyStore", "")
+    val keyStorePassword = cr.getString("org.totalgrid.reef.amqp.keyStorePassword", "")
+
+    new BrokerConnectionInfo(host, port, user, password, virtualHost, ssl, trustStore, trustStorePassword, keyStore, keyStorePassword)
   }
 }

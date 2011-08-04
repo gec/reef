@@ -22,13 +22,14 @@ import scala.actors.AbstractActor
 import scala.actors.Actor._
 import scala.actors.TIMEOUT
 import org.totalgrid.reef.util.Timer
+import parallel.Future
 
 /// Companion class with case classes that correspond to Executor's interface
 object ActorExecutor {
 
   case class Execute(fun: () => Any)
 
-  case class Request[A](fun: () => A)
+  case class Request[A](calculate: () => A, set: Either[Exception, A] => Unit)
 
   case class Link(a: AbstractActor)
 
@@ -132,7 +133,11 @@ trait ActorExecutor extends Executor with Lifecycle {
   }
 
   /// execute a function synchronously and return the value
-  def request[A](fun: => A): A = (myactor !? Request(() => fun)).asInstanceOf[A]
+  def request[A](fun: => A): Future[A] = {
+    val future = new SynchronizedFuture[A]()
+    myactor ! Request(() => fun, future.set)
+    future
+  }
 
   def bind(a: AbstractActor) = myactor ! Link(a)
 

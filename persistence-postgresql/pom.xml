@@ -28,9 +28,14 @@
                     <instructions>
                         <Bundle-Name>Squeryl PostgreSql binding</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <Bundle-Activator>org.totalgrid.reef.persistence.squeryl.postgresql.activator.Activator</Bundle-Activator>
                         <Export-Package>
                             org.totalgrid.reef.persistence.squeryl.postgresql
                         </Export-Package>
+                        <Private-Package>
+                            org.totalgrid.reef.persistence.squeryl.postgresql.activator
+                        </Private-Package>
+                        <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>

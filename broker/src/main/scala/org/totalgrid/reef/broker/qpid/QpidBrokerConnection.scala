@@ -25,6 +25,7 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.broker._
 import scala.{ Some, Option => ScalaOption }
+import java.lang.IllegalArgumentException
 
 class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnection with Logging {
 
@@ -54,9 +55,22 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       val conn = new Connection
       val listener = new Listener(this)
       conn.addConnectionListener(listener)
+
       logger.info("Connecting to " + config)
+
+      if (config.ssl) {
+        if (config.trustStore == "" || config.trustStorePassword == "")
+          throw new IllegalArgumentException("if using ssl, must set trustStore and trustStorePassword")
+
+        System.setProperty("javax.net.ssl.trustStore", config.trustStore)
+        System.setProperty("javax.net.ssl.trustStorePassword", config.trustStorePassword)
+
+        System.setProperty("javax.net.ssl.keyStore", if (config.keyStore == "") config.trustStore else config.keyStore)
+        System.setProperty("javax.net.ssl.keyStorePassword", if (config.keyStore == "") config.trustStorePassword else config.keyStorePassword)
+      }
+
       try {
-        conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, false)
+        conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, config.ssl)
         connection = Some(ConnectionRecord(conn, listener))
         this.setOpen()
         true
