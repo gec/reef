@@ -64,8 +64,6 @@ trait SystemEventCreator {
  */
 trait ServiceModelSystemEventPublisher extends SystemEventCreator {
 
-  def eventSink: SystemEventSink
-
   def postSystemEvent(context: RequestContext, eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil, deviceTime: Option[Long] = None) {
 
     // TODO: put name of services instance handling request on RequestContext, attach to events
@@ -74,6 +72,6 @@ trait ServiceModelSystemEventPublisher extends SystemEventCreator {
     b.setUserId(context.headers.userName.getOrElse(throw new InternalServiceException("No user during event generation")))
     b.setTime(System.currentTimeMillis())
 
-    eventSink.publishSystemEvent(b.build)
+    context.eventSink.publishSystemEvent(b.build)
   }
 }

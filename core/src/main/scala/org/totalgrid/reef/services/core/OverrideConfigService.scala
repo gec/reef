@@ -43,7 +43,7 @@ class OverrideConfigService(protected val model: OverrideConfigServiceModel)
   override val descriptor = Descriptors.measOverride
 }
 
-class OverrideConfigServiceModel(val eventSink: SystemEventSink)
+class OverrideConfigServiceModel
     extends SquerylServiceModel[MeasOverride, OverrideConfig]
     with EventedServiceModel[MeasOverride, OverrideConfig]
     with SimpleModelEntryCreation[MeasOverride, OverrideConfig]

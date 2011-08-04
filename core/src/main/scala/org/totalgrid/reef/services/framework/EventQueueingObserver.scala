@@ -80,9 +80,9 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
   def queueEvent(context: RequestContext, event: Envelope.Event, entry: A, currentSnapshot: Boolean) = {
     if (currentSnapshot) {
       val (proto, keys) = getEventProtoAndKey(entry)
-      context.events.queueInTransaction { keys.foreach(queuePublishEvent(context, event, proto, _)) }
+      context.operationBuffer.queueInTransaction { keys.foreach(queuePublishEvent(context, event, proto, _)) }
     } else
-      context.events.queueInTransaction {
+      context.operationBuffer.queueInTransaction {
         val (proto, keys) = getEventProtoAndKey(entry)
         keys.foreach(queuePublishEvent(context, event, proto, _))
       }
@@ -94,7 +94,7 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
    * (It might still be missing if some other process has deleted the object but that is a seperate issue)
    */
   private def queuePublishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit = {
-    context.events.queuePostTransaction { publishEvent(context, event, resp, key) }
+    context.operationBuffer.queuePostTransaction { publishEvent(context, event, resp, key) }
   }
 
 }

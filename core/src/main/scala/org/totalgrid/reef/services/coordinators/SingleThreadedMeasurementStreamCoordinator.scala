@@ -30,7 +30,7 @@ import org.totalgrid.reef.services.framework._
 class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, contextSource: RequestContextSource, executor: Executor) extends MeasurementStreamCoordinator {
 
   private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
-    context.events.queuePostTransaction {
+    context.operationBuffer.queuePostTransaction {
       executor.request {
         contextSource.transaction { c2 =>
           f(real, c2)

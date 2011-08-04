@@ -120,7 +120,7 @@ trait AuthTokenConversions
 
 }
 
-class AuthTokenServiceModel(val eventSink: SystemEventSink)
+class AuthTokenServiceModel
     extends SquerylServiceModel[AuthToken, AuthTokenModel]
     with EventedServiceModel[AuthToken, AuthTokenModel]
     with AuthTokenConversions

@@ -19,29 +19,21 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.auth.AuthService
-import com.google.protobuf.Descriptors.EnumValueDescriptor
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentServiceSubscriptionHandler, ServiceSubscriptionHandler }
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.japi.Envelope.{ Event, Status }
+import org.totalgrid.reef.japi.Envelope.Event
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 
 trait RequestContext {
 
-  def events: OperationBuffer
+  def operationBuffer: OperationBuffer
 
   def subHandler: ServiceSubscriptionHandler
 
-  //def request : X
+  def eventSink: SystemEventSink
+
   def headers: RequestEnv
-
-  //def authService : AuthService
-
-  //def setResponse : (Status, X) {}
-
-  def transaction(f: Unit => Unit) {
-    ServiceTransactable.doTransaction(events, { b: OperationBuffer => f })
-  }
 }
 
 class Buffer extends OperationBuffer with LinkedBufferedEvaluation
@@ -49,16 +41,18 @@ class Buffer extends OperationBuffer with LinkedBufferedEvaluation
 class SimpleRequestContext extends HeadersRequestContext(new RequestEnv)
 
 class HeadersRequestContext(val headers: RequestEnv) extends RequestContext {
-  val events = new Buffer
+  val operationBuffer = new Buffer
 
   val subHandler = new SilentServiceSubscriptionHandler
+
+  val eventSink = new SilentEventSink
 }
 
 class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
 
   val headers = new RequestEnv
 
-  val events = new Buffer
+  val operationBuffer = new Buffer
 
   val subHandler = new ServiceSubscriptionHandler {
     def publish(event: Event, resp: GeneratedMessage, key: String) = {
@@ -69,22 +63,19 @@ class DependenciesRequestContext(dependencies: ServiceDependencies) extends Requ
       dependencies.pubs.getEventSink(request.getClass).bind(subQueue, key, request)
     }
   }
+
+  val eventSink = dependencies.eventSink
 }
 
 trait RequestContextSource {
   def transaction[A](f: RequestContext => A): A
 }
 
-class SimpleRequestContextSource extends RequestContextSource {
-  def transaction[A](f: RequestContext => A) = {
-    val context = new SimpleRequestContext()
-    ServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
-  }
-}
+class SimpleRequestContextSource extends DependenciesSource(new ServiceDependencies)
 
 class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
-    ServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
+    ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
   }
 }

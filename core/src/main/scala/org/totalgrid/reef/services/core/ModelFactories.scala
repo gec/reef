@@ -25,14 +25,14 @@ import org.totalgrid.reef.services.coordinators.{ SingleThreadedMeasurementStrea
 class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies, contextSource: RequestContextSource = new SimpleRequestContextSource) {
 
   val accesses = new CommandAccessServiceModel
-  val userRequests = new UserCommandRequestServiceModel(accesses, dependencies.eventSink)
+  val userRequests = new UserCommandRequestServiceModel(accesses)
   val cmds = new CommandServiceModel(userRequests, accesses)
   accesses.setCommandModel(cmds)
 
   val coordinator = {
     // we have to make our own copies of the other service models to break the cyclic dependencies
     val measProc = new MeasurementProcessingConnectionServiceModel
-    val fepModel = new CommunicationEndpointConnectionServiceModel(dependencies.eventSink)
+    val fepModel = new CommunicationEndpointConnectionServiceModel
     val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
     measProc.setCoordinator(coord)
     fepModel.setCoordinator(coord)
@@ -40,7 +40,7 @@ class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies
     syncCoord
   }
 
-  val fepConn = new CommunicationEndpointConnectionServiceModel(dependencies.eventSink)
+  val fepConn = new CommunicationEndpointConnectionServiceModel
   val measProcConn = new MeasurementProcessingConnectionServiceModel
 
   measProcConn.setCoordinator(coordinator)
@@ -49,7 +49,7 @@ class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies
   val fep = new FrontEndProcessorServiceModel(coordinator)
   val fepPort = new FrontEndPortServiceModel
 
-  val overrides = new OverrideConfigServiceModel(dependencies.eventSink)
+  val overrides = new OverrideConfigServiceModel
   val triggerSets = new TriggerSetServiceModel
   val points = new PointServiceModel(triggerSets, overrides, dependencies.cm)
 
@@ -60,7 +60,7 @@ class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies
   val eventConfig = new EventConfigServiceModel
   val events = new EventServiceModel(eventConfig, alarms)
 
-  val authTokens = new AuthTokenServiceModel(dependencies.eventSink)
+  val authTokens = new AuthTokenServiceModel
   val agents = new AgentServiceModel
   val permissionSets = new PermissionSetServiceModel
 

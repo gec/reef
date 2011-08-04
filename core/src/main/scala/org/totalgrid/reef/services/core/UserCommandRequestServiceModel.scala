@@ -31,8 +31,7 @@ import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 class UserCommandRequestServiceModel(
-  accessModel: CommandAccessServiceModel,
-  val eventSink: SystemEventSink)
+  accessModel: CommandAccessServiceModel)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]
     with EventedServiceModel[UserCommandRequest, UserCommandModel]
     with UserCommandRequestConversion

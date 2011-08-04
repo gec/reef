@@ -60,8 +60,7 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
 }
 
 import org.totalgrid.reef.services.coordinators._
-class CommunicationEndpointConnectionServiceModel(
-  val eventSink: SystemEventSink)
+class CommunicationEndpointConnectionServiceModel
     extends SquerylServiceModel[ConnProto, FrontEndAssignment]
     with EventedServiceModel[ConnProto, FrontEndAssignment]
     with CommunicationEndpointConnectionConversion
