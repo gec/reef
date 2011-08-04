@@ -18,11 +18,13 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.services.framework.{ SimpleRequestContextSource, RequestContextSource }
+import org.totalgrid.reef.services.framework.{ RequestContextSource }
 import org.totalgrid.reef.services.coordinators.{ SingleThreadedMeasurementStreamCoordinator, SquerylBackedMeasurementStreamCoordinator }
+import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies }
 
-class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies, contextSource: RequestContextSource = new SimpleRequestContextSource) {
+class ModelFactories(dependencies: ServiceDependencies, contextSource: RequestContextSource) {
+
+  def this(deps: ServiceDependencies) = this(deps, new DependenciesSource(deps))
 
   val accesses = new CommandAccessServiceModel
   val userRequests = new UserCommandRequestServiceModel(accesses)

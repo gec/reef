@@ -18,14 +18,12 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.service._
-import org.totalgrid.reef.util.Logging
-import com.google.protobuf.ByteString
-import org.totalgrid.reef.sapi.client.Failure._
-import org.totalgrid.reef.sapi.client.{ Failure, Response }
-import org.totalgrid.reef.japi.{ TypeDescriptor, ReefServiceException, Envelope }
+import org.totalgrid.reef.sapi.client.Response
 
+/**
+ * defines the get verb and provides a default fail operation
+ */
 trait AsyncContextRestGet extends HasServiceType {
   def getAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
 }
@@ -42,45 +40,13 @@ trait AsyncContextRestPut extends HasServiceType {
   def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
 }
 
+/**
+ * rollup trait that has default implementations for all 4 verbs
+ */
 trait AsyncContextRestService extends AsyncContextRestGet with AsyncContextRestDelete with AsyncContextRestPost with AsyncContextRestPut
 
+/**
+ * all services that we will use with ServiceMiddleware will implement this trait
+ */
 trait ServiceEntryPoint[A <: AnyRef] extends ServiceTypeIs[A] with ServiceDescriptor[A] with AsyncContextRestService
-
-class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, service: ServiceEntryPoint[A]) extends AsyncService[A] with Logging with ServiceHelpers[A] {
-
-  val descriptor: TypeDescriptor[A] = service.descriptor
-
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
-    try {
-      handleRequest(req, env, callback)
-    } catch {
-      case px: ReefServiceException =>
-        logger.error(px.getMessage, px)
-        callback.onResponse(getFailure(req.getId, px.getStatus, px.getMessage))
-      case x: Exception =>
-        logger.error(x.getMessage, x)
-        val msg = x.getMessage + "\n" + x.getStackTraceString
-        callback.onResponse(getFailure(req.getId, Envelope.Status.INTERNAL_ERROR, msg))
-    }
-  }
-
-  private def handleRequest(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
-
-    def onResponse(response: Response[A]) = callback.onResponse(getResponse(request.getId, response))
-
-    val value = descriptor.deserialize(request.getPayload.toByteArray)
-
-    contextSource.transaction { context =>
-      context.headers.merge(env)
-      request.getVerb match {
-        case Envelope.Verb.GET => service.getAsync(context, value)(onResponse)
-        case Envelope.Verb.PUT => service.putAsync(context, value)(onResponse)
-        case Envelope.Verb.DELETE => service.deleteAsync(context, value)(onResponse)
-        case Envelope.Verb.POST => service.postAsync(context, value)(onResponse)
-      }
-    }
-
-  }
-
-}
 

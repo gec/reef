@@ -89,3 +89,5 @@ trait LinkedBufferedEvaluation
 }
 
 trait OperationBuffer extends QueuedEvaluation with LinkedBufferLike
+
+class BasicOperationBuffer extends OperationBuffer with LinkedBufferedEvaluation

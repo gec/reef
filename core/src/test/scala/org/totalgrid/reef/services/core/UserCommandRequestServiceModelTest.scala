@@ -46,7 +46,7 @@ import CommandAccess._
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
-import org.totalgrid.reef.services.framework.{ HeadersRequestContext, SimpleRequestContext }
+import org.totalgrid.reef.services.HeadersRequestContext
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {

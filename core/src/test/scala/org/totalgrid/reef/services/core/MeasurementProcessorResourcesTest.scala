@@ -38,7 +38,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import ServiceResponseTestingHelpers._
 
   private def addPoint(pointName: String, devName: String): Entity = {
-    val modelFac = new ModelFactories()
+    val modelFac = new ModelFactories(new ServiceDependencies)
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build

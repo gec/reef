@@ -34,8 +34,8 @@ import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistr
 
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
-import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
-import org.totalgrid.reef.services.framework.{ DependenciesSource, ServiceMiddleware }
+import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies, ServiceBootstrap }
+import org.totalgrid.reef.services.framework.ServiceMiddleware
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {

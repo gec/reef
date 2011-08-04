@@ -26,7 +26,6 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
-import org.totalgrid.reef.services.framework.{ DependenciesSource, HeadersRequestContext }
 
 object ServiceBootstrap {
   /**

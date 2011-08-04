@@ -19,63 +19,48 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.messaging.serviceprovider.{ SilentServiceSubscriptionHandler, ServiceSubscriptionHandler }
-import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.japi.Envelope.Event
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
+import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
+import org.totalgrid.reef.event.SystemEventSink
 
+/**
+ * the request context is handed through the service call chain. It allows us to make the services and models
+ * stateless objects by concentrating all of the per-request state in one object. It also provides the sinks for
+ * common operations that all services use (subscription publishing, operation enqueuing and event generation).
+ *
+ * TODO: refactor auth service to use requestContext
+ */
 trait RequestContext {
 
+  /**
+   * the operation buffer is used to delay the creation and publishing of service events (ADDED,MODIFIED,DELETED) until
+   * the appropriate time.
+   */
   def operationBuffer: OperationBuffer
 
+  /**
+   * subscription handler that handles the publish and bind calls. Differs from the original subHandler since it will
+   * accept any service event and lookup the exchange rather than needing a different publisher for each object type
+   */
   def subHandler: ServiceSubscriptionHandler
 
+  /**
+   * for publishing system messages (System.LogOn, Subsystem.Starting) etc, publishes these messages immediately and
+   * even if the rest of the transaction rolls back
+   */
   def eventSink: SystemEventSink
 
+  /**
+   * request headers as received from the client
+   */
   def headers: RequestEnv
 }
 
-class Buffer extends OperationBuffer with LinkedBufferedEvaluation
-
-class SimpleRequestContext extends HeadersRequestContext(new RequestEnv)
-
-class HeadersRequestContext(val headers: RequestEnv) extends RequestContext {
-  val operationBuffer = new Buffer
-
-  val subHandler = new SilentServiceSubscriptionHandler
-
-  val eventSink = new SilentEventSink
-}
-
-class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
-
-  val headers = new RequestEnv
-
-  val operationBuffer = new Buffer
-
-  val subHandler = new ServiceSubscriptionHandler {
-    def publish(event: Event, resp: GeneratedMessage, key: String) = {
-      dependencies.pubs.getEventSink(resp.getClass).publish(event, resp, key)
-    }
-
-    def bind(subQueue: String, key: String, request: AnyRef) = {
-      dependencies.pubs.getEventSink(request.getClass).bind(subQueue, key, request)
-    }
-  }
-
-  val eventSink = dependencies.eventSink
-}
-
+/**
+ * a RequestContextSource provides a transaction function which will generate a new RequestContext and once the client
+ * function has completed make sure to cleanup after the transaction (publish subscription messages etc). transaction
+ * should be called as high up in the call chain as possible
+ */
 trait RequestContextSource {
   def transaction[A](f: RequestContext => A): A
 }
 
-class SimpleRequestContextSource extends DependenciesSource(new ServiceDependencies)
-
-class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {
-  def transaction[A](f: RequestContext => A) = {
-    val context = new DependenciesRequestContext(dependencies)
-    ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
-  }
-}

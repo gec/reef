@@ -19,19 +19,10 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.{ RestResponses, HasServiceType }
 
 trait DefaultSyncBehaviors
-    extends GetEnabled
-    with PutCreatesOrUpdates
-    with DeleteEnabled
-    with SubscribeEnabled
-    with AsyncContextRestService {
-  //override def getAsync(context : RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(get(context, req,env))
-
-  //override def deleteAsync(context : RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(delete(context, req,env))
-
-  //override def putAsync(context : RequestContext, req: ServiceType, env: RequestEnv)(callback: Response[ServiceType] => Unit): Unit = callback(put(context, req,env))
-}
+  extends GetEnabled
+  with PutCreatesOrUpdates
+  with DeleteEnabled
+  with SubscribeEnabled
+  with AsyncContextRestService

@@ -51,7 +51,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
   }
 
   test("Point model lookup") {
-    val models = new ModelFactories()
+    val models = new ModelFactories(new ServiceDependencies)
     val service = new PointService(models.points)
 
     val entReq =

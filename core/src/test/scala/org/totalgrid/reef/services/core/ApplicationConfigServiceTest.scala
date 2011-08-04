@@ -28,13 +28,14 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
 
   test("GetPutDelete") {
 
-    val modelFac = new ModelFactories()
+    val modelFac = new ModelFactories(new ServiceDependencies)
 
     val service = new ApplicationConfigService(modelFac.appConfig)
 

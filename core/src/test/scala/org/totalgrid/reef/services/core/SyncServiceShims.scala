@@ -22,7 +22,7 @@ import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.promise.SynchronizedPromise
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.services.{ DependenciesRequestContext, ServiceDependencies }
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 

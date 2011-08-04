@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.service.HasServiceType
 

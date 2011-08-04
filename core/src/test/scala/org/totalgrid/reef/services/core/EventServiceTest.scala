@@ -31,12 +31,13 @@ import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.japi.ReefServiceException
 
 import SyncServiceShims._
+import org.totalgrid.reef.services.ServiceDependencies
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
   class Fixture {
-    val factories = new ModelFactories()
+    val factories = new ModelFactories(new ServiceDependencies)
     val eventService = new EventService(factories.events)
     val eventConfigService = new EventConfigService(factories.eventConfig)
     val alarmService = new AlarmService(factories.alarms)

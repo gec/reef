@@ -43,11 +43,11 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException }
-import org.totalgrid.reef.services.framework.HeadersRequestContext
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.services.{ HeadersRequestContext, ServiceDependencies }
 
 class CommandTestRig {
-  val modelFactories = new ModelFactories()
+  val modelFactories = new ModelFactories(new ServiceDependencies)
 
   val commands = modelFactories.cmds
   val accesses = modelFactories.accesses
@@ -70,7 +70,7 @@ class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsI
 
   import AccessProto._
 
-  val context = new HeadersRequestContext(new RequestEnv())
+  val context = new HeadersRequestContext()
 
   def lastSelectFor(cmd: String) = {
     Command.findByNames(cmd :: Nil).head.lastSelectId

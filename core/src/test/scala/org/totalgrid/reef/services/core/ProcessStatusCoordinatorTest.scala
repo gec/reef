@@ -33,9 +33,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.ServiceDependencies
-
-import org.totalgrid.reef.services.framework.DependenciesSource
+import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies }
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
@@ -74,7 +72,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     val deps = ServiceDependencies(pubs)
     val contextSource = new DependenciesSource(deps)
 
-    val modelFac = new ModelFactories()
+    val modelFac = new ModelFactories(deps, contextSource)
 
     val service = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
 

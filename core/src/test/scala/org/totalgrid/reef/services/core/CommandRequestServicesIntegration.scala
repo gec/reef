@@ -62,8 +62,6 @@ import client.Response
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
 
-import org.totalgrid.reef.services.framework.HeadersRequestContext
-
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
     extends EndpointRelatedTestBase {

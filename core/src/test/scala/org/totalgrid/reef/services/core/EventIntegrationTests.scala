@@ -36,7 +36,6 @@ import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => Eve
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.services.framework.DependenciesSource
 import org.totalgrid.reef.sapi.RequestEnv
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {

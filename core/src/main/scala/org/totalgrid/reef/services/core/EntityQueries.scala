@@ -31,6 +31,7 @@ import org.totalgrid.reef.japi.BadRequestException
 import SquerylModel._
 import java.util.UUID
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
+import org.totalgrid.reef.services.HeadersRequestContext
 
 // implict asParam
 import org.totalgrid.reef.util.Optional._
@@ -601,7 +602,8 @@ trait EntityQueries extends EntityTreeQueries {
     if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      EntitySearches.findRecord(new SimpleRequestContext, rootNode).map { rootEnt =>
+      // TODO: get entitiy queries to use and respect requestContext
+      EntitySearches.findRecord(new HeadersRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }
