@@ -35,7 +35,7 @@ import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, En
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.models.{ UserCommandModel, Command, ApplicationSchema, Entity }
 
-class CommandService(protected val modelTrans: ServiceTransactable[CommandServiceModel])
+class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
     with DefaultSyncBehaviors {
 
@@ -53,21 +53,8 @@ class CommandService(protected val modelTrans: ServiceTransactable[CommandServic
   }
 }
 
-class CommandServiceModelFactory(dependencies: ServiceDependencies,
-  commandHistoryFac: UserCommandRequestServiceModelFactory,
-  accessFac: CommandAccessServiceModelFactory)
-    extends BasicModelFactory[CommandProto, CommandServiceModel](dependencies, classOf[CommandProto]) {
-
-  def model = {
-    val m = new CommandServiceModel(subHandler)
-    val accessModel = accessFac.model(m)
-    m.setCommandSelectModel(accessModel)
-    m.setCommandHistoryModel(commandHistoryFac.model(accessModel))
-    m
-  }
-}
-
-class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
+  commandSelectModel: CommandAccessServiceModel)
     extends SquerylServiceModel[CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
     with SimpleModelEntryCreation[CommandProto, Command]
@@ -118,20 +105,6 @@ class CommandServiceModel(protected val subHandler: ServiceSubscriptionHandler)
     EQ.deleteEntity(entry.entity.value)
   }
 
-  // ugly link related bolierplate to break circular dependency
-  var commandHistoryModelOption: Option[UserCommandRequestServiceModel] = None
-  var commandSelectModelOption: Option[CommandAccessServiceModel] = None
-  def setCommandHistoryModel(m: UserCommandRequestServiceModel) {
-
-    commandHistoryModelOption = Some(m)
-  }
-  def setCommandSelectModel(m: CommandAccessServiceModel) {
-
-    commandSelectModelOption = Some(m)
-  }
-
-  def commandHistoryModel = commandHistoryModelOption.get
-  def commandSelectModel = commandSelectModelOption.get
 }
 
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {

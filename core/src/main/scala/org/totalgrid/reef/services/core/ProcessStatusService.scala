@@ -31,7 +31,7 @@ import org.totalgrid.reef.japi.BadRequestException
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
+import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // Implicits
@@ -41,23 +41,14 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-class ProcessStatusService(protected val modelTrans: ServiceTransactable[ProcessStatusServiceModel])
+class ProcessStatusService(val model: ProcessStatusServiceModel)
     extends SyncModeledServiceBase[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.statusSnapshot
 }
 
-class ProcessStatusServiceModelFactory(
-  dependencies: ServiceDependencies,
-  coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[StatusSnapshot, ProcessStatusServiceModel](dependencies, classOf[StatusSnapshot]) {
-
-  def model = new ProcessStatusServiceModel(subHandler, coordinatorFac.model)
-}
-
 class ProcessStatusServiceModel(
-  protected val subHandler: ServiceSubscriptionHandler,
   coordinator: MeasurementStreamCoordinator)
     extends SquerylServiceModel[StatusSnapshot, HeartbeatStatus]
     with EventedServiceModel[StatusSnapshot, HeartbeatStatus]

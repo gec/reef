@@ -71,7 +71,7 @@ class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders:
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
     context.headers.merge(commonHeaders)
-    BasicServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
+    ServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
   }
 }
 

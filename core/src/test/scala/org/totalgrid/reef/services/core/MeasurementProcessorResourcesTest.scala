@@ -92,8 +92,8 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
 
     val node = addPoint("meas01", "dev1")
     addPoint("meas02", "dev2")
-    val fac = new OverrideConfigModelFactory(deps)
-    val s = new OverrideConfigService(fac)
+
+    val s = new OverrideConfigService(new OverrideConfigServiceModel(deps.eventSink))
 
     val headers = new RequestEnv
     headers.setUserName("user")

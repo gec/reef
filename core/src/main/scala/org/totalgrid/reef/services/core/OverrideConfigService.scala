@@ -36,20 +36,14 @@ import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
-class OverrideConfigService(protected val modelTrans: ServiceTransactable[OverrideConfigServiceModel])
+class OverrideConfigService(protected val model: OverrideConfigServiceModel)
     extends SyncModeledServiceBase[MeasOverride, OverrideConfig, OverrideConfigServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.measOverride
 }
 
-class OverrideConfigModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[MeasOverride, OverrideConfigServiceModel](dependencies, classOf[MeasOverride]) {
-
-  def model = new OverrideConfigServiceModel(subHandler, dependencies.eventSink)
-}
-
-class OverrideConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)
+class OverrideConfigServiceModel(val eventSink: SystemEventSink)
     extends SquerylServiceModel[MeasOverride, OverrideConfig]
     with EventedServiceModel[MeasOverride, OverrideConfig]
     with SimpleModelEntryCreation[MeasOverride, OverrideConfig]

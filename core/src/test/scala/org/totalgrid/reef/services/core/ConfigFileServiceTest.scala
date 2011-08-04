@@ -25,7 +25,6 @@ import org.totalgrid.reef.japi.Envelope.Status
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
-import org.totalgrid.reef.services.ServiceDependencies
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.sapi.RequestEnv
@@ -42,9 +41,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test Status Codes") {
-    val deps = new ServiceDependencies()
-
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
+    val s = new ConfigFileService(new ConfigFileServiceModel)
 
     val configFile = makeConfigFile("testFile1", "text", "blah")
 
@@ -62,9 +59,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test Searching") {
-    val deps = new ServiceDependencies()
-
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
+    val s = new ConfigFileService(new ConfigFileServiceModel)
 
     val configFile1 = makeConfigFile("testFile1", "text", "blah")
     val configFile2 = makeConfigFile("testFile2", "text", "blah")
@@ -85,11 +80,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test EntityOwnerShip") {
-    val deps = new ServiceDependencies()
-
     val es = new EntityService()
 
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
+    val s = new ConfigFileService(new ConfigFileServiceModel)
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
     val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
@@ -104,11 +97,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Shared Entity Ownership") {
-    val deps = new ServiceDependencies()
-
     val es = new EntityService()
 
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
+    val s = new ConfigFileService(new ConfigFileServiceModel)
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
     val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
@@ -129,9 +120,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test ResultLimit") {
-    val deps = new ServiceDependencies()
-
-    val s = new ConfigFileService(new ConfigFileServiceModelFactory(deps))
+    val s = new ConfigFileService(new ConfigFileServiceModel)
 
     (1 to 50).foreach { i =>
       val configFile = makeConfigFile("testFile" + i, "text", "blah")

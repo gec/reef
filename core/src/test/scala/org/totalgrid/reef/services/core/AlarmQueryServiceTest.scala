@@ -123,7 +123,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
         val factories = new ModelFactories()
 
-        val eventService = factories.events.model
+        val eventService = factories.events
         val context = new SimpleRequestContext
 
         eventService.createFromProto(context, makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))

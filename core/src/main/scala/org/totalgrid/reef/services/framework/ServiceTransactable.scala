@@ -20,44 +20,7 @@ package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode
 
-import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
-
-/**
- * Interface for components capable of constructing a service model.
- */
-trait ModelFactory[+ModelType] {
-  def model: ModelType
-}
-
-/**
- * Interface for components that perform transactional behavior, providing a stateful
- * model for use during the transaction.
- */
-trait ServiceTransactable[+ModelType] {
-  def transaction[R](fun: ModelType => R): R
-  def model: ModelType
-  def messageType: Class[_]
-}
-
-/**
- *  Generic component that maintains a ServiceSubscriptionHandler resource and provides an implementation of
- *  transactional/buffered behavior. Inherited classes provide the factory method for instantiating model objects
- *  given the ServiceSubscriptionHandler.
- */
-trait BasicServiceTransactable[+ModelType]
-    extends ServiceTransactable[ModelType] {
-
-  protected val subHandler: ServiceSubscriptionHandler
-  def model: ModelType
-
-  def transaction[R](fun: ModelType => R): R = {
-    val m = model
-    fun(m)
-    //BasicServiceTransactable.doTransaction(m, fun)
-  }
-}
-
-object BasicServiceTransactable {
+object ServiceTransactable {
   def doTransaction[ModelType <: BufferLike, Output](m: ModelType, fun: ModelType => Output): Output = {
     try {
       val result: Output = PrimitiveTypeMode.inTransaction {

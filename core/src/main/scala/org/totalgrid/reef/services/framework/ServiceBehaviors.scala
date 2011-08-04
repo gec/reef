@@ -22,15 +22,12 @@ import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
 import org.totalgrid.reef.sapi.client.Response
 
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.RequestEnv
-
-import org.totalgrid.reef.sapi.service._
 
 object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
-  trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasServiceTransactable with AsyncContextRestGet {
+  trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasModelFactory with AsyncContextRestGet {
     def get(context: RequestContext, req: ServiceType): Response[ServiceType] = {
       val results = read(context, model, req)
       context.headers.subQueue.foreach(subscribe(context, model, req, _))
@@ -54,7 +51,7 @@ object ServiceBehaviors {
    * POSTs create a new entry, there are no updates
    */
 
-  trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasServiceTransactable with AsyncContextRestPut {
+  trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasModelFactory with AsyncContextRestPut {
 
     def put(context: RequestContext, req: ServiceType): Response[ServiceType] = {
       val (value, status) = create(context, model, req)
@@ -66,7 +63,7 @@ object ServiceBehaviors {
       callback(put(context, req))
   }
 
-  trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasServiceTransactable with AsyncContextRestPost {
+  trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasModelFactory with AsyncContextRestPost {
 
     def post(context: RequestContext, req: ServiceType): Response[ServiceType] = {
       val (value, status) = model.findRecord(context, req) match {
@@ -92,7 +89,7 @@ object ServiceBehaviors {
       extends HasCreate with AuthorizesCreate
       with HasUpdate with AuthorizesUpdate
       with HasSubscribe
-      with HasServiceTransactable
+      with HasModelFactory
       with AsyncContextRestPut {
 
     protected def doPut(context: RequestContext, req: ServiceType, model: ServiceModelType): Response[ServiceType] = {
@@ -117,7 +114,7 @@ object ServiceBehaviors {
       callback(put(context, req))
   }
 
-  trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasServiceTransactable with AsyncContextRestPut {
+  trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasModelFactory with AsyncContextRestPut {
 
     override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
       doAsyncPutPost(context, doPut(context, req, model), callback)
@@ -128,7 +125,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Delete" behavior
    */
-  trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasServiceTransactable with AsyncContextRestDelete {
+  trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasModelFactory with AsyncContextRestDelete {
 
     def delete(context: RequestContext, req: ServiceType): Response[ServiceType] = {
       context.headers.subQueue.foreach(subscribe(context, model, req, _))

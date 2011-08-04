@@ -30,25 +30,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
-class UserCommandRequestServiceModelFactory(
-  dependencies: ServiceDependencies,
-  accessFac: ModelFactory[CommandAccessServiceModel])
-    extends BasicModelFactory[UserCommandRequest, UserCommandRequestServiceModel](dependencies, classOf[UserCommandRequest]) {
-
-  def model = {
-    val accessModel = accessFac.model
-    val m = new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
-
-    m
-
-  }
-  def model(accessModel: CommandAccessServiceModel) =
-    new UserCommandRequestServiceModel(subHandler, accessModel, dependencies.eventSink)
-
-}
-
 class UserCommandRequestServiceModel(
-  protected val subHandler: ServiceSubscriptionHandler,
   accessModel: CommandAccessServiceModel,
   val eventSink: SystemEventSink)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]

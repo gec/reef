@@ -20,30 +20,26 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.core.EventServiceModelFactory
 import org.totalgrid.reef.japi.ReefServiceException
 import org.squeryl.PrimitiveTypeMode
-import org.totalgrid.reef.services.framework.{ OperationBuffer, BasicServiceTransactable, SimpleRequestContext }
+import org.totalgrid.reef.services.framework.RequestContextSource
+import org.totalgrid.reef.services.core.EventServiceModel
 
 class LocalSystemEventSink extends SystemEventSink with Logging {
 
-  private var eventModelFactory: Option[EventServiceModelFactory] = None
+  private var components: Option[(RequestContextSource, EventServiceModel)] = None
 
   def publishSystemEvent(evt: org.totalgrid.reef.proto.Events.Event) {
     try {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error
       PrimitiveTypeMode.transaction {
-        val context = new SimpleRequestContext
-        BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-          eventModelFactory.get.transaction {
-
-            // notice we are skipping the event service preCreate step that strips time and userId
-            // because our local trusted service components have already set those values correctly
-            _.createFromProto(context, evt)
-
-          }
-        })
+        val (contextSource, model) = components.get
+        contextSource.transaction { context =>
+          // notice we are skipping the event service preCreate step that strips time and userId
+          // because our local trusted service components have already set those values correctly
+          model.createFromProto(context, evt)
+        }
       }
     } catch {
       case e: ReefServiceException =>
@@ -51,7 +47,7 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
     }
   }
 
-  def setEventModel(factory: EventServiceModelFactory) {
-    eventModelFactory = Some(factory)
+  def setComponents(model: EventServiceModel, contextSource: RequestContextSource) {
+    components = Some(contextSource, model)
   }
 }

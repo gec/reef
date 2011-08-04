@@ -114,7 +114,6 @@ trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
  * Implementation of publishing events using a subscription handler
  */
 trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
-  protected val subHandler: ServiceSubscriptionHandler
 
   protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: MessageType, key: String): Unit = {
     context.subHandler.publish(event, resp, key)
@@ -125,8 +124,6 @@ trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
  * Implementation of passing subscribe requests to the subscription handler with routing information
  */
 trait ServiceEventSubscribing[MessageType <: GeneratedMessage] extends SubscribeFunctions[MessageType] {
-
-  protected val subHandler: ServiceSubscriptionHandler
 
   /**
    * Subscribe to model events

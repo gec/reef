@@ -49,9 +49,9 @@ import org.totalgrid.reef.sapi.RequestEnv
 class CommandTestRig {
   val modelFactories = new ModelFactories()
 
-  val commands = modelFactories.cmds.model
-  val accesses = modelFactories.accesses.model
-  val userRequests = modelFactories.userRequests.model
+  val commands = modelFactories.cmds
+  val accesses = modelFactories.accesses
+  val userRequests = modelFactories.userRequests
 
   def seed(sql: Command): Command = {
     ApplicationSchema.commands.insert(sql)

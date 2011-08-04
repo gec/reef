@@ -32,26 +32,14 @@ import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException, Env
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class CommandAccessServiceModelFactory(
-  dependencies: ServiceDependencies)
-    extends BasicModelFactory[AccessProto, CommandAccessServiceModel](dependencies, classOf[AccessProto]) {
-
-  def model = {
-    val commandService = commandFac.get.model
-    val m = new CommandAccessServiceModel(subHandler, commandService)
-
-    m
-  }
-  def model(commandModel: CommandServiceModel) = new CommandAccessServiceModel(subHandler, commandModel)
-
-  private var commandFac: Option[ModelFactory[CommandServiceModel]] = None
-  def setCommandsFactory(commands: ModelFactory[CommandServiceModel]) = commandFac = Some(commands)
-}
-
-class CommandAccessServiceModel(protected val subHandler: ServiceSubscriptionHandler, commandModel: CommandServiceModel)
+class CommandAccessServiceModel
     extends SquerylServiceModel[AccessProto, AccessModel]
     with EventedServiceModel[AccessProto, AccessModel]
     with CommandAccessConversion {
+
+  def commandModel = modelOption.get
+  var modelOption: Option[CommandServiceModel] = None
+  def setCommandModel(commandModel: CommandServiceModel) = modelOption = Some(commandModel)
 
   import org.squeryl.PrimitiveTypeMode._
 

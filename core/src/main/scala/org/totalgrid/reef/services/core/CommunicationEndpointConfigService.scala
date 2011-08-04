@@ -28,30 +28,17 @@ import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory, MeasurementStreamCoordinator }
+import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class CommunicationEndpointService(protected val modelTrans: ServiceTransactable[CommEndCfgServiceModel])
+class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.commEndpointConfig
 }
 
-class CommEndCfgServiceModelFactory(
-  dependencies: ServiceDependencies,
-  commandFac: ModelFactory[CommandServiceModel],
-  configFac: ModelFactory[ConfigFileServiceModel],
-  pointFac: ModelFactory[PointServiceModel],
-  portModelFac: ModelFactory[FrontEndPortServiceModel],
-  coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[CommEndCfgProto, CommEndCfgServiceModel](dependencies, classOf[CommEndCfgProto]) {
-
-  def model = new CommEndCfgServiceModel(subHandler, commandFac.model, configFac.model, pointFac.model, portModelFac.model, coordinatorFac.model)
-}
-
 class CommEndCfgServiceModel(
-  protected val subHandler: ServiceSubscriptionHandler,
   commandModel: CommandServiceModel,
   configModel: ConfigFileServiceModel,
   pointModel: PointServiceModel,

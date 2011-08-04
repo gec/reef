@@ -32,20 +32,14 @@ import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class PermissionSetService(protected val modelTrans: ServiceTransactable[PermissionSetServiceModel])
+class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.permissionSet
 }
 
-class PermissionSetServiceModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[PermissionSetProto, PermissionSetServiceModel](dependencies, classOf[PermissionSetProto]) {
-
-  def model = new PermissionSetServiceModel(subHandler)
-}
-
-class PermissionSetServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class PermissionSetServiceModel
     extends SquerylServiceModel[PermissionSetProto, PermissionSet]
     with EventedServiceModel[PermissionSetProto, PermissionSet]
     with PermissionSetConversions {

@@ -27,22 +27,6 @@ import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.framework._
 
-class MeasurementStreamCoordinatorFactory(
-    dependencies: ServiceDependencies,
-    contextSource: RequestContextSource) {
-
-  def model = {
-    // we have to make our own copies of the other service models to break the cyclic dependencies
-    val measProc = new MeasurementProcessingConnectionServiceModel(dependencies.pubs.getEventSink(classOf[MeasurementProcessingConnection]))
-    val fepModel = new CommunicationEndpointConnectionServiceModel(dependencies.pubs.getEventSink(classOf[CommEndpointConnection]), dependencies.eventSink)
-    val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
-    measProc.setCoordinator(coord, false)
-    fepModel.setCoordinator(coord, false)
-    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource, new InstantExecutor)
-    syncCoord
-  }
-}
-
 /**
  * defines the callbacks from each of the other services used in assigning a front end processor
  * and measurement processor for each endpoint.

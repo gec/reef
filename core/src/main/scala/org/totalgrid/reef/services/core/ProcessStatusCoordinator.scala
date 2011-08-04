@@ -32,7 +32,7 @@ import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 import org.totalgrid.reef.japi.Envelope
 
-class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceModel], contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
+class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
 
   def startTimeoutChecks(react: Executor) {
     // we need to delay the timeout check a bit to make sure any already queued heartbeat messages are waiting
@@ -62,13 +62,10 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
 
   def checkTimeouts(now: Long) {
     contextSource.transaction { context =>
-      trans.transaction { model =>
-
-        ApplicationSchema.heartbeats.where(h => h.isOnline === true and (h.timeoutAt lte now)).foreach(h => {
-          logger.info("App " + h.instanceName.value + ": has timed out at " + now + " (" + (h.timeoutAt - now) + ")")
-          model.takeApplicationOffline(context, h, now)
-        })
-      }
+      ApplicationSchema.heartbeats.where(h => h.isOnline === true and (h.timeoutAt lte now)).foreach(h => {
+        logger.info("App " + h.instanceName.value + ": has timed out at " + now + " (" + (h.timeoutAt - now) + ")")
+        model.takeApplicationOffline(context, h, now)
+      })
     }
   }
 
@@ -90,15 +87,12 @@ class ProcessStatusCoordinator(trans: ServiceTransactable[ProcessStatusServiceMo
       }
     }
     contextSource.transaction { context =>
-      trans.transaction { model =>
-
-        if (!ss.hasProcessId) {
-          logger.warn("Malformed" + ss.getInstanceName + ": isn't configured!")
-        } else {
-          ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
-            case List(hbeat) => update(context, model, hbeat)
-            case _ => logger.warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
-          }
+      if (!ss.hasProcessId) {
+        logger.warn("Malformed" + ss.getInstanceName + ": isn't configured!")
+      } else {
+        ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
+          case List(hbeat) => update(context, model, hbeat)
+          case _ => logger.warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
         }
       }
     }

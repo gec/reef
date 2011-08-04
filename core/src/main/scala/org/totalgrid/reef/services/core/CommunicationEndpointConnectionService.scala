@@ -31,7 +31,6 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinatorFactory }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.japi.BadRequestException
@@ -40,7 +39,7 @@ import org.totalgrid.reef.japi.BadRequestException
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
-class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTransactable[CommunicationEndpointConnectionServiceModel])
+class CommunicationEndpointConnectionService(protected val model: CommunicationEndpointConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
     with GetEnabled
     with PutCreatesOrUpdates
@@ -60,21 +59,8 @@ class CommunicationEndpointConnectionService(protected val modelTrans: ServiceTr
   }
 }
 
-class CommunicationEndpointConnectionModelFactory(
-  dependencies: ServiceDependencies,
-  coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[ConnProto, CommunicationEndpointConnectionServiceModel](dependencies, classOf[ConnProto]) {
-
-  def model = {
-    val csm = new CommunicationEndpointConnectionServiceModel(subHandler, dependencies.eventSink)
-    csm.setCoordinator(coordinatorFac.model)
-    csm
-  }
-}
-
 import org.totalgrid.reef.services.coordinators._
 class CommunicationEndpointConnectionServiceModel(
-  protected val subHandler: ServiceSubscriptionHandler,
   val eventSink: SystemEventSink)
     extends SquerylServiceModel[ConnProto, FrontEndAssignment]
     with EventedServiceModel[ConnProto, FrontEndAssignment]
@@ -84,7 +70,6 @@ class CommunicationEndpointConnectionServiceModel(
   var coordinator: MeasurementStreamCoordinator = null
   def setCoordinator(cr: MeasurementStreamCoordinator, linkModels: Boolean = true) = {
     coordinator = cr
-
   }
 
   def createFromProto(context: RequestContext, req: ConnProto): FrontEndAssignment =

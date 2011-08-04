@@ -40,7 +40,7 @@ trait RequestContext {
   //def setResponse : (Status, X) {}
 
   def transaction(f: Unit => Unit) {
-    BasicServiceTransactable.doTransaction(events, { b: OperationBuffer => f })
+    ServiceTransactable.doTransaction(events, { b: OperationBuffer => f })
   }
 }
 
@@ -78,13 +78,13 @@ trait RequestContextSource {
 class SimpleRequestContextSource extends RequestContextSource {
   def transaction[A](f: RequestContext => A) = {
     val context = new SimpleRequestContext()
-    BasicServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
+    ServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
   }
 }
 
 class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
-    BasicServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
+    ServiceTransactable.doTransaction(context.events, { b: OperationBuffer => f(context) })
   }
 }

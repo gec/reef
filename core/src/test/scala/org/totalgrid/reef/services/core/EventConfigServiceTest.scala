@@ -36,8 +36,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Get and Put") {
 
-    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
-    val service = new EventConfigService(fac)
+    val service = new EventConfigService(new EventConfigServiceModel)
 
     val sent = makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.EVENT), Some("Resource"))
     val created = service.put(sent).expectOne
@@ -48,8 +47,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Incomplete event configs") {
 
-    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
-    val service = new EventConfigService(fac)
+    val service = new EventConfigService(new EventConfigServiceModel)
 
     intercept[BadRequestException] {
       service.put(makeEc(Some("Scada.ControlExe"), None, Some(Designation.EVENT), Some("Resource"))).expectOne
@@ -67,8 +65,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Incomplete alarm event configs") {
 
-    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
-    val service = new EventConfigService(fac)
+    val service = new EventConfigService(new EventConfigServiceModel)
 
     intercept[BadRequestException] {
       service.put(makeEc(Some("Scada.ControlExe"), Some(1), Some(Designation.ALARM), Some("Resource"))).expectOne
@@ -83,8 +80,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Create large string") {
 
-    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
-    val service = new EventConfigService(fac)
+    val service = new EventConfigService(new EventConfigServiceModel)
 
     // resources is by default 128 chars max
     val longString = "hello!" * 50
@@ -96,8 +92,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Delete custom event") {
-    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
-    val service = new EventConfigService(fac)
+    val service = new EventConfigService(new EventConfigServiceModel)
 
     val sent = makeEc(Some("Custom.Event"), Some(1), Some(Designation.EVENT), Some("ss"))
     val created = service.put(sent).expectOne
@@ -112,8 +107,7 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
 
   test("Can't delete builtIn event") {
 
-    val fac = new EventConfigServiceModelFactory(new ServiceDependencies())
-    val service = new EventConfigService(fac)
+    val service = new EventConfigService(new EventConfigServiceModel)
     EventConfigService.seed()
 
     val gotten = service.get(makeEc(builtIn = Some(true))).expectMany().head

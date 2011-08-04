@@ -36,7 +36,7 @@ import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 
 class UserCommandRequestService(
-  protected val modelTrans: ServiceTransactable[UserCommandRequestServiceModel], pool: SessionPool)
+  protected val model: UserCommandRequestServiceModel, pool: SessionPool)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled

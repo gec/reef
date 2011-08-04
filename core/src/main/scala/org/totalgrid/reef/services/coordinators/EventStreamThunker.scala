@@ -32,7 +32,7 @@ import org.totalgrid.reef.services.framework._
  * simple thunker that takes "raw events" from the bus and calls the "put" method from the EventService
  * to put the event into the database.
  */
-class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], rawEventExchanges: List[String]) extends ProtoServiceCoordinator with Logging {
+class EventStreamThunker(model: EventServiceModel, rawEventExchanges: List[String], contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
 
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     // shift the processing of the event onto another thread
@@ -45,9 +45,9 @@ class EventStreamThunker(eventModel: ServiceTransactable[EventServiceModel], raw
     try {
       // notice we are skipping the event service preCreate step that strips time and userId
       // because our local trusted service components have already set those values correctly
-      BasicServiceTransactable.doTransaction(context.events, { buffer: OperationBuffer =>
-        eventModel.transaction { _.createFromProto(context, msg) }
-      })
+      contextSource.transaction { context =>
+        model.createFromProto(context, msg)
+      }
     } catch {
       case e: ReefServiceException =>
         logger.warn("Service Exception thunking event: " + e.getMessage)

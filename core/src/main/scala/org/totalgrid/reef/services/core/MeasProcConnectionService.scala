@@ -30,34 +30,20 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFactory
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
-class MeasurementProcessingConnectionService(protected val modelTrans: ServiceTransactable[MeasurementProcessingConnectionServiceModel])
+class MeasurementProcessingConnectionService(protected val model: MeasurementProcessingConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, MeasProcAssignment, MeasurementProcessingConnectionServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.measurementProcessingConnection
 }
 
-class MeasurementProcessingConnectionModelFactory(
-  dependencies: ServiceDependencies,
-  coordinatorFac: MeasurementStreamCoordinatorFactory)
-    extends BasicModelFactory[ConnProto, MeasurementProcessingConnectionServiceModel](dependencies, classOf[ConnProto]) {
-
-  def model = {
-    val csm = new MeasurementProcessingConnectionServiceModel(subHandler)
-    csm.setCoordinator(coordinatorFac.model)
-    csm
-  }
-}
-
-class MeasurementProcessingConnectionServiceModel(
-  protected val subHandler: ServiceSubscriptionHandler)
+class MeasurementProcessingConnectionServiceModel
     extends SquerylServiceModel[ConnProto, MeasProcAssignment]
     with EventedServiceModel[ConnProto, MeasProcAssignment]
     with SimpleModelEntryCreation[ConnProto, MeasProcAssignment]

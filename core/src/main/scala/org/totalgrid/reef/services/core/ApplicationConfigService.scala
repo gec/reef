@@ -36,23 +36,14 @@ import org.totalgrid.reef.util.Optional._
 
 import scala.collection.JavaConversions._
 
-class ApplicationConfigService(protected val modelTrans: ServiceTransactable[ApplicationConfigServiceModel])
+class ApplicationConfigService(val model: ApplicationConfigServiceModel)
     extends SyncModeledServiceBase[ApplicationConfig, ApplicationInstance, ApplicationConfigServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.applicationConfig
 }
 
-class ApplicationConfigServiceModelFactory(
-  dependencies: ServiceDependencies,
-  procStatus: ModelFactory[ProcessStatusServiceModel])
-    extends BasicModelFactory[ApplicationConfig, ApplicationConfigServiceModel](dependencies, classOf[ApplicationConfig]) {
-
-  def model = new ApplicationConfigServiceModel(subHandler, procStatus.model)
-  def model(procStatusModel: ProcessStatusServiceModel) = new ApplicationConfigServiceModel(subHandler, procStatusModel)
-}
-
-class ApplicationConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler, procStatusModel: ProcessStatusServiceModel)
+class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     extends SquerylServiceModel[ApplicationConfig, ApplicationInstance]
     with EventedServiceModel[ApplicationConfig, ApplicationInstance]
     with ApplicationConfigConversion {

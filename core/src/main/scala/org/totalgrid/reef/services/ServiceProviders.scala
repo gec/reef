@@ -50,7 +50,7 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
 
   // we have to fill in the event model after constructing the event service to break the circular
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services
-  eventPublisher.setEventModel(modelFac.events)
+  eventPublisher.setComponents(modelFac.events, contextSource)
 
   private val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
@@ -114,6 +114,6 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new HistoryTrimmer(cm, serviceConfiguration.trimPeriodMinutes * 1000 * 60, serviceConfiguration.maxMeasurements),
     //serviceContainer.addCoordinator(new PointAbnormalsThunker(modelFac.points, summaries))
     //serviceContainer.addCoordinator(new AlarmSummaryInitializer(modelFac.alarms, summaries))
-    new EventStreamThunker(modelFac.events, List("raw_events")))
+    new EventStreamThunker(modelFac.events, List("raw_events"), contextSource))
 
 }

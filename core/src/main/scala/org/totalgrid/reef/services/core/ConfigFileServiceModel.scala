@@ -33,20 +33,14 @@ import SquerylModel._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class ConfigFileService(protected val modelTrans: ServiceTransactable[ConfigFileServiceModel])
+class ConfigFileService(protected val model: ConfigFileServiceModel)
     extends SyncModeledServiceBase[ConfigProto, ConfigFile, ConfigFileServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.configFile
 }
 
-class ConfigFileServiceModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[ConfigProto, ConfigFileServiceModel](dependencies, classOf[ConfigProto]) {
-
-  def model = new ConfigFileServiceModel(subHandler)
-}
-
-class ConfigFileServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class ConfigFileServiceModel
     extends SquerylServiceModel[ConfigProto, ConfigFile]
     with EventedServiceModel[ConfigProto, ConfigFile]
     with ConfigFileConversion {

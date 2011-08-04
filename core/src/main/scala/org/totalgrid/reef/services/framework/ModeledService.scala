@@ -24,9 +24,8 @@ import org.totalgrid.reef.japi.BadRequestException
 /**
  * Shared dependencies for generic service implementations
  */
-trait HasServiceTransactable extends HasAllTypes {
-  protected val modelTrans: ServiceTransactable[ServiceModelType]
-  lazy val model: ServiceModelType = modelTrans.model
+trait HasModelFactory extends HasAllTypes {
+  protected def model: ServiceModelType
 
 }
 

@@ -31,20 +31,14 @@ import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class TriggerSetService(protected val modelTrans: ServiceTransactable[TriggerSetServiceModel])
+class TriggerSetService(protected val model: TriggerSetServiceModel)
     extends SyncModeledServiceBase[TriggerProto, TriggerSet, TriggerSetServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.triggerSet
 }
 
-class TriggerSetServiceModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[TriggerProto, TriggerSetServiceModel](dependencies, classOf[TriggerProto]) {
-
-  def model = new TriggerSetServiceModel(subHandler)
-}
-
-class TriggerSetServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class TriggerSetServiceModel
   extends SquerylServiceModel[TriggerProto, TriggerSet]
   with EventedServiceModel[TriggerProto, TriggerSet]
   with SimpleModelEntryCreation[TriggerProto, TriggerSet]

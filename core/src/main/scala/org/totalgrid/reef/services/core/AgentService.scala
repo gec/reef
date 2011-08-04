@@ -32,20 +32,14 @@ import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-class AgentService(protected val modelTrans: ServiceTransactable[AgentServiceModel])
+class AgentService(protected val model: AgentServiceModel)
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.agent
 }
 
-class AgentServiceModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[Agent, AgentServiceModel](dependencies, classOf[Agent]) {
-
-  def model = new AgentServiceModel(subHandler)
-}
-
-class AgentServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class AgentServiceModel
     extends SquerylServiceModel[Agent, AgentModel]
     with EventedServiceModel[Agent, AgentModel]
     with AgentConversions {

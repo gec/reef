@@ -38,7 +38,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import SquerylModel._
 import org.totalgrid.reef.util.Optional._
 
-class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceModel])
+class AlarmService(protected val model: AlarmServiceModel)
     extends SyncModeledServiceBase[Alarm, AlarmModel, AlarmServiceModel]
     with DefaultSyncBehaviors {
 
@@ -58,15 +58,7 @@ class AlarmService(protected val modelTrans: ServiceTransactable[AlarmServiceMod
   }
 }
 
-class AlarmServiceModelFactory(
-  dependencies: ServiceDependencies)
-    extends BasicModelFactory[Alarm, AlarmServiceModel](dependencies, classOf[Alarm]) {
-
-  def model = new AlarmServiceModel(subHandler, dependencies.summaries)
-
-}
-
-class AlarmServiceModel(protected val subHandler: ServiceSubscriptionHandler, summary: SummaryPoints)
+class AlarmServiceModel(summary: SummaryPoints)
     extends SquerylServiceModel[Alarm, AlarmModel]
     with EventedServiceModel[Alarm, AlarmModel]
     with SimpleModelEntryCreation[Alarm, AlarmModel]
@@ -179,13 +171,11 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 
-class AlarmSummaryInitializer(modelFac: AlarmServiceModelFactory, summary: SummaryPoints) extends ProtoServiceCoordinator with AlarmSummaryCalculations {
+class AlarmSummaryInitializer(model: AlarmServiceModel, summary: SummaryPoints) extends ProtoServiceCoordinator with AlarmSummaryCalculations {
 
   def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
     reactor.execute {
-      modelFac.transaction { model =>
-        initializeSummaries(summary)
-      }
+      model.initializeSummaries(summary)
     }
   }
 }

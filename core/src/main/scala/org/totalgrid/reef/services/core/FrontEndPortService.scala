@@ -38,7 +38,7 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
-class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEndPortServiceModel])
+class FrontEndPortService(protected val model: FrontEndPortServiceModel)
     extends SyncModeledServiceBase[ChannelProto, FrontEndPort, FrontEndPortServiceModel]
     with GetEnabled
     with PutCreatesOrUpdates
@@ -60,13 +60,7 @@ class FrontEndPortService(protected val modelTrans: ServiceTransactable[FrontEnd
   override val descriptor = Descriptors.commChannel
 }
 
-class FrontEndPortModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[ChannelProto, FrontEndPortServiceModel](dependencies, classOf[ChannelProto]) {
-
-  def model = new FrontEndPortServiceModel(subHandler)
-}
-
-class FrontEndPortServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class FrontEndPortServiceModel
     extends SquerylServiceModel[ChannelProto, FrontEndPort]
     with EventedServiceModel[ChannelProto, FrontEndPort]
     with SimpleModelEntryCreation[ChannelProto, FrontEndPort]

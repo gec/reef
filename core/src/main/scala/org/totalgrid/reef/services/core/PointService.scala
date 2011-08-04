@@ -40,7 +40,7 @@ import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBeha
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
-class PointService(protected val modelTrans: ServiceTransactable[PointServiceModel])
+class PointService(protected val model: PointServiceModel)
     extends SyncModeledServiceBase[PointProto, Point, PointServiceModel]
     with DefaultSyncBehaviors {
 
@@ -59,16 +59,7 @@ class PointService(protected val modelTrans: ServiceTransactable[PointServiceMod
 
 }
 
-class PointServiceModelFactory(dependencies: ServiceDependencies,
-  triggerFac: ModelFactory[TriggerSetServiceModel],
-  overrideFac: ModelFactory[OverrideConfigServiceModel])
-    extends BasicModelFactory[PointProto, PointServiceModel](dependencies, classOf[PointProto]) {
-
-  def model = new PointServiceModel(subHandler, triggerFac.model, overrideFac.model, dependencies.cm)
-}
-
-class PointServiceModel(protected val subHandler: ServiceSubscriptionHandler,
-  triggerModel: TriggerSetServiceModel,
+class PointServiceModel(triggerModel: TriggerSetServiceModel,
   overrideModel: OverrideConfigServiceModel,
   val measurementStore: MeasurementStore)
     extends SquerylServiceModel[PointProto, Point]
@@ -226,7 +217,7 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
  * Watches the measurement stream looking for transitions in the abnormal value of points
  * TODO: move to its own file
  */
-class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summary: SummaryPoints, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
+class PointAbnormalsThunker(model: PointServiceModel, summary: SummaryPoints, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
 
   val pointMap = scala.collection.mutable.Map.empty[String, Point]
 
@@ -251,7 +242,7 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
           Point.findByName(m.getName).headOption
         }
         if (p.isEmpty) {
-          error { "Got measurement for unknown point: " + m.getName }
+          logger.error { "Got measurement for unknown point: " + m.getName }
           return
         } else {
           if (p.get.abnormal) summary.incrementSummary("summary.abnormals", 1)
@@ -264,14 +255,12 @@ class PointAbnormalsThunker(trans: ServiceTransactable[PointServiceModel], summa
 
     if (currentlyAbnormal != point.abnormal) {
       contextSource.transaction { context =>
-        trans.transaction { model =>
-          logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
-          val updated = point.copy(abnormal = currentlyAbnormal)
-          updated.abnormalUpdated = true
-          model.update(context, updated, point)
-          point.abnormal = currentlyAbnormal
-          summary.incrementSummary("summary.abnormals", if (point.abnormal) 1 else -1)
-        }
+        logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
+        val updated = point.copy(abnormal = currentlyAbnormal)
+        updated.abnormalUpdated = true
+        model.update(context, updated, point)
+        point.abnormal = currentlyAbnormal
+        summary.incrementSummary("summary.abnormals", if (point.abnormal) 1 else -1)
       }
     }
   }

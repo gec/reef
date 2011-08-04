@@ -19,40 +19,52 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.services.coordinators.MeasurementStreamCoordinatorFactory
 import org.totalgrid.reef.services.framework.{ SimpleRequestContextSource, RequestContextSource }
+import org.totalgrid.reef.services.coordinators.{ SingleThreadedMeasurementStreamCoordinator, SquerylBackedMeasurementStreamCoordinator }
 
 class ModelFactories(dependencies: ServiceDependencies = new ServiceDependencies, contextSource: RequestContextSource = new SimpleRequestContextSource) {
 
-  val accesses = new CommandAccessServiceModelFactory(dependencies)
-  val userRequests = new UserCommandRequestServiceModelFactory(dependencies, accesses)
-  val cmds = new CommandServiceModelFactory(dependencies, userRequests, accesses)
-  accesses.setCommandsFactory(cmds)
+  val accesses = new CommandAccessServiceModel
+  val userRequests = new UserCommandRequestServiceModel(accesses, dependencies.eventSink)
+  val cmds = new CommandServiceModel(userRequests, accesses)
+  accesses.setCommandModel(cmds)
 
-  val coordinator = new MeasurementStreamCoordinatorFactory(dependencies, contextSource)
+  val coordinator = {
+    // we have to make our own copies of the other service models to break the cyclic dependencies
+    val measProc = new MeasurementProcessingConnectionServiceModel
+    val fepModel = new CommunicationEndpointConnectionServiceModel(dependencies.eventSink)
+    val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
+    measProc.setCoordinator(coord)
+    fepModel.setCoordinator(coord)
+    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource, dependencies.coordinatorExecutor)
+    syncCoord
+  }
 
-  val fepConn = new CommunicationEndpointConnectionModelFactory(dependencies, coordinator)
-  val measProcConn = new MeasurementProcessingConnectionModelFactory(dependencies, coordinator)
+  val fepConn = new CommunicationEndpointConnectionServiceModel(dependencies.eventSink)
+  val measProcConn = new MeasurementProcessingConnectionServiceModel
 
-  val fep = new FrontEndProcessorModelFactory(dependencies, coordinator)
-  val fepPort = new FrontEndPortModelFactory(dependencies)
+  measProcConn.setCoordinator(coordinator)
+  fepConn.setCoordinator(coordinator)
 
-  val overrides = new OverrideConfigModelFactory(dependencies)
-  val triggerSets = new TriggerSetServiceModelFactory(dependencies)
-  val points = new PointServiceModelFactory(dependencies, triggerSets, overrides)
+  val fep = new FrontEndProcessorServiceModel(coordinator)
+  val fepPort = new FrontEndPortServiceModel
 
-  val configFiles = new ConfigFileServiceModelFactory(dependencies)
-  val endpoints = new CommEndCfgServiceModelFactory(dependencies, cmds, configFiles, points, fepPort, coordinator)
+  val overrides = new OverrideConfigServiceModel(dependencies.eventSink)
+  val triggerSets = new TriggerSetServiceModel
+  val points = new PointServiceModel(triggerSets, overrides, dependencies.cm)
 
-  val alarms = new AlarmServiceModelFactory(dependencies)
-  val eventConfig = new EventConfigServiceModelFactory(dependencies)
-  val events = new EventServiceModelFactory(dependencies, eventConfig, alarms)
+  val configFiles = new ConfigFileServiceModel
+  val endpoints = new CommEndCfgServiceModel(cmds, configFiles, points, fepPort, coordinator)
 
-  val authTokens = new AuthTokenServiceModelFactory(dependencies)
-  val agents = new AgentServiceModelFactory(dependencies)
-  val permissionSets = new PermissionSetServiceModelFactory(dependencies)
+  val alarms = new AlarmServiceModel(dependencies.summaries)
+  val eventConfig = new EventConfigServiceModel
+  val events = new EventServiceModel(eventConfig, alarms)
 
-  val procStatus = new ProcessStatusServiceModelFactory(dependencies, coordinator)
-  val appConfig = new ApplicationConfigServiceModelFactory(dependencies, procStatus)
+  val authTokens = new AuthTokenServiceModel(dependencies.eventSink)
+  val agents = new AgentServiceModel
+  val permissionSets = new PermissionSetServiceModel
+
+  val procStatus = new ProcessStatusServiceModel(coordinator)
+  val appConfig = new ApplicationConfigServiceModel(procStatus)
 
 }

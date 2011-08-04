@@ -120,7 +120,7 @@ trait AuthTokenConversions
 
 }
 
-class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler, val eventSink: SystemEventSink)
+class AuthTokenServiceModel(val eventSink: SystemEventSink)
     extends SquerylServiceModel[AuthToken, AuthTokenModel]
     with EventedServiceModel[AuthToken, AuthTokenModel]
     with AuthTokenConversions
@@ -204,16 +204,9 @@ class AuthTokenServiceModel(protected val subHandler: ServiceSubscriptionHandler
 
 }
 
-class AuthTokenServiceModelFactory(
-  dependencies: ServiceDependencies)
-    extends BasicModelFactory[AuthToken, AuthTokenServiceModel](dependencies, classOf[AuthToken]) {
-
-  def model = new AuthTokenServiceModel(subHandler, dependencies.eventSink)
-}
-
 import ServiceBehaviors._
 
-class AuthTokenService(protected val modelTrans: ServiceTransactable[AuthTokenServiceModel])
+class AuthTokenService(protected val model: AuthTokenServiceModel)
     extends SyncModeledServiceBase[AuthToken, AuthTokenModel, AuthTokenServiceModel]
     with GetEnabled
     with PutOnlyCreates

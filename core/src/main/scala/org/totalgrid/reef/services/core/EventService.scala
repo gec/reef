@@ -44,7 +44,7 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import ServiceBehaviors._
 
-class EventService(protected val modelTrans: ServiceTransactable[EventServiceModel])
+class EventService(protected val model: EventServiceModel)
     extends SyncModeledServiceBase[Event, EventStore, EventServiceModel]
     with GetEnabled
     with SubscribeEnabled
@@ -63,20 +63,11 @@ class EventService(protected val modelTrans: ServiceTransactable[EventServiceMod
   }
 }
 
-class EventServiceModelFactory(
-  dependencies: ServiceDependencies,
-  eventConfig: ModelFactory[EventConfigServiceModel],
-  alarmServiceModel: ModelFactory[AlarmServiceModel])
-    extends BasicModelFactory[Event, EventServiceModel](dependencies, classOf[Event]) {
-
-  def model = new EventServiceModel(subHandler, eventConfig.model, alarmServiceModel.model)
-}
-
 // The business model for managing incoming events and deciding whether
 // they are Alarms, Events, or Logs.
 // This will use the ConfigService to determine what is an Alarm, Event, or Log.
 //
-class EventServiceModel(protected val subHandler: ServiceSubscriptionHandler, eventConfig: EventConfigServiceModel, alarmServiceModel: AlarmServiceModel)
+class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel: AlarmServiceModel)
     extends SquerylServiceModel[Event, EventStore]
     with EventedServiceModel[Event, EventStore]
     with EventConversion {

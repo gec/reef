@@ -84,7 +84,7 @@ object EventConfigService {
   }
 }
 
-class EventConfigService(protected val modelTrans: ServiceTransactable[EventConfigServiceModel])
+class EventConfigService(protected val model: EventConfigServiceModel)
     extends SyncModeledServiceBase[EventConfig, EventConfigStore, EventConfigServiceModel]
     with DefaultSyncBehaviors {
 
@@ -117,13 +117,7 @@ class EventConfigService(protected val modelTrans: ServiceTransactable[EventConf
   }
 }
 
-class EventConfigServiceModelFactory(dependencies: ServiceDependencies)
-    extends BasicModelFactory[EventConfig, EventConfigServiceModel](dependencies, classOf[EventConfig]) {
-
-  def model = new EventConfigServiceModel(subHandler)
-}
-
-class EventConfigServiceModel(protected val subHandler: ServiceSubscriptionHandler)
+class EventConfigServiceModel
     extends SquerylServiceModel[EventConfig, EventConfigStore]
     with EventedServiceModel[EventConfig, EventConfigStore]
     with SimpleModelEntryCreation[EventConfig, EventConfigStore]

@@ -30,7 +30,7 @@ import ServiceBehaviors._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.sapi.RequestEnv
 
-class CommandAccessService(protected val modelTrans: ServiceTransactable[CommandAccessServiceModel])
+class CommandAccessService(protected val model: CommandAccessServiceModel)
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]
     with GetEnabled
     with SubscribeEnabled
