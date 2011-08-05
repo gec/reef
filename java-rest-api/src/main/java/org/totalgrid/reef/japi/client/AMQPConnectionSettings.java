@@ -18,6 +18,10 @@
  */
 package org.totalgrid.reef.japi.client;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 /**
  *   Settings class that defines properties for an AMQP connection
  */
@@ -45,6 +49,34 @@ public class AMQPConnectionSettings
         this.password = password;
         this.virtualHost = virtualHost;
     }
+
+    public static AMQPConnectionSettings loadFromFile( String filename ) throws Exception
+    {
+        Properties props = new Properties();
+
+        FileInputStream fis = new FileInputStream( filename );
+        props.load( fis );
+        fis.close();
+
+        String reefIp = loadProperty( "org.totalgrid.reef.amqp.host", props );
+        String port = loadProperty( "org.totalgrid.reef.amqp.port", props );
+        String user = loadProperty( "org.totalgrid.reef.amqp.user", props );
+        String password = loadProperty( "org.totalgrid.reef.amqp.password", props );
+        String virtualHost = loadProperty( "org.totalgrid.reef.amqp.virtualHost", props );
+
+        return new AMQPConnectionSettings( reefIp, Integer.parseInt( port ), user, password, virtualHost );
+    }
+
+    private static String loadProperty( String id, Properties props ) throws Exception
+    {
+        String prop = props.getProperty( id );
+        if ( prop == null )
+        {
+            throw new Exception( "Could not load configuration. Missing: " + id );
+        }
+        return prop;
+    }
+
 
     /**
      *
