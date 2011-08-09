@@ -105,6 +105,10 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     _.get(UserCommandRequestBuilders.getForUid("*")).await().expectMany
   }
 
+  override def getCommandHistory(cmd: Command): java.util.List[UserCommandRequest] = ops("Couldn't get command history") {
+    _.get(UserCommandRequestBuilders.getForName(cmd.getName)).await().expectMany
+  }
+
   override def getCommands(): java.util.List[Command] = ops("Couldn't get all commands") {
     _.get(CommandRequestBuilders.getAll).await().expectMany
   }
