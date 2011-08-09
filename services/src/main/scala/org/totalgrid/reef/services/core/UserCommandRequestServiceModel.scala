@@ -145,7 +145,8 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   def searchQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
       proto.user.map(sql.agent === _),
-      proto.status.map(st => sql.status === st.getNumber))
+      proto.status.map(st => sql.status === st.getNumber),
+      proto.commandRequest.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
   }
 
   def isModified(existing: UserCommandModel, updated: UserCommandModel): Boolean = {

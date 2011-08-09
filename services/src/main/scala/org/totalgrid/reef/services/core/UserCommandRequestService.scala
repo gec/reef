@@ -20,10 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.sapi.client.SessionPool
 
-import org.totalgrid.reef.proto.Commands
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import Commands.UserCommandRequest
-
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.sapi.client.Response
@@ -33,6 +30,8 @@ import org.totalgrid.reef.sapi.{ AddressableDestination }
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
+import org.totalgrid.reef.util.Logging
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel, pool: SessionPool)
@@ -40,7 +39,8 @@ class UserCommandRequestService(
     with UserCommandRequestValidation
     with AsyncGetEnabled
     with AsyncPutCreatesOrUpdates
-    with SubscribeEnabled {
+    with SubscribeEnabled
+    with Logging {
 
   override val descriptor = Descriptors.userCommandRequest
 
@@ -71,6 +71,20 @@ class UserCommandRequestService(
 
     pool.borrow { session =>
       session.put(request, destination = address).listen { response =>
+        contextSource.transaction { context =>
+          model.findRecord(context, request) match {
+            case Some(record) =>
+              val updatedStatus = if (response.success) {
+                response.list.head.getStatus
+              } else {
+                logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
+                CommandStatus.UNDEFINED
+              }
+              model.update(context, record.copy(status = updatedStatus.getNumber), record)
+            case None =>
+              logger.warn { "Couldn't find command request record to update" }
+          }
+        }
         callback(response)
       }
     }
@@ -96,7 +110,7 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
 
     if (proto.hasStatus)
-      throw new BadRequestException("Update must not specify status", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Create must not specify status", Envelope.Status.BAD_REQUEST)
 
     super.preCreate(context, this.doCommonValidation(proto))
   }

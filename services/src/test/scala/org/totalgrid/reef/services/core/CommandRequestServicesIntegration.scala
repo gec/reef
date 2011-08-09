@@ -178,7 +178,7 @@ class CommandRequestServicesIntegration
     b.build
   }
 
-  def testCommandSequence(fixture: CommandFixture) = {
+  def testCommandSequence(fixture: CommandFixture, runNum: Int) = {
 
     // Send a select (access request)
     val select = commandAccess()
@@ -205,9 +205,15 @@ class CommandRequestServicesIntegration
     // Send the user command request
     val cmdReq = userRequest()
 
+    fixture.commandRequest.get(cmdReq).expectMany(runNum)
+
     val result = fixture.commandRequest.put(cmdReq).expectOne()
 
     result.getStatus should equal(CommandStatus.SUCCESS)
+
+    // make sure if we ask for the result of the command later it is correctly set
+    val storedResults = fixture.commandRequest.get(cmdReq).expectMany(runNum + 1)
+    storedResults.foreach { _.getStatus should equal(CommandStatus.SUCCESS) }
 
     fixture.access.delete(selectResult).expectOne()
   }
@@ -220,9 +226,9 @@ class CommandRequestServicesIntegration
       fixture.addFepAndMeasProc()
 
       // Run multiple times, state should be reset
-      testCommandSequence(fixture)
-      testCommandSequence(fixture)
-      testCommandSequence(fixture)
+      testCommandSequence(fixture, 0)
+      testCommandSequence(fixture, 1)
+      testCommandSequence(fixture, 2)
     }
   }
 
