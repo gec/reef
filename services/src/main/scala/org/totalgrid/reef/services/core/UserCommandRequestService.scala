@@ -28,10 +28,9 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.{ RequestEnv, AddressableDestination }
+import org.totalgrid.reef.sapi.{ AddressableDestination }
 
 import org.totalgrid.reef.services.framework._
-import org.squeryl.PrimitiveTypeMode._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 
@@ -45,27 +44,29 @@ class UserCommandRequestService(
 
   override val descriptor = Descriptors.userCommandRequest
 
-  override def doAsyncPutPost(context: RequestContext, rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
-
+  override def doAsyncPutPost(contextSource: RequestContextSource, rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
     val request = rsp.expectOne
 
-    val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
+    val address = contextSource.transaction { context =>
 
-    val address = command.endpoint.value match {
-      case Some(ep) =>
-        val frontEndAssignment = ep.frontEndAssignment.value
+      val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
-        val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
+      command.endpoint.value match {
+        case Some(ep) =>
+          val frontEndAssignment = ep.frontEndAssignment.value
 
-        if (endpointState != CommEndpointConnection.State.COMMS_UP) {
-          throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP: " + endpointState)
-        }
+          val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
 
-        frontEndAssignment.serviceRoutingKey match {
-          case Some(key) => AddressableDestination(key)
-          case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
-        }
-      case None => throw new BadRequestException("Command has no endpoint set " + request)
+          if (endpointState != CommEndpointConnection.State.COMMS_UP) {
+            throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP: " + endpointState)
+          }
+
+          frontEndAssignment.serviceRoutingKey match {
+            case Some(key) => AddressableDestination(key)
+            case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
+          }
+        case None => throw new BadRequestException("Command has no endpoint set " + request)
+      }
     }
 
     pool.borrow { session =>

@@ -23,25 +23,36 @@ import org.totalgrid.reef.sapi.client.Response
 
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
+/**
+ * implementations for common behaviors for the services that use a "model" object.
+ *
+ * NOTE: It is vital to make sure that contextSource.transaction has completed before
+ * calling the service callback because this creates a race condition for the client.
+ * In that case the client may receive the response before the SQL transaction has completed
+ * and if it sends a new request immediately another SQL transaction could be started that wouldn't
+ * see whatever changes we had just made but were not "committed" yet.
+ */
 object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
   trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasModelFactory with AsyncContextRestGet {
-    def get(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      val results = read(context, model, req)
-      context.headers.subQueue.foreach(subscribe(context, model, req, _))
-      Response(Envelope.Status.OK, results)
+    def get(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
+      contextSource.transaction { context =>
+        val results = read(context, model, req)
+        context.headers.subQueue.foreach(subscribe(context, model, req, _))
+        Response(Envelope.Status.OK, results)
+      }
     }
-    override def getAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
-      callback(get(context, req))
+    override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
+      callback(get(contextSource, req))
     }
   }
 
   trait AsyncGetEnabled extends GetEnabled {
 
-    override def getAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
-      doAsyncGet(get(context, req), callback)
+    override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
+      doAsyncGet(get(contextSource, req), callback)
     }
 
     protected def doAsyncGet(rsp: Response[ServiceType], callback: Response[ServiceType] => Unit) = callback(rsp)
@@ -53,33 +64,37 @@ object ServiceBehaviors {
 
   trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasModelFactory with AsyncContextRestPut {
 
-    def put(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      val (value, status) = create(context, model, req)
-      context.headers.subQueue.foreach(subscribe(context, model, value, _))
-      Response(status, value :: Nil)
+    def put(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
+      contextSource.transaction { context =>
+        val (value, status) = create(context, model, req)
+        context.headers.subQueue.foreach(subscribe(context, model, value, _))
+        Response(status, value :: Nil)
+      }
     }
 
-    override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
-      callback(put(context, req))
+    override def putAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
+      callback(put(contextSource, req))
   }
 
   trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasModelFactory with AsyncContextRestPost {
 
-    def post(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      val (value, status) = model.findRecord(context, req) match {
-        case Some(x) => update(context, model, req, x)
-        case None => throw new BadRequestException("Record not found: " + req)
+    def post(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
+      contextSource.transaction { context =>
+        val (value, status) = model.findRecord(context, req) match {
+          case Some(x) => update(context, model, req, x)
+          case None => throw new BadRequestException("Record not found: " + req)
+        }
+        context.headers.subQueue.foreach(subscribe(context, model, value, _))
+        Response(status, value :: Nil)
       }
-      context.headers.subQueue.foreach(subscribe(context, model, value, _))
-      Response(status, value :: Nil)
     }
 
     override def preUpdate(context: RequestContext, proto: ServiceType, existing: ModelType): ServiceType = merge(context, proto, existing)
 
     protected def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType
 
-    override def postAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
-      callback(post(context, req))
+    override def postAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
+      callback(post(contextSource, req))
   }
 
   /**
@@ -92,34 +107,36 @@ object ServiceBehaviors {
       with HasModelFactory
       with AsyncContextRestPut {
 
-    protected def doPut(context: RequestContext, req: ServiceType, model: ServiceModelType): Response[ServiceType] = {
-      val (proto, status) = try {
-        model.findRecord(context, req) match {
-          case None => create(context, model, req)
-          case Some(x) => update(context, model, req, x)
+    protected def doPut(contextSource: RequestContextSource, req: ServiceType, model: ServiceModelType): Response[ServiceType] = {
+      contextSource.transaction { context =>
+        val (proto, status) = try {
+          model.findRecord(context, req) match {
+            case None => create(context, model, req)
+            case Some(x) => update(context, model, req, x)
+          }
+        } catch {
+          // some items can be created without having uniquely identifying fields
+          // so may have no search terms to look for
+          // TODO: evaluate replacing NoSearchTermsException with flags
+          case e: NoSearchTermsException => create(context, model, req)
         }
-      } catch {
-        // some items can be created without having uniquely identifying fields
-        // so may have no search terms to look for
-        // TODO: evaluate replacing NoSearchTermsException with flags
-        case e: NoSearchTermsException => create(context, model, req)
+        context.headers.subQueue.foreach(subscribe(context, model, proto, _))
+        Response(status, proto :: Nil)
       }
-      context.headers.subQueue.foreach(subscribe(context, model, proto, _))
-      Response(status, proto :: Nil)
     }
 
-    def put(context: RequestContext, req: ServiceType): Response[ServiceType] = doPut(context, req, model)
+    def put(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = doPut(contextSource, req, model)
 
-    override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
-      callback(put(context, req))
+    override def putAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
+      callback(put(contextSource, req))
   }
 
   trait AsyncPutCreatesOrUpdates extends PutCreatesOrUpdates with HasModelFactory with AsyncContextRestPut {
 
-    override def putAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
-      doAsyncPutPost(context, doPut(context, req, model), callback)
+    override def putAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
+      doAsyncPutPost(contextSource, doPut(contextSource, req, model), callback)
 
-    protected def doAsyncPutPost(context: RequestContext, rsp: Response[ServiceType], callback: Response[ServiceType] => Unit)
+    protected def doAsyncPutPost(contextSource: RequestContextSource, rsp: Response[ServiceType], callback: Response[ServiceType] => Unit)
   }
 
   /**
@@ -127,14 +144,16 @@ object ServiceBehaviors {
    */
   trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasModelFactory with AsyncContextRestDelete {
 
-    def delete(context: RequestContext, req: ServiceType): Response[ServiceType] = {
-      context.headers.subQueue.foreach(subscribe(context, model, req, _))
-      val deleted = doDelete(context, model, req)
-      val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
-      Response(status, deleted)
+    def delete(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
+      contextSource.transaction { context =>
+        context.headers.subQueue.foreach(subscribe(context, model, req, _))
+        val deleted = doDelete(context, model, req)
+        val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
+        Response(status, deleted)
+      }
     }
-    override def deleteAsync(context: RequestContext, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
-      callback(delete(context, req))
+    override def deleteAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =
+      callback(delete(contextSource, req))
   }
 
   /**

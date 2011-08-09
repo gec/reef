@@ -49,9 +49,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
     def publishMeas(meas: MeasurementBatch): MeasurementBatch = {
       val result = new AsyncValue[Response[MeasurementBatch]]
-      contextSource.transaction { context =>
-        batchService.putAsync(context, meas)(result.set)
-      }
+      batchService.putAsync(contextSource, meas)(result.set)
       result.await().expectOne()
     }
   }

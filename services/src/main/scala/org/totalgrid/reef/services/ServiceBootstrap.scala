@@ -41,25 +41,22 @@ object ServiceBootstrap {
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
     val authService = new core.AuthTokenService(modelFac.authTokens)
 
-    contextSource.transaction { context =>
+    val login = ApplicationEnroller.buildLogin()
+    val authToken = authService.put(contextSource, login).expectOne
 
-      val login = ApplicationEnroller.buildLogin()
-      val authToken = authService.put(context, login).expectOne
+    val config = ApplicationEnroller.buildConfig(List("Services"))
+    val appConfig = applicationConfigService.put(contextSource, config).expectOne
 
-      val config = ApplicationEnroller.buildConfig(List("Services"))
-      val appConfig = applicationConfigService.put(context, config).expectOne
+    // the measurement batch service acts as a type of manual FEP
+    val msg = FrontEndProcessor.newBuilder
+    msg.setAppConfig(appConfig)
+    msg.addProtocols("null")
+    val fepService = new core.FrontEndProcessorService(modelFac.fep)
+    fepService.put(contextSource, msg.build)
 
-      // the measurement batch service acts as a type of manual FEP
-      val msg = FrontEndProcessor.newBuilder
-      msg.setAppConfig(appConfig)
-      msg.addProtocols("null")
-      val fepService = new core.FrontEndProcessorService(modelFac.fep)
-      fepService.put(context, msg.build)
-
-      val env = new RequestEnv
-      env.addAuthToken(authToken.getToken)
-      new CoreApplicationComponents(amqp, appConfig, env)
-    }
+    val env = new RequestEnv
+    env.addAuthToken(authToken.getToken)
+    new CoreApplicationComponents(amqp, appConfig, env)
   }
 
   /**

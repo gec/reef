@@ -24,25 +24,22 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
-import org.squeryl.PrimitiveTypeMode._
-
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
-import org.totalgrid.reef.sapi.service.AsyncServiceBase
+import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
-import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContext, ServiceEntryPoint }
+import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
 
 class MeasurementBatchService(pool: SessionPool)
     extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def putAsync(context: RequestContext, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
+  override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
 
-    authorizeCreate(context, req)
+    val requests = contextSource.transaction { context =>
+      authorizeCreate(context, req)
 
-    val requests: List[Request[MeasurementBatch]] = {
       // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName)
       val points = Point.findByNames(names).toList

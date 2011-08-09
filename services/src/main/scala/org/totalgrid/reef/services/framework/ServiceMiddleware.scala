@@ -48,14 +48,13 @@ class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, servic
 
     val value = descriptor.deserialize(request.getPayload.toByteArray)
 
-    contextSource.transaction { context =>
-      context.headers.merge(env)
-      request.getVerb match {
-        case Envelope.Verb.GET => service.getAsync(context, value)(onResponse)
-        case Envelope.Verb.PUT => service.putAsync(context, value)(onResponse)
-        case Envelope.Verb.DELETE => service.deleteAsync(context, value)(onResponse)
-        case Envelope.Verb.POST => service.postAsync(context, value)(onResponse)
-      }
+    val contextSourceWithHeaders = new RequestContextSourceWithHeaders(contextSource, env)
+
+    request.getVerb match {
+      case Envelope.Verb.GET => service.getAsync(contextSourceWithHeaders, value)(onResponse)
+      case Envelope.Verb.PUT => service.putAsync(contextSourceWithHeaders, value)(onResponse)
+      case Envelope.Verb.DELETE => service.deleteAsync(contextSourceWithHeaders, value)(onResponse)
+      case Envelope.Verb.POST => service.postAsync(contextSourceWithHeaders, value)(onResponse)
     }
 
   }

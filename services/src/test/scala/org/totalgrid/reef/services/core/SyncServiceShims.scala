@@ -29,41 +29,33 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def get(req: A): Response[A] = get(req, new RequestEnv)
   def get(req: A, env: RequestEnv): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    contextSource.transaction { context =>
-      context.headers.merge(env)
-      service.getAsync(context, req)(response.onResponse)
-      response.await
-    }
+    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    service.getAsync(cm, req)(response.onResponse)
+    response.await
   }
 
   def put(req: A): Response[A] = put(req, new RequestEnv)
   def put(req: A, env: RequestEnv): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    contextSource.transaction { context =>
-      context.headers.merge(env)
-      service.putAsync(context, req)(response.onResponse)
-      response.await
-    }
+    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    service.putAsync(cm, req)(response.onResponse)
+    response.await
   }
 
   def post(req: A): Response[A] = post(req, new RequestEnv)
   def post(req: A, env: RequestEnv): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    contextSource.transaction { context =>
-      context.headers.merge(env)
-      service.postAsync(context, req)(response.onResponse)
-      response.await
-    }
+    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    service.postAsync(cm, req)(response.onResponse)
+    response.await
   }
 
   def delete(req: A): Response[A] = delete(req, new RequestEnv)
   def delete(req: A, env: RequestEnv): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
-    contextSource.transaction { context =>
-      context.headers.merge(env)
-      service.deleteAsync(context, req)(response.onResponse)
-      response.await
-    }
+    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    service.deleteAsync(cm, req)(response.onResponse)
+    response.await
   }
 }
 
