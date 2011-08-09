@@ -93,7 +93,7 @@
             <directory>../cfg-templates</directory>
             <outputDirectory>/etc/</outputDirectory>
             <includes>
-                <include>*.cfg</include>
+                <include>org.totalgrid.reef.amqp.cfg</include>
             </includes>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
