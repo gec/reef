@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.executor
 
-import org.totalgrid.reef.util.Timer
 import parallel.Future
+import org.totalgrid.reef.util.{ Cancelable, Timer }
 
 /**
  * Concurrency pattern for abstracting the execution of work on some thread-like implementation.

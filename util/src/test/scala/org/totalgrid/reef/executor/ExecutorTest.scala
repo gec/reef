@@ -210,6 +210,7 @@ abstract class ExecutorTestBase extends FunSuite with ShouldMatchers {
     }
   }
 
+  /*
   test("bind kills linked actors") {
     5.times {
       fixture { a =>
@@ -227,6 +228,7 @@ abstract class ExecutorTestBase extends FunSuite with ShouldMatchers {
       }
     }
   }
+  */
 
   test("restart executor") {
     fixture { a =>

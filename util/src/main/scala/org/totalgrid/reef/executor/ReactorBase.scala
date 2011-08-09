@@ -22,7 +22,7 @@ import scala.actors.{ Actor, Exit }
 
 import org.totalgrid.reef.util.Logging
 
-import ActorExecutor._
+import ActorExecutorMessages._
 
 trait ReactorBase extends Actor with Logging {
 
@@ -55,10 +55,12 @@ trait ReactorBase extends Actor with Logging {
         case ex: Exception => set(Left(ex))
       }
     }
+    /*
     case Link(a) =>
       link(a)
     case UnLink(a) =>
       unlink(a)
+      */
     case Exit(parent, reason) => // linked actor initiated shutdown
       handleStopping
       exit(reason)

@@ -24,19 +24,6 @@ import scala.actors.TIMEOUT
 import org.totalgrid.reef.util.Timer
 import parallel.Future
 
-/// Companion class with case classes that correspond to Executor's interface
-object ActorExecutor {
-
-  case class Execute(fun: () => Any)
-
-  case class Request[A](calculate: () => A, set: Either[Exception, A] => Unit)
-
-  case class Link(a: AbstractActor)
-
-  case class UnLink(a: AbstractActor)
-
-}
-
 /**
  *  Generic actor that can be used to execute
  *  arbitrary blocks of code. Useful for synchronizing
@@ -49,7 +36,7 @@ trait ActorExecutor extends Executor with Lifecycle {
   case object NOW
   case object OPERATION_COMPLETE
 
-  import ActorExecutor._
+  import ActorExecutorMessages._
 
   /// start execution and run fun just afterwards
   override def dispatchStart() = {
