@@ -43,8 +43,8 @@
         <module>proto-shell</module>
         <module>admin-shell</module>
         <module>branding</module>
-        <module>assembly</module>
         <module>loader-xml</module>
+        <module>assemblies</module>
     </modules>
 
     <repositories>

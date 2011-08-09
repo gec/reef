@@ -38,7 +38,7 @@ import org.totalgrid.reef.japi.Envelope
 @RunWith(classOf[JUnitRunner])
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
 
-  val samplesPath = "assembly/src/main/filtered-resources/samples/"
+  val samplesPath = "assemblies/assembly-common/filtered-resources/samples/"
 
   case class Fixture(client: MockSyncOperations, loader: CommunicationsLoader, model: CommunicationsModel) {
     def reset = {

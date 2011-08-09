@@ -6,9 +6,9 @@
     The ASF licenses this file to You under the Apache License, Version 2.0
     (the "License"); you may not use this file except in compliance with
     the License.  You may obtain a copy of the License at
-
+   
     http://www.apache.org/licenses/LICENSE-2.0
-
+   
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,31 +18,43 @@
 <assembly>
     <id></id> <!-- intentionally left blank -> http://jira.codehaus.org/browse/MASSEMBLY-301 -->
     <formats>
-        <format>zip</format>
+        <!--<format>jar</format>-->
+        <format>tar.gz</format>
     </formats>
+
     <dependencySets>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
             <includes>
                 <include>org.totalgrid.reef:reef-branding</include>
             </includes>
+            <fileMode>0644</fileMode>
         </dependencySet>
     </dependencySets>
 
     <fileSets>
         <fileSet>
-            <directory>target/dependencies/win/apache-karaf-${karaf.version}</directory>
+            <directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
-             <exclude>etc/custom.properties</exclude>
-             <exclude>etc/org.apache.karaf.features.cfg</exclude>
-             <exclude>etc/org.ops4j.pax.logging.cfg</exclude>
-             <exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
+                <exclude>etc/custom.properties</exclude>
+                <exclude>etc/org.apache.karaf.features.cfg</exclude>
+                <exclude>etc/org.ops4j.pax.logging.cfg</exclude>
+                <exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
+                <exclude>bin/*</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
+            <outputDirectory>.</outputDirectory>
+            <includes>
+              <include>bin/*</include>
+            </includes>
+            <fileMode>0755</fileMode>
         </fileSet>
 
         <fileSet>
-            <directory>target/reef-cli-repo</directory>
+            <directory>target/reef-repo</directory>
             <outputDirectory>${reef.default.repository}</outputDirectory>
         </fileSet>
         <fileSet>
@@ -53,20 +65,29 @@
         <fileSet>
             <directory>target/classes/etc</directory>
             <outputDirectory>/etc/</outputDirectory>
-            <lineEnding>dos</lineEnding>
+            <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
-            <directory>target/classes/etc-cli</directory>
+            <directory>target/classes/etc-srv</directory>
             <outputDirectory>/etc/</outputDirectory>
-            <lineEnding>dos</lineEnding>
+            <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
             <directory>target/classes/samples</directory>
             <outputDirectory>/samples/</outputDirectory>
-            <lineEnding>dos</lineEnding>
+            <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>target/classes/install</directory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <outputDirectory>.</outputDirectory>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
             <directory>../</directory>
@@ -74,16 +95,16 @@
             <includes>
                 <include>INSTALL.markdown</include>
             </includes>
-            <lineEnding>dos</lineEnding>
+            <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
-            <directory>../cfg-templates</directory>
+            <directory>../../cfg-templates</directory>
             <outputDirectory>/etc/</outputDirectory>
             <includes>
-                <include>org.totalgrid.reef.amqp.cfg</include>
+                <include>*.cfg</include>
             </includes>
-            <lineEnding>dos</lineEnding>
+            <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
     </fileSets>
@@ -93,8 +114,8 @@
             <source>${basedir}/target/classes/reef-feature.xml</source>
             <outputDirectory>/${reef.default.repository}/org/totalgrid/reef/reef-assembly/${reef.version}/</outputDirectory>
             <destName>reef-assembly-${reef.version}-features.xml</destName>
-            <fileMode>0755</fileMode>
-            <lineEnding>dos</lineEnding>
+            <fileMode>0644</fileMode>
+            <lineEnding>unix</lineEnding>
         </file>
     </files>
 
