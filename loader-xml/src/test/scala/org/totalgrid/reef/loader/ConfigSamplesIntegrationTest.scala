@@ -30,7 +30,7 @@ import org.totalgrid.reef.japi.Envelope
 @RunWith(classOf[JUnitRunner])
 class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
 
-  val samplesPath = BuildEnv.configPath + "assembly/src/main/filtered-resources/samples/"
+  val samplesPath = BuildEnv.configPath + "assemblies/assembly-common/filtered-resources/samples/"
   def client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
 
   test("samples/integration") {
