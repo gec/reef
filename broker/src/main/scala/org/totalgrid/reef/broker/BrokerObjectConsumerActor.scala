@@ -21,27 +21,26 @@ package org.totalgrid.reef.broker
 import scala.collection.immutable.Queue
 import org.totalgrid.reef.executor.Executor
 
-trait BrokerObjectConsumer {
-  type BrokerApplicable = (BrokerChannel) => _
+trait ChannelSender {
 
-  def sendTo(b: BrokerApplicable): Unit
+  def sendTo(fun: BrokerChannel => Unit): Unit
 }
 
 /**
  * This actor simplifies objects that need to handle the broker coming up and down and
  * queuing operations until the broker is online.
  */
-class BrokerObjectConsumerActor(reactor: Executor) extends BrokerObjectConsumer with ChannelObserver {
+class BrokerObjectConsumerActor(reactor: Executor) extends ChannelSender with ChannelObserver {
 
   private var channel: Option[BrokerChannel] = None
-  private var queued: Queue[BrokerApplicable] = Queue.empty
+  private var queued: Queue[BrokerChannel => Unit] = Queue.empty
 
-  def sendTo(b: BrokerApplicable): Unit = reactor.execute {
+  def sendTo(fun: BrokerChannel => Unit): Unit = reactor.execute {
     channel match {
       case Some(c) =>
-        b(c)
+        fun(c)
       case None =>
-        queued = queued.enqueue(b)
+        queued = queued.enqueue(fun)
     }
   }
 

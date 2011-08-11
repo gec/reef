@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.sapi
 
-import org.totalgrid.reef.japi.TypeDescriptor
+import org.totalgrid.reef.japi.{ Envelope, TypeDescriptor }
+import org.totalgrid.reef.japi.Envelope.{ ServiceNotification, Event }
 
-object ServiceInfo {
-  def get[A](descriptor: TypeDescriptor[A]) =
-    ServiceInfo[A, A](descriptor, descriptor, EventOperations.getExchange(descriptor))
+import com.google.protobuf.GeneratedMessage
 
-  def get[A, B](descriptor: TypeDescriptor[A], subDescriptor: TypeDescriptor[B]) =
-    ServiceInfo[A, B](descriptor, subDescriptor, EventOperations.getExchange(subDescriptor))
+object EventOperations {
+
+  def getExchange(descriptor: TypeDescriptor[_]) = descriptor.id + "_events"
+
+  def getEvent(event: Event, msg: GeneratedMessage): ServiceNotification =
+    Envelope.ServiceNotification.newBuilder.setEvent(event).setPayload(msg.toByteString).build
 
 }
-
-case class ServiceInfo[A, B](descriptor: TypeDescriptor[A], subType: TypeDescriptor[B], subExchange: String)
-

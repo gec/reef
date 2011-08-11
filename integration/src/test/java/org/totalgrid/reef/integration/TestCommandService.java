@@ -200,7 +200,7 @@ public class TestCommandService extends ReefConnectionTestBase
 
         Command cmd = cs.getCommands().get( 0 );
 
-        List<UserCommandRequest> intialRequests = cs.getCommandHistory(cmd);
+        List<UserCommandRequest> intialRequests = cs.getCommandHistory( cmd );
 
         // select
         CommandAccess accessResponse = cs.createCommandExecutionLock( cmd );
@@ -224,8 +224,8 @@ public class TestCommandService extends ReefConnectionTestBase
             assertEquals( Envelope.Status.BAD_REQUEST, pse.getStatus() );
         }
 
-        List<UserCommandRequest> requests = cs.getCommandHistory(cmd);
+        List<UserCommandRequest> requests = cs.getCommandHistory( cmd );
 
-        assertTrue(intialRequests.size() < requests.size());
+        assertTrue( intialRequests.size() < requests.size() );
     }
 }

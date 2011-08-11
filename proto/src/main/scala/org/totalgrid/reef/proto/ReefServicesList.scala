@@ -41,11 +41,9 @@ object ReefServiceMap {
     getEntry(Descriptors.entityEdge),
     getEntry(Descriptors.entityAttributes))
 
-  private def getEntry[A, B](descriptor: TypeDescriptor[A], subClass: Option[TypeDescriptor[B]] = None): ServiceList.ServiceTuple = {
-    subClass match {
-      case Some(subDescriptor) => descriptor.getKlass -> ServiceInfo.get(descriptor, subDescriptor)
-      case None => descriptor.getKlass -> ServiceInfo.get(descriptor)
-    }
+  private def getEntry[A, B](descriptor: TypeDescriptor[A], subClass: Option[TypeDescriptor[B]] = None): ServiceList.ServiceTuple = subClass match {
+    case Some(subDescriptor) => descriptor.getKlass -> ServiceInfo.get(descriptor, subDescriptor)
+    case None => descriptor.getKlass -> ServiceInfo.get(descriptor)
   }
 }
 

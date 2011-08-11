@@ -25,8 +25,10 @@ import org.totalgrid.reef.messaging.serviceprovider.PublishingSubscriptionHandle
  * very simple subscription provider that is useful for testing. Not for production use, if any bindQueue
  * call fails the broker channel will be broken and never work again
  */
-class SyncSubscriptionHandler(b: BrokerChannel, val exchange: String) extends PublishingSubscriptionHandler {
-  def sendTo(func: BrokerChannel => _) = func(b)
+class SyncSubscriptionHandler(channel: BrokerChannel, val exchange: String) extends PublishingSubscriptionHandler {
 
-  b.declareExchange(exchange)
+  channel.declareExchange(exchange)
+
+  def sendTo(fun: BrokerChannel => Unit): Unit = fun(channel)
+
 }

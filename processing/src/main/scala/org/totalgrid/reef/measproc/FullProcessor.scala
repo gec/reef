@@ -76,17 +76,13 @@ class FullProcessor(components: CoreApplicationComponents, measStore: Measuremen
   val connectionHandler = new ConnectionHandler(addStreamProcessor(_)) with ReactActorExecutor
 
   override def doStart() {
-    components.logger.event(System.SubsystemStarting)
     lifecycles.start
     subscribeToStreams
-    components.logger.event(System.SubsystemStarted)
   }
 
   override def doStop() {
-    components.logger.event(System.SubsystemStopping)
     connectionHandler.clear
     lifecycles.stop
-    components.logger.event(System.SubsystemStopped)
   }
 
   def addStreamProcessor(streamConfig: ConnProto): MeasurementStreamProcessingNode = {

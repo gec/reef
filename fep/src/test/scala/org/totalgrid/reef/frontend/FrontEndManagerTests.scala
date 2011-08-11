@@ -54,9 +54,9 @@ class FrontEndManagerTests extends FunSuite with ShouldMatchers {
     val mp = new NullProtocol("mock") with RecordingProtocol {
       override def requiresChannel = true
     }
-    val eventLog = SilentEventLogPublisher // publishers for events and logs
+
     val appConfig = ApplicationConfig.newBuilder.setUuid("0").build
-    val fem = new FrontEndManager(conn, exe, List(mp), eventLog, appConfig, 5000)
+    val fem = new FrontEndManager(conn, exe, List(mp), appConfig, 5000)
 
     fem.start()
     test(conn, exe, mp, fem)

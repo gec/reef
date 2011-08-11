@@ -22,7 +22,6 @@ import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
 import org.totalgrid.reef.sapi.AddressableDestination
 import org.totalgrid.reef.metrics.MetricsHookContainer
@@ -30,6 +29,11 @@ import org.totalgrid.reef.proto._
 
 import Measurements._
 import Processing._
+
+import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.messaging.{ OrderedServiceTransmitter, AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.japi.Envelope.Verb
 
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.
@@ -45,21 +49,25 @@ class MeasurementStreamProcessingNode(
   connection: MeasurementProcessingConnection,
   executor: Executor with Lifecycle)
     extends Logging with MetricsHookContainer {
-  // the main actor 
+  // the main actor
   val provider = new ServiceHandlerProvider(registry, new ServiceHandler(executor))
+  val serviceTransmitter = new OrderedServiceTransmitter(registry.getSessionPool())
 
-  // TODO: measproc should post events using service, not direct publishing
-  val eventSink = amqp.publish(connection.getRouting.getRawEventDest, RoutingKeys.event, Descriptors.event.serialize)
+  def publishEvent(event: Event): Unit = serviceTransmitter.publish(event, Verb.PUT) // TODO change event service to be POST
+
+  def serializeMeas(meas: Measurement) = EventOperations.getEvent(Envelope.Event.MODIFIED, meas).toByteArray()
+
+  val measSink = amqp.publish(EventOperations.getExchange(Descriptors.measurement), RoutingKeys.measurement, serializeMeas)
 
   val processor = ProcessingNode(
-    amqp.publish(connection.getRouting.getProcessedMeasDest, RoutingKeys.measurement, Descriptors.measurement.serialize),
+    measSink,
     connection.getLogicalNode,
     provider,
     measCache,
     overCache,
     stateCache,
     "streamproc-" + connection.getLogicalNode.getName,
-    eventSink,
+    publishEvent,
     startProcessing)
 
   // once all the components have the pieces they need to process, we subscribe to measurements

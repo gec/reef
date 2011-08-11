@@ -18,14 +18,13 @@
  */
 package org.totalgrid.reef.messaging.serviceprovider
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.japi.Envelope
+import com.google.protobuf.GeneratedMessage
 
 trait ServiceSubscriptionHandler {
 
-  def publish(event: Envelope.Event, resp: GeneratedMessage, key: String)
+  def publish(event: Envelope.Event, resp: GeneratedMessage, key: String): Unit
 
-  def bind(subQueue: String, key: String, request: AnyRef)
+  def bind(subQueue: String, key: String, request: AnyRef): Unit
 }
 

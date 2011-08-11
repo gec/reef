@@ -90,7 +90,6 @@ class FepActivator extends BundleActivator with Logging {
       components.registry,
       exe,
       protocols,
-      components.logger,
       components.appConfig,
       5000)
 

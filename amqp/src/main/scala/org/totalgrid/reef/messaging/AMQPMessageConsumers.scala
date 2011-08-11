@@ -23,10 +23,10 @@ import org.totalgrid.reef.executor.Executor
 
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
-import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
+import org.totalgrid.reef.japi.Envelope
 
 object AMQPMessageConsumers extends Logging {
 
@@ -46,16 +46,6 @@ object AMQPMessageConsumers extends Logging {
         safeExecute {
           val evt = Envelope.ServiceNotification.parseFrom(data)
           accept(new Event(evt.getEvent, convert(evt.getPayload.toByteArray)))
-        }
-      }
-    }
-  }
-
-  def makeConvertingEventStreamConsumer[A](deserialize: Array[Byte] => A, accept: Event[A] => Unit): MessageConsumer = {
-    new MessageConsumer {
-      def receive(data: Array[Byte], reply: Option[Destination]) = {
-        safeExecute {
-          accept(new Event(Envelope.Event.MODIFIED, deserialize(data)))
         }
       }
     }

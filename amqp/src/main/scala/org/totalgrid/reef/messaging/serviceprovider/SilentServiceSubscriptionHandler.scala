@@ -18,9 +18,8 @@
  */
 package org.totalgrid.reef.messaging.serviceprovider
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.japi.Envelope
+import com.google.protobuf.GeneratedMessage
 
 class SilentServiceSubscriptionHandler extends ServiceSubscriptionHandler {
 

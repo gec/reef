@@ -28,7 +28,7 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.broker.BrokerObjectConsumer
+import org.totalgrid.reef.broker.ChannelSender
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }

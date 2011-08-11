@@ -125,28 +125,6 @@ trait EventLogPublisher {
 }
 
 /**
- * Publish events and logs to the bus. Events are localized on the
- * receiver side when they are written to the log file. Logs are not
- * localized.
- *
- * <h3>Use Case</h3><pre>
- * val eventLog = new EventLogPublisher(amqp, "FEP", "raw_events", "raw_logs")     // publishers for events and logs
- *
- * ...
- * eventLog.event( EventType.System.SubsystemStarted)
- * </pre>
- */
-class BusTiedEventLogPublisher(amqp: AMQPProtoFactory,
-  subSystem: String,
-  eventExchange: String,
-  logExchange: String)
-    extends EventLogPublisher {
-  val subsystem = subSystem
-  val publishEvent = amqp.publish(eventExchange, RoutingKeys.event, Descriptors.event.serialize)
-  val publishLog = amqp.publish(logExchange, RoutingKeys.log, Descriptors.log.serialize)
-}
-
-/**
  * Blackhole event/log handler for testing and mocking purposes
  */
 object SilentEventLogPublisher extends EventLogPublisher {

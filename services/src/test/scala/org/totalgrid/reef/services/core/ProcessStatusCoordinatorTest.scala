@@ -27,13 +27,12 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import com.google.protobuf.GeneratedMessage
-
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies }
+import com.google.protobuf.GeneratedMessage
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
@@ -42,7 +41,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     var count = new SyncVar(0: Int)
     var lastEvent: Option[Envelope.Event] = None
     var lastKey: Option[String] = None
-    var lastMessage: Option[GeneratedMessage] = None
+    var lastMessage: Option[AnyRef] = None
 
     def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) {
       lastEvent = Some(event)

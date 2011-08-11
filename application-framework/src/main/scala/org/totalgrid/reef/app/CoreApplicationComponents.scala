@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.event.BusTiedEventLogPublisher
-
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.executor.ReactActorExecutor
@@ -49,9 +47,6 @@ class CoreApplicationComponents(
   /// dies the system can notice quickly and recover. Its important that the client start this actor and stop
   /// it cleanly before the amqp service is killed, that allows a nice clean shutdown
   val heartbeatActor = new ProcessHeartbeatActor(amqp, appConfig.getHeartbeatCfg) with ReactActorExecutor
-
-  /// log and event sink, should also be registered as slf4j backend
-  val logger = new BusTiedEventLogPublisher(amqp, appConfig.getCapabilites(0), appConfig.getStreamCfg.getEventsDest, appConfig.getStreamCfg.getLogsDest)
 
   /// specialized publisher for publishing application metrics
   val metricsPublisher = MetricsSink.getInstance(appConfig.getInstanceName)
