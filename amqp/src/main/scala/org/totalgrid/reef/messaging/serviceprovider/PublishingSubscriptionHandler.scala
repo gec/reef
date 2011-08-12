@@ -21,7 +21,7 @@ package org.totalgrid.reef.messaging.serviceprovider
 import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.proto.EventOperations
+import org.totalgrid.reef.sapi.EventOperations
 import org.totalgrid.reef.broker.ChannelSender
 import com.google.protobuf.GeneratedMessage
 

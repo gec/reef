@@ -23,7 +23,6 @@ import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
 import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
-import org.totalgrid.reef.sapi.AddressableDestination
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import org.totalgrid.reef.proto._
 
@@ -34,6 +33,7 @@ import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.messaging.{ OrderedServiceTransmitter, AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.sapi.{ EventOperations, AddressableDestination }
 
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.
