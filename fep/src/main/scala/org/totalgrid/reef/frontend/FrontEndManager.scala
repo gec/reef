@@ -34,7 +34,7 @@ import org.totalgrid.reef.app.ServiceHandler
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => ConfigProto, FrontEndProcessor }
 import org.totalgrid.reef.sapi.client.{ Response, ClientSession, SingleSuccess }
 
-class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol], eventLog: EventLogPublisher, appConfig: ApplicationConfig, retryms: Long)
+class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol], appConfig: ApplicationConfig, retryms: Long)
     extends Lifecycle with ServiceContext[ConnProto] with Logging {
 
   val serviceHandler = new ServiceHandler(exe)
@@ -96,15 +96,12 @@ class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol],
   // blocking function, uses a service to retrieve the fep uid
   private def annouce(): Unit = {
 
-    eventLog.event(EventType.System.SubsystemStarting)
-
     val msg = protocols.foldLeft(FrontEndProcessor.newBuilder) { (msg, p) =>
       msg.addProtocols(p.name)
     }.setAppConfig(appConfig).build
 
     def handleAnnounceRsp(rsp: Response[FrontEndProcessor]) = rsp match {
       case SingleSuccess(_, fep) =>
-        eventLog.event(EventType.System.SubsystemStarted)
         logger.info("Got uid: " + fep.getUuid.getUuid)
         val query = ConnProto.newBuilder.setFrontEnd(fep).build
         // this is where we actually bind up the service calls

@@ -34,7 +34,7 @@ import org.totalgrid.reef.loader.EnhancedXmlClasses._
  *
  * TODO: generic_type is not set
  */
-class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: ExceptionCollector) extends Logging {
+class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
 
   val equipmentProfiles = LoaderMap[EquipmentType]("Equipment Profile")
   val pointProfiles = LoaderMap[PointProfile]("Point Profile")
@@ -117,6 +117,8 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     val entity = toEntity(name, profiles, extraTypes)
     client.putOrThrow(entity)
 
+    equipment.getInfo.foreach(i => commonLoader.addInfo(entity, i))
+
     // Commands are controls and setpoints
     logger.trace("load equipment: " + name + " commands")
     controls.map { c =>
@@ -139,7 +141,7 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     // Load all the children and create the edges
     logger.trace("load equipment: " + name + " children")
     val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
-    children.foreach(child => client.putOrThrow(toEntityEdge(entity, child, "owns")))
+    children.foreach(child => client.putOrThrow(ProtoUtils.toEntityEdge(entity, child, "owns")))
 
     entity
   }
@@ -164,8 +166,11 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     commands += (name -> command)
 
     client.putOrThrow(commandEntity)
+
+    c.getInfo.foreach(i => commonLoader.addInfo(commandEntity, i))
+
     client.putOrThrow(command)
-    client.putOrThrow(toEntityEdge(equipmentEntity, commandEntity, "owns"))
+    client.putOrThrow(ProtoUtils.toEntityEdge(equipmentEntity, commandEntity, "owns"))
 
     commandEntity
   }
@@ -202,14 +207,17 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     val pointEntity = toEntityType(name, types)
     val point = toPoint(name, pointEntity, pointProtoType, unit)
     client.putOrThrow(pointEntity)
+
+    pointT.getInfo.foreach(i => commonLoader.addInfo(pointEntity, i))
+
     client.putOrThrow(point)
-    client.putOrThrow(toEntityEdge(equipmentEntity, pointEntity, "owns"))
+    client.putOrThrow(ProtoUtils.toEntityEdge(equipmentEntity, pointEntity, "owns"))
 
     val controls = getElements[Control](name, pointT, _.getControl.toList)
-    controls.map(c => client.putOrThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
+    controls.map(c => client.putOrThrow(ProtoUtils.toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
 
     val setpoint = getElements[Setpoint](name, pointT, _.getSetpoint.toList)
-    setpoint.map(c => client.putOrThrow(toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
+    setpoint.map(c => client.putOrThrow(ProtoUtils.toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
 
     loadCache.addPoint(name, unit)
     // Insert range triggers to the existing trigger set in the system. Overwrite any triggers with the same name.
@@ -292,10 +300,10 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     if (types.isEmpty)
       throw new LoadingException(name + " needs at least one <type> specified in the Equipment Model.")
 
-    //    extraTypes.foreach { extra =>
-    //      if (types.contains(extra))
-    //        println("DEPRECATION WARNING: \"" + extra + "\" type is automatically added to " + name)
-    //    }
+    extraTypes.foreach { extra =>
+      if (types.contains(extra))
+        println("DEPRECATION WARNING: \"" + extra + "\" type is automatically added to " + name)
+    }
 
     val finalTypes = (types ::: extraTypes).distinct
 
@@ -320,13 +328,5 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     proto.build
   }
 
-  def toEntityEdge(parent: Entity, child: Entity, relationship: String): EntityEdge = {
-    val proto = EntityEdge.newBuilder
-      .setParent(parent)
-      .setChild(child)
-      .setRelationship(relationship)
-
-    proto.build
-  }
 }
 

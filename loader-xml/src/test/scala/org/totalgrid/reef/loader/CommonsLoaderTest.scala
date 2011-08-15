@@ -27,6 +27,10 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import java.io.File
+import org.totalgrid.reef.sapi.client.MockSyncOperations
+import org.totalgrid.reef.sapi.client.Success
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 @RunWith(classOf[JUnitRunner])
 class CommonsLoaderTest extends FunSuite with ShouldMatchers {
@@ -47,6 +51,14 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     c.getConfigFiles.getConfigFile.toList.get(0)
   }
 
+  def getLoader = {
+    val mockClient = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
+    val modelLoader = new CachingModelLoader(Some(mockClient))
+    val exCollector = new NullExceptionCollector
+    val path = new File(".")
+    new CommonLoader(modelLoader, exCollector, path)
+  }
+
   test("Load ConfigFile as file") {
     val testSnip = """
     <common:configFiles>
@@ -59,7 +71,8 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     //cf.isSetValue should equal(false) // BUG in JAXB equals true always
     cf.getValue.trim.size should equal(0)
 
-    val cfProto = ProtoUtils.toConfigFile(cf, new File("."))
+    val loader = getLoader
+    val cfProto = loader.loadConfigFile(cf)
 
     cfProto.getFile.toStringUtf8 should include("</project>")
     cfProto.getName should equal("test.xml")
@@ -73,7 +86,8 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     """
     val cf = getConfigFile(testSnip)
 
-    val cfProto = ProtoUtils.toConfigFile(cf, new File("."))
+    val loader = getLoader
+    val cfProto = loader.loadConfigFile(cf)
 
     cfProto.getFile.toStringUtf8 should include("</project>")
     cfProto.getName should equal("pom.xml")
@@ -95,7 +109,8 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     cf.getName should equal("test.xml")
     cf.getValue.trim.size should (be > (0))
 
-    val cfProto = ProtoUtils.toConfigFile(cf, new File("."))
+    val loader = getLoader
+    val cfProto = loader.loadConfigFile(cf)
 
     cfProto.getFile.toStringUtf8 should include("ns2:Master")
   }

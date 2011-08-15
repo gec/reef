@@ -46,4 +46,22 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="attribute">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="stringValue" type="xs:string"/>
+            <xs:attribute name="booleanValue" type="xs:boolean"/>
+            <xs:attribute name="intValue" type="xs:int"/>
+            <xs:attribute name="doubleValue" type="xs:double"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="info">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="configFile"/>
+                <xs:element ref="attribute"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>

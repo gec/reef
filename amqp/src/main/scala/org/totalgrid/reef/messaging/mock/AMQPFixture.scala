@@ -20,7 +20,7 @@ package org.totalgrid.reef.messaging.mock
 
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.broker.mock.MockBrokerConnection
+import org.totalgrid.reef.broker.embedded.EmbeddedBrokerConnection
 
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.messaging._
@@ -36,7 +36,7 @@ object AMQPFixture {
   }
 
   def mock(requireConn: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
-    using(new MockBrokerConnection, requireConn)(test)
+    using(new EmbeddedBrokerConnection, requireConn)(test)
   }
 
   def using(connection: BrokerConnection, requireConnection: Boolean = false)(test: AMQPProtoFactory => Unit): Unit = {
@@ -62,7 +62,7 @@ object AMQPFixture {
   }
 
   def mockSync(test: AMQPSyncFactory => Unit): Unit = {
-    sync(new MockBrokerConnection, true) { test }
+    sync(new EmbeddedBrokerConnection, true) { test }
   }
 
   def sync(connection: BrokerConnection, requireConnection: Boolean)(test: AMQPSyncFactory => Unit): Unit = {

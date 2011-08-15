@@ -36,9 +36,8 @@ object Timing {
   /**
    * Runs a block of code and prints (to stdout) how long the operation took
    */
-  def time[A](name: String)(fun: => A): A = {
-    time({ elapsed: Long => println(name + " took " + elapsed + "ms") })(fun)
-  }
+  def time[A](name: String)(fun: => A): A =
+    time(x => println(name + " took " + x + "ms"))(fun)
 
   /**
    * Runs a block of code and passes the length of time it took to another function

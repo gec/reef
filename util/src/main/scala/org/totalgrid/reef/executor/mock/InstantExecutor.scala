@@ -21,6 +21,8 @@ package org.totalgrid.reef.executor.mock
 import org.totalgrid.reef.executor._
 import org.totalgrid.reef.util.Timer
 
+import parallel.Future
+
 /**
  * Mock reactor for use in testing that runs all commands instantly, no delays, no repetition,
  * all on the calling thread. A check is done to ensure that an infinite loop is not entered. This
@@ -48,10 +50,20 @@ class InstantExecutor extends Executor with Lifecycle {
 
   override def execute(fun: => Unit): Unit = checkDepth(fun)
 
-  override def delay(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); NullTimer }
+  override def delay(msec: Long)(fun: => Unit): Timer = {
+    checkDepth(fun)
+    NullTimer
+  }
 
-  override def repeat(msec: Long)(fun: => Unit): Timer = { checkDepth(fun); NullTimer }
+  override def repeat(msec: Long)(fun: => Unit): Timer = {
+    checkDepth(fun)
+    NullTimer
+  }
 
-  override def request[A](fun: => A): A = checkDepth(fun)
+  override def request[A](fun: => A): Future[A] = {
+    checkDepth {
+      new FixedFuture[A](fun)
+    }
+  }
 
 }

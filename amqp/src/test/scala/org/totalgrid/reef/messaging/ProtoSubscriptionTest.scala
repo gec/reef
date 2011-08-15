@@ -19,7 +19,7 @@
 package org.totalgrid.reef.messaging
 
 import mock.AMQPFixture
-import org.totalgrid.reef.broker.mock.MockBrokerConnection
+import org.totalgrid.reef.broker.embedded.EmbeddedBrokerConnection
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -38,7 +38,7 @@ import org.totalgrid.reef.sapi.client.{ Subscription, Response }
 class MockProtoSubscriptionTest extends ProtoSubscriptionTestBase {
   def setupTest(test: AmqpClientSession => Unit) {
 
-    val mock = new MockBrokerConnection
+    val mock = new EmbeddedBrokerConnection
 
     AMQPFixture.sync(mock, true) { syncAmqp =>
       val client = new AmqpClientSession(syncAmqp, servicelist, 10000)
@@ -69,7 +69,7 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
     private var entries = List.empty[Envelope.RequestHeader]
 
     private def handleSub(req: Envelope.RequestHeader, env: RequestEnv) =
-      env.subQueue.foreach(subHandler.bind(_, req.getKey))
+      env.subQueue.foreach(subHandler.bind(_, req.getKey, req))
 
     private def publish(evt: Envelope.Event, changes: List[Envelope.RequestHeader]) =
       changes.foreach(msg => subHandler.publish(evt, msg, msg.getKey))

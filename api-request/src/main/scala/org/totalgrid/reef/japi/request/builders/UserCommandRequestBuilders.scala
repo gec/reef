@@ -24,6 +24,10 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 object UserCommandRequestBuilders {
 
   def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(uid).build
+  def getForName(command: String) = {
+    val cr = CommandRequest.newBuilder.setName(command)
+    UserCommandRequest.newBuilder.setCommandRequest(cr).build
+  }
 
   def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
 

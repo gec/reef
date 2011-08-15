@@ -29,7 +29,8 @@ class Type(_name: String) extends communications.Type {
   setName(_name)
 }
 
-class Protocol(_name: String) extends communications.Protocol {
+class Protocol(_name: String, _configFileName: Option[String]) extends communications.Protocol {
+  _configFileName.foreach(n => getSimOptionsOrConfigFile.add(new ConfigFile(n)))
   setName(_name)
 }
 
@@ -148,13 +149,16 @@ class Equipment(_name: String) extends communications.Equipment with EquipmentTy
 trait EndpointType[A] { self: communications.EndpointType =>
   def init(_name: String, _protocolName: Option[String], _configFileName: Option[String]): Unit = {
     setName(_name)
-    _protocolName.foreach { n => add(new Protocol(n)) }
-    _configFileName.foreach { n => add(new ConfigFile(n)) }
+
+    _protocolName.foreach { n =>
+      val protocol = new Protocol(n, _configFileName)
+      add(protocol)
+    }
   }
   def add(x: EndpointProfile) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
   def add(x: Type) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
   def add(x: Equipment) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
-  def add(x: ConfigFile) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
+
   def add(x: Protocol) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
   def set(x: Interface) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
 }

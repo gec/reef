@@ -74,9 +74,8 @@ class AmqpClientSession(
 
     val info = lookup.getServiceInfo(klass)
     val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => A]
-    val subIsStreamType = info.subIsStreamType
 
-    factory.prepareSubscription(deser, subIsStreamType)
+    factory.prepareSubscription(deser)
   }
 
 }

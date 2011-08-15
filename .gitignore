@@ -1,7 +1,10 @@
 .idea
 *.iml
 **/target
-org.totalgrid.reef.cfg
+**/**/target
+org.totalgrid.reef.sql.cfg
+org.totalgrid.reef.amqp.cfg
+org.totalgrid.reef.services.cfg
 org.totalgrid.reef.test.cfg
 out
 reef-karaf-*

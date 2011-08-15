@@ -132,14 +132,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
     add(sub)
   }
 
-  def getStreamQueue[A](convert: Array[Byte] => A, accept: Event[A] => Unit, notify: String => Unit): ObservableSubscription = {
-    val consumer = AMQPMessageConsumers.makeConvertingEventStreamConsumer(convert, accept)
-    val sub = new AMQPUnboundPrivateQueueListener(consumer)
-    sub.resubscribe(notify)
-    add(sub)
-  }
-
-  final override def prepareSubscription[A](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
+  final override def prepareSubscription[A](deserialize: Array[Byte] => A): Subscription[A] = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }

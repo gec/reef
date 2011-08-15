@@ -22,11 +22,12 @@ import org.totalgrid.reef.japi.TypeDescriptor
 
 object ServiceInfo {
   def get[A](descriptor: TypeDescriptor[A]) =
-    ServiceInfo[A, A](descriptor, false, descriptor, descriptor.id + "_events")
+    ServiceInfo[A, A](descriptor, descriptor, EventOperations.getExchange(descriptor))
 
   def get[A, B](descriptor: TypeDescriptor[A], subDescriptor: TypeDescriptor[B]) =
-    ServiceInfo[A, B](descriptor, true, subDescriptor, subDescriptor.id)
+    ServiceInfo[A, B](descriptor, subDescriptor, EventOperations.getExchange(subDescriptor))
+
 }
 
-case class ServiceInfo[A, B](descriptor: TypeDescriptor[A], subIsStreamType: Boolean, subType: TypeDescriptor[B], subExchange: String)
+case class ServiceInfo[A, B](descriptor: TypeDescriptor[A], subType: TypeDescriptor[B], subExchange: String)
 

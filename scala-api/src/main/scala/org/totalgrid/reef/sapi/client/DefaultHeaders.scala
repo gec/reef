@@ -37,7 +37,9 @@ trait DefaultHeaders {
   def setDefaultHeaders(env: RequestEnv) = defaultEnv = Some(env)
 
   protected def mergeHeaders(env: RequestEnv): RequestEnv = defaultEnv match {
-    case Some(x) => env.merge(x)
+    case Some(x) =>
+      env.merge(x)
+      env
     case None => env
   }
 

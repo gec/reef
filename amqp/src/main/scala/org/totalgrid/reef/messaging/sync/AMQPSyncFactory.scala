@@ -39,16 +39,10 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
     new ServiceResponseCorrelator(timeoutms, reqReply)
   }
 
-  def prepareSubscription[A](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
+  def prepareSubscription[A](deserialize: Array[Byte] => A): Subscription[A] = {
     val channel = getChannel()
-
-    val consumer = { a: (Event[A] => Unit) =>
-      if (subIsStreamType)
-        makeConvertingEventStreamConsumer(deserialize, a)
-      else
-        makeEventConsumer(deserialize, a)
-    }
-    new SyncSubscription[A](channel, consumer)
+    def getConsumer(consumer: Event[A] => Unit) = makeEventConsumer(deserialize, consumer)
+    new SyncSubscription[A](channel, getConsumer)
   }
 
   def broadcast[A](channel: BrokerChannel, serialize: A => Array[Byte]): (A, String, String) => Unit = {

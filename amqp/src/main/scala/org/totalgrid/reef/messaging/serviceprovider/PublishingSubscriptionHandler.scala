@@ -18,33 +18,28 @@
  */
 package org.totalgrid.reef.messaging.serviceprovider
 
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.broker.BrokerChannel
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.sapi.EventOperations
+import org.totalgrid.reef.broker.ChannelSender
+import com.google.protobuf.GeneratedMessage
 
-trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with Logging {
+trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with ChannelSender with Logging {
   val exchange: String
-
-  def sendTo(func: BrokerChannel => _)
 
   private def describe(exchange: String, key: String) =
     exchange + ", w/ key = " + key
 
-  def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = {
-    sendTo((b: BrokerChannel) => {
-      val msg = Envelope.ServiceNotification.newBuilder.setEvent(event).setPayload(resp.toByteString()).build
-      logger.debug("published event: " + event + " to " + describe(exchange, key))
-      b.publish(exchange, key, msg.toByteArray(), None)
-    })
+  def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) = sendTo { channel =>
+    val msg = EventOperations.getEvent(event, resp)
+    logger.debug("published event: " + event + " to " + describe(exchange, key))
+    channel.publish(exchange, key, msg.toByteArray(), None)
   }
 
-  def bind(subQueue: String, key: String) = {
-    sendTo((b: BrokerChannel) => {
-      b.bindQueue(subQueue, exchange, key)
-      logger.debug("binding queue: " + subQueue + " to " + describe(exchange, key))
-    })
+  def bind(subQueue: String, key: String, request: AnyRef) = sendTo { channel =>
+    channel.bindQueue(subQueue, exchange, key)
+    logger.debug("binding queue: " + subQueue + " to " + describe(exchange, key))
   }
 }
 

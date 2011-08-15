@@ -52,5 +52,10 @@
             <version>1.6.1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>se.scalablesolutions.akka</groupId>
+            <artifactId>akka-actor</artifactId>
+            <version>1.1.1</version>
+        </dependency>
     </dependencies>
 </project>

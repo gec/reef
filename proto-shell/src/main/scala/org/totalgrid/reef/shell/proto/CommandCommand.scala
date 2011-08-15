@@ -36,17 +36,14 @@ class CommandListCommand extends ReefCommandSupport {
 @Command(scope = "command", name = "hist", description = "Shows recent commands executions")
 class CommandHistoryCommand extends ReefCommandSupport {
 
-  //  @Argument(index = 0, name = "Command Name", description = "Command name", required = false, multiValued = false)
-  //  private var cmdName: String = null
+  @Argument(index = 0, name = "Command Name", description = "Command name", required = false, multiValued = false)
+  private var cmdName: String = null
 
   def doCommand() = {
-    // TODO: implement getCommandHistory for a single command
-    //    val history = Option(cmdName) match{
-    //      case Some(name) => services.getCommandHistory(services.getCommandByName(name))
-    //      case None => services.getCommandHistory()
-    //    }
-    // TODO: fix command service to update command request status from EXECUTING
-    val history = services.getCommandHistory()
+    val history = Option(cmdName) match {
+      case Some(name) => services.getCommandHistory(services.getCommandByName(name))
+      case None => services.getCommandHistory()
+    }
     CommandView.printHistoryTable(history.toList)
   }
 }

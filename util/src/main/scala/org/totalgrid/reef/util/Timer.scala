@@ -22,14 +22,17 @@ import scala.actors.TIMEOUT
 import scala.actors.Actor
 import scala.actors.Actor._
 
-/**
- * Simple interface to a cancelable timer object
- */
-trait Timer {
+trait Cancelable {
   /**
    *  Cancel the pending callback
    */
   def cancel()
+}
+
+/**
+ * Simple interface to a cancelable timer object
+ */
+trait Timer extends Cancelable {
 
   /**
    *  Execute the pending callback immediately
@@ -42,7 +45,7 @@ trait Timer {
  *  the specified function from an actor thread
  *
  */
-@deprecated("Use Executor.delay instead, these timers don't get cancel automatically")
+@deprecated("Use Executor.delay instead, these timers don't get stopped automatically")
 object Timer {
 
   case object Cancel

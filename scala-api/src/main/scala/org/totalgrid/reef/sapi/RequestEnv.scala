@@ -23,6 +23,8 @@ import org.totalgrid.reef.japi.client.ServiceHeaders
 object RequestEnv {
   val subQueueName = "SUB_QUEUE_NAME"
   val authToken = "AUTH_TOKEN"
+  val user = "USER"
+  val resultLimit = "RESULT_LIMIT"
 }
 
 /**
@@ -62,6 +64,13 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
       case _ => None
     }
   }
+  def getInteger(key: String): Option[Int] = {
+    headers.get(key) match {
+      case Some(List(a)) =>
+        Some(a.toInt)
+      case _ => None
+    }
+  }
   def getList(key: String): List[String] = {
     headers.get(key) match {
       case Some(a) => a
@@ -69,15 +78,15 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
     }
   }
 
-  def merge(defaults: RequestEnv): RequestEnv = {
+  def merge(defaults: RequestEnv) = {
     val k1 = Set(headers.keysIterator.toList: _*)
     val k2 = Set(defaults.headers.keysIterator.toList: _*)
     val intersection = k1 & k2
 
     val r1 = (for (key <- intersection) yield (key -> headers(key))).toMap
     val r2 = headers.filterKeys(!intersection.contains(_)) ++ defaults.headers.filterKeys(!intersection.contains(_))
-    new RequestEnv(r2 ++ r1)
-
+    val r3 = new RequestEnv(r2 ++ r1)
+    headers = r3.headers
   }
 
   def clear(): Unit = headers = Map.empty[String, List[String]]
@@ -105,9 +114,11 @@ class RequestEnv(var headers: Map[String, List[String]]) extends ServiceHeaders 
     ss.foreach(addHeader(RequestEnv.authToken, _))
   }
 
-  def userName = getString("USER")
+  def userName = getString(RequestEnv.user)
+  def setUserName(s: String) = setHeader(RequestEnv.user, s)
 
-  def setUserName(s: String) = setHeader("USER", s)
-
+  def getResultLimit() = getInteger(RequestEnv.resultLimit)
+  def setResultLimit(limit: Int) = setHeader(RequestEnv.resultLimit, limit.toString)
+  def clearResultLimit() = clearHeader(RequestEnv.resultLimit)
 }
 

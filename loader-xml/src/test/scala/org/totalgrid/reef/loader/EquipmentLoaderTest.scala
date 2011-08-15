@@ -53,7 +53,8 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
     val ex = new NullExceptionCollector
-    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu, ex)
+    val commonLoader = new CommonLoader(modelLoader, ex, new java.io.File("."))
+    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu, ex, commonLoader)
 
     test(Fixture(client, loader, model))
   }

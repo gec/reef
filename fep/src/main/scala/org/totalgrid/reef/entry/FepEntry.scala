@@ -46,7 +46,7 @@ class FepActivator extends BundleActivator with Logging {
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
     amqp = Some(new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
+      val broker = new QpidBrokerConnection(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp")))
     })
 
     manager.add(amqp.get)
@@ -90,7 +90,6 @@ class FepActivator extends BundleActivator with Logging {
       components.registry,
       exe,
       protocols,
-      components.logger,
       components.appConfig,
       5000)
 
