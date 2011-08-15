@@ -28,7 +28,6 @@ import org.totalgrid.reef.japi.Envelope
  * Notifies registered observers when a new subscription
  * event occurs. Provides event handlers suitable for use
  * with ServiceHandler
- *
  */
 trait ServiceContext[A] extends Observable {
 

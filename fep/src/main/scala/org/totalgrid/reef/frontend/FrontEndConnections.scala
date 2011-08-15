@@ -72,14 +72,14 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
-    logger.info("Added endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name + " routing key: " + c.getRouting.getServiceRoutingKey)
+    logger.info("Added endpoint: " + c.getEndpoint.getName + " on protocol: " + protocol.name + ", routing key: " + c.getRouting.getServiceRoutingKey)
 
     val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
     endpointComponents += c.getEndpoint.getName -> EndpointComponent(service, transmitter)
   }
 
   def removeEntry(c: ConnProto) {
-    logger.debug("Removing endpoint " + c.getEndpoint.getName)
+    logger.debug("Removing endpoint: " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
 
     // need to make sure we close the addressable service so no new commands
@@ -99,7 +99,7 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
       case None =>
     }
     endpointComponents -= c.getEndpoint.getName
-    logger.info("Removed endpoint " + c.getEndpoint.getName + " on protocol " + protocol.name)
+    logger.info("Removed endpoint: " + c.getEndpoint.getName + " on protocol: " + protocol.name)
   }
 
   private def newMeasBatchPublisher(tx: OrderedServiceTransmitter, routingKey: String) =
