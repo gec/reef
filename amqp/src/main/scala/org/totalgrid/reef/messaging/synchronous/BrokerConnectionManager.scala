@@ -22,7 +22,7 @@ package org.totalgrid.reef.messaging.synchronous
 import org.totalgrid.reef.japi.client.ConnectionListener
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.executor.{ AkkaExecutor, Executor, Lifecycle }
-import org.totalgrid.reef.util.{Timer, Logging}
+import org.totalgrid.reef.util.{ Timer, Logging }
 
 class BasicBrokerConnectionManager(broker: BrokerConnection, initialDelay: Long, maxDelay: Long)
     extends BrokerConnectionManager(broker, new AkkaExecutor, initialDelay, maxDelay) {
@@ -39,7 +39,7 @@ class BrokerConnectionManager(broker: BrokerConnection, exe: Executor, initialDe
 
   broker.addListener(this)
 
-  var timer : Option[Timer] = None
+  var timer: Option[Timer] = None
 
   /// Kicks of the connection process
   final override def afterStart() = exe.execute(attemptConnection(initialDelay))
@@ -58,7 +58,6 @@ class BrokerConnectionManager(broker: BrokerConnection, exe: Executor, initialDe
 
   private def delayedRetry(retryms: Long) =
     timer = Some(exe.delay(retryms)(attemptConnection(math.min(2 * retryms, maxDelay))))
-
 
   /* --- Implement Broker Connection Listener --- */
 
