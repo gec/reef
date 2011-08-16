@@ -43,6 +43,8 @@ class ProcessingActivator extends BundleActivator {
 
     val brokerInfo = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
     val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
+    val userSettings = ApplicationEnroller.getDefaultUserSettings
+    val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
 
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(brokerInfo)
@@ -53,7 +55,9 @@ class ProcessingActivator extends BundleActivator {
     val measStore = MeasurementStoreFinder.getInstance(dbInfo, measExecutor, context)
     mgr.add(measExecutor)
 
-    val enroller = new ApplicationEnroller(amqp, None, List("Processing"), new FullProcessor(_, measStore)) with ReactActorExecutor
+    val enroller = new ApplicationEnroller(amqp, userSettings, nodeSettings,
+      nodeSettings.getDefaultNodeName + "-meas_proc", List("Processing"),
+      new FullProcessor(_, measStore)) with ReactActorExecutor
     mgr.add(enroller)
 
     mgr.start()

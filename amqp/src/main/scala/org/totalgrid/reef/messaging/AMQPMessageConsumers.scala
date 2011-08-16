@@ -27,6 +27,7 @@ import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.japi.Envelope.ServiceNotification
 
 object AMQPMessageConsumers extends Logging {
 
@@ -44,7 +45,7 @@ object AMQPMessageConsumers extends Logging {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
-          val evt = Envelope.ServiceNotification.parseFrom(data)
+          val evt: ServiceNotification = Envelope.ServiceNotification.parseFrom(data)
           accept(new Event(evt.getEvent, convert(evt.getPayload.toByteArray)))
         }
       }

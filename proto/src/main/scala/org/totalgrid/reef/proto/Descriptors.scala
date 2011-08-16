@@ -46,12 +46,6 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.proto.Application.HeartbeatConfig]
     def id = "heartbeat_config"
   }
-  def streamServicesConfig() = new TypeDescriptor[org.totalgrid.reef.proto.Application.StreamServicesConfig] {
-    def serialize(typ: org.totalgrid.reef.proto.Application.StreamServicesConfig): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Application.StreamServicesConfig.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Application.StreamServicesConfig]
-    def id = "stream_services_config"
-  }
   def applicationConfig() = new TypeDescriptor[org.totalgrid.reef.proto.Application.ApplicationConfig] {
     def serialize(typ: org.totalgrid.reef.proto.Application.ApplicationConfig): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Application.ApplicationConfig.parseFrom(bytes)

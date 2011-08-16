@@ -49,7 +49,9 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     val start = System.currentTimeMillis
 
     val deps = ServiceDependencies(new ServiceEventPublisherRegistry(amqp, ReefServicesList))
-    val contextSource = new DependenciesSource(deps)
+    val headers = new RequestEnv()
+    headers.setUserName("user1")
+    val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps)
 
@@ -71,7 +73,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     val appConfig = registerInstance()
 
     /// use the appConfig information to setup the heartbeat publisher
-    val hbeatSink = processStatusCoordinator.handleRawStatus _
+    val hbeatSink = { hbeat: StatusSnapshot => client.put(hbeat).await.expectOne }
 
     /// setup the subscription to the Snapshot service so we track the current status of the application
     subscribeSnapshotStatus()

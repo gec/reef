@@ -52,13 +52,13 @@ trait Connection extends SessionSource {
 }
 
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
-class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection {
+class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, authToken: Option[String] = None) extends Connection {
 
   private lazy val pool = new BasicSessionPool(this)
 
   final override def newSession(): ClientSession = {
     val client = new AmqpClientSession(factory, lookup, timeoutms)
-    defaultEnv.foreach(client.setDefaultHeaders)
+    authToken.foreach(client.getDefaultHeaders.setAuthToken)
     client
   }
 

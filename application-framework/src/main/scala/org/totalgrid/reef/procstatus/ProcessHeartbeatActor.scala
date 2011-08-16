@@ -20,18 +20,15 @@ package org.totalgrid.reef.procstatus
 
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.util.{ Timer, Logging }
+import org.totalgrid.reef.japi.request.ApplicationService
 
-abstract class ProcessHeartbeatActor(amqp: AMQPProtoFactory, configuration: HeartbeatConfig)
-    extends Executor with Lifecycle {
-
-  private def route(s: StatusSnapshot) = configuration.getRoutingKey
-
-  val publish = amqp.publish(configuration.getDest, route, Descriptors.statusSnapshot.serialize)
+abstract class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig)
+    extends Executor with Lifecycle with Logging {
 
   private def makeProto(online: Boolean): StatusSnapshot = {
     StatusSnapshot.newBuilder
@@ -41,10 +38,27 @@ abstract class ProcessHeartbeatActor(amqp: AMQPProtoFactory, configuration: Hear
       .setOnline(online).build
   }
 
-  override def afterStart() = this.repeat(configuration.getPeriodMs)(heartbeat)
+  private var repeater: Option[Timer] = None
 
-  override def beforeStop() = publish(makeProto(false))
+  override def afterStart() = {
+    repeater = Some(this.repeat(configuration.getPeriodMs)(heartbeat))
+  }
+
+  override def beforeStop() = {
+    repeater.foreach(_.cancel)
+    // beforeStop is called on the executor thread
+    publish(makeProto(false))
+  }
 
   private def heartbeat() = publish(makeProto(true))
+
+  private def publish(ss: StatusSnapshot) {
+    try {
+      services.sendHeartbeat(ss)
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn("Problem sending heartbeat: " + rse.getMessage)
+    }
+  }
 
 }
