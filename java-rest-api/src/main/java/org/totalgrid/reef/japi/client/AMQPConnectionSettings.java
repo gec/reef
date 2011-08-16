@@ -105,6 +105,19 @@ public class AMQPConnectionSettings
         }
     }
 
+    @Override
+    public String toString()
+    {
+        if ( ssl )
+        {
+            return "amqps:/" + user + "@" + host + ":" + port + "/" + virtualHost + "{" + trustStore + "}";
+        }
+        else
+        {
+            return "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost;
+        }
+    }
+
     /**
      * @return host name
      */
