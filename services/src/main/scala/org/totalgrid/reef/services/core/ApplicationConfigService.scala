@@ -49,7 +49,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     with ApplicationConfigConversion {
 
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
-    val sql = create(context, createModelEntry(req))
+    val sql = create(context, createModelEntry(req, context.headers.userName.get))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
@@ -62,7 +62,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
-    val (sql, updated) = update(context, createModelEntry(req), existing)
+    val (sql, updated) = update(context, createModelEntry(req, context.headers.userName.get), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
     val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }
@@ -109,10 +109,10 @@ trait ApplicationConfigConversion
     entry.location != existing.location || entry.network != existing.network
   }
 
-  def createModelEntry(proto: ApplicationConfig): ApplicationInstance = {
+  def createModelEntry(proto: ApplicationConfig, userName: String): ApplicationInstance = {
     ApplicationInstance.newInstance(
       proto.getInstanceName,
-      proto.getUserName,
+      userName,
       proto.getLocation,
       proto.getNetwork)
   }
@@ -122,17 +122,9 @@ trait ApplicationConfigConversion
     val hbeat = entry.heartbeat
 
     val h = HeartbeatConfig.newBuilder
-      .setDest("proc_status")
       .setPeriodMs(hbeat.value.periodMS)
       .setProcessId(hbeat.value.processId)
-      .setRoutingKey(entry.instanceName)
       .setInstanceName(entry.instanceName)
-
-    // TODO: delete stream services config when we remove event stream
-    val s = StreamServicesConfig.newBuilder
-      .setLogsDest("raw_logs")
-      .setEventsDest("raw_events")
-      .setNonopDest("raw_meas")
 
     val b = ApplicationConfig.newBuilder
       .setUuid(makeUuid(entry))
@@ -140,7 +132,7 @@ trait ApplicationConfigConversion
       .setInstanceName(entry.instanceName)
       .setNetwork(entry.network)
       .setLocation(entry.location)
-      .setHeartbeatCfg(h).setStreamCfg(s)
+      .setHeartbeatCfg(h)
 
     entry.capabilities.value.foreach(x => b.addCapabilites(x.capability))
     b.build

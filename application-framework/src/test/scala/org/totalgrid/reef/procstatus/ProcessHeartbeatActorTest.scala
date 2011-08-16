@@ -18,72 +18,46 @@
  */
 package org.totalgrid.reef.procstatus
 
-import org.totalgrid.reef.proto.{ ProcessStatus }
-import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.messaging.mock._
-import org.totalgrid.reef.sapi.AllMessages
-
-import org.scalatest.Suite
+import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.executor.ReactActorExecutor
-
-import ProcessStatus._
-
+import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 
+import org.totalgrid.reef.executor.mock.{ MockExecutorTrait }
+import org.totalgrid.reef.japi.request.{ ApplicationService }
+import org.mockito.{ ArgumentCaptor, Mockito }
+
 @RunWith(classOf[JUnitRunner])
-class ProcessHeartbeatActorTest extends Suite with ShouldMatchers {
+class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
 
-  val EXCHANGE = "test_proc_status"
+  val REPEAT_TIME = 10
 
-  def makeConfig(): HeartbeatConfig = {
+  def makeConfig: HeartbeatConfig = {
     HeartbeatConfig.newBuilder
+      .setInstanceName("test")
       .setProcessId("1")
-      .setPeriodMs(10)
-      .setRoutingKey("key")
-      .setDest(EXCHANGE).build
+      .setPeriodMs(REPEAT_TIME).build
   }
 
-  def subscribe(amqp: AMQPProtoFactory): SyncVar[StatusSnapshot] = {
-    val box = new SyncVar(StatusSnapshot.getDefaultInstance)
-    amqp.subscribe(EXCHANGE, AllMessages, StatusSnapshot.parseFrom, { s: StatusSnapshot => box.update(s) })
-    box
-  }
+  test("Heartbeats are sent") {
+    val services = Mockito.mock(classOf[ApplicationService])
+    val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
+    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(null)
 
-  def testComeUp() {
-    AMQPFixture.mock(true) { amqp =>
-      val box = subscribe(amqp)
-      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActorExecutor
-      actor.start
-      box.waitFor((s: StatusSnapshot) => { s.getOnline == true })
+    val actor = new ProcessHeartbeatActor(services, makeConfig) with MockExecutorTrait
 
-    }
-  }
+    actor.start()
 
-  def testBeating() {
-    AMQPFixture.mock(true) { amqp =>
-      val box = subscribe(amqp)
-      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActorExecutor
+    actor.numActionsPending should equal(1)
+    actor.repeatNext(1, 1) should equal(REPEAT_TIME)
+    argument.getValue.getOnline should equal(true)
 
-      actor.start
-      var lastTime = -1: Long
-      for (i <- 1 to 3) yield box.waitFor((s: StatusSnapshot) => { val ret = s.getTime != lastTime; lastTime = s.getTime; ret })
-    }
-  }
+    actor.stop()
 
-  def testGoDown() {
-    AMQPFixture.mock(true) { amqp =>
-      val box = subscribe(amqp)
-      val actor = new ProcessHeartbeatActor(amqp, makeConfig) with ReactActorExecutor
-
-      actor.start
-      box.waitFor((s: StatusSnapshot) => { s.getOnline == true })
-      actor.stop
-      box.waitFor((s: StatusSnapshot) => { s.getOnline == false })
-    }
+    actor.numActionsPending should equal(0)
+    argument.getValue.getOnline should equal(false)
   }
 }

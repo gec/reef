@@ -34,6 +34,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 class FepActivator extends BundleActivator with Logging {
 
@@ -45,14 +46,18 @@ class FepActivator extends BundleActivator with Logging {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
+    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val userSettings = ApplicationEnroller.getDefaultUserSettings
+    val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+
     amqp = Some(new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp")))
+      val broker = new QpidBrokerConnection(brokerOptions)
     })
 
     manager.add(amqp.get)
 
     context watchServices withInterface[Protocol] andHandle {
-      case AddingService(p, _) => addProtocol(p)
+      case AddingService(p, _) => addProtocol(p, userSettings, nodeSettings)
       case ServiceRemoved(p, _) => removeProtocol(p)
     }
 
@@ -61,11 +66,11 @@ class FepActivator extends BundleActivator with Logging {
 
   def stop(context: BundleContext) = manager.stop()
 
-  private def addProtocol(p: Protocol) = map.synchronized {
+  private def addProtocol(p: Protocol, userSettings: UserSettings, nodeSettings: NodeSettings) = map.synchronized {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
-        val enroller = new ApplicationEnroller(amqp.get, Some("FEP-" + p.name), List("FEP"), create(List(p), _)) with ReactActorExecutor
+        val enroller = new ApplicationEnroller(amqp.get, userSettings, nodeSettings, "FEP-" + p.name, List("FEP"), create(List(p), _)) with ReactActorExecutor
         map = map + (p -> enroller)
         manager.add(enroller)
     }

@@ -29,7 +29,7 @@ import parallel.Future
  * invoking each action with expectations.
  */
 
-class MockExecutor extends Executor {
+trait MockExecutorTrait extends Executor {
 
   final override def execute(fun: => Unit): Unit = queue.enqueue(Execution(() => fun))
   final override def delay(msec: Long)(fun: => Unit): Timer = addTimerAction(Delay(() => fun, msec))
@@ -101,3 +101,5 @@ class MockExecutor extends Executor {
   private def repeatNext(preSize: Option[Int], postSize: Option[Int]): Long = performNext(preSize, postSize, "Repeat") { case x: Repeat => x.ms }
 
 }
+
+class MockExecutor extends MockExecutorTrait

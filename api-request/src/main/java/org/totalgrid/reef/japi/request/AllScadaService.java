@@ -38,6 +38,7 @@ public abstract class AllScadaService implements
                                      PointService,
                                      AlarmService,
                                      AgentService,
-                                     EndpointManagementService
+                                     EndpointManagementService,
+                                     ApplicationService
 {
 }

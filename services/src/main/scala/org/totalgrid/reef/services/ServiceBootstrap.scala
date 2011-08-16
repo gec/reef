@@ -26,6 +26,8 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
+import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
+import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 object ServiceBootstrap {
   /**
@@ -33,18 +35,20 @@ object ServiceBootstrap {
    * use to enroll ourselves as an application to get the CoreApplicationComponents without
    * repeating that setup logic somewhere else
    */
-  def bootstrapComponents(amqp: AMQPProtoFactory): CoreApplicationComponents = {
+  def bootstrapComponents(amqp: AMQPProtoFactory, systemUser: UserSettings, appSettings: NodeSettings): CoreApplicationComponents = {
     val pubs = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
     val deps = ServiceDependencies(pubs)
-    val contextSource = new DependenciesSource(deps)
+    val headers = new RequestEnv
+    headers.setUserName(systemUser.getUserName)
+    val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(deps), headers)
     val modelFac = new core.ModelFactories(deps, contextSource)
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
     val authService = new core.AuthTokenService(modelFac.authTokens)
 
-    val login = ApplicationEnroller.buildLogin()
+    val login = ApplicationEnroller.buildLogin(systemUser)
     val authToken = authService.put(contextSource, login).expectOne
 
-    val config = ApplicationEnroller.buildConfig(List("Services"))
+    val config = ApplicationEnroller.buildConfig(appSettings, appSettings.getDefaultNodeName + "_services", List("Services"))
     val appConfig = applicationConfigService.put(contextSource, config).expectOne
 
     // the measurement batch service acts as a type of manual FEP
@@ -54,9 +58,7 @@ object ServiceBootstrap {
     val fepService = new core.FrontEndProcessorService(modelFac.fep)
     fepService.put(contextSource, msg.build)
 
-    val env = new RequestEnv
-    env.addAuthToken(authToken.getToken)
-    new CoreApplicationComponents(amqp, appConfig, env)
+    new CoreApplicationComponents(amqp, appConfig, authToken.getToken)
   }
 
   /**

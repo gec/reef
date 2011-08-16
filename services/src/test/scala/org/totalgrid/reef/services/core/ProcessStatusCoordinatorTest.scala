@@ -25,14 +25,13 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider._
-import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies }
+import org.totalgrid.reef.services.ServiceDependencies
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
@@ -69,7 +68,9 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val pubs = new CountingEventPublishers
     val deps = ServiceDependencies(pubs)
-    val contextSource = new DependenciesSource(deps)
+    val headers = new RequestEnv()
+    headers.setUserName("user1")
+    val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps, contextSource)
 
@@ -113,7 +114,9 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val beat = fix.namedProto.setProcessId("11111").setTime(0).build
 
-    fix.coord.handleRawStatus(beat)
+    intercept[BadRequestException] {
+      fix.service.put(beat).expectOne()
+    }
 
     fix.service.get(StatusSnapshot.newBuilder().setProcessId("11111").build).expectNone()
   }
@@ -131,7 +134,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     // simulate a raw message received before the timeout
     val beat = fix.namedProto.setProcessId(fix.app.getHeartbeatCfg.getProcessId).setOnline(true).setTime(failsAt - 1).build
-    fix.coord.handleRawStatus(beat)
+    fix.service.put(beat).expectOne()
 
     val ss2 = fix.service.get(fix.namedProto.build).expectOne()
     ss2.getOnline should equal(true)
@@ -140,7 +143,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     // simulate a raw message received far in the future
     val failTime = failsAt + 5 * fix.app.getHeartbeatCfg.getPeriodMs
     val beat2 = fix.namedProto.setProcessId(fix.app.getHeartbeatCfg.getProcessId).setOnline(false).setTime(failTime).build
-    fix.coord.handleRawStatus(beat2)
+    fix.service.put(beat2).expectOne()
 
     // since it should have now failed, we should have seen a modified offline message 
     fix.eventSink.waitForNEvents(2)
@@ -187,7 +190,9 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     fix.enrollApp("processId2")
 
     val offlineHeartBeat = fix.namedProto.setProcessId("processId1").setOnline(false).setTime(failsAt).build
-    fix.coord.handleRawStatus(offlineHeartBeat)
+    intercept[BadRequestException] {
+      fix.service.put(offlineHeartBeat).expectOne()
+    }
 
     val ss2 = fix.service.get(fix.namedProto.build).expectOne()
     ss2.getOnline should equal(true)

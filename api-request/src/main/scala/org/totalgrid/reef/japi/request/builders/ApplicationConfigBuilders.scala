@@ -16,24 +16,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
+package org.totalgrid.reef.japi.request.builders
 
-/**
- * "Super" implementation of all of the service interfaces
- */
-trait AllScadaServiceImpl
-  extends AuthTokenServiceImpl
-  with EntityServiceImpl
-  with ConfigFileServiceImpl
-  with MeasurementServiceImpl
-  with MeasurementOverrideServiceImpl
-  with EventServiceImpl
-  with EventCreationServiceImpl
-  with EventConfigServiceImpl
-  with CommandServiceImpl
-  with PointServiceImpl
-  with AlarmServiceImpl
-  with AgentServiceImpl
-  with EndpointManagementServiceImpl
-  with ApplicationServiceImpl
+import org.totalgrid.reef.japi.client.NodeSettings
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 
+object ApplicationConfigBuilders {
+
+  def makeProto(config: NodeSettings, instanceName: String, caps: List[String]) = {
+    val b = ApplicationConfig.newBuilder()
+
+    def randomString(n: Int): String = {
+      val sb = new StringBuilder
+      for (i <- 1 to n) sb.append(util.Random.nextPrintableChar)
+      sb.toString
+    }
+
+    b.setInstanceName(instanceName)
+    b.setNetwork(config.getNetwork)
+    b.setLocation(config.getLocation)
+    caps.foreach(b.addCapabilites(_))
+    b.setProcessId(randomString(8))
+    b.build
+  }
+}
