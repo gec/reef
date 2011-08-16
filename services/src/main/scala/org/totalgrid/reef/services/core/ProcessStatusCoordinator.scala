@@ -74,25 +74,25 @@ class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: 
     def update(context: RequestContext, model: ProcessStatusServiceModel, hbeat: HeartbeatStatus) {
       if (hbeat.isOnline) {
         if (ss.getOnline) {
-          logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
+          logger.debug("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + ", with ms left till timeout: " + (hbeat.timeoutAt - ss.getTime))
           hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
           // don't publish a modify
           ApplicationSchema.heartbeats.update(hbeat)
         } else {
-          logger.info("App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
+          logger.info("App: " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
           model.takeApplicationOffline(context, hbeat, ss.getTime)
         }
       } else {
-        logger.warn("App " + ss.getInstanceName + ": is marked offline but got message!")
+        logger.warn("App: " + ss.getInstanceName + ": is marked offline but got message!")
       }
     }
     contextSource.transaction { context =>
       if (!ss.hasProcessId) {
-        logger.warn("Malformed" + ss.getInstanceName + ": isn't configured!")
+        logger.warn("Malformed: " + ss.getInstanceName + ": isn't configured!")
       } else {
         ApplicationSchema.heartbeats.where(_.processId === ss.getProcessId).toList match {
           case List(hbeat) => update(context, model, hbeat)
-          case _ => logger.warn("App " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
+          case _ => logger.warn("App: " + ss.getInstanceName + ": isn't configured, processId: " + ss.getProcessId)
         }
       }
     }

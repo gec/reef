@@ -127,7 +127,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
 
       case _ =>
         throw new BadRequestException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + req.getEventType +
-            "'", Envelope.Status.INTERNAL_ERROR)
+          "'", Envelope.Status.INTERNAL_ERROR)
     }
   }
 
@@ -138,8 +138,8 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     }
 
     def eventToList(req: Event, entity: Option[Entity]): List[Any] =
-      "severity:" :: event.severity :: "type:" :: event.eventType :: entityToString(entity) :: "user id:" :: event.userId :: "rendered:" ::
-          event.rendered :: Nil
+      "severity:" :: event.severity :: ", type:" :: event.eventType :: entityToString(entity) :: ", user id:" :: event.userId :: ", rendered:" ::
+        event.rendered :: Nil
 
     logger.info(eventToList(req, entity).mkString(" "))
   }

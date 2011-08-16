@@ -75,7 +75,7 @@ class CommEndCfgServiceModel(
 
     val frontEndAssignment = sql.frontEndAssignment.value
     if (frontEndAssignment.enabled)
-      throw new BadRequestException("Cannot delete endpoint that is still enabled, disable before deleting.")
+      throw new BadRequestException("Cannot delete endpoint that is still enabled, disable before deleting.  Try running karaf command: endpoint:disable *")
 
     if (frontEndAssignment.state != ConnProto.State.COMMS_DOWN.getNumber)
       throw new BadRequestException("Cannot delete endpoint that is not in COMMS_DOWN state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
