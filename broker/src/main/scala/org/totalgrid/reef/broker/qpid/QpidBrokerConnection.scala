@@ -59,8 +59,12 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       logger.info("Connecting to " + config)
 
       if (config.ssl) {
-        if (config.trustStore == "" || config.trustStorePassword == "")
-          throw new IllegalArgumentException("if using ssl, must set trustStore and trustStorePassword")
+        if (config.trustStore == null || config.trustStore == "") {
+          throw new IllegalArgumentException("ssl is enabled, trustStore must be not null and not empty: " + config.trustStore)
+        }
+        if (config.trustStorePassword == null || config.trustStorePassword == "") {
+          throw new IllegalArgumentException("ssl is enabled, trustStorePassword must be not null and not empty")
+        }
 
         System.setProperty("javax.net.ssl.trustStore", config.trustStore)
         System.setProperty("javax.net.ssl.trustStorePassword", config.trustStorePassword)
@@ -113,11 +117,11 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
   }
 
   def onOpened(conn: Connection) {
-    logger.info("Qpid Connection opened")
+    logger.info("Qpid connection opened")
   }
 
   def onException(conn: Connection, ex: ConnectionException) {
-    logger.error("Connection Exception: ", ex)
+    logger.error("Connection exception: ", ex)
   }
 
   /* -- End Qpid Connection Listener -- */

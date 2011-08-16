@@ -23,7 +23,7 @@ import java.lang.Boolean
 
 object BrokerConnectionInfo {
 
-  def loadInfo(cr: ConfigReader): BrokerConnectionInfo = BrokerProperties.get(cr)
+  def loadInfo(configReader: ConfigReader): BrokerConnectionInfo = BrokerProperties.get(configReader)
 
   def loadInfo(env: String): BrokerConnectionInfo = loadInfo(BuildEnv.cfgFileReader("amqp", env))
 
@@ -41,11 +41,13 @@ class BrokerConnectionInfo(
     val trustStorePassword: String = "",
     val keyStore: String = "",
     val keyStorePassword: String = "") {
+
   override def toString() = {
     if (ssl) {
       "amqps:/" + user + "@" + host + ":" + port + "/" + virtualHost + "{" + trustStore + "," + keyStore + "}"
     } else {
       "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost
     }
+
   }
 }
