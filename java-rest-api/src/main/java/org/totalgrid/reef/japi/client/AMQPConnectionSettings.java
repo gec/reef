@@ -81,7 +81,7 @@ public class AMQPConnectionSettings
      * @param props properties object loaded with appropriate org.totalgrid.reef.amqp settings
      * @throws IllegalArgumentException if needed entries are missing
      */
-    public AMQPConnectionSettings(Properties props) throws IllegalArgumentException
+    public AMQPConnectionSettings( Properties props ) throws IllegalArgumentException
     {
         this.host = getString( "org.totalgrid.reef.amqp.host", props );
         this.port = getInt( "org.totalgrid.reef.amqp.port", props );
@@ -98,6 +98,19 @@ public class AMQPConnectionSettings
         {
             this.trustStore = "";
             this.trustStorePassword = "";
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        if ( ssl )
+        {
+            return "amqps:/" + user + "@" + host + ":" + port + "/" + virtualHost + "{" + trustStore + "}";
+        }
+        else
+        {
+            return "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost;
         }
     }
 
