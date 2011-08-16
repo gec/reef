@@ -26,7 +26,6 @@ import service.AsyncService
 
 import org.totalgrid.reef.japi.Envelope
 
-import java.io.Closeable
 import org.totalgrid.reef.broker.{ ChannelObserver, CloseableChannel, MessageConsumer }
 
 /**
