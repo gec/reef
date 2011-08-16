@@ -35,8 +35,6 @@ enum Status{
     BUS_UNAVAILABLE     = 504;
 }
 
-
-
 // out-of-band information is encoded here and sent to the server
 message RequestHeader{
     required string key   = 1;
