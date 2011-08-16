@@ -44,7 +44,10 @@ class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList
    */
   def this(settings: AMQPConnectionSettings, timeoutms: Long) = this(settings, ReefServicesList, timeoutms)
 
-  val config = new BrokerConnectionInfo(settings.getHost, settings.getPort, settings.getUser, settings.getPassword, settings.getVirtualHost)
+  val config = new BrokerConnectionInfo(settings.getHost, settings.getPort,
+    settings.getUser, settings.getPassword,
+    settings.getVirtualHost,
+    settings.getSsl, settings.getTrustStore, settings.getTrustStorePassword)
 
   /// Scala factory class we're wrapping to simplify access to java clients
   private val factory = new AMQPSyncFactory with ReactActorExecutor with SessionSource {
