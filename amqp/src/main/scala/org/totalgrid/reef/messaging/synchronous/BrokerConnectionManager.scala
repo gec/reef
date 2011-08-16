@@ -17,49 +17,52 @@
  * the License.
  */
 
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.synchronous
 
 import org.totalgrid.reef.japi.client.ConnectionListener
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
-import org.totalgrid.reef.util.{ Timer, Logging }
+import org.totalgrid.reef.util.{ Logging }
+import org.totalgrid.reef.executor.{ AkkaExecutor, Executor, Lifecycle }
+
+class BasicBrokerConnectionManager(broker: BrokerConnection, initialDelay: Long, maxDelay: Long)
+    extends BrokerConnectionManager(broker, new AkkaExecutor, initialDelay, maxDelay) {
+
+}
 
 /**
  * Keeps the connection to the broker open
  */
-class BrokerConnectionManager(exe: Executor, broker: BrokerConnection, initialDelay: Long, maxDelay: Long) extends Lifecycle
+class BrokerConnectionManager(broker: BrokerConnection, exe: Executor, initialDelay: Long, maxDelay: Long) extends Lifecycle
     with ConnectionListener with Logging {
 
-  def this(exe: Executor, broker: BrokerConnection) = this(exe, broker, 1000, 60000)
-
-  private var timer: Option[Timer] = None
+  def this(broker: BrokerConnection, exe: Executor) = this(broker, exe, 1000, 60000)
 
   broker.addListener(this)
 
   /// Kicks of the connection process
-  final override def afterStart() = this.reconnect()
+  final override def afterStart() = exe.execute(startConnecting())
 
   /// Terminates all the connections and machinery
   final override def beforeStop() = exe.execute {
-    timer.foreach(_.cancel())
+    exe.cancelAllTimers()
     broker.disconnect()
   }
 
   // helper for starting a new connection chain
-  private def reconnect() = exe.execute(attemptConnection(initialDelay))
+  private def startConnecting() = attemptConnection(initialDelay)
 
   /// Makes a connection attempt. Retries if with exponential back-off
   /// if the attempt fails
   private def attemptConnection(retryms: Long): Unit = {
     if (!broker.connect())
-      timer = Some(exe.delay(retryms)(attemptConnection(math.min(2 * retryms, maxDelay))))
+      exe.delay(retryms)(attemptConnection(math.min(2 * retryms, maxDelay)))
   }
 
   /* --- Implement Broker Connection Listener --- */
 
   final override def onConnectionClosed(expected: Boolean) {
     logger.info(" Connection closed, expected:" + expected)
-    if (!expected) timer = Some(exe.delay(initialDelay)(reconnect()))
+    if (!expected) exe.delay(initialDelay)(startConnecting())
   }
 
   final override def onConnectionOpened() = logger.info("Connection opened")
