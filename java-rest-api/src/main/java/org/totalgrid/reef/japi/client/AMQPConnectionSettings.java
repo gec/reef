@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.japi.client;
 
+import org.totalgrid.reef.japi.client.util.PropertyLoading;
+
 import java.util.Properties;
 
 /**
@@ -87,16 +89,16 @@ public class AMQPConnectionSettings
      */
     public AMQPConnectionSettings( Properties props ) throws IllegalArgumentException
     {
-        this.host = getString( "org.totalgrid.reef.amqp.host", props );
-        this.port = getInt( "org.totalgrid.reef.amqp.port", props );
-        this.user = getString( "org.totalgrid.reef.amqp.user", props );
-        this.password = getString( "org.totalgrid.reef.amqp.password", props );
-        this.virtualHost = getString( "org.totalgrid.reef.amqp.virtualHost", props );
-        this.ssl = getBoolean( "org.totalgrid.reef.amqp.ssl", props );
+        this.host = PropertyLoading.getString( "org.totalgrid.reef.amqp.host", props );
+        this.port = PropertyLoading.getInt( "org.totalgrid.reef.amqp.port", props );
+        this.user = PropertyLoading.getString( "org.totalgrid.reef.amqp.user", props );
+        this.password = PropertyLoading.getString( "org.totalgrid.reef.amqp.password", props );
+        this.virtualHost = PropertyLoading.getString( "org.totalgrid.reef.amqp.virtualHost", props );
+        this.ssl = PropertyLoading.getBoolean( "org.totalgrid.reef.amqp.ssl", props );
         if ( ssl )
         {
-            this.trustStore = getString( "org.totalgrid.reef.amqp.trustStore", props );
-            this.trustStorePassword = getString( "org.totalgrid.reef.amqp.trustStorePassword", props );
+            this.trustStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStore", props );
+            this.trustStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStorePassword", props );
         }
         else
         {
@@ -182,26 +184,5 @@ public class AMQPConnectionSettings
         return trustStorePassword;
     }
 
-    // TODO: move these getX functions to a utility class
-    private static String getString( String id, Properties props ) throws IllegalArgumentException
-    {
-        String prop = props.getProperty( id );
-        if ( prop == null )
-        {
-            throw new IllegalArgumentException( "Could not load configuration. Missing: " + id );
-        }
-        return prop;
-    }
 
-    private static int getInt( String id, Properties props ) throws IllegalArgumentException
-    {
-        String prop = getString( id, props );
-        return Integer.parseInt( prop );
-    }
-
-    private static boolean getBoolean( String id, Properties props ) throws IllegalArgumentException
-    {
-        String prop = getString( id, props );
-        return Boolean.parseBoolean( prop );
-    }
 }

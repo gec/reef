@@ -34,6 +34,7 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, Lifecycle }
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.app.ApplicationEnroller
+import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 class ServiceActivator extends BundleActivator {
 
@@ -46,11 +47,14 @@ class ServiceActivator extends BundleActivator {
     val mgr = new LifecycleManager
     manager = Some(mgr)
 
-    val sql = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
-    val brokerConfig = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
-    val options = ServiceOptions.get(new OsgiConfigReader(context, "org.totalgrid.reef.services"))
-    val userSettings = ApplicationEnroller.getDefaultUserSettings
-    val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+    val sql = SqlProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.sql"))
+    val brokerConfig = BrokerProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val options = ServiceOptions.get(OsgiConfigReader(context, "org.totalgrid.reef.services"))
+    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
+
+    //val userSettings = ApplicationEnroller.getDefaultUserSettings
+    //val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
 
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(brokerConfig)

@@ -18,6 +18,11 @@
  */
 package org.totalgrid.reef.japi.client;
 
+import org.totalgrid.reef.japi.client.util.PropertyLoading;
+
+import java.util.Dictionary;
+import java.util.Properties;
+
 public class NodeSettings
 {
 
@@ -33,6 +38,13 @@ public class NodeSettings
         this.defaultNodeName = defaultNodeName;
         this.location = location;
         this.network = network;
+    }
+
+    public NodeSettings( Dictionary properties )
+    {
+        this.defaultNodeName = PropertyLoading.getString( "org.totalgrid.reef.node.name", properties );
+        this.location = PropertyLoading.getString( "org.totalgrid.reef.node.location", properties );
+        this.network = PropertyLoading.getString( "org.totalgrid.reef.node.network", properties );
     }
 
     public String getDefaultNodeName()

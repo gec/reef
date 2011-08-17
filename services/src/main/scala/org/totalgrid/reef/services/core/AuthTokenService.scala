@@ -49,7 +49,7 @@ object AuthTokenService {
     inTransaction {
       if (ApplicationSchema.agents.Count.head == 0) {
 
-        val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", "-system-"))
+        val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", "system"))
 
         val core = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("core", "core"))
         val op = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("operator", "operator"))

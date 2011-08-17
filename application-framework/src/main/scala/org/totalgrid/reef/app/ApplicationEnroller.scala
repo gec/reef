@@ -33,11 +33,11 @@ import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 object ApplicationEnroller extends Logging {
 
-  def defaultUserName = SystemProperty.get("reef.user", "system")
-  def defaultUserPassword = SystemProperty.get("reef.user.password", "-system-")
-  def defaultNodeName = SystemProperty.get("reef.node", "node01")
-  def defaultLocation = SystemProperty.get("reef.network", "any")
-  def defaultNetwork = SystemProperty.get("reef.location", "any")
+  def defaultUserName = SystemProperty.get("org.totalgrid.reef.user.username", "system")
+  def defaultUserPassword = SystemProperty.get("org.totalgrid.reef.user.password", "system")
+  def defaultNodeName = SystemProperty.get("org.totalgrid.reef.node.name", "node01")
+  def defaultLocation = SystemProperty.get("org.totalgrid.reef.node.location", "any")
+  def defaultNetwork = SystemProperty.get("org.totalgrid.reef.node.network", "any")
 
   def buildLogin(userSettings: UserSettings): AuthToken = {
     val agent = Agent.newBuilder
