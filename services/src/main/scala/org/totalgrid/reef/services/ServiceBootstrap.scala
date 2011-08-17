@@ -64,9 +64,9 @@ object ServiceBootstrap {
   /**
    * sets up the default users and low level configurations for the system
    */
-  def seed() {
+  def seed(systemPassword: String) {
     core.EventConfigService.seed()
-    core.AuthTokenService.seed()
+    core.AuthTokenService.seed(systemPassword)
   }
 
   /**
