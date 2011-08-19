@@ -68,8 +68,8 @@ object AMQPMessageConsumers extends Logging {
           case Some(dest) =>
 
             val request = Envelope.ServiceRequest.parseFrom(data)
-            val rspExchange = dest.exchange
-            val rspKey = dest.key
+            val responseExchange = dest.exchange
+            val responseKey = dest.key
 
             import scala.collection.JavaConversions._
 
@@ -78,7 +78,7 @@ object AMQPMessageConsumers extends Logging {
             request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
 
             val callback = new ServiceResponseCallback {
-              def onResponse(rsp: Envelope.ServiceResponse) = publish(rsp, rspExchange, rspKey)
+              def onResponse(serviceResponse: Envelope.ServiceResponse) = publish(serviceResponse, responseExchange, responseKey)
             }
 
             service(request, env, callback) //invoke the service, it will publish the result when done

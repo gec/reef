@@ -46,7 +46,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
   }
 
   def broadcast[A](channel: BrokerChannel, serialize: A => Array[Byte]): (A, String, String) => Unit = {
-    def broadcaster(x: A, ex: String, key: String) = {
+    def broadcaster(x: A, ex: String, key: String): Unit = {
       channel.publish(ex, key, serialize(x))
     }
     broadcaster _
@@ -60,6 +60,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
    */
   def bindService(exchange: String, service: AsyncService.ServiceFunction, executor: Executor, destination: Destination = AnyNodeDestination, competing: Boolean = false): CloseableChannel = {
 
+    logger.info("bindService(): exchange: " + exchange + ", service: " + service + ", destination: " + destination + ", competing: " + competing)
     val channel = getChannel()
 
     val replyPublisher = broadcast[Envelope.ServiceResponse](channel, (x: Envelope.ServiceResponse) => x.toByteArray)

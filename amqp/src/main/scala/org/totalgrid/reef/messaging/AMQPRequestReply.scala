@@ -23,8 +23,7 @@ import org.totalgrid.reef.broker._
 import org.totalgrid.reef.proto.FEP.SerialPort
 
 /**
- * trait used to present a simple interface to a request/reply interface as a
- * simple async channel
+ * trait used to present a simple interface to a request/reply interface as a simple async channel
  */
 trait RequestReplyChannel[RequestType, ReplyType] {
   def send(request: RequestType, exchange: String, key: String)
