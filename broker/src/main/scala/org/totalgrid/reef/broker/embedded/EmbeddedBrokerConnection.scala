@@ -57,30 +57,22 @@ object EmbeddedBrokerConnection {
 }
 
 class EmbeddedBrokerChannel(parent: EmbeddedBrokerConnection) extends BrokerChannel {
-  var started = true
 
-  var messageConsumer: Option[MessageConsumer] = None
-  var queueName: Option[String] = None
+  var open = true
 
-  def start() {
-    started = true
-    parent.listenInternal(queueName.get, messageConsumer.get)
-  }
-
-  def isOpen = started
+  def isOpen = open
 
   def close() {
-    val wasStarted = started
-    started = false
-    if (wasStarted) onClose(true)
+    val wasOpen = open
+    open = false
+    if (wasOpen) onClose(true)
   }
 
-  def throwOnClosed() = if (!started) throw new ServiceIOException("Already closed")
+  def throwOnClosed() = if (!open) throw new ServiceIOException("Already closed")
 
   def listen(queue: String, mc: MessageConsumer) = {
     throwOnClosed()
-    queueName = Some(queue)
-    messageConsumer = Some(mc)
+    parent.listenInternal(queue, mc)
   }
 
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: Option[Destination]) = {

@@ -41,7 +41,6 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   private var messageConsumer: ScalaOption[MessageConsumer] = None
   private var userClosed = false
   private var isChannelOpen = true
-  private var queueName: ScalaOption[String] = None
 
   session.setSessionListener(this)
   session.setAutoSync(true)
@@ -53,7 +52,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   }
 
   def exception(s: Session, e: SessionException) {
-    logger.warn("Qpid Exception: " + queueName, e)
+    logger.warn("Qpid Exception", e)
     onClose(userClosed)
   }
 
@@ -79,7 +78,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     isChannelOpen = false
     // qpid just does a 60 second timeout if close is called more than once
     if (!session.isClosing()) {
-      logger.debug("Closing session: " + queueName)
+      logger.debug("Closing session")
       session.close()
       onClose(userClosed)
     }
@@ -139,16 +138,6 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
 
     logger.debug("Listening, queue: " + queue + " consumer: " + mc)
     messageConsumer = Some(mc)
-    queueName = Some(queue)
-
-  }
-
-  def start() {
-    if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
-
-    val queue = queueName.get
-
-    logger.debug("Starting: " + queue)
 
     session.messageSubscribe(queue, queue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null)
     session.messageFlow(queue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT)
@@ -179,7 +168,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   }
 
   def stop() {
-    logger.debug("Stopping: " + queueName)
+    logger.debug("Stopping")
     unlink()
     close()
   }

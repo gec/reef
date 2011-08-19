@@ -37,7 +37,6 @@ trait AMQPConsumptionPattern extends ChannelObserver with ObserverableBrokerObje
     broker.addCloseListener(this)
     channel = Some(broker)
     queue = Some(getQueue(broker))
-    broker.start
     onConnectEvent(true)
     onChange(true, queue.get)
   }

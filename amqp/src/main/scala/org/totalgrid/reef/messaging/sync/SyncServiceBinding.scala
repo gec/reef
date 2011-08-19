@@ -35,5 +35,4 @@ class SyncServiceBinding(channel: BrokerChannel, exchange: String, destination: 
 
   def close() = channel.close
 
-  channel.start
 }

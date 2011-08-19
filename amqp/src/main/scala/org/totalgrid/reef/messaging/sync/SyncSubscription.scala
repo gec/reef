@@ -34,10 +34,7 @@ class SyncSubscription[A](channel: BrokerChannel, consumerCreator: (Event[A] => 
   override def cancel() = channel.close()
 
   def start(callback: Event[A] => Unit): Unit = {
-
     channel.listen(queueName, consumerCreator(callback))
-
-    channel.start()
   }
 
 }
