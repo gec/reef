@@ -31,7 +31,9 @@ trait ExceptionCollector {
    * loading code should call use a collect blocks around each separable unit of loading.
    * names generally end with a colon and space
    */
-  def collect[A](name: => String)(f: => Unit)
+  def collect[A](name: => String)(function: => Unit)
+
+  def hasErrors: Boolean
 }
 
 class LoadingExceptionCollector extends ExceptionCollector {
@@ -40,9 +42,9 @@ class LoadingExceptionCollector extends ExceptionCollector {
 
   private var firstError = false
 
-  def collect[A](name: => String)(f: => Unit) {
+  def collect[A](name: => String)(function: => Unit) {
     try {
-      f
+      function
     } catch {
       case ex: LoadingException =>
         if (!firstError) {
@@ -55,6 +57,8 @@ class LoadingExceptionCollector extends ExceptionCollector {
   }
 
   def getErrors: List[String] = errors.map { _._1 }
+
+  def hasErrors: Boolean = firstError
 
   def addError(name: String, ex: Exception) =
     errors = errors ::: ((name + " - " + ex.getMessage, ex) :: Nil)

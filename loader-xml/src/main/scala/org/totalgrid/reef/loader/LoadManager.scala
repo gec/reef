@@ -34,18 +34,18 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false, createConfiguration: Boolean = true) = {
-
-    logger.info("Loading configuration file '" + filename + "'")
-
+  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false,
+      createConfiguration: Boolean = true) =
+  {
     val file = new File(filename)
+    logger.info("Loading configuration file: " + file)
+
     try {
       validateXml(filename)
 
       val xml = XMLHelper.read(file, classOf[Configuration])
 
       val loader = new CachingModelLoader(None, createConfiguration)
-
       val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
 
       logger.info("Finished analyzing configuration '" + filename + "'")
@@ -68,11 +68,11 @@ object LoadManager extends Logging {
         println("Error loading configuration file '" + filename + "' " + ex.getMessage)
         throw ex
     }
-
   }
 
-  def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, configurationFile: Option[(File, String)] = None, path: File = new File(".")): Boolean = {
-
+  def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, configurationFileTuple: Option[(File, String)] = None,
+      path: File = new File(".")): Boolean =
+  {
     var equipmentPointUnits = HashMap[String, String]()
     val actionModel = HashMap[String, ActionSet]()
 
@@ -80,15 +80,14 @@ object LoadManager extends Logging {
       throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
 
     val loadCache = new LoadCache
-    val ex = new LoadingExceptionCollector
+    val exceptionCollector = new LoadingExceptionCollector
     try {
-
-      val commonLoader = new CommonLoader(client, ex, path)
+      val commonLoader = new CommonLoader(client, exceptionCollector, path)
 
       if (xml.isSetConfigFiles) commonLoader.load(xml.getConfigFiles)
 
       if (xml.isSetMessageModel) {
-        val messageLoader = new MessageLoader(client, ex)
+        val messageLoader = new MessageLoader(client, exceptionCollector)
         val messageModel = xml.getMessageModel
         messageLoader.load(messageModel)
       }
@@ -99,33 +98,33 @@ object LoadManager extends Logging {
       }
 
       if (xml.isSetEquipmentModel) {
-        val equLoader = new EquipmentLoader(client, loadCache.loadCacheEqu, ex, commonLoader)
-        val equModel = xml.getEquipmentModel
-        equipmentPointUnits = equLoader.load(equModel, actionModel)
+        val equipmentLoader = new EquipmentLoader(client, loadCache.loadCacheEquipment, exceptionCollector, commonLoader)
+        val equipmentModel = xml.getEquipmentModel
+        equipmentPointUnits = equipmentLoader.load(equipmentModel, actionModel)
       }
 
       if (xml.isSetCommunicationsModel) {
-        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCom, ex, commonLoader)
+        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCommunication, exceptionCollector, commonLoader)
         val comModel = xml.getCommunicationsModel
         comLoader.load(comModel, equipmentPointUnits, benchmark)
       }
 
-      configurationFile.foreach {
+      configurationFileTuple.foreach {
         case (thisFile, fileName) =>
-          val cf = new ConfigFile()
-          cf.setMimeType("text/xml")
-          cf.setFileName(thisFile.getName)
-          cf.setName(fileName)
-          client.putOrThrow(commonLoader.loadConfigFile(cf))
+          val configFile = new ConfigFile()
+          configFile.setMimeType("text/xml")
+          configFile.setFileName(thisFile.getName)
+          configFile.setName(fileName)
+          client.putOrThrow(commonLoader.loadConfigFile(configFile))
       }
 
     } catch {
       case exception: Exception =>
-        ex.addError("Terminal parsing error: ", exception)
+        exceptionCollector.addError("Terminal parsing error: ", exception)
         logger.warn(exception.getStackTraceString)
     }
 
-    val errors = ex.getErrors
+    val errors = exceptionCollector.getErrors
 
     if (errors.size > 0) {
       println

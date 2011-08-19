@@ -34,7 +34,10 @@ import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
 import org.totalgrid.reef.japi.Envelope
 
 class NullExceptionCollector extends ExceptionCollector {
+
   def collect[A](name: => String)(f: => Unit) { f }
+
+  def hasErrors = false
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -52,9 +55,9 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
     val client = new MockSyncOperations(AnyRef => Success(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new EquipmentModel
-    val ex = new NullExceptionCollector
-    val commonLoader = new CommonLoader(modelLoader, ex, new java.io.File("."))
-    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEqu, ex, commonLoader)
+    val exceptionCollector = new LoadingExceptionCollector
+    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("."))
+    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEquipment, exceptionCollector, commonLoader)
 
     test(Fixture(client, loader, model))
   }
@@ -80,8 +83,9 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     model.add(makeEquipment("ChapelHill", false)) // No trigger, No profile
     loader.load(model, actionModel)
-
     protos should equal(client.getPutQueue)
+
+    loader.getExceptionCollector.hasErrors should equal(false)
   }
 
   def testEquipmentModelProfilesWithTriggers(fixture: Fixture) = {
@@ -122,6 +126,28 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
 
     //println( "protos2.length = " + client.getPutQueue.length)
     protos should equal(client.getPutQueue)
+
+    loader.getExceptionCollector.hasErrors should equal(false)
+  }
+
+  def makeBreaker(equipmentProfile: Option[EquipmentProfile], isTrigger: Boolean): Equipment =
+  {
+    val breaker = new Equipment("Brk1")
+    equipmentProfile match
+    {
+      case Some(profile) =>
+        breaker.add(profile)
+      case None =>
+        val status = new Status("Bkr", "status")
+
+        if ( isTrigger )
+        {
+          status.add(new Unexpected(false, "Nominal"))
+          status.add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
+        }
+        breaker.add(new Type("Breaker")).add(new Control("trip")).add(new Control("close")).add(status)
+    }
+    breaker
   }
 
   def makeEquipment(
@@ -129,23 +155,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
     isTrigger: Boolean,
     equipmentProfile: Option[EquipmentProfile] = None): Equipment = {
 
-    val breaker = new Equipment("Brk1")
-    equipmentProfile match {
-      case Some(profile) =>
-        breaker.add(profile)
-      case None =>
-        val status = new Status("Bkr", "status")
-
-        if (isTrigger) {
-          status.add(new Unexpected(false, "Nominal"))
-          status.add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
-        }
-        breaker
-          .add(new Type("Breaker"))
-          .add(new Control("trip"))
-          .add(new Control("close"))
-          .add(status)
-    }
+    val breaker: Equipment = makeBreaker(equipmentProfile, isTrigger)
 
     new Equipment(substationName)
       .add(new Type("Substation"))

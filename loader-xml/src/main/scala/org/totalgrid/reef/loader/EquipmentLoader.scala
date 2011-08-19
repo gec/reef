@@ -34,7 +34,7 @@ import org.totalgrid.reef.loader.EnhancedXmlClasses._
  *
  * TODO: generic_type is not set
  */
-class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
+class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEquipment, exceptionCollector: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
 
   val equipmentProfiles = LoaderMap[EquipmentType]("Equipment Profile")
   val pointProfiles = LoaderMap[PointProfile]("Point Profile")
@@ -55,15 +55,19 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     equipmentPointUnits.clear
   }
 
+  def getExceptionCollector: ExceptionCollector = {
+    exceptionCollector
+  }
+
   /**
    * Load this equipment node and all children. Create edges to connect the children.
    * Return equipmentPointUnits - map of points to units
    */
   def load(model: EquipmentModel, actionModel: HashMap[String, ActionSet]): HashMap[String, String] = {
 
-    logger.info("Start")
+    logger.info("Equipment Loader Started")
 
-    ex.collect("Equipment Profiles: ") {
+    exceptionCollector.collect("Equipment Profiles: ") {
       // Collect all the profiles in name->profile maps.
       Option(model.getProfiles).foreach { p =>
         p.getPointProfile.toList.foreach(pointProfile => pointProfiles += (pointProfile.getName -> pointProfile))
@@ -76,12 +80,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
 
     model.getEquipment.toList.foreach(e => {
       println("Loading Equipment: processing equipment '" + e.getName + "'")
-      ex.collect("Equipment: " + e.getName) {
+      exceptionCollector.collect("Equipment: " + e.getName) {
         loadEquipment(e, "", actionModel)
       }
     })
 
-    logger.info("End")
+    logger.info("Equipment Loader Ended")
 
     equipmentPointUnits
   }
@@ -93,12 +97,12 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
     val name = namePrefix + equipment.getName
     val childPrefix = name + "."
 
-    // IMPORTANT:
-    // profiles is a list of profiles plus this equipment (as the last "profile" in the list)
-    //  TODO: We don't see profiles within profiles. Could go recursive and map each profile name to a list of profiles.
+    // IMPORTANT: profiles is a list of profiles plus this equipment (as the last "profile" in the list)
+    // TODO: We don't see profiles within profiles. Could go recursive and map each profile name to a list of profiles.
 
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList.map(p => equipmentProfiles(p.getName)) ::: List[EquipmentType](equipment)
-    logger.info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", ")) // don't print last profile which is this equipment
+    // don't print last profile which is this equipment
+    logger.info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", "))
 
     val childEquipment = profiles.flatMap(_.getEquipment)
     val controls = profiles.flatMap(_.getControl.toList)
@@ -149,27 +153,27 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
   /**
    * Process controls defined under equipment.
    */
-  def processCommand(childPrefix: String, c: Command, equipmentEntity: Entity, commandType: CommandTypeProto) = {
+  def processCommand(childPrefix: String, xmlCommand: Command, equipmentEntity: Entity, commandType: CommandTypeProto) = {
     import ProtoUtils._
 
-    val name = childPrefix + c.getName
-    val displayName = Option(c.getDisplayName) getOrElse c.getName
+    val name = childPrefix + xmlCommand.getName
+    val displayName = Option(xmlCommand.getDisplayName) getOrElse xmlCommand.getName
 
     val baseType = if (commandType == CommandTypeProto.CONTROL) "Control" else "Setpoint"
-    val types = baseType :: getTypeList(c.getType)
+    val types = baseType :: getTypeList(xmlCommand.getType)
 
     logger.trace("processControl: " + name)
     loadCache.addControl(name)
     val commandEntity = toEntityType(name, "Command" :: types)
-    val command = toCommand(name, displayName, commandEntity, commandType)
+    val commandProto = toCommand(name, displayName, commandEntity, commandType)
     commandEntities += (name -> commandEntity)
-    commands += (name -> command)
+    commands += (name -> commandProto)
 
     client.putOrThrow(commandEntity)
 
-    c.getInfo.foreach(i => commonLoader.addInfo(commandEntity, i))
+    xmlCommand.getInfo.foreach(i => commonLoader.addInfo(commandEntity, i))
 
-    client.putOrThrow(command)
+    client.putOrThrow(commandProto)
     client.putOrThrow(ProtoUtils.toEntityEdge(equipmentEntity, commandEntity, "owns"))
 
     commandEntity
@@ -319,13 +323,13 @@ class EquipmentLoader(client: ModelLoader, loadCache: LoadCacheEqu, ex: Exceptio
    * Commands are controls and setpoints. TODO: setpoints
    */
   def toCommand(name: String, displayName: String, entity: Entity, commandType: CommandTypeProto): CommandProto = {
-    val proto = CommandProto.newBuilder
+    val builder = CommandProto.newBuilder
       .setName(name)
       .setDisplayName(displayName)
       .setEntity(entity)
       .setType(commandType)
 
-    proto.build
+    builder.build
   }
 
 }

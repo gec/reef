@@ -60,7 +60,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     val model = new CommunicationsModel
     val ex = new NullExceptionCollector
     val commonLoader = new CommonLoader(modelLoader, ex, new java.io.File(BuildEnv.configPath + samplesPath + "two_substations"))
-    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCom, ex, commonLoader)
+    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCommunication, ex, commonLoader)
 
     test(Fixture(client, loader, model))
   }
