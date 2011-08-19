@@ -35,35 +35,37 @@ class EntityService extends SyncServiceBase[EntityProto] {
 
   override val descriptor = Descriptors.entity
 
-  override def put(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
+  override def put(protoRequest: EntityProto, env: RequestEnv): Response[EntityProto] = {
 
     inTransaction {
-      if (!req.hasName || req.getTypesCount == 0) throw new BadRequestException("Must include name and atleast one entity type to create entity.")
+      if (!protoRequest.hasName || protoRequest.getTypesCount == 0) {
+        throw new BadRequestException("Must include name and atleast one entity type to create entity.")
+      }
 
-      val typ = req.getTypesList.head
-      val name = req.getName
-      val list = EQ.nameTypeQuery(Some(name), Some(List(typ)))
+      val typ = protoRequest.getTypesList.head
+      val name = protoRequest.getName
+      val list = EntityQueryManager.nameTypeQuery(Some(name), Some(List(typ)))
 
       var (status, ent) = list match {
         case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " type:" + typ)
         case List(ent) => (Status.NOT_MODIFIED, list.head)
-        case Nil => (Status.CREATED, EQ.addEntity(name, typ))
+        case Nil => (Status.CREATED, EntityQueryManager.addEntity(name, typ))
       }
 
-      req.getTypesList.tail.foreach(t => {
+      protoRequest.getTypesList.tail.foreach(t => {
         if (ent.types.value.find(_ == t).isEmpty) {
-          ent = EQ.addTypeToEntity(ent, t)
+          ent = EntityQueryManager.addTypeToEntity(ent, t)
           if (status == Status.NOT_MODIFIED) status = Status.UPDATED
         }
       })
-      Response(status, EQ.entityToProto(ent).build :: Nil)
+      Response(status, EntityQueryManager.entityToProto(ent).build :: Nil)
     }
   }
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     inTransaction {
-      EQ.checkAllTypesInSystem(req)
-      val result = EQ.fullQuery(req)
+      EntityQueryManager.checkAllTypesInSystem(req)
+      val result = EntityQueryManager.fullQuery(req)
       Response(Status.OK, result)
     }
   }
@@ -71,13 +73,13 @@ class EntityService extends SyncServiceBase[EntityProto] {
   override def delete(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     // TODO: cannot delete entities with "built in types" repersentations still around
     inTransaction {
-      val entities = EQ.fullQueryAsModels(req);
+      val entities = EntityQueryManager.fullQueryAsModels(req);
 
       val (results, status) = entities match {
         case Nil => (req :: Nil, Status.NOT_MODIFIED)
         case l: List[Entity] =>
-          EQ.deleteEntities(entities)
-          (entities.map { EQ.entityToProto(_).build }, Status.DELETED)
+          EntityQueryManager.deleteEntities(entities)
+          (entities.map { EntityQueryManager.entityToProto(_).build }, Status.DELETED)
       }
       Response(status, results)
     }
@@ -103,13 +105,13 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
   override def put(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
 
     inTransaction {
-      val parentEntity = EQ.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent"))
-      val childEntity = EQ.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child"))
-      val existingEdge = EQ.findEdge(parentEntity, childEntity, req.getRelationship)
+      val parentEntity = EntityQueryManager.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent"))
+      val childEntity = EntityQueryManager.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child"))
+      val existingEdge = EntityQueryManager.findEdge(parentEntity, childEntity, req.getRelationship)
 
       val (edge, status) = existingEdge match {
         case Some(edge) => (edge, Status.NOT_MODIFIED)
-        case None => (EQ.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
+        case None => (EntityQueryManager.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
       }
       val proto = convertToProto(edge)
       Response(status, proto :: Nil)
@@ -120,15 +122,15 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
 
     inTransaction {
 
-      val existingEdge: Option[EntityEdge] = EQ.findEntity(req.getParent).flatMap { parent =>
-        EQ.findEntity(req.getChild).flatMap { child =>
-          EQ.findEdge(parent, child, req.getRelationship)
+      val existingEdge: Option[EntityEdge] = EntityQueryManager.findEntity(req.getParent).flatMap { parent =>
+        EntityQueryManager.findEntity(req.getChild).flatMap { child =>
+          EntityQueryManager.findEdge(parent, child, req.getRelationship)
         }
       }
 
       val (proto, status) = existingEdge match {
         case Some(edge) =>
-          EQ.deleteEdge(edge)
+          EntityQueryManager.deleteEdge(edge)
           (convertToProto(edge), Status.DELETED)
         case None => (req, Status.NOT_MODIFIED)
       }
@@ -139,7 +141,7 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
   override def get(req: EntityEdgeProto, env: RequestEnv): Response[EntityEdgeProto] = {
     inTransaction {
       // TODO: add edge searching
-      val edges = EQ.edges.where(t => true === true).toList
+      val edges = EntityQueryManager.edges.where(t => true === true).toList
       Response(Status.OK, edges.map { convertToProto(_) })
     }
   }

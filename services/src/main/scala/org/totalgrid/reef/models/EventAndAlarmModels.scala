@@ -21,7 +21,7 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
-import org.totalgrid.reef.services.core.EQ
+import org.totalgrid.reef.services.core.EntityQueryManager
 import java.util.UUID
 
 case class EventStore(
@@ -43,8 +43,8 @@ case class EventStore(
 
   val entity = LazyVar(mayHaveOneByUuid(ApplicationSchema.entities, entityId))
 
-  val groups = LazyVar(entityId.map { x => EQ.getParentOfType(x, "owns", "EquipmentGroup").toList }.getOrElse(Nil))
-  val equipments = LazyVar(entityId.map { x => EQ.getParentOfType(x, "owns", "Equipment").toList }.getOrElse(Nil))
+  val groups = LazyVar(entityId.map { x => EntityQueryManager.getParentOfType(x, "owns", "EquipmentGroup").toList }.getOrElse(Nil))
+  val equipments = LazyVar(entityId.map { x => EntityQueryManager.getParentOfType(x, "owns", "Equipment").toList }.getOrElse(Nil))
 }
 
 object EventConfigStore {

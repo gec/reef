@@ -21,7 +21,7 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
-import org.totalgrid.reef.services.core.EQ
+import org.totalgrid.reef.services.core.EntityQueryManager
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
@@ -62,21 +62,20 @@ object Agent {
 
   def createAgentWithPassword(name: String, password: String): Agent = {
     val (digest, saltText) = makeDigestAndSalt(password)
-    val ent = EQ.findOrCreateEntity(name, "Agent")
-    val a = new Agent(ent.id, enc64(digest), enc64(saltText))
-    a.entity.value = ent
-    a
+    val entity = EntityQueryManager.findOrCreateEntity(name, "Agent")
+    val agent = new Agent(entity.id, enc64(digest), enc64(saltText))
+    agent.entity.value = entity
+    agent
   }
 }
 
-// not a case class because we dont want to accidentally print the digest+salt in the logs
+// not a case class because we don't want to accidentally print the digest+salt in the logs
 class Agent(
     _entityId: UUID,
     val digest: String,
     val salt: String) extends EntityBasedModel(_entityId) {
 
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
-
   val authTokens = LazyVar(ApplicationSchema.authTokens.where(au => au.agentId === id))
 
   def checkPassword(password: String): Boolean = {
@@ -93,19 +92,19 @@ class Agent(
     agent
   }
 }
+
 case class AuthPermission(
     val allow: Boolean,
     val resource: String,
     val verb: String) extends ModelWithId {
-
 }
 
 object PermissionSet {
   def newInstance(name: String, defaultExpirationTime: Long) = {
-    val ent = EQ.findOrCreateEntity(name, "PermissionSet")
-    val a = new PermissionSet(ent.id, defaultExpirationTime)
-    a.entity.value = ent
-    a
+    val entity = EntityQueryManager.findOrCreateEntity(name, "PermissionSet")
+    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
+    permissionSet.entity.value = entity
+    permissionSet
   }
 }
 
@@ -124,7 +123,6 @@ case class AuthToken(
 
   val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.tokenSetJoins)(p => where(p.authTokenId === id) select (&(p.permissionSetId)))))
-
 }
 
 case class AgentPermissionSetJoin(val permissionSetId: Long, val agentId: Long)

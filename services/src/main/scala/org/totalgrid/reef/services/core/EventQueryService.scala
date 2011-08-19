@@ -54,7 +54,7 @@ object EventQueryService {
       select.getSubsystemList.asParam { row.subsystem in _ },
       severityOptions.asParam { row.severity in _ },
       select.getUserIdList.asParam { row.userId in _ },
-      select.getEntityList.asParam { row.entityId in _.map(EQ.idsFromProtoQuery(_)).flatten.distinct },
+      select.getEntityList.asParam { row.entityId in _.map(EntityQueryManager.idsFromProtoQuery(_)).flatten.distinct },
       select.timeFrom.asParam(row.time gte _),
       select.timeTo.asParam(row.time lte _))
     //select.uuid.uuidAfter.asParam(row.id gt _.toLong))
@@ -74,7 +74,7 @@ object EventQueryService {
         severityOptions ::
         routingOption(select.getSubsystemList) { s => s } ::
         routingOption(select.getUserIdList) { s => s } ::
-        routingOption(select.getEntityList) { _.map(EQ.idsFromProtoQuery(_)).flatten.distinct.map { _.toString } } :: Nil
+        routingOption(select.getEntityList) { _.map(EntityQueryManager.idsFromProtoQuery(_)).flatten.distinct.map { _.toString } } :: Nil
 
     val multipleTypesSubscription = routingKeyParts.filter(_.size > 1)
     if (multipleTypesSubscription.size > 1) {

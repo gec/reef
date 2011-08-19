@@ -40,7 +40,7 @@ import java.util.UUID
 class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def seedEntity(name: String, typ: String) = {
-    ReefUUID.newBuilder.setUuid(EQ.addEntity(name, typ).id.toString).build
+    ReefUUID.newBuilder.setUuid(EntityQueryManager.addEntity(name, typ).id.toString).build
   }
 
   protected val service = new EntityAttributesService
@@ -86,8 +86,8 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def simpleGetScenario = {
-    val id = EQ.addEntity("ent01", "entType1").id
-    EQ.addEntity("ent02", "entType2")
+    val id = EntityQueryManager.addEntity("ent01", "entType1").id
+    EntityQueryManager.addEntity("ent02", "entType2")
 
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
     ReefUUID.newBuilder.setUuid(id.toString).build
@@ -188,8 +188,8 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get multiple") {
-    val entId1 = EQ.addEntity("ent01", "entType1").id
-    val entId2 = EQ.addEntity("ent02", "entType2").id
+    val entId1 = EntityQueryManager.addEntity("ent01", "entType1").id
+    val entId2 = EntityQueryManager.addEntity("ent02", "entType2").id
 
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
@@ -265,7 +265,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def deleteScenario = {
-    val entId1 = EQ.addEntity("ent01", "entType1").id
+    val entId1 = EntityQueryManager.addEntity("ent01", "entType1").id
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
     ReefUUID.newBuilder.setUuid(entId1.toString).build

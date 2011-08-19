@@ -24,7 +24,6 @@ import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
-import org.totalgrid.reef.models.{ ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin, Agent => AgentModel, PermissionSet => PermissionSetModel, AuthPermission, EventStore }
 import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
@@ -35,6 +34,15 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
+import org.totalgrid.reef.models.{
+  Agent,
+  ApplicationSchema,
+  AuthToken => AuthTokenModel,
+  AuthTokenPermissionSetJoin,
+  PermissionSet => PermissionSetModel,
+  AuthPermission,
+  EventStore
+}
 
 // Implicit squeryl list -> query conversion
 
@@ -44,11 +52,10 @@ import org.totalgrid.reef.event.{ SystemEventSink, EventType }
  */
 object AuthTokenService {
   import org.totalgrid.reef.models.{ Agent, AuthPermission, PermissionSet, PermissionSetJoin, AgentPermissionSetJoin }
-  def seed() {
 
+  def seed() {
     inTransaction {
       if (ApplicationSchema.agents.Count.head == 0) {
-
         val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", "-system-"))
 
         val core = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("core", "core"))
@@ -76,17 +83,15 @@ object AuthTokenService {
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
         ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
-
       }
     }
   }
 }
 
 /**
- * auth token specicic code for searching the sql table and converting from
+ * auth token specific code for searching the sql table and converting from
  */
-trait AuthTokenConversions
-    extends UniqueAndSearchQueryable[AuthToken, AuthTokenModel] {
+trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthTokenModel] {
 
   val table = ApplicationSchema.authTokens
 
@@ -126,61 +131,77 @@ class AuthTokenServiceModel
     with AuthTokenConversions
     with ServiceModelSystemEventPublisher {
 
-  override def createFromProto(context: RequestContext, req: AuthToken): AuthTokenModel = {
+  override def createFromProto(context: RequestContext, authToken: AuthToken): AuthTokenModel =
+    {
+      logger.info("logging in agent: " + authToken.getAgent.getName)
+      val currentTime: Long = System.currentTimeMillis // need one time for authToken DB entry and posted event.
 
-    val currentTime = System.currentTimeMillis // need one time for authToken DB entry and posted event.
+      val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
+      // set the user name for systemEvent publishing
+      context.headers.setUserName(agentName)
 
-    val agentName: String = req.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
-    // set the user name for systemEvent publishing
-    context.headers.setUserName(agentName)
+      // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
+      val agentRecord: Option[Agent] = AgentConversions.findRecord(context, authToken.getAgent)
+      agentRecord match {
+        case None =>
+          logger.info("unable to find agent: " + authToken.getAgent)
+          postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
 
-    // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
-    val agent: AgentModel = AgentConversions.findRecord(context, req.getAgent).getOrElse(postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")) // no agent field or unknown agent!
-    if (!agent.checkPassword(req.getAgent.getPassword)) {
-      postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
+        case Some(agent) =>
+          if (!agent.checkPassword(authToken.getAgent.getPassword)) {
+            logger.debug("invalid password supplied for agent: " + authToken.getAgent.getName)
+            postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
+          }
+          processLogin(context, agent, authToken, currentTime)
+      }
     }
 
-    val availableSets = agent.permissionSets.value.toList // permissions we can have
-    val permissionsRequested = req.getPermissionSetsList.toList // permissions we are asking for
+  def processLogin(context: RequestContext, agent: Agent, authToken: AuthToken, currentTime: Long): AuthTokenModel =
+    {
+      if (!agent.checkPassword(authToken.getAgent.getPassword)) {
+        postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
+      }
 
-    // allow the user to request either all of their permission sets or just a subset, barf if they ask for permisions they dont have
-    val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
-    val permissionSets = if (setQuerySize > 0) {
-      val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
-      val unavailableSets = askedForSets.diff(availableSets)
-      if (unavailableSets.size > 0) postLoginException(context, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
-      askedForSets
-    } else {
-      availableSets
+      val availableSets = agent.permissionSets.value.toList // permissions we can have
+      // permissions we are asking for allow the user to request either all of their permission sets or just a subset, barf if they
+      // ask for permisions they dont have
+      val permissionsRequested = authToken.getPermissionSetsList.toList
+      val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
+      val permissionSets = if (setQuerySize > 0) {
+        val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
+        val unavailableSets = askedForSets.diff(availableSets)
+        if (unavailableSets.size > 0) {
+          postLoginException(context, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+        }
+        askedForSets
+      } else {
+        availableSets
+      }
+
+      // allow the user to set the expiration time explicitly or use the default from the most restrictive permissionset
+      val expirationTime = if (authToken.hasExpirationTime) {
+        val time = authToken.getExpirationTime
+        if (time <= currentTime) {
+          postLoginException(context, Status.BAD_REQUEST, "Expiration time cannot be in the past")
+        }
+        time
+      } else {
+        currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
+      }
+
+      // TODO: generate an unguessable security token
+      val token = java.util.UUID.randomUUID().toString
+      val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, expirationTime))
+      // link the token to all of the permisisonsSet they have checked out access to
+      permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
+
+      postSystemEvent(context, EventType.System.UserLogin)
+
+      newAuthToken
     }
-
-    // allow the user to set the expiration time explicitly or use the default from the
-    // most restrictive permissionset 
-    val expirationTime = if (req.hasExpirationTime) {
-      val time = req.getExpirationTime
-      if (time <= currentTime) postLoginException(context, Status.BAD_REQUEST, "Expiration time cannot be in the past")
-      time
-    } else {
-      currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
-    }
-
-    // TODO: generate an unguessable security token
-    val token = java.util.UUID.randomUUID().toString
-
-    val authToken = table.insert(new AuthTokenModel(token, agent.id, req.getLoginLocation, expirationTime))
-
-    // link the token to all of the permisisonsSet they have checked out access to
-    permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, authToken.id)))
-
-    postSystemEvent(context, EventType.System.UserLogin)
-
-    authToken
-  }
 
   def postLoginException[A](context: RequestContext, status: Status, reason: String): A = {
-
     postSystemEvent(context, EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
-
     throw new BadRequestException(reason, status)
   }
 

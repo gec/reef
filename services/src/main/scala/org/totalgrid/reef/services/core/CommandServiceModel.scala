@@ -67,14 +67,14 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
   def createAndSetOwningNode(context: RequestContext, commands: List[String], dataSource: Entity): Unit = {
     if (commands.size == 0) return
 
-    val allreadyExistingCommands = Entity.asType(ApplicationSchema.commands, EQ.findEntitiesByName(commands).toList, Some("Command"))
+    val allreadyExistingCommands = Entity.asType(ApplicationSchema.commands, EntityQueryManager.findEntitiesByName(commands).toList, Some("Command"))
     val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
     if (!newCommands.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newCommands)
 
     val changeCommandOwner = allreadyExistingCommands.filter { c => c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true) }
     changeCommandOwner.foreach(p => {
-      p.sourceEdge.value.foreach(EQ.deleteEdge(_))
-      EQ.addEdge(dataSource, p.entity.value, "source")
+      p.sourceEdge.value.foreach(EntityQueryManager.deleteEdge(_))
+      EntityQueryManager.addEdge(dataSource, p.entity.value, "source")
       update(context, p, p)
     })
   }
@@ -102,7 +102,7 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
     selects.foreach(s => commandSelectModel.removeAccess(context, s))
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
 
-    EQ.deleteEntity(entry.entity.value)
+    EntityQueryManager.deleteEntity(entry.entity.value)
   }
 
 }
@@ -118,7 +118,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     val esearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Command")))
     List(
       esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EQ.typeIdsFromProtoQuery(ent, "Command")))
+      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = Nil
@@ -140,12 +140,12 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
 
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
-      case Some(e) => b.setEntity(EQ.entityToProto(e))
+      case Some(e) => b.setEntity(EntityQueryManager.entityToProto(e))
       case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EQ.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }

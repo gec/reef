@@ -37,34 +37,34 @@ import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
-  import EQ._
+  import EntityQueryManager._
 
   override def beforeEachInTransaction() {
     seed
   }
 
   def seed {
-    val regId = EQ.addEntity("RegA", "Region", "EquipmentGroup")
+    val regId = EntityQueryManager.addEntity("RegA", "Region", "EquipmentGroup")
     seedSub(regId, "RegA-SubA")
     seedSub(regId, "RegA-SubB")
   }
   def seedSub(regId: Entity, name: String) {
-    val subId = EQ.addEntity(name, "Substation", "EquipmentGroup")
-    EQ.addEdge(regId, subId, "owns")
+    val subId = EntityQueryManager.addEntity(name, "Substation", "EquipmentGroup")
+    EntityQueryManager.addEdge(regId, subId, "owns")
     seedDevice(regId, subId, name + "-DeviceA", "Line")
     seedDevice(regId, subId, name + "-DeviceB", "Line")
     seedDevice(regId, subId, name + "-DeviceC", "Breaker")
   }
   def seedDevice(regId: Entity, subId: Entity, name: String, typ: String) {
-    val devId = EQ.addEntity(name, typ, "Equipment")
-    val toSubId = EQ.addEdge(subId, devId, "owns")
+    val devId = EntityQueryManager.addEntity(name, typ, "Equipment")
+    val toSubId = EntityQueryManager.addEdge(subId, devId, "owns")
     seedPoint(regId, subId, devId, name + "-PointA", "owns")
     seedPoint(regId, subId, devId, name + "-PointB", "owns")
     seedPoint(regId, subId, devId, name + "-PointC", "refs")
   }
   def seedPoint(regId: Entity, subId: Entity, devId: Entity, name: String, rel: String) {
-    val pointId = EQ.addEntity(name, "Point")
-    val toDevId = EQ.addEdge(devId, pointId, rel)
+    val pointId = EntityQueryManager.addEntity(name, "Point")
+    val toDevId = EntityQueryManager.addEdge(devId, pointId, rel)
   }
 
   class EdgeString(me: String) {
@@ -95,7 +95,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   def checkNames(req: EntityProto.Builder, desc: List[String]) = {
-    val results = EQ.fullQuery(req.build)
+    val results = EntityQueryManager.fullQuery(req.build)
     val names = results.map(_.getName).toList
 
     checkResults(names, desc)
@@ -393,7 +393,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Query branching on relation") {
-    val entRoot = EQ.entities.where(t => t.name === "RegA-SubA")
+    val entRoot = EntityQueryManager.entities.where(t => t.name === "RegA-SubA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, Some("RegA-SubA-DeviceA"), Nil,
       List(new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil),
@@ -412,7 +412,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Query branching on type") {
-    val entRoot = EQ.entities.where(t => t.name === "RegA")
+    val entRoot = EntityQueryManager.entities.where(t => t.name === "RegA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, Some("RegA-SubA"), Nil,
       List(new QueryNode(Some("owns"), Some(true), None, None, List("Line"), Nil),
@@ -497,7 +497,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
             EntityProto.newBuilder
               .addTypes("Equipment"))).build
 
-    val results = EQ.fullQuery(req)
+    val results = EntityQueryManager.fullQuery(req)
     results.length should equal(1)
   }
 
@@ -526,7 +526,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
     val req = EntityProto.newBuilder.addTypes("ShouldHaveBeenSubstation")
 
     intercept[BadRequestException] {
-      EQ.checkAllTypesInSystem(req.build)
+      EntityQueryManager.checkAllTypesInSystem(req.build)
     }
   }
 
@@ -540,7 +540,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
             EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
 
     intercept[BadRequestException] {
-      EQ.checkAllTypesInSystem(req.build)
+      EntityQueryManager.checkAllTypesInSystem(req.build)
     }
   }
 

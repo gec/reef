@@ -64,10 +64,8 @@ class EventService(protected val model: EventServiceModel)
   }
 }
 
-// The business model for managing incoming events and deciding whether
-// they are Alarms, Events, or Logs.
+// The business model for managing incoming events and deciding whether they are Alarms, Events, or Logs.
 // This will use the ConfigService to determine what is an Alarm, Event, or Log.
-//
 class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel: AlarmServiceModel)
     extends SquerylServiceModel[Event, EventStore]
     with EventedServiceModel[Event, EventStore]
@@ -81,52 +79,51 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
   override def getSubscribeKeys(req: Event): List[String] = makeSubscribeKeys(req)
 
   /**
-   * A raw Event comes in and we need to process it
-   * into a real Event, Alarm, or Log.
+   * A raw Event comes in and we need to process it into a real Event, Alarm, or Log.
    */
-  override def createFromProto(context: RequestContext, req: Event): EventStore = {
+  override def createFromProto(context: RequestContext, request: Event): EventStore = {
 
-    if (!req.hasEventType) { throw new BadRequestException("Must set EventType.", Envelope.Status.BAD_REQUEST) }
-    if (!req.hasTime) { throw new BadRequestException("Must include time.", Envelope.Status.BAD_REQUEST) }
-    if (!req.hasSubsystem) { throw new BadRequestException("Must include subsystem.", Envelope.Status.BAD_REQUEST) }
+    if (!request.hasEventType) { throw new BadRequestException("invalid event: " + request + ", EventType must be set", Envelope.Status.BAD_REQUEST) }
+    if (!request.hasTime) { throw new BadRequestException("invalid event: " + request + ", Time must be set", Envelope.Status.BAD_REQUEST) }
+    if (!request.hasSubsystem) { throw new BadRequestException("invalid event: " + request + ", Subsystem must be set.", Envelope.Status.BAD_REQUEST) }
 
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
-    val userId = if (!req.hasUserId) {
-      context.headers.userName.getOrElse(throw new BadRequestException("Must be logged in user."))
+    val userId = if (!request.hasUserId) {
+      context.headers.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
     } else {
-      req.getUserId
+      request.getUserId
     }
 
-    val (severity, designation, alarmState, resource) = eventConfig.getProperties(req.getEventType)
+    val (severity, designation, alarmState, resource) = eventConfig.getProperties(request.getEventType)
 
     // if the raw event had the entity filled out try to find that entity
-    val entity = req.entity.map(EQ.findEntity(_)).getOrElse(None)
+    val entity = request.entity.map(EntityQueryManager.findEntity(_)).getOrElse(None)
 
     designation match {
       case EventConfigStore.ALARM =>
         // Create event and alarm instances. Post them to the bus.
-        val event = create(context, createModelEntry(req, true, severity, entity, resource, userId)) // true: is an alarm
+        val event = create(context, createModelEntry(request, true, severity, entity, resource, userId)) // true: is an alarm
         val alarm = new AlarmModel(alarmState, event.id)
         alarm.event.value = event // so we don't lookup the event again
         alarmServiceModel.create(context, alarm)
-        log(req, event, entity)
+        log(request, event, entity)
         event
 
       case EventConfigStore.EVENT =>
         // Create the event instance and post it to the bus.
-        val event = create(context, createModelEntry(req, false, severity, entity, resource, userId)) // false: not an alarm
-        log(req, event, entity)
+        val event = create(context, createModelEntry(request, false, severity, entity, resource, userId)) // false: not an alarm
+        log(request, event, entity)
         event
 
       case EventConfigStore.LOG =>
         // Instead of returning a "Message", return an EventStore without a UID. Not great, but it will do for now.
-        val event = createModelEntry(req, false, severity, entity, resource, userId)
-        log(req, event, entity)
+        val event = createModelEntry(request, false, severity, entity, resource, userId)
+        log(request, event, entity)
         event
 
       case _ =>
-        throw new BadRequestException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + req.getEventType +
+        throw new BadRequestException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + request.getEventType +
           "'", Envelope.Status.INTERNAL_ERROR)
     }
   }
@@ -141,7 +138,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
       "severity:" :: event.severity :: ", type:" :: event.eventType :: entityToString(entity) :: ", user id:" :: event.userId :: ", rendered:" ::
         event.rendered :: Nil
 
-    logger.info(eventToList(req, entity).mkString(" "))
+    logger.info(eventToList(req, entity).mkString("z"))
   }
 
 }
@@ -190,7 +187,7 @@ trait EventConversion
   def makeSubscribeKeys(req: Event): List[String] = {
 
     // just get top level entities from query, skip subscribe on descendents
-    val entities = req.entity.map { EQ.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
+    val entities = req.entity.map { EntityQueryManager.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
 
     val keys = if (entities.size > 0) entities.map(getRoutingKey(req, _))
     else getRoutingKey(req) :: Nil
@@ -200,12 +197,8 @@ trait EventConversion
 
   // Derive a SQL expression from the proto. Used by GET. 
   def searchQuery(proto: Event, sql: EventStore) = {
-    proto.eventType.asParam(sql.eventType === _) ::
-      proto.severity.asParam(sql.severity === _) ::
-      proto.subsystem.asParam(sql.subsystem === _) ::
-      proto.userId.asParam(sql.userId === _) ::
-      proto.entity.map(ent => sql.entityId in EQ.idsFromProtoQuery(ent)) ::
-      Nil
+    proto.eventType.asParam(sql.eventType === _) :: proto.severity.asParam(sql.severity === _) :: proto.subsystem.asParam(sql.subsystem === _) ::
+      proto.userId.asParam(sql.userId === _) :: proto.entity.map(ent => sql.entityId in EntityQueryManager.idsFromProtoQuery(ent)) :: Nil
   }
 
   def uniqueQuery(proto: Event, sql: EventStore) = {
@@ -231,16 +224,9 @@ trait EventConversion
         "Error rendering event string: " + resource + " with attributes: " + attributeList + " error: " + x
     }
 
-    val es = EventStore(proto.getEventType,
-      isAlarm,
-      proto.getTime,
-      proto.deviceTime,
-      severity,
-      proto.getSubsystem,
-      userId,
-      entity.map { _.id },
-      args,
-      rendered)
+    val es = EventStore(proto.getEventType, isAlarm, proto.getTime, proto.deviceTime, severity, proto.getSubsystem, userId, entity.map {
+      _.id
+    }, args, rendered)
 
     es.entity.value = entity
     es
@@ -259,7 +245,7 @@ trait EventConversion
 
     entry.deviceTime.foreach(b.setDeviceTime(_))
     entry.entity.value // force it to try to load the related entity for now
-    entry.entity.asOption.foreach(_.foreach(x => b.setEntity(EQ.entityToProto(x).build)))
+    entry.entity.asOption.foreach(_.foreach(x => b.setEntity(EntityQueryManager.entityToProto(x).build)))
     if (entry.args.length > 0) {
       b.setArgs(AttributeListProto.parseFrom(entry.args))
     }

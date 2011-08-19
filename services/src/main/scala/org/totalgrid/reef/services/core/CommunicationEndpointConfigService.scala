@@ -50,8 +50,8 @@ class CommEndCfgServiceModel(
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     checkProto(proto)
-    val ent = EQ.findOrCreateEntity(proto.getName, "CommunicationEndpoint")
-    EQ.addTypeToEntity(ent, "LogicalNode")
+    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint")
+    EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)
     coordinator.onEndpointCreated(context, sql)
@@ -85,16 +85,14 @@ class CommEndCfgServiceModel(
   }
 
   override def postDelete(context: RequestContext, sql: CommunicationEndpoint) {
-    EQ.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
+    EntityQueryManager.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
   }
 
   import org.totalgrid.reef.proto.OptionalProtos._
-  def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, ent: Entity) {
-    pointModel.createAndSetOwningNode(context, request.ownerships.points.getOrElse(Nil), ent)
-
-    commandModel.createAndSetOwningNode(context, request.ownerships.commands.getOrElse(Nil), ent)
-
-    configModel.addOwningEntity(context, request.getConfigFilesList.toList, ent)
+  def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, entity: Entity) {
+    pointModel.createAndSetOwningNode(context, request.ownerships.points.getOrElse(Nil), entity)
+    commandModel.createAndSetOwningNode(context, request.ownerships.commands.getOrElse(Nil), entity)
+    configModel.addOwningEntity(context, request.getConfigFilesList.toList, entity)
   }
 
   def createModelEntry(context: RequestContext, proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
