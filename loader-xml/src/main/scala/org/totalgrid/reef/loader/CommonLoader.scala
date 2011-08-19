@@ -99,7 +99,7 @@ class CommonLoader(client: ModelLoader, exceptionCollector: ExceptionCollector, 
   }
 
   def addInfo(entity: Entity, info: Info) {
-    logger.debug("adding info for entity: " + entity + ", info: " + info)
+    logger.info("adding info for entity: " + entity + ", info: " + info)
 
     exceptionCollector.collect("Adding info for: " + entity.getName) {
       val configFileProtos: List[ConfigFileProto] = info.getConfigFile.map(configFile => loadConfigFile(configFile))

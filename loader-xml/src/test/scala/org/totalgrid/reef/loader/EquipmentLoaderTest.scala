@@ -131,24 +131,22 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
   }
 
   def makeBreaker(equipmentProfile: Option[EquipmentProfile], isTrigger: Boolean): Equipment =
-  {
-    val breaker = new Equipment("Brk1")
-    equipmentProfile match
     {
-      case Some(profile) =>
-        breaker.add(profile)
-      case None =>
-        val status = new Status("Bkr", "status")
+      val breaker = new Equipment("Brk1")
+      equipmentProfile match {
+        case Some(profile) =>
+          breaker.add(profile)
+        case None =>
+          val status = new Status("Bkr", "status")
 
-        if ( isTrigger )
-        {
-          status.add(new Unexpected(false, "Nominal"))
-          status.add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
-        }
-        breaker.add(new Type("Breaker")).add(new Control("trip")).add(new Control("close")).add(status)
+          if (isTrigger) {
+            status.add(new Unexpected(false, "Nominal"))
+            status.add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
+          }
+          breaker.add(new Type("Breaker")).add(new Control("trip")).add(new Control("close")).add(status)
+      }
+      breaker
     }
-    breaker
-  }
 
   def makeEquipment(
     substationName: String,

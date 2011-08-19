@@ -35,108 +35,108 @@ object LoadManager extends Logging {
    * TODO: Catch file not found exceptions and call usage.
    */
   def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false,
-      createConfiguration: Boolean = true) =
-  {
-    val file = new File(filename)
-    logger.info("Loading configuration file: " + file)
+    createConfiguration: Boolean = true) =
+    {
+      val file = new File(filename)
+      logger.info("Loading configuration file: " + file)
 
-    try {
-      validateXml(filename)
+      try {
+        validateXml(filename)
 
-      val xml = XMLHelper.read(file, classOf[Configuration])
+        val xml = XMLHelper.read(file, classOf[Configuration])
 
-      val loader = new CachingModelLoader(None, createConfiguration)
-      val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
+        val loader = new CachingModelLoader(None, createConfiguration)
+        val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
 
-      logger.info("Finished analyzing configuration '" + filename + "'")
+        logger.info("Finished analyzing configuration '" + filename + "'")
 
-      if (!valid && !ignoreWarnings) {
-        println("Configuration invalid, fix errors or add ignoreWarnings argument")
-        false
-      } else if (!dryRun) {
-        val progress = new SymbolResponseProgressRenderer(Console.out)
-        loader.flush(client, Some(progress))
-        println("Configuration loaded.")
-        true
-      } else {
-        println("DRYRUN: Skipping upload of " + loader.size + " objects.")
-        true
+        if (!valid && !ignoreWarnings) {
+          println("Configuration invalid, fix errors or add ignoreWarnings argument")
+          false
+        } else if (!dryRun) {
+          val progress = new SymbolResponseProgressRenderer(Console.out)
+          loader.flush(client, Some(progress))
+          println("Configuration loaded.")
+          true
+        } else {
+          println("DRYRUN: Skipping upload of " + loader.size + " objects.")
+          true
+        }
+
+      } catch {
+        case ex =>
+          println("Error loading configuration file '" + filename + "' " + ex.getMessage)
+          throw ex
       }
-
-    } catch {
-      case ex =>
-        println("Error loading configuration file '" + filename + "' " + ex.getMessage)
-        throw ex
     }
-  }
 
   def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, configurationFileTuple: Option[(File, String)] = None,
-      path: File = new File(".")): Boolean =
-  {
-    var equipmentPointUnits = HashMap[String, String]()
-    val actionModel = HashMap[String, ActionSet]()
+    path: File = new File(".")): Boolean =
+    {
+      var equipmentPointUnits = HashMap[String, String]()
+      val actionModel = HashMap[String, ActionSet]()
 
-    if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
-      throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
+      if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
+        throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
 
-    val loadCache = new LoadCache
-    val exceptionCollector = new LoadingExceptionCollector
-    try {
-      val commonLoader = new CommonLoader(client, exceptionCollector, path)
+      val loadCache = new LoadCache
+      val exceptionCollector = new LoadingExceptionCollector
+      try {
+        val commonLoader = new CommonLoader(client, exceptionCollector, path)
 
-      if (xml.isSetConfigFiles) commonLoader.load(xml.getConfigFiles)
+        if (xml.isSetConfigFiles) commonLoader.load(xml.getConfigFiles)
 
-      if (xml.isSetMessageModel) {
-        val messageLoader = new MessageLoader(client, exceptionCollector)
-        val messageModel = xml.getMessageModel
-        messageLoader.load(messageModel)
+        if (xml.isSetMessageModel) {
+          val messageLoader = new MessageLoader(client, exceptionCollector)
+          val messageModel = xml.getMessageModel
+          messageLoader.load(messageModel)
+        }
+
+        if (xml.isSetActionModel) {
+          val actionSets = xml.getActionModel.getActionSet.toList
+          actionSets.foreach(as => actionModel += (as.getName -> as))
+        }
+
+        if (xml.isSetEquipmentModel) {
+          val equipmentLoader = new EquipmentLoader(client, loadCache.loadCacheEquipment, exceptionCollector, commonLoader)
+          val equipmentModel = xml.getEquipmentModel
+          equipmentPointUnits = equipmentLoader.load(equipmentModel, actionModel)
+        }
+
+        if (xml.isSetCommunicationsModel) {
+          val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCommunication, exceptionCollector, commonLoader)
+          val comModel = xml.getCommunicationsModel
+          comLoader.load(comModel, equipmentPointUnits, benchmark)
+        }
+
+        configurationFileTuple.foreach {
+          case (thisFile, fileName) =>
+            val configFile = new ConfigFile()
+            configFile.setMimeType("text/xml")
+            configFile.setFileName(thisFile.getName)
+            configFile.setName(fileName)
+            client.putOrThrow(commonLoader.loadConfigFile(configFile))
+        }
+
+      } catch {
+        case exception: Exception =>
+          exceptionCollector.addError("Terminal parsing error: ", exception)
+          logger.warn(exception.getStackTraceString)
       }
 
-      if (xml.isSetActionModel) {
-        val actionSets = xml.getActionModel.getActionSet.toList
-        actionSets.foreach(as => actionModel += (as.getName -> as))
-      }
+      val errors = exceptionCollector.getErrors
 
-      if (xml.isSetEquipmentModel) {
-        val equipmentLoader = new EquipmentLoader(client, loadCache.loadCacheEquipment, exceptionCollector, commonLoader)
-        val equipmentModel = xml.getEquipmentModel
-        equipmentPointUnits = equipmentLoader.load(equipmentModel, actionModel)
+      if (errors.size > 0) {
+        println
+        println("Critical Errors found:")
+        errors.foreach(println(_))
+        println("Fix Critical Errors and try again.")
+        println
+        false
+      } else {
+        loadCache.validate
       }
-
-      if (xml.isSetCommunicationsModel) {
-        val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCommunication, exceptionCollector, commonLoader)
-        val comModel = xml.getCommunicationsModel
-        comLoader.load(comModel, equipmentPointUnits, benchmark)
-      }
-
-      configurationFileTuple.foreach {
-        case (thisFile, fileName) =>
-          val configFile = new ConfigFile()
-          configFile.setMimeType("text/xml")
-          configFile.setFileName(thisFile.getName)
-          configFile.setName(fileName)
-          client.putOrThrow(commonLoader.loadConfigFile(configFile))
-      }
-
-    } catch {
-      case exception: Exception =>
-        exceptionCollector.addError("Terminal parsing error: ", exception)
-        logger.warn(exception.getStackTraceString)
     }
-
-    val errors = exceptionCollector.getErrors
-
-    if (errors.size > 0) {
-      println
-      println("Critical Errors found:")
-      errors.foreach(println(_))
-      println("Fix Critical Errors and try again.")
-      println
-      false
-    } else {
-      loadCache.validate
-    }
-  }
 
   def validateXml(filename: String) = {
 
