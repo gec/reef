@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.japi.request;
 
+import java.util.List;
+
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.ConfigFile;
 import org.totalgrid.reef.proto.Model.ReefUUID;
-
-import java.util.List;
 
 /**
  * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.
@@ -39,7 +39,6 @@ import java.util.List;
  */
 public interface ConfigFileService
 {
-
     /**
      * Get all config files
      */
