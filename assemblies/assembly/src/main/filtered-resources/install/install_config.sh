@@ -13,7 +13,7 @@ load() {
 
     # it can take a long time to setup the ssh session the first time karaf is run on a slow machine
     bin/client -p `cat etc/karaf_pfile` -r 10 -d 5  "start-level 90; features:install reef"
-    bin/client -p `cat etc/karaf_pfile`   "reef:resetdb; start-level 91"
+    bin/client -p `cat etc/karaf_pfile` "reef:resetdb; start-level 91"
 
     echo "Sleeping for 5 seconds before loading"
     sleep 5
