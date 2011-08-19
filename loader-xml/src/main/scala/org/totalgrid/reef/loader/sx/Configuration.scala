@@ -18,7 +18,8 @@
  */
 package org.totalgrid.reef.loader.sx
 
-import org.totalgrid.reef.loader.configuration // jaxb java classes
+// jaxb java classes
+import org.totalgrid.reef.loader.configuration
 
 class Message(
     _name: String,

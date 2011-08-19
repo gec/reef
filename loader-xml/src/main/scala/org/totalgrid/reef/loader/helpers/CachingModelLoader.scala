@@ -59,11 +59,11 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
     progressMeter.foreach(_.start(puts.size + triggers.size))
 
     def handle[A <: AnyRef](promise: Promise[Response[A]], request: AnyRef) {
-      val rsp = promise.await
+      val response = promise.await
 
       // check the response for any non-successful requests
       try {
-        rsp.expectMany()
+        response.expectMany()
       } catch {
         case rse: ReefServiceException =>
           // attach a helpful error message with exact data that caused failure
@@ -71,13 +71,20 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
           throw new ReefServiceException(errorMessage, rse.getStatus, rse)
       }
 
-      progressMeter.foreach(_.update(rsp.status, request))
+      progressMeter.foreach(_.update(response.status, request))
     }
 
     val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
 
-    if (create) uploadOrder.foreach { x => handle(client.put(x), x) }
-    else uploadOrder.reverse.foreach { x => handle(client.delete(x), x) }
+    if (create) {
+      uploadOrder.foreach { x =>
+        handle(client.put(x), x)
+      }
+    } else {
+      uploadOrder.reverse.foreach { x =>
+        handle(client.delete(x), x)
+      }
+    }
 
     puts = Nil
     triggers.clear

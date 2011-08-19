@@ -20,6 +20,7 @@ package org.totalgrid.reef.japi.request.impl
 
 import org.totalgrid.reef.japi.request._
 import org.totalgrid.reef.japi.client.{ Session, SessionExecutionPool }
+import org.totalgrid.reef.sapi.client.{ SubscriptionManagement, RestOperations, SessionPool }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
@@ -41,5 +42,13 @@ class AuthTokenServicePooledWrapper(_sessionPool: SessionExecutionPool) extends 
 
 class AuthTokenServiceWrapper(_session: Session) extends AuthTokenService with AuthTokenServiceImpl with SingleSessionClientSource {
   def session = convertByCasting(_session)
+}
+
+class AllScadaServicePooled(sessionPool: SessionPool, authToken: String)
+    extends AllScadaService with AllScadaServiceImpl with ClientSource {
+
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
+    sessionPool.borrow(authToken)(block)
+  }
 }
 

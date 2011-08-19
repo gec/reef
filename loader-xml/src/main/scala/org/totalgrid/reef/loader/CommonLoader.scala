@@ -21,13 +21,14 @@ package org.totalgrid.reef.loader
 import java.io.File
 import com.google.protobuf.ByteString
 
-import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFiles }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.proto.Model.{EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto}
 
-class CommonLoader(client: ModelLoader, ex: ExceptionCollector, rootDir: File) {
+class CommonLoader(client: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {
   val configFiles = LoaderMap[ConfigFileProto]("Config Files")
 
   def reset() {
@@ -35,30 +36,32 @@ class CommonLoader(client: ModelLoader, ex: ExceptionCollector, rootDir: File) {
   }
 
   def load(files: ConfigFiles) {
+    logger.info("loading config files")
     loadConfigFiles(files.getConfigFile.toList)
   }
 
-  def loadConfigFiles(cfs: List[ConfigFile]): List[ConfigFileProto] = {
+  def loadConfigFiles(configFiles: List[ConfigFile]): List[ConfigFileProto] = {
+    logger.info("loading config files: " + configFiles.size)
     var list = List.empty[ConfigFileProto]
-    ex.collect("Loading config files: ") {
-      list = cfs.map(loadConfigFile(_))
+    exceptionCollector.collect("Loading config files: ") {
+      list = configFiles.map(loadConfigFile(_))
     }
     list
   }
 
-  def loadConfigFile(cf: ConfigFile): ConfigFileProto = {
+  def loadConfigFile(configFile: ConfigFile): ConfigFileProto = {
+    logger.debug(
+      "loading config file: name: " + configFile.getName + ", fileName: " + configFile.getFileName + ", mimeType: " + configFile.getMimeType +
+        ", value: " + configFile.getValue)
+    if (!configFile.isSetName && !configFile.isSetFileName) throw new LoadingException("Need to set either fileName or name for configFile: " + configFile)
 
-    if (!cf.isSetName && !cf.isSetFileName) throw new LoadingException("Need to set either fileName or name for configFile.")
-
-    val name = if (cf.isSetName) cf.getName else cf.getFileName
-
+    val name = if (configFile.isSetName) configFile.getName else configFile.getFileName
     val cachedConfigFile = configFiles.get(name)
-
-    val hasCData = cf.isSetValue && cf.getValue.size > 0
-    val hasFilename = cf.isSetFileName
+    val hasCData = configFile.isSetValue && configFile.getValue.size > 0
+    val hasFilename = configFile.isSetFileName
 
     if (cachedConfigFile.isDefined) {
-      if (hasCData) throw new LoadingException("Cannot use same name as already loaded config file while respecifing data: " + name)
+      if (hasCData) throw new LoadingException("Cannot use same name as already loaded config file while respecifying data: " + name)
       return cachedConfigFile.get
     }
 
@@ -68,40 +71,41 @@ class CommonLoader(client: ModelLoader, ex: ExceptionCollector, rootDir: File) {
       throw new LoadingException("Cannot use same name as already loaded config file while respecifing data: " + name)
     }
 
-    val mimeType = if (!cf.isSetMimeType) {
-
+    val mimeType = if (!configFile.isSetMimeType) {
       name match {
         case s: String if (s.endsWith(".xml")) => "text/xml"
         case _ => throw new LoadingException("Cannot guess mimeType for configfile, must be explictly defined: " + name)
       }
-
     } else {
-      cf.getMimeType
+      configFile.getMimeType
     }
 
-    val proto = ConfigFileProto.newBuilder
-      .setName(name)
-      .setMimeType(mimeType)
+    val proto = ConfigFileProto.newBuilder.setName(name).setMimeType(mimeType)
 
     val bytes = if (hasFilename) {
-      val file = new File(rootDir, cf.getFileName)
+      val file = new File(rootDir, configFile.getFileName)
       if (!file.exists()) throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " doesn't exist.")
       scala.io.Source.fromFile(file).mkString.getBytes
     } else {
-      cf.getValue.getBytes
+      configFile.getValue.getBytes
     }
+
     proto.setFile(ByteString.copyFrom(bytes))
-    val protoCf = proto.build
-    configFiles.put(name, protoCf)
-    client.putOrThrow(protoCf)
-    protoCf
+    val configFileProto = proto.build
+    logger.debug("adding config file: name: " + name + ", proto: " + configFileProto)
+    configFiles.put(name, configFileProto)
+    client.putOrThrow(configFileProto)
+    configFileProto
   }
 
   def addInfo(entity: Entity, info: Info) {
-    ex.collect("Adding info for: " + entity.getName) {
-      val configFileProtos = info.getConfigFile.map(cf => loadConfigFile(cf))
-      val configFileUses = configFileProtos.map(cf => ProtoUtils.toEntityEdge(entity, ProtoUtils.toEntityType(cf.getName, "ConfigurationFile" :: Nil), "uses"))
-      configFileUses.foreach(client.putOrThrow(_))
+    logger.info("adding info for entity: " + entity + ", info: " + info)
+
+    exceptionCollector.collect("Adding info for: " + entity.getName) {
+      val configFileProtos: List[ConfigFileProto] = info.getConfigFile.map(configFile => loadConfigFile(configFile))
+      val configFileEdge: List[EntityEdge] = configFileProtos
+        .map(configFile => ProtoUtils.toEntityEdge(entity, ProtoUtils.toEntityType(configFile.getName, "ConfigurationFile" :: Nil), "uses"))
+      configFileEdge.foreach(client.putOrThrow(_))
 
       val attributeProto = toAttribute(entity, info.getAttribute)
       attributeProto.foreach(client.putOrThrow(_))
@@ -114,18 +118,18 @@ class CommonLoader(client: ModelLoader, ex: ExceptionCollector, rootDir: File) {
 
     if (attrElements.isEmpty) return None
 
-    val b = EntityAttributes.newBuilder.setEntity(entity)
+    val builder = EntityAttributes.newBuilder.setEntity(entity)
 
     attrElements.foreach { attrElement =>
-      val ab = AttributeProto.newBuilder.setName(attrElement.getName)
-      attrElement.doubleValue.foreach { v => ab.setValueDouble(v); ab.setVtype(Type.DOUBLE) }
-      attrElement.intValue.foreach { v => ab.setValueSint64(v); ab.setVtype(Type.SINT64) }
-      attrElement.booleanValue.foreach { v => ab.setValueBool(v); ab.setVtype(Type.BOOL) }
-      attrElement.stringValue.foreach { v => ab.setValueString(v); ab.setVtype(Type.STRING) }
-      b.addAttributes(ab)
+      val attributeProtoBuilder = AttributeProto.newBuilder.setName(attrElement.getName)
+      attrElement.doubleValue.foreach { v => attributeProtoBuilder.setValueDouble(v); attributeProtoBuilder.setVtype(Type.DOUBLE) }
+      attrElement.intValue.foreach { v => attributeProtoBuilder.setValueSint64(v); attributeProtoBuilder.setVtype(Type.SINT64) }
+      attrElement.booleanValue.foreach { v => attributeProtoBuilder.setValueBool(v); attributeProtoBuilder.setVtype(Type.BOOL) }
+      attrElement.stringValue.foreach { v => attributeProtoBuilder.setValueString(v); attributeProtoBuilder.setVtype(Type.STRING) }
+      builder.addAttributes(attributeProtoBuilder)
     }
 
-    Some(b.build)
+    Some(builder.build)
   }
 
 }

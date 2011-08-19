@@ -36,8 +36,8 @@ object ModelSeed {
     def seed(ancestors: List[Entity] = Nil, names: List[String] = Nil): Unit = {
       val nameList = name :: names
       val fullName = nameList.reverse.mkString(".")
-      val me = EQ.addEntity(fullName, typ)
-      if (ancestors.length > 0) EQ.addEdge(ancestors.head, me, "owns")
+      val me = EntityQueryManager.addEntity(fullName, typ)
+      if (ancestors.length > 0) EntityQueryManager.addEdge(ancestors.head, me, "owns")
       subNodes.foreach(node => node.seed(me :: ancestors, nameList))
     }
   }

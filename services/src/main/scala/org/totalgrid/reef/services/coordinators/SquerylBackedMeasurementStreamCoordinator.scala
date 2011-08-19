@@ -101,8 +101,8 @@ class SquerylBackedMeasurementStreamCoordinator(
     val applicationId = if (assign.enabled) getFep(ce).map { _.id } else None
 
     logger.info(
-      ce.entityName + " assigned FEP: " + applicationId + " protocol: " + ce.protocol +
-        " port: " + ce.port.value + " routingKey: " + serviceRoutingKey + " last Fep:" + assign.applicationId)
+      ce.entityName + " assigned FEP: " + applicationId + ", protocol: " + ce.protocol +
+        ", port: " + ce.port.value + ", routingKey: " + serviceRoutingKey + ", last Fep: " + assign.applicationId)
 
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId || assign.serviceRoutingKey != serviceRoutingKey) {

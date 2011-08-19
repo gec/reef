@@ -16,6 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope
@@ -31,18 +32,14 @@ import org.totalgrid.reef.promise.{ FixedPromise, SynchronizedPromise, Promise }
  * called to flush all of the pending messages and stop any more being queued.
  */
 class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) extends Logging {
-
   private case class Record(value: Any, verb: Envelope.Verb, destination: Destination, maxRetries: Int, promise: SynchronizedPromise[Boolean])
 
   private val queue = new scala.collection.mutable.Queue[Record]
   private var transmitting = false
   private var isShutdown = false
 
-  def publish(value: Any,
-    verb: Envelope.Verb = Envelope.Verb.POST,
-    address: Destination = AnyNodeDestination,
+  def publish(value: Any, verb: Envelope.Verb = Envelope.Verb.POST, address: Destination = AnyNodeDestination,
     maxRetries: Int = 0): Promise[Boolean] = queue.synchronized {
-
     if (isShutdown) {
       // could throw exception instead if all producers are guaranteed to be shutdown before
       // the transmitter is stopped
@@ -60,14 +57,17 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     }
   }
 
-  private def checkForTransmit(): Boolean = {
-    if (!transmitting && !queue.isEmpty) {
-      transmitting = true
-      val record = queue.dequeue()
-      publish(record, record.maxRetries)
-      true
-    } else false
-  }
+  private def checkForTransmit(): Boolean =
+    {
+      if (!transmitting && !queue.isEmpty) {
+        transmitting = true
+        val record = queue.dequeue()
+        publish(record, record.maxRetries)
+        true
+      } else {
+        false
+      }
+    }
 
   private def publish(record: Record, retries: Int): Unit = pool.borrow { s =>
     s.request(record.verb, record.value, destination = record.destination).listen(onResponse(record, retries))
@@ -76,26 +76,33 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
   private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {
     case failure: Failure =>
       logger.warn("ordered publisher failure: " + failure)
-      if (retries > 0) publish(record, retries - 1)
-      else complete(record.promise, false)
-
+      if (retries > 0) {
+        publish(record, retries - 1)
+      } else {
+        complete(record.promise, false)
+      }
     case _ => complete(record.promise, true)
   }
 
-  private def complete(promise: SynchronizedPromise[Boolean], result: Boolean) = {
-    promise.onResponse(result)
-    queue.synchronized {
-      transmitting = false
-      if (!checkForTransmit()) queue.notifyAll()
+  private def complete(promise: SynchronizedPromise[Boolean], result: Boolean) =
+    {
+      promise.onResponse(result)
+      queue.synchronized {
+        transmitting = false
+        if (!checkForTransmit()) {
+          queue.notifyAll()
+        }
+      }
     }
-  }
 
   /**
    * waits until all messages have been sent successfully or failed out
    */
   def flush() = queue.synchronized {
     assert(transmitting || queue.isEmpty)
-    while (transmitting || !queue.isEmpty) queue.wait()
+    while (transmitting || !queue.isEmpty) {
+      queue.wait()
+    }
   }
 
   /**
@@ -106,8 +113,9 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     flush()
   }
 
-  override def toString = {
-    "OrderedServiceTransmitter queue: " + queue.size + " max: " + maxQueueSize + " trans: " + transmitting
-  }
+  override def toString =
+    {
+      "OrderedServiceTransmitter: isShutdown: " + isShutdown + ", transmitting: " + transmitting + ", queue: " + queue.size + ", maxQueueSize: " + maxQueueSize
+    }
 }
 

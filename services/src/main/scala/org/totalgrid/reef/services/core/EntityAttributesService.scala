@@ -45,7 +45,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
       throw new BadRequestException("Must specify Entity in request.")
 
     inTransaction {
-      val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+      val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
       val withoutIds = existingAttrs.map { a => a.id = 0; a }
@@ -72,7 +72,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
       throw new BadRequestException("Must specify Entity in request.")
 
     inTransaction {
-      val entEntry = EQ.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+      val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
 
@@ -151,14 +151,14 @@ object EntityAttributesService {
 
   def protoFromEntity(entry: Entity): AttrProto = {
     AttrProto.newBuilder
-      .setEntity(EQ.entityToProto(entry))
+      .setEntity(EntityQueryManager.entityToProto(entry))
       .addAllAttributes(entry.attributes.value.map(convertToProto(_)))
       .build
   }
 
   def protoFromEntity(entry: Entity, attrList: List[AttrModel]): AttrProto = {
     AttrProto.newBuilder
-      .setEntity(EQ.entityToProto(entry))
+      .setEntity(EntityQueryManager.entityToProto(entry))
       .addAllAttributes(attrList.map(convertToProto(_)))
       .build
   }

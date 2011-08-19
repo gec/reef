@@ -22,17 +22,20 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.app.ServiceContext
 
-/// Tailored for some of the measproc classes
+// TODO better comments please
+// Tailored for some of the measproc classes
 trait MeasProcServiceContext[A] extends ServiceContext[A] with Logging {
 
   // define add, remove, and clear    
-  def clear() // clear out your object cache
+  // clear out your object cache
+  def clear()
 
   //modified and subscribed get defined
   def subscribed(list: List[A]) = {
-    logger.info("Subscribed.")
+    logger.info("Subscribed")
     list.foreach { x => add(x) }
   }
+
   def modify(obj: A) = add(obj)
 
 }

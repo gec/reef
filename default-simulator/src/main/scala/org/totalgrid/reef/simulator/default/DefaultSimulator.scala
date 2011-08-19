@@ -60,7 +60,7 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
     // if the delay is 0 we shouldn't publish any random values after
     // the initial integrity poll
     delay = newDelay
-    logger.info("Updating parameters for simulator " + name + " delay = " + delay)
+    logger.info("Updating parameters for simulator: " + name + ", delay = " + delay)
     this.synchronized {
       repeater.foreach(_.cancel)
       repeater = if (delay == 0) None else Some(exe.repeat(delay)(update(measurements.toList)))

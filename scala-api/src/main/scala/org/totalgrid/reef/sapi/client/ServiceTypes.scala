@@ -95,7 +95,7 @@ case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, err
   final override val list = Nil
   final override val success = false
 
-  final override def toString = "Request failed with status: " + status + " msg: " + error
+  final override def toString = "Request failed with status: " + status + ", msg: " + error
 }
 
 case class SingleSuccess[A](override val status: Envelope.Status = Envelope.Status.OK, single: A)

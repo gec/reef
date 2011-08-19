@@ -27,6 +27,7 @@ import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.japi.Envelope.ServiceNotification
 
 object AMQPMessageConsumers extends Logging {
 
@@ -44,7 +45,7 @@ object AMQPMessageConsumers extends Logging {
     new MessageConsumer {
       def receive(data: Array[Byte], reply: Option[Destination]) = {
         safeExecute {
-          val evt = Envelope.ServiceNotification.parseFrom(data)
+          val evt: ServiceNotification = Envelope.ServiceNotification.parseFrom(data)
           accept(new Event(evt.getEvent, convert(evt.getPayload.toByteArray)))
         }
       }
@@ -67,8 +68,8 @@ object AMQPMessageConsumers extends Logging {
           case Some(dest) =>
 
             val request = Envelope.ServiceRequest.parseFrom(data)
-            val rspExchange = dest.exchange
-            val rspKey = dest.key
+            val responseExchange = dest.exchange
+            val responseKey = dest.key
 
             import scala.collection.JavaConversions._
 
@@ -77,7 +78,7 @@ object AMQPMessageConsumers extends Logging {
             request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
 
             val callback = new ServiceResponseCallback {
-              def onResponse(rsp: Envelope.ServiceResponse) = publish(rsp, rspExchange, rspKey)
+              def onResponse(serviceResponse: Envelope.ServiceResponse) = publish(serviceResponse, responseExchange, responseKey)
             }
 
             service(request, env, callback) //invoke the service, it will publish the result when done

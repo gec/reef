@@ -122,7 +122,7 @@ trait AlarmSummaryCalculations {
   def initializeSummaries(summary: SummaryPoints) {
     val severities = (for (i <- 1 to 3) yield i).toList
     val subsystems = List("FEP", "Processing")
-    val eqGroups = EQ.findEntitiesByType("EquipmentGroup" :: Nil).toList.map { _.name }
+    val eqGroups = EntityQueryManager.findEntitiesByType("EquipmentGroup" :: Nil).toList.map { _.name }
 
     // TODO: get list of summary points from configuration somewhere
     val names = severities.map { severityName(_) } ::: subsystems.map { subsystemName(_) } ::: eqGroups.map { eqGroupName(_) }

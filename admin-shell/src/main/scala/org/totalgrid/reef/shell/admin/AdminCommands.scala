@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.shell.admin
 
-import org.apache.felix.gogo.commands.Command
 import org.totalgrid.reef.shell.proto.ReefCommandSupport
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
@@ -26,13 +25,29 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
 import org.totalgrid.reef.services.ServiceBootstrap
+import org.apache.felix.gogo.commands.{ Option => GogoOption, Command }
+import java.io.{ InputStreamReader, BufferedReader }
 
 @Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
 class ResetDatabaseCommand extends ReefCommandSupport {
 
+  @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
+  private var password: String = null
+
   override val requiresLogin = false
 
   override def doCommand(): Unit = {
+
+    val systemPassword = Option(password) match {
+      case Some(pass) =>
+        System.out.println("WARNING: Password will be visible in karaf command history!")
+        pass.trim
+      case None =>
+        val stdIn = new BufferedReader(new InputStreamReader(System.in))
+        System.out.println("Enter New System Password: ")
+        stdIn.readLine.trim
+    }
+
     val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql"))
     logout()
 
@@ -47,7 +62,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
     exe.start()
     try {
       ServiceBootstrap.resetDb()
-      ServiceBootstrap.seed()
+      ServiceBootstrap.seed(systemPassword)
       println("Cleared and updated jvm database")
 
       if (mstore.reset) {

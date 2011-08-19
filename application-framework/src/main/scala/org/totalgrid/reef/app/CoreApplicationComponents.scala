@@ -20,12 +20,12 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.executor.ReactActorExecutor
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.proto.ReefServicesList
 
-import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.metrics.{ MetricsSink }
+import org.totalgrid.reef.japi.request.impl.AllScadaServicePooled
+import org.totalgrid.reef.executor.ReactActorExecutor
+import org.totalgrid.reef.messaging.{ BasicSessionPool, AMQPProtoFactory, AMQPProtoRegistry }
 
 /**
  * wraps up all of the common/core components used by bus enabled applications, most of these components get a key
@@ -38,15 +38,18 @@ class CoreApplicationComponents(
     /// the current appConfig, contains the instanceName and userName
     val appConfig: ApplicationConfig,
     /// authToken we are running the application as
-    val defaultEnv: RequestEnv) {
+    authToken: String) {
 
-  // registry is recreated here so we get service registry from bus if necessary 
-  val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList, Some(defaultEnv))
+  /// registry is recreated here so we get service registry from bus if necessary
+  val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList, Some(authToken))
+
+  /// AllScadaService implementation with its own pool (can't share with registry because it clears default auth token)
+  val services = new AllScadaServicePooled(new BasicSessionPool(registry), authToken)
 
   /// heartbeatActor sends regular updates to the system to let it know we are still running, if this process
   /// dies the system can notice quickly and recover. Its important that the client start this actor and stop
   /// it cleanly before the amqp service is killed, that allows a nice clean shutdown
-  val heartbeatActor = new ProcessHeartbeatActor(amqp, appConfig.getHeartbeatCfg) with ReactActorExecutor
+  val heartbeatActor = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg) with ReactActorExecutor
 
   /// specialized publisher for publishing application metrics
   val metricsPublisher = MetricsSink.getInstance(appConfig.getInstanceName)

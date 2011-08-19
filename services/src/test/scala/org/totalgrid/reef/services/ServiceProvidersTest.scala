@@ -27,12 +27,11 @@ import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.proto.{ ReefServicesList }
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.executor.mock.InstantExecutor
+import org.totalgrid.reef.app.ApplicationEnroller
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
@@ -54,8 +53,12 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
   test("All Service Providers are in services list") {
     AMQPFixture.mock(true) { amqp =>
       ServiceBootstrap.resetDb
-      ServiceBootstrap.seed
-      val components = ServiceBootstrap.bootstrapComponents(amqp)
+      ServiceBootstrap.seed("system")
+
+      val userSettings = ApplicationEnroller.getDefaultUserSettings
+      val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+
+      val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
       val serviceContainer = new ExchangeCheckingServiceContainer
 

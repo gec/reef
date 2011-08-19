@@ -97,10 +97,6 @@ trait FrontEndProcessorConversion
     true
   }
 
-  def createModelEntry(proto: FrontEndProcessor): ApplicationInstance = {
-    ApplicationConfigConversion.createModelEntry(proto.getAppConfig)
-  }
-
   def convertToProto(entry: ApplicationInstance): FrontEndProcessor = {
     val protocols = ApplicationSchema.protocols.where(i => i.applicationId === entry.id).map(_.protocol)
 

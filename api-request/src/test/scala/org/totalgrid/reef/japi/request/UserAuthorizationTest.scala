@@ -25,6 +25,7 @@ import scala.collection.JavaConversions._
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
+/*
 @RunWith(classOf[JUnitRunner])
 class UserAuthorizationTest
     extends ClientSessionSuite("UserAuthorization.xml", "UserAuthorization",
@@ -81,4 +82,4 @@ class UserAuthorizationTest
     }
   }
 
-}
+}*/ 

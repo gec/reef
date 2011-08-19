@@ -77,7 +77,6 @@ trait ActiveModel {
   }
 
   def mayBelongTo[A](query: Query[A]): Option[A] = {
-
     query.size match {
       case 1 => Some(query.single)
       case _ => None
@@ -85,7 +84,6 @@ trait ActiveModel {
   }
 
   def belongTo[A](query: Query[A]): A = {
-
     query.size match {
       case 1 => query.single
       case _ => throw new ActiveModelException("Missing belongTo relation")
@@ -95,7 +93,6 @@ trait ActiveModel {
 
 trait ModelWithId extends KeyedEntity[Long] with ActiveModel {
   var id: Long = 0
-
 }
 
 import java.util.UUID
@@ -119,5 +116,4 @@ class EntityBasedModel(val entityId: UUID) extends ModelWithId {
   val entity = LazyVar(hasOneByUuid(ApplicationSchema.entities, entityId))
 
   def entityName = entity.value.name
-
 }

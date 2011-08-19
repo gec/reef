@@ -139,9 +139,17 @@ class AgentCreateCommand extends SingleAgentCommandBase {
   @GogoOption(name = "-s", description = "Names of wanted permissionSets, must include at least one", required = true, multiValued = true)
   var permissionSets: java.util.List[String] = null
 
+  @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
+  private var password: String = null
+
   def doCommand() = {
 
-    val newPassword = getRepeatedPassword()
+    val newPassword = Option(password) match {
+      case None => getRepeatedPassword()
+      case Some(pw) =>
+        System.out.println("WARNING: Password will be visible in karaf command history!")
+        pw
+    }
 
     val agent = authService.createNewAgent(agentName, newPassword, permissionSets)
 

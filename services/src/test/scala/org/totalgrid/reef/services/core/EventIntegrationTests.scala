@@ -71,22 +71,22 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       seed("SubA")
       seed("SubB")
 
-      EQ.addEntity("Orphan", "Orphan")
+      EntityQueryManager.addEntity("Orphan", "Orphan")
     }
     def seed(name: String) {
-      val subId = EQ.addEntity(name, "Substation", "EquipmentGroup")
+      val subId = EntityQueryManager.addEntity(name, "Substation", "EquipmentGroup")
       seedDevice(subId, name + "-DeviceA", "Line")
       seedDevice(subId, name + "-DeviceB", "Line")
     }
     def seedDevice(subId: Entity, name: String, typ: String) {
-      val devId = EQ.addEntity(name, typ, "Equipment")
-      val toSubId = EQ.addEdge(subId, devId, "owns")
+      val devId = EntityQueryManager.addEntity(name, typ, "Equipment")
+      val toSubId = EntityQueryManager.addEdge(subId, devId, "owns")
       seedPoint(subId, devId, name + "-PointA", "owns")
       seedPoint(subId, devId, name + "-PointB", "owns")
     }
     def seedPoint(subId: Entity, devId: Entity, name: String, rel: String) {
-      val pointId = EQ.addEntity(name, "Point")
-      val toDevId = EQ.addEdge(devId, pointId, rel)
+      val pointId = EntityQueryManager.addEntity(name, "Point")
+      val toDevId = EntityQueryManager.addEdge(devId, pointId, rel)
     }
 
     def subscribeEvents(expected: Int, req: EventProto) = {

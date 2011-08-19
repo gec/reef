@@ -42,7 +42,7 @@ public class TestAuthService extends ReefConnectionTestBase
     public void successfulLogin() throws ReefServiceException
     {
         AuthTokenService as = helpers;
-        as.createNewAuthorizationToken( "core", "core" );
+        as.createNewAuthorizationToken( "system", "system" );
     }
 
     @Test
@@ -62,7 +62,7 @@ public class TestAuthService extends ReefConnectionTestBase
         }
         AuthTokenService as = helpers;
         // logon as all permission user
-        String token = as.createNewAuthorizationToken( "core", "core" );
+        String token = as.createNewAuthorizationToken( "system", "system" );
         helpers = new AllScadaServicePooledWrapper( connection.newSessionPool(), token );
 
         PointService ps = helpers;

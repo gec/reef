@@ -32,17 +32,23 @@ import java.util.{ Dictionary, Hashtable }
 
 class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader with Logging {
 
-  val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
+  private val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
     service.getConfiguration(pid)
   } match {
     case Some(x) => x
     case None => throw new Exception("Unable to find ConfigurationAdmin service")
   }
 
-  val props: Dictionary[String, String] = config.getProperties match {
+  private val props: Dictionary[String, String] = config.getProperties match {
     case null => new Hashtable[String, String]
     case x: Dictionary[_, _] => x.asInstanceOf[Dictionary[String, String]]
   }
 
   def getProp(key: String): Option[String] = Option(props.get(key))
+  def getProperties = props
+}
+
+object OsgiConfigReader {
+  def apply(context: BundleContext, pid: String) = new OsgiConfigReader(context, pid)
+
 }

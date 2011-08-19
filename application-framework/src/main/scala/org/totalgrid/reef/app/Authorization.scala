@@ -27,7 +27,7 @@ import org.totalgrid.reef.util.Logging
 object Authorization extends Logging {
 
   def defaultUserName = SystemProperty.get("reef.user", "system")
-  def defaultUserPassword = SystemProperty.get("reef.user.password", "-system-")
+  def defaultUserPassword = SystemProperty.get("reef.user.password", "system")
 
   def buildLogin(userName: Option[String] = None, userPassword: Option[String] = None): AuthToken = {
     val agent = Agent.newBuilder

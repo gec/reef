@@ -18,22 +18,22 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-/**
- * "Super" implementation of all of the service interfaces
- */
-trait AllScadaServiceImpl
-  extends AuthTokenServiceImpl
-  with EntityServiceImpl
-  with ConfigFileServiceImpl
-  with MeasurementServiceImpl
-  with MeasurementOverrideServiceImpl
-  with EventServiceImpl
-  with EventCreationServiceImpl
-  with EventConfigServiceImpl
-  with CommandServiceImpl
-  with PointServiceImpl
-  with AlarmServiceImpl
-  with AgentServiceImpl
-  with EndpointManagementServiceImpl
-  with ApplicationServiceImpl
+import java.util.List
+import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.japi.request.builders.ApplicationConfigBuilders
 
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.japi.client.NodeSettings
+import org.totalgrid.reef.japi.request.ApplicationService
+
+trait ApplicationServiceImpl extends ReefServiceBaseClass with ApplicationService {
+
+  override def registerApplication(config: NodeSettings, instanceName: String, capabilities: List[String]) = {
+    ops("Failed registering application") {
+      _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).await().expectOne
+    }
+  }
+  override def sendHeartbeat(statusSnapshot: StatusSnapshot) = ops("Heartbeat failed") {
+    _.put(statusSnapshot).await().expectOne()
+  }
+}

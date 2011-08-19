@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
-import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto, Entity => EntityProto }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
@@ -32,6 +31,7 @@ import org.totalgrid.reef.japi.BadRequestException
 import SquerylModel._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
 
 class ConfigFileService(protected val model: ConfigFileServiceModel)
     extends SyncModeledServiceBase[ConfigProto, ConfigFile, ConfigFileServiceModel]
@@ -48,34 +48,36 @@ class ConfigFileServiceModel
   val table = ApplicationSchema.configFiles
 
   def addOwningEntity(context: RequestContext, protos: List[ConfigProto], entity: Entity): Unit = {
-    protos.foreach(proto => {
+    protos.foreach(configFileProto => {
+      logger.debug("addOwningEntity(): configFileProto: " + configFileProto + ", entity: " + entity)
 
       // add the entity to the config file protos so if we need to create it the ownership is set
-      val p = proto.toBuilder.clearEntities.addEntities(EQ.entityToProto(entity)).build
+      val configFile: ConfigProto = configFileProto.toBuilder.clearEntities.addEntities(EntityQueryManager.entityToProto(entity)).build
 
-      findRecord(context, p) match {
-        case Some(found) => updateUsingEntities(context, p, found, found.owners.value)
-        case None => createFromProto(context, p)
+      findRecord(context, configFile) match {
+        case Some(found) => updateUsingEntities(context, configFile, found, found.owners.value)
+        case None => createFromProto(context, configFile)
       }
     })
   }
 
-  override def createFromProto(context: RequestContext, req: ConfigProto): ConfigFile = {
-    if (!req.hasMimeType || !req.hasFile || !req.hasName) {
+  override def createFromProto(context: RequestContext, configFileProto: ConfigProto): ConfigFile = {
+    if (!configFileProto.hasMimeType || !configFileProto.hasFile || !configFileProto.hasName) {
       throw new BadRequestException("Cannot add config file without mimeType, file text and name set")
     }
 
+    logger.debug("creating config file from proto: " + configFileProto)
     // make the entity entry for the config file
-    val ent = EQ.findOrCreateEntity(req.getName, "ConfigurationFile")
+    val entity: Entity = EntityQueryManager.findOrCreateEntity(configFileProto.getName, "ConfigurationFile")
 
-    val sql = create(context, createModelEntry(req, ent))
-    updateUsingEntities(context, req, sql, Nil) // add entity edges
+    val sql = create(context, createModelEntry(configFileProto, entity))
+    updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges
     sql
   }
 
-  override def updateFromProto(context: RequestContext, req: ConfigProto, existing: ConfigFile): Tuple2[ConfigFile, Boolean] = {
-    val sql = createModelEntry(req, existing.entity.value)
-    updateUsingEntities(context, req, sql, existing.owners.value) // add entity edges
+  override def updateFromProto(context: RequestContext, configFileProto: ConfigProto, existing: ConfigFile): Tuple2[ConfigFile, Boolean] = {
+    val sql = createModelEntry(configFileProto, existing.entity.value)
+    updateUsingEntities(context, configFileProto, sql, existing.owners.value) // add entity edges
     update(context, sql, existing)
   }
 
@@ -86,36 +88,36 @@ class ConfigFileServiceModel
   }
 
   override def postDelete(context: RequestContext, sql: ConfigFile) {
-    EQ.deleteEntity(sql.entity.value)
+    EntityQueryManager.deleteEntity(sql.entity.value)
   }
 
-  private def updateUsingEntities(context: RequestContext, req: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
+  private def updateUsingEntities(context: RequestContext, configFileProto: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
-    val updatedEntities = req.getEntitiesList.toList.map { e => EQ.findEntity(e).get }
+    val updatedEntities = configFileProto.getEntitiesList.toList.map { e => EntityQueryManager.findEntity(e).get }
     val newEntitites = updatedEntities.diff(existingEntities)
 
-    // we don't delete edges this way, currently no way to delete configFile edges
+    // TODO we don't delete edges this way, currently no way to delete configFile edges
 
     newEntitites.foreach(addUserEntity(context, sql.entity.value, _))
     if (!newEntitites.isEmpty) sql.changedOwners = true
   }
 
   private def addUserEntity(context: RequestContext, configFile: Entity, user: Entity): Unit = {
-    EQ.addEdge(user, configFile, "uses")
+    EntityQueryManager.addEdge(user, configFile, "uses")
   }
 }
 
 trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
-  def getRoutingKey(req: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid :: req.name :: req.mimeType :: Nil
+  def getRoutingKey(configFileProto: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
+    configFileProto.uuid.uuid :: configFileProto.name :: configFileProto.mimeType :: Nil
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
 
     // when searching we go through all the entities in the proto constucting the intersection of the used config files
-    val entities = EQ.findEntities { proto.getEntitiesList.toList }
-    val configEntityIds = entities.map { e => EQ.getChildrenOfType(e.id, "uses", "ConfigurationFile").map { _.id } }.flatten
+    val entities = EntityQueryManager.findEntities { proto.getEntitiesList.toList }
+    val configEntityIds = entities.map { e => EntityQueryManager.getChildrenOfType(e.id, "uses", "ConfigurationFile").map { _.id } }.flatten
     // if we have specified entities only return matching config files they own (which will be zero if configEntityIds.size == 0)
     val query = if (entities.isEmpty) Nil else Some(sql.entityId in configEntityIds) :: Nil
 
@@ -145,14 +147,14 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
 
   import org.totalgrid.reef.messaging.ProtoSerializer.convertBytesToByteString
   def convertToProto(entry: ConfigFile): ConfigProto = {
-    val b = ConfigProto.newBuilder
+    val configProtoBuilder = ConfigProto.newBuilder
       .setUuid(makeUuid(entry))
       .setName(entry.entity.value.name)
       .setMimeType(entry.mimeType)
       .setFile(entry.file)
 
-    entry.owners.value.foreach(e => b.addEntities(EQ.entityToProto(e)))
+    entry.owners.value.foreach(e => configProtoBuilder.addEntities(EntityQueryManager.entityToProto(e)))
 
-    b.build
+    configProtoBuilder.build
   }
 }

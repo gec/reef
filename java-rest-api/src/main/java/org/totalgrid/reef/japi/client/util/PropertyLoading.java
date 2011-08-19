@@ -16,15 +16,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi;
+package org.totalgrid.reef.japi.client.util;
 
-/**
- * Thrown when no response was received from the server before the timeout expired.
- */
-public class ResponseTimeoutException extends ReefServiceException
+
+import java.util.Dictionary;
+import java.util.Properties;
+
+public class PropertyLoading
 {
-    public ResponseTimeoutException( String msg )
+    public static String getString( String id, Dictionary props ) throws IllegalArgumentException
     {
-        super( msg, Envelope.Status.RESPONSE_TIMEOUT );
+        String prop = (String)props.get( id );
+        if ( prop == null )
+        {
+            throw new IllegalArgumentException( "Could not load configuration. Missing: " + id );
+        }
+        return prop;
+    }
+
+    public static int getInt( String id, Dictionary props ) throws IllegalArgumentException
+    {
+        String prop = getString( id, props );
+        return Integer.parseInt( prop );
+    }
+
+    public static boolean getBoolean( String id, Dictionary props ) throws IllegalArgumentException
+    {
+        String prop = getString( id, props );
+        return Boolean.parseBoolean( prop );
     }
 }

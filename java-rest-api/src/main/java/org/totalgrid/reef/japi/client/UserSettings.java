@@ -16,15 +16,40 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi;
+package org.totalgrid.reef.japi.client;
 
-/**
- * Thrown when no response was received from the server before the timeout expired.
- */
-public class ResponseTimeoutException extends ReefServiceException
+
+import org.totalgrid.reef.japi.client.util.PropertyLoading;
+
+import java.util.Dictionary;
+import java.util.Properties;
+
+public class UserSettings
 {
-    public ResponseTimeoutException( String msg )
+
+    private String userName;
+    private String userPassword;
+
+    public UserSettings( String userName, String userPassword )
     {
-        super( msg, Envelope.Status.RESPONSE_TIMEOUT );
+        this.userName = userName;
+        this.userPassword = userPassword;
     }
+
+    public UserSettings( Dictionary properties )
+    {
+        this.userName = PropertyLoading.getString( "org.totalgrid.reef.user.username", properties );
+        this.userPassword = PropertyLoading.getString( "org.totalgrid.reef.user.password", properties );
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public String getUserPassword()
+    {
+        return userPassword;
+    }
+
 }

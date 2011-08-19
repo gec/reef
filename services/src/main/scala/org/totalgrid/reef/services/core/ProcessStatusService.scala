@@ -56,7 +56,25 @@ class ProcessStatusServiceModel(
     with Logging {
 
   def createFromProto(context: RequestContext, req: StatusSnapshot) =
-    throw new BadRequestException("Cannot create heartbeat status, register application first")
+    throw new BadRequestException("Cannot create heartbeat status, register application first. Instance: "
+      + req.getInstanceName + " Process: " + req.getProcessId + " unknown.")
+
+  override def updateFromProto(context: RequestContext, ss: StatusSnapshot, hbeat: HeartbeatStatus): (HeartbeatStatus, Boolean) = {
+    if (hbeat.isOnline) {
+      if (ss.getOnline) {
+        logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
+        hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
+        // don't publish a modify
+        ApplicationSchema.heartbeats.update(hbeat)
+        (hbeat, true)
+      } else {
+        logger.info("App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
+        takeApplicationOffline(context, hbeat, ss.getTime)
+      }
+    } else {
+      throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message!")
+    }
+  }
 
   def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
 
@@ -80,7 +98,7 @@ class ProcessStatusServiceModel(
     ret
   }
 
-  def takeApplicationOffline(context: RequestContext, hbeat: HeartbeatStatus, now: Long) {
+  def takeApplicationOffline(context: RequestContext, hbeat: HeartbeatStatus, now: Long) = {
 
     logger.debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
     val ret = update(context, new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)

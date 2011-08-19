@@ -25,7 +25,7 @@ import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 /**
  * mixin that handles the add/remove/modify/subscribed behavior by keeping protos in a map and freeing up the
  * user code to handle only the "payload" add/remove behavior. User code can therefore skip any checks to make
- * sure that the object isn't allready created/removed.
+ * sure that the object isn't already created/removed.
  *
  * This class can be mixed in to implement the abstract functions of ServiceContext[A]
  */
@@ -68,36 +68,36 @@ trait KeyedMap[A] extends Logging {
   }
 
   /* --  Handlers for device connections --*/
-  def add(c: A): Unit = {
-    active.get(getKey(c)) match {
-      case Some(x) => modify(c)
+  def add(connection: A): Unit = {
+    active.get(getKey(connection)) match {
+      case Some(x) => modify(connection)
       case None =>
-        addEntry(c)
-        active += getKey(c) -> c
-        logger.info("added key " + getKey(c))
+        addEntry(connection)
+        active += getKey(connection) -> connection
+        logger.info("added key " + getKey(connection) + ", connection: " + connection)
     }
 
   }
 
-  def remove(c: A): Unit = {
-    active.get(getKey(c)) match {
-      case None => logger.warn("Remove on unregistered key: " + getKey(c))
+  def remove(connection: A): Unit = {
+    active.get(getKey(connection)) match {
+      case None => logger.warn("Remove on unregistered key: " + getKey(connection) + ", connection: " + connection)
       case Some(x) =>
-        logger.info("removing ... " + getKey(c))
+        logger.info("removing key: " + getKey(connection) + ", connection: " + connection)
         removeEntry(x)
-        active -= getKey(c)
-        logger.info("removed ... " + getKey(c))
+        active -= getKey(connection)
+        logger.info("removed key: " + getKey(connection) + ", connection: " + connection)
     }
   }
 
-  def modify(c: A): Unit = {
-    active.get(getKey(c)) match {
+  def modify(connection: A): Unit = {
+    active.get(getKey(connection)) match {
       case Some(x) =>
-        if (hasChangedEnoughForReload(c, x)) {
-          remove(c)
-          add(c)
+        if (hasChangedEnoughForReload(connection, x)) {
+          remove(connection)
+          add(connection)
         }
-      case None => add(c)
+      case None => add(connection)
     }
   }
 

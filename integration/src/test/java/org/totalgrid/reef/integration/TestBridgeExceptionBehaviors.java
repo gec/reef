@@ -33,11 +33,7 @@ public class TestBridgeExceptionBehaviors
     @Test
     public void throwsExceptionWhenNotStarted()
     {
-        String reef_ip = System.getProperty( "reef_node_ip" );
-        if ( reef_ip == null )
-            reef_ip = "127.0.0.1";
-
-        AMQPConnectionSettings settings = new AMQPConnectionSettings( reef_ip, 5672, "guest", "guest", "test" );
+        AMQPConnectionSettings settings = new AMQPConnectionSettings( "127.0.0.1", 5672, "guest", "guest", "test", false, "", "" );
         Connection connection = new AMQPConnection( settings, 5000 );
 
         try

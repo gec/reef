@@ -44,10 +44,10 @@ class AmqpClientSession(
   final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) {
 
     val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
-    val serviceRequest = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))
+    val requestBuilder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))
 
-    val sendEnv = mergeHeaders(env)
-    sendEnv.asKeyValueList.foreach(kv => serviceRequest.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
+    val sendEnv: RequestEnv = mergeHeaders(env)
+    sendEnv.asKeyValueList.foreach(kv => requestBuilder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {
       val response: Option[Response[A]] = resp match {
@@ -67,7 +67,7 @@ class AmqpClientSession(
       callback(Response.convert(response))
     }
 
-    correlator.send(serviceRequest, info.descriptor.id, dest.key, handleResponse)
+    correlator.send(requestBuilder, info.descriptor.id, dest.key, handleResponse)
   }
 
   final override def addSubscription[A](klass: Class[_]): Subscription[A] = {

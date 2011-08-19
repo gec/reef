@@ -29,25 +29,26 @@ import org.totalgrid.reef.sapi.client.{ Success, Failure, SingleSuccess }
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 object ApplicationEnroller extends Logging {
 
-  def defaultUserName = SystemProperty.get("reef.user", "system")
-  def defaultUserPassword = SystemProperty.get("reef.user.password", "-system-")
-  def defaultNodeName = SystemProperty.get("reef.node", "node01")
-  def defaultLocation = SystemProperty.get("reef.network", "any")
-  def defaultNetwork = SystemProperty.get("reef.location", "any")
+  def defaultUserName = SystemProperty.get("org.totalgrid.reef.user.username", "system")
+  def defaultUserPassword = SystemProperty.get("org.totalgrid.reef.user.password", "system")
+  def defaultNodeName = SystemProperty.get("org.totalgrid.reef.node.name", "node01")
+  def defaultLocation = SystemProperty.get("org.totalgrid.reef.node.location", "any")
+  def defaultNetwork = SystemProperty.get("org.totalgrid.reef.node.network", "any")
 
-  def buildLogin(userName: Option[String] = None, userPassword: Option[String] = None) = {
+  def buildLogin(userSettings: UserSettings): AuthToken = {
     val agent = Agent.newBuilder
-    agent.setName(userName.getOrElse(defaultUserName)).setPassword(userPassword.getOrElse(defaultUserPassword))
+    agent.setName(userSettings.getUserName).setPassword(userSettings.getUserPassword)
     val auth = AuthToken.newBuilder
     auth.setAgent(agent)
     auth.build
   }
 
   /// Use the system context to get user name, location, network and instanceName
-  def buildConfig(capabilites: List[String], instanceName: Option[String] = None, userName: Option[String] = None, location: Option[String] = None, network: Option[String] = None): ApplicationConfig = {
+  def buildConfig(config: NodeSettings, instanceName: String, capabilities: List[String]): ApplicationConfig = {
     val b = ApplicationConfig.newBuilder()
 
     def randomString(n: Int): String = {
@@ -56,14 +57,16 @@ object ApplicationEnroller extends Logging {
       sb.toString
     }
 
-    b.setInstanceName(instanceName.getOrElse(defaultNodeName + "-" + capabilites.mkString("-")))
-    b.setUserName(userName.getOrElse(defaultUserName))
-    b.setNetwork(network.getOrElse(defaultNetwork))
-    b.setLocation(location.getOrElse(defaultLocation))
-    capabilites.foreach(b.addCapabilites(_))
+    b.setInstanceName(instanceName)
+    b.setNetwork(config.getNetwork)
+    b.setLocation(config.getLocation)
+    capabilities.foreach(b.addCapabilites(_))
     b.setProcessId(randomString(8))
     b.build
   }
+
+  def getDefaultNodeSettings = new NodeSettings(defaultNodeName, defaultLocation, defaultNetwork)
+  def getDefaultUserSettings = new UserSettings(defaultUserName, defaultUserPassword)
 }
 
 import ApplicationEnroller._
@@ -78,7 +81,7 @@ import ApplicationEnroller._
  * @param processType should be either FEP or Processing
  * @param setupFun the construction function for the class using the components, must be StartStoppable
  */
-abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[String], capabilites: List[String], setupFun: CoreApplicationComponents => Lifecycle) extends Executor with Lifecycle with Logging {
+abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSettings, nodeSettings: NodeSettings, instanceName: String, capabilites: List[String], setupFun: CoreApplicationComponents => Lifecycle) extends Executor with Lifecycle with Logging {
 
   private var container: Option[Lifecycle] = None
 
@@ -89,13 +92,13 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
   private def enroll() {
     freshClient
     client.foreach { c =>
-      c.put(buildLogin()).listen { rsp =>
+      c.put(buildLogin(userSettings)).listen { rsp =>
         rsp match {
           case SingleSuccess(status, single) =>
             val env = new RequestEnv
             env.addAuthToken(single.getToken)
             c.setDefaultHeaders(env)
-            putAppConfig(c, env, buildConfig(capabilites, instanceName))
+            putAppConfig(c, single.getToken, buildConfig(nodeSettings, instanceName, capabilites))
           case Success(_, list) =>
             logger.error("Expected 1 AuthToken, but received " + rsp.list)
             reenroll()
@@ -109,10 +112,10 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, instanceName: Option[
 
   private def reenroll() = delay(2000) { enroll() }
 
-  def putAppConfig(client: AmqpClientSession, env: RequestEnv, configRequest: ApplicationConfig) = client.put(configRequest).listen {
+  def putAppConfig(client: AmqpClientSession, auth: String, configRequest: ApplicationConfig) = client.put(configRequest).listen {
     _ match {
       case SingleSuccess(_, config) =>
-        val components = new CoreApplicationComponents(amqp, config, env)
+        val components = new CoreApplicationComponents(amqp, config, auth)
         container = Some(setupFun(components))
         container.get.start
       case Failure(status, err) =>

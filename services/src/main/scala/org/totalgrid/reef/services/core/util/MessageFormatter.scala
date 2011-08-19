@@ -76,8 +76,7 @@ object MessageFormatter {
       leftBrace = indexOfWithEscape(resource, '{', index)
     }
 
-    // Either there were never any braces or there's a string
-    // after the last brace
+    // Either there were never any braces or there's a string after the last brace
     if (index < resource.length)
       segments ::= ResourceSegmentString(resource.substring(index))
 

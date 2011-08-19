@@ -31,6 +31,9 @@ import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
 
 import org.totalgrid.reef.japi.client.Connection;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -74,23 +77,21 @@ public class ReefConnectionTestBase
      */
     private AMQPConnectionSettings getConnectionInfo()
     {
-        String reef_ip = System.getProperty( "reef_node_ip" );
-        if ( reef_ip == null )
-            reef_ip = "127.0.0.1";
-        String reef_port = System.getProperty( "reef_node_port" );
-        if ( reef_port == null )
-            reef_port = "5672";
-        String user = System.getProperty( "org.totalgrid.reef.amqp.user" );
-        if ( user == null )
-            user = "guest";
-        String password = System.getProperty( "org.totalgrid.reef.amqp.password" );
-        if ( password == null )
-            password = "guest";
-        String virtualHost = System.getProperty( "org.totalgrid.reef.amqp.virtualHost" );
-        if ( virtualHost == null )
-            virtualHost = "test";
+        Properties props = new Properties();
 
-        return new AMQPConnectionSettings( reef_ip, Integer.parseInt( reef_port ), user, password, virtualHost );
+        try
+        {
+            FileInputStream fis = new FileInputStream( "../org.totalgrid.reef.amqp.cfg" );
+            props.load( fis );
+            fis.close();
+        }
+        catch ( IOException e )
+        {
+            e.printStackTrace();
+            // we'll then throw an exception when trying to load from emtpy properties file
+        }
+
+        return new AMQPConnectionSettings( props );
     }
 
     @Before
@@ -99,7 +100,7 @@ public class ReefConnectionTestBase
         connection.connect( 5000 );
         client = connection.newSession();
         SessionExecutionPool pool = connection.newSessionPool();
-        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "core", "core" );
+        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
         {
             client.getDefaultHeaders().setAuthToken( authToken );

@@ -47,7 +47,7 @@ object CommunicationsLoader {
  * TODO: Add serial interfaces
  *
  */
-class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
+class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunication, exceptionCollector: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
 
   val controlProfiles = LoaderMap[ControlProfile]("Control Profile")
   val pointProfiles = LoaderMap[PointProfile]("Point Profile")
@@ -95,7 +95,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     // Load endpoints
     model.getEndpoint.toList.foreach(e => {
       println("Loading Communications: processing endpoint '" + e.getName + "'")
-      ex.collect("Endpoint: " + e.getName) {
+      exceptionCollector.collect("Endpoint: " + e.getName) {
         loadEndpoint(e, equipmentPointUnits, benchmark)
       }
     })
@@ -112,7 +112,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     //  pointProfiles: scale
     for ((name, profile) <- pointProfiles) {
       if (profile.isSetScale)
-        validatePointScale(ex, "profile '" + name + "'", profile.getScale)
+        validatePointScale(exceptionCollector, "profile '" + name + "'", profile.getScale)
     }
 
     // TODO: more profile validation ...
@@ -154,20 +154,22 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     val statuses = HashMap[String, PointType]()
     val analogs = HashMap[String, PointType]()
     val counters = HashMap[String, PointType]()
-    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, setpoints, statuses, analogs, counters)) // TODO: should the endpoint name be used as the starting prefixed ?
+    // TODO: should the endpoint name be used as the starting prefixed ?
+    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, setpoints, statuses, analogs, counters))
     logger.trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
 
-    for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex) // TODO fill in endpoint name
+    // TODO fill in endpoint name
+    for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex)
     for ((name, s) <- setpoints) loadCache.addControl("", name, s.getIndex)
 
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
     val isBenchmark = overriddenProtocolName == BENCHMARK
-    ex.collect("Checking Indexes: " + endpointName) {
+    exceptionCollector.collect("Checking Indexes: " + endpointName) {
       validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg, compareControls)
       validateIndexesAreUnique[Setpoint](setpoints, isBenchmark, errorMsg)
       validateIndexesAreUnique[PointType](statuses, isBenchmark, errorMsg)
@@ -188,12 +190,12 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     overriddenProtocolName match {
       case DNP3 =>
-        ex.collect("DNP3 Indexes:" + endpointName) {
+        exceptionCollector.collect("DNP3 Indexes:" + endpointName) {
           configFiles ::= processIndexMapping(endpointName, controls, setpoints, points)
         }
       case BENCHMARK => {
         val delay = protocol.getSimOptions.map { _.getDelay }
-        ex.collect("Simulator Mapping:" + endpointName) {
+        exceptionCollector.collect("Simulator Mapping:" + endpointName) {
           configFiles ::= createSimulatorMapping(endpointName, controls, setpoints, points, delay)
         }
       }
@@ -227,9 +229,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def validateIndexesAreUnique[A <: IndexType](indexables: HashMap[String, A], isBenchmark: Boolean, error: String, equalsFunc: (A, A) => Boolean = { (a: A, b: A) => true }) {
     val map = HashMap[Int, A]()
     for ((name, indexable) <- indexables) {
-      // if there are indexes, check them
-      // if the originalProtocol is benchmark, indexes are optional
-      // if the originalProtocol is
+      // if there are indexes, check them.  if the originalProtocol is benchmark, indexes are optional
       if (indexable.isSetIndex) {
         val index = indexable.getIndex
         map.contains(index) match {
@@ -413,9 +413,9 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
 
     val indexMap = toIndexMapping(controlProtos.toList ::: setpointsProtos.toList, pointProtos).build
 
-    val cf = toConfigFile(endpointName, indexMap).build
-    client.putOrThrow(cf)
-    cf
+    val configFile = toConfigFile(endpointName, indexMap).build
+    client.putOrThrow(configFile)
+    configFile
   }
 
   /**
@@ -425,7 +425,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   def processPointScaling(endpointName: String, points: HashMap[String, PointType], equipmentPointUnits: HashMap[String, String], isBenchmark: Boolean): Unit = {
     import ProtoUtils._
 
-    for ((name, point) <- points) ex.collect("Point: " + endpointName + "." + name) {
+    for ((name, point) <- points) exceptionCollector.collect("Point: " + endpointName + "." + name) {
       val profile = getPointProfile(endpointName, point)
       val scale = if (point.isSetScale) // point/scale overrides any pointProfile/scale.
         Some(point.getScale)
@@ -666,7 +666,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
   }
 
   def createSimulatorMapping(
-    name: String,
+    endpointName: String,
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType],
@@ -683,25 +683,20 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     simMap.addAllMeasurements(pointProtos.toList)
     simMap.addAllCommands(controlProtos.toList ::: setpointProtos.toList)
 
-    val cf = toConfigFile(name, simMap.build).build
-    client.putOrThrow(cf)
-    cf
+    val configFile = toConfigFile(endpointName, simMap.build).build
+    client.putOrThrow(configFile)
+    configFile
   }
 
   def toCommandSim(name: String): SimMapping.CommandSim.Builder = {
-
-    SimMapping.CommandSim.newBuilder
-      .setName(name)
-      .setResponseStatus(Commands.CommandStatus.SUCCESS)
+    SimMapping.CommandSim.newBuilder.setName(name).setResponseStatus(Commands.CommandStatus.SUCCESS)
   }
 
   def toMeasSim(name: String, point: PointType): SimMapping.MeasSim.Builder = {
     import ProtoUtils._
 
-    logger.debug("    SIM POINT  -> " + name)
-    val proto = SimMapping.MeasSim.newBuilder
-      .setName(name)
-      .setUnit(point.getUnit)
+    logger.debug("SIM POINT -> " + name)
+    val proto = SimMapping.MeasSim.newBuilder.setName(name).setUnit(point.getUnit)
 
     var triggerSet = client.getOrThrow(toTriggerSet(toPoint(name))).headOption
 
@@ -747,13 +742,14 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCom, ex: Exc
     proto.setInitial(middle)
   }
 
-  def toConfigFile(name: String, simMapping: SimMapping.SimulatorMapping): Model.ConfigFile.Builder = {
-    val proto = Model.ConfigFile.newBuilder
-      .setName(name + "-sim.pi")
+  def toConfigFile(endpointName: String, simMapping: SimMapping.SimulatorMapping): Model.ConfigFile.Builder = {
+    val configFileBuilder = Model.ConfigFile.newBuilder
+      .setName(endpointName + "-sim.pi")
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(simMapping.toByteString)
-    logger.info(simMapping.toString)
 
-    proto
+    logger.info("simulator mapping: endpoint: " + endpointName + ", mapping: " + simMapping.toString)
+
+    configFileBuilder
   }
 }

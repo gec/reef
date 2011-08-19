@@ -19,7 +19,7 @@
 package org.totalgrid.reef.models
 
 import org.totalgrid.reef.util.LazyVar
-import org.totalgrid.reef.services.core.EQ
+import org.totalgrid.reef.services.core.EntityQueryManager
 
 import org.squeryl.annotations.Transient
 import org.squeryl.PrimitiveTypeMode._
@@ -28,16 +28,16 @@ import org.squeryl.Query
 
 object Point {
   def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String) = {
-    val ent = EQ.findOrCreateEntity(name, "Point")
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Point")
     val p = new Point(ent.id, _type, unit, abnormal)
-    dataSource.foreach(ln => { EQ.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
+    dataSource.foreach(ln => { EntityQueryManager.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
     p.entity.value = ent
     p
   }
 
   def findByName(name: String) = findByNames(name :: Nil)
   def findByNames(names: List[String]): Query[Point] = {
-    ApplicationSchema.points.where(_.entityId in EQ.findEntityIds(names, List("Point")))
+    ApplicationSchema.points.where(_.entityId in EntityQueryManager.findEntityIds(names, List("Point")))
   }
 }
 
@@ -47,7 +47,7 @@ case class Point(
     unit: String,
     var abnormal: Boolean) extends EntityBasedModel(_entityId) {
 
-  val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
+  val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
 
   val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
@@ -68,17 +68,17 @@ case class Point(
 
 object Command {
   def newInstance(name: String, displayName: String, _type: Int) = {
-    val ent = EQ.findOrCreateEntity(name, "Command")
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Command")
     val c = new Command(ent.id, displayName, _type, false, None, None)
     c.entity.value = ent
     c
   }
 
   def findByNames(names: List[String]): Query[Command] = {
-    ApplicationSchema.commands.where(_.entityId in EQ.findEntityIds(names, List("Command")))
+    ApplicationSchema.commands.where(_.entityId in EntityQueryManager.findEntityIds(names, List("Command")))
   }
   def findIdsByNames(names: List[String]): Query[Long] = {
-    from(ApplicationSchema.commands)(c => where(c.entityId in EQ.findEntityIds(names, List("Command"))) select (&(c.id)))
+    from(ApplicationSchema.commands)(c => where(c.entityId in EntityQueryManager.findEntityIds(names, List("Command"))) select (&(c.id)))
   }
 }
 
@@ -92,7 +92,7 @@ case class Command(
 
   def this() = this(new UUID(0, 0), "", -1, false, Some(0), Some(0))
 
-  val logicalNode = LazyVar(mayHaveOne(EQ.getParentOfType(entityId, "source", "LogicalNode")))
+  val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
 
   val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
@@ -107,7 +107,7 @@ case class Command(
 
 object FrontEndPort {
   def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte]) = {
-    val ent = EQ.findOrCreateEntity(name, "Channel")
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel")
     val c = new FrontEndPort(ent.id, network, location, state, proto)
     c.entity.value = ent
     c
@@ -131,7 +131,7 @@ case class ConfigFile(
     val mimeType: String,
     var file: Array[Byte]) extends EntityBasedModel(_entityId) {
 
-  val owners = LazyVar(EQ.getParents(entity.value.id, "uses").toList)
+  val owners = LazyVar(EntityQueryManager.getParents(entity.value.id, "uses").toList)
 
   /// this flag allows us to tell if we have modified
   @Transient
@@ -150,8 +150,12 @@ case class CommunicationEndpoint(
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
-  val configFiles = LazyVar(Entity.asType(ApplicationSchema.configFiles, EQ.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList, Some("ConfigurationFile")))
+  val configFiles = LazyVar(Entity
+    .asType(ApplicationSchema.configFiles, EntityQueryManager.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList,
+      Some("ConfigurationFile")))
 
-  val points = LazyVar(Entity.asType(ApplicationSchema.points, EQ.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))
-  val commands = LazyVar(Entity.asType(ApplicationSchema.commands, EQ.getChildrenOfType(entity.value.id, "source", "Command").toList, Some("Command")))
+  val points = LazyVar(
+    Entity.asType(ApplicationSchema.points, EntityQueryManager.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))
+  val commands = LazyVar(
+    Entity.asType(ApplicationSchema.commands, EntityQueryManager.getChildrenOfType(entity.value.id, "source", "Command").toList, Some("Command")))
 }

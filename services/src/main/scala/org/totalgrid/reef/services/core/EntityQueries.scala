@@ -32,6 +32,7 @@ import SquerylModel._
 import java.util.UUID
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
 import org.totalgrid.reef.services.HeadersRequestContext
+import org.totalgrid.reef.util.Logging
 
 // implict asParam
 import org.totalgrid.reef.util.Optional._
@@ -371,7 +372,7 @@ trait EntityTreeQueries { self: EntityQueries =>
   }
 }
 
-trait EntityQueries extends EntityTreeQueries {
+trait EntityQueries extends EntityTreeQueries with Logging {
 
   val entities = ApplicationSchema.entities
   val edges = ApplicationSchema.edges
@@ -547,17 +548,18 @@ trait EntityQueries extends EntityTreeQueries {
     derivedEdge
   }
 
-  def findOrCreateEntity(name: String, typ: String): Entity = {
+  def findOrCreateEntity(name: String, entityType: String): Entity = {
     val list = nameTypeQuery(Some(name), None)
-    if (list.size > 1) throw new Exception("more than one entity matched: " + name + " type:" + typ)
+    if (list.size > 1) throw new Exception("more than one entity matched: " + name + " type:" + entityType)
     if (list.size == 1) {
-      if (list.head.types.value.find(_ == typ).isEmpty) {
-        addTypeToEntity(list.head, typ)
+      if (list.head.types.value.find(_ == entityType).isEmpty) {
+        addTypeToEntity(list.head, entityType)
       } else {
         list.head
       }
     } else {
-      addEntity(name, typ)
+      logger.debug("creating entity: name: " + name + ", type: " + entityType)
+      addEntity(name, entityType)
     }
   }
 
@@ -638,7 +640,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
     List(
       proto.uuid.uuid.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
-      EQ.noneIfEmpty(proto.types).asParam(sql.id in EQ.entityIdsFromTypes(_)))
+      EntityQueryManager.noneIfEmpty(proto.types).asParam(sql.id in EntityQueryManager.entityIdsFromTypes(_)))
   }
 
   def searchQuery(proto: EntityProto, sql: Entity) = Nil
@@ -658,11 +660,11 @@ trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity]
     List(
       proto.uuid.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
-      EQ.noneIfEmpty(proto.types).asParam(sql.id in EQ.entityIdsFromTypes(_)))
+      EntityQueryManager.noneIfEmpty(proto.types).asParam(sql.id in EntityQueryManager.entityIdsFromTypes(_)))
   }
 
   def searchQuery(proto: EntitySearch, sql: Entity) = Nil
 }
 object EntityPartsSearches extends EntityPartsSearches
 
-object EQ extends EntityQueries
+object EntityQueryManager extends EntityQueries

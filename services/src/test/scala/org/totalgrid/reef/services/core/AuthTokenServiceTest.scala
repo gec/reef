@@ -44,7 +44,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   override def beforeAll() {
     super.beforeAll()
-    AuthTokenService.seed()
+    AuthTokenService.seedTesting()
   }
 
   class Fixture {

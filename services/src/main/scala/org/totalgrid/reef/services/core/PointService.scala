@@ -81,7 +81,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
   def createAndSetOwningNode(context: RequestContext, points: List[String], dataSource: Entity): Unit = {
     if (points.size == 0) return
     //TODO: combine the createAndSet for points and commands
-    val alreadyExistingPoints = Entity.asType(ApplicationSchema.points, EQ.findEntitiesByName(points).toList, Some("Point"))
+    val alreadyExistingPoints = Entity.asType(ApplicationSchema.points, EntityQueryManager.findEntitiesByName(points).toList, Some("Point"))
     val newPoints = points.diff(alreadyExistingPoints.map(_.entityName).toList)
     if (!newPoints.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newPoints)
 
@@ -89,8 +89,8 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
       c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true)
     }
     changePointOwner.foreach(p => {
-      p.sourceEdge.value.foreach(EQ.deleteEdge(_))
-      EQ.addEdge(dataSource, p.entity.value, "source")
+      p.sourceEdge.value.foreach(EntityQueryManager.deleteEdge(_))
+      EntityQueryManager.addEdge(dataSource, p.entity.value, "source")
       update(context, p, p)
     })
   }
@@ -114,7 +114,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
 
     measurementStore.remove(entry.entityName :: Nil)
 
-    EQ.deleteEntity(entry.entity.value)
+    EntityQueryManager.deleteEntity(entry.entity.value)
   }
 }
 
@@ -152,8 +152,8 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EQ.typeIdsFromProtoQuery(ent, "Point")),
-      proto.logicalNode.map(logicalNode => sql.entityId in EQ.findIdsOfChildren(logicalNode, "source", "Point")))
+      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")),
+      proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
   }
 
   def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _))
@@ -167,10 +167,10 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
 
     b.setUuid(makeUuid(sql))
     b.setName(sql.entityName)
-    sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
+    sql.entity.asOption.foreach(e => b.setEntity(EntityQueryManager.entityToProto(e)))
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EQ.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
@@ -200,8 +200,8 @@ object PointTiedModel {
   def populatedPointProto(point: Point): PointProto.Builder = {
     val pb = PointProto.newBuilder
     pb.setName(point.entityName).setUuid(makeUuid(point))
-    pb.setEntity(EQ.entityToProto(point.entity.value))
-    point.logicalNode.value.foreach(p => pb.setLogicalNode(EQ.entityToProto(p)))
+    pb.setEntity(EntityQueryManager.entityToProto(point.entity.value))
+    point.logicalNode.value.foreach(p => pb.setLogicalNode(EntityQueryManager.entityToProto(p)))
     pb
   }
 }

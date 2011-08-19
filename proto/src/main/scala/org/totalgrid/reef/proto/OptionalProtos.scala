@@ -46,16 +46,8 @@ object OptionalProtos {
   implicit def proto2OptApplicationHeartbeatConfig(a: org.totalgrid.reef.proto.Application.HeartbeatConfig): OptApplicationHeartbeatConfig = new OptApplicationHeartbeatConfig(Some(a))
   class OptApplicationHeartbeatConfig(real: Option[org.totalgrid.reef.proto.Application.HeartbeatConfig]) extends OptionalStruct(real) {
     val processId = optionally(_.hasProcessId, _.getProcessId)
-    val dest = optionally(_.hasDest, _.getDest)
     val periodMs = optionally(_.hasPeriodMs, _.getPeriodMs)
-    val routingKey = optionally(_.hasRoutingKey, _.getRoutingKey)
     val instanceName = optionally(_.hasInstanceName, _.getInstanceName)
-  }
-  implicit def proto2OptApplicationStreamServicesConfig(a: org.totalgrid.reef.proto.Application.StreamServicesConfig): OptApplicationStreamServicesConfig = new OptApplicationStreamServicesConfig(Some(a))
-  class OptApplicationStreamServicesConfig(real: Option[org.totalgrid.reef.proto.Application.StreamServicesConfig]) extends OptionalStruct(real) {
-    val logsDest = optionally(_.getLogsDest)
-    val eventsDest = optionally(_.getEventsDest)
-    val nonopDest = optionally(_.getNonopDest)
   }
   implicit def proto2OptApplicationApplicationConfig(a: org.totalgrid.reef.proto.Application.ApplicationConfig): OptApplicationApplicationConfig = new OptApplicationApplicationConfig(Some(a))
   class OptApplicationApplicationConfig(real: Option[org.totalgrid.reef.proto.Application.ApplicationConfig]) extends OptionalStruct(real) {
@@ -67,7 +59,6 @@ object OptionalProtos {
     val location = optionally(_.hasLocation, _.getLocation)
     val capabilites = optionally(_.getCapabilitesList.toList)
     val heartbeatCfg = new OptApplicationHeartbeatConfig(optionally(_.hasHeartbeatCfg, _.getHeartbeatCfg))
-    val streamCfg = new OptApplicationStreamServicesConfig(optionally(_.hasStreamCfg, _.getStreamCfg))
   }
   implicit def proto2OptAuthAgent(a: org.totalgrid.reef.proto.Auth.Agent): OptAuthAgent = new OptAuthAgent(Some(a))
   class OptAuthAgent(real: Option[org.totalgrid.reef.proto.Auth.Agent]) extends OptionalStruct(real) {

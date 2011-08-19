@@ -30,8 +30,8 @@ class LoadCache {
   val controls = HashMap[String, CachedControl]()
   val points = HashMap[String, CachedPoint]()
 
-  val loadCacheEqu = new LoadCacheEqu(this)
-  val loadCacheCom = new LoadCacheCom(this)
+  val loadCacheEquipment = new LoadCacheEquipment(this)
+  val loadCacheCommunication = new LoadCacheCommunication(this)
 
   def validate: Boolean = {
     import ValidateResult._
@@ -169,7 +169,7 @@ class CacheType(val cache: LoadCache) {
   }
 }
 
-class LoadCacheEqu(override val cache: LoadCache) extends CacheType(cache) {
+class LoadCacheEquipment(override val cache: LoadCache) extends CacheType(cache) {
 
   def addPoint(name: String, unit: String) = {
     cache.points.get(name) match {
@@ -187,7 +187,7 @@ class LoadCacheEqu(override val cache: LoadCache) extends CacheType(cache) {
   //override def getType = "equipmentModel"
 }
 
-class LoadCacheCom(override val cache: LoadCache) extends CacheType(cache) {
+class LoadCacheCommunication(override val cache: LoadCache) extends CacheType(cache) {
 
   def addPoint(endpointName: String, name: String, index: Int, unit: String = "") = {
     cache.points.get(name) match {
@@ -217,13 +217,13 @@ object ValidateResult {
 class CachedObject(referencedFrom: CacheType, val name: String) {
   var errors = List[String]()
   var warnings = List[String]()
-  var comCount = if (referencedFrom.isInstanceOf[LoadCacheCom]) 1 else 0
-  var equCount = if (referencedFrom.isInstanceOf[LoadCacheEqu]) 1 else 0
+  var comCount = if (referencedFrom.isInstanceOf[LoadCacheCommunication]) 1 else 0
+  var equCount = if (referencedFrom.isInstanceOf[LoadCacheEquipment]) 1 else 0
 
   def incrementReference(referencedFrom: CacheType) = {
     referencedFrom match {
-      case c: LoadCacheCom => comCount += 1
-      case e: LoadCacheEqu => equCount += 1
+      case c: LoadCacheCommunication => comCount += 1
+      case e: LoadCacheEquipment => equCount += 1
     }
   }
 

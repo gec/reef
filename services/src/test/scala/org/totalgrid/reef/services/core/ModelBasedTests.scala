@@ -45,7 +45,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
   }
 
   def seedPoints {
-    EQ.findEntitiesByType(List("Point")).foreach { ent =>
+    EntityQueryManager.findEntitiesByType(List("Point")).foreach { ent =>
       ApplicationSchema.points.insert(Point.newInstance(ent.name, false, None, 1, "raw"))
     }
   }
