@@ -40,7 +40,7 @@ object StatusCodes {
     case Envelope.Status.INTERNAL_ERROR => new InternalServiceException(error)
     case Envelope.Status.LOCAL_ERROR => new InternalClientError(error, null) // not possible?
     case Envelope.Status.UNEXPECTED_RESPONSE => new ExpectationException(error)
-    case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException
+    case Envelope.Status.RESPONSE_TIMEOUT => new ResponseTimeoutException(error)
     case Envelope.Status.BUS_UNAVAILABLE => new ServiceIOException(error)
     case _ => new BadRequestException(error, status)
   }
