@@ -53,7 +53,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
   test("All Service Providers are in services list") {
     AMQPFixture.mock(true) { amqp =>
       ServiceBootstrap.resetDb
-      ServiceBootstrap.seed
+      ServiceBootstrap.seed("system")
 
       val userSettings = ApplicationEnroller.getDefaultUserSettings
       val nodeSettings = ApplicationEnroller.getDefaultNodeSettings

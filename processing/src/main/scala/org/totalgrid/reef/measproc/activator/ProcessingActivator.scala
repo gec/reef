@@ -29,6 +29,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.app.ApplicationEnroller
 import org.totalgrid.reef.measproc.FullProcessor
 import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, LifecycleWrapper }
+import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 class ProcessingActivator extends BundleActivator {
 
@@ -43,8 +44,8 @@ class ProcessingActivator extends BundleActivator {
 
     val brokerInfo = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
     val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
-    val userSettings = ApplicationEnroller.getDefaultUserSettings
-    val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(brokerInfo)

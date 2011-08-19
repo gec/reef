@@ -16,40 +16,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.client;
+package org.totalgrid.reef.japi.client.util;
 
-
-import org.totalgrid.reef.japi.client.util.PropertyLoading;
 
 import java.util.Dictionary;
 import java.util.Properties;
 
-public class UserSettings
+public class PropertyLoading
 {
-
-    private String userName;
-    private String userPassword;
-
-    public UserSettings( String userName, String userPassword )
+    public static String getString( String id, Dictionary props ) throws IllegalArgumentException
     {
-        this.userName = userName;
-        this.userPassword = userPassword;
+        String prop = (String)props.get( id );
+        if ( prop == null )
+        {
+            throw new IllegalArgumentException( "Could not load configuration. Missing: " + id );
+        }
+        return prop;
     }
 
-    public UserSettings( Dictionary properties )
+    public static int getInt( String id, Dictionary props ) throws IllegalArgumentException
     {
-        this.userName = PropertyLoading.getString( "org.totalgrid.reef.user.username", properties );
-        this.userPassword = PropertyLoading.getString( "org.totalgrid.reef.user.password", properties );
+        String prop = getString( id, props );
+        return Integer.parseInt( prop );
     }
 
-    public String getUserName()
+    public static boolean getBoolean( String id, Dictionary props ) throws IllegalArgumentException
     {
-        return userName;
+        String prop = getString( id, props );
+        return Boolean.parseBoolean( prop );
     }
-
-    public String getUserPassword()
-    {
-        return userPassword;
-    }
-
 }

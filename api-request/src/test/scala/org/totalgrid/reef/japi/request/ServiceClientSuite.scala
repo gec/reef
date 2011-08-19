@@ -60,8 +60,8 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   lazy val client = connect
 
-  val username = "core"
-  val password = "core"
+  val username = "system"
+  val password = "system"
 
   def connect = {
     val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {

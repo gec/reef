@@ -100,7 +100,7 @@ public class ReefConnectionTestBase
         connection.connect( 5000 );
         client = connection.newSession();
         SessionExecutionPool pool = connection.newSessionPool();
-        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "core", "core" );
+        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
         {
             client.getDefaultHeaders().setAuthToken( authToken );
