@@ -33,7 +33,7 @@ trait ApplicationServiceImpl extends ReefServiceBaseClass with ApplicationServic
       _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).await().expectOne
     }
   }
-  override def sendHeartbeat(ss: StatusSnapshot) = ops("Heartbeat failed") {
-    _.put(ss).await().expectOne()
+  override def sendHeartbeat(statusSnapshot: StatusSnapshot) = ops("Heartbeat failed") {
+    _.put(statusSnapshot).await().expectOne()
   }
 }

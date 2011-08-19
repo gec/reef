@@ -18,16 +18,13 @@
  */
 package org.totalgrid.reef.japi.client;
 
-import org.totalgrid.reef.japi.client.util.PropertyLoading;
-
 import java.util.Dictionary;
-import java.util.Properties;
+
+import org.totalgrid.reef.japi.client.util.PropertyLoading;
 
 public class NodeSettings
 {
-
     private String defaultNodeName;
-
     private String location;
 
     // TODO: make network a list
@@ -42,9 +39,9 @@ public class NodeSettings
 
     public NodeSettings( Dictionary properties )
     {
-        this.defaultNodeName = PropertyLoading.getString( "org.totalgrid.reef.node.name", properties );
-        this.location = PropertyLoading.getString( "org.totalgrid.reef.node.location", properties );
-        this.network = PropertyLoading.getString( "org.totalgrid.reef.node.network", properties );
+        defaultNodeName = PropertyLoading.getString( "org.totalgrid.reef.node.name", properties );
+        location = PropertyLoading.getString( "org.totalgrid.reef.node.location", properties );
+        network = PropertyLoading.getString( "org.totalgrid.reef.node.network", properties );
     }
 
     public String getDefaultNodeName()

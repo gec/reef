@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.japi.request;
 
+import java.util.List;
+
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.NodeSettings;
 import org.totalgrid.reef.proto.Application.ApplicationConfig;
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot;
-
-import java.util.List;
 
 public interface ApplicationService
 {
@@ -39,15 +39,13 @@ public interface ApplicationService
      * @return The configuration from the server, includes heartbeat settings
      * @throws ReefServiceException
      */
-    public ApplicationConfig registerApplication( NodeSettings nodeSettings, String instanceName, List<String> capabilities )
-        throws ReefServiceException;
+    ApplicationConfig registerApplication( NodeSettings nodeSettings, String instanceName, List<String> capabilities ) throws ReefServiceException;
 
     /**
      * Performs a heartbeat service call with the services.
-     * @param ss
+     * @param statusSnapshot
      * @return
      * @throws ReefServiceException
      */
-    public StatusSnapshot sendHeartbeat( StatusSnapshot ss ) throws ReefServiceException;
-
+    StatusSnapshot sendHeartbeat( StatusSnapshot statusSnapshot ) throws ReefServiceException;
 }
