@@ -27,10 +27,10 @@ import org.totalgrid.reef.util.{ Cancelable, Timer }
 trait Executor {
 
   /**
-   * dispatches a unit of work immediately. If the fun throws, the executor catches the exception. This
+   * dispatches a unit of work immediately. If the function throws, the executor catches the exception. This
    * function is "fire-and-forget"
    */
-  def execute(fun: => Unit): Unit
+  def execute(function: => Unit): Unit
 
   /**
    * dispatches a unit of work to do after a specified time has elapsed.
@@ -67,13 +67,13 @@ object Executor {
     // http://scala-programming-language.1934581.n4.nabble.com/Increase-actor-thread-pool-td1936329.html
     // un-deadlocks the measproc when it tries to load lots of resources at one time. Problem is due to
     // inline actors all blocking on service futures and starving the AMQP actors so it cant receive the 
-    // service resposes and causing erroneous timeouts
+    // service responses and causing erroneous timeouts
     import scala.actors.Scheduler
     import scala.actors.scheduler.ResizableThreadPoolScheduler
     Scheduler.impl = {
-      val s = new ResizableThreadPoolScheduler(false)
-      s.start()
-      s
+      val scheduler = new ResizableThreadPoolScheduler(false)
+      scheduler.start()
+      scheduler
     }
   }
 }
