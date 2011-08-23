@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<configuration version="1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="configuration.loader.reef.totalgrid.org"
+               xmlns:eq="equipment.loader.reef.totalgrid.org"
+               xmlns:cm="communications.loader.reef.totalgrid.org"
+               xmlns:common="common.loader.reef.totalgrid.org">
+  <messageModel>
+    <messageSet name="System" severity="8" type="LOG">
+      <message name="UserLogin" type="EVENT">User login {status} {reason}</message>
+      <message name="UserLogout" type="EVENT">User logged out</message>
+      <message name="SubsystemStarting">Subsystem is starting</message>
+      <message name="SubsystemStarted">Subsystem has started</message>
+      <message name="SubsystemStopping">Subsystem is stopping</message>
+      <message name="SubsystemStopped">Subsystem has stopped</message>
+    </messageSet>
+    <messageSet name="Scada" severity="6" type="ALARM" state="UNACK_SILENT">
+      <message name="ControlExe">User executed control {control} on device {device}</message>
+      <message name="OutOfNominal" severity="4">Measurement not in nominal range: {value}{unit} validity {validity}</message>
+      <message name="OutOfReasonable" severity="3" state="UNACK_AUDIBLE">Measurement not reasonable: {value}{unit} validity {validity}</message>
+    </messageSet>
+  </messageModel>
+  <actionModel>
+    <actionSet name="RLC" priority="100">
+      <rising>
+        <message name="Scada.OutOfReasonable" />
+      </rising>
+      <high moreActions="false">
+        <stripValue />
+        <setAbnormal />
+      </high>
+    </actionSet>
+    <actionSet name="Nominal" priority="500">
+      <rising>
+        <message name="Scada.OutOfNominal" />
+      </rising>
+    </actionSet>
+    <actionSet name="Everything" priority="1000">
+      <rising>
+        <message name="Scada.OutOfNominal" />
+      </rising>
+      <high>
+        <!-- <quality validity="questionable" source="PROCESS" detailQuality="2" test="false" operatorBlocked="false"/> -->
+        <stripValue />
+        <setBool value="true" />
+        <setUnit unit="var" />
+      </high>
+      <transition></transition>
+    </actionSet>
+    <!--/actionModel>
+
+    <actionModel>
+
+        <actionSet name="Nominal">
+            <rising>
+                <message name="Scada.OutOfNominal"/>
+            </rising>
+            <high>
+                <setAbnormal/>
+            </high>
+        </actionSet-->
+    <actionSet name="Abnormal">
+      <high>
+        <setAbnormal />
+      </high>
+    </actionSet>
+  </actionModel>
+  <eq:equipmentModel>
+    <eq:profiles>
+      <!-- Status Point Profiles-->
+      <eq:pointProfile name="FID_BKR">
+        <eq:unexpected stringValue="Open" actionSet="Nominal" />
+        <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+          <eq:valueMap fromValue="true" toValue="Closed" />
+          <eq:valueMap fromValue="false" toValue="Open" />
+        </eq:transform>
+      </eq:pointProfile>
+      <eq:pointProfile name="NormallyTrueAlarmed">
+        <eq:unexpected stringValue="Alarm" actionSet="Nominal" />
+        <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+          <eq:valueMap fromValue="true" toValue="Alarm" />
+          <eq:valueMap fromValue="false" toValue="Normal" />
+        </eq:transform>
+      </eq:pointProfile>
+      <!-- Analog Point Profiles-->
+      <!-- Counter Point Profiles-->
+      <eq:pointProfile name="GenMWh">
+        <eq:range actionSet="RLC" low="0" high="12000" deadband="1" />
+      </eq:pointProfile>
+      <!-- Equipment Profiles-->
+      <eq:equipmentProfile name="MicrogridProfile">
+        <eq:type name="Microgrid" />
+      </eq:equipmentProfile>
+      <eq:equipmentProfile name="FullBreaker">
+        <eq:type name="Breaker" />
+        <eq:control name="Open" />
+        <eq:control name="Close" />
+        <eq:status name="Status" unit="status" pointProfile="FID_BKR">
+          <eq:control name="Open" />
+          <eq:control name="Close" />
+        </eq:status>
+        <eq:status name="Overcurrent" unit="status" pointProfile="NormallyTrueAlarmed" />
+      </eq:equipmentProfile>
+      <eq:equipmentProfile name="KvKwkVAR_Meas">
+        <eq:type name="PV" />
+        <eq:analog name="kV" unit="kV"></eq:analog>
+        <eq:analog name="kW" unit="kW"></eq:analog>
+        <eq:analog name="kVAR" unit="kVAR"></eq:analog>
+      </eq:equipmentProfile>
+      <eq:equipmentProfile name="Line_Meas">
+        <eq:type name="Line" />
+        <eq:analog name="Amps" unit="Amps"></eq:analog>
+        <eq:analog name="kW" unit="kW"></eq:analog>
+      </eq:equipmentProfile>
+    </eq:profiles>
+    <!-- Equipment Definition-->
+    <eq:equipment name="MainSt">
+      <!--Start MainSt Equipment Configuration-->
+      <eq:equipmentProfile name="MicrogridProfile" />
+      <eq:equipment name="FID1">
+        <eq:equipmentProfile name="FullBreaker" />
+      </eq:equipment>
+      <eq:equipment name="FID2">
+        <eq:equipmentProfile name="FullBreaker" />
+      </eq:equipment>
+      <eq:equipment name="FID3">
+        <eq:equipmentProfile name="FullBreaker" />
+      </eq:equipment>
+      <eq:equipment name="FID4">
+        <eq:equipmentProfile name="FullBreaker" />
+      </eq:equipment>
+      <eq:equipment name="CB1">
+        <eq:equipmentProfile name="FullBreaker" />
+      </eq:equipment>
+      <eq:equipment name="Substation 1">
+        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+        <eq:analog name="Frequency" unit="Hz"></eq:analog>
+      </eq:equipment>
+      <eq:equipment name="Bus1">
+        <eq:analog name="kV" unit="kV"></eq:analog>
+        <eq:type name="Bus" />
+      </eq:equipment>
+      <eq:equipment name="Bus2">
+        <eq:analog name="kV" unit="kV"></eq:analog>
+        <eq:type name="Bus" />
+      </eq:equipment>
+      <eq:equipment name="Bus3">
+        <eq:analog name="kV" unit="kV"></eq:analog>
+        <eq:type name="Bus" />
+      </eq:equipment>
+      <eq:equipment name="PV1">
+        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+      </eq:equipment>
+      <eq:equipment name="PV2">
+        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+      </eq:equipment>
+      <eq:equipment name="PV3">
+        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+      </eq:equipment>
+      <eq:equipment name="DES">
+        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+        <eq:analog name="%SOC" unit="raw"></eq:analog>
+      </eq:equipment>
+      <eq:equipment name="Line 1">
+        <eq:equipmentProfile name="Line_Meas" />
+      </eq:equipment>
+      <eq:equipment name="Line 2">
+        <eq:equipmentProfile name="Line_Meas" />
+      </eq:equipment>
+      <eq:equipment name="Line 3">
+        <eq:equipmentProfile name="Line_Meas" />
+      </eq:equipment>
+      <eq:equipment name="Line 4">
+        <eq:equipmentProfile name="Line_Meas" />
+      </eq:equipment>
+      <eq:equipment name="SST1">
+        <eq:analog name="kW" unit="kW"></eq:analog>
+        <eq:type name="SST" />
+      </eq:equipment>
+      <eq:equipment name="SST2">
+        <eq:analog name="kW" unit="kW"></eq:analog>
+        <eq:type name="SST" />
+      </eq:equipment>
+      <eq:equipment name="SST3">
+        <eq:analog name="kW" unit="kW"></eq:analog>
+        <eq:type name="SST" />
+      </eq:equipment>
+      <!--End MainSt Equipment Configuration-->
+    </eq:equipment>
+  </eq:equipmentModel>
+  <cm:communicationsModel>
+    <!--
+          Profiles types:
+            controlProfile
+            pointProfile
+            endpointProfile
+            equipmentProfile
+        -->
+    <!-- Named interfaces -->
+    <cm:interface name="BM1" ip="192.168.100.30" netmask="255.255.255.0" port="8000" network="any" />
+    <cm:interface name="MainSt_DNP" ip="152.14.125.31" netmask="255.255.255.0" port="20000" network="any" />
+    <!--start MainSt Configuration-->
+    <cm:endpoint name="MainSt">
+      <cm:type name="Endpoint" />
+      <cm:protocol name="benchmark">
+        <cm:simOptions delay="7500" />
+      </cm:protocol>
+      <cm:interface name="BM1" />
+      <cm:equipment name="MainSt">
+        <cm:equipment name="FID1">
+          <cm:status name="Status" index="0" unit="raw" />
+          <cm:status name="Overcurrent" index="1" unit="raw" />
+          <cm:control name="Open" index="0">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+          <cm:control name="Close" index="1">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+        </cm:equipment>
+        <cm:equipment name="FID2">
+          <cm:status name="Status" index="2" unit="raw" />
+          <cm:status name="Overcurrent" index="3" unit="raw" />
+          <cm:control name="Open" index="2">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+          <cm:control name="Close" index="3">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+        </cm:equipment>
+        <cm:equipment name="FID3">
+          <cm:status name="Status" index="4" unit="raw" />
+          <cm:status name="Overcurrent" index="5" unit="raw" />
+          <cm:control name="Open" index="4">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+          <cm:control name="Close" index="5">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+        </cm:equipment>
+        <cm:equipment name="FID4">
+          <cm:status name="Status" index="6" unit="raw" />
+          <cm:status name="Overcurrent" index="7" unit="raw" />
+          <cm:control name="Open" index="6">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+          <cm:control name="Close" index="7">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+        </cm:equipment>
+        <cm:equipment name="CB1">
+          <cm:status name="Status" index="8" unit="raw" />
+          <cm:status name="Overcurrent" index="9" unit="raw" />
+          <cm:control name="Open" index="8">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+          <cm:control name="Close" index="9">
+            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
+          </cm:control>
+        </cm:equipment>
+        <cm:equipment name="Substation 1">
+          <cm:analog name="kV" index="0" unit="kV" />
+          <cm:analog name="kW" index="1" unit="kW">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kVAR" index="2" unit="kVAR" />
+          <cm:analog name="Frequency" index="3" unit="Hz" />
+        </cm:equipment>
+        <cm:equipment name="Bus1">
+          <cm:analog name="kV" index="4" unit="kV">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="Bus2">
+          <cm:analog name="kV" index="5" unit="kV">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="Bus3">
+          <cm:analog name="kV" index="6" unit="kV">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="PV1">
+          <cm:analog name="kV" index="7" unit="kV" />
+          <cm:analog name="kW" index="8" unit="kW" />
+          <cm:analog name="kVAR" index="9" unit="kVAR" />
+        </cm:equipment>
+        <cm:equipment name="PV2">
+          <cm:analog name="kV" index="10" unit="kV" />
+          <cm:analog name="kW" index="11" unit="kW" />
+          <cm:analog name="kVAR" index="12" unit="kVAR" />
+        </cm:equipment>
+        <cm:equipment name="PV3">
+          <cm:analog name="kV" index="13" unit="kV" />
+          <cm:analog name="kW" index="14" unit="kW" />
+          <cm:analog name="kVAR" index="15" unit="kVAR" />
+        </cm:equipment>
+        <cm:equipment name="DES">
+          <cm:analog name="kV" index="16" unit="kV" />
+          <cm:analog name="kW" index="17" unit="kW" />
+          <cm:analog name="kVAR" index="18" unit="kVAR" />
+          <cm:analog name="%SOC" index="19" unit="raw" />
+        </cm:equipment>
+        <cm:equipment name="Line 1">
+          <cm:analog name="Amps" index="20" unit="Amps" />
+          <cm:analog name="kW" index="21" unit="kW">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="Line 2">
+          <cm:analog name="Amps" index="22" unit="Amps" />
+          <cm:analog name="kW" index="23" unit="kW">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="Line 3">
+          <cm:analog name="Amps" index="24" unit="Amps" />
+          <cm:analog name="kW" index="25" unit="kW">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="Line 4">
+          <cm:analog name="Amps" index="26" unit="Amps" />
+          <cm:analog name="kW" index="27" unit="kW">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+        </cm:equipment>
+        <cm:equipment name="SST1">
+          <cm:analog name="kW" index="28" unit="kW" />
+        </cm:equipment>
+        <cm:equipment name="SST2">
+          <cm:analog name="kW" index="29" unit="kW" />
+        </cm:equipment>
+        <cm:equipment name="SST3">
+          <cm:analog name="kW" index="30" unit="kW" />
+        </cm:equipment>
+      </cm:equipment>
+    </cm:endpoint>
+    <!--end MainSt configuration-->
+  </cm:communicationsModel>
+</configuration>
