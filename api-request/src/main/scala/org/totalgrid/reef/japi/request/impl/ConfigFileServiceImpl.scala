@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-import org.totalgrid.reef.proto.Model.{ ConfigFile, ReefUUID }
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
@@ -26,6 +25,8 @@ import org.totalgrid.reef.japi.ExpectationException
 import org.totalgrid.reef.japi.request.{ ConfigFileService }
 import org.totalgrid.reef.japi.request.builders.{ EntityRequestBuilders, ConfigFileRequestBuilders }
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.proto.Model.{Entity, ConfigFile, ReefUUID}
+import collection.mutable.Buffer
 
 /**
  * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever
@@ -52,6 +53,25 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
     ops("Couldn't get config files used by entity: " + entityUid.uuid) {
       _.get(ConfigFileRequestBuilders.getByEntity(entityUid)).await().expectMany()
     }
+  }
+
+  override def getConfigFileWithRelativeName(entity: Entity, relativeName: String): ConfigFile = {
+    val configFiles: java.util.List[ConfigFile] = ops(
+      "Couldn't get config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " + relativeName)
+    {
+      _.get(ConfigFileRequestBuilders.getByEntity(entity.getUuid)).await().expectMany()
+    }
+
+    val filteredFiles: Buffer[ConfigFile] = configFiles.filter(configFile => configFile.getName.equals(entity.getName + "." + relativeName))
+    if ( filteredFiles.length == 0 ) {
+      return null
+    }
+    if ( filteredFiles.length == 1 ) {
+      return filteredFiles.get(0)
+    }
+    throw new ExpectationException(
+      "Received unexpected results when retrieving config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " +
+          relativeName)
   }
 
   override def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = {
@@ -83,9 +103,9 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
     }
   }
 
-  override def addConfigFileUserByEntity(configFile: ConfigFile, entityUid: ReefUUID): ConfigFile = {
+  override def addConfigFileUsedByEntity(configFile: ConfigFile, entityUid: ReefUUID): ConfigFile = {
 
-    ops("Couldn't add entity: " + entityUid.uuid + " as user of configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
+    ops("Couldn't not associate: " + entityUid.uuid + " with configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
       if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set.")
       session.put(configFile.toBuilder.addEntities(EntityRequestBuilders.getByUid(entityUid)).build).await().expectOne
     }

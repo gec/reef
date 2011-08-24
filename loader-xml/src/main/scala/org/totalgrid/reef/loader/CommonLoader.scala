@@ -130,19 +130,15 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
   def addInfo(entity: Entity, info: Info, addEntityNamePrefix: Boolean) {
     logger.info("adding info for entity: " + entity + ", add entity prefix: " + addEntityNamePrefix + ", info: " + info)
 
-    exceptionCollector.collect("Adding info for entity: " + entity.getName)
-    {
+    exceptionCollector.collect("Adding info for entity: " + entity.getName) {
       val configFileProtos: List[ConfigFileProto] = info.getConfigFile.map(configFile =>
-      {
-        if ( addEntityNamePrefix )
         {
-          loadConfigFile(configFile, Some(entity.getName))
-        }
-        else
-        {
-          loadConfigFile(configFile)
-        }
-      })
+          if (addEntityNamePrefix) {
+            loadConfigFile(configFile, Some(entity.getName))
+          } else {
+            loadConfigFile(configFile)
+          }
+        })
 
       val configFileEdge: List[EntityEdge] = configFileProtos
         .map(configFile => ProtoUtils.toEntityEdge(entity, ProtoUtils.toEntityType(configFile.getName, "ConfigurationFile" :: Nil), "uses"))

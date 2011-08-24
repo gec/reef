@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.ConfigFile;
+import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.ReefUUID;
 
 /**
@@ -60,6 +61,15 @@ public interface ConfigFileService
     List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid ) throws ReefServiceException;
 
     /**
+     * retrieve the config file associated with the supplied entity and has the given relative name
+     * @param entity
+     * @param relativeName
+     * @return associated config file
+     * @throws ReefServiceException
+     */
+    ConfigFile getConfigFileWithRelativeName( Entity entity, String relativeName ) throws ReefServiceException;
+
+    /**
      * search for all config files "used" by an entity, only returns files with matching mimeType
      */
     List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid, String mimeType ) throws ReefServiceException;
@@ -83,7 +93,7 @@ public interface ConfigFileService
     /**
      * adds another Entity as a "user" of the ConfigFile
      */
-    ConfigFile addConfigFileUserByEntity( ConfigFile configFile, ReefUUID entityUid ) throws ReefServiceException;
+    ConfigFile addConfigFileUsedByEntity( ConfigFile configFile, ReefUUID entityUid ) throws ReefServiceException;
 
     /**
      * delete the passed in config file and all "using" relationships to Entities

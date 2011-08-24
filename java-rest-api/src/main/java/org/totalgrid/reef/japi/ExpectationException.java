@@ -25,10 +25,8 @@ package org.totalgrid.reef.japi;
  */
 public class ExpectationException extends ReplyException
 {
-
     public ExpectationException( String msg )
     {
         super( msg, Envelope.Status.UNEXPECTED_RESPONSE );
     }
-
 }

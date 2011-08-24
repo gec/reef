@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.sapi.client
 
-/** A class that implements a borrow function */
 trait SessionPool {
 
   def borrow[A](fun: ClientSession => A): A

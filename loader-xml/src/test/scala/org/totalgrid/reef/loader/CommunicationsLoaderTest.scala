@@ -376,24 +376,20 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     new Equipment(substationName).add(breaker)
   }
 
-  private def logProtos(list: Seq[AnyRef])
-  {
+  private def logProtos(list: Seq[AnyRef]) {
     logger.debug("")
     logger.debug("protos: " + list.length)
     list.foreach(proto => logger.debug("proto(" + proto.getClass.getSimpleName + "): " + proto))
     logger.debug("")
   }
 
-  private def logCollectedExceptions(loader: BaseConfigurationLoader)
-  {
-    if ( loader.getExceptionCollector.hasErrors )
-    {
+  private def logCollectedExceptions(loader: BaseConfigurationLoader) {
+    if (loader.getExceptionCollector.hasErrors) {
       loader.getExceptionCollector.getErrors.foreach(error => logger.info("error: " + error))
     }
   }
 
-  private def verifyNoLoadExceptions(loader: BaseConfigurationLoader)
-  {
+  private def verifyNoLoadExceptions(loader: BaseConfigurationLoader) {
     logCollectedExceptions(loader)
     loader.getExceptionCollector.hasErrors should equal(false)
   }
