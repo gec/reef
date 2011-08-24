@@ -301,17 +301,28 @@
 			</equip:equipment>
 		</equip:equipment>
 		<!--End MainSt Equipment Configuration-->
+
+		<equip:equipment name="Residential">
+			<equip:equipmentProfile name="MicrogridProfile"/>
+
+			<common:info>
+				<common:configFile name="oneline" fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+			</common:info>
+
+			<equip:equipment name="FID1">
+				<equip:equipmentProfile name="FullBreaker"/>
+			</equip:equipment>
+
+			<equip:equipment name="Substation1">
+				<equip:equipmentProfile name="Bus_Meas"/>
+				<equip:analog name="Frequency" unit="Hz"></equip:analog>
+			</equip:equipment>
+		</equip:equipment>
+
 	</equip:equipmentModel>
 
 	<comm:communicationsModel>
-		<!--
-	Profiles types:
-		controlProfile
-		pointProfile
-		endpointProfile
-		equipmentProfile
--->
-		<!-- Named interfaces -->
+
 		<comm:interface name="MainSt_DNP" ip="152.14.125.31" netmask="255.255.255.0" port="20000" network="any"/>
 
 		<!--start MainSt Configuration-->
@@ -611,6 +622,50 @@
 				</comm:equipment>
 			</comm:equipment>
 		</comm:endpoint>
-		<!--end MainSt configuration-->
+
+		<comm:endpoint name="Residential">
+			<comm:type name="Endpoint"/>
+
+			<comm:protocol name="benchmark">
+				<comm:simOptions delay="7500"/>
+			</comm:protocol>
+
+			<comm:interface name="MainSt_DNP"/>
+
+			<comm:equipment name="Residential">
+
+					<comm:equipment name="FID1">
+					<comm:status name="Status" index="0" unit="raw"/>
+					<comm:status name="Overcurrent" index="1" unit="raw"/>
+					<comm:control name="Open" index="0">
+						<comm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1"/>
+					</comm:control>
+					<comm:control name="Close" index="1">
+						<comm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1"/>
+					</comm:control>
+				</comm:equipment>
+
+				<comm:equipment name="Substation1">
+					<comm:analog name="kV_a" index="0" unit="kV"/>
+					<comm:analog name="kW_a" index="3">
+						<comm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW"/>
+					</comm:analog>
+					<comm:analog name="kVar_a" index="6" unit="kVar"/>
+					<comm:analog name="Frequency" index="9" unit="Hz"/>
+					<comm:analog name="kV_b" index="1" unit="kV"/>
+					<comm:analog name="kV_c" index="2" unit="kV"/>
+					<comm:analog name="kW_b" index="4">
+						<comm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW"/>
+					</comm:analog>
+					<comm:analog name="kW_c" index="5">
+						<comm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW"/>
+					</comm:analog>
+					<comm:analog name="kVar_b" index="7" unit="kVar"/>
+					<comm:analog name="kVar_c" index="8" unit="kVar"/>
+				</comm:equipment>
+			</comm:equipment>
+
+		</comm:endpoint>
+
 	</comm:communicationsModel>
 </configuration>

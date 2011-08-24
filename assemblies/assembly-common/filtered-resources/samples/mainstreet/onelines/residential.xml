@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <oneline xmlns='http://www.totalgrid.org/oneline' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
-	<!-- MainSt oneline -->
+	<!-- Residential oneline -->
 
 	<voltages>
 		<nominalVoltage value="22kV" color="#ef2929"/>
