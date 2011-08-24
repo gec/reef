@@ -68,6 +68,13 @@
   <eq:equipmentModel>
     <eq:profiles>
       <!-- Status Point Profiles-->
+      <eq:pointProfile name="ChargeDis_NoAlm">
+        <eq:unexpected stringValue="Discharge" actionSet="Abnormal" />
+        <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+          <eq:valueMap fromValue="true" toValue="Discharge" />
+          <eq:valueMap fromValue="false" toValue="Charge" />
+        </eq:transform>
+      </eq:pointProfile>
       <eq:pointProfile name="FID_BKR">
         <eq:unexpected stringValue="Open" actionSet="Nominal" />
         <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
@@ -82,8 +89,27 @@
           <eq:valueMap fromValue="false" toValue="Normal" />
         </eq:transform>
       </eq:pointProfile>
-      <!-- Analog Point Profiles-->
-      <!-- Counter Point Profiles-->
+      <eq:pointProfile name="NormallyFalseAlarmed">
+        <eq:unexpected stringValue="Alarm" actionSet="Nominal" />
+        <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+          <eq:valueMap fromValue="true" toValue="Normal" />
+          <eq:valueMap fromValue="false" toValue="Alarm" />
+        </eq:transform>
+      </eq:pointProfile>
+      <eq:pointProfile name="AutoMan_NoAlm">
+        <eq:unexpected stringValue="Manual" actionSet="Abnormal" />
+        <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+          <eq:valueMap fromValue="true" toValue="Manual" />
+          <eq:valueMap fromValue="false" toValue="Auto"></eq:valueMap>
+        </eq:transform>
+      </eq:pointProfile>
+      <eq:pointProfile name="OnOff_NoAlm">
+        <eq:unexpected stringValue="Off" actionSet="Abnormal" />
+        <eq:transform fromUnit="raw" toUnit="status" transformationType="status">
+          <eq:valueMap fromValue="true" toValue="On" />
+          <eq:valueMap fromValue="false" toValue="Off" />
+        </eq:transform>
+      </eq:pointProfile>
       <eq:pointProfile name="GenMWh">
         <eq:range actionSet="RLC" low="0" high="12000" deadband="1" />
       </eq:pointProfile>
@@ -101,16 +127,72 @@
         </eq:status>
         <eq:status name="Overcurrent" unit="status" pointProfile="NormallyTrueAlarmed" />
       </eq:equipmentProfile>
-      <eq:equipmentProfile name="KvKwkVAR_Meas">
+      <eq:equipmentProfile name="KvKwkVar_Meas">
         <eq:type name="PV" />
         <eq:analog name="kV" unit="kV"></eq:analog>
         <eq:analog name="kW" unit="kW"></eq:analog>
-        <eq:analog name="kVAR" unit="kVAR"></eq:analog>
+        <eq:analog name="kVar" unit="kVar"></eq:analog>
+      </eq:equipmentProfile>
+      <eq:equipmentProfile name="DES">
+        <eq:type name="PV" />
+        <eq:analog name="kV" unit="kV"></eq:analog>
+        <eq:analog name="kW" unit="kW">
+          <eq:setpoint name="Pset" />
+        </eq:analog>
+        <eq:analog name="kVar" unit="kVar">
+          <eq:setpoint name="Qset" />
+        </eq:analog>
+        <eq:analog name="%SOC" unit="%SOC"></eq:analog>
+        <eq:setpoint name="Pset" />
+        <eq:setpoint name="Qset" />
+        <eq:control name="Charge" />
+        <eq:control name="Discharge" />
+        <eq:status name="Mode" unit="status" pointProfile="ChargeDis_NoAlm">
+          <eq:control name="Charge" />
+          <eq:control name="Discharge" />
+        </eq:status>
+        <eq:analog name="Amps" unit="Amps"></eq:analog>
       </eq:equipmentProfile>
       <eq:equipmentProfile name="Line_Meas">
         <eq:type name="Line" />
         <eq:analog name="Amps" unit="Amps"></eq:analog>
         <eq:analog name="kW" unit="kW"></eq:analog>
+      </eq:equipmentProfile>
+      <eq:equipmentProfile name="SST">
+        <eq:type name="SST" />
+        <eq:analog name="kW_a" unit="kW"></eq:analog>
+        <eq:setpoint name="Qref_a" />
+        <eq:setpoint name="Qref_b" />
+        <eq:setpoint name="Qref_c" />
+        <eq:analog name="kVar_a" unit="kVar">
+          <eq:setpoint name="Qref_a" />
+        </eq:analog>
+        <eq:analog name="kVar_b" unit="kVar">
+          <eq:setpoint name="Qref_b" />
+        </eq:analog>
+        <eq:analog name="kVar_c" unit="kVar">
+          <eq:setpoint name="Qref_c" />
+        </eq:analog>
+        <eq:analog name="kW_b" unit="kW"></eq:analog>
+        <eq:analog name="kW_c" unit="kW"></eq:analog>
+        <eq:analog name="kV_a" unit="kV"></eq:analog>
+        <eq:analog name="kV_b" unit="kV"></eq:analog>
+        <eq:analog name="kV_c" unit="kV"></eq:analog>
+        <eq:status name="Qsst_a" unit="status" pointProfile="OnOff_NoAlm" />
+        <eq:status name="Qsst_b" unit="status" pointProfile="OnOff_NoAlm" />
+        <eq:status name="Qsst_c" unit="status" pointProfile="OnOff_NoAlm" />
+      </eq:equipmentProfile>
+      <eq:equipmentProfile name="Bus_Meas">
+        <eq:type name="Bus" />
+        <eq:analog name="kW_a" unit="kW"></eq:analog>
+        <eq:analog name="kVar_a" unit="kVar"></eq:analog>
+        <eq:analog name="kVar_b" unit="kVar"></eq:analog>
+        <eq:analog name="kVar_c" unit="kVar"></eq:analog>
+        <eq:analog name="kW_b" unit="kW"></eq:analog>
+        <eq:analog name="kW_c" unit="kW"></eq:analog>
+        <eq:analog name="kV_a" unit="kV"></eq:analog>
+        <eq:analog name="kV_b" unit="kV"></eq:analog>
+        <eq:analog name="kV_c" unit="kV"></eq:analog>
       </eq:equipmentProfile>
     </eq:profiles>
     <!-- Equipment Definition-->
@@ -129,64 +211,64 @@
       <eq:equipment name="FID4">
         <eq:equipmentProfile name="FullBreaker" />
       </eq:equipment>
-      <eq:equipment name="CB1">
-        <eq:equipmentProfile name="FullBreaker" />
-      </eq:equipment>
-      <eq:equipment name="Substation 1">
-        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+      <!--<eq:equipment name="CB1" xmlns:eq="equipment.loader.reef.totalgrid.org"><eq:equipmentProfile name="FullBreaker" /></eq:equipment>-->
+      <eq:equipment name="Substation1">
+        <eq:equipmentProfile name="Bus_Meas" />
         <eq:analog name="Frequency" unit="Hz"></eq:analog>
       </eq:equipment>
       <eq:equipment name="Bus1">
-        <eq:analog name="kV" unit="kV"></eq:analog>
         <eq:type name="Bus" />
+        <eq:equipmentProfile name="Bus_Meas" />
       </eq:equipment>
       <eq:equipment name="Bus2">
-        <eq:analog name="kV" unit="kV"></eq:analog>
         <eq:type name="Bus" />
+        <eq:equipmentProfile name="Bus_Meas" />
       </eq:equipment>
       <eq:equipment name="Bus3">
-        <eq:analog name="kV" unit="kV"></eq:analog>
         <eq:type name="Bus" />
+        <eq:equipmentProfile name="Bus_Meas" />
       </eq:equipment>
       <eq:equipment name="PV1">
-        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+        <eq:equipmentProfile name="KvKwkVar_Meas" />
       </eq:equipment>
       <eq:equipment name="PV2">
-        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+        <eq:equipmentProfile name="KvKwkVar_Meas" />
       </eq:equipment>
       <eq:equipment name="PV3">
-        <eq:equipmentProfile name="KvKwkVAR_Meas" />
+        <eq:equipmentProfile name="KvKwkVar_Meas" />
       </eq:equipment>
-      <eq:equipment name="DES">
-        <eq:equipmentProfile name="KvKwkVAR_Meas" />
-        <eq:analog name="%SOC" unit="raw"></eq:analog>
-      </eq:equipment>
-      <eq:equipment name="Line 1">
+      <eq:equipment name="Line1">
         <eq:equipmentProfile name="Line_Meas" />
       </eq:equipment>
-      <eq:equipment name="Line 2">
+      <eq:equipment name="Line2">
         <eq:equipmentProfile name="Line_Meas" />
       </eq:equipment>
-      <eq:equipment name="Line 3">
+      <eq:equipment name="Line3">
         <eq:equipmentProfile name="Line_Meas" />
       </eq:equipment>
-      <eq:equipment name="Line 4">
+      <eq:equipment name="Line4">
         <eq:equipmentProfile name="Line_Meas" />
       </eq:equipment>
       <eq:equipment name="SST1">
-        <eq:analog name="kW" unit="kW"></eq:analog>
-        <eq:type name="SST" />
+        <eq:equipmentProfile name="SST" />
       </eq:equipment>
       <eq:equipment name="SST2">
-        <eq:analog name="kW" unit="kW"></eq:analog>
-        <eq:type name="SST" />
+        <eq:equipmentProfile name="SST" />
       </eq:equipment>
       <eq:equipment name="SST3">
-        <eq:analog name="kW" unit="kW"></eq:analog>
-        <eq:type name="SST" />
+        <eq:equipmentProfile name="SST" />
       </eq:equipment>
-      <!--End MainSt Equipment Configuration-->
+      <eq:equipment name="DES1">
+        <eq:equipmentProfile name="DES" />
+      </eq:equipment>
+      <eq:equipment name="DES2">
+        <eq:equipmentProfile name="DES" />
+      </eq:equipment>
+      <eq:equipment name="DES3">
+        <eq:equipmentProfile name="DES" />
+      </eq:equipment>
     </eq:equipment>
+    <!--End MainSt Equipment Configuration-->
   </eq:equipmentModel>
   <cm:communicationsModel>
     <!--
@@ -197,15 +279,17 @@
             equipmentProfile
         -->
     <!-- Named interfaces -->
-    <cm:interface name="BM1" ip="192.168.100.30" netmask="255.255.255.0" port="8000" network="any" />
     <cm:interface name="MainSt_DNP" ip="152.14.125.31" netmask="255.255.255.0" port="20000" network="any" />
+    
     <!--start MainSt Configuration-->
     <cm:endpoint name="MainSt">
+    
       <cm:type name="Endpoint" />
       <cm:protocol name="benchmark">
         <cm:simOptions delay="7500" />
       </cm:protocol>
-      <cm:interface name="BM1" />
+      <cm:interface name="MainSt_DNP" />
+      
       <cm:equipment name="MainSt">
         <cm:equipment name="FID1">
           <cm:status name="Status" index="0" unit="raw" />
@@ -247,92 +331,230 @@
             <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
           </cm:control>
         </cm:equipment>
-        <cm:equipment name="CB1">
-          <cm:status name="Status" index="8" unit="raw" />
-          <cm:status name="Overcurrent" index="9" unit="raw" />
-          <cm:control name="Open" index="8">
-            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
-          </cm:control>
-          <cm:control name="Close" index="9">
-            <cm:optionsDnp3 type="PULSE" onTime="1000" offTime="1000" count="1" />
-          </cm:control>
-        </cm:equipment>
-        <cm:equipment name="Substation 1">
-          <cm:analog name="kV" index="0" unit="kV" />
-          <cm:analog name="kW" index="1" unit="kW">
+        <cm:equipment name="Substation1">
+          <cm:analog name="kV_a" index="0" unit="kV" />
+          <cm:analog name="kW_a" index="3">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
           </cm:analog>
-          <cm:analog name="kVAR" index="2" unit="kVAR" />
-          <cm:analog name="Frequency" index="3" unit="Hz" />
+          <cm:analog name="kVar_a" index="6" unit="kVar" />
+          <cm:analog name="Frequency" index="9" unit="Hz" />
+          <cm:analog name="kV_b" index="1" unit="kV" />
+          <cm:analog name="kV_c" index="2" unit="kV" />
+          <cm:analog name="kW_b" index="4">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_c" index="5">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kVar_b" index="7" unit="kVar" />
+          <cm:analog name="kVar_c" index="8" unit="kVar" />
         </cm:equipment>
         <cm:equipment name="Bus1">
-          <cm:analog name="kV" index="4" unit="kV">
+          <cm:analog name="kV_a" index="16">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
           </cm:analog>
+          <cm:analog name="kV_b" index="17">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+          <cm:analog name="kV_c" index="18">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+          <cm:analog name="kW_a" index="10">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_b" index="11">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_c" index="12">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kVar_a" index="13" unit="kVar" />
+          <cm:analog name="kVar_b" index="14" unit="kVar" />
+          <cm:analog name="kVar_c" index="15" unit="kVar" />
         </cm:equipment>
         <cm:equipment name="Bus2">
-          <cm:analog name="kV" index="5" unit="kV">
+          <cm:analog name="kV_a" index="25">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
           </cm:analog>
+          <cm:analog name="kV_b" index="26">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+          <cm:analog name="kV_c" index="27">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+          <cm:analog name="kW_a" index="19">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_b" index="20">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_c" index="21">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kVar_a" index="22" unit="kVar" />
+          <cm:analog name="kVar_b" index="23" unit="kVar" />
+          <cm:analog name="kVar_c" index="24" unit="kVar" />
         </cm:equipment>
         <cm:equipment name="Bus3">
-          <cm:analog name="kV" index="6" unit="kV">
+          <cm:analog name="kV_a" index="34">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
           </cm:analog>
+          <cm:analog name="kV_b" index="35">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+          <cm:analog name="kV_c" index="36">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kV" />
+          </cm:analog>
+          <cm:analog name="kW_a" index="28">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_b" index="29">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kW_c" index="30">
+            <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
+          </cm:analog>
+          <cm:analog name="kVar_a" index="31" unit="kVar" />
+          <cm:analog name="kVar_b" index="32" unit="kVar" />
+          <cm:analog name="kVar_c" index="33" unit="kVar" />
         </cm:equipment>
         <cm:equipment name="PV1">
-          <cm:analog name="kV" index="7" unit="kV" />
-          <cm:analog name="kW" index="8" unit="kW" />
-          <cm:analog name="kVAR" index="9" unit="kVAR" />
+          <cm:analog name="kV" index="37" unit="kV" />
+          <cm:analog name="kW" index="38" unit="kW" />
+          <cm:analog name="kVar" index="39" unit="kVar" />
         </cm:equipment>
         <cm:equipment name="PV2">
-          <cm:analog name="kV" index="10" unit="kV" />
-          <cm:analog name="kW" index="11" unit="kW" />
-          <cm:analog name="kVAR" index="12" unit="kVAR" />
+          <cm:analog name="kV" index="40" unit="kV" />
+          <cm:analog name="kW" index="41" unit="kW" />
+          <cm:analog name="kVar" index="42" unit="kVar" />
         </cm:equipment>
         <cm:equipment name="PV3">
-          <cm:analog name="kV" index="13" unit="kV" />
-          <cm:analog name="kW" index="14" unit="kW" />
-          <cm:analog name="kVAR" index="15" unit="kVAR" />
+          <cm:analog name="kV" index="43" unit="kV" />
+          <cm:analog name="kW" index="44" unit="kW" />
+          <cm:analog name="kVar" index="45" unit="kVar" />
         </cm:equipment>
-        <cm:equipment name="DES">
-          <cm:analog name="kV" index="16" unit="kV" />
-          <cm:analog name="kW" index="17" unit="kW" />
-          <cm:analog name="kVAR" index="18" unit="kVAR" />
-          <cm:analog name="%SOC" index="19" unit="raw" />
+        <cm:equipment name="DES1">
+          <cm:analog name="kV" index="46" unit="kV" />
+          <cm:analog name="kW" index="48" unit="kW" />
+          <cm:analog name="kVar" index="49" unit="kVar" />
+          <cm:analog name="%SOC" index="50" unit="raw" />
+          <cm:setpoint name="Pset" index="0" />
+          <cm:setpoint name="Qset" index="1" />
+          <cm:analog name="Amps" index="47" unit="Amps" />
+          <cm:control name="Discharge" index="8">
+            <cm:optionsDnp3 type="LATCH_ON" />
+          </cm:control>
+          <cm:control name="Charge" index="8">
+            <cm:optionsDnp3 type="LATCH_OFF" />
+          </cm:control>
+          <cm:status name="Mode" index="17" unit="raw" />
         </cm:equipment>
-        <cm:equipment name="Line 1">
-          <cm:analog name="Amps" index="20" unit="Amps" />
-          <cm:analog name="kW" index="21" unit="kW">
+        <cm:equipment name="Line1">
+          <cm:analog name="Amps" index="51" unit="Amps" />
+          <cm:analog name="kW" index="52">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
           </cm:analog>
         </cm:equipment>
-        <cm:equipment name="Line 2">
-          <cm:analog name="Amps" index="22" unit="Amps" />
-          <cm:analog name="kW" index="23" unit="kW">
+        <cm:equipment name="Line2">
+          <cm:analog name="Amps" index="53" unit="Amps" />
+          <cm:analog name="kW" index="54">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
           </cm:analog>
         </cm:equipment>
-        <cm:equipment name="Line 3">
-          <cm:analog name="Amps" index="24" unit="Amps" />
-          <cm:analog name="kW" index="25" unit="kW">
+        <cm:equipment name="Line3">
+          <cm:analog name="Amps" index="55" unit="Amps" />
+          <cm:analog name="kW" index="56">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
           </cm:analog>
         </cm:equipment>
-        <cm:equipment name="Line 4">
-          <cm:analog name="Amps" index="26" unit="Amps" />
-          <cm:analog name="kW" index="27" unit="kW">
+        <cm:equipment name="Line4">
+          <cm:analog name="Amps" index="57" unit="Amps" />
+          <cm:analog name="kW" index="58">
             <cm:scale rawLow="-999999" rawHigh="999999" engLow="-999.999" engHigh="999.999" engUnit="kW" />
           </cm:analog>
         </cm:equipment>
         <cm:equipment name="SST1">
-          <cm:analog name="kW" index="28" unit="kW" />
+          <cm:analog name="kW_a" index="59" unit="kW" />
+          <cm:setpoint name="Qref_a" index="6" />
+          <cm:setpoint name="Qref_b" index="7" />
+          <cm:setpoint name="Qref_c" index="8" />
+          <cm:status name="Qsst_a" index="8" unit="raw" />
+          <cm:status name="Qsst_b" index="9" unit="raw" />
+          <cm:status name="Qsst_c" index="10" unit="raw" />
+          <cm:analog name="kW_b" index="60" unit="kW" />
+          <cm:analog name="kW_c" index="61" unit="kW" />
+          <cm:analog name="kVar_a" index="62" unit="kVar" />
+          <cm:analog name="kVar_b" index="63" unit="kVar" />
+          <cm:analog name="kVar_c" index="64" unit="kVar" />
+          <cm:analog name="kV_a" index="65" unit="kV" />
+          <cm:analog name="kV_b" index="66" unit="kV" />
+          <cm:analog name="kV_c" index="67" unit="kV" />
+        </cm:equipment>
+        <cm:equipment name="DES2">
+          <cm:analog name="kV" index="86" unit="kV" />
+          <cm:analog name="kW" index="88" unit="kW" />
+          <cm:analog name="kVar" index="89" unit="kVar" />
+          <cm:analog name="%SOC" index="90" unit="raw" />
+          <cm:setpoint name="Pset" index="2" />
+          <cm:setpoint name="Qset" index="3" />
+          <cm:analog name="Amps" index="87" unit="Amps" />
+          <cm:control name="Discharge" index="9">
+            <cm:optionsDnp3 type="LATCH_ON" />
+          </cm:control>
+          <cm:control name="Charge" index="9">
+            <cm:optionsDnp3 type="LATCH_OFF" />
+          </cm:control>
+          <cm:status name="Mode" index="18" unit="raw" />
+        </cm:equipment>
+        <cm:equipment name="DES3">
+          <cm:analog name="kV" index="91" unit="kV" />
+          <cm:analog name="kW" index="93" unit="kW" />
+          <cm:analog name="kVar" index="94" unit="kVar" />
+          <cm:analog name="%SOC" index="95" unit="raw" />
+          <cm:setpoint name="Pset" index="4" />
+          <cm:setpoint name="Qset" index="5" />
+          <cm:analog name="Amps" index="92" unit="Amps" />
+          <cm:control name="Discharge" index="10">
+            <cm:optionsDnp3 type="LATCH_ON" />
+          </cm:control>
+          <cm:control name="Charge" index="10">
+            <cm:optionsDnp3 type="LATCH_OFF" />
+          </cm:control>
+          <cm:status name="Mode" index="19" unit="raw" />
         </cm:equipment>
         <cm:equipment name="SST2">
-          <cm:analog name="kW" index="29" unit="kW" />
+          <cm:analog name="kW_a" index="68" unit="kW" />
+          <cm:setpoint name="Qref_a" index="9" />
+          <cm:setpoint name="Qref_b" index="10" />
+          <cm:setpoint name="Qref_c" index="11" />
+          <cm:status name="Qsst_a" index="11" unit="raw" />
+          <cm:status name="Qsst_b" index="12" unit="raw" />
+          <cm:status name="Qsst_c" index="13" unit="raw" />
+          <cm:analog name="kW_b" index="69" unit="kW" />
+          <cm:analog name="kW_c" index="70" unit="kW" />
+          <cm:analog name="kVar_a" index="71" unit="kVar" />
+          <cm:analog name="kVar_b" index="72" unit="kVar" />
+          <cm:analog name="kVar_c" index="73" unit="kVar" />
+          <cm:analog name="kV_a" index="74" unit="kV" />
+          <cm:analog name="kV_b" index="75" unit="kV" />
+          <cm:analog name="kV_c" index="76" unit="kV" />
         </cm:equipment>
         <cm:equipment name="SST3">
-          <cm:analog name="kW" index="30" unit="kW" />
+          <cm:analog name="kW_a" index="77" unit="kW" />
+          <cm:setpoint name="Qref_a" index="12" />
+          <cm:setpoint name="Qref_b" index="13" />
+          <cm:setpoint name="Qref_c" index="14" />
+          <cm:status name="Qsst_a" index="14" unit="raw" />
+          <cm:status name="Qsst_b" index="15" unit="raw" />
+          <cm:status name="Qsst_c" index="16" unit="raw" />
+          <cm:analog name="kW_b" index="78" unit="kW" />
+          <cm:analog name="kW_c" index="79" unit="kW" />
+          <cm:analog name="kVar_a" index="80" unit="kVar" />
+          <cm:analog name="kVar_b" index="81" unit="kVar" />
+          <cm:analog name="kVar_c" index="82" unit="kVar" />
+          <cm:analog name="kV_a" index="83" unit="kV" />
+          <cm:analog name="kV_b" index="84" unit="kV" />
+          <cm:analog name="kV_c" index="85" unit="kV" />
         </cm:equipment>
       </cm:equipment>
     </cm:endpoint>
