@@ -41,7 +41,6 @@
                 <eq:unexpected stringValue="CLOSED" actionSet="Nominal"/>
             </eq:pointProfile>
 
-
             <eq:equipmentProfile name="Substation">
                 <eq:type name="Substation"/>
             </eq:equipmentProfile>
@@ -59,7 +58,6 @@
                     </common:info>
                 </eq:control>
 
-                
                 <eq:status name="Bkr" unit="status" pointProfile="BreakerStatus">
                     <eq:control name="Trip"/>
                     <eq:control name="Close"/>
