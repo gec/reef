@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.proto.Model.ConfigFile
 import org.scalatest.{ Assertions, FunSuite }
+import org.totalgrid.reef.loader.LoadingException
 
 @RunWith(classOf[JUnitRunner])
 class ModelContainerTest extends FunSuite with ShouldMatchers with Assertions {
@@ -38,7 +39,7 @@ class ModelContainerTest extends FunSuite with ShouldMatchers with Assertions {
     val configFile: ConfigFile = ConfigFile.newBuilder().setName("blap2").build()
     val configFile2: ConfigFile = ConfigFile.newBuilder().setName("blap2").build()
     container.add(configFile);
-    val exception = intercept[IllegalStateException] {
+    val exception = intercept[LoadingException] {
       container.add(configFile2);
     }
     assert(exception.getMessage.contains("duplicate"))
