@@ -38,7 +38,7 @@ object LoadManager extends Logging {
     createConfiguration: Boolean = true) =
     {
       val file = new File(filename)
-      logger.info("Loading configuration file: " + file)
+      logger.info("processing model file: " + file)
 
       try {
         validateXml(filename)
@@ -115,13 +115,13 @@ object LoadManager extends Logging {
             configFile.setMimeType("text/xml")
             configFile.setFileName(thisFile.getName)
             configFile.setName(fileName)
-            client.putOrThrow(commonLoader.loadConfigFile(configFile))
+            commonLoader.loadConfigFile(configFile)
         }
 
       } catch {
         case exception: Exception =>
-          exceptionCollector.addError("Terminal parsing error: ", exception)
-          logger.warn(exception.getStackTraceString)
+          exceptionCollector.addError("Terminal parsing error: " + exception.getMessage, exception)
+          logger.warn("error loading configuration: " + exception.getMessage, exception)
       }
 
       val errors = exceptionCollector.getErrors

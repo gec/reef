@@ -16,123 +16,352 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.totalgrid.reef.loader
 
+import helpers.{ ModelContainer, CachingModelLoader }
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.sx.equipment._
-import org.totalgrid.reef.loader.helpers.CachingModelLoader
-
-// scala XML classes
+import org.scalatest.mock.MockitoSugar
+import collection.mutable.{ Seq, Queue, HashMap }
+import org.totalgrid.reef.util.Logging
+import org.junit.Assert
+import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
+import sx.communications.CommunicationsModel
+import sx.{ InfoXmlBean, ConfigFileXmlBean }
+import scala.None
 
 import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
 import org.totalgrid.reef.japi.Envelope
-
-class NullExceptionCollector extends ExceptionCollector {
-
-  def collect[A](name: => String)(f: => Unit) { f }
-
-  def hasErrors = false
-}
+import org.totalgrid.reef.proto.Model
 
 @RunWith(classOf[JUnitRunner])
-class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
+class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with MockitoSugar with Logging {
 
-  case class Fixture(client: MockSyncOperations, loader: EquipmentLoader, model: EquipmentModel)
+  case class Fixture(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, loader: EquipmentLoader,
+      model: EquipmentModel) {
+    def reset {
+      loader.reset
+      modelLoader.reset()
+      exceptionCollector.reset()
+      model.reset
+    }
+  }
+
   type FixtureParam = Fixture
 
   /**
    *  This is run before each test.
    */
-  def withFixture(test: OneArgTest) = {
+  def withFixture(test: OneArgTest) =
+    {
+      val modelLoader = new CachingModelLoader(None)
+      val model = new EquipmentModel
+      val exceptionCollector = new LoadingExceptionCollector
+      val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("."))
+      val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEquipment, exceptionCollector, commonLoader)
 
-    // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations(AnyRef => Success(Envelope.Status.OK, List[AnyRef]()))
-    val modelLoader = new CachingModelLoader(Some(client))
-    val model = new EquipmentModel
-    val exceptionCollector = new LoadingExceptionCollector
-    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("."))
-    val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEquipment, exceptionCollector, commonLoader)
+      test(Fixture(modelLoader, exceptionCollector, loader, model))
+    }
 
-    test(Fixture(client, loader, model))
-  }
+  def testEquipmentModelProfiles(fixture: Fixture) =
+    {
+      import fixture._
 
-  def testEquipmentModelProfiles(fixture: Fixture) = {
-    import fixture._
+      val actionModel = HashMap[String, configuration.ActionSet]()
+      val breakerProfile = makeEquipmentProfile("FullBreaker")
 
-    val actionModel = HashMap[String, configuration.ActionSet]()
-    val breakerProfile = makeEquipmentProfile("FullBreaker")
+      val profiles = new Profiles
+      model.setProfiles(profiles)
 
-    val profiles = new Profiles
-    model.setProfiles(profiles)
+      profiles.add(breakerProfile)
+      model.add(makeSubstationWithBreaker("ChapelHill", false, Some(breakerProfile))) // F: no triggers
+      loader.load(model, actionModel)
+      val container: ModelContainer = loader.getModelLoader.getModelContainer
+      val protos = container.getModels
+      protos.length should equal(12)
 
-    profiles.add(breakerProfile)
-    model.add(makeEquipment("ChapelHill", false, Some(breakerProfile))) // F: no triggers
-    loader.load(model, actionModel)
-    val protos = client.getPutQueue.clone
-    protos.length should equal(12)
+      // TODO break into two tests
+      reset
 
-    client.reset // reset putQueue, etc.
-    loader.reset // Clear profiles, etc.
-    model.reset // Clear profiles and equipment
+      model.add(makeSubstationWithBreaker("ChapelHill", false)) // No trigger, No profile
+      loader.load(model, actionModel)
+      container.getModels.length should equal(12)
 
-    model.add(makeEquipment("ChapelHill", false)) // No trigger, No profile
-    loader.load(model, actionModel)
-    protos should equal(client.getPutQueue)
+      loader.getExceptionCollector.hasErrors should equal(false)
+    }
 
-    loader.getExceptionCollector.hasErrors should equal(false)
-  }
+  def testEquipmentModelProfilesWithTriggers(fixture: Fixture) =
+    {
+      import fixture._
 
-  def testEquipmentModelProfilesWithTriggers(fixture: Fixture) = {
-    import fixture._
+      val actionModel = HashMap[String, configuration.ActionSet]()
+      actionModel += ("Nominal" -> makeActionSetNominal())
 
-    val actionModel = HashMap[String, configuration.ActionSet]()
-    actionModel += ("Nominal" -> makeActionSetNominal())
+      val normallyFalse = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
+      val normallyTrue = makePointProfile("NormallyTrueAlarmed", false, "Nominal")
+      val breakerProfile = makeEquipmentProfile("FullBreaker", Some(normallyTrue))
 
-    val normallyFalse = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
-    val normallyTrue = makePointProfile("NormallyTrueAlarmed", false, "Nominal")
-    val breakerProfile = makeEquipmentProfile("FullBreaker", Some(normallyTrue))
-
-    /*
+      /*
     val pointEntity = toEntityType(name, List("Point"))
     val point = toPoint(name, pointEntity)
     val triggerSet = toTriggerSet(point)
     */
+      val profiles = new Profiles
+      model.setProfiles(profiles)
 
-    val profiles = new Profiles
-    model.setProfiles(profiles)
+      profiles.add(breakerProfile)
+      profiles.add(normallyFalse)
+      profiles.add(normallyTrue)
 
-    profiles.add(breakerProfile)
-    profiles.add(normallyFalse)
-    profiles.add(normallyTrue)
+      model.add(makeSubstationWithBreaker("ChapelHill", true, Some(breakerProfile)))
 
-    model.add(makeEquipment("ChapelHill", true, Some(breakerProfile)))
+      loader.load(model, actionModel)
+      var container: ModelContainer = loader.getModelLoader.getModelContainer
+      var protos = container.getModels
+      protos.length should equal(12)
+      modelLoader.getModelContainer.getTriggerSets().length should equal(1)
 
-    loader.load(model, actionModel)
-    val protos = client.getPutQueue.clone
-    protos.length should equal(13)
+      // TODO break into two tests
+      reset
 
-    client.reset // reset putQueue, etc.
-    loader.reset // Clear profiles, etc.
-    model.reset // Clear profiles and equipment
+      model.add(makeSubstationWithBreaker("ChapelHill", true)) // No profile
+      loader.load(model, actionModel)
+      container = loader.getModelLoader.getModelContainer
+      protos = container.getModels
+      protos.length should equal(12)
+      modelLoader.getModelContainer.getTriggerSets().length should equal(1)
 
-    model.add(makeEquipment("ChapelHill", true)) // No profile
-    loader.load(model, actionModel)
+      loader.getExceptionCollector.hasErrors should equal(false)
+    }
 
-    //println( "protos2.length = " + client.getPutQueue.length)
-    protos should equal(client.getPutQueue)
-
-    loader.getExceptionCollector.hasErrors should equal(false)
-  }
-
-  def makeBreaker(equipmentProfile: Option[EquipmentProfile], isTrigger: Boolean): Equipment =
+  def testSimple(fixture: Fixture) =
     {
-      val breaker = new Equipment("Brk1")
+      import fixture._
+
+      val actionModel = HashMap[String, configuration.ActionSet]()
+      actionModel += ("Nominal" -> makeActionSetNominal())
+
+      val normallyFalsePointProfile: PointProfile = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
+      val normallyTruePointProfile: PointProfile = makePointProfile("NormallyTrueAlarmed", false, "Nominal")
+      val breakerProfile: EquipmentProfile = makeEquipmentProfile("FullBreaker", Some(normallyTruePointProfile))
+
+      val profiles = new Profiles
+      profiles.add(normallyTruePointProfile)
+      profiles.add(normallyFalsePointProfile)
+      profiles.add(breakerProfile)
+      model.setProfiles(profiles)
+
+      val substation: Equipment = makeSubstation("Substation1")
+      val breaker1: Equipment = makeBreaker("Breaker1", Some(breakerProfile), true)
+      substation.add(breaker1)
+      model.add(substation)
+
+      loader.load(model, actionModel)
+      val modelLoader: ModelLoader = loader.getModelLoader
+      val modelContainer: ModelContainer = modelLoader.getModelContainer
+      modelContainer.getEntities().foreach(entity => logger.info("entity: " + entity))
+
+      var entity: Option[Entity] = modelContainer.getEntity("Substation1")
+      Assert.assertFalse(entity.isEmpty)
+      entity = modelContainer.getEntity("Substation1.Breaker1")
+      Assert.assertFalse(entity.isEmpty)
+
+      loader.getExceptionCollector.hasErrors should equal(false)
+    }
+
+  def testEquipmentWithConfigFile(fixture: Fixture) =
+    {
+      import fixture._
+
+      val actionModel = HashMap[String, configuration.ActionSet]()
+      actionModel += ("Nominal" -> makeActionSetNominal())
+
+      val normallyFalsePointProfile: PointProfile = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
+      val normallyTruePointProfile: PointProfile = makePointProfile("NormallyTrueAlarmed", false, "Nominal")
+      val breakerProfile: EquipmentProfile = makeEquipmentProfile("FullBreaker", Some(normallyTruePointProfile))
+
+      val profiles = new Profiles
+      profiles.add(normallyTruePointProfile)
+      profiles.add(normallyFalsePointProfile)
+      profiles.add(breakerProfile)
+      model.setProfiles(profiles)
+
+      val substation: Equipment = makeSubstation("Substation1")
+      val breaker1: Equipment = makeBreaker("Breaker1", Some(breakerProfile), true)
+      substation.add(breaker1)
+
+      val mimeType: String = "oneline/xml"
+      val onelineContent: String = "oneline content"
+      val info: InfoXmlBean = createInfoConfigFile(createInlineConfig("oneline", mimeType, onelineContent))
+      substation.add(info)
+
+      model.add(substation)
+
+      loader.load(model, actionModel)
+      if (loader.getExceptionCollector.hasErrors) {
+        loader.getExceptionCollector.getErrors.foreach(error => logger.info("error: " + error))
+      }
+      loader.getExceptionCollector.hasErrors should equal(false)
+
+      val modelLoader: ModelLoader = loader.getModelLoader
+      val modelContainer: ModelContainer = modelLoader.getModelContainer
+      modelContainer.getEntities().foreach(entity => logger.info("entity: " + entity))
+
+      var substationEntity: Option[Entity] = modelContainer.getEntity("Substation1")
+      Assert.assertFalse(substationEntity.isEmpty)
+      var entity = modelContainer.getEntity("Substation1.Breaker1")
+      Assert.assertFalse(entity.isEmpty)
+      val optionOfConfigFile: Option[ConfigFile] = modelContainer.getConfigFile(createChildEntityName(substationEntity.get, "oneline"))
+      Assert.assertFalse(optionOfConfigFile.isEmpty)
+      val configFile: ConfigFile = optionOfConfigFile.get
+      Assert.assertEquals(createChildEntityName(substationEntity.get, "oneline"), configFile.getName)
+      Assert.assertEquals(mimeType, configFile.getMimeType)
+      Assert.assertEquals(onelineContent, configFile.getFile.toStringUtf8)
+    }
+
+  def testEquipmentTwoConfigFilesFails(fixture: Fixture) =
+    {
+      import fixture._
+
+      val actionModel = HashMap[String, configuration.ActionSet]()
+      actionModel += ("Nominal" -> makeActionSetNominal())
+
+      val normallyFalsePointProfile: PointProfile = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
+      val normallyTruePointProfile: PointProfile = makePointProfile("NormallyTrueAlarmed", false, "Nominal")
+      val breakerProfile: EquipmentProfile = makeEquipmentProfile("FullBreaker", Some(normallyTruePointProfile))
+
+      val profiles = new Profiles
+      profiles.add(normallyTruePointProfile)
+      profiles.add(normallyFalsePointProfile)
+      profiles.add(breakerProfile)
+      model.setProfiles(profiles)
+
+      val substation: Equipment = makeSubstation("Substation1")
+      val breaker1: Equipment = makeBreaker("Breaker1", Some(breakerProfile), true)
+      substation.add(breaker1)
+
+      val mimeType: String = "oneline/xml"
+      val onelineContent: String = "oneline content"
+      substation.add(createInfoConfigFile(createInlineConfig("oneline", mimeType, onelineContent)))
+      substation.add(createInfoConfigFile(createInlineConfig("oneline2", mimeType, onelineContent)))
+
+      model.add(substation)
+
+      loader.load(model, actionModel)
+      if (loader.getExceptionCollector.hasErrors) {
+        loader.getExceptionCollector.getErrors.foreach(error => logger.info("error: " + error))
+      }
+      loader.getExceptionCollector.hasErrors should equal(true)
+      loader.getExceptionCollector.getErrors.exists(error => error.contains("More than one Info defined")) should equal(true)
+    }
+
+  private def createChildEntityName(substationEntity: Model.Entity, childName: String): String =
+    {
+      substationEntity.getName + "." + childName
+    }
+
+  def testTwoEquipmentGroupsWithConfigFiles(fixture: Fixture) =
+    {
+      import fixture._
+
+      val actionModel = HashMap[String, configuration.ActionSet]()
+      actionModel += ("Nominal" -> makeActionSetNominal())
+
+      val normallyFalsePointProfile: PointProfile = makePointProfile("NormallyFalseAlarmed", true, "Nominal")
+      val normallyTruePointProfile: PointProfile = makePointProfile("NormallyTrueAlarmed", false, "Nominal")
+      val breakerProfile: EquipmentProfile = makeEquipmentProfile("FullBreaker", Some(normallyTruePointProfile))
+
+      val profiles = new Profiles
+      profiles.add(normallyTruePointProfile)
+      profiles.add(normallyFalsePointProfile)
+      profiles.add(breakerProfile)
+      model.setProfiles(profiles)
+
+      val mimeType: String = "oneline/xml"
+      val onelineContent: String = "oneline content"
+
+      var substation: Equipment = makeSubstation("Substation1", makeBreaker("Breaker1", Some(breakerProfile), true))
+      substation.add(createInfoConfigFile(createInlineConfig("oneline", mimeType, onelineContent)))
+      model.add(substation)
+
+      substation = makeSubstation("Substation2", makeBreaker("Breaker1", Some(breakerProfile), true))
+      substation.add(createInfoConfigFile(createInlineConfig("oneline", mimeType, onelineContent)))
+      model.add(substation)
+
+      loader.load(model, actionModel)
+      if (loader.getExceptionCollector.hasErrors) {
+        loader.getExceptionCollector.getErrors.foreach(error => logger.info("error: " + error))
+      }
+      loader.getExceptionCollector.hasErrors should equal(false)
+
+      val modelLoader: ModelLoader = loader.getModelLoader
+      val modelContainer: ModelContainer = modelLoader.getModelContainer
+      modelContainer.getEntities().foreach(entity => logger.info("entity: " + entity))
+
+      var substationEntity: Option[Entity] = modelContainer.getEntity("Substation1")
+      Assert.assertFalse(substationEntity.isEmpty)
+      var entity = modelContainer.getEntity("Substation1.Breaker1")
+      Assert.assertFalse(entity.isEmpty)
+      var optionOfConfigFile: Option[ConfigFile] = modelContainer.getConfigFile(createChildEntityName(substationEntity.get, "oneline"))
+      Assert.assertFalse(optionOfConfigFile.isEmpty)
+      var configFile: ConfigFile = optionOfConfigFile.get
+      Assert.assertEquals(createChildEntityName(substationEntity.get, "oneline"), configFile.getName)
+      Assert.assertEquals(mimeType, configFile.getMimeType)
+      Assert.assertEquals(onelineContent, configFile.getFile.toStringUtf8)
+
+      substationEntity = modelContainer.getEntity("Substation2")
+      Assert.assertFalse(substationEntity.isEmpty)
+      entity = modelContainer.getEntity("Substation2.Breaker1")
+      Assert.assertFalse(entity.isEmpty)
+      optionOfConfigFile = modelContainer.getConfigFile(createChildEntityName(substationEntity.get, "oneline"))
+      Assert.assertFalse(optionOfConfigFile.isEmpty)
+      configFile = optionOfConfigFile.get
+      Assert.assertEquals(createChildEntityName(substationEntity.get, "oneline"), configFile.getName)
+      Assert.assertEquals(mimeType, configFile.getMimeType)
+      Assert.assertEquals(onelineContent, configFile.getFile.toStringUtf8)
+    }
+
+  private def makeSubstation(name: String, subEquipment: Equipment): Equipment =
+    {
+      val substation: Equipment = makeSubstation(name)
+      substation.add(subEquipment)
+      substation
+    }
+
+  private def createInfoConfigFile(configFile: ConfigFileXmlBean): InfoXmlBean =
+    {
+      val info = new InfoXmlBean()
+      info.getConfigFileOrAttribute.add(configFile)
+      info
+    }
+
+  private def createConfigFile(name: String, mimeType: String, fileName: String): ConfigFileXmlBean =
+    {
+      val configFile = new ConfigFileXmlBean()
+      configFile.setFileName(fileName)
+      configFile.setName(name)
+      configFile.setMimeType(mimeType)
+      configFile
+    }
+
+  private def createInlineConfig(name: String, mimeType: String, content: String): ConfigFileXmlBean =
+    {
+      val configFile = new ConfigFileXmlBean()
+      configFile.setName(name)
+      configFile.setMimeType(mimeType)
+      configFile.setValue(content)
+      configFile
+    }
+
+  private def makeBreaker(name: String, equipmentProfile: Option[EquipmentProfile], isTrigger: Boolean): Equipment =
+    {
+      val breaker = new Equipment(name)
       equipmentProfile match {
         case Some(profile) =>
           breaker.add(profile)
@@ -148,42 +377,59 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       breaker
     }
 
-  def makeEquipment(
-    substationName: String,
-    isTrigger: Boolean,
-    equipmentProfile: Option[EquipmentProfile] = None): Equipment = {
+  private def makeSubstation(substationName: String): Equipment =
+    {
+      new Equipment(substationName).add(new Type("Substation"))
+    }
 
-    val breaker: Equipment = makeBreaker(equipmentProfile, isTrigger)
+  private def makeSubstationWithBreaker(substationName: String, isTrigger: Boolean, equipmentProfile: Option[EquipmentProfile] = None): Equipment =
+    {
+      val breaker: Equipment = makeBreaker("Brk1", equipmentProfile, isTrigger)
+      new Equipment(substationName).add(new Type("Substation")).add(breaker)
+    }
 
-    new Equipment(substationName)
-      .add(new Type("Substation"))
-      .add(breaker)
+  private def makeEquipmentProfile(profileName: String, pointProfile: Option[PointProfile] = None): EquipmentProfile =
+    {
+      new EquipmentProfile(profileName).add(new Type("Breaker")).add(new Control("trip")).add(new Control("close"))
+        .add(new Status("Bkr", "status", pointProfile))
+    }
+
+  private def makePointProfile(profileName: String, value: Boolean, actionSet: String): PointProfile =
+    {
+      new PointProfile(profileName).add(new Unexpected(value, actionSet))
+        .add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
+    }
+
+  private def makeActionSetNominal(): sx.ActionSet =
+    {
+      val rising = new configuration.Rising()
+      rising.setMessage(new sx.Message("Scada.OutOfNominal"))
+
+      val high = new configuration.High
+      high.setSetAbnormal(new Object)
+
+      val as = new sx.ActionSet("Nominal")
+      as.setRising(rising)
+      as.setHigh(high)
+      as
+    }
+
+  private def logProtos(list: Seq[AnyRef]) {
+    logger.debug("")
+    logger.debug("protos: " + list.length)
+    list.foreach(proto => logger.debug("proto(" + proto.getClass.getSimpleName + "): " + proto))
+    logger.debug("")
   }
 
-  def makeEquipmentProfile(profileName: String, pointProfile: Option[PointProfile] = None): EquipmentProfile = {
-
-    new EquipmentProfile(profileName)
-      .add(new Type("Breaker"))
-      .add(new Control("trip"))
-      .add(new Control("close"))
-      .add(new Status("Bkr", "status", pointProfile))
+  private def logCollectedExceptions(loader: BaseConfigurationLoader) {
+    if (loader.getExceptionCollector.hasErrors) {
+      loader.getExceptionCollector.getErrors.foreach(error => logger.info("error: " + error))
+    }
   }
 
-  def makePointProfile(profileName: String, value: Boolean, actionSet: String): PointProfile = {
-    new PointProfile(profileName)
-      .add(new Unexpected(value, actionSet))
-      .add(new Transform("raw", "status", new ValueMap("false", "CLOSED"), new ValueMap("true", "OPEN")))
-  }
-
-  def makeActionSetNominal(): sx.ActionSet = {
-    val as = new sx.ActionSet("Nominal")
-    val rising = new configuration.Rising()
-    rising.setMessage(new sx.Message("Scada.OutOfNominal"))
-    val high = new configuration.High
-    high.setSetAbnormal(new Object)
-    as.setRising(rising)
-    as.setHigh(high)
-    as
+  private def verifyNoLoadExceptions(loader: BaseConfigurationLoader) {
+    logCollectedExceptions(loader)
+    loader.getExceptionCollector.hasErrors should equal(false)
   }
 
 }

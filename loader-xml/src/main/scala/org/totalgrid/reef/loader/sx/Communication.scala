@@ -21,7 +21,7 @@ package org.totalgrid.reef.loader.sx.communications
 import org.totalgrid.reef.loader.communications
 
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
-import org.totalgrid.reef.loader.sx.ConfigFile
+import org.totalgrid.reef.loader.sx.{ ConfigFileXmlBean }
 
 // jaxb java classes
 
@@ -30,8 +30,14 @@ class Type(_name: String) extends communications.Type {
 }
 
 class Protocol(_name: String, _configFileName: Option[String]) extends communications.Protocol {
-  _configFileName.foreach(n => getSimOptionsOrConfigFile.add(new ConfigFile(n)))
+  _configFileName.foreach(fileName => getSimOptionsOrConfigFile.add(createConfigFile(fileName)))
   setName(_name)
+
+  private def createConfigFile(fileName: String): ConfigFileXmlBean = {
+    val configFile: ConfigFileXmlBean = new ConfigFileXmlBean()
+    configFile.setFileName(fileName)
+    configFile
+  }
 }
 
 class SimOptions(_value: Int) extends communications.SimOptions {
@@ -162,9 +168,11 @@ trait EndpointType[A] { self: communications.EndpointType =>
   def add(x: Protocol) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
   def set(x: Interface) = { getProtocolOrInterfaceOrEndpointProfile.add(x); this.asInstanceOf[A] }
 }
+
 class EndpointProfile(_name: String, _protocolName: Option[String] = Some("benchmark"), _configFileName: Option[String] = None) extends communications.EndpointProfile with EndpointType[EndpointProfile] {
   init(_name, _protocolName, _configFileName)
 }
+
 class Endpoint(_name: String, _protocolName: Option[String] = Some("benchmark"), _configFileName: Option[String] = None) extends communications.Endpoint with EndpointType[Endpoint] {
   init(_name, _protocolName, _configFileName)
 }

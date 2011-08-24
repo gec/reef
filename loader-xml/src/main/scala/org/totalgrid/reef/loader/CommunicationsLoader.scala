@@ -47,7 +47,9 @@ object CommunicationsLoader {
  * TODO: Add serial interfaces
  *
  */
-class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunication, exceptionCollector: ExceptionCollector, commonLoader: CommonLoader) extends Logging {
+class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommunication, exceptionCollector: ExceptionCollector,
+  commonLoader: CommonLoader)
+    extends Logging with BaseConfigurationLoader {
 
   val controlProfiles = LoaderMap[ControlProfile]("Control Profile")
   val pointProfiles = LoaderMap[PointProfile]("Point Profile")
@@ -68,13 +70,28 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     commonLoader.reset()
   }
 
+  def getExceptionCollector: ExceptionCollector = {
+    exceptionCollector
+  }
+
+  def getModelLoader: ModelLoader = {
+    modelLoader
+  }
+
   /**
    * Load this equipment node and all children. Create edges to connect the children.
-   * path: Path prefix where config files should be.
+   */
+  def load(model: CommunicationsModel, equipmentPointUnits: HashMap[String, String]): Unit = {
+    load(model, equipmentPointUnits, false)
+  }
+
+  /**
+   * Load this equipment node and all children. Create edges to connect the children.
+   * if benchmark is true ignore endpoint type and use benchmark protocol
    */
   def load(model: CommunicationsModel, equipmentPointUnits: HashMap[String, String], benchmark: Boolean) = {
-
     logger.info("Start")
+
     // Collect all the profiles in name->profile maps.
     model.getProfiles.foreach { profiles =>
       profiles.getControlProfile.toList.foreach(controlProfile => controlProfiles += (controlProfile.getName -> controlProfile))
@@ -142,7 +159,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
 
-    val port: Option[CommChannel.Builder] = if (overriddenProtocolName != BENCHMARK)
+    val commChannelBuilder: Option[CommChannel.Builder] = if (overriddenProtocolName != BENCHMARK)
       Some(processInterface(profiles))
     else
       None
@@ -169,6 +186,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
     val isBenchmark = overriddenProtocolName == BENCHMARK
+    logger.debug("checking indices: isBenchmark: " + isBenchmark + ", overridden protocol name: " + overriddenProtocolName)
     exceptionCollector.collect("Checking Indexes: " + endpointName) {
       validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg, compareControls)
       validateIndexesAreUnique[Setpoint](setpoints, isBenchmark, errorMsg)
@@ -202,12 +220,12 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     }
 
     // Now we have a list of all the controls and points for this Endpoint
-    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, port, controls, setpoints, points).build
-    client.putOrThrow(endpointCfg)
+    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannelBuilder, controls, setpoints,
+      points).build
+    modelLoader.putOrThrow(endpointCfg)
 
     val endpointEntity = ProtoUtils.toEntityType(endpointName, "CommunicationEndpoint" :: Nil)
-
-    endpoint.getInfo.foreach(i => commonLoader.addInfo(endpointEntity, i))
+    endpoint.getInfo.foreach(info => commonLoader.addInfo(endpointEntity, info))
   }
 
   private def compareControls(a: Control, b: Control): Boolean = {
@@ -234,12 +252,19 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
         val index = indexable.getIndex
         map.contains(index) match {
           case true =>
-            if (equalsFunc(indexable, map(index))) throw new LoadingException(error + " both '" + name + "' and '" + map(index).getName + "' cannot use the same index=\"" + index + "\"")
+            if (equalsFunc(indexable, map(index))) {
+              val msg: String = error + " both '" + name + "' and '" + map(index).getName + "' cannot use the same index=\"" + index + "\""
+              logger.error(msg)
+              throw new LoadingException(msg)
+            }
           case false => map += (index -> indexable)
         }
       } else {
-        if (!isBenchmark)
-          throw new LoadingException(error + " '" + name + "' does not specify an index.")
+        if (!isBenchmark) {
+          val msg: String = error + " '" + name + "' does not specify an index."
+          logger.error(msg)
+          throw new LoadingException(msg)
+        }
       }
     }
   }
@@ -346,7 +371,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
       .setIp(ipProto)
       .build
 
-    client.putOrThrow(portProto)
+    modelLoader.putOrThrow(portProto)
 
     portProto.toBuilder
   }
@@ -414,7 +439,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     val indexMap = toIndexMapping(controlProtos.toList ::: setpointsProtos.toList, pointProtos).build
 
     val configFile = toConfigFile(endpointName, indexMap).build
-    client.putOrThrow(configFile)
+    modelLoader.putOrThrow(configFile)
     configFile
   }
 
@@ -455,7 +480,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
 
         val point = toPoint(name)
 
-        addTriggers(client, point, toTrigger(name, s) :: Nil)
+        addTriggers(modelLoader, point, toTrigger(name, s) :: Nil)
       } else {
         loadCache.addPoint(endpointName, name, index)
       }
@@ -573,28 +598,27 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     proto
   }
 
-  def toMeasMap(endpointName: String, name: String, point: PointType): Mapping.MeasMap.Builder = {
-    import CommunicationsLoader._
+  def toMeasMap(endpointName: String, name: String, point: PointType): Mapping.MeasMap.Builder =
+    {
+      import CommunicationsLoader._
 
-    logger.debug("    POINT " + point.getIndex + " -> " + name)
-    val proto = Mapping.MeasMap.newBuilder
-      .setPointName(name)
-      .setUnit(point.getUnit)
+      if (!point.isSetIndex) {
+        throw new LoadingException("ERROR in endpoint '" + endpointName + "' - Point '" + name + "' has no index specified.")
+      }
 
-    if (point.isSetIndex)
-      proto.setIndex(point.getIndex)
-    else
-      throw new LoadingException("ERROR in endpoint '" + endpointName + "' - Point '" + name + "' has no index specified.")
+      logger.debug("    POINT: " + point.getIndex + " -> " + name)
+      val builder = Mapping.MeasMap.newBuilder.setPointName(name).setUnit(point.getUnit)
+      builder.setIndex(point.getIndex)
 
-    val typ = point match {
-      case status: Status => MAPPING_STATUS
-      case analog: Analog => MAPPING_ANALOG
-      case counter: Counter => MAPPING_COUNTER
+      val pointType = point match {
+        case status: Status => MAPPING_STATUS
+        case analog: Analog => MAPPING_ANALOG
+        case counter: Counter => MAPPING_COUNTER
+      }
+      builder.setType(pointType)
+
+      builder
     }
-    proto.setType(typ)
-
-    proto
-  }
 
   def setpointToCommandMap(endpointName: String, name: String, setpoint: Setpoint): Mapping.CommandMap.Builder = {
 
@@ -684,7 +708,7 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     simMap.addAllCommands(controlProtos.toList ::: setpointProtos.toList)
 
     val configFile = toConfigFile(endpointName, simMap.build).build
-    client.putOrThrow(configFile)
+    modelLoader.putOrThrow(configFile)
     configFile
   }
 
@@ -696,31 +720,31 @@ class CommunicationsLoader(client: ModelLoader, loadCache: LoadCacheCommunicatio
     import ProtoUtils._
 
     logger.debug("SIM POINT -> " + name)
-    val proto = SimMapping.MeasSim.newBuilder.setName(name).setUnit(point.getUnit)
+    val builder = SimMapping.MeasSim.newBuilder.setName(name).setUnit(point.getUnit)
 
-    var triggerSet = client.getOrThrow(toTriggerSet(toPoint(name))).headOption
+    var triggerSet = modelLoader.getOrThrow(toTriggerSet(toPoint(name))).headOption
 
     var inBoundsRatio = 0.85
     var changeChance = 1.0
 
     point match {
       case status: Status =>
-        proto.setType(Measurements.Measurement.Type.BOOL)
+        builder.setType(Measurements.Measurement.Type.BOOL)
         val boolTrigger = triggerSet.map { _.getTriggersList.find(_.hasBoolValue) }.flatMap { x => x }
         val bval = boolTrigger.map { _.getBoolValue }.getOrElse(false)
-        proto.setInitial(if (bval) 1 else 0)
+        builder.setInitial(if (bval) 1 else 0)
         changeChance = 0.03
       case analog: Analog =>
-        proto.setType(Measurements.Measurement.Type.DOUBLE)
-        configureNumericMeasSim(proto, triggerSet, inBoundsRatio)
+        builder.setType(Measurements.Measurement.Type.DOUBLE)
+        configureNumericMeasSim(builder, triggerSet, inBoundsRatio)
       case counter: Counter =>
-        proto.setType(Measurements.Measurement.Type.INT)
-        configureNumericMeasSim(proto, triggerSet, inBoundsRatio)
-        proto.setMaxDelta(proto.getMaxDelta.max(1.0))
+        builder.setType(Measurements.Measurement.Type.INT)
+        configureNumericMeasSim(builder, triggerSet, inBoundsRatio)
+        builder.setMaxDelta(builder.getMaxDelta.max(1.0))
     }
-    proto.setChangeChance(changeChance)
+    builder.setChangeChance(changeChance)
 
-    proto
+    builder
   }
 
   def configureNumericMeasSim(proto: SimMapping.MeasSim.Builder, triggerSet: Option[TriggerSet], inBoundsRatio: Double) {

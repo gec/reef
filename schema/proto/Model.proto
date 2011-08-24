@@ -21,14 +21,11 @@ message ReefUUID {
   Together, entities connected by a certain relationship type form an acyclic directed
   graph. The model must not include cycles (given a start entity, it must not be possible
   to get back to the same entity using the same relationship type and direction).
-
 */
 message Entity {
-
   optional ReefUUID uuid = 1;
   repeated string types = 2;
   optional string name = 3;
-
   repeated Relationship relations = 10;
 }
 
@@ -39,14 +36,11 @@ message Entity {
   Entity relationships have a type ("relationship"), a direction ("descendant_of"), and
   a list of Entity objects the relationship connects to. Because relationships are transitive,
   they also have a distance, or how many edges away the other entities are.
-
 */
 message Relationship {
   optional string relationship = 1;
   optional bool descendant_of = 2;
-  
   repeated Entity entities = 10;
-  
   optional uint32 distance = 15;
 }
 
@@ -56,7 +50,6 @@ message Relationship {
 
   Represents a single directed edge between entities. Puts to the service automatically
   enforce the transitive property of entity relationships.
-
 */
 message EntityEdge {
   optional ReefUUID uuid = 1;
@@ -133,9 +126,8 @@ message Command {
   as an opaque byte array by the services.
 
   ConfigFile objects also contain a reference to the entities they are associated with.
-
 */
-message ConfigFile{
+message ConfigFile {
     optional ReefUUID uuid    = 1;
     optional string name      = 2;
     optional string mime_type = 3;

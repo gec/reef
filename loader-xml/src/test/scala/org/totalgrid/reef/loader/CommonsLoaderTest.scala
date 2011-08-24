@@ -54,7 +54,7 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
   def getLoader = {
     val mockClient = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(mockClient))
-    val exCollector = new NullExceptionCollector
+    val exCollector = new LoadingExceptionCollector
     val path = new File(".")
     new CommonLoader(modelLoader, exCollector, path)
   }
@@ -76,6 +76,8 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
 
     cfProto.getFile.toStringUtf8 should include("</project>")
     cfProto.getName should equal("test.xml")
+
+    loader.getExceptionCollector.hasErrors should equal(false)
   }
 
   test("Use Filename as name") {
@@ -91,6 +93,8 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
 
     cfProto.getFile.toStringUtf8 should include("</project>")
     cfProto.getName should equal("pom.xml")
+
+    loader.getExceptionCollector.hasErrors should equal(false)
   }
 
   test("Load ConfigFile as CDATA") {
@@ -113,5 +117,7 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     val cfProto = loader.loadConfigFile(cf)
 
     cfProto.getFile.toStringUtf8 should include("ns2:Master")
+
+    loader.getExceptionCollector.hasErrors should equal(false)
   }
 }

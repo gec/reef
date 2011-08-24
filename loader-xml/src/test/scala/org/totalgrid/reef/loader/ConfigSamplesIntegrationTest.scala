@@ -31,21 +31,23 @@ import org.totalgrid.reef.japi.Envelope
 class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
 
   val samplesPath = BuildEnv.configPath + "assemblies/assembly-common/filtered-resources/samples/"
-  def client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
+  def createClient: MockSyncOperations = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
 
   test("samples/integration") {
-    val c = client
-    LoadManager.loadFile(c, samplesPath + "integration/config.xml", false, false, false, true) should equal(true)
-    c.getPutQueue.size should equal(72)
+    val client = createClient
+    LoadManager.loadFile(client, samplesPath + "integration/config.xml", false, false, false, true) should equal(true)
+    client.getPutQueue.size should equal(71)
   }
+
   test("samples/demo") {
-    val c = client
-    LoadManager.loadFile(c, samplesPath + "demo/configuration.demo.xml", false, false, false, true) should equal(true)
-    c.getPutQueue.size should equal(295)
+    val client = createClient
+    LoadManager.loadFile(client, samplesPath + "demo/configuration.demo.xml", false, false, false, true) should equal(true)
+    client.getPutQueue.size should equal(294)
   }
+
   test("samples/two_substations") {
-    val c = client
-    LoadManager.loadFile(c, samplesPath + "two_substations/config.xml", false, false, false, true) should equal(true)
-    c.getPutQueue.size should equal(310)
+    val client = createClient
+    LoadManager.loadFile(client, samplesPath + "two_substations/config.xml", false, false, false, true) should equal(true)
+    client.getPutQueue.size should equal(309)
   }
 }

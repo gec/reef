@@ -112,6 +112,7 @@ trait EquipmentType[A] { self: equipment.EquipmentType =>
   def add(x: org.totalgrid.reef.loader.equipment.Analog) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
   def add(x: org.totalgrid.reef.loader.equipment.Counter) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
   def add(x: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
+  def add(x: org.totalgrid.reef.loader.common.Info) = { getEquipmentProfileOrTypeOrControl.add(x); this.asInstanceOf[A] }
 }
 
 class EquipmentProfile(_name: String) extends equipment.EquipmentProfile with EquipmentType[EquipmentProfile] {
@@ -128,9 +129,9 @@ class Profiles extends equipment.Profiles {
 }
 class EquipmentModel extends equipment.EquipmentModel {
   def add(e: org.totalgrid.reef.loader.equipment.Equipment) = { getEquipment.add(e); this }
-  def reset: Unit = {
+  def reset() {
     setProfiles(new Profiles)
-    getEquipment.clear
+    getEquipment.clear()
   }
 }
 

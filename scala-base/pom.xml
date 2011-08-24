@@ -84,7 +84,7 @@
             <scope>test</scope>
         </dependency>
 
-		<!-- logging implementation -->
+		<!-- logging implementation for test -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>

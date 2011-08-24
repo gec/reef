@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.loader
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
@@ -26,24 +25,29 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.loader.sx.communications._
 
-import collection.mutable.HashMap
-import org.totalgrid.reef.util.BuildEnv
 import org.totalgrid.reef.loader.helpers.CachingModelLoader
-
-// scala XML classes
+import org.totalgrid.reef.util.{ Logging, BuildEnv }
+import org.scalatest.{ Assertions, BeforeAndAfterAll }
+import collection.mutable.{ HashMap }
 
 import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
 import org.totalgrid.reef.japi.Envelope
+import collection.Seq
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
+import org.totalgrid.reef.proto.Model.ConfigFile
 
 @RunWith(classOf[JUnitRunner])
-class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
+class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with Assertions with Logging {
 
   val samplesPath = "assemblies/assembly-common/filtered-resources/samples/"
 
-  case class Fixture(client: MockSyncOperations, loader: CommunicationsLoader, model: CommunicationsModel) {
-    def reset = {
+  case class Fixture(client: MockSyncOperations, modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, loader: CommunicationsLoader,
+      model: CommunicationsModel) {
+    def reset {
       client.reset // reset putQueue, etc.
       loader.reset // Clear profiles, etc.
+      modelLoader.reset()
+      exceptionCollector.reset()
       model.reset // Clear profiles and equipment
     }
   }
@@ -58,54 +62,66 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     val client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
-    val ex = new NullExceptionCollector
-    val commonLoader = new CommonLoader(modelLoader, ex, new java.io.File(BuildEnv.configPath + samplesPath + "two_substations"))
-    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCommunication, ex, commonLoader)
+    val exceptionCollector = new LoadingExceptionCollector
+    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File(BuildEnv.configPath + samplesPath + "two_substations"))
+    val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCommunication, exceptionCollector, commonLoader)
 
-    test(Fixture(client, loader, model))
+    test(Fixture(client, modelLoader, exceptionCollector, loader, model))
   }
 
-  def testInterfaces(fixture: Fixture) = {
+  def testInterfaces(fixture: Fixture) {
     import fixture._
 
     val equipmentPointUnits = HashMap[String, String]()
 
+    val endpointXmlFileName: String = "comms/sel_351_endpoint1.xml"
+    val endpointName: String = "myEndpoint"
     model.add(
-      new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
+      new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1", "192.168.100.30", 8003)))
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
-    val protos = client.getPutQueue.clone
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
+    logger.info("config file count: " + loader.getModelLoader.getModelContainer.getConfigFiles().size)
+    logger.info("entity count: " + loader.getModelLoader.getModelContainer.getEntities().size)
+    logProtos(loader.getModelLoader.getModelContainer.getConfigFiles().keysIterator.toSeq)
+    verifyNoLoadExceptions(loader)
+    val protos = client.getPutQueue.clone()
     protos.length should equal(3)
 
     reset
+
+    model.add(new Interface("i1", "192.168.100.30", 8003))
     model.add(
-      new Interface("i1", "192.168.100.30", 8003))
-    model.add(
-      new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
+      new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1")))
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
     protos should equal(client.getPutQueue)
 
     reset
+
+    model.add(new Interface("i1", "192.168.100.30", 0))
     model.add(
-      new Interface("i1", "192.168.100.30", 0))
-    model.add(
-      new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
+      new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1", 8003)))
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
     protos should equal(client.getPutQueue)
 
     reset
+
+    model.add(new Interface("i1", "192.168.100.0", 0))
     model.add(
-      new Interface("i1", "192.168.100.0", 0))
-    model.add(
-      new Endpoint("myEndpoint", Some("dnp3"), Some("comms/sel_351_endpoint1.xml"))
+      new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1", "192.168.100.30", 8003)))
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
     protos should equal(client.getPutQueue)
+
+    verifyNoLoadExceptions(loader)
   }
 
-  def testCommunicationsPointProfiles(fixture: Fixture) = {
+  def testCommunicationsPointProfiles(fixture: Fixture) {
     import fixture._
 
     val equipmentPointUnits = HashMap[String, String]()
@@ -122,9 +138,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
               .set(new OptionsDnp3("PULSE_CLOSE", 1000, 1000, 1)))
             .add(new Analog("Mw", Some(3))
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
-    val protos = client.getPutQueue.clone
-    //println( "no profiles protos.length = "+protos.length); protos.foreach( protoPrintln); println(" \n ");
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
+    val protos = client.getPutQueue.clone()
     protos.length should equal(3)
 
     //  With PointProfile and ControlProfile
@@ -144,12 +160,13 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
             .add(new Control("trip", Some(1), controlProfile))
             .add(new Analog("Mw", Some(3), linePowerProfile)))))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    //val protos2 = client.getPutQueue
-    //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
+    logProtos(client.getPutQueue.clone().toList)
     protos should equal(client.getPutQueue)
+
+    verifyNoLoadExceptions(loader)
   }
 
-  def testCommunicationsEndpointProfiles(fixture: Fixture) = {
+  def testCommunicationsEndpointProfiles(fixture: Fixture) {
     import fixture._
 
     val equipmentPointUnits = HashMap[String, String]()
@@ -167,9 +184,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
             .add(new Analog("Mw", Some(3))
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    val protos = client.getPutQueue.clone
-    println(protos)
-    //println( "no profiles protos.length = "+protos.length); protos.foreach( protoPrintln); println(" \n ");
+    logProtos(client.getPutQueue.clone().toList)
+    val protos = client.getPutQueue.clone()
     protos.length should equal(3)
 
     //  With EndpointProfile, PointProfile, and ControlProfile
@@ -191,8 +207,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       new Endpoint("Endpoint1")
         .add(new EndpointProfile("EndpointProfile1")))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    //val protos2 = client.getPutQueue
-    //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
+    logProtos(client.getPutQueue.clone().toList)
     protos should equal(client.getPutQueue)
 
     //  With control in EndpointProfile, analog not.
@@ -214,61 +229,132 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
           .add(new Equipment("BigBkr")
             .add(new Analog("Mw", Some(3), linePowerProfile)))))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    //val protos2 = client.getPutQueue
-    //println( "\nWith profiles protos.length = "+protos2.length); protos2.foreach( protoPrintln); println(" \n ");
+    logProtos(client.getPutQueue.clone().toList)
     protos should equal(client.getPutQueue)
+
+    verifyNoLoadExceptions(loader)
   }
 
-  /**
-   * Indexes are not required for benchmark.
-   */
-  def testCommunicationsBenchmarkWithoutIndexes(fixture: Fixture) = {
+  // Indexes are not required for benchmark.
+  def testCommunicationsBenchmarkWithoutIndexes(fixture: Fixture) {
     import fixture._
 
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
+    // default protocol is benchmark
     model.add(
-      new Endpoint("Simulated") // default protocol is benchmark
+      new Endpoint("Simulated")
         .add(new Equipment("ChapelHill")
           .add(new Equipment("BigBkr")
             .add(new Analog("Mw")))))
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
-    val protos = client.getPutQueue.clone
-    protos.length should equal(2)
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
+    verifyNoLoadExceptions(loader)
 
+    client.getPutQueue.clone().length should equal(2)
   }
 
-  /**
-   * Indexes are not required for benchmark.
-   */
-  def testCommunicationsDnp3WithoutIndexes(fixture: Fixture) = {
+  def testCommunicationsDnp3WithoutIndexesFails(fixture: Fixture) {
     import fixture._
 
     val equipmentPointUnits = HashMap[String, String]()
     equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
 
-    model.add(
-      new Endpoint("Simulated", Some(CommunicationsLoader.DNP3))
-        .set(new Interface("interface1", "127.0.0.1", 8001))
-        .add(new Equipment("ChapelHill")
-          .add(new Equipment("BigBkr")
-            .add(new Analog("Mw")))))
+    val endpoint: Endpoint = createSimpleEndpoint(false)
+    model.add(endpoint)
 
-    intercept[Exception] {
-      loader.load(model, equipmentPointUnits, false) // T: benchmark
-    }
+    loader.load(model, equipmentPointUnits)
+    logProtos(client.getPutQueue.clone().toList)
+    logCollectedExceptions(loader)
 
-    loader.load(model, equipmentPointUnits, true) // T: benchmark
-    val protos = client.getPutQueue.clone
+    expect(2)(loader.getExceptionCollector.getErrors.length)
+    val matchedError: List[String] = loader.getExceptionCollector.getErrors.filter(error =>
+      {
+        error.contains("does not specify an index") || error.contains("has no index specified")
+      })
+    expect(2)(matchedError.length)
+  }
+
+  def testCommunicationsDnp3WithIndexesSucceeds(fixture: Fixture) {
+    import fixture._
+
+    val equipmentPointUnits = HashMap[String, String]()
+    equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
+
+    val endpoint: Endpoint = createSimpleEndpoint(true)
+    model.add(endpoint)
+
+    loader.load(model, equipmentPointUnits)
+    logProtos(client.getPutQueue.clone().toList)
+
+    verifyNoLoadExceptions(loader)
+    val protos: Seq[AnyRef] = client.getPutQueue.clone().toSeq
     protos.length should equal(3)
 
+    val commChannelList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommChannel])
+    commChannelList.length should equal(1)
+    commChannelList.apply(0).asInstanceOf[CommChannel].getName should equal("tcp://127.0.0.1:7799@any")
+
+    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
+    endPointConfigList.length should equal(1)
+    endPointConfigList.apply(0).asInstanceOf[CommEndpointConfig].getName should equal(endpoint.getName)
+
+    val configFileList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[ConfigFile])
+    configFileList.length should equal(1)
+    configFileList.apply(0).asInstanceOf[ConfigFile].getName should equal(endpoint.getName + "-mapping.pi")
   }
 
-  def protoPrintln(value: AnyRef) = println("\nPROTO: " + className(value.getClass.toString) + "\n" + value.toString + "\n")
-  def className(c: String) = c.substring(c.lastIndexOf('.') + 1, c.length - 1).replace('$', '.')
+  def testCommunicationsDnp3WithoutIndexesInBenchmarkModeSucceeds(fixture: Fixture) {
+    import fixture._
 
-  def makeEquipment(
+    val equipmentPointUnits = HashMap[String, String]()
+    equipmentPointUnits += ("ChapelHill.BigBkr.Mw" -> "Mw")
+
+    val endpoint: Endpoint = createSimpleEndpoint(true)
+    model.add(endpoint)
+
+    loader.load(model, equipmentPointUnits, true)
+    logProtos(client.getPutQueue.clone().toList)
+
+    verifyNoLoadExceptions(loader)
+    val protos: Seq[AnyRef] = client.getPutQueue.clone().toSeq
+    protos.length should equal(2)
+
+    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
+    endPointConfigList.length should equal(1)
+    endPointConfigList.apply(0).asInstanceOf[CommEndpointConfig].getName should equal(endpoint.getName)
+
+    val configFileList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[ConfigFile])
+    configFileList.length should equal(1)
+    configFileList.apply(0).asInstanceOf[ConfigFile].getName should equal(endpoint.getName + "-sim.pi")
+  }
+
+  def createSimpleEndpoint(): Endpoint =
+    {
+      createSimpleEndpoint(false)
+    }
+
+  def createSimpleEndpoint(withIndices: Boolean): Endpoint =
+    {
+      val endpoint: Endpoint = new Endpoint("SimulatedEndpoint", Some(CommunicationsLoader.DNP3))
+      val interface: Interface = new Interface("interface1", "127.0.0.1", 7799)
+      val breaker: Equipment = new Equipment("BigBkr")
+
+      val mwAnalog = if (withIndices)
+        new Analog("Mw", Some(555))
+      else
+        new Analog("Mw")
+
+      breaker.add(mwAnalog)
+      val equipmentGroup: Equipment = new Equipment("ChapelHill")
+      equipmentGroup.add(breaker)
+      endpoint.set(interface).add(equipmentGroup)
+
+      endpoint
+    }
+
+  private def makeEquipment(
     substationName: String,
     isTrigger: Boolean,
     equipmentProfile: Option[EquipmentProfile] = None): Equipment = {
@@ -287,8 +373,29 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
           .add(status)
     }
 
-    new Equipment(substationName)
-      .add(breaker)
+    new Equipment(substationName).add(breaker)
+  }
+
+  private def logProtos(list: Seq[AnyRef])
+  {
+    logger.debug("")
+    logger.debug("protos: " + list.length)
+    list.foreach(proto => logger.debug("proto(" + proto.getClass.getSimpleName + "): " + proto))
+    logger.debug("")
+  }
+
+  private def logCollectedExceptions(loader: BaseConfigurationLoader)
+  {
+    if ( loader.getExceptionCollector.hasErrors )
+    {
+      loader.getExceptionCollector.getErrors.foreach(error => logger.info("error: " + error))
+    }
+  }
+
+  private def verifyNoLoadExceptions(loader: BaseConfigurationLoader)
+  {
+    logCollectedExceptions(loader)
+    loader.getExceptionCollector.hasErrors should equal(false)
   }
 
 }

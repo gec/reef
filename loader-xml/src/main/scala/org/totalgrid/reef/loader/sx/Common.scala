@@ -20,6 +20,8 @@ package org.totalgrid.reef.loader.sx
 
 import org.totalgrid.reef.loader.common
 
-class ConfigFile(_fileName: String) extends common.ConfigFile {
-  setFileName(_fileName)
+class ConfigFileXmlBean() extends common.ConfigFile {
+}
+
+class InfoXmlBean extends common.Info {
 }

@@ -386,9 +386,9 @@ object ProtoUtils {
    * @param types  List of type strings
    */
   def toEntityType(name: String, types: List[String]): Entity = {
-    val proto = Entity.newBuilder.setName(name)
-    types.foreach(proto.addTypes)
-    proto.build
+    val entityBuilder = Entity.newBuilder.setName(name)
+    types.foreach(entityBuilder.addTypes)
+    entityBuilder.build
   }
 
   def toPoint(name: String): Point = Point.newBuilder.setName(name).build

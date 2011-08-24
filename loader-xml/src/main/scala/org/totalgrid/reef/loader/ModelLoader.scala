@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.loader
 
+import helpers.ModelContainer
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.FEP._
@@ -36,4 +37,7 @@ trait ModelLoader {
 
   def putOrThrow(e: TriggerSet)
   def getOrThrow(e: TriggerSet): List[TriggerSet]
+
+  def getModelContainer: ModelContainer
+  def reset()
 }

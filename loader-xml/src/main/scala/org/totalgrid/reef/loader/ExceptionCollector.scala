@@ -16,7 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.totalgrid.reef.loader
+
+import org.totalgrid.reef.util.Logging
 
 class LoadingException(msg: String) extends RuntimeException(msg)
 
@@ -26,7 +29,6 @@ class LoadingException(msg: String) extends RuntimeException(msg)
  * as many errors as possible on each pass
  */
 trait ExceptionCollector {
-
   /**
    * loading code should call use a collect blocks around each separable unit of loading.
    * names generally end with a colon and space
@@ -34,9 +36,15 @@ trait ExceptionCollector {
   def collect[A](name: => String)(function: => Unit)
 
   def hasErrors: Boolean
+
+  def getErrors: List[String]
+
+  def getErrorTuples: List[(String, Exception)]
+
+  def reset()
 }
 
-class LoadingExceptionCollector extends ExceptionCollector {
+class LoadingExceptionCollector extends ExceptionCollector with Logging {
 
   private var errors = List.empty[(String, Exception)]
 
@@ -51,15 +59,33 @@ class LoadingExceptionCollector extends ExceptionCollector {
           println("Errors detected, attempting to continue loading, not all errors may be detected until these errors are fixed.")
         }
         firstError = true
-        val nameString = try { name } catch { case _ => "<unknown>" }
+        val nameString = try {
+          name
+        } catch {
+          case _ => "<unknown>"
+        }
+        logger.info("exception encountered during loading: " + nameString + ": " + ex.getMessage)
+        //        logger.debug("DEBUG: exception encountered during loading: " + nameString + ": " + ex.getMessage + ": ", ex)
         addError(nameString, ex)
     }
   }
 
-  def getErrors: List[String] = errors.map { _._1 }
+  def getErrors: List[String] = errors.map {
+    _._1
+  }
+
+  def getErrorTuples: List[(String, Exception)] = {
+    errors.toList
+  }
 
   def hasErrors: Boolean = firstError
 
-  def addError(name: String, ex: Exception) =
+  def addError(name: String, ex: Exception) {
     errors = errors ::: ((name + " - " + ex.getMessage, ex) :: Nil)
+  }
+
+  def reset() {
+    errors = List.empty[(String, Exception)]
+    firstError = false
+  }
 }
