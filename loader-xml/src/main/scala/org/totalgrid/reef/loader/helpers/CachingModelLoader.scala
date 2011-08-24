@@ -108,7 +108,7 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
     client.foreach(flush(_, None))
   }
 
-  def getTriggerSets(): Map[String, TriggerSet] =  {
+  def getTriggerSets(): Map[String, TriggerSet] = {
     triggers.clone()
   }
 
@@ -148,9 +148,9 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
     }
 
   def getModelContainer: ModelContainer =
-  {
-    modelContainer
-  }
+    {
+      modelContainer
+    }
 
   def reset() {
     puts = List.empty[AnyRef]
