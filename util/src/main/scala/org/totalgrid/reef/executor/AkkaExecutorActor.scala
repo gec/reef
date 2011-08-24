@@ -58,22 +58,49 @@ trait AkkaTimer extends Timer {
 
   val actor: ActorRef
 
-  def cancel() = actor ! CANCEL
+  private val mutex = new Object
+  private var isStopped = false
+
+  def waitForCompletion() = mutex.synchronized {
+    def waitForComplete: Unit = {
+      if (!isStopped) {
+        mutex.wait()
+        waitForComplete
+      }
+    }
+    waitForComplete
+  }
+
+  def onStopped() = mutex.synchronized {
+    isStopped = true
+    mutex.notifyAll()
+  }
+
+  def cancel() = if (!isStopped) {
+    actor ! CANCEL
+    waitForCompletion()
+  }
+
   def now() = actor ! NOW
 }
 
 class SingleAkkaTimer(delay: Long, executor: Executor)(onStop: Timer => Unit)(fun: => Unit) extends AkkaTimer {
-  val actor = actorOf(new AkkaSingleTimerActor(delay, executor)(onStop(this))(fun)).start()
+  val actor = actorOf(new AkkaSingleTimerActor(delay, executor, this)(onStop(this))(fun)).start()
 }
 
 class RepeatAkkaTimer(delay: Long, executor: Executor)(onStop: Timer => Unit)(fun: => Unit) extends AkkaTimer {
   executor.execute(fun) //call the function initially
-  val actor = actorOf(new AkkaRepeatTimerActor(delay, executor)(onStop(this))(fun)).start()
+  val actor = actorOf(new AkkaRepeatTimerActor(delay, executor, this)(onStop(this))(fun)).start()
 }
 
-abstract class AkkaTimerActor(delay: Long)(beforeExit: => Unit) extends Actor {
+abstract class AkkaTimerActor(delay: Long, timer: AkkaTimer)(beforeExit: => Unit) extends Actor {
 
   import org.totalgrid.reef.executor.ActorTimerMessages._
+
+  def onBeforeExit() = {
+    timer.onStopped()
+    beforeExit
+  }
 
   self.receiveTimeout = Some(delay)
 
@@ -81,30 +108,30 @@ abstract class AkkaTimerActor(delay: Long)(beforeExit: => Unit) extends Actor {
 
   def defaultMessageHandler: Receive = {
     case CANCEL =>
-      beforeExit
+      onBeforeExit()
       self.exit()
   }
 
   def receive() = specificMessageHandler orElse defaultMessageHandler
 }
 
-class AkkaSingleTimerActor(delay: Long, executor: Executor)(beforeExit: => Unit)(fun: => Unit)
-    extends AkkaTimerActor(delay)(beforeExit) with Logging {
+class AkkaSingleTimerActor(delay: Long, executor: Executor, timer: AkkaTimer)(beforeExit: => Unit)(fun: => Unit)
+    extends AkkaTimerActor(delay, timer)(beforeExit) with Logging {
 
   override def specificMessageHandler() = {
     case NOW =>
       executor.execute(fun)
-      beforeExit
+      onBeforeExit()
       self.exit()
     case ReceiveTimeout =>
       executor.execute(fun)
-      beforeExit
+      onBeforeExit()
       self.exit()
   }
 
 }
-class AkkaRepeatTimerActor(delay: Long, executor: Executor)(beforeExit: => Unit)(fun: => Unit)
-    extends AkkaTimerActor(delay)(beforeExit) with Logging {
+class AkkaRepeatTimerActor(delay: Long, executor: Executor, timer: AkkaTimer)(beforeExit: => Unit)(fun: => Unit)
+    extends AkkaTimerActor(delay, timer)(beforeExit) with Logging {
 
   def specificMessageHandler() = {
     case NOW => doFun
@@ -120,7 +147,7 @@ class AkkaRepeatTimerActor(delay: Long, executor: Executor)(beforeExit: => Unit)
         self.receiveTimeout = Some(delay)
         unbecome()
       case CANCEL =>
-        beforeExit
+        onBeforeExit()
         self.exit()
       case NOW =>
         doFun

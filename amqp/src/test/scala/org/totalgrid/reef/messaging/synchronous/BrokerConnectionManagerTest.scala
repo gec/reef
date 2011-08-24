@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging
+package org.totalgrid.reef.messaging.synchronous
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -33,10 +33,10 @@ class BrokerConnectionManagerTest extends FunSuite with ShouldMatchers {
 
   def fixture(initial: Int, max: Long)(test: (BrokerConnection, MockExecutor, BrokerConnectionManager) => Unit): Unit = {
     val broker = Mockito.mock(classOf[BrokerConnection])
-    val exe = new MockExecutor
-    val manager = new BrokerConnectionManager(exe, broker, initial, max)
+    val executor = new MockExecutor
+    val manager = new BrokerConnectionManager(broker, executor, initial, max)
     Mockito.verify(broker).addListener(manager) // mananger adds itself as a listener on construction
-    test(broker, exe, manager)
+    test(broker, executor, manager)
   }
 
   def fixture(test: (BrokerConnection, MockExecutor, BrokerConnectionManager) => Unit): Unit = fixture(1000, 60000)(test)
@@ -53,6 +53,27 @@ class BrokerConnectionManagerTest extends FunSuite with ShouldMatchers {
       manager.start()
       Mockito.when(broker.connect()).thenReturn(true)
       exe.executeNext(1, 0)
+    }
+  }
+
+  test("Connection failure causes exponential backoff up to maximum") {
+    fixture(2000, 5000) { (broker, exe, manager) =>
+      manager.start()
+      Mockito.when(broker.connect()).thenReturn(false)
+      exe.executeNext(1, 1)
+      exe.delayNext(1, 1) should equal(2000)
+      exe.delayNext(1, 1) should equal(4000)
+      exe.delayNext(1, 1) should equal(5000)
+    }
+  }
+
+  test("Connection failure causes reconnection after delay") {
+    fixture(2000, 5000) { (broker, exe, manager) =>
+      manager.start()
+      Mockito.when(broker.connect()).thenReturn(true)
+      exe.executeNext(1, 0)
+      manager.onConnectionClosed(false)
+      exe.delayNext(1, 0)
     }
   }
 

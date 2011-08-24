@@ -57,55 +57,47 @@ object EmbeddedBrokerConnection {
 }
 
 class EmbeddedBrokerChannel(parent: EmbeddedBrokerConnection) extends BrokerChannel {
-  var started = true
 
-  var messageConsumer: Option[MessageConsumer] = None
-  var queueName: Option[String] = None
+  var open = true
 
-  def start() {
-    started = true
-    parent.listen(queueName.get, messageConsumer.get)
-  }
-
-  def isOpen = started
+  def isOpen = open
 
   def close() {
-    val wasStarted = started
-    started = false
-    if (wasStarted) onClose(true)
+    val wasOpen = open
+    open = false
+    if (wasOpen) onClose(true)
   }
 
-  def throwOnClosed() = if (!started) throw new ServiceIOException("Already closed")
+  def throwOnClosed() = if (!open) throw new ServiceIOException("Already closed")
 
   def listen(queue: String, mc: MessageConsumer) = {
     throwOnClosed()
-    queueName = Some(queue)
-    messageConsumer = Some(mc)
+    parent.listenInternal(queue, mc)
   }
 
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: Option[Destination]) = {
     throwOnClosed()
-    parent.publish(exchange, key, b, replyTo)
+    parent.publishInternal(exchange, key, b, replyTo)
   }
 
   def unbindQueue(queue: String, exchange: String, key: String) = {
     throwOnClosed()
-    parent.unbindQueue(queue, exchange, key)
+    parent.unbindQueueInternal(queue, exchange, key)
   }
 
   def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean) = {
     throwOnClosed()
-    parent.bindQueue(queue, exchange, key, unbindFirst)
+    parent.bindQueueInternal(queue, exchange, key, unbindFirst)
   }
 
   def declareExchange(exchange: String, exchangeType: String) = {
     throwOnClosed()
-    parent.declareExchange(exchange, exchangeType)
+    parent.declareExchangeInternal(exchange, exchangeType)
   }
 
   def declareQueue(queue: String, autoDelete: Boolean, exclusive: Boolean) = {
     throwOnClosed()
-    parent.declareQueue(queue, autoDelete, exclusive)
+    parent.declareQueueInternal(queue, autoDelete, exclusive)
   }
 }
 
@@ -143,7 +135,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
   var exchanges = immutable.Map.empty[String, List[ExchangeBinding]]
   var queueNum = 0
 
-  def publish(exchange: String, routingKey: String, b: Array[Byte], replyTo: Option[Destination]) = {
+  def publishInternal(exchange: String, routingKey: String, b: Array[Byte], replyTo: Option[Destination]) = {
     // we get all the destinations before sending any messages so we are not synchronized when we make the callback
     // because that will lead to a deadlock if the callback causes another message to be sent on the same thread
     getDestinations(exchange, routingKey).foreach(mc => mc.receive(b, replyTo))
@@ -168,7 +160,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
     }
   }
 
-  def listen(queue: String, mc: MessageConsumer) {
+  def listenInternal(queue: String, mc: MessageConsumer) {
     synchronized {
       queues.get(queue) match {
         case Some(roundRobin) =>
@@ -176,7 +168,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
           roundRobin.add(mc)
         case None =>
           queues = queues + (queue -> new RoundRobinList[MessageConsumer] {})
-          listen(queue, mc)
+          listenInternal(queue, mc)
       }
     }
   }
@@ -192,11 +184,11 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
     queueNameTemplate //return the unique queue name
   }
 
-  def declareQueue(queue: String, autoDelete: Boolean, exclusive: Boolean): String = {
+  def declareQueueInternal(queue: String, autoDelete: Boolean, exclusive: Boolean): String = {
     synchronized { privateName(queue) }
   }
 
-  def declareExchange(exchange: String, exchangeType: String = "topic"): Unit = {
+  def declareExchangeInternal(exchange: String, exchangeType: String = "topic"): Unit = {
     synchronized {
       exchanges.get(exchange) match {
         case Some(l) =>
@@ -206,7 +198,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
     }
   }
 
-  def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean): Unit = {
+  def bindQueueInternal(queue: String, exchange: String, key: String, unbindFirst: Boolean): Unit = {
     if (unbindFirst) {
       unbindQueue(queue, exchange, key)
     }
@@ -225,7 +217,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
     }
   }
 
-  def unbindQueue(queue: String, exchange: String, key: String): Unit = {
+  def unbindQueueInternal(queue: String, exchange: String, key: String): Unit = {
     synchronized {
       exchanges.get(exchange) match {
         case Some(l: List[_]) =>

@@ -12,3 +12,5 @@ totalgrid-reef-*
 Thumbs.db
 *.log
 **/*.log
+*.ipr
+*.iws

@@ -16,15 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.messaging.synchronous
 
-/** A class that implements a borrow function */
-trait SessionPool {
+import org.totalgrid.reef.sapi.ServiceList
+import org.totalgrid.reef.broker.BrokerConnection
 
-  def borrow[A](fun: ClientSession => A): A
-
-  def borrow[A](authToken: String)(fun: ClientSession => A): A
-
-  def size: Int
+class ServicePool(lookup: ServiceList, conn: BrokerConnection) {
 
 }

@@ -62,8 +62,6 @@ trait BrokerChannel {
 
   def listen(queue: String, mc: MessageConsumer)
 
-  def start()
-
   def close()
 
   def isOpen: Boolean

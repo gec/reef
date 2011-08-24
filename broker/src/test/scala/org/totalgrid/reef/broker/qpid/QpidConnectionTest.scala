@@ -80,7 +80,6 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
         sv.update(value)
       }
     })
-    channel.start
 
     channel.publish("test", "hi", "hi".getBytes, None)
 
