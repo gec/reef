@@ -48,9 +48,9 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
 
   private def acquire(): ClientSession = available.synchronized {
     available.lastOption match {
-      case Some(s) =>
-        available.remove(s)
-        s
+      case Some(session) =>
+        available.remove(session)
+        session
       case None => getNewSession()
     }
   }
@@ -71,7 +71,8 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
     session match {
       case ex: ErroredClientSession => // do nothing
       case _ =>
-        if (session.isOpen) available.add(session) // if the session somehow gets closed, we discard it
+        // if the session somehow gets closed, we discard it
+        if (session.isOpen) available.add(session)
         else count -= 1
     }
 
