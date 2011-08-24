@@ -207,6 +207,9 @@
 		<!-- Equipment Definition-->
 		<equip:equipment name="MainSt">
 			<equip:equipmentProfile name="MicrogridProfile"/>
+			<common:info>
+				<common:configFile name="oneline" fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+			</common:info>
 
 			<equip:equipment name="FID1">
 				<equip:equipmentProfile name="FullBreaker"/>
