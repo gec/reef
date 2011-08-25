@@ -135,10 +135,10 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     }
 
     def eventToList(req: Event, entity: Option[Entity]): List[Any] =
-      "severity:" :: event.severity :: ", type:" :: event.eventType :: entityToString(entity) :: ", user id:" :: event.userId :: ", rendered:" ::
+      "severity: " :: event.severity :: ", type: " :: event.eventType :: entityToString(entity) :: ", user id: " :: event.userId :: ", rendered: " ::
         event.rendered :: Nil
 
-    logger.info(eventToList(req, entity).mkString("z"))
+    logger.info(eventToList(req, entity).mkString(""))
   }
 
 }
