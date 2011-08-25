@@ -21,8 +21,8 @@
 		</messageSet>
 
 		<messageSet name="Scada" severity="6" type="ALARM" state="UNACK_SILENT">
-			<message name="ControlExe">User executed control {control} on device {device}</message>
-			<message name="OutOfNominal" severity="4">Measurement not in nominal range: {value}{unit} validity {validity}</message>
+			<message name="ControlExe">User executed control: {control} on device: {device}</message>
+			<message name="OutOfNominal" severity="4">Measurement not in nominal range: value: {value}, unit: {unit}, validity: {validity}</message>
 			<message name="OutOfReasonable" severity="3" state="UNACK_AUDIBLE">Measurement not reasonable: {value}{unit} validity {validity}</message>
 		</messageSet>
 	</messageModel>
