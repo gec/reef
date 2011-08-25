@@ -27,9 +27,9 @@ import collection.mutable.ArrayBuffer
 import org.totalgrid.reef.util.Logging
 import org.scalatest.BeforeAndAfter
 import org.totalgrid.reef.proto.Model
-import java.util.{Iterator, List}
+import java.util.{ Iterator, List }
 import collection.Seq
-import collection.immutable.{List => ScalaList}
+import collection.immutable.{ List => ScalaList }
 
 /**
  * example of the live example documentation/tests we use to make it clear exactly how the system is implementing
@@ -38,18 +38,17 @@ import collection.immutable.{List => ScalaList}
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest
     extends ClientSessionSuite("ConfigFile.xml", "Config Files", <div>
-      <p>Config files are for larger hunks of opaque data for use by external applications. Config files can be related to 0 to many entities.
+                                                                   <p>
+                                                                     Config files are for larger hunks of opaque data for use by external applications. Config files can be related to 0 to many entities.
         Config files can be searched for by name, uid or by entities they are related to. Searches can all be filtered by mimeType if the name is
-        unknown. Names must be unique system-wide.</p>
-    </div>)
-    with ShouldMatchers with Logging with BeforeAndAfter
-{
+        unknown. Names must be unique system-wide.
+                                                                   </p>
+                                                                 </div>)
+    with ShouldMatchers with Logging with BeforeAndAfter {
 
   val configFiles = new ArrayBuffer[ConfigFile]
 
-
-  test("Create config files")
-  {
+  test("Create config files") {
     client.addExplanation("Create a free floating config file", "Config files can be created without being attached to an Entity")
     val cf = client.createConfigFile("Test-Config-File", "text/plain", "Data".getBytes())
     registerConfigFile(cf)
@@ -61,8 +60,7 @@ class ConfigFileServiceTest
     client.deleteConfigFile(cf)
   }
 
-  test("Associate Config File to Entity")
-  {
+  test("Associate Config File to Entity") {
     val entity = client.getEntityByName("StaticSubstation")
 
     client.addExplanation("Attach Config File to Entity", "If we specify an entity with the config file they will be associated")
@@ -87,13 +85,12 @@ class ConfigFileServiceTest
     client.deleteConfigFile(cf2)
   }
 
-  test("search for relative config files")
-  {
+  test("search for relative config files") {
     val relativeName: String = "equipmentGroupConfig"
     val entity = client.getEntityByName("StaticSubstation")
     val service: ConfigFileService = client.asInstanceOf[ConfigFileService]
 
-    val files: Seq[ConfigFile] = convertToScalaSequence( service.getAllConfigFiles )
+    val files: Seq[ConfigFile] = convertToScalaSequence(service.getAllConfigFiles)
     val filtered: Seq[ConfigFile] = files.filter(file => file.getName == entity.getName + "." + relativeName)
     filtered.length should equal(1)
 
@@ -109,34 +106,30 @@ class ConfigFileServiceTest
   }
 
   private def convertToScalaSequence(files: List[ConfigFile]): Seq[ConfigFile] =
-  {
-    val list = new ArrayBuffer[ConfigFile]()
-    val iterator: Iterator[ConfigFile] = files.iterator()
-    while ( iterator.hasNext )
     {
-      list += iterator.next()
+      val list = new ArrayBuffer[ConfigFile]()
+      val iterator: Iterator[ConfigFile] = files.iterator()
+      while (iterator.hasNext) {
+        list += iterator.next()
+      }
+      list.toSeq
     }
-    list.toSeq
-  }
 
-  override protected def before(fun: => Any)
-  {
+  override protected def before(fun: => Any) {
     logger.debug("before(): " + configFiles.length)
     configFiles.clear()
   }
 
-  override protected def after(fun: => Any)
-  {
+  override protected def after(fun: => Any) {
     logger.debug("after(): " + configFiles.length)
     configFiles.foreach(configFile =>
-    {
-      client.deleteConfigFile(configFile)
-    })
+      {
+        client.deleteConfigFile(configFile)
+      })
     configFiles.clear()
   }
 
-  private def registerConfigFile(configFile: Model.ConfigFile)
-  {
+  private def registerConfigFile(configFile: Model.ConfigFile) {
     configFiles += configFile
   }
 

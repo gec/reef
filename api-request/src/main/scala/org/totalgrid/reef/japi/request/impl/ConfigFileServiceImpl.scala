@@ -25,7 +25,7 @@ import org.totalgrid.reef.japi.ExpectationException
 import org.totalgrid.reef.japi.request.{ ConfigFileService }
 import org.totalgrid.reef.japi.request.builders.{ EntityRequestBuilders, ConfigFileRequestBuilders }
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Model.{Entity, ConfigFile, ReefUUID}
+import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile, ReefUUID }
 import collection.mutable.Buffer
 
 /**
@@ -57,21 +57,20 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
 
   override def getConfigFileWithRelativeName(entity: Entity, relativeName: String): ConfigFile = {
     val configFiles: java.util.List[ConfigFile] = ops(
-      "Couldn't get config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " + relativeName)
-    {
-      _.get(ConfigFileRequestBuilders.getByEntity(entity.getUuid)).await().expectMany()
-    }
+      "Couldn't get config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " + relativeName) {
+        _.get(ConfigFileRequestBuilders.getByEntity(entity.getUuid)).await().expectMany()
+      }
 
     val filteredFiles: Buffer[ConfigFile] = configFiles.filter(configFile => configFile.getName.equals(entity.getName + "." + relativeName))
-    if ( filteredFiles.length == 0 ) {
+    if (filteredFiles.length == 0) {
       return null
     }
-    if ( filteredFiles.length == 1 ) {
+    if (filteredFiles.length == 1) {
       return filteredFiles.get(0)
     }
     throw new ExpectationException(
       "Received unexpected results when retrieving config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " +
-          relativeName)
+        relativeName)
   }
 
   override def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = {
