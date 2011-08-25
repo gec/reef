@@ -18,22 +18,21 @@
  */
 package org.totalgrid.reef.integration;
 
-import org.junit.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
+import org.junit.Test;
+
+import org.totalgrid.reef.japi.client.AMQPConnectionSettingImpl;
 import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
 import org.totalgrid.reef.japi.client.Connection;
-
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-import org.totalgrid.reef.proto.Measurements;
 
 public class TestBridgeExceptionBehaviors
 {
-
     @Test
     public void throwsExceptionWhenNotStarted()
     {
-        AMQPConnectionSettings settings = new AMQPConnectionSettings( "127.0.0.1", 5672, "guest", "guest", "test", false, "", "" );
+        AMQPConnectionSettings settings = new AMQPConnectionSettingImpl( "127.0.0.1", 5672, "guest", "guest", "test", false, "", "" );
         Connection connection = new AMQPConnection( settings, 5000 );
 
         try

@@ -21,6 +21,7 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.*;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.AMQPConnectionSettingImpl;
 import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
 import org.totalgrid.reef.japi.client.Session;
 import org.totalgrid.reef.japi.request.AllScadaService;
@@ -91,7 +92,7 @@ public class ReefConnectionTestBase
             // we'll then throw an exception when trying to load from emtpy properties file
         }
 
-        return new AMQPConnectionSettings( props );
+        return new AMQPConnectionSettingImpl( props );
     }
 
     @Before

@@ -18,171 +18,21 @@
  */
 package org.totalgrid.reef.japi.client;
 
-import org.totalgrid.reef.japi.client.util.PropertyLoading;
-
-import java.util.Properties;
-
-/**
- * Settings class that defines properties for an AMQP connection
- */
-public class AMQPConnectionSettings
+public interface AMQPConnectionSettings
 {
-    private final String host;
-    private final int port;
-    private final String user;
-    private final String password;
-    private final String virtualHost;
+    String getHost();
 
-    private final boolean ssl;
-    private final String trustStore;
-    private final String trustStorePassword;
+    int getPort();
 
-    public AMQPConnectionSettings( String host, int port, String user, String password, String virtualHost )
-    {
-        this( host, port, user, password, virtualHost, false, null, null );
-    }
+    String getUser();
 
-    /**
-     * @param host        The IP address or DNS name of AMQP broker
-     * @param port        The TCP port that the broker is listening on (default 5672)
-     * @param user        The username for the connection
-     * @param password    The password for the connection
-     * @param virtualHost The virtual host to use, default is '/'
-     * @param ssl         If connection is encrypted using SSL
-     * @param trustStore  Path to trustStore file (trust-store.jks)
-     * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
-     */
-    public AMQPConnectionSettings( String host, int port, String user, String password, String virtualHost, boolean ssl, String trustStore,
-        String trustStorePassword )
-    {
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.password = password;
-        this.virtualHost = virtualHost;
-        this.ssl = ssl;
-        this.trustStore = trustStore;
-        this.trustStorePassword = trustStorePassword;
-    }
+    String getPassword();
 
-    /**
-     * loads the connection settings from a properties object. Properties can be loaded using any of the standard
-     * java methods, example below.
-     * <pre>
-     *   Properties props = new Properties();
-     *   try
-     *   {
-     *     FileInputStream fis = new FileInputStream( "../org.totalgrid.reef.test.cfg" );
-     *     props.load( fis );
-     *     fis.close();
-     *   }
-     *   catch ( IOException e )
-     *   {
-     *     e.printStackTrace();
-     *     // we'll then throw an exception when trying to load from emtpy properties file
-     *   }
-     *   new AMQPConnectionSettings( props );
-     * </pre>
-     *
-     * @param props properties object loaded with appropriate org.totalgrid.reef.amqp settings
-     * @throws IllegalArgumentException if needed entries are missing
-     */
-    public AMQPConnectionSettings( Properties props ) throws IllegalArgumentException
-    {
-        this.host = PropertyLoading.getString( "org.totalgrid.reef.amqp.host", props );
-        this.port = PropertyLoading.getInt( "org.totalgrid.reef.amqp.port", props );
-        this.user = PropertyLoading.getString( "org.totalgrid.reef.amqp.user", props );
-        this.password = PropertyLoading.getString( "org.totalgrid.reef.amqp.password", props );
-        this.virtualHost = PropertyLoading.getString( "org.totalgrid.reef.amqp.virtualHost", props );
-        this.ssl = PropertyLoading.getBoolean( "org.totalgrid.reef.amqp.ssl", props );
-        if ( ssl )
-        {
-            this.trustStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStore", props );
-            this.trustStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStorePassword", props );
-        }
-        else
-        {
-            this.trustStore = "";
-            this.trustStorePassword = "";
-        }
-    }
+    String getVirtualHost();
 
-    @Override
-    public String toString()
-    {
-        if ( ssl )
-        {
-            return "amqps:/" + user + "@" + host + ":" + port + "/" + virtualHost + "{" + trustStore + "}";
-        }
-        else
-        {
-            return "amqp:/" + user + "@" + host + ":" + port + "/" + virtualHost;
-        }
-    }
+    boolean getSsl();
 
-    /**
-     * @return host name
-     */
-    public String getHost()
-    {
-        return host;
-    }
+    String getTrustStore();
 
-    /**
-     * @return TCP port
-     */
-    public int getPort()
-    {
-        return port;
-    }
-
-    /**
-     * @return username
-     */
-    public String getUser()
-    {
-        return user;
-    }
-
-    /**
-     * @return password
-     */
-    public String getPassword()
-    {
-        return password;
-    }
-
-    /**
-     * @return virtual host
-     */
-    public String getVirtualHost()
-    {
-        return virtualHost;
-    }
-
-    /**
-     * @return whether connection is using ssl
-     */
-    public boolean getSsl()
-    {
-        return ssl;
-    }
-
-    /**
-     * @return path of trust store file
-     */
-    public String getTrustStore()
-    {
-        return trustStore;
-    }
-
-    /**
-     * @return password for trust store password
-     */
-    public String getTrustStorePassword()
-    {
-        return trustStorePassword;
-    }
-
-
+    String getTrustStorePassword();
 }

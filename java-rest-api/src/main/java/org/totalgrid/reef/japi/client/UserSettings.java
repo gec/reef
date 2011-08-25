@@ -19,14 +19,12 @@
 package org.totalgrid.reef.japi.client;
 
 
-import org.totalgrid.reef.japi.client.util.PropertyLoading;
-
 import java.util.Dictionary;
-import java.util.Properties;
+
+import org.totalgrid.reef.japi.client.util.PropertyLoading;
 
 public class UserSettings
 {
-
     private String userName;
     private String userPassword;
 
@@ -38,8 +36,8 @@ public class UserSettings
 
     public UserSettings( Dictionary properties )
     {
-        this.userName = PropertyLoading.getString( "org.totalgrid.reef.user.username", properties );
-        this.userPassword = PropertyLoading.getString( "org.totalgrid.reef.user.password", properties );
+        userName = PropertyLoading.getString( "org.totalgrid.reef.user.username", properties );
+        userPassword = PropertyLoading.getString( "org.totalgrid.reef.user.password", properties );
     }
 
     public String getUserName()
@@ -51,5 +49,4 @@ public class UserSettings
     {
         return userPassword;
     }
-
 }
