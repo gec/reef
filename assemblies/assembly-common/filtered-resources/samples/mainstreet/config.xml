@@ -28,6 +28,7 @@
 			<rising>
 				<message name="Scada.OutOfReasonable"/>
 			</rising>
+
 			<high moreActions="false">
 				<stripValue/>
 				<setAbnormal/>
@@ -44,12 +45,14 @@
 			<rising>
 				<message name="Scada.OutOfNominal"/>
 			</rising>
+
 			<high>
 				<!-- <quality validity="questionable" source="PROCESS" detailQuality="2" test="false" operatorBlocked="false"/> -->
 				<stripValue/>
 				<setBool value="true"/>
 				<setUnit unit="var"/>
 			</high>
+
 			<transition></transition>
 		</actionSet>
 

@@ -61,8 +61,7 @@
 			<coordinate x="43.849998116493225" y="277"/>
 		</device>
 
-		<device xsi:type="Transformer" name="MainSt.SST3" label="SST3" type="SOLID_STATE" rating="" westNominalVoltage="277V" eastNominalVoltage="7
-		.2kV">
+		<device xsi:type="Transformer" name="MainSt.SST3" label="SST3" type="SOLID_STATE" rating="" westNominalVoltage="277V" eastNominalVoltage="7.2kV">
 			<coordinate x="332.19999623298645" y="277"/>
 		</device>
 
@@ -395,21 +394,26 @@
 			<point name="MainSt.Line1.Amps" pointName="MainSt.Line1.Amps"/>
 			<point name="MainSt.Line1.kW" pointName="MainSt.Line1.kW"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.Line2">
 			<coordinate x="601" y="177"/>
 			<point name="MainSt.Line2.Amps" pointName="MainSt.Line2.Amps"/>
 			<point name="MainSt.Line2.kW" pointName="MainSt.Line2.kW"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.Line4">
 			<coordinate x="545" y="268"/>
 			<point name="MainSt.Line4.Amps" pointName="MainSt.Line4.Amps"/>
 			<point name="MainSt.Line4.kW" pointName="MainSt.Line4.kW"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.Line3">
 			<coordinate x="526" y="131"/>
 			<point name="MainSt.Line3.Amps" pointName="MainSt.Line3.Amps"/>
 			<point name="MainSt.Line3.kW" pointName="MainSt.Line3.kW"/>
 		</pointGroup>
 	</pointGroups>
+
+	<labels/>
 
 </oneline>
