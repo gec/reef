@@ -6,9 +6,9 @@
 							 xmlns:comm="communications.loader.reef.totalgrid.org"
 							 xmlns:common="common.loader.reef.totalgrid.org">
 
-	<common:info>
+	<common:configFiles>
 		<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
-	</common:info>
+	</common:configFiles>
 
 	<messageModel>
 		<messageSet name="System" severity="8" type="LOG">
