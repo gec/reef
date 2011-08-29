@@ -414,6 +414,20 @@
 		</pointGroup>
 	</pointGroups>
 
-	<labels/>
+	<navigationDestinations>
+		<destination name="oneline-mainstreet" uri="online:/equipmentGroup?name=MainSt"/>
+		<destination name="oneline-residential" uri="online:/equipmentGroup?name=Residential"/>
+		<destination name="oneline-overview" uri="online:/absolute?name=overview"/>
+	</navigationDestinations>
+
+	<labels>
+		<label xsi:type='NavigationLabel' name='online:mainStreet' label='Main Street' destination="oneline-mainstreet">
+			<coordinate x='6' y='7'/>
+		</label>
+
+		<label xsi:type='NavigationLabel' name='online:overview' label='Overview' destination="oneline-overview">
+			<coordinate x='100' y='150'/>
+		</label>
+	</labels>
 
 </oneline>
