@@ -414,6 +414,24 @@
 		</pointGroup>
 	</pointGroups>
 
-	<labels/>
+	<navigationDestinations>
+		<destination name="oneline-mainstreet" uri="EquipmentGroupDetailPlace:?equipmentGroup_name=MainSt;tab=oneline"/>
+		<destination name="oneline-residential" uri="EquipmentGroupDetailPlace:?equipmentGroup_name=Residential;tab=oneline"/>
+		<destination name="dashboard" uri="/dashboard"/>
+	</navigationDestinations>
+
+	<labels>
+		<label xsi:type='NavigationLabel' name='oneline:mainStreet' label='To Main Street' destination="oneline-mainstreet">
+			<coordinate x='5' y='5'/>
+		</label>
+
+		<label xsi:type='NavigationLabel' name='oneline:residential' label='To Residential' destination="oneline-residential">
+			<coordinate x='5' y='50'/>
+		</label>
+
+		<label xsi:type='NavigationLabel' name='dashboard' label='To Dashboard' destination='dashboard'>
+			<coordinate x='5' y='100'/>
+		</label>
+	</labels>
 
 </oneline>
