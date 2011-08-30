@@ -154,13 +154,18 @@ object LoadManager extends Logging {
     // load the xml file
     val source = new StreamSource(filename)
 
-    val ex = new LoadingExceptionCollector
+    val collector = new LoadingExceptionCollector
+
+    def addError(header: String, ex: SAXParseException) = {
+      collector.addError(header + " - ( line: " + ex.getLineNumber + ", col: " + ex.getColumnNumber + ")", ex)
+    }
+
     val handler = new ErrorHandler {
-      def warning(exception: SAXParseException) = ex.addError("Validation Warning", exception)
-      def error(exception: SAXParseException) = ex.addError("Validation Error", exception)
-      def fatalError(exception: SAXParseException) {
-        ex.addError("Fatal Validation Error", exception)
-        throw exception
+      def warning(ex: SAXParseException) = addError("Validation Warning", ex)
+      def error(ex: SAXParseException) = addError("Validation Error", ex)
+      def fatalError(ex: SAXParseException) {
+        addError("Fatal Validation Error", ex)
+        throw ex
       }
     }
 
@@ -172,7 +177,7 @@ object LoadManager extends Logging {
         throw new LoadingException("error during validation: " + e.getMessage)
     }
 
-    val errors = ex.getErrors
+    val errors = collector.getErrors
     if (errors.size > 0) {
       println
       println("Validation errors found:")
