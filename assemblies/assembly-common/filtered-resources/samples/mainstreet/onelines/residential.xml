@@ -435,6 +435,9 @@
 		<destination name="dashboard" uri="DashboardPlace:"/>
 	</navigationDestinations>
 
+	<navigationAreas>
+	</navigationAreas>
+
 	<labels>
 		<label xsi:type='NavigationLabel' name='oneline:mainStreet' label='To Main Street' destination="oneline-mainstreet">
 			<coordinate x='5' y='5'/>

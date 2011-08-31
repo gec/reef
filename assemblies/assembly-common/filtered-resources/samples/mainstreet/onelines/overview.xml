@@ -460,6 +460,21 @@
 		<destination name="dashboard" uri="DashboardPlace:"/>
 	</navigationDestinations>
 
+	<navigationAreas>
+		<area name="oneline-mainstreet" destination="oneline-mainstreet">
+			<coordinate x="100" y="100"/>
+			<coordinate x="200" y="100"/>
+			<coordinate x="200" y="200"/>
+			<coordinate x="100" y="200"/>
+		</area>
+		<area name="oneline-residential" destination="oneline-residential">
+			<coordinate x="300" y="100"/>
+			<coordinate x="400" y="100"/>
+			<coordinate x="400" y="200"/>
+			<coordinate x="100" y="300"/>
+		</area>
+	</navigationAreas>
+
 	<labels>
 		<label xsi:type='NavigationLabel' name='oneline:mainStreet' label='To Main Street' destination="oneline-mainstreet">
 			<coordinate x='5' y='5'/>
