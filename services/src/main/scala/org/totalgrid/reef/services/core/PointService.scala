@@ -27,6 +27,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
@@ -178,7 +179,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
   }
 
   def createModelEntry(proto: PointProto): Point = {
-    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit)
+    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit, proto.uuid)
   }
 
 }

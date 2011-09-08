@@ -501,8 +501,22 @@ trait EntityQueries extends EntityTreeQueries with Logging {
         select (ent))
   }
 
-  def addEntity(name: String, types: String*) = {
-    val ent = entities.insert(new Entity(name))
+  def addEntity(name: String, typ: String): Entity = {
+    addEntity(name, typ :: Nil, None)
+  }
+
+  def addEntity(name: String, types: List[String], uuid: Option[UUID] = None): Entity = {
+    val entityModel = new Entity(name)
+    uuid.foreach { id =>
+      // if we are given a UUID it probably means we are importing uuids from another system.
+      // we check that the uuids are unique not because we don't believe in uuids working in
+      // theory, we just want to make sure to catch errors where the user code is giving us
+      // the same uuid everytime
+      val existing = from(entities)(e => where(e.id === id) select (e)).toList
+      if (!existing.isEmpty) throw new BadRequestException("UUID already in system with name: " + existing.head.name)
+      entityModel.id = id
+    }
+    val ent = entities.insert(entityModel)
     addEntityTypes(types.toList)
     types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
     ent
@@ -548,7 +562,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     derivedEdge
   }
 
-  def findOrCreateEntity(name: String, entityType: String): Entity = {
+  def findOrCreateEntity(name: String, entityType: String, uuid: Option[UUID]): Entity = {
     val list = nameTypeQuery(Some(name), None)
     if (list.size > 1) throw new Exception("more than one entity matched: " + name + " type:" + entityType)
     if (list.size == 1) {
@@ -559,7 +573,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
       }
     } else {
       logger.debug("creating entity: name: " + name + ", type: " + entityType)
-      addEntity(name, entityType)
+      addEntity(name, entityType :: Nil, uuid)
     }
   }
 

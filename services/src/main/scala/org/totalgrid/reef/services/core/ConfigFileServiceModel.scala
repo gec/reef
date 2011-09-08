@@ -26,6 +26,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.japi.BadRequestException
 
 import SquerylModel._
@@ -68,7 +69,7 @@ class ConfigFileServiceModel
 
     logger.debug("creating config file from proto: " + configFileProto)
     // make the entity entry for the config file
-    val entity: Entity = EntityQueryManager.findOrCreateEntity(configFileProto.getName, "ConfigurationFile")
+    val entity: Entity = EntityQueryManager.findOrCreateEntity(configFileProto.getName, "ConfigurationFile", configFileProto.uuid)
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges

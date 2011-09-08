@@ -23,7 +23,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Entity, Relationship }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, Relationship }
+import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityRequestTest
@@ -97,5 +98,18 @@ class EntityRequestTest
     client.addExplanation("Multi-level tree query", desc)
     val resp = client.get(EntityRequestBuilders.getAllPointsSortedByOwningEquipment(subUid)).await().expectMany()
 
+  }
+
+  test("Put with UUID") {
+
+    client.delete(Entity.newBuilder.setName("MagicTestObject").build).await.expectMany()
+
+    val uuid = UUID.randomUUID.toString
+
+    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject").addTypes("TestType").build
+
+    val created = client.put(upload).await.expectOne
+
+    created.getUuid.getUuid.toString should equal(uuid)
   }
 }

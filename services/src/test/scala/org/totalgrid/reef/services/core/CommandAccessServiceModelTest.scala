@@ -61,7 +61,7 @@ class CommandTestRig {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String): Command = {
-    seed(Command.newInstance(name, name, 1))
+    seed(Command.newInstance(name, name, 1, None))
   }
 }
 

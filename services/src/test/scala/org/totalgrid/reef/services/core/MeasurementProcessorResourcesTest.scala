@@ -42,7 +42,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
-    val device = EntityQueryManager.findOrCreateEntity(devName, "LogicalNode")
+    val device = EntityQueryManager.findOrCreateEntity(devName, "LogicalNode", None)
     val pp = Point.newBuilder.setName(pointName).setUnit("raw").setType(PointType.ANALOG).build
 
     val point = service.put(pp).expectOne()
