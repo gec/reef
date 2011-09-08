@@ -61,15 +61,6 @@ public interface ConfigFileService
     List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid ) throws ReefServiceException;
 
     /**
-     * retrieve the config file associated with the supplied entity and has the given relative name
-     * @param entity
-     * @param relativeName
-     * @return associated config file
-     * @throws ReefServiceException
-     */
-    ConfigFile getConfigFileWithRelativeName( Entity entity, String relativeName ) throws ReefServiceException;
-
-    /**
      * search for all config files "used" by an entity, only returns files with matching mimeType
      */
     List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid, String mimeType ) throws ReefServiceException;

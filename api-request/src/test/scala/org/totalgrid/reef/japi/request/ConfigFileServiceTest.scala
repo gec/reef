@@ -85,26 +85,6 @@ class ConfigFileServiceTest
     client.deleteConfigFile(cf2)
   }
 
-  test("search for relative config files") {
-    val relativeName: String = "equipmentGroupConfig"
-    val entity = client.getEntityByName("StaticSubstation")
-    val service: ConfigFileService = client.asInstanceOf[ConfigFileService]
-
-    val files: Seq[ConfigFile] = convertToScalaSequence(service.getAllConfigFiles)
-    val filtered: Seq[ConfigFile] = files.filter(file => file.getName == entity.getName + "." + relativeName)
-    filtered.length should equal(1)
-
-    val configFile: ConfigFile = service.getConfigFileWithRelativeName(entity, relativeName)
-    configFile.getName should equal(entity.getName + "." + relativeName)
-    logProtos(ScalaList(configFile).toSeq)
-
-    val entity2 = client.getEntityByName("SimulatedSubstation")
-    val configFile2: ConfigFile = service.getConfigFileWithRelativeName(entity2, relativeName)
-    configFile2.getName should equal(entity2.getName + "." + relativeName)
-    logProtos(ScalaList(configFile2).toSeq)
-
-  }
-
   private def convertToScalaSequence(files: List[ConfigFile]): Seq[ConfigFile] =
     {
       val list = new ArrayBuffer[ConfigFile]()
