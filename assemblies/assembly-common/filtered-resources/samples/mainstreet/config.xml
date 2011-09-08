@@ -6,10 +6,6 @@
 							 xmlns:comm="communications.loader.reef.totalgrid.org"
 							 xmlns:common="common.loader.reef.totalgrid.org">
 
-	<common:configFiles>
-		<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
-	</common:configFiles>
-
 	<messageModel>
 		<messageSet name="System" severity="8" type="LOG">
 			<message name="UserLogin" type="EVENT">User login {status} {reason}</message>
@@ -221,7 +217,7 @@
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
 			<common:info>
-				<common:configFile name="oneline" fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
 			</common:info>
 
 			<equip:equipment name="FID1">
@@ -319,13 +315,10 @@
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
 			<common:info>
-				<common:configFile name="oneline" fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
 			</common:info>
 
 			<equip:equipment name="FID1">
-				<common:info>
-					<common:configFile name="oneline" fileName="onelines/residential.xml" mimeType="oneline/xml"/>
-				</common:info>
 				<equip:equipmentProfile name="FullBreaker"/>
 			</equip:equipment>
 

@@ -43,24 +43,17 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     logger.info("loading config files: " + configFiles.size)
     var list = List.empty[ConfigFileProto]
     exceptionCollector.collect("Loading config files: ") {
-      list = configFiles.map(loadConfigFile(_, None))
+      list = configFiles.map(loadConfigFile(_))
     }
     list
   }
 
-  def loadConfigFile(configFile: ConfigFile, namePrefixOption: Option[String] = None, entity: Option[Entity] = None): ConfigFileProto = {
+  def loadConfigFile(configFile: ConfigFile, entity: Option[Entity] = None): ConfigFileProto = {
     if (!configFile.isSetName && !configFile.isSetFileName) {
       throw new LoadingException("Need to set either fileName or name for configFile: " + configFile)
     }
 
-    val name = if (configFile.isSetName) {
-      namePrefixOption match {
-        case None => configFile.getName
-        case Some(namePrefix) => namePrefix + "." + configFile.getName
-      }
-    } else {
-      configFile.getFileName
-    }
+    val name = if (configFile.isSetName) configFile.getName else configFile.getFileName
     logger.debug(
       "processing config file: name: " + configFile.getName + ", fileName: " + configFile.getFileName + ", mimeType: " + configFile.getMimeType)
 
@@ -96,14 +89,12 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     configFileProto
   }
 
-  def addInfo(entity: Entity, info: Info, addEntityNamePrefix: Boolean = false) {
-    logger.info("adding info for entity: " + entity + ", add entity prefix: " + addEntityNamePrefix + ", info: " + info)
+  def addInfo(entity: Entity, info: Info) {
+    logger.info("adding info for entity: " + entity + ", info: " + info)
 
     exceptionCollector.collect("Adding info for entity: " + entity.getName) {
 
-      val namePrefix = if (addEntityNamePrefix) Some(entity.getName) else None
-
-      info.getConfigFile.map(configFile => loadConfigFile(configFile, namePrefix, Some(entity)))
+      info.getConfigFile.map(configFile => loadConfigFile(configFile, Some(entity)))
 
       val attributeProto = toAttribute(entity, info.getAttribute)
       attributeProto.foreach(modelLoader.putOrThrow(_))

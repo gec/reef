@@ -217,10 +217,10 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       Assert.assertFalse(substationEntity.isEmpty)
       var entity = modelContainer.getEntity("Substation1.Breaker1")
       Assert.assertFalse(entity.isEmpty)
-      val optionOfConfigFile: Option[ConfigFile] = modelContainer.getConfigFile(createChildEntityName(substationEntity.get, "oneline"))
+      val optionOfConfigFile: Option[ConfigFile] = modelContainer.getConfigFile("oneline")
       Assert.assertFalse(optionOfConfigFile.isEmpty)
       val configFile: ConfigFile = optionOfConfigFile.get
-      Assert.assertEquals(createChildEntityName(substationEntity.get, "oneline"), configFile.getName)
+      Assert.assertEquals("oneline", configFile.getName)
       Assert.assertEquals(mimeType, configFile.getMimeType)
       Assert.assertEquals(onelineContent, configFile.getFile.toStringUtf8)
     }
@@ -287,11 +287,11 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       val onelineContent: String = "oneline content"
 
       var substation: Equipment = makeSubstation("Substation1", makeBreaker("Breaker1", Some(breakerProfile), true))
-      substation.add(createInfoConfigFile(createInlineConfig("oneline", mimeType, onelineContent)))
+      substation.add(createInfoConfigFile(createInlineConfig("onelineA", mimeType, onelineContent)))
       model.add(substation)
 
       substation = makeSubstation("Substation2", makeBreaker("Breaker1", Some(breakerProfile), true))
-      substation.add(createInfoConfigFile(createInlineConfig("oneline", mimeType, onelineContent)))
+      substation.add(createInfoConfigFile(createInlineConfig("onelineB", mimeType, onelineContent)))
       model.add(substation)
 
       loader.load(model, actionModel)
@@ -308,10 +308,10 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       Assert.assertFalse(substationEntity.isEmpty)
       var entity = modelContainer.getEntity("Substation1.Breaker1")
       Assert.assertFalse(entity.isEmpty)
-      var optionOfConfigFile: Option[ConfigFile] = modelContainer.getConfigFile(createChildEntityName(substationEntity.get, "oneline"))
+      var optionOfConfigFile: Option[ConfigFile] = modelContainer.getConfigFile("onelineA")
       Assert.assertFalse(optionOfConfigFile.isEmpty)
       var configFile: ConfigFile = optionOfConfigFile.get
-      Assert.assertEquals(createChildEntityName(substationEntity.get, "oneline"), configFile.getName)
+      Assert.assertEquals("onelineA", configFile.getName)
       Assert.assertEquals(mimeType, configFile.getMimeType)
       Assert.assertEquals(onelineContent, configFile.getFile.toStringUtf8)
 
@@ -319,10 +319,10 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       Assert.assertFalse(substationEntity.isEmpty)
       entity = modelContainer.getEntity("Substation2.Breaker1")
       Assert.assertFalse(entity.isEmpty)
-      optionOfConfigFile = modelContainer.getConfigFile(createChildEntityName(substationEntity.get, "oneline"))
+      optionOfConfigFile = modelContainer.getConfigFile("onelineB")
       Assert.assertFalse(optionOfConfigFile.isEmpty)
       configFile = optionOfConfigFile.get
-      Assert.assertEquals(createChildEntityName(substationEntity.get, "oneline"), configFile.getName)
+      Assert.assertEquals("onelineB", configFile.getName)
       Assert.assertEquals(mimeType, configFile.getMimeType)
       Assert.assertEquals(onelineContent, configFile.getFile.toStringUtf8)
     }

@@ -31,18 +31,16 @@ class ModelContainerTest extends FunSuite with ShouldMatchers with Assertions {
   test("addConfigFile") {
     val container: ModelContainer = new ModelContainer
     val configFile: ConfigFile = ConfigFile.newBuilder().setName("blap").build()
-    container.add(configFile);
+    container.add(configFile)
   }
 
-  test("addConfigFileTwiceFails") {
+  test("addConfigFileTwiceSucceeds") {
+    // multiple pieces of equipment may reference same configFile
     val container: ModelContainer = new ModelContainer
     val configFile: ConfigFile = ConfigFile.newBuilder().setName("blap2").build()
     val configFile2: ConfigFile = ConfigFile.newBuilder().setName("blap2").build()
-    container.add(configFile);
-    val exception = intercept[LoadingException] {
-      container.add(configFile2);
-    }
-    assert(exception.getMessage.contains("duplicate"))
+    container.add(configFile)
+    container.add(configFile2)
   }
 
 }

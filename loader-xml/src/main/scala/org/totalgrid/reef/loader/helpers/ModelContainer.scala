@@ -99,16 +99,9 @@ class ModelContainer extends Logging {
 
   def add(configFile: ConfigFile): ConfigFile =
     {
-      logger.debug("adding config file to container: " + configFile.getName)
-      val currentConfigFile: Option[ConfigFile] = configFiles.get(configFile.getName)
-      if (!currentConfigFile.isEmpty) {
-        throw new LoadingException("duplicate configFile name found: " + configFile.getName)
-      } else {
-        configFiles.put(configFile.getName, configFile)
-        addModel(configFile)
-        logger.debug("new config file: " + configFile.getName)
-        configFile
-      }
+      configFiles.put(configFile.getName, configFile)
+      addModel(configFile)
+      configFile
     }
 
   def add(commChannel: CommChannel): CommChannel =

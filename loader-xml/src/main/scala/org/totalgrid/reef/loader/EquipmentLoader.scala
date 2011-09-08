@@ -128,7 +128,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val entity = toEntity(name, types, extraTypes)
     modelLoader.putOrThrow(entity)
 
-    equipment.getInfo.foreach(infoBlock => commonLoader.addInfo(entity, infoBlock, true))
+    equipment.getInfo.foreach(infoBlock => commonLoader.addInfo(entity, infoBlock))
 
     // Commands are controls and setpoints
     logger.trace("load equipment: " + name + " commands")
