@@ -86,6 +86,12 @@ public interface ConfigFileService
     ConfigFile createConfigFile( String name, String mimeType, byte[] data, ReefUUID entityUid ) throws ReefServiceException;
 
     /**
+     * create a ConfigFile that is "used" by an Entiny and only findable via that entity, it has no name of its own.
+     * Queryable by mimeType and entity only.
+     */
+    ConfigFile createConfigFile( String mimeType, byte[] data, ReefUUID entityUid ) throws ReefServiceException;
+
+    /**
      * update the text of the previously retrieved ConfigFile
      */
     ConfigFile updateConfigFile( ConfigFile configFile, byte[] data ) throws ReefServiceException;

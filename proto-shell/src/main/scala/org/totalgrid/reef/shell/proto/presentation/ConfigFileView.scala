@@ -29,12 +29,11 @@ object ConfigFileView {
   }
 
   def header = {
-    "ID" :: "Name" :: "MimeType" :: "RelatedEntities" :: Nil
+    "Name" :: "MimeType" :: "RelatedEntities" :: Nil
   }
 
   def row(a: ConfigFile) = {
-    a.getUuid.getUuid ::
-      a.getName ::
+    a.getName ::
       a.getMimeType ::
       a.getEntitiesList.toList.map { _.getName }.mkString(", ") ::
       Nil

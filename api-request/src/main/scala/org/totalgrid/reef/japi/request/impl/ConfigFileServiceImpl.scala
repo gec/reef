@@ -92,6 +92,13 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
     }
   }
 
+  override def createConfigFile(mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile = {
+    ops("Couldn't create config file with mimeType: " + mimeType + " dataLength: " + data.length
+      + " for entity: " + entityUid.uuid) {
+      _.put(ConfigFileRequestBuilders.makeConfigFile(mimeType, data, entityUid)).await().expectOne
+    }
+  }
+
   //TODO - Evaluate why we're doing client side validation. Seems that all validation should be server-side JAC
 
   override def updateConfigFile(configFile: ConfigFile, data: Array[Byte]): ConfigFile = {
