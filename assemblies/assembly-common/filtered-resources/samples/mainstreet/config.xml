@@ -212,6 +212,11 @@
 		</equip:profiles>
 
 		<!-- Equipment Definition-->
+		<equip:equipment name="Local" addParentNames="false">
+			<equip:type name="Site"/>
+			<common:info>
+				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+			</common:info>
 		<equip:equipment name="MainSt">
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
@@ -329,6 +334,7 @@
 				<equip:analog name="Frequency" unit="Hz"></equip:analog>
 			</equip:equipment>
 		</equip:equipment>
+	</equip:equipment>
 
 	</equip:equipmentModel>
 
@@ -337,7 +343,7 @@
 		<comm:interface name="MainSt_DNP" ip="152.14.125.31" netmask="255.255.255.0" port="20000" network="any"/>
 
 		<!--start MainSt Configuration-->
-		<comm:endpoint name="MainSt">
+		<comm:endpoint name="MainStRTU">
 
 			<comm:type name="Endpoint"/>
 			<comm:protocol name="benchmark">
@@ -634,7 +640,7 @@
 			</comm:equipment>
 		</comm:endpoint>
 
-		<comm:endpoint name="Residential">
+		<comm:endpoint name="ResidentialRTU">
 			<comm:type name="Endpoint"/>
 
 			<comm:protocol name="benchmark">

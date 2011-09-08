@@ -652,6 +652,7 @@
             <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="addParentNames" type="xs:boolean" default="true"/>
     </xs:complexType>
     <xs:element name="equipmentProfile">
         <xs:annotation>

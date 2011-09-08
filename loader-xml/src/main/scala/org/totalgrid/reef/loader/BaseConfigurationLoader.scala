@@ -45,4 +45,7 @@ trait BaseConfigurationLoader {
 
   def getModelLoader: ModelLoader
 
+  def getChildName(childPrefix: Option[String], name: String): String = {
+    childPrefix.map(_ + name).getOrElse(name)
+  }
 }

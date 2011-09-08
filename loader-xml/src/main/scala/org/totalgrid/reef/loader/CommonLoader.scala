@@ -29,11 +29,6 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 
 class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {
-  val configFiles = LoaderMap[ConfigFileProto]("Config Files")
-
-  def reset() {
-    configFiles.clear()
-  }
 
   def getExceptionCollector: ExceptionCollector = {
     exceptionCollector
@@ -48,17 +43,12 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     logger.info("loading config files: " + configFiles.size)
     var list = List.empty[ConfigFileProto]
     exceptionCollector.collect("Loading config files: ") {
-      list = configFiles.map(loadConfigFile(_))
+      list = configFiles.map(loadConfigFile(_, None))
     }
     list
   }
 
-  def loadConfigFile(configFile: ConfigFile): ConfigFileProto =
-    {
-      loadConfigFile(configFile, None)
-    }
-
-  def loadConfigFile(configFile: ConfigFile, namePrefixOption: Option[String]): ConfigFileProto = {
+  def loadConfigFile(configFile: ConfigFile, namePrefixOption: Option[String] = None, entity: Option[Entity] = None): ConfigFileProto = {
     if (!configFile.isSetName && !configFile.isSetFileName) {
       throw new LoadingException("Need to set either fileName or name for configFile: " + configFile)
     }
@@ -74,14 +64,8 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     logger.debug(
       "processing config file: name: " + configFile.getName + ", fileName: " + configFile.getFileName + ", mimeType: " + configFile.getMimeType)
 
-    val cachedConfigFile = configFiles.get(name)
     val hasCData = configFile.isSetValue && configFile.getValue.size > 0
     val hasFilename = configFile.isSetFileName
-
-    if (cachedConfigFile.isDefined) {
-      if (hasCData) throw new LoadingException("Cannot use same name as already loaded config file while respecifying data: " + name)
-      return cachedConfigFile.get
-    }
 
     if (hasFilename && hasCData) throw new LoadingException("Cannot have both filename and inline-data for configFile: " + name)
 
@@ -105,44 +89,21 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     }
 
     proto.setFile(ByteString.copyFrom(bytes))
+    entity.foreach(proto.addEntities(_))
     val configFileProto = proto.build
     logger.debug("new config file proto: name: " + name + ", mimeType: " + configFileProto.getMimeType)
-    configFiles.put(name, configFileProto)
     modelLoader.putOrThrow(configFileProto)
     configFileProto
   }
 
-  // TODO replace implementation with addInfo() method with add name prefix false
-  def addInfo(entity: Entity, info: Info) {
-    logger.info("adding info for entity: " + entity + ", info: " + info)
-
-    exceptionCollector.collect("Adding info for: " + entity.getName) {
-      val configFileProtos: List[ConfigFileProto] = info.getConfigFile.map(configFile => loadConfigFile(configFile))
-      val configFileEdge: List[EntityEdge] = configFileProtos
-        .map(configFile => ProtoUtils.toEntityEdge(entity, ProtoUtils.toEntityType(configFile.getName, "ConfigurationFile" :: Nil), "uses"))
-      configFileEdge.foreach(modelLoader.putOrThrow(_))
-
-      val attributeProto = toAttribute(entity, info.getAttribute)
-      attributeProto.foreach(modelLoader.putOrThrow(_))
-    }
-  }
-
-  def addInfo(entity: Entity, info: Info, addEntityNamePrefix: Boolean) {
+  def addInfo(entity: Entity, info: Info, addEntityNamePrefix: Boolean = false) {
     logger.info("adding info for entity: " + entity + ", add entity prefix: " + addEntityNamePrefix + ", info: " + info)
 
     exceptionCollector.collect("Adding info for entity: " + entity.getName) {
-      val configFileProtos: List[ConfigFileProto] = info.getConfigFile.map(configFile =>
-        {
-          if (addEntityNamePrefix) {
-            loadConfigFile(configFile, Some(entity.getName))
-          } else {
-            loadConfigFile(configFile)
-          }
-        })
 
-      val configFileEdge: List[EntityEdge] = configFileProtos
-        .map(configFile => ProtoUtils.toEntityEdge(entity, ProtoUtils.toEntityType(configFile.getName, "ConfigurationFile" :: Nil), "uses"))
-      configFileEdge.foreach(modelLoader.putOrThrow(_))
+      val namePrefix = if (addEntityNamePrefix) Some(entity.getName) else None
+
+      info.getConfigFile.map(configFile => loadConfigFile(configFile, namePrefix, Some(entity)))
 
       val attributeProto = toAttribute(entity, info.getAttribute)
       attributeProto.foreach(modelLoader.putOrThrow(_))

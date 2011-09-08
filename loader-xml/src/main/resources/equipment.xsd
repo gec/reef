@@ -611,6 +611,7 @@ value will be classified as Abnormal.-->
 		</xs:choice>
 
 		<xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="addParentNames" type="xs:boolean" default="true"/>
 	</xs:complexType>
 
 	<xs:element name="equipmentProfile">

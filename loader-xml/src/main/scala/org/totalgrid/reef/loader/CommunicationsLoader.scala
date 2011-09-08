@@ -67,7 +67,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     endpointProfiles.clear()
     equipmentProfiles.clear()
     interfaces.clear()
-    commonLoader.reset()
   }
 
   def getExceptionCollector: ExceptionCollector = {
@@ -143,7 +142,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     import CommunicationsLoader._
 
     val endpointName = endpoint.getName
-    val childPrefix = endpointName + "."
     logger.trace("loadEndpoint: " + endpointName)
 
     // IMPORTANT:  profiles is a list of profiles plus this endpoint (as the last "profile" in the list)
@@ -172,7 +170,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val analogs = HashMap[String, PointType]()
     val counters = HashMap[String, PointType]()
     // TODO: should the endpoint name be used as the starting prefixed ?
-    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, setpoints, statuses, analogs, counters))
+    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, None, controls, setpoints, statuses, analogs, counters))
     logger.trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
@@ -507,26 +505,26 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
    *  equipment
    */
   def findControlsAndPoints(equipment: Equipment,
-    namePrefix: String,
+    namePrefix: Option[String],
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
     statuses: HashMap[String, PointType],
     analogs: HashMap[String, PointType],
     counters: HashMap[String, PointType]): Unit = {
 
-    val name = namePrefix + equipment.getName
-    val childPrefix = name + "."
+    val name = getChildName(namePrefix, equipment.getName)
+    val childPrefix = if (equipment.isAddParentNames) Some(name + ".") else None
     logger.trace("findControlAndPoints: " + name)
 
     // IMPORTANT:  profiles is a list of profiles plus this equipment (as the last "profile" in the list)
     //
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList ::: List[EquipmentType](equipment)
 
-    profiles.flatMap(_.getControl).foreach(c => addUnique[Control](controls, childPrefix + c.getName, c, "Duplicate control name: "))
-    profiles.flatMap(_.getSetpoint).foreach(c => addUnique[Setpoint](setpoints, childPrefix + c.getName, c, "Duplicate setpoint name: "))
-    profiles.flatMap(_.getStatus).foreach(p => addUnique[PointType](statuses, childPrefix + p.getName, p, "Duplicate status name: "))
-    profiles.flatMap(_.getAnalog).foreach(p => addUnique[PointType](analogs, childPrefix + p.getName, p, "Duplicate analog name: "))
-    profiles.flatMap(_.getCounter).foreach(p => addUnique[PointType](counters, childPrefix + p.getName, p, "Duplicate counter name: "))
+    profiles.flatMap(_.getControl).foreach(c => addUnique[Control](controls, getChildName(childPrefix, c.getName), c, "Duplicate control name: "))
+    profiles.flatMap(_.getSetpoint).foreach(c => addUnique[Setpoint](setpoints, getChildName(childPrefix, c.getName), c, "Duplicate setpoint name: "))
+    profiles.flatMap(_.getStatus).foreach(p => addUnique[PointType](statuses, getChildName(childPrefix, p.getName), p, "Duplicate status name: "))
+    profiles.flatMap(_.getAnalog).foreach(p => addUnique[PointType](analogs, getChildName(childPrefix, p.getName), p, "Duplicate analog name: "))
+    profiles.flatMap(_.getCounter).foreach(p => addUnique[PointType](counters, getChildName(childPrefix, p.getName), p, "Duplicate counter name: "))
 
     // Recurse into child equipment
     profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, childPrefix, controls, setpoints, statuses, analogs, counters))
