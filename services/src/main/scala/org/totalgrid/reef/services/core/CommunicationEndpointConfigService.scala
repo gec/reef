@@ -133,7 +133,10 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 
-  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = Nil
+  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+    List(
+      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) })
+  }
 
   def isModified(entry: CommunicationEndpoint, existing: CommunicationEndpoint) = {
     true // we always consider it to have changed to force coordinator to re-check fep assignment

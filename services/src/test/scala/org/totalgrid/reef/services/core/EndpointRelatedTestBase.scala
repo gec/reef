@@ -202,9 +202,9 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
       addEndpointPointsAndCommands(send, List(name + "." + pname), List(name + ".test_commands"))
     }
 
-    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None): CommEndpointConfig = {
-      val netPort = network.map { net => CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
-      val locPort = location.map { loc => CommChannel.newBuilder.setName(name + "-serial").setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
+    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None, portName: Option[String] = None): CommEndpointConfig = {
+      val netPort = network.map { net => CommChannel.newBuilder.setName(portName.getOrElse(name + "-port")).setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
+      val locPort = location.map { loc => CommChannel.newBuilder.setName(portName.getOrElse(name + "-serial")).setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
       val port = portService.put(netPort.getOrElse(locPort.get)).expectOne()
       val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("dnp3").setChannel(port)
       addEndpointPointsAndCommands(send, List(name + ".test_point"), List(name + ".test_commands"))
