@@ -120,7 +120,9 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
   }
 
-  def searchQuery(proto: CommandProto, sql: Command) = Nil
+  // TODO: add symmetric getCommandsOwnedByEntity and getCommandsBelongingToEndpoint functions to java API
+  def searchQuery(proto: CommandProto, sql: Command) = List(
+    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def createModelEntry(proto: CommandProto): Command = {
     Command.newInstance(proto.getName, proto.getDisplayName, proto.getType.getNumber, proto.uuid)
