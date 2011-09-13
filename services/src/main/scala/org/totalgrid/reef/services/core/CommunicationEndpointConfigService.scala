@@ -27,10 +27,9 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.services.ProtoRoutingKeys
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -50,8 +49,6 @@ class CommEndCfgServiceModel(
     with CommEndCfgServiceConversion {
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
-    checkProto(proto)
-
     import org.totalgrid.reef.services.core.util.UUIDConversions._
     val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
     EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
@@ -62,16 +59,10 @@ class CommEndCfgServiceModel(
   }
 
   override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
-    checkProto(proto)
     val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
     coordinator.onEndpointUpdated(context, sql)
     (sql, changed)
-  }
-
-  private def checkProto(proto: CommEndCfgProto) {
-    if (proto.getOwnerships.getPointsCount == 0 && proto.getOwnerships.getCommandsCount == 0)
-      throw new BadRequestException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
   }
 
   override def preDelete(context: RequestContext, sql: CommunicationEndpoint) {

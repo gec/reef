@@ -186,12 +186,6 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned1.getConfigFiles(0).getUuid should equal(returned2.getConfigFiles(0).getUuid)
   }
 
-  test("Endpoint with no ownerships blows up") {
-    intercept[BadRequestException] {
-      endpointService.put(getEndpoint().build)
-    }
-  }
-
   test("Can only delete disabled offline endpoints") {
     val point = pointService.put(getPoint().build).expectOne()
     val command = commandService.put(getCommand().build).expectOne()
