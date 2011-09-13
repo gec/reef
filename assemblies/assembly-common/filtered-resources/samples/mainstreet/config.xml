@@ -208,11 +208,7 @@
 		</equip:profiles>
 
 		<!-- Equipment Definition-->
-		<equip:equipment name="Local" addParentNames="false">
-			<equip:type name="Site"/>
-			<common:info>
-				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
-			</common:info>
+
 		<equip:equipment name="MainSt">
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
@@ -327,7 +323,42 @@
 				<equip:analog name="Frequency" unit="Hz"></equip:analog>
 			</equip:equipment>
 		</equip:equipment>
-	</equip:equipment>
+
+        <equip:equipment name="MicroGrids" addParentNames="false">
+            <equip:type name="Root"/>
+            <equip:type name="MicroGrid"/>
+            <common:info>
+                <common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+            </common:info>
+            <equip:equipment name="MainSt"/>
+            <equip:equipment name="Residential"/>
+        </equip:equipment>
+
+        <equip:equipment name="MainSite" addParentNames="false">
+            <equip:type name="Site"/>
+            <common:info>
+                <common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+            </common:info>
+            <equip:equipment name="MainSt"/>
+        </equip:equipment>
+
+        <equip:equipment name="ResidentialSite" addParentNames="false">
+            <equip:type name="Site"/>
+            <common:info>
+                <common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+            </common:info>
+            <equip:equipment name="Residential"/>
+        </equip:equipment>
+
+        <equip:equipment name="Sites" addParentNames="false">
+            <equip:type name="Root"/>
+            <equip:type name="Site"/>
+            <common:info>
+                <common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+            </common:info>
+            <equip:equipment name="MainSite"/>
+            <equip:equipment name="ResidentialSite"/>
+        </equip:equipment>
 
 	</equip:equipmentModel>
 
