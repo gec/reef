@@ -78,42 +78,33 @@ class EntityChildrenCommand extends ReefCommandSupport {
   }
 }
 
-@Command(scope = "entity", name = "tree", description = "Prints all entities or information on a specific entity.")
+@Command(scope = "entity", name = "tree", description = "Prints trees based on root type start")
 class EntityTreeCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "Entity Name", description = "Entity name.", required = false, multiValued = false)
-  var rootName: String = null
+  @Argument(index = 0, name = "Entity Type", description = "Entity name.", required = false, multiValued = false)
+  var rootType: String = null
 
-  @Argument(index = 1, name = "Relationship", description = "Name of relationship type", required = false, multiValued = false)
+  @Argument(index = 1, name = "Relationship", description = "Name of relationship type", required = true, multiValued = false)
   var relationship: String = null
 
-  @Argument(index = 2, name = "types", description = "List of types we want in returned list", required = false, multiValued = true)
+  @Argument(index = 2, name = "Depth", description = "Show children at depth <i>", required = true, multiValued = false)
+  var depth: Int = 1
+
+  @Argument(index = 3, name = "types", description = "List of types we want in returned list", required = true, multiValued = true)
   var types: java.util.List[String] = null
 
+  @GogoOption(name = "-name", description = "First argument is a specific entity name")
+  var rootTypeIsName: Boolean = false
+
   def doCommand() = {
-    val rootEntityName = Option(rootName) match {
-      case Some(entId) => entId
-      case None => getRootName.getOrElse(throw new Exception("No root entity configured, use entity:tree <name> to root tree!"))
+    val entities = rootTypeIsName match {
+      case false =>
+        services.getEntityChildrenFromTypeRoots(rootType, relationship, depth, types).toList
+      case true =>
+        val root = services.getEntityByName(rootType)
+        services.getEntityChildren(root.getUuid, relationship, depth, types) :: Nil
+
     }
-    val rel = Option(relationship).getOrElse(getRelationship.getOrElse("owns"))
-
-    val rootEntity = services.getEntityByName(rootEntityName)
-
-    // store the current options
-    setRootName(rootEntityName)
-    setRelationship(rel)
-
-    val ents = Option(types) match {
-      case Some(typs) => services.getEntityImmediateChildren(rootEntity.getUuid, rel, typs)
-      case None => services.getEntityImmediateChildren(rootEntity.getUuid, rel)
-    }
-    EntityView.printTreeSingleDepth(rootEntity, ents.toList)
+    entities.foreach { EntityView.printTreeRecursively(_) }
   }
-
-  private def getRootName: Option[String] = get("entity:tree:root")
-  private def setRootName(name: String) = set("entity:tree:root", name)
-
-  private def getRelationship: Option[String] = get("entity:tree:rel")
-  private def setRelationship(rel: String) = set("entity:tree:rel", rel)
 }
-
