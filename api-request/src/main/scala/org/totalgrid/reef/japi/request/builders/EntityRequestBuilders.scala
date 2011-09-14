@@ -75,6 +75,29 @@ object EntityRequestBuilders {
     Entity.newBuilder.setUuid(rootUid).addRelations(rel).build
   }
 
+  private def childrenRelatedWithTypeRecursive(relationship: String, types: java.util.List[String], depth: Int): Relationship.Builder = {
+    val child = if (depth == 0) {
+      Entity.newBuilder.addAllTypes(types)
+    } else {
+      Entity.newBuilder.addAllTypes(types).addRelations(childrenRelatedWithTypeRecursive(relationship, types, depth - 1))
+    }
+    Relationship.newBuilder
+      .setDescendantOf(true)
+      .setRelationship(relationship)
+      .setDistance(1)
+      .addEntities(child)
+  }
+
+  def getChildrenAtDepth(rootUid: ReefUUID, relationship: String, depth: Int, constrainingTypes: java.util.List[String]) = {
+    import scala.collection.JavaConversions._
+    Entity.newBuilder.setUuid(rootUid).addRelations(childrenRelatedWithTypeRecursive(relationship, constrainingTypes, depth - 1)).build
+  }
+
+  def getChildrenAtDepth(rootType: String, relationship: String, depth: Int, constrainingTypes: java.util.List[String]) = {
+    import scala.collection.JavaConversions._
+    Entity.newBuilder.addTypes(rootType).addRelations(childrenRelatedWithTypeRecursive(relationship, constrainingTypes, depth - 1)).build
+  }
+
   def getAllPointsSortedByOwningEquipment(rootUid: ReefUUID) = {
     Entity.newBuilder.setUuid(rootUid).addRelations(
       Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(

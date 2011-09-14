@@ -76,6 +76,27 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     }
   }
 
+  override def getEntityChildren(parent: ReefUUID, relationship: String, depth: Int, constrainingTypes: java.util.List[String]): Entity = {
+    ops("Couldn't get tree for entity: " + parent.getUuid + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
+      val request = EntityRequestBuilders.getChildrenAtDepth(parent, relationship, depth, constrainingTypes)
+      session.get(request).await().expectOne()
+    }
+  }
+
+  override def getEntityChildren(parent: ReefUUID, relationship: String, depth: Int): Entity = {
+    ops("Couldn't get tree for entity: " + parent.getUuid + " relation: " + relationship + " depth: " + depth) { session =>
+      val request = EntityRequestBuilders.getChildrenAtDepth(parent, relationship, depth, Nil)
+      session.get(request).await().expectOne()
+    }
+  }
+
+  override def getEntityChildrenFromTypeRoots(parentType: String, relationship: String, depth: Int, constrainingTypes: java.util.List[String]): java.util.List[Entity] = {
+    ops("Couldn't get tree for from type roots: " + parentType + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
+      val request = EntityRequestBuilders.getChildrenAtDepth(parentType, relationship, depth, constrainingTypes)
+      session.get(request).await().expectMany()
+    }
+  }
+
   override def getEntityTree(entityTree: Entity): Entity = ops("Couldn't get entity tree matching: " + entityTree) {
     _.get(entityTree).await().expectOne
   }
