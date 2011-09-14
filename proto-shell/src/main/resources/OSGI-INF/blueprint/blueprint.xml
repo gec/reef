@@ -60,6 +60,9 @@
         <command name="entity/entity">
             <action class="org.totalgrid.reef.shell.proto.EntityCommand"/>
         </command>
+        <command name="entity/tree">
+            <action class="org.totalgrid.reef.shell.proto.EntityTreeCommand"/>
+        </command>
         <command name="meas/list">
             <action class="org.totalgrid.reef.shell.proto.MeasListCommand"/>
         </command>
