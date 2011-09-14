@@ -130,6 +130,26 @@ public interface EntityService
     List<Entity> getEntityRelatedChildrenOfType( ReefUUID parent, String relationship, String type ) throws ReefServiceException;
 
     /**
+     * Return direct children of the parent Entity (distance of 1). Just children are returned.
+     * @param parent       a reference to the parent entity on which to root the request
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @return  list of all children in arbitrary order
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityImmediateChildren( ReefUUID parent, String relationship ) throws ReefServiceException;
+
+    /**
+     * Return direct children of the parent Entity (distance of 1). Just children are returned.
+     * @param parent       a reference to the parent entity on which to root the request
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @param constrainingTypes list of children types we would like to returned, only those children that have atleast one
+     *                          of the indicated types are returned
+     * @return  list of all children in arbitrary order
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityImmediateChildren( ReefUUID parent, String relationship, List<String> constrainingTypes ) throws ReefServiceException;
+
+    /**
      * Return a tree of entities based on a complex entity model query. It is usually possible to satisfy most entity requirements
      * with a single call to the Entity service. This is accomplished by building a request entity that has the same
      * tree "shape" as the result you want to display. The entity service will then "fill in" that tree with the matching

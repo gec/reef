@@ -54,7 +54,7 @@ object EntityRequestBuilders {
   private def childrenRelatedWithType(relationship: String, typ: String) = {
     Relationship.newBuilder
       .setDescendantOf(true)
-      .setRelationship("owns")
+      .setRelationship(relationship)
       .addEntities(Entity.newBuilder.addTypes(typ))
   }
 
@@ -65,6 +65,13 @@ object EntityRequestBuilders {
 
   def getDirectChildrenFromRootUid(rootUid: ReefUUID, relationship: String) = {
     val rel = Relationship.newBuilder.setDescendantOf(true).setRelationship(relationship).setDistance(1)
+    Entity.newBuilder.setUuid(rootUid).addRelations(rel).build
+  }
+
+  def getDirectChildrenFromRootUid(rootUid: ReefUUID, relationship: String, constrainingTypes: java.util.List[String]) = {
+    val constraint = Entity.newBuilder.addAllTypes(constrainingTypes)
+    val rel = Relationship.newBuilder.setDescendantOf(true).setRelationship(relationship).setDistance(1).addEntities(constraint)
+
     Entity.newBuilder.setUuid(rootUid).addRelations(rel).build
   }
 

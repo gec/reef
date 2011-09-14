@@ -60,6 +60,22 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
     }
   }
 
+  override def getEntityImmediateChildren(parent: ReefUUID, relationship: String): java.util.List[Entity] = {
+    ops("Couldn't get immediate children of entity: " + parent.getUuid + " relation: " + relationship) { session =>
+      val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship)
+      val result = session.get(request).await().expectOne()
+      result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList
+    }
+  }
+
+  override def getEntityImmediateChildren(parent: ReefUUID, relationship: String, constrainingTypes: java.util.List[String]): java.util.List[Entity] = {
+    ops("Couldn't get immediate children of entity: " + parent.getUuid + " relation: " + relationship) { session =>
+      val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship, constrainingTypes)
+      val result = session.get(request).await().expectOne()
+      result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList
+    }
+  }
+
   override def getEntityTree(entityTree: Entity): Entity = ops("Couldn't get entity tree matching: " + entityTree) {
     _.get(entityTree).await().expectOne
   }
