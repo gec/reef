@@ -23,6 +23,7 @@ import org.totalgrid.reef.proto.Commands.CommandAccess;
 import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.proto.Model.Command;
+import org.totalgrid.reef.proto.Model.ReefUUID;
 
 import java.util.List;
 
@@ -289,4 +290,20 @@ public interface CommandService
      * @throws ReefServiceException if an error occurs
      */
     Command getCommandByName( String name ) throws ReefServiceException;
+
+    /**
+     * retrieve all commands that are have the relationship "owns" to the parent entity
+     *
+     * @param parentUUID uuid of parent entity
+     * @return commands owned by parentEntity
+     */
+    List<Command> getCommandsOwnedByEntity( ReefUUID parentUUID ) throws ReefServiceException;
+
+    /**
+     * retrieve all commands that are have the relationship "source" to the endpoint
+     *
+     * @param endpointUuid uuid of endpoint
+     * @return all commands that are related to endpoint
+     */
+    List<Command> getCommandsBelongingToEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
 }
