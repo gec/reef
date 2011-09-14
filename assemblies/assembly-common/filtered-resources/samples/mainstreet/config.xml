@@ -205,129 +205,142 @@
 				<equip:analog name="kV_b" unit="kV"></equip:analog>
 				<equip:analog name="kV_c" unit="kV"></equip:analog>
 			</equip:equipmentProfile>
+
+			<equip:equipmentProfile name="ChargePointUsage">
+				<equip:type name="ChargePoint"/>
+				<equip:analog name="power" unit="watts"></equip:analog>
+			</equip:equipmentProfile>
+
 		</equip:profiles>
 
 		<!-- Equipment Definition-->
 		<equip:equipment name="Local" addParentNames="false">
 			<equip:type name="Site"/>
+
 			<common:info>
 				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
 			</common:info>
-		<equip:equipment name="MainSt">
-			<equip:equipmentProfile name="MicrogridProfile"/>
 
-			<common:info>
-				<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
-			</common:info>
+			<equip:equipment name="MainSt">
+				<equip:equipmentProfile name="MicrogridProfile"/>
 
-			<equip:equipment name="FID1">
-				<equip:equipmentProfile name="FullBreaker"/>
+				<common:info>
+					<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+				</common:info>
+
+				<equip:equipment name="FID1">
+					<equip:equipmentProfile name="FullBreaker"/>
+				</equip:equipment>
+
+				<equip:equipment name="FID2">
+					<equip:equipmentProfile name="FullBreaker"/>
+				</equip:equipment>
+
+				<equip:equipment name="FID3">
+					<equip:equipmentProfile name="FullBreaker"/>
+				</equip:equipment>
+
+				<equip:equipment name="FID4">
+					<equip:equipmentProfile name="FullBreaker"/>
+				</equip:equipment>
+
+				<!--<eq:equipment name="CB1" xmlns:eq="equipment.loader.reef.totalgrid.org"><eq:equipmentProfile name="FullBreaker" /></eq:equipment>-->
+				<equip:equipment name="Substation1">
+					<equip:equipmentProfile name="Bus_Meas"/>
+					<equip:analog name="Frequency" unit="Hz"></equip:analog>
+				</equip:equipment>
+
+				<equip:equipment name="Bus1">
+					<equip:type name="Bus"/>
+					<equip:equipmentProfile name="Bus_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="Bus2">
+					<equip:type name="Bus"/>
+					<equip:equipmentProfile name="Bus_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="Bus3">
+					<equip:type name="Bus"/>
+					<equip:equipmentProfile name="Bus_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="PV1">
+					<equip:equipmentProfile name="KvKwkVar_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="PV2">
+					<equip:equipmentProfile name="KvKwkVar_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="PV3">
+					<equip:equipmentProfile name="KvKwkVar_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="Line1">
+					<equip:equipmentProfile name="Line_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="Line2">
+					<equip:equipmentProfile name="Line_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="Line3">
+					<equip:equipmentProfile name="Line_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="Line4">
+					<equip:equipmentProfile name="Line_Meas"/>
+				</equip:equipment>
+
+				<equip:equipment name="SST1">
+					<equip:equipmentProfile name="SST"/>
+				</equip:equipment>
+
+				<equip:equipment name="SST2">
+					<equip:equipmentProfile name="SST"/>
+				</equip:equipment>
+
+				<equip:equipment name="SST3">
+					<equip:equipmentProfile name="SST"/>
+				</equip:equipment>
+
+				<equip:equipment name="DES1">
+					<equip:equipmentProfile name="DES"/>
+				</equip:equipment>
+
+				<equip:equipment name="DES2">
+					<equip:equipmentProfile name="DES"/>
+				</equip:equipment>
+
+				<equip:equipment name="DES3">
+					<equip:equipmentProfile name="DES"/>
+				</equip:equipment>
 			</equip:equipment>
+			<!--End MainSt Equipment Configuration-->
 
-			<equip:equipment name="FID2">
-				<equip:equipmentProfile name="FullBreaker"/>
-			</equip:equipment>
+			<equip:equipment name="Residential">
+				<equip:equipmentProfile name="MicrogridProfile"/>
 
-			<equip:equipment name="FID3">
-				<equip:equipmentProfile name="FullBreaker"/>
-			</equip:equipment>
+				<common:info>
+					<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+				</common:info>
 
-			<equip:equipment name="FID4">
-				<equip:equipmentProfile name="FullBreaker"/>
-			</equip:equipment>
+				<equip:equipment name="FID1">
+					<equip:equipmentProfile name="FullBreaker"/>
+				</equip:equipment>
 
-			<!--<eq:equipment name="CB1" xmlns:eq="equipment.loader.reef.totalgrid.org"><eq:equipmentProfile name="FullBreaker" /></eq:equipment>-->
-			<equip:equipment name="Substation1">
-				<equip:equipmentProfile name="Bus_Meas"/>
-				<equip:analog name="Frequency" unit="Hz"></equip:analog>
-			</equip:equipment>
+				<equip:equipment name="Substation1">
+					<equip:equipmentProfile name="Bus_Meas"/>
+					<equip:analog name="Frequency" unit="Hz"></equip:analog>
+				</equip:equipment>
 
-			<equip:equipment name="Bus1">
-				<equip:type name="Bus"/>
-				<equip:equipmentProfile name="Bus_Meas"/>
-			</equip:equipment>
+				<equip:equipment name="ChargePointStation">
+					<equip:equipmentProfile name="ChargePointUsage"/>
+				</equip:equipment>
 
-			<equip:equipment name="Bus2">
-				<equip:type name="Bus"/>
-				<equip:equipmentProfile name="Bus_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="Bus3">
-				<equip:type name="Bus"/>
-				<equip:equipmentProfile name="Bus_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="PV1">
-				<equip:equipmentProfile name="KvKwkVar_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="PV2">
-				<equip:equipmentProfile name="KvKwkVar_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="PV3">
-				<equip:equipmentProfile name="KvKwkVar_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="Line1">
-				<equip:equipmentProfile name="Line_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="Line2">
-				<equip:equipmentProfile name="Line_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="Line3">
-				<equip:equipmentProfile name="Line_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="Line4">
-				<equip:equipmentProfile name="Line_Meas"/>
-			</equip:equipment>
-
-			<equip:equipment name="SST1">
-				<equip:equipmentProfile name="SST"/>
-			</equip:equipment>
-
-			<equip:equipment name="SST2">
-				<equip:equipmentProfile name="SST"/>
-			</equip:equipment>
-
-			<equip:equipment name="SST3">
-				<equip:equipmentProfile name="SST"/>
-			</equip:equipment>
-
-			<equip:equipment name="DES1">
-				<equip:equipmentProfile name="DES"/>
-			</equip:equipment>
-
-			<equip:equipment name="DES2">
-				<equip:equipmentProfile name="DES"/>
-			</equip:equipment>
-
-			<equip:equipment name="DES3">
-				<equip:equipmentProfile name="DES"/>
 			</equip:equipment>
 		</equip:equipment>
-		<!--End MainSt Equipment Configuration-->
-
-		<equip:equipment name="Residential">
-			<equip:equipmentProfile name="MicrogridProfile"/>
-
-			<common:info>
-				<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
-			</common:info>
-
-			<equip:equipment name="FID1">
-				<equip:equipmentProfile name="FullBreaker"/>
-			</equip:equipment>
-
-			<equip:equipment name="Substation1">
-				<equip:equipmentProfile name="Bus_Meas"/>
-				<equip:analog name="Frequency" unit="Hz"></equip:analog>
-			</equip:equipment>
-		</equip:equipment>
-	</equip:equipment>
 
 	</equip:equipmentModel>
 
@@ -643,8 +656,7 @@
 			<comm:interface name="MainSt_DNP"/>
 
 			<comm:equipment name="Residential">
-
-					<comm:equipment name="FID1">
+				<comm:equipment name="FID1">
 					<comm:status name="Status" index="0" unit="raw"/>
 					<comm:status name="Overcurrent" index="1" unit="raw"/>
 					<comm:control name="Open" index="0">
@@ -672,6 +684,23 @@
 					</comm:analog>
 					<comm:analog name="kVar_b" index="7" unit="kVar"/>
 					<comm:analog name="kVar_c" index="8" unit="kVar"/>
+				</comm:equipment>
+			</comm:equipment>
+
+		</comm:endpoint>
+
+		<comm:endpoint name="ChargePointRTU">
+			<comm:type name="Endpoint"/>
+
+			<comm:protocol name="chargePointUsage">
+				<common:configFile fileName="communication/chargePoint.properties" mimeType="chargePoint/properties"/>
+			</comm:protocol>
+
+			<comm:interface name="MainSt_DNP"/>
+
+			<comm:equipment name="Residential">
+				<comm:equipment name="ChargePointStation">
+					<comm:analog name="power" index="0" unit="watts"/>
 				</comm:equipment>
 			</comm:equipment>
 
