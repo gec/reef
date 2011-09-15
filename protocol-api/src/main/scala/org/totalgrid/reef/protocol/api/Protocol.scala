@@ -16,12 +16,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
 import FEP.CommChannel
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
+import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.util.Logging
 
 trait Publisher[A] {
   /**
@@ -33,9 +36,14 @@ trait Publisher[A] {
 
 object Protocol {
 
-  def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
-    files.find { _.getMimeType == mimetype }.getOrElse { throw new Exception("Missing file w/ mime-type: " + mimetype) }
-  }
+  def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile =
+    {
+      files.find {
+        _.getMimeType == mimetype
+      }.getOrElse {
+        throw new Exception("Missing file w/ mime-type: " + mimetype)
+      }
+    }
 
   type BatchPublisher = Publisher[MeasurementBatch]
   type EndpointPublisher = Publisher[FEP.CommEndpointConnection.State]
@@ -52,10 +60,14 @@ trait NullPublisher[A] extends Publisher[A] {
 }
 
 case object NullBatchPublisher extends NullPublisher[MeasurementBatch]
+
 case object NullEndpointPublisher extends NullPublisher[FEP.CommEndpointConnection.State]
+
 case object NullChannelPublisher extends NullPublisher[CommChannel.State]
+
 case object NullCommandHandler extends CommandHandler {
-  def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) = {}
+  def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) =
+    {}
 }
 
 import Protocol._
@@ -69,20 +81,55 @@ trait Protocol {
 
   def requiresChannel: Boolean
 
-  def addEndpoint(endpoint: String,
-    channelName: String,
-    config: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
+  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher,
     endpointPublisher: EndpointPublisher): CommandHandler
 
   def removeEndpoint(endpoint: String): Unit
 
   def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit
+
   def removeChannel(channel: String): Unit
 
 }
 
 trait ChannelIgnoringProtocol extends Protocol {
-  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit = {}
-  def removeChannel(channel: String): Unit = {}
+  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit =
+    {}
+
+  def removeChannel(channel: String): Unit =
+    {}
+}
+
+trait LoggingProtocol extends Protocol with Logging {
+  def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) {
+    logger.info("protocol: " + name + ": adding channel: " + channel + ", channelPublisher: " + channelPublisher)
+    doAddChannel(channel, channelPublisher)
+  }
+
+  def removeChannel(channel: String) {
+    logger.info("protocol: " + name + ": remove channel: " + channel)
+    doRemoveChannel(channel)
+  }
+
+  def addEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
+    endpointPublisher: Protocol.EndpointPublisher) =
+    {
+      logger.info("protocol: " + name + ": adding endpoint: " + endpointName + ", channelName: " + channelName);
+      doAddEndpoint(endpointName, channelName, config, batchPublisher, endpointPublisher)
+    }
+
+  def removeEndpoint(endpoint: String) {
+    logger.info("protocol: " + name + ": remove endpoint: " + endpoint)
+    doRemoveEndpoint(endpoint)
+  }
+
+  def doAddChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher)
+
+  def doRemoveChannel(channel: String)
+
+  def doAddEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
+    endpointPublisher: Protocol.EndpointPublisher): CommandHandler
+
+  def doRemoveEndpoint(endpoint: String)
+
 }

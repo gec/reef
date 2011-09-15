@@ -24,12 +24,13 @@ import org.totalgrid.reef.util.{ Logging }
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
+import org.totalgrid.reef.proto.FEP.CommChannel
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with SimulatorManagement with Logging {
+class SimulatedProtocol(exe: Executor) extends LoggingProtocol with SimulatorManagement with Logging {
 
   import Protocol._
 
@@ -41,6 +42,40 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
   private val mutex = new Object
   private var endpoints = Map.empty[String, PluginRecord]
   private var factories = Set.empty[SimulatorPluginFactory]
+
+  override def doAddEndpoint(
+    endpoint: String,
+    channel: String,
+    files: List[Model.ConfigFile],
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler = mutex.synchronized {
+
+    endpoints.get(endpoint) match {
+      case Some(x) =>
+        throw new IllegalStateException("Endpoint has already been added: " + endpoint)
+      case None =>
+        val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
+        val mapping = SimMapping.SimulatorMapping.parseFrom(file)
+        val emptyRecord = new PluginRecord(endpoint, mapping, batchPublisher, None)
+        endpoints += endpoint -> emptyRecord
+        checkEndpoint(emptyRecord)
+        new EndpointCommandHandler(endpoint)
+    }
+  }
+
+  override def doRemoveEndpoint(endpoint: String) = mutex.synchronized {
+    endpoints.get(endpoint) match {
+      case Some(record) =>
+        record.current.foreach(_.shutdown()) // shutdown the current plugin
+        endpoints -= endpoint
+      case None =>
+        throw new IllegalStateException("Trying to remove endpoint that doesn't exist: " + endpoint)
+    }
+  }
+
+  def doAddChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) = null
+
+  def doRemoveChannel(channel: String) = null
 
   class EndpointCommandHandler(endpoint: String) extends CommandHandler {
 
@@ -110,36 +145,6 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
           checkEndpoint(emptyRecord)
         }
       }
-    }
-  }
-
-  override def addEndpoint(
-    endpoint: String,
-    channel: String,
-    files: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = mutex.synchronized {
-
-    endpoints.get(endpoint) match {
-      case Some(x) =>
-        throw new IllegalStateException("Endpoint has already been added: " + endpoint)
-      case None =>
-        val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
-        val mapping = SimMapping.SimulatorMapping.parseFrom(file)
-        val emptyRecord = new PluginRecord(endpoint, mapping, batchPublisher, None)
-        endpoints += endpoint -> emptyRecord
-        checkEndpoint(emptyRecord)
-        new EndpointCommandHandler(endpoint)
-    }
-  }
-
-  override def removeEndpoint(endpoint: String) = mutex.synchronized {
-    endpoints.get(endpoint) match {
-      case Some(record) =>
-        record.current.foreach(_.shutdown()) // shutdown the current plugin
-        endpoints -= endpoint
-      case None =>
-        throw new IllegalStateException("Trying to remove endpoint that doesn't exist: " + endpoint)
     }
   }
 
