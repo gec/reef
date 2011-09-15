@@ -61,6 +61,7 @@ class ModelFactories(dependencies: ServiceDependencies, contextSource: RequestCo
   val alarms = new AlarmServiceModel(dependencies.summaries)
   val eventConfig = new EventConfigServiceModel
   val events = new EventServiceModel(eventConfig, alarms)
+  alarms.eventModel = Some(events)
 
   val authTokens = new AuthTokenServiceModel
   val agents = new AgentServiceModel

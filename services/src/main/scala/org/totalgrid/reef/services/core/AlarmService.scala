@@ -20,8 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.Events.{ Event => EventProto }
-import org.totalgrid.reef.models.{ ApplicationSchema, AlarmModel, EventStore }
-
+import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, AlarmModel, EventStore }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
@@ -30,6 +29,7 @@ import org.squeryl.Table
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.sapi.RequestEnv
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
@@ -46,7 +46,9 @@ class AlarmService(protected val model: AlarmServiceModel)
 
   // Alarms are created by events. No create via an Alarm proto.
   override def preCreate(context: RequestContext, req: Alarm) = {
-    throw new BadRequestException("Create on alarms not allowed via this service.")
+    if (!req.hasEvent)
+      throw new BadRequestException("If creating alarm you must also specify a full event")
+    req
   }
 
   // If they don't have a state, what are they doing with an update?
@@ -61,8 +63,10 @@ class AlarmService(protected val model: AlarmServiceModel)
 class AlarmServiceModel(summary: SummaryPoints)
     extends SquerylServiceModel[Alarm, AlarmModel]
     with EventedServiceModel[Alarm, AlarmModel]
-    with SimpleModelEntryCreation[Alarm, AlarmModel]
     with AlarmConversion with AlarmSummaryCalculations {
+
+  // delayed link to eventServiceModel to break circular dependecy
+  var eventModel: Option[EventServiceModel] = None
 
   override def getEventProtoAndKey(alarm: AlarmModel) = {
     val (_, eventKeys) = EventConversion.makeEventProtoAndKey(alarm.event.value)
@@ -79,6 +83,28 @@ class AlarmServiceModel(summary: SummaryPoints)
     eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uid :: Nil) + "." + _ }
   }
 
+  override def createFromProto(context: RequestContext, req: Alarm): AlarmModel = {
+
+    val entity = req.event.entity.map(EntityQueryManager.findEntity(_)).getOrElse(None)
+
+    val eventProto = req.getEvent
+
+    eventModel.get.validateEventProto(eventProto)
+
+    if (!eventProto.hasSeverity || !eventProto.hasRendered || !eventProto.hasUserId || !req.hasState)
+      throw new BadRequestException("When posting alarm the event needs to have severity, rendered, userId and state fields set")
+
+    val (eventStore, alarmOption) = eventModel.get.makeEvent(context, EventConfigStore.ALARM, eventProto, eventProto.getSeverity,
+      entity, eventProto.getRendered, eventProto.getUserId, req.getState.getNumber)
+    alarmOption.get
+  }
+
+  def createAlarmForEvent(context: RequestContext, eventStore: EventStore, alarmState: Int) = {
+    val alarm = new AlarmModel(alarmState, eventStore.id)
+    alarm.event.value = eventStore // so we don't lookup the event again
+    create(context, alarm)
+  }
+
   // Update an Alarm. Currently, only the state can be updated.
   // Enforce valid state transitions.
   //
@@ -92,7 +118,7 @@ class AlarmServiceModel(summary: SummaryPoints)
     }
   }
   // Don't allow any updates except on the alarm state.
-  override def updateModelEntry(proto: Alarm, existing: AlarmModel): AlarmModel = {
+  private def updateModelEntry(proto: Alarm, existing: AlarmModel): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
       existing.eventUid) // Use the existing event so there's no possibility of an update.
