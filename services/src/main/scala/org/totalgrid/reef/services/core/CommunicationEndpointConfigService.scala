@@ -27,10 +27,9 @@ import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.services.ProtoRoutingKeys
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -50,28 +49,20 @@ class CommEndCfgServiceModel(
     with CommEndCfgServiceConversion {
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
-    checkProto(proto)
-
     import org.totalgrid.reef.services.core.util.UUIDConversions._
-    val entity = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
-    EntityQueryManager.addTypeToEntity(entity, "LogicalNode")
-    val endpoint: CommunicationEndpoint = create(context, createModelEntry(context, proto, entity))
-    setLinkedObjects(context, endpoint, proto, entity)
-    coordinator.onEndpointCreated(context, endpoint)
-    endpoint
+    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
+    EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
+    val sql = create(context, createModelEntry(context, proto, ent))
+    setLinkedObjects(context, sql, proto, ent)
+    coordinator.onEndpointCreated(context, sql)
+    sql
   }
 
   override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
-    checkProto(proto)
     val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
     coordinator.onEndpointUpdated(context, sql)
     (sql, changed)
-  }
-
-  private def checkProto(proto: CommEndCfgProto) {
-    if (proto.getOwnerships.getPointsCount == 0 && proto.getOwnerships.getCommandsCount == 0)
-      throw new BadRequestException("Endpoint must be source (ownership) for at least one point or command, if not needed delete instead")
   }
 
   override def preDelete(context: RequestContext, sql: CommunicationEndpoint) {
@@ -133,7 +124,10 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 
-  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = Nil
+  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+    List(
+      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) })
+  }
 
   def isModified(entry: CommunicationEndpoint, existing: CommunicationEndpoint) = {
     true // we always consider it to have changed to force coordinator to re-check fep assignment

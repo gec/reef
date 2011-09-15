@@ -42,6 +42,8 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   val commands = LoaderMap[CommandProto]("Command")
   val commandEntities = LoaderMap[Entity]("Command Entities")
 
+  val equipments = LoaderMap[Entity]("Equipment")
+
   // map of points to units
   val equipmentPointUnits = LoaderMap[String]("Point Unit")
 
@@ -54,6 +56,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     commands.clear
     commandEntities.clear
     equipmentPointUnits.clear
+    equipments.clear
     modelLoader.reset()
   }
 
@@ -123,7 +126,14 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
 
     var extraTypes: List[String] = Nil
     if (points.nonEmpty || commands.nonEmpty) extraTypes ::= "Equipment"
-    if (childEquipment.nonEmpty && types.find(_ == "Site").isEmpty) extraTypes ::= "EquipmentGroup"
+    if (childEquipment.nonEmpty && types.find(s => s == "Site" || s == "Root").isEmpty) extraTypes ::= "EquipmentGroup"
+
+    val foundEquipment = equipments.get(name)
+    if (foundEquipment.isDefined) {
+      if (points.nonEmpty || commands.nonEmpty || childEquipment.nonEmpty)
+        throw new LoadingException("Reference to equipment cannot contain data")
+      return foundEquipment.get
+    }
 
     val entity = toEntity(name, types, extraTypes)
     modelLoader.putOrThrow(entity)
@@ -154,6 +164,8 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     logger.trace("load equipment: " + name + " children")
     val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
     children.foreach(child => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(entity, child, "owns")))
+
+    equipments += (name -> entity)
 
     entity
   }
