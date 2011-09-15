@@ -193,9 +193,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       validateIndexesAreUnique[PointType](counters, isBenchmark, errorMsg)
     }
 
-    // Collect all the point types into points while making sure each name is unique
-    // across all point types.
-    //
+    // Collect all the point types into points while making sure each name is unique across all point types.
     val points = HashMap[String, PointType]()
     for ((name, p) <- statuses) addUniquePoint(points, name, p, errorMsg + "status")
     for ((name, p) <- analogs) addUniquePoint(points, name, p, errorMsg + "analog")
@@ -204,6 +202,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
 
+    // TODO should the communications loader really have knowledge of all the protocols?
     overriddenProtocolName match {
       case DNP3 =>
         exceptionCollector.collect("DNP3 Indexes:" + endpointName) {
@@ -215,6 +214,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
           configFiles ::= createSimulatorMapping(endpointName, controls, setpoints, points, delay)
         }
       }
+      case _ => // do nothing
     }
 
     // Now we have a list of all the controls and points for this Endpoint
@@ -651,7 +651,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val profiles: List[ControlType] = control.getControlProfile.toList.map(p => controlProfiles(p.getName)) ::: List[ControlType](control)
     val reverseProfiles = profiles.reverse
 
-    // Search the reverse profile list to fInd an index
+    // Search the reverse profile list to find an index
     val index = reverseProfiles.find(_.isSetIndex) match {
       case Some(ct) => ct.getIndex
       case None =>

@@ -53,12 +53,12 @@ class CommEndCfgServiceModel(
     checkProto(proto)
 
     import org.totalgrid.reef.services.core.util.UUIDConversions._
-    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
-    EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
-    val sql = create(context, createModelEntry(context, proto, ent))
-    setLinkedObjects(context, sql, proto, ent)
-    coordinator.onEndpointCreated(context, sql)
-    sql
+    val entity = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
+    EntityQueryManager.addTypeToEntity(entity, "LogicalNode")
+    val endpoint: CommunicationEndpoint = create(context, createModelEntry(context, proto, entity))
+    setLinkedObjects(context, endpoint, proto, entity)
+    coordinator.onEndpointCreated(context, endpoint)
+    endpoint
   }
 
   override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
@@ -71,7 +71,7 @@ class CommEndCfgServiceModel(
 
   private def checkProto(proto: CommEndCfgProto) {
     if (proto.getOwnerships.getPointsCount == 0 && proto.getOwnerships.getCommandsCount == 0)
-      throw new BadRequestException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
+      throw new BadRequestException("Endpoint must be source (ownership) for at least one point or command, if not needed delete instead")
   }
 
   override def preDelete(context: RequestContext, sql: CommunicationEndpoint) {

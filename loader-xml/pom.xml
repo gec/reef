@@ -36,6 +36,7 @@
                     </instructions>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
@@ -43,6 +44,7 @@
                     <header>../AGPL_FILE_HEADER</header>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jaxb2-maven-plugin</artifactId>
@@ -66,6 +68,7 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
