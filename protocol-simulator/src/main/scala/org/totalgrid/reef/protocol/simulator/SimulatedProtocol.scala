@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.FEP.CommChannel
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class SimulatedProtocol(exe: Executor) extends LoggingProtocol with SimulatorManagement with Logging {
+class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager with SimulatorManagement with Logging {
 
   import Protocol._
 

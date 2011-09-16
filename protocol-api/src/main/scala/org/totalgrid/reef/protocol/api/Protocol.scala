@@ -100,7 +100,7 @@ trait ChannelIgnoringProtocol extends Protocol {
     {}
 }
 
-trait LoggingProtocol extends Protocol with Logging {
+trait LoggingProtocolEndpointManager extends Protocol with Logging {
   def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) {
     logger.info("protocol: " + name + ": adding channel: " + channel + ", channelPublisher: " + channelPublisher)
     doAddChannel(channel, channelPublisher)
