@@ -28,10 +28,9 @@ import org.totalgrid.reef.proto.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
 import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.ReefServiceException
-
 import SyncServiceShims._
 import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
@@ -111,6 +110,29 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
   }
 
+  test("Create Alarm Directly") {
+    val fix = new Fixture
+
+    val eventWithoutRenderedFields = createSystemEvent("Test.Event", "FEP").build
+    val badAlarm: Alarm = makeAlarm(eventWithoutRenderedFields, Some(Alarm.State.UNACK_AUDIBLE))
+    intercept[BadRequestException] {
+      fix.alarmService.put(badAlarm).expectOne
+    }
+
+    fix.createConfig(makeEc(Some("Test.Event"), Some(7), Some(EventConfig.Designation.EVENT), Some("Test Event")))
+
+    // create a fully formed event by posting to event service
+    val event = fix.publishEvent(createSystemEvent("Test.Event", "FEP").build)
+    // create an alarm using that event as a template (we'll duplicate event)
+    val alarmRequest = makeAlarm(event, Some(Alarm.State.UNACK_AUDIBLE))
+
+    val alarm = fix.alarmService.put(alarmRequest).expectOne
+    // make sure we added a new event than the template
+    alarm.event.uid.get should not equal (event.uid.get)
+    alarm.event.rendered should equal(event.rendered)
+    alarm.state should equal(Some(Alarm.State.UNACK_AUDIBLE))
+  }
+
   test("Update Alarm States") {
 
     val fix = new Fixture
@@ -176,8 +198,11 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
   /**
    * Make an Event
    */
-  def makeAlarm(event: EventProto) =
-    Alarm.newBuilder.setEvent(event).build
+  def makeAlarm(event: EventProto, state: Option[Alarm.State] = None): Alarm = {
+    val b = Alarm.newBuilder.setEvent(event)
+    state.foreach(b.setState(_))
+    b.build
+  }
 
   def makeEc(event: Option[String],
     severity: Option[Int] = None,

@@ -74,6 +74,8 @@ public class TestEventService extends ReefConnectionTestBase
         EntityService entityService = helpers;
         EventConfigService configService = helpers;
 
+        EventService eventService = helpers;
+
         // make an event type for our test events
         configService.setEventConfigAsEvent( "Test.Event", 1, "Event" );
 
@@ -85,6 +87,12 @@ public class TestEventService extends ReefConnectionTestBase
             Events.Event e = es.publishEvent( "Test.Event", "Tests", entity.getUuid() );
             assertTrue( e.hasUid() );
             assertNotSame( 0, e.getUid().length() );
+            assertTrue( e.hasEntity() );
+            assertTrue( e.getEntity().hasUuid() );
+            assertNotSame( 0, e.getEntity().getUuid().getUuid().length() );
+
+            Events.Event e2 = eventService.getEvent( e.getUid() );
+            assertEquals( e2, e );
 
             assertTrue( e.hasTime() );
             assertTrue( e.getTime() > 0 );
@@ -112,13 +120,16 @@ public class TestEventService extends ReefConnectionTestBase
 
         EventCreationService pub = helpers;
 
-        pub.publishEvent( "Test.Event", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
+        Events.Event pubEvent = pub.publishEvent( "Test.Event", "Tests", getUUID( "StaticSubstation.Line02.Current" ) );
 
         events.getSubscription().start( mock );
 
-        mock.pop( 1000 );
+        Events.Event subEvent = mock.pop( 1000 ).getValue();
 
-
+        assertTrue( subEvent.hasEntity() );
+        assertTrue( subEvent.getEntity().hasUuid() );
+        assertNotSame( 0, subEvent.getEntity().getUuid().getUuid().length() );
+        assertEquals( pubEvent, subEvent );
     }
 
     private Model.ReefUUID getUUID( String name ) throws ReefServiceException

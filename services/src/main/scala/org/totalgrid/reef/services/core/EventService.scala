@@ -81,11 +81,44 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
   /**
    * A raw Event comes in and we need to process it into a real Event, Alarm, or Log.
    */
+  def makeEvent(context: RequestContext, designation: Int, request: Event, severity: Int, entity: Option[Entity],
+    renderedMessage: String, userId: String, alarmState: Int): (EventStore, Option[AlarmModel]) = {
+    val (eventStore, alarm) = designation match {
+      case EventConfigStore.ALARM =>
+        // Create event and alarm instances. Post them to the bus.
+        val event = create(context, createModelEntry(request, true, severity, entity, renderedMessage, userId)) // true: is an alarm
+        val alarm = alarmServiceModel.createAlarmForEvent(context, event, alarmState)
+
+        (event, Some(alarm))
+
+      case EventConfigStore.EVENT =>
+        // create an EventStore and store it in the database + publish
+        (create(context, createModelEntry(request, false, severity, entity, renderedMessage, userId)), None)
+
+      case EventConfigStore.LOG =>
+        // Instead of returning a "Message", return an "unsaved" eventstore, the lack of UID can indicate
+        // to the user that the message wasn't saved to the database
+        (createModelEntry(request, false, severity, entity, renderedMessage, userId), None)
+
+      case _ =>
+        throw new BadRequestException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + request.getEventType +
+          "'", Envelope.Status.INTERNAL_ERROR)
+    }
+    // we log all events regardless of designation
+    log(eventStore)
+
+    (eventStore, alarm)
+  }
+
+  def validateEventProto(request: Event) {
+    if (!request.hasEventType) throw new BadRequestException("invalid event: " + request + ", EventType must be set")
+    if (!request.hasTime) throw new BadRequestException("invalid event: " + request + ", Time must be set")
+    if (!request.hasSubsystem) throw new BadRequestException("invalid event: " + request + ", Subsystem must be set.")
+  }
+
   override def createFromProto(context: RequestContext, request: Event): EventStore = {
 
-    if (!request.hasEventType) { throw new BadRequestException("invalid event: " + request + ", EventType must be set", Envelope.Status.BAD_REQUEST) }
-    if (!request.hasTime) { throw new BadRequestException("invalid event: " + request + ", Time must be set", Envelope.Status.BAD_REQUEST) }
-    if (!request.hasSubsystem) { throw new BadRequestException("invalid event: " + request + ", Subsystem must be set.", Envelope.Status.BAD_REQUEST) }
+    validateEventProto(request)
 
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
@@ -96,51 +129,25 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     }
 
     val (severity, designation, alarmState, resource) = eventConfig.getProperties(request.getEventType)
+    val renderedMessage = renderEventMessage(request, resource)
 
     // if the raw event had the entity filled out try to find that entity
     val entity = request.entity.map(EntityQueryManager.findEntity(_)).getOrElse(None)
 
-    designation match {
-      case EventConfigStore.ALARM =>
-        // Create event and alarm instances. Post them to the bus.
-        val event = create(context, createModelEntry(request, true, severity, entity, resource, userId)) // true: is an alarm
-        val alarm = new AlarmModel(alarmState, event.id)
-        alarm.event.value = event // so we don't lookup the event again
-        alarmServiceModel.create(context, alarm)
-        log(request, event, entity)
-        event
-
-      case EventConfigStore.EVENT =>
-        // Create the event instance and post it to the bus.
-        val event = create(context, createModelEntry(request, false, severity, entity, resource, userId)) // false: not an alarm
-        log(request, event, entity)
-        event
-
-      case EventConfigStore.LOG =>
-        // Instead of returning a "Message", return an EventStore without a UID. Not great, but it will do for now.
-        val event = createModelEntry(request, false, severity, entity, resource, userId)
-        log(request, event, entity)
-        event
-
-      case _ =>
-        throw new BadRequestException("Unknown designation (i.e. ALARM, EVENT, LOG): '" + designation + "' for EventType: '" + request.getEventType +
-          "'", Envelope.Status.INTERNAL_ERROR)
-    }
+    val (eventStore, alarmOption) = makeEvent(context, designation, request, severity, entity, renderedMessage, userId, alarmState)
+    eventStore
   }
 
-  def log(req: Event, event: EventStore, entity: Option[Entity]): Unit = {
-    def entityToString(entity: Option[Entity]) = entity match {
-      case Some(e) => e.name
-      case None => "-"
-    }
+  def log(event: EventStore) {
+    // TODO: why are we building this as a list then doing mkString?
+    val eventStringParts = "severity: " :: event.severity ::
+      ", type: " :: event.eventType ::
+      event.entity.value.map { _.name }.getOrElse("_") ::
+      ", user id: " :: event.userId ::
+      ", rendered: " :: event.rendered :: Nil
 
-    def eventToList(req: Event, entity: Option[Entity]): List[Any] =
-      "severity: " :: event.severity :: ", type: " :: event.eventType :: entityToString(entity) :: ", user id: " :: event.userId :: ", rendered: " ::
-        event.rendered :: Nil
-
-    logger.info(eventToList(req, entity).mkString(""))
+    logger.info(eventStringParts.mkString(""))
   }
-
 }
 
 trait EventConversion
@@ -209,24 +216,30 @@ trait EventConversion
     true
   }
 
-  def createModelEntry(proto: Event, isAlarm: Boolean, severity: Int, entity: Option[Entity], resource: String, userId: String): EventStore = {
+  def renderEventMessage(proto: Event, resourceString: String) = {
 
-    val (args, attributeList) = if (proto.hasArgs) {
-      (proto.getArgs.toByteArray, new AttributeList(proto.getArgs))
+    if (proto.hasRendered) {
+      // if the user set the rendered string keep it as is
+      proto.getRendered
     } else {
-      (Array[Byte](), new AttributeList)
+      val attributeList = proto.args.map { new AttributeList(_) }.getOrElse(new AttributeList)
+      try {
+        MessageFormatter.format(resourceString, attributeList)
+      } catch {
+        case x: Exception =>
+          "Error rendering event string: " + resourceString + " with attributes: " + attributeList + " error: " + x
+      }
     }
+  }
 
-    val rendered = try {
-      MessageFormatter.format(resource, attributeList)
-    } catch {
-      case x: Exception =>
-        "Error rendering event string: " + resource + " with attributes: " + attributeList + " error: " + x
-    }
+  def createModelEntry(proto: Event, isAlarm: Boolean, severity: Int, entity: Option[Entity], message: String, userId: String): EventStore = {
 
-    val es = EventStore(proto.getEventType, isAlarm, proto.getTime, proto.deviceTime, severity, proto.getSubsystem, userId, entity.map {
-      _.id
-    }, args, rendered)
+    val args = proto.args.map { _.toByteArray }.getOrElse(Array[Byte]())
+
+    val entityUuid = entity.map { _.id }
+
+    val es = EventStore(proto.getEventType, isAlarm, proto.getTime, proto.deviceTime, severity,
+      proto.getSubsystem, userId, entityUuid, args, message)
 
     es.entity.value = entity
     es
