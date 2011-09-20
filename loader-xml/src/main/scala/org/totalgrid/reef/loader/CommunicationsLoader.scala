@@ -157,10 +157,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
 
-    val commChannelBuilder: Option[CommChannel.Builder] = if (overriddenProtocolName != BENCHMARK)
-      Some(processInterface(profiles))
-    else
-      None
+    val commChannel = Some(processInterface(profiles))
 
     //  Walk the tree of equipment nodes to collect the controls and points
     // An endpoint may have multiple top level equipment objects (each with nested equipment nodes).
@@ -218,7 +215,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     }
 
     // Now we have a list of all the controls and points for this Endpoint
-    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannelBuilder, controls, setpoints,
+    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannel, controls, setpoints,
       points).build
     modelLoader.putOrThrow(endpointCfg)
 
