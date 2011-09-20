@@ -80,7 +80,7 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
   }
 
   def removeEntry(c: ConnProto) {
-    logger.debug("Removing endpoint: " + c.getEndpoint.getName)
+    logger.info("Removing endpoint: " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
 
     // need to make sure we close the addressable service so no new commands
