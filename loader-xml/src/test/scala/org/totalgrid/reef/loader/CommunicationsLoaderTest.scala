@@ -86,7 +86,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     logProtos(loader.getModelLoader.getModelContainer.getConfigFiles().keysIterator.toSeq)
     verifyNoLoadExceptions(loader)
     val protos = client.getPutQueue.clone()
-    protos.length should equal(3)
+    protos.length should equal(4)
 
     reset
 
@@ -141,7 +141,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     loader.load(model, equipmentPointUnits, true)
     logProtos(client.getPutQueue.clone().toList)
     val protos = client.getPutQueue.clone()
-    protos.length should equal(3)
+    protos.length should equal(4)
 
     //  With PointProfile and ControlProfile
     //
@@ -186,7 +186,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     loader.load(model, equipmentPointUnits, true) // T: benchmark
     logProtos(client.getPutQueue.clone().toList)
     val protos = client.getPutQueue.clone()
-    protos.length should equal(3)
+    protos.length should equal(4)
 
     //  With EndpointProfile, PointProfile, and ControlProfile
     //
@@ -319,7 +319,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
 
     verifyNoLoadExceptions(loader)
     val protos: Seq[AnyRef] = client.getPutQueue.clone().toSeq
-    protos.length should equal(2)
+    protos.length should equal(3)
 
     val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
     endPointConfigList.length should equal(1)

@@ -157,7 +157,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
 
-    val commChannel = Some(processInterface(profiles))
+    val commChannel = processInterface(profiles)
 
     //  Walk the tree of equipment nodes to collect the controls and points
     // An endpoint may have multiple top level equipment objects (each with nested equipment nodes).
@@ -205,6 +205,8 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
         exceptionCollector.collect("DNP3 Indexes:" + endpointName) {
           configFiles ::= processIndexMapping(endpointName, controls, setpoints, points)
         }
+        if (commChannel.isEmpty)
+          throw new LoadingException("Endpoint '" + endpointName + "' has no interface element specified.")
       case BENCHMARK => {
         val delay = protocol.getSimOptions.map { _.getDelay }
         exceptionCollector.collect("Simulator Mapping:" + endpointName) {
@@ -324,51 +326,46 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
    * first one found by search backwards through the list of profiles.
    *
    */
-  def processInterface(profiles: List[EndpointType]): CommChannel.Builder = {
+  def processInterface(profiles: List[EndpointType]): Option[CommChannel.Builder] = {
 
     val endpointName = profiles.last.getName
     // Walk the endpointTypes backwards to find the first interface specified. The list of profiles
     // includes this endpoint as the last "profile".
-    val interface: Interface = profiles.reverse.find(_.isSetInterface) match {
-      case Some(endpoint) => endpoint.getInterface.get
-      case None =>
-        profiles.size match {
-          case 1 => throw new LoadingException("Endpoint '" + endpointName + "' has no interface element specified.")
-          case _ => throw new LoadingException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify an interface.")
-        }
+    val interfaceElement = profiles.reverse.find(_.isSetInterface).map { _.getInterface.get }
+
+    interfaceElement.map { interface =>
+      // If the interface found inside the endpoint or endpoint profile specifies
+      // all the required attributes, it doesn't need a name.
+      val reference = interface.isSetName match {
+        case true => interfaces.get(interface.getName) // get the named interface if it exists.
+        case false => None
+      }
+
+      // Get each attribute from the endpoint's interface or the endpoint profile's
+      // interface. The endpoint's interface can override individual properties
+      // of the reference interface
+
+      // TODO: the ip may be empty string or illegal.
+      // TODO: the network may be empty string.
+      val ip = getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
+      val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "ip")
+      val network = getAttributeDefault[String](interface, reference, _.isSetNetwork, _.getNetwork, "any")
+
+      val ipProto = IpPort.newBuilder
+        .setAddress(ip)
+        .setPort(port)
+        .setNetwork(network)
+        .setMode(IpPort.Mode.CLIENT)
+
+      val portProto = CommChannel.newBuilder
+        .setName("tcp://" + ip + ":" + port + "@" + network)
+        .setIp(ipProto)
+        .build
+
+      modelLoader.putOrThrow(portProto)
+
+      portProto.toBuilder
     }
-
-    // If the interface found inside the endpoint or endpoint profile specifies
-    // all the required attributes, it doesn't need a name.
-    val reference = interface.isSetName match {
-      case true => interfaces.get(interface.getName) // get the named interface if it exists.
-      case false => None
-    }
-
-    // Get each attribute from the endpoint's interface or the endpoint profile's
-    // interface. The endpoint's interface can override individual properties
-    // of the reference interface
-
-    // TODO: the ip may be empty string or illegal.
-    // TODO: the network may be empty string.
-    val ip = getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
-    val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "ip")
-    val network = getAttributeDefault[String](interface, reference, _.isSetNetwork, _.getNetwork, "any")
-
-    val ipProto = IpPort.newBuilder
-      .setAddress(ip)
-      .setPort(port)
-      .setNetwork(network)
-      .setMode(IpPort.Mode.CLIENT)
-
-    val portProto = CommChannel.newBuilder
-      .setName("tcp://" + ip + ":" + port + "@" + network)
-      .setIp(ipProto)
-      .build
-
-    modelLoader.putOrThrow(portProto)
-
-    portProto.toBuilder
   }
 
   /**
@@ -404,16 +401,11 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     isSet: (Interface) => Boolean,
     get: (Interface) => A,
     default: A): A = {
-
-    val value: A = isSet(interface) match {
-      case true => get(interface)
-      case false =>
-        reference match {
-          case Some(i) => get(i)
-          case _ => default
-        }
+    (isSet(interface), reference.map { isSet(_) }.getOrElse(false)) match {
+      case (true, _) => get(interface)
+      case (false, true) => get(reference.get)
+      case _ => default
     }
-    value
   }
 
   def processIndexMapping(
