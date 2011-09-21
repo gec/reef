@@ -73,8 +73,8 @@ object StandaloneLoader {
     var benchmark = false
     var dryRun = false
     var create = true
-    var username = "core"
-    var password = "core"
+    var username = "system"
+    var password = "system"
 
     println("main: " + args.mkString(","))
 

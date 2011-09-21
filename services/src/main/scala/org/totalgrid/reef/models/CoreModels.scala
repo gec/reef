@@ -27,8 +27,8 @@ import java.util.UUID
 import org.squeryl.Query
 
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Point")
+  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String, uuid: Option[UUID]) = {
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Point", uuid)
     val p = new Point(ent.id, _type, unit, abnormal)
     dataSource.foreach(ln => { EntityQueryManager.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
     p.entity.value = ent
@@ -67,8 +67,8 @@ case class Point(
 }
 
 object Command {
-  def newInstance(name: String, displayName: String, _type: Int) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Command")
+  def newInstance(name: String, displayName: String, _type: Int, uuid: Option[UUID]) = {
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Command", uuid)
     val c = new Command(ent.id, displayName, _type, false, None, None)
     c.entity.value = ent
     c
@@ -106,8 +106,8 @@ case class Command(
 }
 
 object FrontEndPort {
-  def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel")
+  def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte], uuid: Option[UUID]) = {
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel", uuid)
     val c = new FrontEndPort(ent.id, network, location, state, proto)
     c.entity.value = ent
     c

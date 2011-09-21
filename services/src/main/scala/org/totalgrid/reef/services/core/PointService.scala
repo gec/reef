@@ -27,6 +27,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
@@ -152,11 +153,11 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")),
-      proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
+      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")))
   }
 
-  def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _))
+  def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
+    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal
@@ -178,7 +179,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
   }
 
   def createModelEntry(proto: PointProto): Point = {
-    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit)
+    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit, proto.uuid)
   }
 
 }

@@ -49,4 +49,8 @@ object ConfigFileRequestBuilders {
   def makeConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
     makeBasicConfigFile(name, mimeType, data).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
   }
+
+  def makeConfigFile(mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
+    ConfigFile.newBuilder().setMimeType(mimeType).setFile(ByteString.copyFrom(data)).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
+  }
 }

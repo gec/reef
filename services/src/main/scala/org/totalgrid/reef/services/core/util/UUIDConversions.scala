@@ -16,33 +16,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.shell.proto.presentation
+package org.totalgrid.reef.services.core.util
 
-import org.totalgrid.reef.proto.Model.ConfigFile
+import java.util.UUID
+import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.OptionalProtos.OptModelReefUUID
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.util.Table
+object UUIDConversions {
 
-object ConfigFileView {
-  def printTable(apps: List[ConfigFile]) = {
-    Table.printTable(header, apps.map(row(_)))
+  implicit def convertReefUUIDToUUID(optUUID: Option[ReefUUID]) = {
+    optUUID.map { ru => UUID.fromString(ru.getUuid) }
   }
 
-  def header = {
-    "Name" :: "MimeType" :: "RelatedEntities" :: Nil
+  implicit def convertOptReefUUIDToUUID(optUUID: OptModelReefUUID) = {
+    optUUID.uuid.map { ru => UUID.fromString(ru) }
   }
 
-  def row(a: ConfigFile) = {
-    a.getName ::
-      a.getMimeType ::
-      a.getEntitiesList.toList.map { _.getName }.mkString(", ") ::
-      Nil
-  }
-
-  def printInspect(a: ConfigFile) {
-    Table.printTable(header, (a :: Nil).map(row(_)))
-    println("\nData:\n\n")
-    println(a.getFile.toStringUtf8)
-    println("\n")
+  implicit def convertUUIDtoReefUUID(uuid: UUID) = {
+    ReefUUID.newBuilder.setUuid(uuid.toString).build
   }
 }

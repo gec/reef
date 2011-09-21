@@ -67,7 +67,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     endpointProfiles.clear()
     equipmentProfiles.clear()
     interfaces.clear()
-    commonLoader.reset()
   }
 
   def getExceptionCollector: ExceptionCollector = {
@@ -143,7 +142,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     import CommunicationsLoader._
 
     val endpointName = endpoint.getName
-    val childPrefix = endpointName + "."
     logger.trace("loadEndpoint: " + endpointName)
 
     // IMPORTANT:  profiles is a list of profiles plus this endpoint (as the last "profile" in the list)
@@ -159,10 +157,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val originalProtocolName = protocol.getName
     val overriddenProtocolName = if (benchmark) BENCHMARK else originalProtocolName
 
-    val commChannelBuilder: Option[CommChannel.Builder] = if (overriddenProtocolName != BENCHMARK)
-      Some(processInterface(profiles))
-    else
-      None
+    val commChannel = processInterface(profiles)
 
     //  Walk the tree of equipment nodes to collect the controls and points
     // An endpoint may have multiple top level equipment objects (each with nested equipment nodes).
@@ -172,7 +167,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val analogs = HashMap[String, PointType]()
     val counters = HashMap[String, PointType]()
     // TODO: should the endpoint name be used as the starting prefixed ?
-    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, "", controls, setpoints, statuses, analogs, counters))
+    profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, None, controls, setpoints, statuses, analogs, counters))
     logger.trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with statuses: " + statuses.keys.mkString(", "))
@@ -195,9 +190,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       validateIndexesAreUnique[PointType](counters, isBenchmark, errorMsg)
     }
 
-    // Collect all the point types into points while making sure each name is unique
-    // across all point types.
-    //
+    // Collect all the point types into points while making sure each name is unique across all point types.
     val points = HashMap[String, PointType]()
     for ((name, p) <- statuses) addUniquePoint(points, name, p, errorMsg + "status")
     for ((name, p) <- analogs) addUniquePoint(points, name, p, errorMsg + "analog")
@@ -206,21 +199,25 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
 
+    // TODO should the communications loader really have knowledge of all the protocols?
     overriddenProtocolName match {
       case DNP3 =>
         exceptionCollector.collect("DNP3 Indexes:" + endpointName) {
           configFiles ::= processIndexMapping(endpointName, controls, setpoints, points)
         }
+        if (commChannel.isEmpty)
+          throw new LoadingException("Endpoint '" + endpointName + "' has no interface element specified.")
       case BENCHMARK => {
         val delay = protocol.getSimOptions.map { _.getDelay }
         exceptionCollector.collect("Simulator Mapping:" + endpointName) {
           configFiles ::= createSimulatorMapping(endpointName, controls, setpoints, points, delay)
         }
       }
+      case _ => // do nothing
     }
 
     // Now we have a list of all the controls and points for this Endpoint
-    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannelBuilder, controls, setpoints,
+    val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannel, controls, setpoints,
       points).build
     modelLoader.putOrThrow(endpointCfg)
 
@@ -329,51 +326,46 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
    * first one found by search backwards through the list of profiles.
    *
    */
-  def processInterface(profiles: List[EndpointType]): CommChannel.Builder = {
+  def processInterface(profiles: List[EndpointType]): Option[CommChannel.Builder] = {
 
     val endpointName = profiles.last.getName
     // Walk the endpointTypes backwards to find the first interface specified. The list of profiles
     // includes this endpoint as the last "profile".
-    val interface: Interface = profiles.reverse.find(_.isSetInterface) match {
-      case Some(endpoint) => endpoint.getInterface.get
-      case None =>
-        profiles.size match {
-          case 1 => throw new LoadingException("Endpoint '" + endpointName + "' has no interface element specified.")
-          case _ => throw new LoadingException("Endpoint '" + endpointName + "' and its associated endpointProfile element(s) do not specify an interface.")
-        }
+    val interfaceElement = profiles.reverse.find(_.isSetInterface).map { _.getInterface.get }
+
+    interfaceElement.map { interface =>
+      // If the interface found inside the endpoint or endpoint profile specifies
+      // all the required attributes, it doesn't need a name.
+      val reference = interface.isSetName match {
+        case true => interfaces.get(interface.getName) // get the named interface if it exists.
+        case false => None
+      }
+
+      // Get each attribute from the endpoint's interface or the endpoint profile's
+      // interface. The endpoint's interface can override individual properties
+      // of the reference interface
+
+      // TODO: the ip may be empty string or illegal.
+      // TODO: the network may be empty string.
+      val ip = getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
+      val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "ip")
+      val network = getAttributeDefault[String](interface, reference, _.isSetNetwork, _.getNetwork, "any")
+
+      val ipProto = IpPort.newBuilder
+        .setAddress(ip)
+        .setPort(port)
+        .setNetwork(network)
+        .setMode(IpPort.Mode.CLIENT)
+
+      val portProto = CommChannel.newBuilder
+        .setName("tcp://" + ip + ":" + port + "@" + network)
+        .setIp(ipProto)
+        .build
+
+      modelLoader.putOrThrow(portProto)
+
+      portProto.toBuilder
     }
-
-    // If the interface found inside the endpoint or endpoint profile specifies
-    // all the required attributes, it doesn't need a name.
-    val reference = interface.isSetName match {
-      case true => interfaces.get(interface.getName) // get the named interface if it exists.
-      case false => None
-    }
-
-    // Get each attribute from the endpoint's interface or the endpoint profile's
-    // interface. The endpoint's interface can override individual properties
-    // of the reference interface
-
-    // TODO: the ip may be empty string or illegal.
-    // TODO: the network may be empty string.
-    val ip = getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
-    val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "ip")
-    val network = getAttributeDefault[String](interface, reference, _.isSetNetwork, _.getNetwork, "any")
-
-    val ipProto = IpPort.newBuilder
-      .setAddress(ip)
-      .setPort(port)
-      .setNetwork(network)
-      .setMode(IpPort.Mode.CLIENT)
-
-    val portProto = CommChannel.newBuilder
-      .setName("tcp://" + ip + ":" + port + "@" + network)
-      .setIp(ipProto)
-      .build
-
-    modelLoader.putOrThrow(portProto)
-
-    portProto.toBuilder
   }
 
   /**
@@ -409,16 +401,11 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     isSet: (Interface) => Boolean,
     get: (Interface) => A,
     default: A): A = {
-
-    val value: A = isSet(interface) match {
-      case true => get(interface)
-      case false =>
-        reference match {
-          case Some(i) => get(i)
-          case _ => default
-        }
+    (isSet(interface), reference.map { isSet(_) }.getOrElse(false)) match {
+      case (true, _) => get(interface)
+      case (false, true) => get(reference.get)
+      case _ => default
     }
-    value
   }
 
   def processIndexMapping(
@@ -507,26 +494,26 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
    *  equipment
    */
   def findControlsAndPoints(equipment: Equipment,
-    namePrefix: String,
+    namePrefix: Option[String],
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
     statuses: HashMap[String, PointType],
     analogs: HashMap[String, PointType],
     counters: HashMap[String, PointType]): Unit = {
 
-    val name = namePrefix + equipment.getName
-    val childPrefix = name + "."
+    val name = getChildName(namePrefix, equipment.getName)
+    val childPrefix = if (equipment.isAddParentNames) Some(name + ".") else None
     logger.trace("findControlAndPoints: " + name)
 
     // IMPORTANT:  profiles is a list of profiles plus this equipment (as the last "profile" in the list)
     //
     val profiles: List[EquipmentType] = equipment.getEquipmentProfile.toList ::: List[EquipmentType](equipment)
 
-    profiles.flatMap(_.getControl).foreach(c => addUnique[Control](controls, childPrefix + c.getName, c, "Duplicate control name: "))
-    profiles.flatMap(_.getSetpoint).foreach(c => addUnique[Setpoint](setpoints, childPrefix + c.getName, c, "Duplicate setpoint name: "))
-    profiles.flatMap(_.getStatus).foreach(p => addUnique[PointType](statuses, childPrefix + p.getName, p, "Duplicate status name: "))
-    profiles.flatMap(_.getAnalog).foreach(p => addUnique[PointType](analogs, childPrefix + p.getName, p, "Duplicate analog name: "))
-    profiles.flatMap(_.getCounter).foreach(p => addUnique[PointType](counters, childPrefix + p.getName, p, "Duplicate counter name: "))
+    profiles.flatMap(_.getControl).foreach(c => addUnique[Control](controls, getChildName(childPrefix, c.getName), c, "Duplicate control name: "))
+    profiles.flatMap(_.getSetpoint).foreach(c => addUnique[Setpoint](setpoints, getChildName(childPrefix, c.getName), c, "Duplicate setpoint name: "))
+    profiles.flatMap(_.getStatus).foreach(p => addUnique[PointType](statuses, getChildName(childPrefix, p.getName), p, "Duplicate status name: "))
+    profiles.flatMap(_.getAnalog).foreach(p => addUnique[PointType](analogs, getChildName(childPrefix, p.getName), p, "Duplicate analog name: "))
+    profiles.flatMap(_.getCounter).foreach(p => addUnique[PointType](counters, getChildName(childPrefix, p.getName), p, "Duplicate counter name: "))
 
     // Recurse into child equipment
     profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, childPrefix, controls, setpoints, statuses, analogs, counters))
@@ -653,7 +640,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val profiles: List[ControlType] = control.getControlProfile.toList.map(p => controlProfiles(p.getName)) ::: List[ControlType](control)
     val reverseProfiles = profiles.reverse
 
-    // Search the reverse profile list to fInd an index
+    // Search the reverse profile list to find an index
     val index = reverseProfiles.find(_.isSetIndex) match {
       case Some(ct) => ct.getIndex
       case None =>

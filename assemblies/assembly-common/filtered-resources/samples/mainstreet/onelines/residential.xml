@@ -430,10 +430,13 @@
 	</pointGroups>
 
 	<navigationDestinations>
-		<destination name="oneline-mainstreet" uri="EquipmentGroupDetailPlace:?equipmentGroup_name=MainSt;tab=oneline"/>
-		<destination name="oneline-residential" uri="EquipmentGroupDetailPlace:?equipmentGroup_name=Residential;tab=oneline"/>
+		<destination name="oneline-mainstreet" uri="ModelNodeDetailPlace:?model_node_name=MainSt;tab=oneline"/>
+		<destination name="oneline-residential" uri="ModelNodeDetailPlace:?model_node_name=Residential;tab=oneline"/>
 		<destination name="dashboard" uri="DashboardPlace:"/>
 	</navigationDestinations>
+
+	<navigationAreas>
+	</navigationAreas>
 
 	<labels>
 		<label xsi:type='NavigationLabel' name='oneline:mainStreet' label='To Main Street' destination="oneline-mainstreet">

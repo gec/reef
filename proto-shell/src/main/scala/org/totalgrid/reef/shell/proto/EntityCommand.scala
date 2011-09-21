@@ -78,3 +78,33 @@ class EntityChildrenCommand extends ReefCommandSupport {
   }
 }
 
+@Command(scope = "entity", name = "tree", description = "Prints trees based on root type start")
+class EntityTreeCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "Entity Type", description = "Entity name.", required = false, multiValued = false)
+  var rootType: String = null
+
+  @Argument(index = 1, name = "Relationship", description = "Name of relationship type", required = true, multiValued = false)
+  var relationship: String = null
+
+  @Argument(index = 2, name = "Depth", description = "Show children at depth <i>", required = true, multiValued = false)
+  var depth: Int = 1
+
+  @Argument(index = 3, name = "types", description = "List of types we want in returned list", required = true, multiValued = true)
+  var types: java.util.List[String] = null
+
+  @GogoOption(name = "-name", description = "First argument is a specific entity name")
+  var rootTypeIsName: Boolean = false
+
+  def doCommand() = {
+    val entities = rootTypeIsName match {
+      case false =>
+        services.getEntityChildrenFromTypeRoots(rootType, relationship, depth, types).toList
+      case true =>
+        val root = services.getEntityByName(rootType)
+        services.getEntityChildren(root.getUuid, relationship, depth, types) :: Nil
+
+    }
+    entities.foreach { EntityView.printTreeRecursively(_) }
+  }
+}

@@ -58,14 +58,14 @@ class UserCommandRequestService(
           val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
 
           if (endpointState != CommEndpointConnection.State.COMMS_UP) {
-            throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP: " + endpointState)
+            throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP, current state: " + endpointState)
           }
 
           frontEndAssignment.serviceRoutingKey match {
             case Some(key) => AddressableDestination(key)
             case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
           }
-        case None => throw new BadRequestException("Command has no endpoint set " + request)
+        case None => throw new BadRequestException("Command has no endpoint set: " + request)
       }
     }
 

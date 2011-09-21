@@ -26,12 +26,14 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.japi.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
+import java.util.UUID
 
 class ConfigFileService(protected val model: ConfigFileServiceModel)
     extends SyncModeledServiceBase[ConfigProto, ConfigFile, ConfigFileServiceModel]
@@ -62,13 +64,22 @@ class ConfigFileServiceModel
   }
 
   override def createFromProto(context: RequestContext, configFileProto: ConfigProto): ConfigFile = {
-    if (!configFileProto.hasMimeType || !configFileProto.hasFile || !configFileProto.hasName) {
-      throw new BadRequestException("Cannot add config file without mimeType, file text and name set")
+    if (!configFileProto.hasMimeType || !configFileProto.hasFile) {
+      throw new BadRequestException("Cannot add config file without mimeType and file text set")
     }
+
+    if (!configFileProto.hasName && configFileProto.getEntitiesCount != 1) {
+      throw new BadRequestException("Cannot add config file without name or related entity set")
+    }
+
+    val uuid: UUID = configFileProto.uuid.getOrElse(UUID.randomUUID)
+
+    // if name wasn't set use the uuid for this config file
+    val name = if (configFileProto.hasName) configFileProto.getName else uuid.toString
 
     logger.debug("creating config file from proto: " + configFileProto)
     // make the entity entry for the config file
-    val entity: Entity = EntityQueryManager.findOrCreateEntity(configFileProto.getName, "ConfigurationFile")
+    val entity: Entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile", Some(uuid))
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges

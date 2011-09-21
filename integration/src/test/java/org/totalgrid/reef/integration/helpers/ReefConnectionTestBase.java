@@ -18,30 +18,29 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.junit.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.AMQPConnectionSettingImpl;
 import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
+import org.totalgrid.reef.japi.client.Connection;
 import org.totalgrid.reef.japi.client.Session;
+import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.japi.request.AllScadaService;
 import org.totalgrid.reef.japi.request.impl.AllScadaServicePooledWrapper;
 import org.totalgrid.reef.japi.request.impl.AuthTokenServicePooledWrapper;
-import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-
-import org.totalgrid.reef.japi.client.Connection;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
  */
 public class ReefConnectionTestBase
 {
-
     private final boolean autoLogon;
 
     /**
@@ -88,6 +87,7 @@ public class ReefConnectionTestBase
         }
         catch ( IOException e )
         {
+            // TODO can we just fail here?
             e.printStackTrace();
             // we'll then throw an exception when trying to load from emtpy properties file
         }

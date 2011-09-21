@@ -55,24 +55,6 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
     }
   }
 
-  override def getConfigFileWithRelativeName(entity: Entity, relativeName: String): ConfigFile = {
-    val configFiles: java.util.List[ConfigFile] = ops(
-      "Couldn't get config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " + relativeName) {
-        _.get(ConfigFileRequestBuilders.getByEntity(entity.getUuid)).await().expectMany()
-      }
-
-    val filteredFiles: Buffer[ConfigFile] = configFiles.filter(configFile => configFile.getName.equals(entity.getName + "." + relativeName))
-    if (filteredFiles.length == 0) {
-      return null
-    }
-    if (filteredFiles.length == 1) {
-      return filteredFiles.get(0)
-    }
-    throw new ExpectationException(
-      "Received unexpected results when retrieving config file for entity: " + entity.getName + "(" + entity.getUuid + "), with relative name: " +
-        relativeName)
-  }
-
   override def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String): java.util.List[ConfigFile] = {
     ops("Couldn't get config files used by entity: " + entityUid.uuid + " mimeType: " + mimeType) {
       _.get(ConfigFileRequestBuilders.getByEntity(entityUid, mimeType)).await().expectMany()
@@ -89,6 +71,13 @@ trait ConfigFileServiceImpl extends ReefServiceBaseClass with ConfigFileService 
     ops("Couldn't create config file with name: " + name + " mimeType: " + mimeType + " dataLength: " + data.length
       + " for entity: " + entityUid.uuid) {
       _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityUid)).await().expectOne
+    }
+  }
+
+  override def createConfigFile(mimeType: String, data: Array[Byte], entityUid: ReefUUID): ConfigFile = {
+    ops("Couldn't create config file with mimeType: " + mimeType + " dataLength: " + data.length
+      + " for entity: " + entityUid.uuid) {
+      _.put(ConfigFileRequestBuilders.makeConfigFile(mimeType, data, entityUid)).await().expectOne
     }
   }
 

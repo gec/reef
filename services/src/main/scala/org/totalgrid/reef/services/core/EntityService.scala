@@ -20,6 +20,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -49,7 +51,7 @@ class EntityService extends SyncServiceBase[EntityProto] {
       var (status, ent) = list match {
         case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " type:" + typ)
         case List(ent) => (Status.NOT_MODIFIED, list.head)
-        case Nil => (Status.CREATED, EntityQueryManager.addEntity(name, typ))
+        case Nil => (Status.CREATED, EntityQueryManager.addEntity(name, typ :: Nil, protoRequest.uuid))
       }
 
       protoRequest.getTypesList.tail.foreach(t => {

@@ -126,7 +126,7 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
         } catch {
           case rse: ReefServiceException =>
             // attach a helpful error message with exact data that caused failure
-            val errorMessage = "Error processing object: " + request.getClass.getSimpleName + " with data: " + request
+            val errorMessage = "Error processing object of type: " + request.getClass.getSimpleName + ", with data: " + request
             throw new ReefServiceException(errorMessage, rse.getStatus, rse)
         }
 

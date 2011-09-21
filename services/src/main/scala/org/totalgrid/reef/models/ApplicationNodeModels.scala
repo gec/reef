@@ -33,7 +33,7 @@ case class ApplicationCapability(
 
 object ApplicationInstance {
   def newInstance(instanceName: String, userName: String, location: String, network: String) = {
-    val ent = EntityQueryManager.findOrCreateEntity(instanceName, "Application")
+    val ent = EntityQueryManager.findOrCreateEntity(instanceName, "Application", None)
     val a = new ApplicationInstance(ent.id, instanceName, userName, location, network)
     a.entity.value = ent
     a

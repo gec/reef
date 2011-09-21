@@ -84,8 +84,8 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     }
   }
 
-  private def unset(name: String): Unit = set(name, null)
-  private def set(name: String, value: String): Unit = this.session.put(name, value)
+  protected def unset(name: String): Unit = set(name, null)
+  protected def set(name: String, value: String): Unit = this.session.put(name, value)
 
   override protected def doExecute(): Object = {
     println("")

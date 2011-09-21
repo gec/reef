@@ -40,6 +40,13 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     cfb.build
   }
 
+  def makeConfigFile(mime: String, data: String, owner: Option[Entity]) = {
+    import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
+    val cfb = ConfigFile.newBuilder.setMimeType(mime).setFile(data)
+    owner.foreach(cfb.addEntities(_))
+    cfb.build
+  }
+
   test("Test Status Codes") {
     val s = new ConfigFileService(new ConfigFileServiceModel)
 
@@ -94,6 +101,22 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     s.get(ConfigFile.newBuilder.addEntities(node1).build).expectMany(3)
     s.get(ConfigFile.newBuilder.addEntities(node2).build).expectOne()
+  }
+
+  test("Test add config file without name") {
+    val es = new EntityService()
+
+    val s = new ConfigFileService(new ConfigFileServiceModel)
+
+    val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
+
+    val cf = s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
+
+    cf.getName should equal(cf.getUuid.getUuid)
+
+    s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
+
+    s.get(ConfigFile.newBuilder.addEntities(node1).build).expectMany(2)
   }
 
   test("Shared Entity Ownership") {

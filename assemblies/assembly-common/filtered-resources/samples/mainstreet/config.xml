@@ -6,10 +6,6 @@
 							 xmlns:comm="communications.loader.reef.totalgrid.org"
 							 xmlns:common="common.loader.reef.totalgrid.org">
 
-	<common:configFiles>
-		<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
-	</common:configFiles>
-
 	<messageModel>
 		<messageSet name="System" severity="8" type="LOG">
 			<message name="UserLogin" type="EVENT">User login {status} {reason}</message>
@@ -209,14 +205,21 @@
 				<equip:analog name="kV_b" unit="kV"></equip:analog>
 				<equip:analog name="kV_c" unit="kV"></equip:analog>
 			</equip:equipmentProfile>
+
+			<equip:equipmentProfile name="ChargePointUsage">
+				<equip:type name="ChargePoint"/>
+				<equip:analog name="power" unit="watts"></equip:analog>
+			</equip:equipmentProfile>
+
 		</equip:profiles>
 
 		<!-- Equipment Definition-->
+
 		<equip:equipment name="MainSt">
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
 			<common:info>
-				<common:configFile name="oneline" fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
 			</common:info>
 
 			<equip:equipment name="FID1">
@@ -314,13 +317,10 @@
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
 			<common:info>
-				<common:configFile name="oneline" fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
 			</common:info>
 
 			<equip:equipment name="FID1">
-				<common:info>
-					<common:configFile name="oneline" fileName="onelines/residential.xml" mimeType="oneline/xml"/>
-				</common:info>
 				<equip:equipmentProfile name="FullBreaker"/>
 			</equip:equipment>
 
@@ -328,6 +328,47 @@
 				<equip:equipmentProfile name="Bus_Meas"/>
 				<equip:analog name="Frequency" unit="Hz"></equip:analog>
 			</equip:equipment>
+
+			<equip:equipment name="ChargePointStation">
+				<equip:equipmentProfile name="ChargePointUsage"/>
+			</equip:equipment>
+
+		</equip:equipment>
+
+		<equip:equipment name="MicroGrids" addParentNames="false">
+			<equip:type name="Root"/>
+			<equip:type name="MicroGrid"/>
+			<common:info>
+				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+			</common:info>
+			<equip:equipment name="MainSt"/>
+			<equip:equipment name="Residential"/>
+		</equip:equipment>
+
+		<equip:equipment name="MainSite" addParentNames="false">
+			<equip:type name="Site"/>
+			<common:info>
+				<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+			</common:info>
+			<equip:equipment name="MainSt"/>
+		</equip:equipment>
+
+		<equip:equipment name="ResidentialSite" addParentNames="false">
+			<equip:type name="Site"/>
+			<common:info>
+				<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+			</common:info>
+			<equip:equipment name="Residential"/>
+		</equip:equipment>
+
+		<equip:equipment name="Sites" addParentNames="false">
+			<equip:type name="Root"/>
+			<equip:type name="Site"/>
+			<common:info>
+				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+			</common:info>
+			<equip:equipment name="MainSite"/>
+			<equip:equipment name="ResidentialSite"/>
 		</equip:equipment>
 
 	</equip:equipmentModel>
@@ -337,7 +378,7 @@
 		<comm:interface name="MainSt_DNP" ip="152.14.125.31" netmask="255.255.255.0" port="20000" network="any"/>
 
 		<!--start MainSt Configuration-->
-		<comm:endpoint name="MainSt">
+		<comm:endpoint name="MainStRTU">
 
 			<comm:type name="Endpoint"/>
 			<comm:protocol name="benchmark">
@@ -634,7 +675,7 @@
 			</comm:equipment>
 		</comm:endpoint>
 
-		<comm:endpoint name="Residential">
+		<comm:endpoint name="ResidentialRTU">
 			<comm:type name="Endpoint"/>
 
 			<comm:protocol name="benchmark">
@@ -644,8 +685,7 @@
 			<comm:interface name="MainSt_DNP"/>
 
 			<comm:equipment name="Residential">
-
-					<comm:equipment name="FID1">
+				<comm:equipment name="FID1">
 					<comm:status name="Status" index="0" unit="raw"/>
 					<comm:status name="Overcurrent" index="1" unit="raw"/>
 					<comm:control name="Open" index="0">
@@ -673,6 +713,23 @@
 					</comm:analog>
 					<comm:analog name="kVar_b" index="7" unit="kVar"/>
 					<comm:analog name="kVar_c" index="8" unit="kVar"/>
+				</comm:equipment>
+			</comm:equipment>
+
+		</comm:endpoint>
+
+		<comm:endpoint name="ChargePointRTU">
+			<comm:type name="Endpoint"/>
+
+			<comm:protocol name="chargePointUsage">
+				<common:configFile fileName="communication/chargePoint.properties" mimeType="chargePoint/properties"/>
+			</comm:protocol>
+
+			<comm:interface name="MainSt_DNP"/>
+
+			<comm:equipment name="Residential">
+				<comm:equipment name="ChargePointStation">
+					<comm:analog name="power" index="0" unit="watts"/>
 				</comm:equipment>
 			</comm:equipment>
 

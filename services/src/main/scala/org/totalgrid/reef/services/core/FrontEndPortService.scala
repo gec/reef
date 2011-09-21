@@ -28,6 +28,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
@@ -104,7 +105,7 @@ trait FrontEndPortConversion
   }
 
   def createModelEntry(proto: ChannelProto): FrontEndPort = {
-    FrontEndPort.newInstance(proto.getName, proto.ip.network, proto.serial.location, proto.getState.getNumber, proto.toByteString.toByteArray)
+    FrontEndPort.newInstance(proto.getName, proto.ip.network, proto.serial.location, proto.getState.getNumber, proto.toByteString.toByteArray, proto.uuid)
   }
 
   def convertToProto(entry: FrontEndPort): ChannelProto = {

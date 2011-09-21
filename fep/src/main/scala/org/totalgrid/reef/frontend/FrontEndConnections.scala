@@ -57,29 +57,30 @@ class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedM
       (updated.hasRouting && updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey)
   }
 
-  def addEntry(c: ConnProto) = {
+  def addEntry(commEndpointConnection: ConnProto) = {
 
-    val protocol = getProtocol(c.getEndpoint.getProtocol)
-    val endpoint = c.getEndpoint
-    val port = c.getEndpoint.getChannel
+    val protocol = getProtocol(commEndpointConnection.getEndpoint.getProtocol)
+    val endpoint = commEndpointConnection.getEndpoint
+    val port = commEndpointConnection.getEndpoint.getChannel
 
     val transmitter = new OrderedServiceTransmitter(pool)
 
-    val batchPublisher = newMeasBatchPublisher(transmitter, c.getRouting.getServiceRoutingKey)
+    val batchPublisher = newMeasBatchPublisher(transmitter, commEndpointConnection.getRouting.getServiceRoutingKey)
     val channelListener = newChannelStatePublisher(transmitter, port.getUuid)
-    val endpointListener = newEndpointStatePublisher(transmitter, c.getUid)
+    val endpointListener = newEndpointStatePublisher(transmitter, commEndpointConnection.getUid)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
     val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
-    logger.info("Added endpoint: " + c.getEndpoint.getName + " on protocol: " + protocol.name + ", routing key: " + c.getRouting.getServiceRoutingKey)
+    logger.info("Added endpoint: " + commEndpointConnection.getEndpoint.getName + " on protocol: " + protocol.name + ", routing key: " +
+      commEndpointConnection.getRouting.getServiceRoutingKey)
 
-    val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(c.getRouting.getServiceRoutingKey))
-    endpointComponents += c.getEndpoint.getName -> EndpointComponent(service, transmitter)
+    val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(commEndpointConnection.getRouting.getServiceRoutingKey))
+    endpointComponents += commEndpointConnection.getEndpoint.getName -> EndpointComponent(service, transmitter)
   }
 
   def removeEntry(c: ConnProto) {
-    logger.debug("Removing endpoint: " + c.getEndpoint.getName)
+    logger.info("Removing endpoint: " + c.getEndpoint.getName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
 
     // need to make sure we close the addressable service so no new commands

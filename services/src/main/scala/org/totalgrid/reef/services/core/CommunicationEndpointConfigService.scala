@@ -21,15 +21,15 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, ConfigFile }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.services.ProtoRoutingKeys
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -49,8 +49,8 @@ class CommEndCfgServiceModel(
     with CommEndCfgServiceConversion {
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
-    checkProto(proto)
-    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint")
+    import org.totalgrid.reef.services.core.util.UUIDConversions._
+    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
     EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)
@@ -59,16 +59,10 @@ class CommEndCfgServiceModel(
   }
 
   override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
-    checkProto(proto)
     val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
     coordinator.onEndpointUpdated(context, sql)
     (sql, changed)
-  }
-
-  private def checkProto(proto: CommEndCfgProto) {
-    if (proto.getOwnerships.getPointsCount == 0 && proto.getOwnerships.getCommandsCount == 0)
-      throw new BadRequestException("Endpoint must be source (ownership) for atleast one point or command, if unneeded delete instead")
   }
 
   override def preDelete(context: RequestContext, sql: CommunicationEndpoint) {
@@ -115,7 +109,7 @@ class CommEndCfgServiceModel(
 trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgProto, CommunicationEndpoint] {
 
   import org.squeryl.PrimitiveTypeMode._
-  import org.totalgrid.reef.proto.OptionalProtos._
+
   import SquerylModel._
 
   val table = ApplicationSchema.endpoints
@@ -126,11 +120,14 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.uuid.uuid.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(proto.uuid.get).build, { _.id })),
+      proto.uuid.uuid.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uid)).build, { _.id })),
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 
-  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = Nil
+  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+    List(
+      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) })
+  }
 
   def isModified(entry: CommunicationEndpoint, existing: CommunicationEndpoint) = {
     true // we always consider it to have changed to force coordinator to re-check fep assignment

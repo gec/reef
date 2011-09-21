@@ -43,11 +43,20 @@ class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol],
   val pool = conn.getSessionPool()
   val connections = new FrontEndConnections(protocols, conn)
 
+  // we need to track the "running" state of the frontend to avoid adding new connections
+  // as we are shutting down because our subscription is still active so we can receive
+  // new assignments during that time which will spawn connections that never get
+  // shutdown (since we never clear that map).
+  // a better solution would be to cancel the subscription before canceling but the
+  // serviceContext code throws away that reference deep in the class hierarchy
+  // TODO: cancel frontend subscription before clearing map
+  var running = true
+
   /* ---- Implement ServiceContext[Endpoint] ---- */
 
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
-  def add(ep: ConnProto) = retrieve(ep) { c =>
+  def add(ep: ConnProto) = if (running) retrieve(ep) { c =>
     tryWrap("Error adding connProto: " + ep) {
       // the coordinator assigns FEPs when available but meas procs may not be online yet
       // re sends with routing information when meas_proc is online
@@ -56,14 +65,14 @@ class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol],
     }
   }
 
-  def modify(ep: ConnProto) = retrieve(ep) { c =>
+  def modify(ep: ConnProto) = if (running) retrieve(ep) { c =>
     tryWrap("Error modifying connProto: " + c) {
       if (c.hasRouting && c.hasEnabled && c.getEnabled) connections.modify(c)
       else connections.remove(c)
     }
   }
 
-  def remove(ep: ConnProto) = tryWrap("Error removing connProto: " + ep) {
+  def remove(ep: ConnProto) = if (running) tryWrap("Error removing connProto: " + ep) {
     connections.remove(ep)
   }
 
@@ -86,9 +95,13 @@ class FrontEndManager(conn: Connection, exe: Executor, protocols: Seq[Protocol],
 
   /* ---- Done implementing ServiceContext[Endpoint] ---- */
 
-  final override def afterStart() = annouce()
+  final override def afterStart() = {
+    running = true
+    annouce()
+  }
 
   final override def beforeStop() = {
+    running = false
     logger.info("Clearing connections")
     connections.clear()
   }

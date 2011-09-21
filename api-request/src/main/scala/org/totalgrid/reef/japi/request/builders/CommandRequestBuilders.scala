@@ -25,4 +25,11 @@ object CommandRequestBuilders {
 
   def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setUuid(uid).build
   def getByEntityName(name: String) = Command.newBuilder.setName(name).build
+
+  def getOwnedByEntityWithUuid(uuid: ReefUUID) = {
+    Command.newBuilder.setEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(uuid, "Command")).build
+  }
+  def getSourcedByEndpoint(entityUuid: ReefUUID) = {
+    Command.newBuilder.setLogicalNode(EntityRequestBuilders.getByUid(entityUuid)).build
+  }
 }

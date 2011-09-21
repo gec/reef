@@ -75,6 +75,7 @@
             </build>
         </profile>
     </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
@@ -116,6 +117,6 @@
 				<version>0.9.27</version>
 				<scope>test</scope>
 			</dependency>
-
 		</dependencies>
+
 </project>

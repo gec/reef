@@ -28,7 +28,6 @@ import parallel.Future
  *  Generic actor that can be used to execute
  *  arbitrary blocks of code. Useful for synchronizing
  *  lots of other threads.
- *
  */
 trait ActorExecutor extends Executor with Lifecycle {
 
@@ -50,8 +49,7 @@ trait ActorExecutor extends Executor with Lifecycle {
     myactor = getExecutorActor
   }
 
-  /// Extending classes will implement the AbstractActor that receives these
-  /// messages
+  /// Extending classes will implement the AbstractActor that receives these messages
   var myactor: ReactorBase = getExecutorActor
 
   def getActor: AbstractActor = myactor

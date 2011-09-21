@@ -37,7 +37,6 @@ import org.totalgrid.reef.japi.ReefServiceException;
  */
 public interface AuthTokenService
 {
-
     /**
      * Create an authorization token for the specified Agent with all available
      * permissions "checked out". If the password or agentName is wrong this

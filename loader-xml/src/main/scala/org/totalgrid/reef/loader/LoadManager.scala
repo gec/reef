@@ -115,7 +115,7 @@ object LoadManager extends Logging {
             configFile.setMimeType("text/xml")
             configFile.setFileName(thisFile.getName)
             configFile.setName(fileName)
-            commonLoader.loadConfigFile(configFile)
+            commonLoader.loadConfigFile(configFile, None)
         }
 
       } catch {

@@ -27,13 +27,12 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
 import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import java.util.UUID
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+
+import org.totalgrid.reef.services.core.util.UUIDConversions._
+import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.models.{ UserCommandModel, Command, ApplicationSchema, Entity }
+import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
 
 class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -121,10 +120,12 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
   }
 
-  def searchQuery(proto: CommandProto, sql: Command) = Nil
+  // TODO: add symmetric getCommandsOwnedByEntity and getCommandsBelongingToEndpoint functions to java API
+  def searchQuery(proto: CommandProto, sql: Command) = List(
+    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def createModelEntry(proto: CommandProto): Command = {
-    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType.getNumber)
+    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType.getNumber, proto.uuid)
   }
 
   def isModified(entry: Command, existing: Command) = {

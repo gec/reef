@@ -42,6 +42,8 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   val commands = LoaderMap[CommandProto]("Command")
   val commandEntities = LoaderMap[Entity]("Command Entities")
 
+  val equipments = LoaderMap[Entity]("Equipment")
+
   // map of points to units
   val equipmentPointUnits = LoaderMap[String]("Point Unit")
 
@@ -54,6 +56,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     commands.clear
     commandEntities.clear
     equipmentPointUnits.clear
+    equipments.clear
     modelLoader.reset()
   }
 
@@ -86,7 +89,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     model.getEquipment.toList.foreach(equipment => {
       println("Loading Equipment: processing equipment '" + equipment.getName + "'")
       exceptionCollector.collect("Equipment: " + equipment.getName) {
-        loadEquipment(equipment, "", actionModel)
+        loadEquipment(equipment, None, actionModel)
       }
     })
 
@@ -98,9 +101,9 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   /**
    * Load this equipment node and all children. Create edges to connect the children.
    */
-  private def loadEquipment(equipment: Equipment, namePrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
-    val name = namePrefix + equipment.getName
-    val childPrefix = name + "."
+  private def loadEquipment(equipment: Equipment, namePrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
+    val name = getChildName(namePrefix, equipment.getName)
+    val childPrefix = if (equipment.isAddParentNames) Some(name + ".") else None
 
     // IMPORTANT: profiles is a list of profiles plus this equipment (as the last "profile" in the list)
     // TODO: We don't see profiles within profiles. Could go recursive and map each profile name to a list of profiles.
@@ -116,17 +119,26 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val analogs = profiles.flatMap(_.getAnalog.toList)
     val counters = profiles.flatMap(_.getCounter.toList)
 
+    val types = profiles.flatMap(_.getType.toList).map { _.getName }.distinct
+
     val points = statuses ::: analogs ::: counters
     val commands = controls ::: setpoints
 
     var extraTypes: List[String] = Nil
     if (points.nonEmpty || commands.nonEmpty) extraTypes ::= "Equipment"
-    if (childEquipment.nonEmpty) extraTypes ::= "EquipmentGroup"
+    if (childEquipment.nonEmpty && types.find(s => s == "Site" || s == "Root").isEmpty) extraTypes ::= "EquipmentGroup"
 
-    val entity = toEntity(name, profiles, extraTypes)
+    val foundEquipment = equipments.get(name)
+    if (foundEquipment.isDefined) {
+      if (points.nonEmpty || commands.nonEmpty || childEquipment.nonEmpty)
+        throw new LoadingException("Reference to equipment cannot contain data")
+      return foundEquipment.get
+    }
+
+    val entity = toEntity(name, types, extraTypes)
     modelLoader.putOrThrow(entity)
 
-    equipment.getInfo.foreach(infoBlock => commonLoader.addInfo(entity, infoBlock, true))
+    equipment.getInfo.foreach(infoBlock => commonLoader.addInfo(entity, infoBlock))
 
     // Commands are controls and setpoints
     logger.trace("load equipment: " + name + " commands")
@@ -153,16 +165,18 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
     children.foreach(child => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(entity, child, "owns")))
 
+    equipments += (name -> entity)
+
     entity
   }
 
   /**
    * Process controls defined under equipment.
    */
-  def processCommand(childPrefix: String, xmlCommand: Command, equipmentEntity: Entity, commandType: CommandTypeProto) = {
+  def processCommand(childPrefix: Option[String], xmlCommand: Command, equipmentEntity: Entity, commandType: CommandTypeProto) = {
     import ProtoUtils._
 
-    val name = childPrefix + xmlCommand.getName
+    val name = getChildName(childPrefix, xmlCommand.getName)
     val displayName = Option(xmlCommand.getDisplayName) getOrElse xmlCommand.getName
 
     val baseType = if (commandType == CommandTypeProto.CONTROL) "Control" else "Setpoint"
@@ -197,7 +211,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
    *
    * TODO: Handle exceptions from invalid name references (ex: control)
    */
-  def processPointType(pointType: PointType, equipmentEntity: Entity, childPrefix: String, actionModel: HashMap[String, ActionSet]): Entity = {
+  def processPointType(pointType: PointType, equipmentEntity: Entity, childPrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
     val (baseType, pointProtoType) = pointType match {
@@ -207,7 +221,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
       case _ => throw new LoadingException("Bad point type")
     }
 
-    val name = childPrefix + pointType.getName
+    val name = getChildName(childPrefix, pointType.getName)
     val types = "Point" :: baseType :: getTypeList(pointType.getType)
 
     val unit = getAttribute[String](name, pointType, _.isSetUnit, _.getUnit, "unit")
@@ -224,10 +238,10 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     modelLoader.putOrThrow(ProtoUtils.toEntityEdge(equipmentEntity, pointEntity, "owns"))
 
     val controls = getElements[Control](name, pointType, _.getControl.toList)
-    controls.map(c => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
+    controls.map(c => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(pointEntity, getCommandEntity(name, getChildName(childPrefix, c.getName)), "feedback")))
 
     val setpoint = getElements[Setpoint](name, pointType, _.getSetpoint.toList)
-    setpoint.map(c => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(pointEntity, getCommandEntity(name, childPrefix + c.getName), "feedback")))
+    setpoint.map(c => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(pointEntity, getCommandEntity(name, getChildName(childPrefix, c.getName)), "feedback")))
 
     loadCache.addPoint(name, unit)
     // Insert range triggers to the existing trigger set in the system. Overwrite any triggers with the same name.
@@ -303,11 +317,8 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   /**
    * Return an Entity proto
    */
-  def toEntity(name: String, profiles: List[EquipmentType], extraTypes: List[String]): Entity = {
+  def toEntity(name: String, types: List[String], extraTypes: List[String]): Entity = {
     val protoBuilder = Entity.newBuilder.setName(name)
-    val types = profiles.flatMap(_.getType.toList).map { _.getName }
-    if (types.isEmpty)
-      throw new LoadingException(name + " needs at least one <type> specified in the Equipment Model.")
 
     extraTypes.foreach { extra =>
       if (types.contains(extra))

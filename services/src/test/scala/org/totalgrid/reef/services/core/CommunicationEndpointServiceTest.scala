@@ -29,6 +29,8 @@ import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Model._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
+import org.totalgrid.reef.services.core.util.UUIDConversions._
+import java.util.UUID
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.scalatest.junit.JUnitRunner
@@ -184,12 +186,6 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned1.getConfigFiles(0).getUuid should equal(returned2.getConfigFiles(0).getUuid)
   }
 
-  test("Endpoint with no ownerships blows up") {
-    intercept[BadRequestException] {
-      endpointService.put(getEndpoint().build)
-    }
-  }
-
   test("Can only delete disabled offline endpoints") {
     val point = pointService.put(getPoint().build).expectOne()
     val command = commandService.put(getCommand().build).expectOne()
@@ -244,5 +240,26 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     commandService.delete(command).expectOne(Status.DELETED)
     configFileService.delete(configFile).expectOne(Status.DELETED)
     portService.delete(port).expectOne(Status.DELETED)
+  }
+
+  test("Add parts seperatley pre-configured uuids") {
+
+    val pointUUID: ReefUUID = UUID.randomUUID
+    val commandUUID: ReefUUID = UUID.randomUUID
+    val configFileUUID: ReefUUID = UUID.randomUUID
+
+    pointService.put(getPoint().setUuid(pointUUID).build).expectOne()
+    commandService.put(getCommand().setUuid(commandUUID).build).expectOne()
+    val cf = configFileService.put(getConfigFile().setUuid(configFileUUID).build).expectOne()
+    val port = portService.put(getIPPort().build).expectOne()
+
+    val endpoint = getEndpoint().setChannel(port).addConfigFiles(cf).setOwnerships(getOwnership())
+
+    endpointService.put(endpoint.build).expectOne()
+
+    pointService.get(getPoint("*").build).expectOne().getUuid should equal(pointUUID)
+    commandService.get(getCommand("*").build).expectOne().getUuid should equal(commandUUID)
+
+    configFileService.get(getConfigFile(Some("*")).build).expectOne().getUuid should equal(configFileUUID)
   }
 }

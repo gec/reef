@@ -159,6 +159,10 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
 
       fix.waitForValue("summary.abnormals", 1)
 
+      // TODO: remove these tests or fix race-conditon in abnormal publisher by using request context
+      // after transaction publishing
+      Thread.sleep(250)
+
       // subscribe to abnormal points
       val points = fix.subscribePoints(fix.abnormalPoint(true))
       // should only get the abnormal point

@@ -44,19 +44,19 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   def seed {
-    val regId = EntityQueryManager.addEntity("RegA", "Region", "EquipmentGroup")
+    val regId = EntityQueryManager.addEntity("RegA", "Region" :: "EquipmentGroup" :: Nil)
     seedSub(regId, "RegA-SubA")
     seedSub(regId, "RegA-SubB")
   }
   def seedSub(regId: Entity, name: String) {
-    val subId = EntityQueryManager.addEntity(name, "Substation", "EquipmentGroup")
+    val subId = EntityQueryManager.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
     EntityQueryManager.addEdge(regId, subId, "owns")
     seedDevice(regId, subId, name + "-DeviceA", "Line")
     seedDevice(regId, subId, name + "-DeviceB", "Line")
     seedDevice(regId, subId, name + "-DeviceC", "Breaker")
   }
   def seedDevice(regId: Entity, subId: Entity, name: String, typ: String) {
-    val devId = EntityQueryManager.addEntity(name, typ, "Equipment")
+    val devId = EntityQueryManager.addEntity(name, typ :: "Equipment" :: Nil)
     val toSubId = EntityQueryManager.addEdge(subId, devId, "owns")
     seedPoint(regId, subId, devId, name + "-PointA", "owns")
     seedPoint(regId, subId, devId, name + "-PointB", "owns")

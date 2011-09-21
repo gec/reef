@@ -137,6 +137,36 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
     }
   }
 
+  test("Search for Endpoints by channel") {
+    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+      val coord = new CoordinatorFixture(amqp)
+
+      val serialLocA1 = coord.addDnp3Device("serialLocA1", None, Some("locA"), Some("SerialA"))
+      val serialLocA2 = coord.addDnp3Device("serialLocA2", None, Some("locA"), Some("SerialA"))
+      serialLocA1.getChannel should equal(serialLocA2.getChannel)
+
+      val serialLocB1 = coord.addDnp3Device("serialLocB1", None, Some("locB"), Some("SerialB"))
+      val serialLocB2 = coord.addDnp3Device("serialLocB2", None, Some("locB"), Some("SerialB"))
+      serialLocB1.getChannel should equal(serialLocB2.getChannel)
+
+      val ipNetA1 = coord.addDnp3Device("ipNetA1", Some("netA"), None, Some("IPA"))
+      val ipNetA2 = coord.addDnp3Device("ipNetA2", Some("netA"), None, Some("IPA"))
+      val ipNetA3 = coord.addDnp3Device("ipNetA3", Some("netA"), None, Some("IPA"))
+      val ipNetB = coord.addDnp3Device("ipNetB", Some("netB"), None, Some("IPB"))
+      ipNetA1.getChannel should equal(ipNetA2.getChannel)
+      ipNetA1.getChannel should equal(ipNetA3.getChannel)
+
+      ipNetA1.getChannel should not equal (ipNetB.getChannel)
+      ipNetA1.getChannel should not equal (serialLocB1.getChannel)
+      serialLocB1.getChannel should not equal (serialLocA1.getChannel)
+
+      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(serialLocA1.getChannel).build).expectMany(2)
+      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(serialLocB1.getChannel).build).expectMany(2)
+      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(ipNetA1.getChannel).build).expectMany(3)
+      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(ipNetB.getChannel).build).expectMany(1)
+    }
+  }
+
   test("FEPS have correct ports") {
     AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
       val coord = new CoordinatorFixture(amqp)
