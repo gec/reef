@@ -31,6 +31,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import java.util.Date
 
 class CommandAccessServiceModel
     extends SquerylServiceModel[AccessProto, AccessModel]
@@ -78,18 +79,17 @@ class CommandAccessServiceModel
   }
 
   def areAnyBlocked(commands: List[String]): Boolean = {
-    areAnyBlockedById(CommandModel.findByNames(commands).map { _.id }.toList)
+    val blocked = areAnyBlockedById(CommandModel.findByNames(commands).map { _.id }.toList)
+    !blocked.isEmpty
   }
-  def areAnyBlockedById(ids: List[Long]): Boolean = {
+  def areAnyBlockedById(ids: List[Long]): List[AccessModel] = {
     val joinTable = ApplicationSchema.commandToBlocks
     val blockInt = AccessProto.AccessMode.BLOCKED.getNumber
 
-    val lookup = from(joinTable, table)((join, acc) =>
+    from(joinTable, table)((join, acc) =>
       where(join.commandId in ids and
         join.accessId === acc.id and (acc.access === blockInt or acc.expireTime.isNull or acc.expireTime > System.currentTimeMillis))
-        select (acc))
-
-    lookup.size != 0
+        select (acc)).toList
   }
 
   protected def addEntryForAll(request: RequestContext, entry: AccessModel, cmds: List[CommandModel]) = {
@@ -138,8 +138,16 @@ class CommandAccessServiceModel
     }
 
     val cmdIds = cmds.map { _.id }
-    if (areAnyBlockedById(cmdIds))
-      throw new UnauthorizedException("One or more commands are blocked")
+    val blocked = areAnyBlockedById(cmdIds)
+    if (!blocked.isEmpty) {
+      val msgs = blocked.map { acc =>
+        "( " + acc.commands.map { _.entityName }.mkString(", ") +
+          " locked by: " + acc.agent +
+          " until: " + acc.expireTime.map { t => new Date(t).toString }.getOrElse(" unblocked") +
+          " )"
+      }.mkString(", ")
+      throw new UnauthorizedException("Some commands are blocked: " + msgs)
+    }
 
     val accEntry = create(context, new AccessModel(AccessProto.AccessMode.ALLOWED.getNumber, expireTime, Some(user)))
     addEntryForAll(context, accEntry, cmds.toList)
