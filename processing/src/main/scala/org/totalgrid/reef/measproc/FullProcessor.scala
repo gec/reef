@@ -20,43 +20,14 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.event.EventType._
-import org.totalgrid.reef.app.KeyedMap
-
-import org.totalgrid.reef.executor.{ Executor, Lifecycle, LifecycleManager }
+import org.totalgrid.reef.executor.{ Lifecycle, LifecycleManager }
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
 
 import org.totalgrid.reef.executor.ReactActorExecutor
-import org.totalgrid.reef.app.{ ServiceHandler, CoreApplicationComponents, ServiceContext }
+import org.totalgrid.reef.app.{ CoreApplicationComponents }
 import org.totalgrid.reef.persistence.{ InMemoryObjectCache }
-import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreToMeasurementCacheAdapter, MeasurementStoreFinder }
-
-abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNode)
-    extends ServiceContext[ConnProto] with KeyedMap[ConnProto]
-    with Executor with Lifecycle {
-
-  val serviceHandler = new ServiceHandler(this)
-
-  protected override def getKey(c: ConnProto) = c.getUid
-
-  private var map = Map.empty[String, MeasurementStreamProcessingNode]
-
-  override def addEntry(ep: ConnProto) = {
-    val entry = fun(ep)
-    map += getKey(ep) -> entry
-    entry.start
-  }
-
-  override def removeEntry(ep: ConnProto) = {
-    map.get(getKey(ep)).get.stop
-    map -= getKey(ep)
-  }
-
-  override def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
-    updated.getAssignedTime != existing.getAssignedTime
-  }
-}
+import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreToMeasurementCacheAdapter }
 
 /**
  *  Non-entry point meas processor setup
@@ -81,6 +52,9 @@ class FullProcessor(components: CoreApplicationComponents, measStore: Measuremen
   }
 
   override def doStop() {
+    // make sure we stop the meas proc from readding connections
+    // as we are shutting down
+    connectionHandler.running = false
     connectionHandler.clear
     lifecycles.stop
   }
