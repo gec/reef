@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.loader
 
-import java.io.File
+import java.io.{ File, FileInputStream }
 import com.google.protobuf.ByteString
 
 import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFiles }
@@ -65,6 +65,11 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     val mimeType = if (!configFile.isSetMimeType) {
       name match {
         case s: String if (s.endsWith(".xml")) => "text/xml"
+        case s: String if (s.endsWith(".jpg")) => "image/jpeg"
+        case s: String if (s.endsWith(".jpeg")) => "image/jpeg"
+        case s: String if (s.endsWith(".png")) => "image/png"
+        case s: String if (s.endsWith(".gif")) => "image/gif"
+        case s: String if (s.endsWith(".svg")) => "image/svg+xml"
         case _ => throw new LoadingException("Cannot guess mimeType for configfile, must be explictly defined: " + name)
       }
     } else {
@@ -76,7 +81,7 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     val bytes = if (hasFilename) {
       val file = new File(rootDir, configFile.getFileName)
       if (!file.exists()) throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " doesn't exist.")
-      scala.io.Source.fromFile(file).mkString.getBytes
+      readFileToByteArray(file, mimeType)
     } else {
       configFile.getValue.getBytes
     }
@@ -87,6 +92,22 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     logger.debug("new config file proto: name: " + name + ", mimeType: " + configFileProto.getMimeType)
     modelLoader.putOrThrow(configFileProto)
     configFileProto
+  }
+
+  def readFileToByteArray(file: File, mimeType: String): Array[Byte] = {
+    if (mimeType.startsWith("image")) {
+      val fis = new FileInputStream(file);
+      val length = file.length()
+      if (length > Integer.MAX_VALUE) {
+        throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " is larger than " + Integer.MAX_VALUE + " bytes")
+      }
+      val buffer = new Array[Byte](length.toInt);
+      fis.read(buffer);
+      fis.close();
+      buffer
+    } else {
+      scala.io.Source.fromFile(file).mkString.getBytes
+    }
   }
 
   def addInfo(entity: Entity, info: Info) {
