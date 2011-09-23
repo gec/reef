@@ -66,9 +66,7 @@ class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
 
 }
 
-@RunWith(classOf[JUnitRunner])
-class AmqpClientSessionTest extends FunSuite with ShouldMatchers {
-
+class AmqpClientSessionTestBase extends FunSuite with ShouldMatchers {
   val exchangeA = TestDescriptors.serviceNotification.id
   val exchangeB = TestDescriptors.requestHeader.id
 
@@ -95,6 +93,10 @@ class AmqpClientSessionTest extends FunSuite with ShouldMatchers {
       }
     }
   }
+}
+
+@RunWith(classOf[JUnitRunner])
+class AmqpClientSessionTest extends AmqpClientSessionTestBase {
 
   test("ProtoClient handles multiple proto types") {
     setupTest(true) { (client, amqp) =>

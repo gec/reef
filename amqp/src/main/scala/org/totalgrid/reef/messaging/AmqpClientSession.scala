@@ -34,7 +34,7 @@ import org.totalgrid.reef.japi.Envelope
 class AmqpClientSession(
     factory: ClientSessionFactory,
     lookup: ServiceList,
-    timeoutms: Long) extends ClientSession with AsyncRestAdapter with Logging {
+    timeoutms: Long) extends ClientSession with AsyncRestAdapter with RequestSpyHook with Logging {
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
 
