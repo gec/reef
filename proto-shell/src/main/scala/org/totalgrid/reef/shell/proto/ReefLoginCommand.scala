@@ -76,12 +76,13 @@ class ReefLoginCommand extends ReefLoginCommandBase {
 
     import org.totalgrid.reef.executor.ReactActorExecutor
     import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
+    import org.totalgrid.reef.messaging.{ AmqpClientSession }
+    import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
     import org.totalgrid.reef.proto.ReefServicesList
 
     val connectionInfo = BrokerProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
 
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
+    val amqp = new AMQPSyncFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(connectionInfo)
     }
 
