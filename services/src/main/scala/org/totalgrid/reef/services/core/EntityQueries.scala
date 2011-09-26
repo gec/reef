@@ -160,7 +160,7 @@ trait EntityTreeQueries { self: EntityQueries =>
           select (et.entType)).distinct.toList.sorted
 
       val missing = requestTypes.diff(inSystemTypes)
-      if (!missing.isEmpty) throw new BadRequestException("Requested unknown entity types: " + missing)
+      if (!missing.isEmpty) throw new BadRequestException("Retreived no results and requested unknown entity types: " + missing)
     }
   }
 
