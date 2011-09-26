@@ -34,6 +34,7 @@ import com.weiglewilczek.scalamodules._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.totalgrid.reef.promise.{ Promise, SynchronizedPromise }
+import org.totalgrid.reef.messaging.RequestSpyHook
 
 class ServiceDispatcher[A](rh: AsyncService[A]) {
 
@@ -117,7 +118,7 @@ trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
 }
 
-class OsgiClientSession(bundleContext: BundleContext) extends OsgiSyncOperations with ClientSession {
+class OsgiClientSession(bundleContext: BundleContext) extends OsgiSyncOperations with ClientSession with RequestSpyHook {
   def getBundleContext: BundleContext = bundleContext
 
   def addSubscription[A](klass: Class[_]) = {

@@ -67,6 +67,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
     val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
       def session = this
     }
+    client.addRequestSpy(client)
 
     val agent = Agent.newBuilder.setName(username).setPassword(password).build
     val request = AuthToken.newBuilder.setAgent(agent).build

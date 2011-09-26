@@ -66,8 +66,10 @@ class EntityService extends SyncServiceBase[EntityProto] {
 
   override def get(req: EntityProto, env: RequestEnv): Response[EntityProto] = {
     inTransaction {
-      EntityQueryManager.checkAllTypesInSystem(req)
       val result = EntityQueryManager.fullQuery(req)
+      if (result.size == 0) {
+        EntityQueryManager.checkAllTypesInSystem(req)
+      }
       Response(Status.OK, result)
     }
   }

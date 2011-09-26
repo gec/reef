@@ -16,28 +16,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.sapi.client.requestspys
 
-trait ClientSession
-  extends RestOperations
-  with SubscriptionManagement
-  with SessionLifecycle
-  with DefaultHeaders
-  with RequestSpyManager
+import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.promise.Promise
+import org.totalgrid.reef.sapi.client.{ RequestSpy, Response }
 
 /**
- * all ClientSessions should be closeable and able to report their state
+ * simple request spy that prints out all requests and responses.
+ * Can be integrated with logging frame work:
+ * <code>
+ *   new LoggingRequestSpy(logger.info _)
+ * </code>
  */
-trait SessionLifecycle {
+class LoggingRequestSpy(func: String => Unit) extends RequestSpy {
 
-  /**
-   * @return True if the session is open (and ready for use)
-   */
-  def isOpen: Boolean
-
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
+  def onRequestReply[A](verb: Verb, request: A, response: Promise[Response[A]]) = {
+    val str = verb.toString + " => " + request + " <= " + response.await()
+    func(str)
+  }
 }
-

@@ -72,14 +72,17 @@ class ConfigFileServiceModel
       throw new BadRequestException("Cannot add config file without name or related entity set")
     }
 
-    val uuid: UUID = configFileProto.uuid.getOrElse(UUID.randomUUID)
+    var uuid: Option[UUID] = configFileProto.uuid
 
     // if name wasn't set use the uuid for this config file
-    val name = if (configFileProto.hasName) configFileProto.getName else uuid.toString
+    val name = if (configFileProto.hasName) configFileProto.getName else {
+      uuid = Some(UUID.randomUUID)
+      uuid.get.toString
+    }
 
     logger.debug("creating config file from proto: " + configFileProto)
     // make the entity entry for the config file
-    val entity: Entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile", Some(uuid))
+    val entity: Entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile", uuid)
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges

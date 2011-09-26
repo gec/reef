@@ -160,7 +160,7 @@ trait EntityTreeQueries { self: EntityQueries =>
           select (et.entType)).distinct.toList.sorted
 
       val missing = requestTypes.diff(inSystemTypes)
-      if (!missing.isEmpty) throw new BadRequestException("Requested unknown entity types: " + missing)
+      if (!missing.isEmpty) throw new BadRequestException("Retreived no results and requested unknown entity types: " + missing)
     }
   }
 
@@ -566,11 +566,16 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     val list = nameTypeQuery(Some(name), None)
     if (list.size > 1) throw new Exception("more than one entity matched: " + name + " type:" + entityType)
     if (list.size == 1) {
-      if (list.head.types.value.find(_ == entityType).isEmpty) {
+      val entity = if (list.head.types.value.find(_ == entityType).isEmpty) {
         addTypeToEntity(list.head, entityType)
       } else {
         list.head
       }
+      uuid.foreach { u =>
+        if (entity.id != u)
+          throw new Exception("Entity with name: " + name + " already has uuid different than we requested.")
+      }
+      entity
     } else {
       logger.debug("creating entity: name: " + name + ", type: " + entityType)
       addEntity(name, entityType :: Nil, uuid)

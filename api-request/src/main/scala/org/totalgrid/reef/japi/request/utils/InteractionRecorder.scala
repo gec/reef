@@ -32,7 +32,7 @@ import org.totalgrid.reef.promise.{ FixedPromise, Promise }
  * the lowest level operation in this class (request) we get to see the result before any exception throwing would
  * occur therefore the output is just as useful in the failure cases (expected and unexpected)
  */
-trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
+trait InteractionRecorder extends RequestSpy {
 
   // list of explanations for the upcoming requests
   private val explanations = new Queue[Documenter.CaseExplanation]
@@ -60,18 +60,11 @@ trait InteractionRecorder extends RestOperations { self: DefaultHeaders =>
     Documenter.save(fileName, formattedRequests, title, desc)
   }
 
-  /**
-   * implementation of SyncOperations base function that uses the passed in "real" client to create collect interactions
-   * for later formatting to file
-   */
-  abstract override def request[A](verb: Envelope.Verb, request: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
-
-    val promise = super.request(verb, request, env, destination)
+  def onRequestReply[A](verb: Envelope.Verb, request: A, promise: Promise[Response[A]]) {
 
     if (explanations.nonEmpty) {
       explainedRequests ::= Documenter.RequestWithExplanation(explanations.dequeue, verb, request, promise.await)
     }
 
-    new FixedPromise(promise.await)
   }
 }
