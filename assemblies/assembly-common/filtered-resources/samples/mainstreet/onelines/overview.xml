@@ -488,5 +488,19 @@
 			<coordinate x='5' y='100'/>
 		</label>
 	</labels>
+	<rects>
+                <rect xsi:type="Rect"  height="50" width="5">
+                        <coordinate x="200" y="4"/>
+                </rect>
+                <rect xsi:type="Rect"  height="50" width="5">
+                        <coordinate x="245" y="4"/>
+                </rect>
+                <rect xsi:type="Rect"  height="5" width="50">
+                        <coordinate x="200" y="50"/>
+                </rect>
+                <rect xsi:type="Rect"  height="5" width="50">
+                        <coordinate x="200" y="4"/>
+                </rect>
+        </rects>
 
 </oneline>
