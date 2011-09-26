@@ -175,8 +175,8 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     logger.trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
 
     // TODO fill in endpoint name
-    for ((name, c) <- controls) loadCache.addControl("", name, c.getIndex)
-    for ((name, s) <- setpoints) loadCache.addControl("", name, s.getIndex)
+    for ((name, c) <- controls) loadCache.addControl("", name, if (c.isSetIndex) c.getIndex else -1)
+    for ((name, s) <- setpoints) loadCache.addControl("", name, if (s.isSetIndex) s.getIndex else -1)
 
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
