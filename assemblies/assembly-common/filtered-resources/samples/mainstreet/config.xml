@@ -721,7 +721,7 @@
 		<comm:endpoint name="ChargePointRTU">
 			<comm:type name="Endpoint"/>
 
-			<comm:protocol name="chargePointUsage">
+			<comm:protocol name="chargePoint">
 				<common:configFile fileName="communication/chargePoint.properties" mimeType="chargePoint/properties"/>
 			</comm:protocol>
 
