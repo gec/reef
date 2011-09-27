@@ -55,5 +55,12 @@
 			<artifactId>akka-actor</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.totalgrid.reef</groupId>
+			<artifactId>reef-test-util</artifactId>
+			<version>0.3.1-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
