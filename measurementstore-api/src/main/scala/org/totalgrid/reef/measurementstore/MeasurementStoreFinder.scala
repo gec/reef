@@ -1,5 +1,3 @@
-package org.totalgrid.reef.measurementstore
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,11 +16,12 @@ package org.totalgrid.reef.measurementstore
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+package org.totalgrid.reef.measurementstore
+
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.executor.Executor
-import scala.collection.JavaConversions._
 import org.osgi.framework.{ ServiceReference, BundleContext }
-import javax.management.remote.rmi._RMIConnection_Stub
 
 object MeasurementStoreFinder extends Logging {
 
@@ -39,7 +38,6 @@ object MeasurementStoreFinder extends Logging {
     config match {
       case di: DbInfo =>
         val services: List[ServiceReference] = Option(context.getServiceReferences(classOf[MeasurementStoreFactory].getName, "(org.totalgrid.reef.mstore=sql)")).map(_.toList).getOrElse(Nil)
-
         services.headOption match {
           case Some(srvRef) =>
             val factory = context.getService(srvRef).asInstanceOf[MeasurementStoreFactory]
