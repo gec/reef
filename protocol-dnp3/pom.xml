@@ -53,7 +53,7 @@
                             <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <packageName>org.totalgrid.reef.xml.dnp3</packageName>
+                            <packageName>org.totalgrid.reef.protocol.dnp3.xml</packageName>
                             <schemaDirectory>../schema/xsd/dnp3</schemaDirectory>
                             <staleFile>${project.build.directory}/generated-sources/jaxb/.DNP3StaleFlag</staleFile>
                         </configuration>

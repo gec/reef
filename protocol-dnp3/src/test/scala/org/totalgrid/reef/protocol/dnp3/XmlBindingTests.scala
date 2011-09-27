@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.xml.dnp3.{ Master, Stack, AppLayer, LinkLayer }
+import org.totalgrid.reef.protocol.dnp3.xml.{ Master, Stack, AppLayer, LinkLayer }
 import java.io.{ FileWriter, File }
 import org.totalgrid.reef.util.XMLHelper
 

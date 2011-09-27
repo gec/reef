@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.FEP.IpPort
-import org.totalgrid.reef.xml.dnp3.{ LinkLayer, AppLayer, Stack, Master }
+import org.totalgrid.reef.protocol.dnp3.xml.{ LinkLayer, AppLayer, Stack, Master }
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.proto.{ Model, FEP }
 
