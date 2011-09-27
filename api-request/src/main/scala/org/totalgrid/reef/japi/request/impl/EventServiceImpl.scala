@@ -43,6 +43,14 @@ trait EventServiceImpl extends ReefServiceBaseClass with EventService {
     }
   }
 
+  override def subscribeToRecentEvents(types: java.util.List[String], limit: Int) = {
+    ops("Couldn't subscribe to recent events") { session =>
+      useSubscription(session, Descriptors.event.getKlass) { sub =>
+        session.get(EventListRequestBuilders.getAllByEventTypes(types, limit), sub).await().expectOne.getEventsList
+      }
+    }
+  }
+
   override def getRecentEvents(types: java.util.List[String], limit: Int) = {
     ops("Couldn't get recent events with types: " + types) {
       _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).await().expectOne.getEventsList
