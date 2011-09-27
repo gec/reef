@@ -16,6 +16,7 @@
 
 	<modules>
 		<module>scala-base</module>
+		<module>test-util</module>
 		<module>proto</module>
 		<module>scala-api</module>
 		<module>api-request</module>

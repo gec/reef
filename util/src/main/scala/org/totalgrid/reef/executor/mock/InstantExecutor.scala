@@ -26,7 +26,7 @@ import parallel.Future
 /**
  * Mock reactor for use in testing that runs all commands instantly, no delays, no repetition,
  * all on the calling thread. A check is done to ensure that an infinite loop is not entered. This
- * class is not appropriate for testing class with with complex timing requirements
+ * class is not appropriate for testing classes with complex timing requirements
  */
 
 class InstantExecutor extends Executor with Lifecycle {

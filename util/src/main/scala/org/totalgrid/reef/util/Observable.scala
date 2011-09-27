@@ -19,7 +19,7 @@
 package org.totalgrid.reef.util
 
 /**
- *    Generic trait for implementing observer pattern
+ * Generic trait for implementing observer pattern
  */
 trait Observable {
 

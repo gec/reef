@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>org.totalgrid.reef</groupId>
 		<artifactId>reef-scala-base</artifactId>
@@ -9,8 +8,8 @@
 		<relativePath>../scala-base</relativePath>
 	</parent>
 
-	<artifactId>reef-util</artifactId>
-	<packaging>bundle</packaging>
+	<artifactId>reef-test-util</artifactId>
+	<packaging>jar</packaging>
 
 	<licenses>
 		<license>
@@ -23,23 +22,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>${mavenBundleVersion}</version>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-Name>Reef Utility Library</Bundle-Name>
-						<Export-Package>org.totalgrid.reef.executor.*, org.totalgrid.reef.util.*,
-							org.totalgrid.reef.osgi.*, org.totalgrid.reef.promise.*
-						</Export-Package>
-						<Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
-						<_nouses>true</_nouses>
-					</instructions>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>com.mycila.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
 				<configuration>
@@ -51,9 +33,36 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>se.scalablesolutions.akka</groupId>
-			<artifactId>akka-actor</artifactId>
-			<version>1.1.1</version>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_2.9.0</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.scala-tools.testing</groupId>
+			<artifactId>specs_2.9.1</artifactId>
+			<version>1.6.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.8.5</version>
+		</dependency>
+
+		<!-- logging implementation for test -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>0.9.27</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>0.9.27</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
