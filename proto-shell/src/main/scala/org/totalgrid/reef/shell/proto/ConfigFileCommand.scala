@@ -19,9 +19,12 @@
 package org.totalgrid.reef.shell.proto
 
 import presentation.ConfigFileView
-import org.apache.felix.gogo.commands.{ Argument, Command }
-
+import org.apache.felix.gogo.commands.{ Option => GogoOption, Argument, Command }
 import scala.collection.JavaConversions._
+import java.io.File
+
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.util.IOHelpers
 
 @Command(scope = "configfile", name = "list", description = "Prints all config files")
 class ConfigFileListCommand extends ReefCommandSupport {
@@ -41,5 +44,62 @@ class ConfigFileViewCommand extends ReefCommandSupport {
   def doCommand() = {
     val entry = services.getConfigFileByName(configFileName)
     ConfigFileView.printInspect(entry)
+  }
+}
+
+@Command(scope = "configfile", name = "download", description = "Download a config file")
+class ConfigFileDownloadCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Config file name", required = true, multiValued = false)
+  private var configFileName: String = null
+
+  @Argument(index = 1, name = "outputFile", description = "File to create, defaults to configFileName", required = false, multiValued = false)
+  private var outputFile: String = null
+
+  def doCommand() = {
+    val entry = services.getConfigFileByName(configFileName)
+    val dataFile = new File(Option(outputFile).getOrElse(configFileName))
+    IOHelpers.writeBinary(dataFile, entry.getFile.toByteArray)
+  }
+}
+
+@Command(scope = "configfile", name = "upload", description = "Upload a config file")
+class ConfigFileUploadCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Config file name", required = true, multiValued = false)
+  private var configFileName: String = null
+
+  @Argument(index = 1, name = "inputFile", description = "File name to load data from, defaults to configFileName", required = false, multiValued = false)
+  private var inputFile: String = null
+
+  @Argument(index = 2, name = "mimeType", description = "Mime Type of file, not necessary if overwriting config file", required = false, multiValued = false)
+  private var mimeType: String = null
+
+  @GogoOption(name = "-e", description = "Entity to attach configFile to.", required = false, multiValued = false)
+  var entity: String = null
+
+  def doCommand() = {
+    val currentFile = try {
+      // TODO: add findConfigFileByName
+      Some(services.getConfigFileByName(configFileName))
+    } catch {
+      case ex: BadRequestException => None
+    }
+
+    val dataFile = new File(Option(inputFile).getOrElse(configFileName))
+    val data = IOHelpers.readBinary(dataFile)
+
+    currentFile match {
+      case Some(cf) =>
+        services.updateConfigFile(cf, data)
+      case None =>
+        if (mimeType == null) throw new Exception("Must specify mimeType when uploading new config file")
+
+        // TODO: add a createConfigFile with list for entities
+        Option(entity).map { services.getEntityByName(_).getUuid } match {
+          case Some(entUuid) => services.createConfigFile(configFileName, mimeType, data, entUuid)
+          case None => services.createConfigFile(configFileName, mimeType, data)
+        }
+    }
   }
 }

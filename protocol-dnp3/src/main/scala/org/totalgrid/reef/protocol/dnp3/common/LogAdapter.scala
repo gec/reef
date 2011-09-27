@@ -16,9 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.common
 
 import org.totalgrid.reef.util.{ SafeExecution, Logging, LoggerFactory }
+import org.totalgrid.reef.protocol.dnp3._
 
 /**
  * Shim layer to push log messages from the c++ dnp3 world
