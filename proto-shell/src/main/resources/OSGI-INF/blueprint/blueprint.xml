@@ -162,6 +162,12 @@
         <command name="configfile/view">
             <action class="org.totalgrid.reef.shell.proto.ConfigFileViewCommand"/>
         </command>
+        <command name="configfile/download">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileDownloadCommand"/>
+        </command>
+        <command name="configfile/upload">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileUploadCommand"/>
+        </command>
         <command name="agent/password">
             <action class="org.totalgrid.reef.shell.proto.AgentSetPasswordCommand"/>
         </command>

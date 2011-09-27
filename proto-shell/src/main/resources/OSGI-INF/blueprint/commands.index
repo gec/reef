@@ -46,6 +46,8 @@ org.totalgrid.reef.shell.proto.EndpointDisableCommand
 org.totalgrid.reef.shell.proto.ApplicationListCommand
 org.totalgrid.reef.shell.proto.ConfigFileListCommand
 org.totalgrid.reef.shell.proto.ConfigFileViewCommand
+org.totalgrid.reef.shell.proto.ConfigFileDownloadCommand
+org.totalgrid.reef.shell.proto.ConfigFileUploadCommand
 org.totalgrid.reef.shell.proto.AgentSetPasswordCommand
 org.totalgrid.reef.shell.proto.AgentListCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsListCommand
