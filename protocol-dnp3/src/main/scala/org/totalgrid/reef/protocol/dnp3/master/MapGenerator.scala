@@ -16,26 +16,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.master
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
-import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
+import scala.collection.immutable
+import scala.collection.JavaConversions._
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.proto.Mapping
 
-class Activator extends BundleActivator {
+object MapGenerator {
 
-  // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
-  System.loadLibrary("dnp3java")
-  System.setProperty("reef.protocol.dnp3.nostaticload", "")
-  val protocol = new Dnp3Protocol with AddRemoveValidation
-
-  override def start(context: BundleContext) {
-    context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+  /// Turns a proto type into a map that can be used to lookup names
+  def getMeasMap(mapping: Mapping.IndexMapping) = {
+    val map = immutable.Map.empty[Tuple2[Long, Int], Mapping.MeasMap]
+    mapping.getMeasmapList().foldLeft(map) { (x, y) =>
+      x + (((y.getIndex().toLong, y.getType().getNumber())) -> y)
+    }
   }
 
-  override def stop(context: BundleContext) {
-    protocol.Shutdown()
+  def getCommandMap(mapping: Mapping.IndexMapping) = {
+    val map = immutable.Map.empty[String, Mapping.CommandMap]
+    mapping.getCommandmapList().foldLeft(map) { (x, y) =>
+      x + (y.getCommandName() -> y)
+    }
   }
 
 }

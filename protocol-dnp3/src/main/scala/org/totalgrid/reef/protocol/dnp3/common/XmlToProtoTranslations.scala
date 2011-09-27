@@ -16,10 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.common
 
 import org.totalgrid.reef.proto.FEP
 import org.totalgrid.reef.protocol.dnp3.xml.{ LogLevel, Log }
+import org.totalgrid.reef.protocol.dnp3._
 
 /**
  * Converts common dnp3 xml settings to their proto or dnp3 equivilants

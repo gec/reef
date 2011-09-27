@@ -16,9 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.master
 
 import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
+import org.totalgrid.reef.protocol.dnp3._
 
 object DNPTranslator {
 

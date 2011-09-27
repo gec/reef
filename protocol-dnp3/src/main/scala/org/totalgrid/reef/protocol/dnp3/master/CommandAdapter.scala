@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.master
 
 import scala.collection.mutable
 
@@ -25,6 +25,7 @@ import org.totalgrid.reef.util.{ SafeExecution, Logging }
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
 import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.protocol.dnp3._
 
 /**
  * Command adapter acts as a command response acceptor, forwarding translated responses to an actor

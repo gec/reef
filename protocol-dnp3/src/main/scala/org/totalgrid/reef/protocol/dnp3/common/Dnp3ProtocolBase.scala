@@ -16,40 +16,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.common
+
+import scala.collection.JavaConversions._
+
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 
 import org.totalgrid.reef.protocol.api._
+import org.totalgrid.reef.protocol.dnp3._
 
-import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
-
-import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
-import org.totalgrid.reef.protocol.dnp3.xml.Master
-
-import scala.collection.immutable
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
-
-class Dnp3Protocol extends Protocol with Logging {
+abstract class Dnp3ProtocolBase[ObjectContainer] extends Protocol with Logging {
 
   import Protocol._
   import XmlToProtoTranslations._
 
-  final override def name = "dnp3"
   final override def requiresChannel = true
-
-  case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver, batchPublisher: Publisher[MeasurementBatch], commandAdapter: CommandAdapter)
 
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.
-  private var map = immutable.Map.empty[String, MasterObjectsContainer]
+  protected var map = Map.empty[String, ObjectContainer]
 
-  private var physMonitorMap = immutable.Map.empty[String, IPhysicalLayerObserver]
+  private var physMonitorMap = Map.empty[String, IPhysicalLayerObserver]
 
   // TODO: fix Protocol trait to send nonop data on same channel as meas data
-  private val log = new LogAdapter
-  private val dnp3 = new StackManager
+  protected val log = new LogAdapter
+  protected val dnp3 = new StackManager
   dnp3.AddLogHook(log)
 
   final def Shutdown() = dnp3.Shutdown()
@@ -81,29 +74,6 @@ class Dnp3Protocol extends Protocol with Logging {
     dnp3.RemovePort(channel)
     physMonitorMap -= channel
     logger.info("Removed channel with name: " + channel)
-  }
-
-  override def addEndpoint(endpointName: String,
-    channelName: String,
-    files: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
-
-    logger.info("Adding device with uid: " + endpointName + " onto channel " + channelName)
-
-    val (masterConfig, filterLevel) = MasterXmlConfig.getMasterConfig(files)
-
-    val stackObserver = createStackObserver(endpointPublisher)
-    masterConfig.getMaster.setMpObserver(stackObserver)
-
-    val mapping = getMappingProto(files)
-    val dataObserver = new MeasAdapter(mapping, batchPublisher.publish)
-
-    val cmdAcceptor = dnp3.AddMaster(channelName, endpointName, filterLevel, dataObserver, masterConfig)
-
-    val commandAdapter = new CommandAdapter(mapping, cmdAcceptor)
-    map += endpointName -> MasterObjectsContainer(dataObserver, stackObserver, batchPublisher, commandAdapter)
-    commandAdapter
   }
 
   override def removeEndpoint(endpointName: String) = {

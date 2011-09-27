@@ -24,6 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.totalgrid.reef.protocol.dnp3.common.LogAdapter
 
 @RunWith(classOf[JUnitRunner])
 class DNP3BindingTest extends FunSuite with ShouldMatchers {

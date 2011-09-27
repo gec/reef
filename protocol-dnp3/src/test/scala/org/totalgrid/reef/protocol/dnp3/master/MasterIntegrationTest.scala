@@ -16,9 +16,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.protocol.dnp3.master
 
-import mock.InstantCommandResponder
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -34,9 +33,11 @@ import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
+import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
 
 @RunWith(classOf[JUnitRunner])
-class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
+class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
 
   val slave = new StackManager
   val commandAcceptor = new InstantCommandResponder(CommandStatus.CS_SUCCESS)
@@ -65,7 +66,7 @@ class IntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAl
 
     val configFiles = makeMappingFile(10, 10, 10, 10, 10, 10, 10) :: makeConfigFile() :: Nil
 
-    val protocol = new Dnp3Protocol
+    val protocol = new Dnp3MasterProtocol
     val listeners = (portStart to portEnd).map { port =>
       val channelName = "port" + port
 
