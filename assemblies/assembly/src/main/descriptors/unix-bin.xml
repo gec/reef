@@ -38,6 +38,9 @@
 			<directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
 			<outputDirectory>.</outputDirectory>
 			<excludes>
+                <exclude>etc/jre.properties</exclude>
+                <exclude>etc/startup.properties</exclude>
+                <exclude>etc/users.properties</exclude>
 				<exclude>etc/custom.properties</exclude>
 				<exclude>etc/org.apache.karaf.features.cfg</exclude>
 				<exclude>etc/org.ops4j.pax.logging.cfg</exclude>
@@ -66,7 +69,7 @@
 
 		<fileSet>
 			<directory>target/reef-repo</directory>
-			<outputDirectory>${reef.default.repository}</outputDirectory>
+			<outputDirectory>system</outputDirectory>
 		</fileSet>
 		<fileSet>
 			<directory>target/system-repo</directory>
@@ -123,7 +126,7 @@
 	<files>
 		<file>
 			<source>${basedir}/target/classes/reef-feature.xml</source>
-			<outputDirectory>/${reef.default.repository}/org/totalgrid/reef/reef-assembly/${reef.version}/</outputDirectory>
+			<outputDirectory>/system/org/totalgrid/reef/reef-assembly/${reef.version}/</outputDirectory>
 			<destName>reef-assembly-${reef.version}-features.xml</destName>
 			<fileMode>0644</fileMode>
 			<lineEnding>unix</lineEnding>

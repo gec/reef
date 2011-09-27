@@ -34,16 +34,18 @@
             <directory>target/dependencies/win/apache-karaf-${karaf.version}</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
-             <exclude>etc/custom.properties</exclude>
-             <exclude>etc/org.apache.karaf.features.cfg</exclude>
-             <exclude>etc/org.ops4j.pax.logging.cfg</exclude>
-             <exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
+                <exclude>etc/jre.properties</exclude>
+                <exclude>etc/startup.properties</exclude>
+                <exclude>etc/custom.properties</exclude>
+                <exclude>etc/org.apache.karaf.features.cfg</exclude>
+                <exclude>etc/org.ops4j.pax.logging.cfg</exclude>
+                <exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
             </excludes>
         </fileSet>
 
         <fileSet>
             <directory>target/reef-cli-repo</directory>
-            <outputDirectory>${reef.default.repository}</outputDirectory>
+            <outputDirectory>system</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/system-repo</directory>
@@ -91,7 +93,7 @@
     <files>
         <file>
             <source>${basedir}/target/classes/reef-feature.xml</source>
-            <outputDirectory>/${reef.default.repository}/org/totalgrid/reef/reef-assembly/${reef.version}/</outputDirectory>
+            <outputDirectory>/system/org/totalgrid/reef/reef-assembly/${reef.version}/</outputDirectory>
             <destName>reef-assembly-${reef.version}-features.xml</destName>
             <fileMode>0755</fileMode>
             <lineEnding>dos</lineEnding>
