@@ -47,7 +47,7 @@ object MasterXmlConfig {
     config
   }
 
-  private def configure(xml: LinkLayer): LinkConfig = {
+  def configure(xml: LinkLayer): LinkConfig = {
     val cfg = new LinkConfig(xml.isIsMaster, xml.isUseConfirmations)
     cfg.setNumRetry(xml.getNumRetries)
     cfg.setRemoteAddr(xml.getRemoteAddress)
@@ -56,7 +56,7 @@ object MasterXmlConfig {
     cfg
   }
 
-  private def configure(xml: AppLayer): AppConfig = {
+  def configure(xml: AppLayer): AppConfig = {
     val cfg = new AppConfig
     cfg.setFragSize(xml.getMaxFragSize)
     cfg.setRspTimeout(xml.getTimeoutMS)

@@ -88,7 +88,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
         endpointListener.lastValue.waitUntil(FEP.CommEndpointConnection.State.COMMS_UP)
         measListener.lastValue.waitFor(m => m.getMeasCount > 0)
 
-        issueAndWaitForCommandResponse(commandAdapter, makeControl("control0", "00"))
+        issueAndWaitForCommandResponse(commandAdapter, makeControl("control1", "00"))
     }
 
     (portStart to portEnd).map { port =>
@@ -137,27 +137,9 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
   }
 
   private def makeMappingFile(numBinary: Int, numAnalog: Int, numCounter: Int, numControlStatus: Int, numSetpointStatus: Int, numControl: Int, numSetpoint: Int) = {
-    import org.totalgrid.reef.proto.Mapping._
 
-    val index = IndexMapping.newBuilder
-
-    def add(i: Int, n: String, t: DataType) {
-      index.addMeasmap(MeasMap.newBuilder.setIndex(i).setPointName(n + i).setType(t).setUnit("raw"))
-    }
-    def addC(i: Int, n: String, t: CommandType) {
-      index.addCommandmap(CommandMap.newBuilder.setCommandName(n + i).setType(t).setIndex(i))
-    }
-
-    (0 to numBinary).foreach(i => add(i, "binary", DataType.BINARY))
-    (0 to numAnalog).foreach(i => add(i, "analog", DataType.ANALOG))
-    (0 to numCounter).foreach(i => add(i, "counter", DataType.COUNTER))
-    (0 to numControlStatus).foreach(i => add(i, "contolStatus", DataType.CONTROL_STATUS))
-    (0 to numSetpointStatus).foreach(i => add(i, "setpointStatus", DataType.SETPOINT_STATUS))
-
-    (0 to numControl).foreach(i => addC(i, "control", CommandType.LATCH_ON))
-    (0 to numSetpoint).foreach(i => addC(i, "setpoint", CommandType.SETPOINT))
-
-    val indexProto = index.build
+    val indexProto = DNPTestHelpers.makeMappingProto(numBinary, numAnalog, numCounter,
+      numControlStatus, numSetpointStatus, numControl, numSetpoint)
 
     Model.ConfigFile.newBuilder().setName("mapping.pi")
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping")
