@@ -26,14 +26,14 @@ import org.totalgrid.test.MockitoFunSuite
 class AtomicReferenceTest extends MockitoFunSuite {
 
   test("atomicRefWithNone") {
-    val ref: AtomicReference[Object] = new AtomicReference[Object](None)
-    ref.getOption().isEmpty should equal(true)
+    val ref = new AtomicReference[Object](None)
+    ref.getOption.isEmpty should equal(true)
   }
 
   test("atomicRefWithSome") {
-    val value: Object = new Object()
-    val ref: AtomicReference[Object] = new AtomicReference[Object](Some(value))
-    val valueOption: Option[Object] = ref.getOption()
+    val value = new Object
+    val ref = new AtomicReference(Some(value))
+    val valueOption = ref.getOption
     valueOption.isDefined should equal(true)
     valueOption.get should equal(value)
   }
