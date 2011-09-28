@@ -20,6 +20,7 @@ package org.totalgrid.reef.protocol.dnp3.master
 
 import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
 import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 
 object DNPTranslator {
 
@@ -69,26 +70,41 @@ object DNPTranslator {
 
   def translate(rsp: CommandResponse, id: String) = {
     val status = rsp.getMResult match {
-      case CommandStatus.CS_SUCCESS => Commands.CommandStatus.SUCCESS
-      case CommandStatus.CS_TIMEOUT => Commands.CommandStatus.TIMEOUT
-      case CommandStatus.CS_NO_SELECT => Commands.CommandStatus.NO_SELECT
-      case CommandStatus.CS_FORMAT_ERROR => Commands.CommandStatus.FORMAT_ERROR
-      case CommandStatus.CS_NOT_SUPPORTED => Commands.CommandStatus.NOT_SUPPORTED
-      case CommandStatus.CS_ALREADY_ACTIVE => Commands.CommandStatus.ALREADY_ACTIVE
-      case CommandStatus.CS_HARDWARE_ERROR => Commands.CommandStatus.HARDWARE_ERROR
-      case CommandStatus.CS_LOCAL => Commands.CommandStatus.LOCAL
-      case CommandStatus.CS_TOO_MANY_OPS => Commands.CommandStatus.TOO_MANY_OPS
-      case CommandStatus.CS_NOT_AUTHORIZED => Commands.CommandStatus.NOT_AUTHORIZED
-      case _ => Commands.CommandStatus.UNDEFINED
+      case CommandStatus.CS_SUCCESS => ProtoCommandStatus.SUCCESS
+      case CommandStatus.CS_TIMEOUT => ProtoCommandStatus.TIMEOUT
+      case CommandStatus.CS_NO_SELECT => ProtoCommandStatus.NO_SELECT
+      case CommandStatus.CS_FORMAT_ERROR => ProtoCommandStatus.FORMAT_ERROR
+      case CommandStatus.CS_NOT_SUPPORTED => ProtoCommandStatus.NOT_SUPPORTED
+      case CommandStatus.CS_ALREADY_ACTIVE => ProtoCommandStatus.ALREADY_ACTIVE
+      case CommandStatus.CS_HARDWARE_ERROR => ProtoCommandStatus.HARDWARE_ERROR
+      case CommandStatus.CS_LOCAL => ProtoCommandStatus.LOCAL
+      case CommandStatus.CS_TOO_MANY_OPS => ProtoCommandStatus.TOO_MANY_OPS
+      case CommandStatus.CS_NOT_AUTHORIZED => ProtoCommandStatus.NOT_AUTHORIZED
+      case _ => ProtoCommandStatus.UNDEFINED
     }
     Commands.CommandResponse.newBuilder.setStatus(status).setCorrelationId(id).build
+  }
+  def translateCommandStatus(rsp: ProtoCommandStatus): CommandStatus = {
+    rsp match {
+      case ProtoCommandStatus.SUCCESS => CommandStatus.CS_SUCCESS
+      case ProtoCommandStatus.TIMEOUT => CommandStatus.CS_TIMEOUT
+      case ProtoCommandStatus.NO_SELECT => CommandStatus.CS_NO_SELECT
+      case ProtoCommandStatus.FORMAT_ERROR => CommandStatus.CS_FORMAT_ERROR
+      case ProtoCommandStatus.NOT_SUPPORTED => CommandStatus.CS_NOT_SUPPORTED
+      case ProtoCommandStatus.ALREADY_ACTIVE => CommandStatus.CS_ALREADY_ACTIVE
+      case ProtoCommandStatus.HARDWARE_ERROR => CommandStatus.CS_HARDWARE_ERROR
+      case ProtoCommandStatus.LOCAL => CommandStatus.CS_LOCAL
+      case ProtoCommandStatus.TOO_MANY_OPS => CommandStatus.CS_TOO_MANY_OPS
+      case ProtoCommandStatus.NOT_AUTHORIZED => CommandStatus.CS_NOT_AUTHORIZED
+      case _ => CommandStatus.CS_UNDEFINED
+    }
   }
 
   /* Translation functions from bus CommandRequests to DNP3 types */
 
   def translateBinaryOutput(c: Mapping.CommandMap) = {
     // TODO - Make the mapping types shorts
-    new BinaryOutput(translate(c.getType), c.getCount.toShort, c.getOnTime, c.getOffTime)
+    new BinaryOutput(translateCommandType(c.getType), c.getCount.toShort, c.getOnTime, c.getOffTime)
   }
 
   def translateSetpoint(c: Commands.CommandRequest) = c.getType match {
@@ -99,7 +115,7 @@ object DNPTranslator {
 
   /* private helper functions */
 
-  private def translate(c: Mapping.CommandType) = c match {
+  def translateCommandType(c: Mapping.CommandType) = c match {
     case Mapping.CommandType.LATCH_ON => ControlCode.CC_LATCH_ON
     case Mapping.CommandType.LATCH_OFF => ControlCode.CC_LATCH_OFF
     case Mapping.CommandType.PULSE => ControlCode.CC_PULSE

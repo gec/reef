@@ -77,21 +77,17 @@ abstract class Dnp3ProtocolBase[ObjectContainer] extends Protocol with Logging {
   }
 
   override def removeEndpoint(endpointName: String) = {
-
     logger.debug("Not removing stack " + endpointName + " as per workaround")
-    /* BUG in the DNP3 bindings causes removing endpoints to deadlock until integrity poll
-    times out.
-    stack will get removed when port is removed
-     */
-
-    /*info { "removing stack with name: " + endpointName }
-    try {
-      dnp3.RemoveStack(endpointName)
-      map -= endpoint
-    } catch {
-      case x => println("From remove stack: " + x)
-    }
-    info { "removed stack with name: " + endpointName }*/
+    // TODO: re-enable endpoint removal once we have good integration tests
+    //    logger.info { "removing stack with name: " + endpointName }
+    //    try {
+    //      dnp3.RemoveStack(endpointName)
+    //      map -= endpointName
+    //    } catch {
+    //      case x: Exception =>
+    //        logger.error("Failed removing stack: " + x.getMessage, x)
+    //    }
+    //    logger.info { "removed stack with name: " + endpointName }
   }
 
   protected def getMappingProto(files: List[Model.ConfigFile]) = {

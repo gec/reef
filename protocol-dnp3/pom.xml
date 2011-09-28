@@ -111,6 +111,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-api-request</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.totalgrid.reef.protocol.dnp3</groupId>
             <artifactId>dnp3java</artifactId>
             <version>1.0.0-RC1</version>
