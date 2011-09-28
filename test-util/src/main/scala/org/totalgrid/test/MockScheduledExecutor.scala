@@ -21,6 +21,9 @@ package org.totalgrid.reef.test
 import java.util.concurrent.{ Delayed, ScheduledFuture, Callable, TimeUnit, ScheduledExecutorService }
 import java.util.{ ArrayList, List => JavaList, Collection }
 
+
+// TODO - remove this class in favor of the robust org.jmock.lib.concurrent.DeterministicScheduler)
+@deprecated("Use org.jmock.lib.concurrent.DeterministicScheduler instead")
 class MockScheduledExecutor extends ScheduledExecutorService {
   private var shutdownFlag: Boolean = false;
   private var terminatedFlag: Boolean = false;
@@ -79,6 +82,7 @@ class MockScheduledExecutor extends ScheduledExecutorService {
 
 }
 
+@deprecated("Use org.jmock.lib.concurrent.DeterministicScheduler instead")
 class MockScheduledFuture(delay: Long) extends ScheduledFuture[Object] {
   def cancel(mayInterruptIfRunning: Boolean) = false
 

@@ -41,6 +41,4 @@ import org.scalatest.matchers.ShouldMatchers
 import org.specs.mock.Mockito
 import org.specs.specification.DefaultExampleExpectationsListener
 
-trait MockitoFunSuite extends FunSuite with ShouldMatchers with Mockito with DefaultExampleExpectationsListener {
-
-}
+trait MockitoFunSuite extends FunSuite with ShouldMatchers with Mockito with DefaultExampleExpectationsListener

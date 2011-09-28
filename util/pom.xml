@@ -30,9 +30,7 @@
 				<configuration>
 					<instructions>
 						<Bundle-Name>Reef Utility Library</Bundle-Name>
-						<Export-Package>org.totalgrid.reef.executor.*, org.totalgrid.reef.util.*,
-							org.totalgrid.reef.osgi.*, org.totalgrid.reef.promise.*
-						</Export-Package>
+						<Export-Package>org.totalgrid.reef.executor.*, org.totalgrid.reef.util.*, org.totalgrid.reef.promise.*</Export-Package>
 						<Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
 						<_nouses>true</_nouses>
 					</instructions>
@@ -50,12 +48,6 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>se.scalablesolutions.akka</groupId>
-			<artifactId>akka-actor</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.totalgrid.reef</groupId>
 			<artifactId>reef-test-util</artifactId>

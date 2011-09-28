@@ -21,11 +21,11 @@ package org.totalgrid.reef.messaging.synchronous
 
 import org.totalgrid.reef.japi.client.ConnectionListener
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.executor.{ AkkaExecutor, Executor, Lifecycle }
 import org.totalgrid.reef.util.{ Timer, Logging }
+import org.totalgrid.reef.executor.{ ReactActorExecutor, Executor, Lifecycle }
 
 class BasicBrokerConnectionManager(broker: BrokerConnection, initialDelay: Long, maxDelay: Long)
-    extends BrokerConnectionManager(broker, new AkkaExecutor, initialDelay, maxDelay) {
+    extends BrokerConnectionManager(broker, new ReactActorExecutor {}, initialDelay, maxDelay) {
 
 }
 

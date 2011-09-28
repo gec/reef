@@ -18,15 +18,19 @@
  */
 package org.totalgrid.reef.util.concurrent
 
-class AtomicReference[T](value: Option[T]) extends java.util.concurrent.atomic.AtomicReference[T](value.getOrElse(null.asInstanceOf[T])) {
-  def getOption(): Option[T] = Option(get())
+import java.util.concurrent.atomic.{ AtomicReference => JavaAtomicReference }
 
-  def set(value: Option[T]) {
-    set(value.getOrElse(null.asInstanceOf[T]))
-  }
+object AtomicReference {
+  def orNull[A](value: Option[A]): A = value.getOrElse(null.asInstanceOf[A])
+}
 
-  def compareAndSet(expect: Option[T], update: Option[T]): Boolean =
-    {
-      compareAndSet(expect.getOrElse(null.asInstanceOf[T]), update.getOrElse(null.asInstanceOf[T]))
-    }
+import AtomicReference.orNull
+
+class AtomicReference[A](value: Option[A]) extends JavaAtomicReference[A](orNull(value)) {
+
+  def getOption: Option[A] = Option(get)
+
+  def set(value: Option[A]): Unit = set(orNull(value))
+
+  def compareAndSet(expect: Option[A], update: Option[A]): Boolean = compareAndSet(orNull(expect), orNull(update))
 }
