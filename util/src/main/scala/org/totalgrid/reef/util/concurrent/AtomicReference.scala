@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.util.concurrent
 
-import java.util.concurrent.atomic.{AtomicReference => JavaAtomicReference}
+import java.util.concurrent.atomic.{ AtomicReference => JavaAtomicReference }
 
 object AtomicReference {
   def orNull[A](value: Option[A]): A = value.getOrElse(null.asInstanceOf[A])
