@@ -70,7 +70,7 @@ trait MockExecutorTrait extends Executor {
     val actionOption = queue.dequeueFirst(x.isDefinedAt(_))
 
     if (actionOption.isEmpty)
-      throw new Exception("Expected the execution queue to have a " + expected +" , but it was empty")
+      throw new Exception("Expected the execution queue to have a " + expected + " , but it was empty")
     val action = actionOption.get
 
     action.perform()

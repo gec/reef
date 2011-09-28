@@ -33,7 +33,7 @@ class DataObserverPublisherTest extends FunSuite with ShouldMatchers with Before
   import DNPTestHelpers._
 
   // ignored until we can fix the c++ memory weirdness
-  ignore("Translates measurements") {
+  test("Translates measurements") {
     val map = makeMappingProto(2, 2, 2, 2, 2, 0, 0)
 
     val mock = new MockDataObserver
@@ -59,7 +59,7 @@ class DataObserverPublisherTest extends FunSuite with ShouldMatchers with Before
 
     mock.controlStatus.head._2 should equal(1)
     mock.controlStatus.head._1.GetValue() should equal(true)
-    mock.controlStatus.head._1.GetQuality() should equal(goodQuality)
+    mock.controlStatus.head._1.GetQuality() should equal(goodQuality + 128) // the value is in the quality field (highest bit)
 
     mock.setpointStatus.head._2 should equal(0)
     mock.setpointStatus.head._1.GetValue() should equal(75)
