@@ -61,20 +61,21 @@ trait MockExecutorTrait extends Executor {
 
   private def performNext[A](preSize: Option[Int], postSize: Option[Int], expected: String)(x: PartialFunction[Action, A]): A = {
 
-    if (queue.isEmpty) throw new Exception("Expected the execution queue to have an action, but it was empty")
-
     def checkSize(size: Int, prefix: String) = if (queue.size != size) {
       throw new Exception(prefix + ": expected queue of size " + size + " but it was " + queue.size)
     }
 
-    val action = queue.front
-    if (x.isDefinedAt(action)) {
-      preSize.foreach(checkSize(_, "Precondition"))
-      queue.dequeue()
-      action.perform()
-      postSize.foreach(checkSize(_, "Postcondition"))
-      x.apply(action)
-    } else throw new Exception("Expected type " + expected + " but front of queue was " + action.getClass)
+    preSize.foreach(checkSize(_, "Precondition"))
+
+    val actionOption = queue.dequeueFirst(x.isDefinedAt(_))
+
+    if (actionOption.isEmpty)
+      throw new Exception("Expected the execution queue to have a " + expected +" , but it was empty")
+    val action = actionOption.get
+
+    action.perform()
+    postSize.foreach(checkSize(_, "Postcondition"))
+    x.apply(action)
   }
 
   private case class Repeat(fun: () => Unit, ms: Long) extends TimerAction {
