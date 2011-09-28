@@ -30,7 +30,8 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
 import org.totalgrid.reef.executor.Executor
 
-class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe : Executor) extends ICommandAcceptor with Logging {
+class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Executor)
+    extends ICommandAcceptor with Logging {
 
   private case class Index(isSetpoint: Boolean, index: Long) {
     override def toString() = (if (isSetpoint) "setpoint" else "control") + " index: " + index
@@ -92,7 +93,7 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe : Ex
   }
 
   private def handleCommand(index: Index, seq: Int, accept: IResponseAcceptor)(executeCommand: (Command, CommandMap) => ProtoCommandStatus) = {
-    exe.execute{
+    exe.execute {
       val commandStatus = commandMap.get(index) match {
         case None =>
           logger.warn("Got unknown command request: " + index)

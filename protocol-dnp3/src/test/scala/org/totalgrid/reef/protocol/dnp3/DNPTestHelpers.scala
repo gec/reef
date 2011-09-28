@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.protocol.dnp3
 
+import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+
 object DNPTestHelpers {
   def makeMappingProto(numBinary: Int, numAnalog: Int, numCounter: Int, numControlStatus: Int, numSetpointStatus: Int, numControl: Int, numSetpoint: Int) = {
     import org.totalgrid.reef.proto.Mapping._
@@ -31,16 +33,28 @@ object DNPTestHelpers {
       index.addCommandmap(CommandMap.newBuilder.setCommandName(n + i).setType(t).setIndex(i))
     }
 
-    (1 to numBinary).foreach(i => add(i, "binary", DataType.BINARY))
-    (1 to numAnalog).foreach(i => add(i, "analog", DataType.ANALOG))
-    (1 to numCounter).foreach(i => add(i, "counter", DataType.COUNTER))
-    (1 to numControlStatus).foreach(i => add(i, "contolStatus", DataType.CONTROL_STATUS))
-    (1 to numSetpointStatus).foreach(i => add(i, "setpointStatus", DataType.SETPOINT_STATUS))
+    (0 until numBinary).foreach(i => add(i, "binary", DataType.BINARY))
+    (0 until numAnalog).foreach(i => add(i, "analog", DataType.ANALOG))
+    (0 until numCounter).foreach(i => add(i, "counter", DataType.COUNTER))
+    (0 until numControlStatus).foreach(i => add(i, "controlStatus", DataType.CONTROL_STATUS))
+    (0 until numSetpointStatus).foreach(i => add(i, "setpointStatus", DataType.SETPOINT_STATUS))
 
-    (1 to numControl).foreach(i => addC(i, "control", CommandType.LATCH_ON))
-    (1 to numSetpoint).foreach(i => addC(i, "setpoint", CommandType.SETPOINT))
+    (0 until numControl).foreach(i => addC(i, "control", CommandType.LATCH_ON))
+    (0 until numSetpoint).foreach(i => addC(i, "setpoint", CommandType.SETPOINT))
 
     index.build
   }
 
+  def makeAnalogMeas(name: String, value: Double, time: Long = 9999) = {
+    Measurement.newBuilder.setName(name).setDoubleVal(value).setTime(time)
+      .setType(Measurement.Type.DOUBLE).setQuality(Quality.newBuilder).build
+  }
+  def makeAnalogIntMeas(name: String, value: Int, time: Long = 9999) = {
+    Measurement.newBuilder.setName(name).setIntVal(value).setTime(time)
+      .setType(Measurement.Type.INT).setQuality(Quality.newBuilder).build
+  }
+  def makeBinaryMeas(name: String, value: Boolean, time: Long = 9999) = {
+    Measurement.newBuilder.setName(name).setBoolVal(value).setTime(time)
+      .setType(Measurement.Type.BOOL).setQuality(Quality.newBuilder).build
+  }
 }
