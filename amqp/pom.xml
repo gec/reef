@@ -46,6 +46,23 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>net.agile-automata.executor4s</groupId>
+            <artifactId>executor4s_2.9.0-1</artifactId>
+            <version>0.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock</artifactId>
+            <version>2.5.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.agile-automata.nio4s</groupId>
+            <artifactId>commons_2.9.0-1</artifactId>
+            <version>0.1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto</artifactId>
             <version>0.3.1-SNAPSHOT</version>
@@ -60,6 +77,12 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-broker</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-memory-broker</artifactId>
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
