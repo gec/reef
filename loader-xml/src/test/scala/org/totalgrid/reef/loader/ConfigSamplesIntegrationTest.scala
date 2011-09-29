@@ -33,27 +33,29 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   val samplesPath = BuildEnv.configPath + "assemblies/assembly-common/filtered-resources/samples/"
   def createClient: MockSyncOperations = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
 
-  test("samples/integration") {
+  private def loadFile(fileName: String, numExpected: Int) = {
     val client = createClient
-    LoadManager.loadFile(client, samplesPath + "integration/config.xml", false, false, false, true) should equal(true)
-    client.getPutQueue.size should equal(72)
+    LoadManager.loadFile(client, fileName, false, false, false, true) should equal(true)
+    client.getPutQueue.size should equal(numExpected)
+  }
+
+  test("samples/integration") {
+    loadFile(samplesPath + "integration/config.xml", 72)
   }
 
   test("samples/demo") {
-    val client = createClient
-    LoadManager.loadFile(client, samplesPath + "demo/configuration.demo.xml", false, false, false, true) should equal(true)
-    client.getPutQueue.size should equal(294)
+    loadFile(samplesPath + "demo/configuration.demo.xml", 294)
   }
 
   test("samples/two_substations") {
-    val client = createClient
-    LoadManager.loadFile(client, samplesPath + "two_substations/config.xml", false, false, false, true) should equal(true)
-    client.getPutQueue.size should equal(310)
+    loadFile(samplesPath + "two_substations/config.xml", 310)
   }
 
   test("samples/mainstreet") {
-    val client = createClient
-    LoadManager.loadFile(client, samplesPath + "mainstreet/config.xml", false, false, false, true) should equal(true)
-    client.getPutQueue.size should equal(646)
+    loadFile(samplesPath + "mainstreet/config.xml", 646)
+  }
+
+  test("dnp3-sample") {
+    loadFile(BuildEnv.configPath + "protocol-dnp3/src/test/resources/sample-model.xml", 72)
   }
 }

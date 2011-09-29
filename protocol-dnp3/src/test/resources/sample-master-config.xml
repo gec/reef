@@ -27,7 +27,7 @@
   </Stack>
   <MasterSettings IntegrityPeriodMS="60000" TaskRetryMS="5000" AllowTimeSync="true"/>
   <ScanList>
-    <ExceptionScan PeriodMS="2000" Class3="true" Class2="true" Class1="true"/>
+    <!-- <ExceptionScan PeriodMS="2000" Class3="true" Class2="true" Class1="true"/> -->
   </ScanList>
-  <Unsol Class3="true" Class2="true" Class1="true" Enable="false" DoTask="false"/>
+  <Unsol Class3="true" Class2="true" Class1="true" Enable="true" DoTask="true"/>
 </Master>
