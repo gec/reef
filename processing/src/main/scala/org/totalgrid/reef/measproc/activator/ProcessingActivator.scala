@@ -22,13 +22,13 @@ import org.osgi.framework._
 
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.app.ApplicationEnroller
 import org.totalgrid.reef.measproc.FullProcessor
-import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, LifecycleWrapper }
+import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor }
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 class ProcessingActivator extends BundleActivator {

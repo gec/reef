@@ -26,7 +26,7 @@ import service.AsyncService
 
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.broker.{ ChannelObserver, CloseableChannel, MessageConsumer }
+import org.totalgrid.reef.broker.api.{ ChannelObserver, CloseableChannel, MessageConsumer }
 
 /**
  * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.

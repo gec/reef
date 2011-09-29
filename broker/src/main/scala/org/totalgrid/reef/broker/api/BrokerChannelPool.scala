@@ -1,3 +1,5 @@
+package org.totalgrid.reef.broker.api
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker
-
 trait BrokerChannelPool {
 
   protected def newChannel(): BrokerChannel
@@ -57,5 +57,9 @@ trait BrokerChannelPool {
 
   def publish(exchange: String, key: String, bytes: Array[Byte], replyTo: Option[Destination] = None) =
     execute(_.publish(exchange, key, bytes, replyTo))
+
+  def listen(queue: String, mc: MessageConsumer): Unit = {
+    execute(_.listen(queue, mc))
+  }
 
 }

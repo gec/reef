@@ -23,7 +23,7 @@ import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 import scala.{ Some, Option => ScalaOption }
 import java.lang.IllegalArgumentException
 
@@ -76,7 +76,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       try {
         conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, config.ssl)
         connection = Some(ConnectionRecord(conn, listener))
-        this.setOpen()
+        this.setState(BrokerState.Connected)
         true
       } catch {
         case ex: Exception =>
@@ -112,7 +112,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
 
   private def cleanupAfterClose(expected: Boolean) = {
     connection = None
-    this.setClosed(expected)
+    this.setState(if (expected) BrokerState.Closed else BrokerState.Disconnected)
     unlinkChannels()
   }
 

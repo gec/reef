@@ -23,9 +23,9 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.util.Conversion._
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
+import net.agileautomata.commons.testing._
 
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionTest extends FunSuite with ShouldMatchers {

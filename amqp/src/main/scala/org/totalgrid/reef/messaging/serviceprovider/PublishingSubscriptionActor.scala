@@ -19,7 +19,7 @@
 package org.totalgrid.reef.messaging.serviceprovider
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.broker.{ BrokerObjectConsumerActor, BrokerChannel }
+import org.totalgrid.reef.broker.api.{ BrokerObjectConsumerActor, BrokerChannel }
 import org.totalgrid.reef.executor.Executor
 
 class PublishingSubscriptionActor(exch: String, reactor: Executor) extends BrokerObjectConsumerActor(reactor) with PublishingSubscriptionHandler with Logging {

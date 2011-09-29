@@ -22,7 +22,7 @@ import org.totalgrid.reef.messaging._
 
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 
 class ProtoSyncRequestReply(channel: BrokerChannel)
   extends SyncRequestReply[Envelope.ServiceRequest, Envelope.ServiceResponse](

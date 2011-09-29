@@ -21,7 +21,7 @@ package org.totalgrid.reef.messaging.broker.qpid
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.totalgrid.reef.broker.BrokerConnectionInfo
+import org.totalgrid.reef.broker.api.BrokerConnectionInfo
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.sync.SyncSubscriptionHandler

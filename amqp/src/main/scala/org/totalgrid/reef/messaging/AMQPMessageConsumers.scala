@@ -25,7 +25,7 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
-import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
+import org.totalgrid.reef.broker.api.{ MessageConsumer, Destination }
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.japi.Envelope.ServiceNotification
 

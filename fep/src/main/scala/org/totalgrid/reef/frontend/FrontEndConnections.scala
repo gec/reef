@@ -27,7 +27,7 @@ import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.broker.api.CloseableChannel
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.messaging.{ OrderedServiceTransmitter, Connection }
 import org.totalgrid.reef.app.KeyedMap

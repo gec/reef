@@ -24,7 +24,7 @@ import org.totalgrid.reef.sapi.client.{ Event, SessionPool }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.Destination
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.broker.api._
 import java.lang.Exception
 
 object MockConnection {

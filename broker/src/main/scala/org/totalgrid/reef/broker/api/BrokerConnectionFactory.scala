@@ -1,3 +1,5 @@
+package org.totalgrid.reef.broker.api
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,25 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.messaging.sync
-
-import org.totalgrid.reef.sapi.client.{ Subscription, Event }
-import org.totalgrid.reef.messaging.QueuePatterns
-
-import org.totalgrid.reef.broker.api.{ MessageConsumer, BrokerChannel }
-
-/**
- * synchronous subscription object, allows canceling and a delayed starting
- */
-class SyncSubscription[A](channel: BrokerChannel, consumerCreator: (Event[A] => Unit) => MessageConsumer) extends Subscription[A] {
-
-  private val queueName = QueuePatterns.getLateBoundPrivateUnboundQueue(channel)
-
-  override def id() = queueName
-  override def cancel() = channel.close()
-
-  def start(callback: Event[A] => Unit): Unit = {
-    channel.listen(queueName, consumerCreator(callback))
-  }
-
+trait BrokerConnectionFactory {
+  def newBrokerConnection: BrokerConnection
 }

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.broker.api
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,23 +18,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker
-
 import org.totalgrid.reef.japi.client.ConnectionListener
+
+object BrokerState extends Enumeration {
+  type BrokerState = Value
+  val Connected = Value("Connection is open")
+  val Closed = Value("Connection closed locally")
+  val Disconnected = Value("Connection disconnected unexpectedly")
+}
 
 trait BrokerConnection extends BrokerChannelPool {
 
-  private var connected = false
+  private var state = BrokerState.Closed
 
   /// Set of connection listeners, also used as a mutex
-  private val listeners = scala.collection.mutable.Set.empty[ConnectionListener]
+  private val mutex = new Object
+  private var listeners = Set.empty[ConnectionListener]
 
   /**
    * query the state of the connection
    *  @return True if connected, false otherwise
    */
 
-  final def isConnected: Boolean = connected
+  final def isConnected: Boolean = state == BrokerState.Connected
 
   /**
    * Idempotent, blocking connect function
@@ -52,22 +60,21 @@ trait BrokerConnection extends BrokerChannelPool {
   def newChannel(): BrokerChannel
 
   /// sets the connection listener
-  final def addListener(listener: ConnectionListener) = listeners.synchronized {
+  final def addListener(listener: ConnectionListener) = mutex.synchronized {
     listeners += listener
   }
 
-  final def removeListener(listener: ConnectionListener) = listeners.synchronized {
+  final def removeListener(listener: ConnectionListener) = mutex.synchronized {
     listeners -= listener
   }
 
-  final protected def setOpen() = listeners.synchronized {
-    connected = true
-    listeners.foreach(_.onConnectionOpened())
-  }
-
-  final protected def setClosed(expected: Boolean) = listeners.synchronized {
-    connected = false
-    listeners.foreach(_.onConnectionClosed(expected))
+  final protected def setState(newState: BrokerState.Value) = {
+    mutex.synchronized { state = newState }
+    newState match {
+      case BrokerState.Connected => listeners.foreach(_.onConnectionOpened())
+      case BrokerState.Disconnected => listeners.foreach(_.onConnectionClosed(false))
+      case BrokerState.Closed => listeners.foreach(_.onConnectionClosed(true))
+    }
   }
 
 }

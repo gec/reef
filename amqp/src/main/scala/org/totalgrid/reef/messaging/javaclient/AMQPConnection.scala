@@ -20,7 +20,7 @@ package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.messaging.sync._
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.executor.ReactActorExecutor

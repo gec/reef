@@ -21,7 +21,7 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
 import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 /**

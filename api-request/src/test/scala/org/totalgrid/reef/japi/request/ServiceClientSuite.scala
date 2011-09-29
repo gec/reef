@@ -29,7 +29,7 @@ import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.SystemPropertyConfigReader
 import org.totalgrid.reef.messaging.AmqpClientSession
-import org.totalgrid.reef.broker.BrokerConnectionInfo
+import org.totalgrid.reef.broker.api.BrokerConnectionInfo
 
 import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 

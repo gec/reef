@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.{ ServiceList, RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi.{ ServiceList, Destination, AnyNodeDestination }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.broker.api.CloseableChannel
 import org.totalgrid.reef.sapi.client.{ ClientSession, Event, SessionPool }
 
 trait SessionSource {

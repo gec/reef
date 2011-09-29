@@ -20,7 +20,7 @@ package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 
 /**
  * 	Simple publisher that fails when the session fails

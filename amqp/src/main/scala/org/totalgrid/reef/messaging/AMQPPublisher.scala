@@ -22,7 +22,7 @@ import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.japi.ServiceIOException
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 
 object AMQPPublisher {
   val defaultBufferSize = 1024 * 1024

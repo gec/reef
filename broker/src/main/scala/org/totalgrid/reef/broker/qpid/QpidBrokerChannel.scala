@@ -24,9 +24,9 @@ import org.apache.qpid.transport._
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.japi.ServiceIOException
-import java.security.PrivateKey
+import org.totalgrid.reef.executor.Executor
 
 object QpidBrokerChannel {
 
@@ -65,7 +65,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
   def message(s: Session, msg: MessageTransfer): Unit = {
     val replyTo = msg.getHeader.get(classOf[MessageProperties]).getReplyTo
     val dest = if (replyTo == null) None else Some(new Destination(replyTo.getExchange, replyTo.getRoutingKey))
-    messageConsumer.foreach { mc => mc.receive(msg.getBodyBytes, dest) }
+    messageConsumer.foreach(mc => mc.receive(msg.getBodyBytes, dest))
     s.processed(msg)
   }
 
@@ -94,6 +94,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (autoDelete) l ::= Option.AUTO_DELETE
     if (exclusive) l ::= Option.EXCLUSIVE
     session.queueDeclare(queue, null, null, l: _*)
+    session.sync()
     logger.debug("Declared Queue: " + queue)
     queue //return the unique queue name
   }
@@ -109,6 +110,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
       if (exchange.trim.length < 1) throw new Exception("Bad exchange name: " + exchange)
 
       session.exchangeDeclare(exchange, exchangeType, null, null)
+      session.sync()
       logger.debug("Declared Exchange: " + exchange)
     }
   }
@@ -121,6 +123,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
       unbindQueue(queue, exchange, key)
     }
     session.exchangeBind(queue, exchange, key, null)
+    session.sync()
     logger.debug("Bound " + describeBinding(queue, exchange, key))
   }
 
@@ -129,6 +132,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     if (session.isClosing()) throw new ServiceIOException("Session unexpectedly closing/closed")
 
     session.exchangeUnbind(queue, exchange, key)
+    session.sync()
     logger.debug("Unbound " + describeBinding(queue, exchange, key))
   }
 
@@ -142,6 +146,7 @@ class QpidBrokerChannel(session: Session) extends SessionListener with BrokerCha
     session.messageSubscribe(queue, queue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null)
     session.messageFlow(queue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT)
     session.messageFlow(queue, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT)
+    session.sync()
   }
 
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[Destination]) = {

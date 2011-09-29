@@ -33,7 +33,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 
-import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 class FepActivator extends BundleActivator with Logging {

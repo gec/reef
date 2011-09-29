@@ -19,7 +19,7 @@
 package org.totalgrid.reef.loader
 
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.executor.ReactActorExecutor
 

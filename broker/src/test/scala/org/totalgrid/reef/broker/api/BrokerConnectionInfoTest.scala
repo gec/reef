@@ -1,3 +1,5 @@
+package org.totalgrid.reef.broker.api
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,10 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker
-
-import api.BrokerConnectionInfo
-
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

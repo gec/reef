@@ -25,7 +25,7 @@ import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.broker.{ BrokerChannel, CloseableChannel }
+import org.totalgrid.reef.broker.api.{ BrokerChannel, CloseableChannel }
 
 trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
   import AMQPMessageConsumers._
