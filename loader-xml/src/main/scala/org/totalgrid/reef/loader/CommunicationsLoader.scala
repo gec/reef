@@ -176,9 +176,10 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     logger.trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
 
-    // TODO fill in endpoint name
-    for ((name, c) <- controls) loadCache.addControl("", name, if (c.isSetIndex) c.getIndex else -1)
-    for ((name, s) <- setpoints) loadCache.addControl("", name, if (s.isSetIndex) s.getIndex else -1)
+    if (endpoint.isDataSource) {
+      for ((name, c) <- controls) loadCache.addControl(endpointName, name, if (c.isSetIndex) c.getIndex else -1)
+      for ((name, s) <- setpoints) loadCache.addControl(endpointName, name, if (s.isSetIndex) s.getIndex else -1)
+    }
 
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
@@ -199,7 +200,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
     logger.trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
-    processPointScaling(endpointName, points, equipmentPointUnits, isBenchmark)
+    processPointScaling(endpointName, points, equipmentPointUnits, endpoint.isDataSource)
 
     // TODO should the communications loader really have knowledge of all the protocols?
     overriddenProtocolName match {
@@ -220,7 +221,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     // Now we have a list of all the controls and points for this Endpoint
     val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannel, controls, setpoints,
-      points).build
+      points, endpoint.isDataSource).build
     modelLoader.putOrThrow(endpointCfg)
 
     val endpointEntity = ProtoUtils.toEntityType(endpointName, "CommunicationEndpoint" :: Nil)
@@ -352,17 +353,16 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
       val server = getAttributeDefault[Boolean](interface, reference, _.isSetServerSocket, _.isServerSocket, false)
 
-      val ip = if(!server) getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
+      val ip = if (!server) getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
       else getAttributeDefault[String](interface, reference, _.isSetIp, _.getIp, "0.0.0.0")
       val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "port")
       val network = getAttributeDefault[String](interface, reference, _.isSetNetwork, _.getNetwork, "any")
-
 
       val ipProto = IpPort.newBuilder
         .setAddress(ip)
         .setPort(port)
         .setNetwork(network)
-        .setMode(if(server)IpPort.Mode.SERVER else IpPort.Mode.CLIENT)
+        .setMode(if (server) IpPort.Mode.SERVER else IpPort.Mode.CLIENT)
 
       val portProto = CommChannel.newBuilder
         .setName("tcp://" + ip + ":" + port + "@" + network)
@@ -441,7 +441,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
    * Process point scaling. Could be other stuff in the future.
    * TODO: Can't get some attributes from point/scale and some from pointProfile/scale.
    */
-  def processPointScaling(endpointName: String, points: HashMap[String, PointType], equipmentPointUnits: HashMap[String, String], isBenchmark: Boolean): Unit = {
+  def processPointScaling(endpointName: String, points: HashMap[String, PointType], equipmentPointUnits: HashMap[String, String], isDataSource: Boolean): Unit = {
     import ProtoUtils._
 
     for ((name, point) <- points) exceptionCollector.collect("Point: " + endpointName + "." + name) {
@@ -455,15 +455,13 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
       val index = if (point.isSetIndex) point.getIndex else -1
 
-      if (scale.isDefined) {
+      val unit = if (scale.isDefined) {
         val s = scale.get
 
         if (!s.isSetEngUnit)
           throw new LoadingException("Endpoint '" + endpointName + "': <scale> element used by point '" + name + "' does not have required attribute 'engUnit'")
 
         val unit = s.getEngUnit
-
-        loadCache.addPoint(endpointName, name, index, unit)
 
         equipmentPointUnits.get(name) match {
           case Some(u) =>
@@ -475,9 +473,12 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
         val point = toPoint(name)
 
         addTriggers(modelLoader, point, toTrigger(name, s) :: Nil)
+
+        unit
       } else {
-        loadCache.addPoint(endpointName, name, index)
+        if (!point.isSetUnit) "" else point.getUnit
       }
+      if (isDataSource) loadCache.addPoint(endpointName, name, index, unit)
     }
   }
 
@@ -545,13 +546,15 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     port: Option[CommChannel.Builder],
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
-    points: HashMap[String, PointType]): CommEndpointConfig.Builder = {
+    points: HashMap[String, PointType],
+    isDataSource: Boolean): CommEndpointConfig.Builder = {
 
     val proto = CommEndpointConfig.newBuilder
       .setName(name)
       .setProtocol(protocol)
       .setOwnerships(toEndpointOwnership(controls.keys.toList ::: setpoints.keys.toList, points.keys))
-    //TODO: .setEntity()
+
+    proto.setDataSource(isDataSource)
 
     if (port.isDefined)
       proto.setChannel(port.get)

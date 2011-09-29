@@ -154,7 +154,7 @@
 			</comm:equipment>
 		</comm:endpoint>
 
-		<comm:endpoint name="DNPOutput">
+		<comm:endpoint name="DNPOutput" dataSource="false">
 			<comm:protocol name="dnp3-slave">
 				<common:configFile fileName="sample-slave-config.xml" mimeType="text/xml"/>
 			</comm:protocol>
