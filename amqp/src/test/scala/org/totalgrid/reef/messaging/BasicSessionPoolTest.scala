@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 import scala.actors.Actor._
 import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, RequestEnv }
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable, RequestEnv }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.japi.{ ServiceIOException, ReefServiceException, Envelope }
@@ -44,7 +44,7 @@ class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
 
     def addSubscription[A](klass: Class[_]): Subscription[A] = throw new ServiceIOException("Unimplemented")
 
-    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
+    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination): Promise[Response[A]] = {
       numRequests += 1
       new FixedPromise(SingleSuccess(single = payload))
     }

@@ -16,23 +16,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.sapi
 
-trait ClientSession extends RestOperations with SubscriptionManagement with SessionLifecycle with DefaultHeaders
+trait RoutingKey {
+  val key: String
+}
 
-/**
- * all ClientSessions should be closeable and able to report their state
- */
-trait SessionLifecycle {
+trait Routable extends RoutingKey
 
-  /**
-   * @return True if the session is open (and ready for use)
-   */
-  def isOpen: Boolean
+case class AddressableDestination(key: String) extends Routable
 
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
+case object AnyNodeDestination extends Routable {
+  val key = "request"
+}
+
+case object AllMessages extends RoutingKey {
+  val key = "#"
 }
 

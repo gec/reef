@@ -21,11 +21,11 @@ package org.totalgrid.reef.sapi
 import org.totalgrid.reef.japi.TypeDescriptor
 
 object ServiceInfo {
-  def get[A](descriptor: TypeDescriptor[A]) =
-    ServiceInfo[A, A](descriptor, descriptor, EventOperations.getExchange(descriptor))
+  def apply[A](descriptor: TypeDescriptor[A]): ServiceInfo[A, A] =
+    ServiceInfo[A, A](descriptor, descriptor, RestOperations.getEventExchange(descriptor))
 
-  def get[A, B](descriptor: TypeDescriptor[A], subDescriptor: TypeDescriptor[B]) =
-    ServiceInfo[A, B](descriptor, subDescriptor, EventOperations.getExchange(subDescriptor))
+  def apply[A, B](descriptor: TypeDescriptor[A], subDescriptor: TypeDescriptor[B]): ServiceInfo[A, B] =
+    ServiceInfo[A, B](descriptor, subDescriptor, RestOperations.getEventExchange(subDescriptor))
 
 }
 

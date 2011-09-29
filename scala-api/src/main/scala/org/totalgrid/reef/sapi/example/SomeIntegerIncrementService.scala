@@ -16,23 +16,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.sapi.example
 
-trait ClientSession extends RestOperations with SubscriptionManagement with SessionLifecycle with DefaultHeaders
+import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.sapi.client.{ SubscriptionHandler, Response }
+import org.totalgrid.reef.japi.Envelope.Event
 
-/**
- * all ClientSessions should be closeable and able to report their state
- */
-trait SessionLifecycle {
+class SomeIntegerIncrementService(handler: SubscriptionHandler) extends SyncServiceBase[SomeInteger] {
+  val descriptor = SomeIntegerTypeDescriptor
 
-  /**
-   * @return True if the session is open (and ready for use)
-   */
-  def isOpen: Boolean
-
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
+  final override def put(req: SomeInteger, env: RequestEnv): Response[ServiceType] = {
+    val rsp = req.increment
+    env.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
+    handler.publishEvent(Event.MODIFIED, req.increment, "all")
+    Response(Envelope.Status.OK, rsp)
+  }
 }
-

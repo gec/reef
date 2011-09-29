@@ -41,7 +41,7 @@ class AmqpClientSession(
   final override def isOpen = correlator.isOpen
   override def close() = correlator.close()
 
-  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) {
+  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Routable)(callback: Response[A] => Unit) {
 
     val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
     val requestBuilder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))

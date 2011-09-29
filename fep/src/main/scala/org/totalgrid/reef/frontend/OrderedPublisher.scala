@@ -19,7 +19,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.Destination
+import org.totalgrid.reef.sapi.Routable
 import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.messaging.OrderedServiceTransmitter
@@ -27,7 +27,7 @@ import org.totalgrid.reef.messaging.OrderedServiceTransmitter
 class IdentityOrderedPublisher[A](
     tx: OrderedServiceTransmitter,
     verb: Envelope.Verb,
-    address: Destination,
+    address: Routable,
     maxRetries: Int) extends OrderedPublisher[A, A](tx, verb, address, maxRetries)(x => x) {
 
   override def toString = "IdentityOrderedPublisher{ address: " + address + " }"
@@ -36,7 +36,7 @@ class IdentityOrderedPublisher[A](
 class OrderedPublisher[A, B](
     tx: OrderedServiceTransmitter,
     verb: Envelope.Verb,
-    address: Destination,
+    address: Routable,
     maxRetries: Int)(transform: A => B) extends Publisher[A] {
 
   def publish(value: A): Promise[Boolean] = tx.publish(transform(value), verb, address, maxRetries)

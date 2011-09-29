@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.messaging.mock.synchronous
 
-import org.totalgrid.reef.sapi.{ Destination, RequestEnv }
+import org.totalgrid.reef.sapi.{ Routable, RequestEnv }
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.client._
 import java.lang.Exception
@@ -59,7 +59,7 @@ class MockSession extends ClientSession {
     def isComplete: Boolean = option.isDefined
   }
 
-  final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination): Promise[Response[A]] = {
+  final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Routable): Promise[Response[A]] = {
     if (!open) throw new IllegalStateException("Session is not open")
     val request = Request[A](verb, payload, env, dest)
     nextHandler[A]() match {

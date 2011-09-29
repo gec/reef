@@ -58,7 +58,7 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
 
   val exchange = TestDescriptors.requestHeader.id
   val exchangeMap: ServiceList.ServiceMap = Map(
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader))
+    classOf[Envelope.RequestHeader] -> ServiceInfo(TestDescriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
   def setupTest(test: AmqpClientSession => Unit)

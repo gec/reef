@@ -75,7 +75,7 @@ class MeasurementBatchService(pool: SessionPool)
 
   }
 
-  private def convertEndpointToDestination(ce: CommunicationEndpoint): Destination = ce.frontEndAssignment.value.serviceRoutingKey match {
+  private def convertEndpointToDestination(ce: CommunicationEndpoint): Routable = ce.frontEndAssignment.value.serviceRoutingKey match {
     case Some(key) => AddressableDestination(key)
     case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }

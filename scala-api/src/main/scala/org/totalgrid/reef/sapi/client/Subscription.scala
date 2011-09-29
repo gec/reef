@@ -21,15 +21,15 @@ package org.totalgrid.reef.sapi.client
 import org.totalgrid.reef.japi.Envelope
 
 import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.util.Cancelable
 
-trait Subscription[A] {
-  def cancel()
+trait Subscription[A] extends Cancelable {
 
   def start(callback: Event[A] => Unit): Unit
 
   def start(callback: (Envelope.Event, A) => Unit): Unit = {
-    val proxy = { (evt: Event[A]) => callback(evt.event, evt.value) }
-    start(proxy)
+    def proxy(event: Event[A]): Unit = callback(event.event, event.value)
+    start(proxy(_))
   }
 
   def id(): String

@@ -19,8 +19,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.client.DefaultHeaders
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, RequestEnv }
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable, RequestEnv }
 import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.sapi.client._
 
@@ -38,7 +37,7 @@ trait RequestSpyHook extends RestOperations with DefaultHeaders with RequestSpyM
     verb: Envelope.Verb,
     request: A,
     env: RequestEnv = getDefaultHeaders,
-    destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
+    destination: Routable = AnyNodeDestination): Promise[Response[A]] = {
 
     val promise = super.request(verb, request, env, destination)
 

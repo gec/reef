@@ -22,6 +22,18 @@ import org.totalgrid.reef.japi._
 
 trait Expectations[+A] {
 
+  def many: Either[ReefServiceException, List[A]]
+
+  def one: Either[ReefServiceException, A] = many match {
+    case Left(ex) => Left(ex)
+    case Right(list) => list match {
+      case List(x) =>
+        Right(x)
+      case list: List[_] =>
+        Left(new ExpectationException("Expected a response list of size 1, but got a list of size: " + list.size))
+    }
+  }
+
   // implement to widen the trait
   def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A]
 

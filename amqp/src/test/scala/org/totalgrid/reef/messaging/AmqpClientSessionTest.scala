@@ -71,8 +71,8 @@ class AmqpClientSessionTestBase extends FunSuite with ShouldMatchers {
   val exchangeB = TestDescriptors.requestHeader.id
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Envelope.ServiceNotification] -> ServiceInfo.get(TestDescriptors.serviceNotification),
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
+    classOf[Envelope.ServiceNotification] -> ServiceInfo(TestDescriptors.serviceNotification),
+    classOf[Envelope.RequestHeader] -> ServiceInfo(TestDescriptors.requestHeader)))
 
   def setupTest(addServices: Boolean)(test: (AmqpClientSession, AMQPProtoFactory) => Unit) {
     val connection = new EmbeddedBrokerConnection

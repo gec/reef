@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.client
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,21 +18,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi
+import org.totalgrid.reef.japi.Envelope
 
-trait RoutingKey {
-  val key: String
-}
+trait SubscriptionHandler {
 
-trait Destination extends RoutingKey
+  def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit
 
-case class AddressableDestination(key: String) extends Destination
-
-case object AnyNodeDestination extends Destination {
-  val key = "request"
-}
-
-case object AllMessages extends RoutingKey {
-  val key = "#"
+  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit
 }
 

@@ -31,7 +31,7 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
 
   class ErroredClientSession(exception: ReefServiceException) extends ClientSession {
 
-    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] =
+    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination): Promise[Response[A]] =
       new FixedPromise[Response[A]](Failure(Envelope.Status.BUS_UNAVAILABLE, "The session pool could not obtain a session: " + exception.toString))
 
     final override def isOpen: Boolean = false

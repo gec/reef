@@ -18,21 +18,8 @@
  */
 package org.totalgrid.reef.sapi.client
 
-trait ClientSession extends RestOperations with SubscriptionManagement with SessionLifecycle with DefaultHeaders
+import org.totalgrid.reef.japi.TypeDescriptor
 
-/**
- * all ClientSessions should be closeable and able to report their state
- */
-trait SessionLifecycle {
-
-  /**
-   * @return True if the session is open (and ready for use)
-   */
-  def isOpen: Boolean
-
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
+trait Subscribable {
+  def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A]
 }
-

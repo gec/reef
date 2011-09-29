@@ -26,11 +26,11 @@ trait RestOperations {
 
   self: DefaultHeaders =>
 
-  def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]]
+  def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination): Promise[Response[A]]
 
-  final def get[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination) = request(Verb.GET, payload, env, destination)
-  final def delete[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination) = request(Verb.DELETE, payload, env, destination)
-  final def post[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination) = request(Verb.POST, payload, env, destination)
-  final def put[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination) = request(Verb.PUT, payload, env, destination)
+  final def get[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination) = request(Verb.GET, payload, env, destination)
+  final def delete[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination) = request(Verb.DELETE, payload, env, destination)
+  final def post[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination) = request(Verb.POST, payload, env, destination)
+  final def put[A](payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination) = request(Verb.PUT, payload, env, destination)
 
 }

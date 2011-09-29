@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.{ ServiceList, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi.{ ServiceList, Routable, AnyNodeDestination }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.broker.api.CloseableChannel
@@ -47,7 +47,7 @@ trait Connection extends SessionSource {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): CloseableChannel
+  def bindService(service: AsyncService[_], destination: Routable = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): CloseableChannel
 
 }
 
@@ -72,7 +72,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
     factory.getEventQueue(deserialize, accept, notify)
   }
 
-  final override def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): CloseableChannel = {
+  final override def bindService(service: AsyncService[_], destination: Routable = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): CloseableChannel = {
     factory.bindService(service.descriptor.id, service.respond, destination, competing, reactor)
   }
 

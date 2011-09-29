@@ -16,23 +16,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.sapi.example
 
-trait ClientSession extends RestOperations with SubscriptionManagement with SessionLifecycle with DefaultHeaders
+import org.totalgrid.reef.japi.TypeDescriptor
+import java.io._
 
-/**
- * all ClientSessions should be closeable and able to report their state
- */
-trait SessionLifecycle {
-
-  /**
-   * @return True if the session is open (and ready for use)
-   */
-  def isOpen: Boolean
-
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
+case class SomeInteger(num: Int) extends Serializable {
+  def increment = SomeInteger(num + 1)
 }
 
+object SomeIntegerTypeDescriptor extends SerializableTypeDescriptor[SomeInteger] {
+  def id = "SomeInteger"
+  def getKlass = classOf[SomeInteger]
+}
+
+trait SerializableTypeDescriptor[A <: Serializable] extends TypeDescriptor[A] {
+
+  final override def serialize(a: A): Array[Byte] = {
+    val bos = new ByteArrayOutputStream()
+    val out = new ObjectOutputStream(bos)
+    out.writeObject(a)
+    bos.toByteArray()
+  }
+
+  final override def deserialize(a: Array[Byte]): A = {
+    val bis = new ByteArrayInputStream(a)
+    val in = new ObjectInputStream(bis)
+    in.readObject().asInstanceOf[A]
+  }
+}

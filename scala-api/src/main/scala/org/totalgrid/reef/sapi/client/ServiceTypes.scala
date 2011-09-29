@@ -19,12 +19,12 @@
 package org.totalgrid.reef.sapi.client
 
 import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.japi._
 import org.totalgrid.reef.japi.client.SubscriptionEvent
+import org.totalgrid.reef.japi._
 
 /* ---- Case classes that make the service api easier to use ---- */
 
-case class Request[+A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: Destination = AnyNodeDestination)
+case class Request[+A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: Routable = AnyNodeDestination)
 
 object Response {
 
@@ -52,6 +52,11 @@ trait Response[+A] extends Expectations[A] {
   val list: List[A]
   val error: String
   val success: Boolean
+
+  def many(): Either[ReefServiceException, List[A]] = this match {
+    case Success(_, list) => Right(list)
+    case Failure(status, error) => Left(StatusCodes.toException(status, error))
+  }
 
   final override def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A] = {
 

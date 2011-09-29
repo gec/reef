@@ -25,6 +25,8 @@ object RequestEnv {
   val authToken = "AUTH_TOKEN"
   val user = "USER"
   val resultLimit = "RESULT_LIMIT"
+
+  def apply() = new RequestEnv()
 }
 
 /**

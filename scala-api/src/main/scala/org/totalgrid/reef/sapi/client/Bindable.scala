@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.client
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,23 +18,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
 
-trait ClientSession extends RestOperations with SubscriptionManagement with SessionLifecycle with DefaultHeaders
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable }
+import org.totalgrid.reef.util.Cancelable
 
-/**
- * all ClientSessions should be closeable and able to report their state
- */
-trait SessionLifecycle {
+trait Bindable {
 
-  /**
-   * @return True if the session is open (and ready for use)
-   */
-  def isOpen: Boolean
+  def bindService[A](service: AsyncService[A], destination: Routable = AnyNodeDestination, competing: Boolean = false): Cancelable
 
-  /**
-   * clients should be closed before being thrown away
-   */
-  def close()
 }
-
