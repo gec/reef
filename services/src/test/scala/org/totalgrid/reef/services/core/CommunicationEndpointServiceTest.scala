@@ -62,6 +62,9 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
     CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
   }
+  def getSinkEndpoint(name: String = "device", protocol: String = "benchmark") = {
+    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name).setDataSource(false)
+  }
   def getIPPort(name: String = "device") = {
     CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork("any").setAddress("localhost").setPort(1200))
   }
@@ -261,5 +264,18 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     commandService.get(getCommand("*").build).expectOne().getUuid should equal(commandUUID)
 
     configFileService.get(getConfigFile(Some("*")).build).expectOne().getUuid should equal(configFileUUID)
+  }
+
+  test("Add Sink Endpoint") {
+
+    pointService.put(getPoint().build).expectOne()
+    commandService.put(getCommand().build).expectOne()
+
+    val endpoint = getSinkEndpoint().setOwnerships(getOwnership())
+
+    val returned = endpointService.put(endpoint.build).expectOne()
+
+    returned.getOwnerships.getPointsCount should equal(1)
+    returned.getOwnerships.getCommandsCount should equal(1)
   }
 }
