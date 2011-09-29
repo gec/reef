@@ -20,13 +20,13 @@ package org.totalgrid.reef.protocol.dnp3.common
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.util.{ Cancelable, Logging }
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._
 
-abstract class Dnp3ProtocolBase[ObjectContainer] extends Protocol with Logging {
+abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol with Logging {
 
   import Protocol._
   import XmlToProtoTranslations._
@@ -78,6 +78,11 @@ abstract class Dnp3ProtocolBase[ObjectContainer] extends Protocol with Logging {
 
   override def removeEndpoint(endpointName: String) = {
     logger.debug("Not removing stack " + endpointName + " as per workaround")
+
+    map.get(endpointName).foreach { _.cancel }
+
+    map -= endpointName
+
     // TODO: re-enable endpoint removal once we have good integration tests
     //    logger.info { "removing stack with name: " + endpointName }
     //    try {
