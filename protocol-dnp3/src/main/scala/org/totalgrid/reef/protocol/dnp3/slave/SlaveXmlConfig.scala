@@ -27,9 +27,9 @@ import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig
 import org.totalgrid.reef.proto.Mapping.{ DataType, IndexMapping, CommandType }
 import org.totalgrid.reef.proto.Model.{ ConfigFile }
 import org.totalgrid.reef.protocol.dnp3.master.{ MasterXmlConfig }
-import org.totalgrid.reef.protocol.dnp3.{ CommandModes, ClassMask, ControlRecord, PointRecord, EventPointRecord, DeadbandPointRecord, DeviceTemplate, PointClass, EventMaxConfig, SlaveConfig => DnpSlaveConfig, FilterLevel, SlaveStackConfig }
 import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig.{ TimeIINTask, UnsolDefaults }
 import org.totalgrid.reef.protocol.dnp3.xml._
+import org.totalgrid.reef.protocol.dnp3.{ GrpVar, CommandModes, ClassMask, ControlRecord, PointRecord, EventPointRecord, DeadbandPointRecord, DeviceTemplate, PointClass, EventMaxConfig, SlaveConfig => DnpSlaveConfig, FilterLevel, SlaveStackConfig }
 
 object SlaveXmlConfig {
   def getSlaveConfigFromConfigFiles(files: List[ConfigFile], mapping: IndexMapping): (SlaveStackConfig, FilterLevel) = {
@@ -99,6 +99,10 @@ object SlaveXmlConfig {
     cfg.setMUnsolRetryDelay(xml.getUnsolDefaults.getRetryMS)
 
     // TODO: make slave config configure default event types?
+
+    // use double by default
+    cfg.setMEventAnalog(new GrpVar(32, 8))
+    cfg.setMStaticAnalog(new GrpVar(30, 6))
 
     cfg
   }
