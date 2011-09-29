@@ -36,6 +36,8 @@ object CommunicationsLoader {
   val MAPPING_COUNTER = Mapping.DataType.valueOf("COUNTER")
   val BENCHMARK = "benchmark"
   val DNP3 = "dnp3"
+  val DNP3Slave = "dnp3-slave"
+  val MODBUS = "modbus"
 }
 
 /**
@@ -201,7 +203,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     // TODO should the communications loader really have knowledge of all the protocols?
     overriddenProtocolName match {
-      case DNP3 =>
+      case DNP3 | DNP3Slave | MODBUS =>
         exceptionCollector.collect("DNP3 Indexes:" + endpointName) {
           configFiles ::= processIndexMapping(endpointName, controls, setpoints, points)
         }
@@ -347,15 +349,20 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
       // TODO: the ip may be empty string or illegal.
       // TODO: the network may be empty string.
-      val ip = getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
-      val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "ip")
+
+      val server = getAttributeDefault[Boolean](interface, reference, _.isSetServerSocket, _.isServerSocket, false)
+
+      val ip = if(!server) getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
+      else getAttributeDefault[String](interface, reference, _.isSetIp, _.getIp, "0.0.0.0")
+      val port = getAttribute[Int](interface, reference, _.isSetPort, _.getPort, endpointName, "port")
       val network = getAttributeDefault[String](interface, reference, _.isSetNetwork, _.getNetwork, "any")
+
 
       val ipProto = IpPort.newBuilder
         .setAddress(ip)
         .setPort(port)
         .setNetwork(network)
-        .setMode(IpPort.Mode.CLIENT)
+        .setMode(if(server)IpPort.Mode.SERVER else IpPort.Mode.CLIENT)
 
       val portProto = CommChannel.newBuilder
         .setName("tcp://" + ip + ":" + port + "@" + network)

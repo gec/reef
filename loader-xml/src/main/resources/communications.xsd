@@ -832,6 +832,7 @@
             <xs:attribute name="netmask" type="xs:string"/>
             <xs:attribute name="port" type="xs:int"/>
             <xs:attribute name="network" type="xs:string"/>
+			<xs:attribute name="serverSocket" type="xs:boolean"/>
             <!-- remote network location (it's not a netmask) -->
         </xs:complexType>
     </xs:element>
