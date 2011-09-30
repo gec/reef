@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.3.1</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -48,13 +48,13 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-java-rest-api</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.3.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.3.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
