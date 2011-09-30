@@ -21,6 +21,8 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
 import org.totalgrid.reef.sapi.client.ClientSession
+import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.osgi.OsgiConfigReader
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to
@@ -35,7 +37,7 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
   private var password: String = null
 
-  def doCommand() = {
+  def doCommand() {
 
     if (isLoggedIn) {
       System.out.println(getLoginString)
@@ -67,47 +69,25 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
   def setupReefSession(): (ClientSession, String)
 }
 
-@Command(scope = "reef", name = "login", description = "Authorizes a user with the local Reef node, asks for password interactively")
+@Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefLoginCommandBase {
-
-  def setupReefSession() = {
-    (new OSGISession(getBundleContext), "local")
-  }
-}
-
-@Command(scope = "reef", name = "remote-login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
-class ReefRemoteLoginCommand extends ReefLoginCommandBase {
-
-  @Argument(index = 1, name = "host", description = "broker ip address or dns name", required = true, multiValued = false)
-  private var host: String = "127.0.0.1"
-
-  @Argument(index = 2, name = "port", description = "broker port", required = false, multiValued = false)
-  private var port: Int = 5672
-
-  @Argument(index = 3, name = "brokerUser", description = "broker username", required = false, multiValued = false)
-  private var brokerUser: String = "guest"
-
-  @Argument(index = 4, name = "brokerPassword", description = "broker password", required = false, multiValued = false)
-  private var brokerPassword: String = "guest"
-
-  @Argument(index = 5, name = "brokerVirtualHost", description = "broker virtual host", required = false, multiValued = false)
-  private var brokerVirtualHost: String = "test"
 
   def setupReefSession() = {
 
     import org.totalgrid.reef.executor.ReactActorExecutor
     import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.broker.BrokerConnectionInfo
-    import org.totalgrid.reef.messaging.{ ProtoClient, AMQPProtoFactory }
+    import org.totalgrid.reef.messaging.{ AmqpClientSession }
+    import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
     import org.totalgrid.reef.proto.ReefServicesList
 
-    val connectionInfo = new BrokerConnectionInfo(host, port, brokerUser, brokerPassword, brokerVirtualHost)
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
+    val connectionInfo = BrokerProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
+
+    val amqp = new AMQPSyncFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(connectionInfo)
     }
 
     amqp.connect(5000)
-    val client = new ProtoClient(amqp, ReefServicesList, 5000) {
+    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
       override def close() {
         super.close()
         amqp.disconnect(5000)
@@ -120,6 +100,12 @@ class ReefRemoteLoginCommand extends ReefLoginCommandBase {
 
 @Command(scope = "reef", name = "logout", description = "Logs out the current user")
 class ReefLogoutCommand extends ReefCommandSupport {
-  def doCommand() = this.logout()
+  def doCommand() = {
+    this.get("authToken") match {
+      case Some(token) => services.deleteAuthorizationToken(token)
+      case None =>
+    }
+    this.logout()
+  }
 }
 

@@ -28,8 +28,10 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Measurement Processing</Bundle-Name>
-                        <Bundle-Activator>org.totalgrid.reef.entry.ProcessingActivator</Bundle-Activator>
-                        <Private-Package>org.totalgrid.reef.entry</Private-Package>
+                        <Bundle-Activator>org.totalgrid.reef.measproc.activator.ProcessingActivator</Bundle-Activator>
+                        <Private-Package>org.totalgrid.reef.measproc.activator</Private-Package>
+                        <Export-Package>!org.totalgrid.reef.measproc.activator,
+                            org.totalgrid.reef.measproc.*</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <_nouses>true</_nouses>
@@ -43,12 +45,36 @@
                     <header>../AGPL_FILE_HEADER</header>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-core</artifactId>
+            <artifactId>reef-measurementstore-squeryl</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-application-framework</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-osgi</artifactId>
             <version>0.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

@@ -24,7 +24,7 @@ package org.totalgrid.reef.broker
 case class Destination(exchange: String, key: String)
 
 /**
- * Anyone wanting to recieve messages from the bus need to implement this interface
+ * Anyone wanting to receive messages from the bus need to implement this interface
  * TODO: factor MessageConsumer into a free function
  */
 trait MessageConsumer {
@@ -62,9 +62,9 @@ trait BrokerChannel {
 
   def listen(queue: String, mc: MessageConsumer)
 
-  def start()
-
   def close()
+
+  def isOpen: Boolean
 
   private val listeners = scala.collection.mutable.Set.empty[BrokerChannelCloseListener]
 
@@ -77,7 +77,7 @@ trait BrokerChannel {
   }
 
   /**
-   * BrokerChannel implimentations need to call this callback when terminated
+   * BrokerChannel implementations need to call this callback when terminated
    */
   protected def onClose(expected: Boolean) = listeners.synchronized {
     listeners.foreach(_.onClosed(this, expected))

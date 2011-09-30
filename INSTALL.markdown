@@ -16,8 +16,8 @@ script will setup the user/databases for running and testing with default settin
 the block starting with "CREATE USER" into the "SQL Shell (psql)" application (after logging in). If on
 linux you should be able to copy/paste the whole script into a command shell.
 
-rm -f postgres.sql
-cat > postgres.sql <<-DELIM
+rm -f /tmp/postgres.sql
+cat > /tmp/postgres.sql <<-DELIM
 
 CREATE USER core WITH PASSWORD 'core';
 CREATE DATABASE reef_d;
@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON DATABASE reef_d TO core;
 GRANT ALL PRIVILEGES ON DATABASE reef_t TO core;
 
 DELIM
-sudo su postgres -c "psql < postgres.sql"
+sudo su postgres -c "psql < /tmp/postgres.sql" && rm /tmp/postgres.sql
 
 
 Qpid 0.8

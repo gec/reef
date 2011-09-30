@@ -21,6 +21,8 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.Model.{ Entity }
 import scala.collection.JavaConversions._
 
+import org.totalgrid.reef.util.Table
+
 object EntityView {
 
   def printInspect(ent: Entity) = {
@@ -44,24 +46,14 @@ object EntityView {
   }
 
   def toLine(ent: Entity): List[String] = {
-    "[" + ent.getUuid.getUuid + "]" ::
-      ent.getName ::
+    //"[" + ent.getUuid.getUuid + "]" ::
+    ent.getName ::
       "(" + ent.getTypesList.toList.mkString(", ") + ")" ::
       Nil
   }
 
   def printTreeSingleDepth(root: Entity) {
-    val margin = " "
-    val childLines = root.getRelationsList.toList.flatMap { rel =>
-      rel.getEntitiesList.toList.map { ent =>
-        "|--" :: toLine(ent)
-      }
-    }
-
-    val justChildren = Table.justifyColumns(childLines)
-
-    val rootLine = "+" :: toLine(root)
-    (rootLine :: justChildren).foreach(line => println(margin + line.mkString(" ")))
+    printTreeSingleDepth(root, root.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList)
   }
 
   def printTreeMultiDepth(root: Entity) {
@@ -99,5 +91,17 @@ object EntityView {
     val treeLines = getSubTree(root, 0)
 
     treeLines.foreach(line => println(margin + line.mkString(" ")))
+  }
+
+  def printTreeSingleDepth(root: Entity, children: List[Entity]) {
+    val margin = " "
+    val childLines = children.map { ent =>
+      "|--" :: toLine(ent)
+    }
+
+    val justChildren = Table.justifyColumns(childLines)
+
+    val rootLine = "+" :: toLine(root)
+    (rootLine :: justChildren).foreach(line => println(margin + line.mkString(" ")))
   }
 }

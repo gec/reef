@@ -25,11 +25,11 @@ import org.totalgrid.reef.metrics.{ MetricsHookSource, StaticMetricsHooksBase }
 class MeasSinkMetrics(sink: MeasSink, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with MeasSink {
 
   val sets = counterHook("setOps")
-  val setTime = timingHook[Unit]("setTime")
+  val setTime = timingHook("setTime")
 
   def set(meas: Seq[Meas]): Unit = {
     sets(1)
-    setTime { sink.set(meas) }
+    setTime(sink.set(meas))
   }
 }
 
@@ -37,14 +37,12 @@ class RTDatabaseMetrics(db: RTDatabase, source: MetricsHookSource) extends Stati
 
   val gets = counterHook("getOps")
   val keys = counterHook("keysRequested")
-  val getTime = timingHook[Map[String, Meas]]("getTime")
+  val getTime = timingHook("getTime")
 
   def get(names: Seq[String]): Map[String, Meas] = {
     gets(1)
     keys(names.size)
-    getTime {
-      db.get(names)
-    }
+    getTime(db.get(names))
   }
 }
 
@@ -52,27 +50,27 @@ class HistorianMetrics(db: Historian, source: MetricsHookSource) extends StaticM
 
   val gets = counterHook("getOps")
   val entriesRetrieved = counterHook("entriesRetrieved")
-  val getTime = timingHook[Seq[Meas]]("getTime")
+  val getTime = timingHook("getTime")
 
   val counts = counterHook("countOps")
-  val countTime = timingHook[Int]("countTime")
+  val countTime = timingHook("countTime")
   val removes = counterHook("removeOps")
-  val removeTime = timingHook[Unit]("removeTime")
+  val removeTime = timingHook("removeTime")
 
   def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
     gets(1)
-    val result = getTime { db.getInRange(name, begin, end, max, ascending) }
+    val result = getTime(db.getInRange(name, begin, end, max, ascending))
     entriesRetrieved(result.size)
     result
   }
 
   def numValues(name: String): Int = {
     counts(1)
-    countTime { db.numValues(name) }
+    countTime(db.numValues(name))
   }
 
   def remove(names: Seq[String]): Unit = {
     removes(1)
-    removeTime { db.remove(names) }
+    removeTime(db.remove(names))
   }
 }

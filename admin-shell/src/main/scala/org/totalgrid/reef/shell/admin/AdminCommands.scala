@@ -18,45 +18,65 @@
  */
 package org.totalgrid.reef.shell.admin
 
-import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import org.totalgrid.reef.shell.proto.ReefCommandSupport
 
-import org.totalgrid.reef.services.Services
-import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-
-import org.totalgrid.reef.loader.LoadManager
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
+import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
+import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
+import org.totalgrid.reef.services.ServiceBootstrap
+import org.apache.felix.gogo.commands.{ Option => GogoOption, Command }
+import java.io.{ InputStreamReader, BufferedReader }
 
 @Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
 class ResetDatabaseCommand extends ReefCommandSupport {
 
+  @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
+  private var password: String = null
+
   override val requiresLogin = false
 
   override def doCommand(): Unit = {
-    val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef"))
+
+    val systemPassword = Option(password) match {
+      case Some(pass) =>
+        System.out.println("WARNING: Password will be visible in karaf command history!")
+        pass.trim
+      case None =>
+        val stdIn = new BufferedReader(new InputStreamReader(System.in))
+        System.out.println("Enter New System Password: ")
+        stdIn.readLine.trim
+    }
+
+    val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql"))
     logout()
-    Services.resetSystem(sql, sql)
+
+    val bundleContext = getBundleContext()
+
+    DbConnector.connect(sql, bundleContext)
+
+    val exe = new ReactActorExecutor {}
+
+    val mstore = MeasurementStoreFinder.getInstance(sql, exe, bundleContext)
+
+    exe.start()
+    try {
+      ServiceBootstrap.resetDb()
+      ServiceBootstrap.seed(systemPassword)
+      println("Cleared and updated jvm database")
+
+      if (mstore.reset) {
+        println("Cleared measurement store")
+      } else {
+        println("NOTE: measurement store not reset, needs to be done manually")
+      }
+    } catch {
+      case ex => println("Reset failed: " + ex.toString)
+    }
+    finally {
+      exe.stop()
+    }
   }
 
 }
 
-@Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
-class LoadConfigCommand extends ReefCommandSupport {
-
-  @GogoOption(name = "-benchmark", aliases = Array[String](), description = "Override endpoint protocol to force all endpoints in configuration file to be simulated", required = false, multiValued = false)
-  private var benchmark = false
-
-  @GogoOption(name = "-dryRun", description = "Just analyze file, don't actually send data to reef", required = false, multiValued = false)
-  private var dryRun = false
-
-  @GogoOption(name = "-ignoreWarnings", description = "Still attempt upload even if configuration is invalid", required = false, multiValued = false)
-  private var ignoreWarnings = false
-
-  @Argument(index = 0, name = "configFile", description = "Configuration file name with path", required = true, multiValued = false)
-  private var configFile: String = null
-
-  override def doCommand(): Unit = {
-    LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings)
-  }
-
-}

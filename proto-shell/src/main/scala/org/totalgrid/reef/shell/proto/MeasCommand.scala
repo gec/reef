@@ -25,23 +25,142 @@ import org.totalgrid.reef.shell.proto.presentation.{ MeasView }
 import scala.collection.JavaConversions._
 
 import java.io.File
-import org.totalgrid.reef.proto.Measurements.Measurement
 import java.text.SimpleDateFormat
 import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
 
-@Command(scope = "meas", name = "meas", description = "Prints all measurements or a specified measurement.")
-class MeasCommand extends ReefCommandSupport {
+@Command(scope = "meas", name = "list", description = "Prints all measurements or a specified measurement.")
+class MeasListCommand extends ReefCommandSupport {
 
   @Argument(index = 0, name = "name", description = "Measurement name.", required = false, multiValued = false)
   var name: String = null
 
+  @GogoOption(name = "-block", description = "Show only operator blocked measurements (aka. Not in Service).", required = false, multiValued = false)
+  private var block = false
+
+  @GogoOption(name = "-override", description = "Show only overridden measurements (aka. Substituted).", required = false, multiValued = false)
+  private var override_ = false
+
+  @GogoOption(name = "-good", description = "Show only measurements with validity good.", required = false, multiValued = false)
+  private var good = false
+
+  @GogoOption(name = "-invalid", description = "Show only measurements with validity invalid.", required = false, multiValued = false)
+  private var invalid = false
+
+  @GogoOption(name = "-questionable", description = "Show only measurements with validity questionable.", required = false, multiValued = false)
+  private var questionable = false
+
   def doCommand() = {
     Option(name) match {
-      case Some(measName) => MeasView.printInspect(services.getMeasurementByName(name))
-      case None =>
-        val points = services.getAllPoints
-        MeasView.printTable(services.getMeasurementsByPoints(points).toList)
+      case Some(measName) => print(getListByNameOrParentName(name))
+      case None => print(getAllMeasurements)
     }
+  }
+
+  def getAllMeasurements = {
+    val points = services.getAllPoints
+    services.getMeasurementsByPoints(points).toList
+  }
+
+  def getListByNameOrParentName(name: String): List[Measurement] = {
+
+    // TODO: Replace this exception catch with future find-some-or-none services.
+    try {
+      // If it's a specific measurement, return it as a list of one.
+      List(services.getMeasurementByName(name))
+    } catch {
+      case _ => {
+        // Maybe it's a parent name and they want all measurements under the parent.
+        val entity = services.getEntityByName(name)
+        val pointEntites = services.getEntityRelatedChildrenOfType(entity.getUuid, "owns", "Point")
+
+        services.getMeasurementsByNames(pointEntites.map { _.getName }).toList
+      }
+    }
+  }
+
+  def print(measurements: List[Measurement]) = {
+    if (measurements.size == 1) {
+      MeasView.printInspect(measurements(0))
+    } else {
+      if (!block && !override_ && !good && !invalid && !questionable) {
+        MeasView.printTable(measurements)
+      } else {
+        var q = Quality.newBuilder();
+        if (block) q.setOperatorBlocked(true)
+        if (override_) q.setSource(Quality.Source.SUBSTITUTED)
+        if (good) q.setValidity(Quality.Validity.GOOD)
+        if (invalid) q.setValidity(Quality.Validity.INVALID)
+        if (questionable) q.setValidity(Quality.Validity.QUESTIONABLE)
+        MeasView.printTableFilteredByQuality(measurements, q.build)
+      }
+    }
+
+  }
+}
+
+@Command(scope = "meas", name = "block", description = "Block a point so it does recieve measurement updates from the field (aka. Not in Service).")
+class MeasBlockCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Measurement name.", required = true, multiValued = false)
+  var name: String = null
+
+  def doCommand() = {
+    var point = services.getPointByName(name)
+    services.setPointOutOfService(point)
+    MeasView.printInspect(services.getMeasurementByPoint(point))
+  }
+}
+
+@Command(scope = "meas", name = "unblock", description = "Unblock a point so it recieves measurement updates from the field (aka. In Service).")
+class MeasUnblockCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Measurement name.", required = true, multiValued = false)
+  var name: String = null
+
+  def doCommand() = {
+    var point = services.getPointByName(name)
+    services.clearMeasurementOverridesOnPoint(point)
+    MeasView.printInspect(services.getMeasurementByPoint(point))
+  }
+}
+
+@Command(scope = "meas", name = "override", description = "Override a blocked point with the specified measurement.")
+class MeasOverrideCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Measurement name.", required = true, multiValued = false)
+  var name: String = null
+
+  @Argument(index = 1, name = "value", description = "Override value.", required = true, multiValued = false)
+  var value: String = null
+
+  def doCommand() = {
+    var point = services.getPointByName(name)
+    var measurement = services.getMeasurementByName(name)
+    var m = measurement.toBuilder
+    val typ = measurement.getType
+    try {
+      m = typ match {
+        case Measurement.Type.INT => m.setIntVal(value.toLong)
+        case Measurement.Type.DOUBLE => m.setDoubleVal(value.toDouble)
+        case Measurement.Type.BOOL => m.setBoolVal(value.toBoolean)
+        case Measurement.Type.STRING => m.setStringVal(value)
+        case Measurement.Type.NONE =>
+          // TODO: We'll do better when Point has the type information.
+          throw new Exception("Point " + name + " has no measurements. Type is unknown. Measurement not overridden.")
+      }
+      m.setUnit(measurement.getUnit)
+      services.setPointOverride(point, m.build)
+      MeasView.printInspect(services.getMeasurementByPoint(point))
+    } catch {
+      case ex: NumberFormatException =>
+        Console.println("ERROR: Expected measurement value of type " + typ.toString + ", but found '" + value + "' instead.")
+      case ex => throw ex
+    }
+  }
+
+  def overrideInt(point: Point, value: String) = {
+    val v = value.toInt
   }
 }
 

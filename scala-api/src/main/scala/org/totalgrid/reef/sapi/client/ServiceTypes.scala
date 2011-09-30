@@ -18,26 +18,6 @@
  */
 package org.totalgrid.reef.sapi.client
 
-/**
- * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  Green Energy Corp licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi._
 import org.totalgrid.reef.japi.client.SubscriptionEvent
@@ -60,6 +40,8 @@ object Response {
     }
     else Failure(status, error)
   }
+
+  def apply[A](status: Envelope.Status, single: A): Response[A] = apply(status, single :: Nil, "")
 }
 
 object ResponseTimeout extends Failure(Envelope.Status.RESPONSE_TIMEOUT)
@@ -113,7 +95,7 @@ case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, err
   final override val list = Nil
   final override val success = false
 
-  final override def toString = "Request failed with status: " + status + " msg: " + error
+  final override def toString = "Request failed with status: " + status + ", msg: " + error
 }
 
 case class SingleSuccess[A](override val status: Envelope.Status = Envelope.Status.OK, single: A)

@@ -52,13 +52,13 @@ class LockStepConnection[ConnectionType](r: ConnectionType) extends ConnectionOp
 /**
  * Reactor class that buffers async operations in a list until a connection is restored.
  */
-abstract class AsyncBufferReactor[ConnType](val reactor: Executor, obs: ConnectionReactor.Observer, val connectOnStart: Boolean = true)
+abstract class AsyncBufferReactor[ConnType](val exe: Executor, obs: ConnectionReactor.Observer, val connectOnStart: Boolean = true)
     extends ConnectionReactor[ConnType] with ConnectionOperations[ConnType] with MetricsHooks {
 
   private lazy val delayedPuts = counterHook("delayedPuts")
   private lazy val puts = counterHook("puts")
   private lazy val gets = counterHook("gets")
-  private lazy val getLatency = timingHook[Any]("getTime")
+  private lazy val getLatency = timingHook("getTime")
 
   private var buffer: List[AsyncOperation] = Nil
 
@@ -80,13 +80,11 @@ abstract class AsyncBufferReactor[ConnType](val reactor: Executor, obs: Connecti
   }
 
   /// Execute an empty block, this makes us block for a response
-  def sync(): Unit = {
-    reactor.request {}
-  }
+  def sync(): Unit = exe.sync()
 
   def doAsync(fun: AsyncOperation): Unit = {
     puts(1)
-    reactor.execute {
+    exe.execute {
       op { fun } match {
         case true =>
         case false =>
@@ -100,9 +98,7 @@ abstract class AsyncBufferReactor[ConnType](val reactor: Executor, obs: Connecti
     gets(1)
     //TODO : fix the timingHook so that it doesn't require a dynamic cast
     getLatency {
-      reactor.request {
-        op { fun }
-      }
+      exe.request(op(fun)).apply()
     }.asInstanceOf[Option[A]]
   }
 

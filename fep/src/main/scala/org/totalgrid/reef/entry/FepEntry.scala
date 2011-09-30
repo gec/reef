@@ -25,19 +25,20 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
-import org.totalgrid.reef.frontend.{ FrontEndActor }
+import org.totalgrid.reef.frontend.FrontEndManager
 import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
-import org.totalgrid.reef.protocol.api.IProtocol
+import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 
 class FepActivator extends BundleActivator with Logging {
 
-  private var map = Map.empty[IProtocol, Lifecycle]
+  private var map = Map.empty[Protocol, Lifecycle]
   private var amqp: Option[AMQPProtoFactory] = None
   private val manager = new LifecycleManager
 
@@ -45,14 +46,18 @@ class FepActivator extends BundleActivator with Logging {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
+    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
+
     amqp = Some(new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef")))
+      val broker = new QpidBrokerConnection(brokerOptions)
     })
 
     manager.add(amqp.get)
 
-    context watchServices withInterface[IProtocol] andHandle {
-      case AddingService(p, _) => addProtocol(p)
+    context watchServices withInterface[Protocol] andHandle {
+      case AddingService(p, _) => addProtocol(p, userSettings, nodeSettings)
       case ServiceRemoved(p, _) => removeProtocol(p)
     }
 
@@ -61,17 +66,17 @@ class FepActivator extends BundleActivator with Logging {
 
   def stop(context: BundleContext) = manager.stop()
 
-  private def addProtocol(p: IProtocol) = map.synchronized {
+  private def addProtocol(p: Protocol, userSettings: UserSettings, nodeSettings: NodeSettings) = map.synchronized {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
-        val enroller = new ApplicationEnroller(amqp.get, Some("FEP-" + p.name), List("FEP"), create(List(p), _)) with ReactActorExecutor
+        val enroller = new ApplicationEnroller(amqp.get, userSettings, nodeSettings, "FEP-" + p.name, List("FEP"), create(List(p), _)) with ReactActorExecutor
         map = map + (p -> enroller)
         manager.add(enroller)
     }
   }
 
-  private def removeProtocol(p: IProtocol) = map.synchronized {
+  private def removeProtocol(p: Protocol) = map.synchronized {
     map.get(p) match {
       case Some(lifecycle) =>
         map = map - p
@@ -80,18 +85,20 @@ class FepActivator extends BundleActivator with Logging {
     }
   }
 
-  private def create(protocols: Seq[IProtocol], components: CoreApplicationComponents): Lifecycle = {
+  private def create(protocols: Seq[Protocol], components: CoreApplicationComponents): Lifecycle = {
 
-    // the actor does all the work of announcing the system, retrieving resources and starting/stopping
+    val exe = new ReactActorExecutor {}
+
+    // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events
-    val fepActor = new FrontEndActor(
+    val fem = new FrontEndManager(
       components.registry,
+      exe,
       protocols,
-      components.logger,
       components.appConfig,
-      FrontEndActor.retryms) with ReactActorExecutor
+      5000)
 
-    new LifecycleWrapper(components.heartbeatActor :: fepActor :: Nil)
+    new LifecycleWrapper(components.heartbeatActor :: exe :: fem :: Nil)
   }
 
 }

@@ -20,14 +20,14 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.Command
 
-import org.totalgrid.reef.proto.FEP.CommChannel
+import scala.collection.JavaConversions._
 import presentation.ChannelView
 
 @Command(scope = "channel", name = "list", description = "Prints channel information")
 class ChannelListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = reefSession.get(CommChannel.newBuilder.setName("*").build).await().expectMany()
+    val results = services.getAllCommunicationChannels.toList
     ChannelView.printTable(results)
   }
 }

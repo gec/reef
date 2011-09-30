@@ -43,18 +43,19 @@ class SyncRequestReply[S, R](
   /**
    * Close the underlying channel. No further requests or responses are possible.
    */
-  override def close() = channel.close()
+  final override def close() = channel.close()
+
+  final override def isOpen = channel.isOpen
 
   /// where to send the received data, optional to break circular construction dependency, will blow
   /// up if used without setting the destination
   private var handler: Option[ResponseHandler[R]] = None
   def setResponseHandler(h: ResponseHandler[R]) = handler = Some(h)
 
+  channel.addCloseListener(this)
+
   /// Here's the subscription that gets setup synchronously
   private val queue = QueuePatterns.getPrivateResponseQueue(channel, "amq.direct", this)
-
-  channel.addCloseListener(this)
-  channel.start
 
   /// Set's the publisher's reply to field
   this.setReplyTo(Destination("amq.direct", queue))

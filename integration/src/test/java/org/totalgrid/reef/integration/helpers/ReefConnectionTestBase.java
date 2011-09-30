@@ -18,33 +18,37 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.junit.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.client.AMQPConnectionSettingImpl;
 import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
-import org.totalgrid.reef.japi.client.Session;
-import org.totalgrid.reef.japi.request.impl.AuthTokenServicePooledWrapper;
-import org.totalgrid.reef.integration.AtollService;
-import org.totalgrid.reef.japi.client.SessionExecutionPool;
-import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-
 import org.totalgrid.reef.japi.client.Connection;
-
+import org.totalgrid.reef.japi.client.Session;
+import org.totalgrid.reef.japi.client.SessionExecutionPool;
+import org.totalgrid.reef.japi.request.AllScadaService;
+import org.totalgrid.reef.japi.request.impl.AllScadaServicePooledWrapper;
+import org.totalgrid.reef.japi.request.impl.AuthTokenServicePooledWrapper;
+import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
  */
 public class ReefConnectionTestBase
 {
-
-    private boolean autoLogon;
+    private final boolean autoLogon;
 
     /**
      * connector to the bus, restarted for every test connected for
      */
-    protected Connection connection = new AMQPConnection( getConnectionInfo(), 5000 );
+    protected final Connection connection = new AMQPConnection( getConnectionInfo(), 5000 );
     protected Session client;
-    protected AtollService helpers;
+    protected AllScadaService helpers;
 
     /**
      * Baseclass for junit integration tests, provides a Connection that is started and stopped with
@@ -54,7 +58,7 @@ public class ReefConnectionTestBase
      *            If set we automatically acquire and set auth tokens for the client on every
      *            request
      */
-    public ReefConnectionTestBase( boolean autoLogon )
+    protected ReefConnectionTestBase( boolean autoLogon )
     {
         this.autoLogon = autoLogon;
     }
@@ -62,7 +66,7 @@ public class ReefConnectionTestBase
     /**
      * defaults autoLogon to true
      */
-    public ReefConnectionTestBase()
+    protected ReefConnectionTestBase()
     {
         this( true );
     }
@@ -73,23 +77,22 @@ public class ReefConnectionTestBase
      */
     private AMQPConnectionSettings getConnectionInfo()
     {
-        String reef_ip = System.getProperty( "reef_node_ip" );
-        if ( reef_ip == null )
-            reef_ip = "127.0.0.1";
-        String reef_port = System.getProperty( "reef_node_port" );
-        if ( reef_port == null )
-            reef_port = "5672";
-        String user = System.getProperty( "org.totalgrid.reef.amqp.user" );
-        if ( user == null )
-            user = "guest";
-        String password = System.getProperty( "org.totalgrid.reef.amqp.password" );
-        if ( password == null )
-            password = "guest";
-        String virtualHost = System.getProperty( "org.totalgrid.reef.amqp.virtualHost" );
-        if ( virtualHost == null )
-            virtualHost = "test";
+        Properties props = new Properties();
 
-        return new AMQPConnectionSettings( reef_ip, Integer.parseInt( reef_port ), user, password, virtualHost );
+        try
+        {
+            FileInputStream fis = new FileInputStream( "../org.totalgrid.reef.amqp.cfg" );
+            props.load( fis );
+            fis.close();
+        }
+        catch ( IOException e )
+        {
+            // TODO can we just fail here?
+            e.printStackTrace();
+            // we'll then throw an exception when trying to load from emtpy properties file
+        }
+
+        return new AMQPConnectionSettingImpl( props );
     }
 
     @Before
@@ -98,10 +101,16 @@ public class ReefConnectionTestBase
         connection.connect( 5000 );
         client = connection.newSession();
         SessionExecutionPool pool = connection.newSessionPool();
-        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "core", "core" );
+        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
+        {
             client.getDefaultHeaders().setAuthToken( authToken );
-        helpers = new AtollService( pool, authToken );
+            helpers = new AllScadaServicePooledWrapper( pool, authToken );
+        }
+        else
+        {
+            helpers = new AllScadaServicePooledWrapper( pool, "" );
+        }
     }
 
     @After

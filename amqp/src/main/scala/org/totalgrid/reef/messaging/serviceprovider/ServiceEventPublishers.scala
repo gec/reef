@@ -22,5 +22,5 @@ import com.google.protobuf.GeneratedMessage
 
 // Interface for services to acquire subscription handlers based on message type
 trait ServiceEventPublishers {
-  def getEventSink[A <: GeneratedMessage](klass: Class[A]): ServiceSubscriptionHandler
+  def getEventSink(klass: Class[_]): ServiceSubscriptionHandler
 }

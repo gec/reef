@@ -19,7 +19,7 @@
 package org.totalgrid.reef.japi.request.impl
 
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.totalgrid.reef.japi.request.{ CommandService }
@@ -105,11 +105,27 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
     _.get(UserCommandRequestBuilders.getForUid("*")).await().expectMany
   }
 
+  override def getCommandHistory(cmd: Command): java.util.List[UserCommandRequest] = ops("Couldn't get command history") {
+    _.get(UserCommandRequestBuilders.getForName(cmd.getName)).await().expectMany
+  }
+
   override def getCommands(): java.util.List[Command] = ops("Couldn't get all commands") {
     _.get(CommandRequestBuilders.getAll).await().expectMany
   }
 
   override def getCommandByName(name: String) = ops("Couldn't get command with name: " + name) {
     _.get(CommandRequestBuilders.getByEntityName(name)).await().expectOne
+  }
+
+  override def getCommandsOwnedByEntity(parentUuid: ReefUUID) = {
+    ops("Couldn't find commands owned by parent entity: " + parentUuid.getUuid) {
+      _.get(CommandRequestBuilders.getOwnedByEntityWithUuid(parentUuid)).await().expectMany
+    }
+  }
+
+  override def getCommandsBelongingToEndpoint(endpointUuid: ReefUUID) = {
+    ops("Couldn't find commands sourced by endpoint: " + endpointUuid.getUuid) {
+      _.get(CommandRequestBuilders.getSourcedByEndpoint(endpointUuid)).await().expectMany
+    }
   }
 }

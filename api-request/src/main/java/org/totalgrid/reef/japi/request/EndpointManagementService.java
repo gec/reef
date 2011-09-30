@@ -20,6 +20,7 @@ package org.totalgrid.reef.japi.request;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
+import org.totalgrid.reef.proto.FEP.CommChannel;
 import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection;
 import org.totalgrid.reef.proto.Model.ReefUUID;
@@ -100,5 +101,24 @@ public interface EndpointManagementService
      * @return the connection object representing the current connection state
      */
     CommEndpointConnection getEndpointConnection( ReefUUID endpointUuid ) throws ReefServiceException;
+
+    /**
+     * In reef a communication channel is the representation of the "low-level" connection to an external resource
+     * like a serial port or tcp socket.
+     * @return list of all of the communication channels
+     */
+    List<CommChannel> getAllCommunicationChannels() throws ReefServiceException;
+
+    /**
+     * @param channelUuid uuid of channel
+     * @return channel with matching uuid or exception if doesn't exist
+     */
+    CommChannel getCommunicationChannel( ReefUUID channelUuid ) throws ReefServiceException;
+
+    /**
+     * @param channelName name of the channel
+     * @return channel with matching name or exception if doesn't exist
+     */
+    CommChannel getCommunicationChannelByName( String channelName ) throws ReefServiceException;
 
 }

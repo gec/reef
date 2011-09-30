@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.SystemPropertyConfigReader
-import org.totalgrid.reef.messaging.ProtoClient
+import org.totalgrid.reef.messaging.AmqpClientSession
 import org.totalgrid.reef.broker.BrokerConnectionInfo
 
 import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
@@ -46,9 +46,9 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   override def beforeAll() {
     factory.connect(5000)
   }
+
   override def afterAll() {
     factory.disconnect(5000)
-
     client.save(file, title, desc)
   }
 
@@ -60,13 +60,14 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   lazy val client = connect
 
-  val username = "core"
-  val password = "core"
+  val username = "system"
+  val password = "system"
 
   def connect = {
-    val client = new ProtoClient(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
+    val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with InteractionRecorder with SingleSessionClientSource {
       def session = this
     }
+    client.addRequestSpy(client)
 
     val agent = Agent.newBuilder.setName(username).setPassword(password).build
     val request = AuthToken.newBuilder.setAgent(agent).build

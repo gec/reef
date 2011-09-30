@@ -20,14 +20,16 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope._
 import org.totalgrid.reef.broker._
+import org.totalgrid.reef.proto.FEP.SerialPort
 
 /**
- * trait used to present a simple interface to a request/reply interface as a
- * simple async channel
+ * trait used to present a simple interface to a request/reply interface as a simple async channel
  */
 trait RequestReplyChannel[RequestType, ReplyType] {
   def send(request: RequestType, exchange: String, key: String)
+
   def close(): Unit
+  def isOpen: Boolean
 
   def setResponseHandler(handler: ResponseHandler[ReplyType])
 }
@@ -61,7 +63,13 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
     extends AMQPPublisher(Nil) with RequestReplyChannel[S, R] with MessageConsumer with BrokerChannelCloseListener {
 
   private var channel: Option[BrokerChannel] = None
-  override def close(): Unit = channel.foreach { _.close }
+
+  final override def close(): Unit = channel.foreach { _.close }
+
+  final override def isOpen = channel match {
+    case Some(x) => x.isOpen
+    case None => false
+  }
 
   /// where to send the received data, optional to break circular construction dependency, will blow
   /// up if used without setting the destination
@@ -76,7 +84,7 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
     send(serialize(value), exchange, key)
   }
 
-  override def onClosed(b: BrokerChannel, expected: Boolean) = {
+  final override def onClosed(b: BrokerChannel, expected: Boolean) = {
     responseQueue.close()
     handler.get.onClosed()
     super.onClosed(b, expected)
@@ -87,7 +95,7 @@ abstract class AMQPRequestReply[S, R](responseExchange: String, serialize: S => 
   /**
    * Overrides the online function to setup the subscriber BEFORE the publisher.
    */
-  override def online(b: BrokerChannel) {
+  final override def online(b: BrokerChannel) {
     // This ordering is very important for avoiding race conditions!!
     b.addCloseListener(this)
     channel = Some(b)

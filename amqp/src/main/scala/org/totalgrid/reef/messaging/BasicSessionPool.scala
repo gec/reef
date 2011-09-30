@@ -18,35 +18,67 @@
  */
 package org.totalgrid.reef.messaging
 
-import scala.collection.mutable._
-import org.totalgrid.reef.sapi.client.{ ClientSession, SessionPool }
 import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.sapi._
+import client._
+import org.totalgrid.reef.japi.{ InternalClientError, Envelope, ReefServiceException }
+import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
-class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) extends SessionPool with SessionExecutionPool {
+class BasicSessionPool(source: SessionSource) extends SessionPool with SessionExecutionPool with Logging {
 
-  private val available = Set.empty[ClientSession]
-  private val unavailable = Set.empty[ClientSession]
+  class ErroredClientSession(exception: ReefServiceException) extends ClientSession {
+
+    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Destination = AnyNodeDestination): Promise[Response[A]] =
+      new FixedPromise[Response[A]](Failure(Envelope.Status.BUS_UNAVAILABLE, "The session pool could not obtain a session: " + exception.toString))
+
+    final override def isOpen: Boolean = false
+
+    final override def close() = {}
+
+    final override def addSubscription[A](klass: Class[_]): Subscription[A] = throw new InternalClientError("Bus is unavailable", exception)
+  }
+
+  private val available = scala.collection.mutable.Set.empty[ClientSession]
+  private var count = 0
+
+  final override def size = count
 
   private def acquire(): ClientSession = available.synchronized {
     available.lastOption match {
-      case Some(s) =>
-        available.remove(s)
-        unavailable.add(s)
-        s
-      case None =>
-        val s = conn.getClientSession()
-        unavailable.add(s)
-        s
+      case Some(session) =>
+        available.remove(session)
+        session
+      case None => getNewSession()
+    }
+  }
+
+  private def getNewSession(): ClientSession = {
+    try {
+      val session = source.newSession()
+      count += 1
+      session
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn("Exception getting new ClientSession", rse)
+        new ErroredClientSession(rse)
     }
   }
 
   private def release(session: ClientSession) = available.synchronized {
-    unavailable.remove(session)
-    available.add(session)
+    session match {
+      case ex: ErroredClientSession => // do nothing
+      case _ =>
+        // if the session somehow gets closed, we discard it
+        if (session.isOpen) available.add(session)
+        else count -= 1
+    }
+
   }
 
-  override def borrow[A](fun: ClientSession => A): A = {
+  final override def borrow[A](fun: ClientSession => A): A = {
 
     val session = acquire()
 
@@ -58,17 +90,13 @@ class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) 
 
   }
 
-  override def borrow[A](authToken: String)(fun: ClientSession => A): A = {
-
-    borrow { session =>
-      try {
-        session.getDefaultHeaders.setAuthToken(authToken)
-        fun(session)
-      } finally {
-        session.getDefaultHeaders.clear()
-      }
+  final override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow { session =>
+    try {
+      session.getDefaultHeaders.setAuthToken(authToken)
+      fun(session)
+    } finally {
+      session.getDefaultHeaders.clear()
     }
-
   }
 
   // implement Java SessionExecutionPool
@@ -80,3 +108,4 @@ class BasicSessionPool[A <: { def getClientSession(): ClientSession }](conn: A) 
     borrow(authToken)(client => function.apply(new SessionWrapper(client)))
   }
 }
+

@@ -107,12 +107,14 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
       case List(x, y) =>
         x.getTime should equal(10)
         y.getTime should equal(9)
+      case _ => assert(false)
     }
 
     cm.getOldest(name, 2) match {
       case List(x, y) =>
         x.getTime should equal(1)
         y.getTime should equal(2)
+      case _ => assert(false)
     }
 
     cm.getInRange(name, 3, 5, 100, true) match {
@@ -120,6 +122,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
         x.getTime should equal(3)
         y.getTime should equal(4)
         z.getTime should equal(5)
+      case _ => assert(false)
     }
 
     cm.getInRange(name, 3, 5, 100, false) match {
@@ -127,6 +130,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
         x.getTime should equal(5)
         y.getTime should equal(4)
         z.getTime should equal(3)
+      case _ => assert(false)
     }
 
     // cm.remove(name)
@@ -190,6 +194,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
           x.getIntVal should equal(1)
           y.getTime should equal(4)
           y.getIntVal should equal(0)
+        case _ => assert(false)
       }
 
       cm.getOldest(name, 2) match {
@@ -198,6 +203,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
           x.getIntVal should equal(0)
           y.getTime should equal(0)
           y.getIntVal should equal(1)
+        case _ => assert(false)
       }
 
       cm.getInRange(name, 1, 2, 100, true) match {
@@ -210,6 +216,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
           y.getIntVal should equal(0)
           z.getTime should equal(2)
           z.getIntVal should equal(1)
+        case _ => assert(false)
       }
 
       cm.getInRange(name, 1, 2, 100, false) match {
@@ -218,6 +225,7 @@ abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with Be
           x.getTime should equal(2)
           y.getTime should equal(1)
           z.getTime should equal(1)
+        case _ => assert(false)
       }
 
       cm.remove(List(name))

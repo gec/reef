@@ -22,25 +22,12 @@ import scala.actors.AbstractActor
 import scala.actors.Actor._
 import scala.actors.TIMEOUT
 import org.totalgrid.reef.util.Timer
-
-/// Companion class with case classes that correspond to Executor's interface
-object ActorExecutor {
-
-  case class Execute(fun: () => Any)
-
-  case class Request[A](fun: () => A)
-
-  case class Link(a: AbstractActor)
-
-  case class UnLink(a: AbstractActor)
-
-}
+import parallel.Future
 
 /**
  *  Generic actor that can be used to execute
  *  arbitrary blocks of code. Useful for synchronizing
  *  lots of other threads.
- *
  */
 trait ActorExecutor extends Executor with Lifecycle {
 
@@ -48,7 +35,7 @@ trait ActorExecutor extends Executor with Lifecycle {
   case object NOW
   case object OPERATION_COMPLETE
 
-  import ActorExecutor._
+  import ActorExecutorMessages._
 
   /// start execution and run fun just afterwards
   override def dispatchStart() = {
@@ -62,8 +49,7 @@ trait ActorExecutor extends Executor with Lifecycle {
     myactor = getExecutorActor
   }
 
-  /// Extending classes will implement the AbstractActor that receives these
-  /// messages
+  /// Extending classes will implement the AbstractActor that receives these messages
   var myactor: ReactorBase = getExecutorActor
 
   def getActor: AbstractActor = myactor
@@ -132,7 +118,11 @@ trait ActorExecutor extends Executor with Lifecycle {
   }
 
   /// execute a function synchronously and return the value
-  def request[A](fun: => A): A = (myactor !? Request(() => fun)).asInstanceOf[A]
+  def request[A](fun: => A): Future[A] = {
+    val future = new SynchronizedFuture[A]()
+    myactor ! Request(() => fun, future.set)
+    future
+  }
 
   def bind(a: AbstractActor) = myactor ! Link(a)
 

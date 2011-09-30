@@ -18,11 +18,12 @@
  */
 package org.totalgrid.reef.japi.request;
 
+import java.util.List;
+
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.ConfigFile;
+import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.ReefUUID;
-
-import java.util.List;
 
 /**
  * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.
@@ -39,7 +40,6 @@ import java.util.List;
  */
 public interface ConfigFileService
 {
-
     /**
      * Get all config files
      */
@@ -77,6 +77,12 @@ public interface ConfigFileService
     ConfigFile createConfigFile( String name, String mimeType, byte[] data, ReefUUID entityUid ) throws ReefServiceException;
 
     /**
+     * create a ConfigFile that is "used" by an Entiny and only findable via that entity, it has no name of its own.
+     * Queryable by mimeType and entity only.
+     */
+    ConfigFile createConfigFile( String mimeType, byte[] data, ReefUUID entityUid ) throws ReefServiceException;
+
+    /**
      * update the text of the previously retrieved ConfigFile
      */
     ConfigFile updateConfigFile( ConfigFile configFile, byte[] data ) throws ReefServiceException;
@@ -84,7 +90,7 @@ public interface ConfigFileService
     /**
      * adds another Entity as a "user" of the ConfigFile
      */
-    ConfigFile addConfigFileUserByEntity( ConfigFile configFile, ReefUUID entityUid ) throws ReefServiceException;
+    ConfigFile addConfigFileUsedByEntity( ConfigFile configFile, ReefUUID entityUid ) throws ReefServiceException;
 
     /**
      * delete the passed in config file and all "using" relationships to Entities

@@ -21,6 +21,7 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.Model.ConfigFile
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.util.Table
 
 object ConfigFileView {
   def printTable(apps: List[ConfigFile]) = {
@@ -28,12 +29,11 @@ object ConfigFileView {
   }
 
   def header = {
-    "ID" :: "Name" :: "MimeType" :: "RelatedEntities" :: Nil
+    "Name" :: "MimeType" :: "RelatedEntities" :: Nil
   }
 
   def row(a: ConfigFile) = {
-    a.getUuid.getUuid ::
-      a.getName ::
+    a.getName ::
       a.getMimeType ::
       a.getEntitiesList.toList.map { _.getName }.mkString(", ") ::
       Nil

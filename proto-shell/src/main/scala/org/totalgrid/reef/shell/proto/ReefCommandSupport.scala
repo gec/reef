@@ -67,23 +67,25 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
   protected def login(user: String, auth: String) = {
     this.set("user", user)
+    this.set("authToken", auth)
     reefSession.getDefaultHeaders.setAuthToken(auth)
   }
 
   protected def logout() = {
     this.unset("user")
+    this.unset("authToken")
     setReefSession(null, null)
   }
 
-  private def get(name: String): Option[String] = {
+  protected def get(name: String): Option[String] = {
     this.session.get(name) match {
       case null => None
       case x => Some(x.asInstanceOf[String])
     }
   }
 
-  private def unset(name: String): Unit = set(name, null)
-  private def set(name: String, value: String): Unit = this.session.put(name, value)
+  protected def unset(name: String): Unit = set(name, null)
+  protected def set(name: String, value: String): Unit = this.session.put(name, value)
 
   override protected def doExecute(): Object = {
     println("")

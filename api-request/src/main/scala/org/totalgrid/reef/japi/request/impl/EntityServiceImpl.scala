@@ -18,26 +18,6 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-/**
- * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  Green Energy Corp licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 import org.totalgrid.reef.japi.request.{ EntityService }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity, ReefUUID }
@@ -77,6 +57,43 @@ trait EntityServiceImpl extends ReefServiceBaseClass with EntityService {
 
       val allEntitiesList: List[Entity] = result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten
       allEntitiesList
+    }
+  }
+
+  override def getEntityImmediateChildren(parent: ReefUUID, relationship: String): java.util.List[Entity] = {
+    ops("Couldn't get immediate children of entity: " + parent.getUuid + " relation: " + relationship) { session =>
+      val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship)
+      val result = session.get(request).await().expectOne()
+      result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList
+    }
+  }
+
+  override def getEntityImmediateChildren(parent: ReefUUID, relationship: String, constrainingTypes: java.util.List[String]): java.util.List[Entity] = {
+    ops("Couldn't get immediate children of entity: " + parent.getUuid + " relation: " + relationship) { session =>
+      val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship, constrainingTypes)
+      val result = session.get(request).await().expectOne()
+      result.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList
+    }
+  }
+
+  override def getEntityChildren(parent: ReefUUID, relationship: String, depth: Int, constrainingTypes: java.util.List[String]): Entity = {
+    ops("Couldn't get tree for entity: " + parent.getUuid + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
+      val request = EntityRequestBuilders.getChildrenAtDepth(parent, relationship, depth, constrainingTypes)
+      session.get(request).await().expectOne()
+    }
+  }
+
+  override def getEntityChildren(parent: ReefUUID, relationship: String, depth: Int): Entity = {
+    ops("Couldn't get tree for entity: " + parent.getUuid + " relation: " + relationship + " depth: " + depth) { session =>
+      val request = EntityRequestBuilders.getChildrenAtDepth(parent, relationship, depth, Nil)
+      session.get(request).await().expectOne()
+    }
+  }
+
+  override def getEntityChildrenFromTypeRoots(parentType: String, relationship: String, depth: Int, constrainingTypes: java.util.List[String]): java.util.List[Entity] = {
+    ops("Couldn't get tree for from type roots: " + parentType + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
+      val request = EntityRequestBuilders.getChildrenAtDepth(parentType, relationship, depth, constrainingTypes)
+      session.get(request).await().expectMany()
     }
   }
 

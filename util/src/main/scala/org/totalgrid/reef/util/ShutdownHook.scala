@@ -19,26 +19,25 @@
 package org.totalgrid.reef.util
 
 /**
- * provides a mechanism for entry points to gracefully shutdown by calling
- *  a generic handler
+ * provides a mechanism for entry points to gracefully shutdown by calling a generic handler
  */
 trait ShutdownHook {
 
   /**
-   *  Waits until a shutdown condition occurs (i.e. signal) and then
-   *   calls the provided hook.
+   *  Waits until a shutdown condition occurs (i.e. signal) and then calls the provided hook.
    *
    *   @param	hook	Shutdown callback
    */
   def waitForShutdown(hook: => Unit) = {
-    addShutdownHook(hook, this)
+    addShutdownHook(hook)
     synchronized { wait }
   }
 
-  private def addShutdownHook(hook: => Unit) = {
+  private def addShutdownHook(hook: => Unit) {
     Runtime.getRuntime.addShutdownHook(new Thread {
-      override def run = {
-        synchronized { notify }
+      override def run() {
+        // TODO is this correct??  shouldn't it do the work and then notify the caller?
+        synchronized { notifyAll() }
         hook
       }
     })

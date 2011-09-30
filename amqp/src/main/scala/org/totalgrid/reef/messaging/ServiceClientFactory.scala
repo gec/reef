@@ -31,11 +31,11 @@ trait ClientSessionFactory {
    */
   def getServiceResponseCorrelator(timeoutms: Long): ServiceResponseCorrelator
 
-  def getProtoClientSession(lookup: ServiceList, timeoutms: Long) = new ProtoClient(this, lookup, timeoutms)
+  def getProtoClientSession(lookup: ServiceList, timeoutms: Long) = new AmqpClientSession(this, lookup, timeoutms)
 
   /**
    * the factory must create subscription objects of the appropriate type even if its a "stream type"
    */
-  def prepareSubscription[A](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A]
+  def prepareSubscription[A](deserialize: Array[Byte] => A): Subscription[A]
 
 }

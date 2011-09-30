@@ -25,6 +25,10 @@ import org.totalgrid.reef.japi.Envelope;
 
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.UnauthorizedException;
+import org.totalgrid.reef.japi.request.AuthTokenService;
+import org.totalgrid.reef.japi.request.PointService;
+import org.totalgrid.reef.japi.request.impl.AllScadaServicePooledWrapper;
 
 public class TestAuthService extends ReefConnectionTestBase
 {
@@ -37,25 +41,32 @@ public class TestAuthService extends ReefConnectionTestBase
     @Test
     public void successfulLogin() throws ReefServiceException
     {
-        SampleRequests.logonAs( client, "core", "core", false );
+        AuthTokenService as = helpers;
+        as.createNewAuthorizationToken( "system", "system" );
     }
 
     @Test
     public void demonstateAuthTokenNeeded() throws ReefServiceException
     {
+
         try
         {
             // will fail because we don't havent logged in to get auth tokens
-            SampleRequests.getAllPoints( client );
+            PointService ps = helpers;
+            ps.getAllPoints();
             assertTrue( false );
         }
-        catch ( ReefServiceException pse )
+        catch ( UnauthorizedException pse )
         {
             assertEquals( Envelope.Status.UNAUTHORIZED, pse.getStatus() );
         }
+        AuthTokenService as = helpers;
         // logon as all permission user
-        SampleRequests.logonAs( client, "core", "core", true );
+        String token = as.createNewAuthorizationToken( "system", "system" );
+        helpers = new AllScadaServicePooledWrapper( connection.newSessionPool(), token );
+
+        PointService ps = helpers;
         // request will now not be rejected
-        SampleRequests.getAllPoints( client );
+        ps.getAllPoints();
     }
 }

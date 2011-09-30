@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="common.loader.reef.totalgrid.org"
+           xmlns="common.loader.reef.totalgrid.org"
+           elementFormDefault="qualified"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="1.0">
+
+    <xs:element name="configFile">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="name" type="xs:string" use="optional"/>
+                    <xs:attribute name="fileName" type="xs:string" use="optional"/>
+                    <xs:attribute name="mimeType" type="xs:string" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="configFiles">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="configFile" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="attribute">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="stringValue" type="xs:string"/>
+            <xs:attribute name="booleanValue" type="xs:boolean"/>
+            <xs:attribute name="intValue" type="xs:int"/>
+            <xs:attribute name="doubleValue" type="xs:double"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="info">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="configFile"/>
+                <xs:element ref="attribute"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -23,12 +23,6 @@ package org.totalgrid.reef.japi;
  */
 public class ResponseTimeoutException extends ReefServiceException
 {
-
-    public ResponseTimeoutException()
-    {
-        super( "", Envelope.Status.RESPONSE_TIMEOUT );
-    }
-
     public ResponseTimeoutException( String msg )
     {
         super( msg, Envelope.Status.RESPONSE_TIMEOUT );

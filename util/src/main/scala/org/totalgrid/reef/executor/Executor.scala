@@ -18,7 +18,8 @@
  */
 package org.totalgrid.reef.executor
 
-import org.totalgrid.reef.util.Timer
+import parallel.Future
+import org.totalgrid.reef.util.{ Cancelable, Timer }
 
 /**
  * Concurrency pattern for abstracting the execution of work on some thread-like implementation.
@@ -26,9 +27,10 @@ import org.totalgrid.reef.util.Timer
 trait Executor {
 
   /**
-   * dispatches a unit of work immediately
+   * dispatches a unit of work immediately. If the function throws, the executor catches the exception. This
+   * function is "fire-and-forget"
    */
-  def execute(fun: => Unit): Unit
+  def execute(function: => Unit): Unit
 
   /**
    * dispatches a unit of work to do after a specified time has elapsed.
@@ -45,9 +47,16 @@ trait Executor {
   def repeat(msec: Long)(fun: => Unit): Timer
 
   /**
-   * dispatches a unit of work synchronously with a specific evaluation type A
+   * dispatches a unit of work, the result of which is returned as a future. If the fun throws,
+   * the future's apply method will throw the same exception
    */
-  def request[A](fun: => A): A
+  def request[A](fun: => A): Future[A]
+
+  /**
+   * Blocks until all previously made "execute/request" calls have completed
+   */
+  final def sync() = request {}()
+
 }
 
 object Executor {
@@ -58,13 +67,13 @@ object Executor {
     // http://scala-programming-language.1934581.n4.nabble.com/Increase-actor-thread-pool-td1936329.html
     // un-deadlocks the measproc when it tries to load lots of resources at one time. Problem is due to
     // inline actors all blocking on service futures and starving the AMQP actors so it cant receive the 
-    // service resposes and causing erroneous timeouts
+    // service responses and causing erroneous timeouts
     import scala.actors.Scheduler
     import scala.actors.scheduler.ResizableThreadPoolScheduler
     Scheduler.impl = {
-      val s = new ResizableThreadPoolScheduler(false)
-      s.start()
-      s
+      val scheduler = new ResizableThreadPoolScheduler(false)
+      scheduler.start()
+      scheduler
     }
   }
 }

@@ -18,20 +18,18 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.client.{ ClientSession, Event, SessionPool }
 import org.totalgrid.reef.sapi.{ ServiceList, RequestEnv, Destination, AnyNodeDestination }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.sapi.client.{ ClientSession, Event, SessionPool }
 
-trait PoolableConnection {
-
-  def getClientSession(): ClientSession
-
+trait SessionSource {
+  def newSession(): ClientSession
 }
 
 /** Combines the various registry traits into a single interface */
-trait Connection {
+trait Connection extends SessionSource {
 
   def getSessionPool(): SessionPool
 
@@ -54,13 +52,13 @@ trait Connection {
 }
 
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
-class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, defaultEnv: Option[RequestEnv] = None) extends Connection {
+class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, authToken: Option[String] = None) extends Connection {
 
   private lazy val pool = new BasicSessionPool(this)
 
-  def getClientSession(): ClientSession = {
-    val client = new ProtoClient(factory, lookup, timeoutms)
-    defaultEnv.foreach(client.setDefaultHeaders)
+  final override def newSession(): ClientSession = {
+    val client = new AmqpClientSession(factory, lookup, timeoutms)
+    authToken.foreach(client.getDefaultHeaders.setAuthToken)
     client
   }
 

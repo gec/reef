@@ -24,14 +24,15 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
+import org.totalgrid.reef.japi.request.MeasurementOverrideService;
 import org.totalgrid.reef.japi.request.MeasurementService;
-import org.totalgrid.reef.japi.request.builders.MeasurementBatchRequestBuilders;
-import org.totalgrid.reef.japi.request.builders.MeasurementOverrideRequestBuilders;
+
 import org.totalgrid.reef.japi.request.builders.MeasurementRequestBuilders;
 import org.totalgrid.reef.proto.Measurements.*;
 import org.totalgrid.reef.proto.Model.*;
 import org.totalgrid.reef.proto.Processing.MeasOverride;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +41,10 @@ import org.totalgrid.reef.integration.helpers.*;
 @SuppressWarnings("unchecked")
 public class TestMeasOverrideService extends ReefConnectionTestBase
 {
+    private Measurement clearTime( Measurement m )
+    {
+        return m.toBuilder().clearTime().build();
+    }
 
     /** Test that the measurement overrides work correctly */
     @Test
@@ -52,68 +57,90 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
         List<Point> ps = new LinkedList<Point>();
         ps.add( p );
 
-        MeasurementService ms = helpers;
+        MeasurementService measurementService = helpers;
+        MeasurementOverrideService overrideService = helpers;
 
-        Measurement originalValue = ms.getMeasurementByPoint( p );
+        Measurement originalValue = measurementService.getMeasurementByPoint( p );
 
         MockSubscriptionEventAcceptor<Measurement> mock = new MockSubscriptionEventAcceptor<Measurement>( true );
 
         // delete override by point
-        client.delete( MeasurementOverrideRequestBuilders.getByPoint( p ) );
+        overrideService.clearMeasurementOverridesOnPoint( p );
+
 
         // subscribe to updates for this point
-        SubscriptionResult<List<Measurement>, Measurement> result = ms.subscribeToMeasurementsByPoints( ps );
+        SubscriptionResult<List<Measurement>, Measurement> result = measurementService.subscribeToMeasurementsByPoints( ps );
 
         assertEquals( result.getResult().size(), 1 );
         result.getSubscription().start( mock );
 
 
+        Comparator<Measurement> timeStrippedComparer = new Comparator<Measurement>() {
+            @Override
+            public int compare( Measurement m1, Measurement m2 )
+            {
+                return clearTime( m1 ).equals( clearTime( m2 ) ) ? 0 : 1;
+            }
+        };
+
         long now = System.currentTimeMillis();
 
         // create an override
         Measurement m = MeasurementRequestBuilders.makeIntMeasurement( pointName, 11111, now );
-        MeasOverride ovrRequest = MeasurementOverrideRequestBuilders.makeOverride( p, m );
-        MeasOverride override = client.put( ovrRequest ).await().expectOne();
+        overrideService.setPointOutOfService( p );
+        MeasOverride override = overrideService.setPointOverride( p, m );
 
         // make sure we see it in the event stream
-        assertTrue( mock.waitFor( MeasurementRequestBuilders.makeSubstituted( m ), 5000 ) );
+        assertTrue( mock.waitFor( MeasurementRequestBuilders.makeSubstituted( m ), 5000, timeStrippedComparer ) );
 
         // verify that substitued value got to measurement database
-        Measurement stored = helpers.getMeasurementByPoint( p );
-        assertEquals( MeasurementRequestBuilders.makeSubstituted( m ), stored );
+        Measurement stored = measurementService.getMeasurementByPoint( p );
+        assertEquals( clearTime( MeasurementRequestBuilders.makeSubstituted( m ) ), clearTime( stored ) );
+
+        List<Measurement> batch = new LinkedList<Measurement>();
 
         // if we now try to put a measurement it should be suppressed (b/c we have overridden it)
         Measurement suppressedValue = MeasurementRequestBuilders.makeIntMeasurement( pointName, 22222, now + 1 );
-        MeasurementBatch mb = MeasurementBatchRequestBuilders.makeBatch( suppressedValue );
-        client.put( mb ).await().expectOne();
+        batch.add( suppressedValue );
+
+        measurementService.publishMeasurements( batch );
 
         // we store the most recently reported value in a cache so if we publish a value
         // while it is overridden and then take off the override we should see the cached value published
         Measurement cachedValue = MeasurementRequestBuilders.makeIntMeasurement( pointName, 33333, now + 2 );
-        MeasurementBatch mb2 = MeasurementBatchRequestBuilders.makeBatch( cachedValue );
-        client.put( mb2 ).await().expectOne();
+        batch.clear();
+        batch.add( cachedValue );
+        measurementService.publishMeasurements( batch );
 
         // now we remove the override, we should get the second measurement we attempted to publish
-        client.delete( override ).await().expectOne();
+        overrideService.deleteMeasurementOverride( override );
 
         // publish a final measurement we expect to see on the subscription channel
         Measurement finalValue = MeasurementRequestBuilders.makeIntMeasurement( pointName, 44444, now + 3 );
-        MeasurementBatch mb3 = MeasurementBatchRequestBuilders.makeBatch( finalValue );
-        client.put( mb3 ).await().expectOne();
+        batch.clear();
+        batch.add( finalValue );
+        measurementService.publishMeasurements( batch );
 
         // verify that last value got to measurement database
-        Measurement lastValue = helpers.getMeasurementByPoint( p );
-        assertEquals( finalValue, lastValue );
+        Measurement lastValue = measurementService.getMeasurementByPoint( p );
+        assertEquals( clearTime( finalValue ), clearTime( lastValue ) );
 
         // verify that we get that final value
-        assertTrue( mock.waitFor( finalValue, 5000 ) );
+        assertTrue( mock.waitFor( finalValue, 5000, timeStrippedComparer ) );
 
         // then verify that we never got the suppressed value
-        List<Measurement> measurements = mock.getPayloads();
-        assertTrue( measurements.contains( cachedValue ) );
-        assertFalse( measurements.contains( suppressedValue ) );
+        List<Measurement> measurementsWithTime = mock.getPayloads();
+        LinkedList<Measurement> measurements = new LinkedList<Measurement>();
+        for ( Measurement m1 : measurementsWithTime )
+        {
+            measurements.add( clearTime( m1 ) );
+        }
+        assertTrue( measurements.contains( clearTime( cachedValue ) ) );
+        assertFalse( measurements.contains( clearTime( suppressedValue ) ) );
 
         // put the original value back in
-        client.put( MeasurementBatchRequestBuilders.makeBatch( originalValue ) ).await().expectOne();
+        batch.clear();
+        batch.add( originalValue );
+        measurementService.publishMeasurements( batch );
     }
 }

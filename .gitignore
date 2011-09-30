@@ -1,11 +1,13 @@
 .idea
 *.iml
 **/target
-org.totalgrid.reef.cfg
-org.totalgrid.reef.test.cfg
+**/**/target
+org.totalgrid.reef.*.cfg
 out
 reef-karaf-*
 totalgrid-reef-*
 Thumbs.db
 *.log
 **/*.log
+*.ipr
+*.iws

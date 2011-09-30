@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.japi.request;
 
+import java.util.List;
+
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.EntityAttributes;
 import org.totalgrid.reef.proto.Model.ReefUUID;
-
-import java.util.List;
 
 /**
  * <p>
@@ -100,11 +100,11 @@ public interface EntityService
     /**
      * Find all entities with a specified type.
      *
-     * @param typ The entity type to search for.
+     * @param type The entity type to search for.
      * @return The list of entities that have the specified type.
      * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-    List<Entity> getAllEntitiesWithType( String typ ) throws ReefServiceException;
+    List<Entity> getAllEntitiesWithType( String type ) throws ReefServiceException;
 
     /**
      * Find all entities matching at least one of the specified types.
@@ -123,11 +123,66 @@ public interface EntityService
      *
      * @param parent       a reference to the parent entity on which to root the request
      * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
-     * @param typ          the "type" or "class" the matching children need to have
+     * @param type          the "type" or "class" the matching children need to have
      * @return list of all children in arbitrary order
      * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-    List<Entity> getEntityRelatedChildrenOfType( ReefUUID parent, String relationship, String typ ) throws ReefServiceException;
+    List<Entity> getEntityRelatedChildrenOfType( ReefUUID parent, String relationship, String type ) throws ReefServiceException;
+
+    /**
+     * Return direct children of the parent Entity (distance of 1). Just children are returned.
+     * @param parent       a reference to the parent entity on which to root the request
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @return  list of all children in arbitrary order
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityImmediateChildren( ReefUUID parent, String relationship ) throws ReefServiceException;
+
+    /**
+     * Return direct children of the parent Entity (distance of 1). Just children are returned.
+     * @param parent       a reference to the parent entity on which to root the request
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @param constrainingTypes list of children types we would like to returned, only those children that have atleast one
+     *                          of the indicated types are returned
+     * @return  list of all children in arbitrary order
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityImmediateChildren( ReefUUID parent, String relationship, List<String> constrainingTypes ) throws ReefServiceException;
+
+    /**
+     * Return a tree of upto depth with all nodes related to each other
+     * @param parent       a reference to the parent entity on which to root the request
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @param depth        how many plies deep we want to
+     * @return  the root entity filled out with children
+     * @throws ReefServiceException
+     */
+    Entity getEntityChildren( ReefUUID parent, String relationship, int depth ) throws ReefServiceException;
+
+    /**
+     * Return a tree of upto depth with all nodes in constraining types related to each other
+     * @param parent       a reference to the parent entity on which to root the request
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @param depth        how many plies deep we want to
+     * @param constrainingTypes list of children types we would like to returned, only those children that have atleast one
+     *                          of the indicated types are returned
+     * @return  the root entity filled out with children
+     * @throws ReefServiceException
+     */
+    Entity getEntityChildren( ReefUUID parent, String relationship, int depth, List<String> constrainingTypes ) throws ReefServiceException;
+
+    /**
+     * Return a tree of upto depth with all nodes in constraining types related to each other
+     * @param parentType   a type for all of the roots we want to use ("Root")
+     * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
+     * @param depth        how many plies deep we want to
+     * @param constrainingTypes list of children types we would like to returned, only those children that have atleast one
+     *                          of the indicated types are returned
+     * @return  the root entity filled out with children
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityChildrenFromTypeRoots( String parentType, String relationship, int depth, List<String> constrainingTypes )
+        throws ReefServiceException;
 
     /**
      * Return a tree of entities based on a complex entity model query. It is usually possible to satisfy most entity requirements

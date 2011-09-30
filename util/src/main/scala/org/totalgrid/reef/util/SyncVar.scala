@@ -70,7 +70,7 @@ class SyncVar[A](initialValue: Option[A] = None) {
   val defaultTimeout = 5000
 
   protected val queue = new Queue[A]
-  initialValue.foreach { x => queue.enqueue(x) }
+  initialValue.foreach(queue.enqueue(_))
 
   def current = queue.synchronized { queue.last }
 
@@ -89,17 +89,19 @@ class SyncVar[A](initialValue: Option[A] = None) {
     current
   }
 
-  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[(A) => Exception] = { None }): Boolean = {
-    val exception = customException.orElse(Some((a: A) => new Exception("Condition not met, final value was: " + a + " not: " + value)))
+  def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Option[A] => Exception] = None): Boolean = {
+    def getException(x: Option[A]) = new Exception("Condition not met, final value was: " + x + " not: " + value)
+    val exception = customException.orElse(Some(getException(_)))
     waitFor(current => current == value, msec, throwOnFailure, exception)
   }
 
-  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[(A) => Exception] = { None }): Boolean = {
-    val exception = customException.orElse(Some((a: A) => new Exception("Condition not met, final value was still: " + a)))
+  def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Option[A] => Exception] = None): Boolean = {
+    def getException(x: Option[A]) = new Exception("Condition not met, final value was still: " + x)
+    val exception = customException.orElse(Some(getException(_)))
     waitFor(current => current != value, msec, throwOnFailure, exception)
   }
 
-  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[(A) => Exception] = { None }): Boolean = queue.synchronized {
+  def waitFor(fun: A => Boolean, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Option[A] => Exception] = None): Boolean = queue.synchronized {
 
     @tailrec
     def waitUntilExpiration(fun: A => Boolean, expiration: Long): Boolean = {
@@ -111,8 +113,10 @@ class SyncVar[A](initialValue: Option[A] = None) {
           waitUntilExpiration(fun, expiration)
         } else {
           if (throwOnFailure) {
-            if (customException.isDefined) throw customException.get(queue.last)
-            throw new Exception("Condition not met, final value was: " + queue.lastOption)
+            throw customException match {
+              case Some(fun) => fun(queue.lastOption)
+              case None => new Exception("Condition not met, final value was: " + queue.lastOption)
+            }
           } else false
         }
       }

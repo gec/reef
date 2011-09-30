@@ -20,6 +20,7 @@ package org.totalgrid.reef.util
 
 import scala.collection.mutable.Queue
 
+// TODO use Java concurrent queue implementation
 class BlockingQueue[A] {
 
   private val queue = new Queue[A]
@@ -27,7 +28,7 @@ class BlockingQueue[A] {
   def push(o: A): Unit = {
     queue.synchronized {
       queue.enqueue(o)
-      queue.notify()
+      queue.notifyAll()
     }
   }
 
@@ -35,12 +36,11 @@ class BlockingQueue[A] {
     queue.synchronized {
       if (queue.size == 0) queue.wait(timeout)
       queue.dequeue()
-
     }
   }
 
   /**
-   * Block for timeout milliseconds until the queue has _atleast_ size entries (may have more than size)
+   * Block for timeout milliseconds until the queue has _atleast_ size entries (may have more than size).
    * @return whether the queue has atleast size entries
    */
   def waitUntil(size: Int, timeout: Long): Boolean = {

@@ -1,6 +1,10 @@
 set -ex
 
-./bin/deploy.sh
+#./bin/deploy.sh
+
+mvn install -DskipTests -Pdist
+
+./bin/redeploy-integration-tests.sh
 
 mvn -pl integration -pl api-request -P test test
 

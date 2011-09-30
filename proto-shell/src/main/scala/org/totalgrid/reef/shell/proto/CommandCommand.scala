@@ -22,7 +22,6 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import presentation.{ CommandView }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.util.Conversion
 
@@ -31,6 +30,21 @@ class CommandListCommand extends ReefCommandSupport {
 
   def doCommand() = {
     CommandView.commandList(services.getCommands().toList)
+  }
+}
+
+@Command(scope = "command", name = "hist", description = "Shows recent commands executions")
+class CommandHistoryCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "Command Name", description = "Command name", required = false, multiValued = false)
+  private var cmdName: String = null
+
+  def doCommand() = {
+    val history = Option(cmdName) match {
+      case Some(name) => services.getCommandHistory(services.getCommandByName(name))
+      case None => services.getCommandHistory()
+    }
+    CommandView.printHistoryTable(history.toList)
   }
 }
 

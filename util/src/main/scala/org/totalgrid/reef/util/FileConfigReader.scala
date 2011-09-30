@@ -16,9 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.totalgrid.reef.util
 
-import java.util.{ Properties, Dictionary, Hashtable }
+import java.util.{ Properties }
 import java.io.FileInputStream
 
 class FileConfigReader(file: String) extends ConfigReader {

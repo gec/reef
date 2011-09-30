@@ -23,7 +23,6 @@ import org.totalgrid.reef.util.Timing
 class UnHookedException(msg: String) extends Exception(msg)
 
 object MetricsHooks {
-  /// 
   var forceHooks = false
 
   sealed abstract class HookType
@@ -101,6 +100,18 @@ object MetricsHookFunctions {
   val nop = (i: Int) => {}
 }
 
+trait Instrument {
+  def apply[U](fun: => U): U
+}
+
+object NullInstrument extends Instrument {
+  def apply[U](fun: => U): U = fun
+}
+
+class TimingInstrument(publish: Int => Unit) extends Instrument {
+  def apply[U](fun: => U): U = Timing.time(x => publish(x.toInt))(fun)
+}
+
 /**
  * provides the interface used by client code to setup hooks for values, counters and timing
  * operations.
@@ -121,14 +132,10 @@ trait MetricsHookFunctions {
     getHook(name, MetricsHooks.Average)
   }
 
-  protected def timingHook[A](name: String): (=> A) => A = {
+  protected def timingHook(name: String): Instrument = {
     val metric = averageHook(name)
-    if (metric != MetricsHookFunctions.nop) Timing.time(t => metric(t.toInt)) _
-    else {
-      /// only necessary to make scala compiler happy, couldn't define anonymously
-      def nothing[A]()(block: => A) = { block }
-      nothing() _
-    }
+    if (metric != MetricsHookFunctions.nop) new TimingInstrument(metric)
+    else NullInstrument
   }
 }
 

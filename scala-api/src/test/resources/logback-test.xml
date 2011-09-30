@@ -18,7 +18,7 @@
     the License.
 
 -->
-<configuration debug='false'>
+<configuration>
 
 	<appender name='FILE' class='ch.qos.logback.core.FileAppender'>
 		<file>test.log</file>
@@ -38,6 +38,7 @@
 		<level value='debug'/>
 
 		<appender-ref ref='FILE'/>
+		<appender-ref ref='STDOUT'/>
 	</root>
 
 </configuration>

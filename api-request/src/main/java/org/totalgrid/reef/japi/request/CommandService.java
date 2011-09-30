@@ -18,13 +18,14 @@
  */
 package org.totalgrid.reef.japi.request;
 
+import java.util.List;
+
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Commands.CommandAccess;
 import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.proto.Model.Command;
-
-import java.util.List;
+import org.totalgrid.reef.proto.Model.ReefUUID;
 
 /**
  *
@@ -262,11 +263,18 @@ public interface CommandService
     List<CommandAccess> getCommandLocksOnCommands( List<Command> cmds ) throws ReefServiceException;
 
     /**
-     * Get a recent history of issued commands. Information returned is who issued them, what
-     * the final status was and when they were issued.
+     * Get a recent history of issued commands. Information returned is who issued them and what
+     * the final status was.
      * @throws ReefServiceException if an error occurs
      */
     List<UserCommandRequest> getCommandHistory() throws ReefServiceException;
+
+    /**
+     * Get a recent history for a particular command. Information returned is who issued them and what
+     * the final status was.
+     * @throws ReefServiceException if an error occurs
+     */
+    List<UserCommandRequest> getCommandHistory( Command cmd ) throws ReefServiceException;
 
     /**
      * Get a list of available commands in the system
@@ -282,4 +290,20 @@ public interface CommandService
      * @throws ReefServiceException if an error occurs
      */
     Command getCommandByName( String name ) throws ReefServiceException;
+
+    /**
+     * retrieve all commands that are have the relationship "owns" to the parent entity
+     *
+     * @param parentUUID uuid of parent entity
+     * @return commands owned by parentEntity
+     */
+    List<Command> getCommandsOwnedByEntity( ReefUUID parentUUID ) throws ReefServiceException;
+
+    /**
+     * retrieve all commands that are have the relationship "source" to the endpoint
+     *
+     * @param endpointUuid uuid of endpoint
+     * @return all commands that are related to endpoint
+     */
+    List<Command> getCommandsBelongingToEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
 }

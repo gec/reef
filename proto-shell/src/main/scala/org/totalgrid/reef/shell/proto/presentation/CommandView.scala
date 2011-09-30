@@ -21,14 +21,25 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.Model.Command
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.util.Table
 
 object CommandView {
 
-  def commandList(list: List[Command]) = {
-    val rows = list.map { cmd =>
-      ("[" + cmd.getUuid.getUuid + "]") :: cmd.getName :: ("\"" + cmd.getDisplayName + "\"") :: Nil
-    }
-    Table.justifyColumns(rows).foreach { line => println(line mkString " ") }
+  def commandList(cmds: List[Command]) = {
+    Table.printTable(commandHeader, cmds.map(commandRow(_)))
+  }
+
+  def commandHeader = {
+    "Name" :: "DisplayName" :: "Type" :: "Endpoint" :: Nil
+  }
+
+  def commandRow(a: Command) = {
+    a.getName ::
+      a.getDisplayName ::
+      a.getType.toString ::
+      a.logicalNode.name.getOrElse("") ::
+      Nil
   }
 
   //def selectResponse(resp: CommandAccess)
@@ -94,5 +105,22 @@ object CommandView {
 
   def printAccessTable(list: List[CommandAccess]) = {
     Table.printTable(accessHeader, list.map(accessRow(_)))
+  }
+
+  def printHistoryTable(history: List[UserCommandRequest]) = {
+    Table.printTable(historyHeader, history.map(historyRow(_)))
+  }
+
+  def historyHeader = {
+    "Uid" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
+  }
+
+  def historyRow(a: UserCommandRequest) = {
+    a.uid.getOrElse("unknown") ::
+      a.commandRequest.name.getOrElse("unknown") ::
+      a.status.map { _.toString }.getOrElse("unknown") ::
+      a.user.getOrElse("unknown") ::
+      a.commandRequest._type.toString ::
+      Nil
   }
 }

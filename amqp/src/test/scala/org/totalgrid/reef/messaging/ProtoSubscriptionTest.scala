@@ -19,47 +19,49 @@
 package org.totalgrid.reef.messaging
 
 import mock.AMQPFixture
-import org.totalgrid.reef.broker.mock.MockBrokerConnection
+import org.totalgrid.reef.broker.embedded.EmbeddedBrokerConnection
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import serviceprovider.{ PublishingSubscriptionActor, ServiceSubscriptionHandler }
+import serviceprovider.ServiceSubscriptionHandler
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi._
-import client._
-import service.SyncServiceBase
+import org.totalgrid.reef.messaging.sync.SyncSubscriptionHandler
+import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.sapi.client.{ Subscription, Response }
 
 @RunWith(classOf[JUnitRunner])
-class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
+class MockProtoSubscriptionTest extends ProtoSubscriptionTestBase {
+  def setupTest(test: AmqpClientSession => Unit) {
+
+    val mock = new EmbeddedBrokerConnection
+
+    AMQPFixture.sync(mock, true) { syncAmqp =>
+      val client = new AmqpClientSession(syncAmqp, servicelist, 10000)
+
+      val pub = new SyncSubscriptionHandler(syncAmqp.getChannel, exchange + "_events")
+
+      val executor = new InstantExecutor
+
+      syncAmqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, executor, competing = true)
+
+      test(client)
+    }
+  }
+}
+
+abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
 
   val exchange = TestDescriptors.requestHeader.id
   val exchangeMap: ServiceList.ServiceMap = Map(
     classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader))
   val servicelist = new ServiceListOnMap(exchangeMap)
 
-  def setupTest(test: ProtoClient => Unit) {
-
-    // TODO: fix setupTest to use all async and all sync
-
-    val mock = new MockBrokerConnection
-
-    AMQPFixture.using(mock) { amqp =>
-
-      val pub = new PublishingSubscriptionActor(exchange + "_events", new InstantExecutor {})
-      amqp.add(pub)
-      amqp.bindService(exchange, (new DemoSubscribeService(pub)).respond, competing = true)
-
-      AMQPFixture.sync(mock, true) { syncAmqp =>
-        val client = new ProtoClient(syncAmqp, servicelist, 10000)
-
-        test(client)
-      }
-    }
-  }
+  def setupTest(test: AmqpClientSession => Unit)
 
   class DemoSubscribeService(subHandler: ServiceSubscriptionHandler) extends SyncServiceBase[Envelope.RequestHeader] {
 
@@ -67,7 +69,7 @@ class ProtoSubscriptionTest extends FunSuite with ShouldMatchers {
     private var entries = List.empty[Envelope.RequestHeader]
 
     private def handleSub(req: Envelope.RequestHeader, env: RequestEnv) =
-      env.subQueue.foreach(subHandler.bind(_, req.getKey))
+      env.subQueue.foreach(subHandler.bind(_, req.getKey, req))
 
     private def publish(evt: Envelope.Event, changes: List[Envelope.RequestHeader]) =
       changes.foreach(msg => subHandler.publish(evt, msg, msg.getKey))

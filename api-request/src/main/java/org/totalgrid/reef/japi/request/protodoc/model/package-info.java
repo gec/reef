@@ -43,14 +43,11 @@
  *   Together, entities connected by a certain relationship type form an acyclic directed
  *   graph. The model must not include cycles (given a start entity, it must not be possible
  *   to get back to the same entity using the same relationship type and direction).
- * 
  * -/
  * message Entity {
- * 
  *   optional ReefUUID uuid = 1;
  *   repeated string types = 2;
  *   optional string name = 3;
- * 
  *   repeated Relationship relations = 10;
  * }
  * 
@@ -61,14 +58,11 @@
  *   Entity relationships have a type ("relationship"), a direction ("descendant_of"), and
  *   a list of Entity objects the relationship connects to. Because relationships are transitive,
  *   they also have a distance, or how many edges away the other entities are.
- * 
  * -/
  * message Relationship {
  *   optional string relationship = 1;
  *   optional bool descendant_of = 2;
- *   
  *   repeated Entity entities = 10;
- *   
  *   optional uint32 distance = 15;
  * }
  * 
@@ -78,7 +72,6 @@
  * 
  *   Represents a single directed edge between entities. Puts to the service automatically
  *   enforce the transitive property of entity relationships.
- * 
  * -/
  * message EntityEdge {
  *   optional ReefUUID uuid = 1;
@@ -91,6 +84,17 @@
  * message EntityAttributes {
  *   optional Entity entity = 1;
  *   repeated org.totalgrid.reef.proto.Utils.Attribute attributes = 2;
+ * }
+ * 
+ * enum PointType {
+ *   ANALOG         = 1;
+ *   COUNTER        = 2;
+ *   STATUS         = 3;
+ * }
+ * enum CommandType {
+ *   CONTROL         = 1;
+ *   SETPOINT_INT    = 2;
+ *   SETPOINT_DOUBLE = 3;
  * }
  * 
  * /*
@@ -110,6 +114,8 @@
  *   optional Entity logicalNode = 5; // live state
  *   optional Entity entity   = 7;    // The point entity
  *   optional bool    abnormal = 6;   // live state
+ *   optional PointType type = 8;
+ *   optional string    unit = 9;
  * }
  * 
  * 
@@ -130,6 +136,7 @@
  *   optional string display_name = 3;
  *   optional Entity logicalNode = 5;
  *   optional Entity entity   = 6;
+ *   optional CommandType type = 7;
  * }
  * 
  * 
@@ -141,9 +148,8 @@
  *   as an opaque byte array by the services.
  * 
  *   ConfigFile objects also contain a reference to the entities they are associated with.
- * 
  * -/
- * message ConfigFile{
+ * message ConfigFile {
  *     optional ReefUUID uuid    = 1;
  *     optional string name      = 2;
  *     optional string mime_type = 3;

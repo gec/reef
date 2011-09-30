@@ -18,27 +18,34 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ Model, FEP, Measurements }
+import org.totalgrid.reef.proto.{ Model, FEP }
+import org.totalgrid.reef.util.Logging
 
-trait EndpointAlwaysOnline extends IProtocol {
+trait EndpointAlwaysOnline extends Protocol with Logging {
 
-  import IProtocol._
+  import Protocol._
 
-  abstract override def addEndpoint(endpoint: String,
+  private val endpointMap = scala.collection.mutable.Map.empty[String, EndpointPublisher]
+
+  abstract override def addEndpoint(
+    endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    publish: IListener[Measurements.MeasurementBatch],
-    listener: IListener[FEP.CommEndpointConnection.State]): ICommandHandler = {
+    batchPublisher: BatchPublisher,
+    endpointPublisher: EndpointPublisher): CommandHandler = {
 
-    val ret = super.addEndpoint(endpoint, channel, config, publish, listener)
-    listener.onUpdate(FEP.CommEndpointConnection.State.COMMS_UP)
+    val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher)
+    endpointMap += endpoint -> endpointPublisher
+    endpointPublisher.publish(FEP.CommEndpointConnection.State.COMMS_UP)
     ret
   }
 
-  abstract override def removeEndpoint(endpoint: String): IListener[FEP.CommEndpointConnection.State] = {
-    val ret = super.removeEndpoint(endpoint)
-    ret.onUpdate(FEP.CommEndpointConnection.State.COMMS_DOWN)
-    ret
+  abstract override def removeEndpoint(endpoint: String): Unit = {
+    super.removeEndpoint(endpoint)
+    endpointMap.remove(endpoint) match {
+      case Some(x) => x.publish(FEP.CommEndpointConnection.State.COMMS_DOWN)
+      case None => logger.error("Referenced endpoint not in map: " + endpoint)
+    }
   }
 
 }

@@ -24,9 +24,6 @@
         <command name="reef/resetdb">
             <action class="org.totalgrid.reef.shell.admin.ResetDatabaseCommand"/>
         </command>
-        <command name="reef/load">
-            <action class="org.totalgrid.reef.shell.admin.LoadConfigCommand"/>
-        </command>
         <command name="metrics/metrics">
             <action class="org.totalgrid.reef.shell.admin.MetricsShow"/>
         </command>
@@ -47,6 +44,9 @@
         </command>
         <command name="metrics/throughput">
             <action class="org.totalgrid.reef.shell.admin.MetricsThroughput"/>
+        </command>
+        <command name="reef/local-login">
+            <action class="org.totalgrid.reef.shell.admin.ReefLocalLoginCommand"/>
         </command>
     </command-bundle>
 

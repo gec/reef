@@ -1,0 +1,859 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="communications.loader.reef.totalgrid.org"
+           xmlns="communications.loader.reef.totalgrid.org"
+           xmlns:common="common.loader.reef.totalgrid.org"
+           elementFormDefault="qualified"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="1.0">
+
+    <xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
+    <xs:annotation>
+        <xs:documentation>
+            <blockquote>
+                <span class="title">communicationModel</span>
+            </blockquote>
+            <p class="elementDef">
+                The
+                <span class="elementStyle">communicationModel</span>
+                section of the REEF configuration xml is the location where all of the communication and endpoint
+                measurement index mapping parameters are configured. The REEF system
+                is configured with all of the necessary parameters required to communicate with all of the end devices.
+                SCADA measurements defined in the equipment section are linked to actual measurements
+                in endpoint devices. All required scaling is also done in the communications modeling sections.
+                <span class="elementStyle">communicationModel</span>
+                is one of the four main elements or sections of the overall parent configuration element.<span
+                    class="elementStyle">equipmentModel, messageModel, actionModel</span>,
+                and
+                <span class="elementStyle">communicationModel</span>
+                make up the entire REEF configuration. The following is an example of the configuration xml structure:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;configuration&gt;
+                    &lt;messageModel&gt;
+                    &lt;!--Message model configuration (see messageModel documentation)--&gt;
+                    &lt;/messageModel&gt;
+
+                    &lt;actionModel&gt;
+                    &lt;!--Action model configuration (see actionModel documentation)--&gt;
+                    &lt;/actionModel&gt;
+
+                    &lt;;eq:equipmentModel&gt;
+                    &lt;!--Equipment model configuration (see equipmentModel documentation)--&gt;
+                    &lt;/eq:equipmentModel&gt;
+
+                    <span class="nameStyle">&lt;cm:communicationsModel&gt; </span>
+                    &lt;cm:profiles&gt;
+                    &lt;!-pointProfile, equipmentProfile, controlProfile, and endpointprofile defined--&gt;
+                    &lt;/cm:profiles&gt;
+                    &lt;cm:interface&gt;
+                    &lt;!-Communication interface parameters defined--&gt;
+                    &lt;/cm:interface&gt;
+                    &lt;cm:endpoint&gt;
+                    &lt;!-Endpoint (IED) and measurement mapping parameters defined--&gt;
+                    &lt;/cm:endpoint&gt;
+                    <span class="nameStyle">&lt;/cm:communicationsModel&gt; </span>
+                    &lt;/configuration&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                Endpoints are defined and then associated with measurements defined in the<span class="elementStyle">
+                equipmentModel</span>. stations and/or field equipment in<span class="elementStyle">
+                equipmentModel</span>. An
+                <span class="elementStyle">endpoint</span>
+                will correspond to an actual
+                intelligent electronic device (IED) that REEF will communicate to and monitor telemetered data. The data
+                points monitored from the endpoint device will then need to be linked to corresponding
+                measurements defined in the<span class="elementStyle">equipmentModel</span>. The following describes the
+                typical endpoint modeling process. Please refer to the individual element definitions for additional
+                details.Each
+                <span class="elementStyle">endpoint</span>
+                must be linked to an<span class="elementStyle">interface</span>. The
+                <span class="elementStyle">interface</span>
+                is the communication link parameters that REEF will use to communicate to the<span class="elementStyle">
+                endpoint</span>.
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;cm:interface name="i1" ip="192.168.100.30" netmask="255.255.255.0" port="8003" network="any"/&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                This example will create an endpoint and link it’s measurements to those created in the first example of
+                <span class="elementStyle">equipmentModel</span>.
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;cm:endpoint name="Sel351Endpoint1"&gt;
+                    &lt;cm:type name="Endpoint"/&gt;
+                    &lt;cm:protocol name="dnp3"&gt;
+                    &lt;cm:configFile name="comms/sel_351_endpoint1.xml"&gt;
+                    &lt;/cm:protocol&gt;
+
+                    &lt;cm:interface name="i1"/&gt;
+
+                    &lt;cm:equipment name="ChapelHill"&gt;
+                    &lt;cm:equipment name="CB11001"&gt;
+                    &lt;cm:control name="trip" index="16"&gt;&lt;cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000"
+                    offTime="1000" count="1"/&gt;&lt;/cm:control&gt;
+                    &lt;cm:control name="close" index="17"&gt;&lt;cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000"
+                    offTime="1000" count="1"/&gt;&lt;/cm:control&gt;
+                    &lt;cm:status name="Bkr" index="4"/&gt;
+                    &lt;cm:analog name="Mw" index="14"/&gt;
+                    &lt;cm:scale rawLow="-50" rawHigh="50" engLow="100.0" engHigh="200.0" EngUnit="Mw"/&gt;
+                    &lt;/cm:equipment&gt;
+                    &lt;/cm:equipment&gt;
+
+                    &lt;/cm:endpoint&gt;</p>
+            </pre>
+            <p class="elementDef">
+                In this example the following SCADA points were linked
+                <ul>
+                    <li>ChapelHill CB11001 Bkr (status)</li>
+                    <li>ChapelHill CB11001 Bkr Trip (control)</li>
+                    <li>ChapelHill CB11001 Bkr Close (control)</li>
+                    <li>ChapelHill CB11001 Mw (analog)</li>
+                </ul>
+            </p>
+            <p class="elementDef">Profiles can be created for measurements, equipment, and endpoints.
+                <span class="elementStyle">pointProfile</span>
+                and
+                <span class="elementStyle">controlProfile</span>
+                are used to define measurement types for controls, status, analog, and counter
+                measurements. These point profiles can then be associated with individual measurements. For example,
+                using the information for the measurements defined for the CB11001 Bkr
+                created in the last example, point profiles named CB_cntl and CB_Mw can be defined as following:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;cm:pointProfile name="CB_Mw"&gt;
+                    &lt;cm:scale rawLow="-50" rawHigh="50" engLow="100.0" engHigh="200.0" engUnit="Mw"/&gt;
+                    &lt;/cm:pointProfile&gt;
+
+                    &lt;cm:controlProfile name="CB_cntl?&gt;
+                    &lt;cm:optionsDnp3 type="PULSE_CLOSE" onTime="1000" offTime="1000" count="1"/&gt;
+                    &lt;/cm:controlProfile&gt;</p>
+            </pre>
+            <p class="elementDef">
+                These profiles can then be assigned to measurements throughout the communication configuration. In the
+                following example the same four points as the first example are created using profiles.
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;cm:endpoint name="Sel351Endpoint1"&gt;
+                    &lt;cm:type name="Endpoint"/&gt;
+                    &lt;cm:protocol name="dnp3"&gt;
+                    &lt;cm:configFile name="comms/sel_351_endpoint1.xml"&gt;
+                    &lt;/cm:protocol&gt;
+                    &lt;cm:interface name="i1"/&gt;
+                    &lt;cm:equipment name="ChapelHill"&gt;
+                    &lt;cm:equipment name="CB11001"&gt;
+                    &lt;cm:control name="trip" index="16"&gt;&lt;cm:controlProfile name="<span class="nameStyle">
+                    CB_cntl</span>"/&gt;&lt;/cm:control&gt;
+                    &lt;cm:control name="close" index="17"&gt;&lt;cm:controlProfile name="<span class="nameStyle">
+                    CB_cntl</span>"/&gt;&lt;/cm:control&gt;
+                    &lt;cm:status name="Bkr" index="4"/&gt;
+                    &lt;cm:analog name="Mw" index="14"/&gt;&lt;cm:pointProfile name="<span class="nameStyle">
+                    CB_Mw</span>"/&gt;&lt;/cm:analog&gt;
+                    &lt;/cm:equipment&gt;
+                    &lt;/cm:equipment&gt;
+
+                    &lt;/cm:endpoint&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                Equipment profiles are configured similar to point profiles. The
+                <span class="elementStyle">equipmentProfile</span>
+                element defines profiles for stations, equipment groups, field equipment, or any entity throughout
+                the system that can have multiple measurements or attributes associated with it. For example, an
+                <span class="elementStyle">equipmentprofile</span>
+                named CircuitBreaker can be defined as following:
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;cm:equipmentProfile name="<span class="nameStyle">CircuitBreaker</span>"&gt;
+                    &lt;cm:control name="trip" index="16"&gt;&lt;cm:controlProfile name="<span class="nameStyle">
+                    CB_cntl</span>"/&gt;&lt;/cm:control&gt;
+                    &lt;cm:control name="close" index="17"&gt;&lt;cm:controlProfile name="<span class="nameStyle">
+                    CB_cntl</span>"/&gt;&lt;/cm:control&gt;
+                    &lt;cm:status name="APh_Trip" index="0"/&gt;
+                    &lt;cm:status name="BPh_Trip" index="1"/&gt;
+                    &lt;cm:status name="Auto_Man" index="10"/&gt;
+                    &lt;cm:status name="CPh_Trip" index="2"/&gt;
+                    &lt;cm:status name="50_Trip" index="3"/&gt;
+                    &lt;cm:status name="Bkr" index="4"/&gt;
+                    &lt;cm:status name="G_Trip" index="7"/&gt;
+                    &lt;cm:analog name="Mw" index="14"/&gt;&lt;cm:pointProfile name="<span class="nameStyle">
+                    CB_Mw</span>"/&gt;&lt;/cm:analog&gt;
+                    &lt;cm:analog name="MVar" index="15"/&gt;&lt;cm:pointProfile name="<span class="nameStyle">
+                    CB_Mw</span>"/&gt;&lt;/cm:analog&gt;
+                    &lt;/cm:equipment&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                This profile can then be attached to all endpoint devices that will monitor similar type circuit
+                breakers. Similar profiles can be made for other field equipment measurement groups
+                and attached to the same endpoint as shown in the following. Line_meas and Bus_meas profiles are also
+                used for this endpoint.
+            </p>
+            <pre>
+                <p class="exConfig">
+                    &lt;cm:endpoint name="Sel351Endpoint1"&gt;
+                    &lt;cm:type name="Endpoint"/&gt;
+                    &lt;cm:protocol name="dnp3"&gt;
+                    &lt;cm:configFile name="comms/sel_351_endpoint1.xml"&gt;
+                    &lt;/cm:protocol&gt;
+                    &lt;cm:interface name="i1"/&gt;
+                    &lt;cm:equipment name="ChapelHill"&gt;
+
+                    &lt;cm:equipment name="CB11001"&gt;
+                    &lt;cm:equipmentProfile name="<span class="nameStyle">CircuitBreaker</span>"/&gt;
+                    &lt;/cm:equipment&gt;
+
+                    &lt;cm:equipment name="L200"&gt;
+                    &lt;cm:equipmentProfile name="<span class="nameStyle">Line_meas</span>"/&gt;
+                    &lt;/cm:equipment&gt;
+
+                    &lt;cm:equipment name="Bus1"&gt;
+                    &lt;cm:equipmentProfile name="<span class="nameStyle">Bus_meas</span>"/&gt;
+                    &lt;/cm:equipment&gt;
+
+                    &lt;/cm:equipment&gt;
+                    &lt;/cm:endpoint&gt;
+                </p>
+            </pre>
+            <p class="elementDef">
+                A combination of individual measurements and pointProfiles can be assigned to equipment to allow for
+                additional flexibility. Measurements can be modeled under
+                <span class="elementStyle">equipment</span>
+                in three different ways. These examples demonstrate the flexibility in modeling measurements in the
+                <span class="elementStyle">communicationModeling</span>
+                section.
+            </p>
+        </xs:documentation>
+    </xs:annotation>
+    <!--
+      Reef communications model XSD
+    -->
+    <xs:element name="type">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Types are tags used for classification of equipment and measurements into groups
+                    or categories.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="protocol">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Communication protocol assigned to the device. "protocol" is assigned under each
+                    endpoint configuration. Allowed values are DNP3.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="simOptions"/>
+                <xs:element ref="common:configFile"/>
+            </xs:choice>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="simOptions">
+        <xs:complexType>
+            <xs:attribute name="delay" type="xs:unsignedShort" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ___________________ Controls ___________________ -->
+    <!--
+      type        onTime   offTime  count
+      =========== ======== ======== ======
+      PULSE         X        X        X
+      LATCH_ON      -        -        -
+      LATCH_OFF     -        -        -
+      PULSE_CLOSE   X        X        X
+      PUSLE_TRIP    X        X        X
+      SETPOINT      X        X        X
+
+      Note: 'X' are required attributes for given types.
+    -->
+    <xs:element name="optionsDnp3">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines the parameters for a control output. The
+                    <span class="elementStyle">optionsDNP3</span>
+                    attributes include:
+                    <blockquote>
+                        <span class="elementStyle">type</span>
+                        - Control output type. Valid values are PULSE, LATCH_ON, LATCH_OFF, PULSE_CLOSE, PULSE_TRIP, and
+                        SETPOINT.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">onTime</span>
+                        - pulse on duration (not used for LATCH controls)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">offTime</span>
+                        - pulse off duration (not used for LATCH controls)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">count</span>
+                        - number of pulse outputs (not used for LATCH controls)
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="type" type="xs:string" use="required"/>
+            <xs:attribute name="onTime" type="xs:unsignedShort"/>
+            <xs:attribute name="offTime" type="xs:unsignedShort"/>
+            <xs:attribute name="count" type="xs:unsignedShort"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      A scale is either low/high or slope/offset, not both. Examples:
+
+      <scale rawLow="0" rawHigh="2000" engLow="100.0" engHigh="200.0" engUnit="w"/>
+      <scale slope="0.05" offset="100.0" engUnit="var"/>
+    -->
+    <xs:element name="scale">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Analog measurement scaling can also be assigned to a point profile using the
+                    “scale? element. Scaling can be done using either of two methods, by
+                    assigning raw and engineering values, or by assigning slope and offset values. The scale attributes
+                    are the following.
+                    <blockquote>
+                        <span class="elementStyle">rawLow</span>
+                        - raw or unscaled low value for the measurement.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">rawHigh</span>
+                        - raw or unscaled high value for the measurement.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">rawUnit</span>
+                        - unit of measurement for the raw value.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">engLow</span>
+                        - engineering scaled low value for the measurement (paired with rawLow).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">engHigh</span>
+                        - engineering scaled high value for the measurement (paired with rawHigh).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">engUnit</span>
+                        - unit of measurement for the eng value.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">slope</span>
+                        - Value of slope.
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">offset</span>
+                        - Value of offset.
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="rawLow" type="xs:double"/>
+            <xs:attribute name="rawHigh" type="xs:double"/>
+            <xs:attribute name="rawUnit" type="xs:string" default="raw"/>
+            <xs:attribute name="engLow" type="xs:double"/>
+            <xs:attribute name="engHigh" type="xs:double"/>
+            <xs:attribute name="engUnit" type="xs:string"/>
+            <xs:attribute name="slope" type="xs:double"/>
+            <xs:attribute name="offset" type="xs:double"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="IndexType" abstract="true">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="index" type="xs:unsignedShort"/>
+        <xs:attribute name="unit" type="xs:string" default="raw"/>
+    </xs:complexType>
+    <!-- ___________________ Control Types ___________________ -->
+    <xs:complexType name="ControlType" abstract="true">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines controls or digital output (DO) parameters for the communications modeling
+                    of endpoints or devices. The control element assigns attributes
+                    to a control output type. The following attributes can be assigned under control.
+                    <span class="elementStyle">name</span>
+                    - name used to reference the control profile in the communications mapping section (required). The
+                    control name must match the control name defined for the corresponding point in the equipment
+                    modeling section.
+                    <blockquote>
+                        <span class="elementStyle">index</span>
+                        - DNP3 index of the control output (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - Unit of measurement (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">controlProfile</span>
+                        - name of the desired controlProfile (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">optionsDnp3</span>
+                        - control output parameters (see documentation for optionsDnp3 element).
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="IndexType">
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="controlProfile" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="optionsDnp3" minOccurs="0" maxOccurs="1"/>
+                </xs:choice>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:element name="controlProfile">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="ControlType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="control">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="ControlType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="setpoint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="ControlType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ___________________ Point Types ___________________ -->
+    <!-- Meta data for point types that have values (i.e. not controls) -->
+    <xs:complexType name="PointType" abstract="true">
+        <xs:complexContent>
+            <xs:extension base="IndexType">
+                <xs:sequence>
+                    <xs:element ref="scale" minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+                <xs:attribute name="pointProfile" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:element name="pointProfile">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines a set of communication related attributes to a measurement. Once the profile is created, it
+                    can be linked to any number of
+                    measurements in the communication mapping section, all of which will share the profile’s attributes.
+                    Analog scaling is configured with the “scale? element.
+                    The following attributes can be assigned under<span class="elementStyle">pointProfile</span>.
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - name used to reference the point profile in the communications mapping section (required).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">index</span>
+                        - DNP3 index of the measurement. (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - Unit of measurement (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">pointProfile</span>
+                        - name of nested pointProfile. Point profile attributes can be assigned to other point profiles
+                        (optional)
+                    </blockquote>
+
+                    Analog measurement scaling can also be assigned to a point profile using the
+                    <span class="elementStyle">scale</span>
+                    element.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="status">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines status or digital input (DI) parameters for the communications modeling of
+                    endpoints or devices. The following attributes can be assigned under status.
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - name used to reference the status point in the communications mapping section (required).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">index</span>
+                        - DNP3 index of the measurement (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - Unit of measurement (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">pointProfile</span>
+                        - name of pointProfile assigned to the status.
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="analog">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines analog input (AI) parameters for the communications modeling of endpoints
+                    or devices. The following attributes can be assigned under analog.
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - name used to reference the analog in the communications mapping section (required).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">index</span>
+                        - DNP3 index of the measurement. (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - Unit of measurement (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">pointProfile</span>
+                        - name of pointProfile assigned to the analog.
+                    </blockquote>
+
+                    Measurement scaling can also be assigned to a analog measurement using the
+                    <span class="elementStyle">scale</span>
+                    element.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="counter">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines counter parameters for the communications modeling of endpoints or
+                    devices. The following attributes can be assigned under counter.
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - name used to reference the counter in the communications mapping section (required).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">index</span>
+                        - DNP3 index of the counter measurement (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">unit</span>
+                        - Unit of measurement (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">pointProfile</span>
+                        - name of pointProfile assigned to the counter.
+                    </blockquote>
+
+                    Measurement scaling can also be assigned to a counter using the
+                    <span class="elementStyle">scale</span>
+                    element.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="PointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <!-- ___________________ Profiles  ___________________ -->
+    <xs:element name="profiles">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    The root element of profiles configuration section of the xml config file. It's child elements are
+                    <span class="elementStyle">controlProfile</span>,<span class="elementStyle">pointProfile</span>,
+                    <span class="elementStyle">endpointProfile</span>, and<span class="elementStyle">
+                    equipmentProfile</span>.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="controlProfile" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="pointProfile" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="endpointProfile" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      equipment element can specify all contained equipment or reference an equipmentProfile.
+      The only difference between an equipmentProfile and equipment is that equipment has an
+      optional equipmentProfile attribute. Both can specify multiple profiles in descendant
+      elements.
+
+      Multiple equipmentProfile elements can be specified.
+    -->
+    <xs:complexType name="EquipmentType" abstract="true">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="equipmentProfile" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="control" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="setpoint" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="status" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="analog" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="counter" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="equipment" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="addParentNames" type="xs:boolean" default="true"/>
+    </xs:complexType>
+    <xs:element name="equipmentProfile">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines an equipment model which can be used multiple times throughout the communications modeling
+                    section.
+                    Child elements of the equipment profile are the same as the equipment element. When defining a type
+                    of equipment,
+                    the user can individually specify the child elements of the equipment element, or an
+                    equipmentProfile can be specified.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="EquipmentType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="equipment">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Defines entities within the system such as stations, equipment groups, equipment, and devices.
+                    <span class="elementStyle">equipment</span>
+                    is used in the communication
+                    modeling section to link the measurements created in the equipment modeling section to endpoint or
+                    communication device measurements.
+                    Measurements are assigned by name, so care must be taken to verify all equipment and measurement
+                    names are matching. Equipment may
+                    correspond to a substation or actual field device. The following elements and attributes can be
+                    assigned under equipment.
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - name of the equipment. The name specified here must match the corresponding equipment name
+                        specified in the equipment modeling section (ex. Chapel Hill, CB11001) (required).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">equipmentProfile</span>
+                        - Equipment profiles defined in the equipment modeling section can be assigned to the equipment.
+                        (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">control</span>
+                        - List all controls under the equipment. The control names must match the corresponding control
+                        defined in the equipment modeling sections. (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">analog</span>
+                        - List all analogs under the equipment. The analog names must match the corresponding analog
+                        defined in the equipment modeling sections. (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">status</span>
+                        - List all status under the equipment. The status names must match the corresponding status
+                        defined in the equipment modeling sections. (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">counter</span>
+                        - List all counters under the equipment. The counter names must match the corresponding counters
+                        defined in the equipment modeling sections. (optional)
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">equipment</span>
+                        - equipments are nested to specify the measurement tag hierarchy
+                        (equipment.equipment.measurement) (ex. Chapel Hill.CB11001.Bkr).
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="EquipmentType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <!-- ___________________ Endpoint ___________________ -->
+    <xs:complexType name="endpointType" abstract="true">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="protocol"/>
+            <xs:element ref="interface"/>
+            <xs:element ref="endpointProfile"/>
+            <xs:element ref="type"/>
+            <xs:element ref="equipment"/>
+            <xs:element ref="common:info"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="dataSource" type="xs:boolean" default="true"/>
+    </xs:complexType>
+    <xs:element name="endpointProfile">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    Allows the user to define an endpoint model which can be used multiple times throughout the
+                    communications modeling section.
+                    Child elements of the
+                    <span class="elementStyle">endpointProfile</span>
+                    are the same as the
+                    <span class="elementStyle">endpoint</span>
+                    element. When defining a type of endpoint, the user can individually specify the child elements of
+                    the
+                    <span class="elementStyle">endpoint</span>
+                    element, or an
+                    <span class="elementStyle">endpointProfile</span>
+                    can be specified.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="endpointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="endpoint">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Endpoints are associated with Intelligent Electronic Devices (IED) that provide
+                    telemetered data. The following elements and attributes can be defined
+                    under<span class="elementStyle">endpoint</span>.
+                    <blockquote>
+                        <span class="elementStyle">name</span>
+                        - name of the endpoint. (ex. RTU22, SEL351-1) (required).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">type</span>
+                        - type of endpoint (see type) (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">protocol</span>
+                        - protocol of the endpoint device (ex. Dnp3) (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">interface</span>
+                        - Communication interface of the endpoint device. (see interface) (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">equipment</span>
+                        - equipment includes the list of measurements aquired from the endpoint device (see equipment)
+                        (optional).
+                    </blockquote>
+                    <blockquote>
+                        <span class="elementStyle">endpointProfile</span>
+                        - endpoint profile assigned to the endpoint.
+                    </blockquote>
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="endpointType"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <!-- ___________________ Interfaces ___________________ -->
+    <xs:element name="interface">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">Defines the IP communication interface of the end device. The following attributes
+                    can be assigned under<span class="elementStyle">interface</span>.
+                    <span class="elementStyle">name</span>
+                    - name used to reference the interface in the communications modeling section (required).
+                    <span class="elementStyle">ip</span>
+                    - The IP address of the end device. (optional)
+                    <span class="elementStyle">netmask</span>
+                    - Network subnet mask (optional)
+                    <span class="elementStyle">port</span>
+                    - IP port of end device.(optional)
+                    <span class="elementStyle">network</span>
+                    - network
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="ip" type="xs:string"/>
+            <xs:attribute name="netmask" type="xs:string"/>
+            <xs:attribute name="port" type="xs:int"/>
+            <xs:attribute name="network" type="xs:string"/>
+			<xs:attribute name="serverSocket" type="xs:boolean"/>
+            <!-- remote network location (it's not a netmask) -->
+        </xs:complexType>
+    </xs:element>
+    <!-- ___________________ root element  ___________________ -->
+    <xs:element name="communicationsModel">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">The root element of the communication modeling section, child elements of
+                    <span class="elementStyle">communicationsModel</span>
+                    are<span class="elementStyle">profiles</span>,<span class="elementStyle">interface</span>, and<span
+                            class="elementStyle">equipment</span>.
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="profiles" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="interface" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="endpoint" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

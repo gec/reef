@@ -26,7 +26,6 @@ import org.totalgrid.reef.japi.ReefServiceException;
 // TODO: add shutdown behavior
 public interface SessionExecutionPool
 {
-
     /**
      * Executes a block of code using a temporarily acquired session cleaning up any affected state afterwards
      *
@@ -47,5 +46,4 @@ public interface SessionExecutionPool
      * method
      */
     <A> A execute( String authToken, SessionFunction<A> function ) throws ReefServiceException;
-
 }

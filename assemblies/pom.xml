@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.totalgrid.reef</groupId>
+        <artifactId>reef</artifactId>
+        <version>0.3.1-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <artifactId>reef-assemblies</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>assembly</module>
+        <module>assembly-cli</module>
+    </modules>
+
+    <properties>
+        <karaf.version>2.2.2</karaf.version>
+        <karaf.name>apache-karaf-${karaf.version}</karaf.name>
+        <reef.version>0.3.1-SNAPSHOT</reef.version>
+        <reef.default.repository>reef-bundles</reef.default.repository>
+        <maven-assembly-plugin.version>2.2-beta-4</maven-assembly-plugin.version>
+        <dist.name>totalgrid-reef</dist.name>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>apache-karaf</artifactId>
+            <version>2.2.2</version>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>apache-karaf</artifactId>
+            <version>2.2.2</version>
+            <type>tar.gz</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-branding</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>codehaus</id>
+            <name>Codehaus repo</name>
+            <url>http://repo1.maven.org/maven2/org/codehaus/mojo/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>

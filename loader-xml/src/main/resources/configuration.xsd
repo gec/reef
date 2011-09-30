@@ -1,0 +1,753 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="configuration.loader.reef.totalgrid.org"
+					 xmlns:equ="equipment.loader.reef.totalgrid.org"
+					 xmlns:com="communications.loader.reef.totalgrid.org"
+					 xmlns:common="common.loader.reef.totalgrid.org"
+					 xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+					 targetNamespace="configuration.loader.reef.totalgrid.org"
+					 elementFormDefault="unqualified" jaxb:version="1.0">
+	<xs:import namespace="equipment.loader.reef.totalgrid.org" schemaLocation="equipment.xsd"/>
+	<xs:import namespace="communications.loader.reef.totalgrid.org" schemaLocation="communications.xsd"/>
+	<xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
+
+	<!-- Reef configuration XSD -->
+
+	<!-- This uses the additional vendor specific features provided by the JAXB RI
+				They are defined in the "http://java.sun.com/xml/ns/jaxb/xjc" namespace -->
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:globalBindings generateIsSetMethod="true"/>
+		</xs:appinfo>
+	</xs:annotation>
+
+	<xs:annotation>
+		<xs:documentation>
+			<blockquote>
+				<span class="title">configuration</span>
+			</blockquote>
+
+			<p class="elementDef">
+				The
+				<span class="elementStyle">configuration</span>
+				section of reef is where the root element for the entire configuration file is defined.
+				<span class="elementStyle">configuration</span>
+				includes the four main elements or “sections? of the configuration.
+				<span class="elementStyle">equipmentModel</span>,<span class="elementStyle">messageModel</span>,
+				<span class="elementStyle">actionModel</span>, and
+				<span class="elementStyle">communicationsModel</span>
+				make up the entire REEF configuration. SCADA Measurements are defined and associated with stations
+				and/or field equipment in<span class="elementStyle">equipmentModel</span>. Profiles can be created in
+				<span class="elementStyle">equipmentModel</span>
+				for measurements and equipment to allow for ease of configuration.
+			</p>
+			<br/>
+			<p class="elementDef">
+				The
+				<span class="elementStyle">messageModel</span>
+				section of the REEF configuration xml is the location were logging, alarming, and event reporting are
+				all configured. Messages are categorized using the parent
+				<span class="elementStyle">messageSet</span>
+				element. Message sets are assigned a name, severity, type, and state.
+			</p>
+			<br/>
+			<p class="elementDef">
+				The
+				<span class="elementStyle">actionModel</span>
+				section of the REEF configuration xml is where
+				<span class="elementStyle">actionSets</span>
+				are defined. An
+				<span class="elementStyle">actionSet</span>
+				is used to designate what state of a measurement will trigger a message. An
+				<span class="elementStyle">actionSet</span>
+				is attached to a measurement in the
+				<span class="elementStyle">equipmentModel</span>
+				section of the xml. An
+				<span class="elementStyle">actionSet</span>
+				is assigned by name to a measurement by using the
+				<span class="elementStyle">unexpected</span>
+				element.
+			</p>
+			<br/>
+			<p class="elementDef">
+				The<span class="elementStyle">communicationModel</span>section of the REEF configuration xml is the
+				location where all of the communication and endpoint measurement index mapping parameters are
+				configured. The REEF system is configured with all of the necessary parameters required to communicate
+				with all of the end devices. SCADA measurements defined in the<span class="elementStyle">
+				equipmentModel</span>section are linked to actual measurements in endpoint devices. All required scaling
+				is also done in the<span class="elementStyle">communicationModel</span>section.
+			</p>
+			<br/>
+			<p class="elementDef">The following is an example of the configuration xml structure:</p>
+			<pre>
+				<p class="exConfig">
+					<span class="nameStyle">&lt;configuration&gt;</span>
+					&lt;messageModel&gt;
+					&lt;!--Message model configuration (see messageModel documentation)--&gt;
+					&lt;/messageModel&gt;
+
+					&lt;actionModel&gt;
+					&lt;!--Action model configuration (see actionModel documentation)--&gt;
+					&lt;/actionModel&gt;
+
+					&lt;;eq:equipmentModel&gt;
+					&lt;!--Equipment model configuration (see equipmentModel documentation)--&gt;
+					&lt;/eq:equipmentModel&gt;
+
+					&lt;cm:communicationsModel&gt;
+					&lt;cm:profiles&gt;
+					&lt;!—pointProfile, equipmentProfile, controlProfile, and endpointprofile defined--&gt;
+					&lt;/cm:profiles&gt;
+					&lt;cm:interface&gt;
+					&lt;!—Communication interface parameters defined--&gt;
+					&lt;/cm:interface&gt;
+					&lt;cm:endpoint&gt;
+					&lt;!—Endpoint (IED) and measurement mapping parameters defined--&gt;
+					&lt;/cm:endpoint&gt;
+					&lt;/cm:communicationsModel&gt;
+					<span class="nameStyle">&lt;/configuration&gt;</span>
+				</p>
+			</pre>
+			<p class="elementDef">
+				The
+				<span class="elementStyle">messageModel</span>
+				section of the REEF configuration xml is the location were logging, alarming, and event reporting are
+				all configured. Messages are
+				categorized using the parent
+				<span class="elementStyle">messageSet</span>
+				element. Message sets are assigned a name, severity, type, and state. The following is an example of the
+				modeling of a
+				<span class="elementStyle">messageSet:</span>
+			</p>
+			<pre>
+				<p class="exConfig">
+					&lt;messageSet name="SCADA" severity="6" type="ALARM" state=?UNACK_SILENT?&gt;</p>
+			</pre>
+			<p class="elementDef">
+				<blockquote>
+					<span class="elementStyle">name</span>
+					– name of the messageSet.
+				</blockquote>
+				<blockquote>
+					<span class="elementStyle">severity</span>
+					– Value from 1 to 8 used to prioritize message sets. Severity specified for individual messages
+					overrides the
+					<span class="elementStyle">messageSet</span>
+					severity value.
+				</blockquote>
+				<blockquote>
+					<span class="elementStyle">type</span>
+					– Must be either ALARM, EVENT, or LOG. Used to categorize the messages of the messageSet. Type
+					specified for individual messages overrides
+					the type value. Types are hierarchical. Alarm types will also produce event and log messages. Event
+					types will also produce log messages.
+				</blockquote>
+				<blockquote>
+					<span class="elementStyle">state</span>
+					– defines the state of the alarm when triggered.
+				</blockquote>
+			</p>
+			<p class="elementDef">The following are options for state:
+				<ul>
+					<li>UNACK_AUDIBLE – Unacknowledged, audible alarm</li>
+					<li>UNACK_SILENT – Unacknowledged, silent alarm</li>
+					<li>ACKNOWLEDGED – acknowledged, silent alarm</li>
+				</ul>
+			</p>
+			<p class="elementDef">
+				Messages are categorized using the parent
+				<span class="elementStyle">messageSet</span>
+				element. Like the<span class="elementStyle">messageSet</span>, messages can also be assigned a name,
+				severity, type, and state. Messages are required to have a name. Severity, type, and state are all
+				optional. If the optional attributes are not assigned for a message, the attributes of the parent
+				<span class="elementStyle">messageSet</span>
+				are assigned to the message by default. The following is an
+				example message along with it’s parent
+				<span class="elementStyle">messageSet</span>
+			</p>
+			<pre>
+				<p class="exConfig">
+					&lt;messageSet name="SCADA" severity="6" type="ALARM" state=?UNACK_SILENT?&gt;
+					&lt;message name="ControlExe"&gt;User executed control {control} on device {device}&lt;/message&gt;
+				</p>
+			</pre>
+			<p class="elementDef">
+				The message above is a SCADA message with a severity of 6, ALARM type, and UNACK_SILENT state. The alarm
+				message would read “User executed control {control} on device {device}? The message string is also configurable. Messages
+				can be passed arguments to make the message more definitive. Arguments are designated with braces, as shown above.There are system
+				required messages that must be present in the configuration. The following
+				<span class="elementStyle">messageSet</span>
+				and message model configuration must be present in the REEF configuration file. Note that
+				<span class="elementStyle">messageSet</span>
+				and message names shown below are required, all other attributes are user configurable.
+			</p>
+			<pre>
+				<p class="exConfig">
+					&lt;messageModel&gt;
+					&lt;messageSet name="System" severity="8" type="LOG"&gt;
+					&lt;message name="UserLogin" type="EVENT"&gt;User login {status} {reason}&lt;/message&gt;
+					&lt;message name="UserLogout" type="EVENT"&gt;User logged out&lt;/message&gt;
+					&lt;message name="SubsystemStarting"&gt;Subsystem is starting&lt;/message&gt;
+					&lt;message name="SubsystemStarted"&gt;Subsystem has started&lt;/message&gt;
+					&lt;message name="SubsystemStopping"&gt;Subsystem is stopping&lt;/message&gt;
+					&lt;message name="SubsystemStopped"&gt;Subsystem has stopped&lt;/message&gt;
+					&lt;/messageSet&gt;
+
+					&lt;messageSet name="Scada" severity="6" type="ALARM" state="UNACK_SILENT" &gt;
+					&lt;message name="ControlExe"&gt;User executed control {control} on device {device}&lt;/message&gt;
+					&lt;message name="OutOfNominal" severity="4"&gt;Measurement not in nominal range: {value}{unit}
+					validity {validity}&lt;/message&gt;
+					&lt;message name="OutOfReasonable" severity="3" state="UNACK_AUDIBLE"&gt;Measurement not reasonable:
+					{value}{unit} validity {validity}&lt;/message&gt;
+					&lt;/messageSet&gt;
+					&lt;/messageModel&gt;
+				</p>
+			</pre>
+			<p class="elementDef">
+				A specific state of a SCADA measurement can be used to trigger an Alarm, Event, or Log message on the
+				system. An
+				<span class="elementStyle">actionSet</span>
+				is used to designate
+				what state of a measurement will trigger a message. Action Sets are attached to measurements in the
+				<span class="elementStyle">equipmentModel</span>
+				section of the xml. Action Sets
+				are assigned by name to a measurement by using the unexpected element. The following is an example of an
+				<span class="elementStyle">actionSet</span>
+				model:
+			</p>
+			<pre>
+				<p class="exConfig">
+					&lt;actionSet name="RLC" priority="100"&gt;
+					&lt;rising&gt;
+					&lt;message name="Scada.OutOfReasonable"/&gt;
+					&lt;/rising&gt;
+					&lt;high moreActions="false"&gt;
+					&lt;stripValue/&gt;
+					&lt;setAbnormal/&gt;
+					&lt;/high&gt;
+					&lt;/actionSet&gt;
+				</p>
+			</pre>
+			<p class="elementDef">
+				In the above example an
+				<span class="elementStyle">actionSet</span>
+				was created called RLC, with a priority of 100. This
+				<span class="elementStyle">actionSet</span>
+				will execute the message defined as “Scada.OutOfReasonable? in the
+				<span class="elementStyle">messageModel</span>
+				section of the configuration xml. (see actionSet element documentation for more details)
+			</p>
+		</xs:documentation>
+	</xs:annotation>
+
+	<xs:element name="message">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">
+					Logging, alarming, and event reporting are all configured in the
+					<span class="elementStyle">messageModel</span>
+					with the
+					<span class="elementStyle">message</span>
+					element. Messages are categorized using the parent
+					<span class="elementStyle">messageSet</span>
+					element. Certain messages
+					are required to be present in the configuration xml<span class="elementStyle">messageModel</span>.
+					The following
+					<span class="elementStyle">messageSet</span>
+					and
+					<span class="elementStyle">message</span>
+					model configuration must be present in the REEF configuration file. Note that
+					<span class="elementStyle">messageSet</span>
+					and message names shown below are required, all other attributes are user configurable. The
+					<span class="elementStyle">message</span>
+					string is also configurable. Arguments can be placed in the
+					<span class="elementStyle">message</span>
+					string to make the message more definitive. Valid arguments are shown below in braces.
+				</p>
+				<pre>
+					<p class="exConfig">
+						&lt;messageModel&gt;
+						&lt;messageSet name="System" severity="8" type="LOG"&gt;
+						&lt;message name="UserLogin" type="EVENT"&gt;User login {status} {reason}&lt;/message&gt;
+						&lt;message name="UserLogout" type="EVENT"&gt;User logged out&lt;/message&gt;
+						&lt;message name="SubsystemStarting"&gt;Subsystem is starting&lt;/message&gt;
+						&lt;message name="SubsystemStarted"&gt;Subsystem has started&lt;/message&gt;
+						&lt;message name="SubsystemStopping"&gt;Subsystem is stopping&lt;/message&gt;
+						&lt;message name="SubsystemStopped"&gt;Subsystem has stopped&lt;/message&gt;
+						&lt;/messageSet&gt;
+
+						&lt;messageSet name="Scada" severity="6" type="ALARM" state="UNACK_SILENT" &gt;
+						&lt;message name="ControlExe"&gt;User executed control {control} on device {device}&lt;/message&gt;
+						&lt;message name="OutOfNominal" severity="4"&gt;Measurement not in nominal range: {value}{unit}
+						validity {validity}&lt;/message&gt;
+						&lt;message name="OutOfReasonable" severity="3" state="UNACK_AUDIBLE"&gt;Measurement not
+						reasonable: {value}{unit} validity {validity}&lt;/message&gt;
+						&lt;/messageSet&gt;
+						&lt;/messageModel&gt;
+					</p>
+				</pre>
+				<p class="elementDef">
+					The
+					<span class="elementStyle">message</span>
+					attributes are as follows, refer to
+					<span class="elementStyle">messageSet</span>
+					for further information:
+					Name – Certain message names are required by the system. Required message names are shown below
+					along with their parent<span class="elementStyle">messageSet</span>.
+
+					<span class="elementStyle">messageModel</span>
+					<ol>
+						<b>System</b>
+						<li>UserLogin</li>
+						<li>UserLogout</li>
+						<li>SubsystemStarting</li>
+						<li>SubsystemStarted</li>
+						<li>SubsystemStopping</li>
+						<li>SubsystemStopped</li>
+					</ol>
+					<ol>
+						<b>Scada</b>
+						<li>ControlExe</li>
+						<li>OutOfNominal</li>
+						<li>OutOfReasonable</li>
+					</ol>
+					<blockquote>
+						<span class="elementStyle">severity</span>
+						– Value from 1 to 8 used to prioritize messageSets.
+						Severity specified for individual messages overrides the
+						<span class="elementStyle">messageSet</span>
+						severity value. (user configurable)
+					</blockquote>
+					<blockquote>
+						<span class="elementStyle">type</span>
+						– Must be either ALARM, EVENT, or LOG. Used to categorize the messages of
+						the<span class="elementStyle">messageSet</span>. Type specified for individual messages overrides the type value.
+						Types are hierarchical. Alarm types will also produce event and log messages. Event types will also produce log messages.
+						(user configurable)
+					</blockquote>
+					<blockquote>
+						<span class="elementStyle">state</span>
+						– defines the state of the alarm when triggered. State specified for individual messages
+						overrides the state value. Can be one of the following: (user configurable).
+					</blockquote>
+					<ul>
+						<li>UNACK_AUDIBLE – Unacknowledged, audible alarm</li>
+						<li>UNACK_SILENT – Unacknowledged, silent alarm</li>
+						<li>ACKNOWLEDGED – acknowledged, silent alarm</li>
+					</ul>
+				</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="name" type="xs:string" use="required"/>
+					<xs:attribute name="severity">
+
+						<xs:simpleType>
+							<xs:restriction base="xs:unsignedShort">
+								<!-- mildest -->
+								<xs:minInclusive value="1"/>
+								<!-- most severe -->
+								<xs:maxInclusive value="8"/>
+							</xs:restriction>
+						</xs:simpleType>
+
+					</xs:attribute>
+
+					<xs:attribute name="type">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="ALARM"/>
+								<xs:enumeration value="EVENT"/>
+								<xs:enumeration value="LOG"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+
+					<xs:attribute name="state">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="UNACK_AUDIBLE"/>
+								<xs:enumeration value="UNACK_SILENT"/>
+								<xs:enumeration value="ACKNOWLEDGED"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+
+	</xs:element>
+
+	<xs:element name="messageSet">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">
+					REEF messages are placed into
+					<span class="elementStyle">messageSet</span>
+					categories.
+					<span class="elementStyle">messageSet</span>
+					structure and attributes are required to be configured as shown below. There must be
+					a System and Scada
+					<span class="elementStyle">messageSet</span>
+					defined for each configuration. The
+					<span class="elementStyle">messageSet</span>
+					attributes are as follows, refer to message for further information:
+					<blockquote>
+						<span class="elementStyle">name</span>
+						– name of the messageSet, (required to be System and Scada)
+					</blockquote>
+
+					<blockquote>
+						<span class="elementStyle">severity</span>
+						– Value from 1 to 8 used to prioritize message sets. Severity specified for
+						individual messages overrides the
+						<span class="elementStyle">messageSet</span>
+						severity value. (user configurable)
+					</blockquote>
+					<blockquote>
+						<span class="elementStyle">type</span>
+						– Must be either ALARM, EVENT, or LOG. Used to categorize the messages of the<span
+							class="elementStyle">messageSet</span>. Type specified for individual messages overrides the
+						type value. Types are hierarchical. Alarm types will also produce event and log messages. Event types
+						will also produce log messages. (user configurable)
+					</blockquote>
+					<blockquote>
+						<span class="elementStyle">state</span>
+						– defines the state of the alarm when triggered. State specified for individual messages
+						overrides the state value. Can be one of the following: (user configurable)
+					</blockquote>
+					.
+					<ul>
+						<li>UNACK_AUDIBLE – Unacknowledged, audible alarm</li>
+						<li>UNACK_SILENT – Unacknowledged, silent alarm</li>
+						<li>ACKNOWLEDGED – acknowledged, silent alarm</li>
+					</ul>
+				</p>
+				<pre>
+					<p class="exConfig">
+						&lt;messageModel&gt;
+						&lt;messageSet name="System" severity="8" type="LOG"&gt;
+						&lt;message name="UserLogin" type="EVENT"&gt;User login {status} {reason}&lt;/message&gt;
+						&lt;message name="UserLogout" type="EVENT"&gt;User logged out&lt;/message&gt;
+						&lt;message name="SubsystemStarting"&gt;Subsystem is starting&lt;/message&gt;
+						&lt;message name="SubsystemStarted"&gt;Subsystem has started&lt;/message&gt;
+						&lt;message name="SubsystemStopping"&gt;Subsystem is stopping&lt;/message&gt;
+						&lt;message name="SubsystemStopped"&gt;Subsystem has stopped&lt;/message&gt;
+						&lt;/messageSet&gt;
+
+						&lt;messageSet name="Scada" severity="6" type="ALARM" state="UNACK_SILENT" &gt;
+						&lt;message name="ControlExe"&gt;User executed control {control} on device {device}&lt;/message&gt;
+						&lt;message name="OutOfNominal" severity="4"&gt;Measurement not in nominal range: {value}{unit}
+						validity {validity}&lt;/message&gt;
+						&lt;message name="OutOfReasonable" severity="3" state="UNACK_AUDIBLE"&gt;Measurement not
+						reasonable: {value}{unit} validity {validity}&lt;/message&gt;
+						&lt;/messageSet&gt;
+						&lt;/messageModel&gt;
+					</p>
+				</pre>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="messageSet" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="message" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+
+			<xs:attribute name="name" type="xs:string" use="required"/>
+
+			<xs:attribute name="severity">
+				<xs:simpleType>
+					<xs:restriction base="xs:unsignedShort">
+						<xs:minInclusive value="1"/>
+						<xs:maxInclusive value="8"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+
+			<xs:attribute name="type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="ALARM"/>
+						<xs:enumeration value="EVENT"/>
+						<xs:enumeration value="LOG"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+
+			<xs:attribute name="state">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="UNACK_AUDIBLE"/>
+						<xs:enumeration value="UNACK_SILENT"/>
+						<xs:enumeration value="ACKNOWLEDGED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="messageModel">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">
+					The root element of the for the
+					<span class="elementStyle">messageSet</span>
+					modeling. The
+					<span class="elementStyle">messageModel</span>
+					section of the REEF configuration xml is the location were logging, alarming, and event reporting
+					are all configured. Messages are
+					categorized using the parent
+					<span class="elementStyle">messageSet</span>
+					element. Message sets are assigned a name, severity, type, and state.
+				</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="messageSet" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element ref="message" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="stripValue">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="setAbnormal">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="setBool">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="value" type="xs:boolean" use="required"/>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="setUnit">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="unit" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="TriggerType" abstract="true">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:all>
+			<xs:element ref="message" minOccurs="0"/>
+			<xs:element ref="stripValue" minOccurs="0"/>
+			<xs:element ref="setAbnormal" minOccurs="0"/>
+			<xs:element ref="setBool" minOccurs="0"/>
+			<xs:element ref="setUnit" minOccurs="0"/>
+		</xs:all>
+
+		<xs:attribute name="moreActions" type="xs:boolean" default="true"/>
+	</xs:complexType>
+
+	<xs:element name="high">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TriggerType"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="low">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TriggerType"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="rising">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TriggerType"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="falling">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TriggerType"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="transition">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">Future</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TriggerType"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="actionSet">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">
+					Alarm, Event, and Logs are triggered using the
+					<span class="elementStyle">actionSet</span>
+					element. Action Set configurations are created and attached to measurements, defining what state if
+					any that the measurement
+					will initiate an Alarm, Event, or Log.
+					<span class="elementStyle">actionSet</span>
+					is used in conjunction with message to provide messaging. Attributes that can be used with the
+					<span class="elementStyle">actionSet</span>
+					element are as follows:
+					<blockquote>
+						<span class="elementStyle">name</span>
+						– name of the<span class="elementStyle">actionSet</span>. This name is referenced when an action
+						set is associated with a measurement (required).
+					</blockquote>
+					<blockquote>
+						<span class="elementStyle">priority</span>
+						- Value from 0 to 1000 used to prioritize
+						<span class="elementStyle">actionSet</span>
+					</blockquote>
+				</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="high" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="low" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="rising" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="falling" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="transition" minOccurs="0" maxOccurs="1"/>
+			</xs:all>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:attribute name="priority" type="xs:unsignedShort"/>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="actionModel">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">
+					The root element for the
+					<span class="elementStyle">actionSet</span>
+					modeling. A specific state of a SCADA measurement can be used to trigger an Alarm, Event, or Log
+					message on the system. An actionSet is used to designate what state of a measurement will trigger a
+					message. Action Sets are attached to measurements in the equipmentModel section of the xml. Action
+					Sets are assigned by name to a measurement by using the unexpected element.
+				</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="actionSet" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- ___________________ root element  ___________________ -->
+	<xs:element name="configuration">
+		<xs:annotation>
+			<xs:documentation>
+				<p class="elementDef">
+					The root element of the entire configuration file. It also contains the main sections of the
+					configuration file -<span class="elementStyle">messageModel</span>,<span class="elementStyle">
+					actionModel</span>,<span class="elementStyle">equipmentModel</span>, and<span class="elementStyle">
+					communicationsModel</span>.
+				</p>
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="common:configFiles" minOccurs="0"/>
+				<xs:element ref="messageModel" minOccurs="0"/>
+				<xs:element ref="actionModel" minOccurs="0"/>
+				<xs:element ref="equ:equipmentModel" minOccurs="0"/>
+				<xs:element ref="com:communicationsModel" minOccurs="0"/>
+			</xs:all>
+			<xs:attribute name="version" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="1.0"/>
+						<!-- Add new versions here and keep old versions that are backwards compatible -->
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

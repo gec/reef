@@ -76,32 +76,35 @@ class EntityChildrenCommand extends ReefCommandSupport {
       EntityView.printTreeSingleDepth(ents)
     }
   }
-
 }
 
-@Command(scope = "point", name = "list", description = "Lists points")
-class PointListCommand extends ReefCommandSupport {
+@Command(scope = "entity", name = "tree", description = "Prints trees based on root type start")
+class EntityTreeCommand extends ReefCommandSupport {
 
-  def doCommand() = EntityView.printList(services.getAllEntitiesWithType("Point").toList)
+  @Argument(index = 0, name = "Entity Type", description = "Entity name.", required = false, multiValued = false)
+  var rootType: String = null
 
-}
+  @Argument(index = 1, name = "Relationship", description = "Name of relationship type", required = true, multiValued = false)
+  var relationship: String = null
 
-@Command(scope = "point", name = "commands", description = "Lists points with associated commands.")
-class PointCommandsCommand extends ReefCommandSupport {
+  @Argument(index = 2, name = "Depth", description = "Show children at depth <i>", required = true, multiValued = false)
+  var depth: Int = 1
 
-  @Argument(index = 0, name = "pointName", description = "Point name.", required = false, multiValued = false)
-  var pointName: String = null
+  @Argument(index = 3, name = "types", description = "List of types we want in returned list", required = true, multiValued = true)
+  var types: java.util.List[String] = null
+
+  @GogoOption(name = "-name", description = "First argument is a specific entity name")
+  var rootTypeIsName: Boolean = false
 
   def doCommand() = {
+    val entities = rootTypeIsName match {
+      case false =>
+        services.getEntityChildrenFromTypeRoots(rootType, relationship, depth, types).toList
+      case true =>
+        val root = services.getEntityByName(rootType)
+        services.getEntityChildren(root.getUuid, relationship, depth, types) :: Nil
 
-    import org.totalgrid.reef.proto.Model.Entity
-
-    val query = Option(pointName) match {
-      case Some(entName) => Entity.newBuilder().setName(pointName).addRelations(EntityRequestBuilders.getAllFeedBackCommands).build
-      case None => EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands
     }
-    services.getEntities(query).foreach(EntityView.printTreeRecursively(_))
+    entities.foreach { EntityView.printTreeRecursively(_) }
   }
-
 }
-

@@ -26,7 +26,6 @@ import service.AsyncService
 
 import org.totalgrid.reef.japi.Envelope
 
-import java.io.Closeable
 import org.totalgrid.reef.broker.{ ChannelObserver, CloseableChannel, MessageConsumer }
 
 /**
@@ -132,14 +131,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
     add(sub)
   }
 
-  def getStreamQueue[A](convert: Array[Byte] => A, accept: Event[A] => Unit, notify: String => Unit): ObservableSubscription = {
-    val consumer = AMQPMessageConsumers.makeConvertingEventStreamConsumer(convert, accept)
-    val sub = new AMQPUnboundPrivateQueueListener(consumer)
-    sub.resubscribe(notify)
-    add(sub)
-  }
-
-  final override def prepareSubscription[A](deserialize: Array[Byte] => A, subIsStreamType: Boolean): Subscription[A] = {
+  final override def prepareSubscription[A](deserialize: Array[Byte] => A): Subscription[A] = {
     // TODO: implement prepareSubscription for async world?
     throw new Exception("Not implemented for asyc factory")
   }
@@ -154,20 +146,26 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(exchange: String, service: AsyncService.ServiceFunction, destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): CloseableChannel = {
-    val pub = broadcast[Envelope.ServiceResponse]((x: Envelope.ServiceResponse) => x.toByteArray)
-    val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
+  def bindService(exchange: String, service: AsyncService.ServiceFunction, destination: Destination = AnyNodeDestination, competing: Boolean = false,
+    reactor: Option[Executor] = None): CloseableChannel =
+    {
+      val pub = broadcast[Envelope.ServiceResponse]((x: Envelope.ServiceResponse) => x.toByteArray)
+      val binding = dispatch(AMQPMessageConsumers.makeServiceBinding(pub, service), reactor)
 
-    val s = if (competing) add(new AMQPCompetingConsumer(exchange, exchange + "_server", destination, binding))
-    else add(new AMQPExclusiveConsumer(exchange, destination, binding))
-    closeable(s)
-  }
+      val consumer: AMQPConsumptionPattern = if (competing) {
+        add(new AMQPCompetingConsumer(exchange, exchange + "_server", destination, binding))
+      } else {
+        add(new AMQPExclusiveConsumer(exchange, destination, binding))
+      }
 
-  private def closeable(s: ChannelObserver with CloseableChannel) = {
+      closeable(consumer)
+    }
+
+  private def closeable(consumer: ChannelObserver with CloseableChannel) = {
     new CloseableChannel {
       def close() {
-        remove(s)
-        s.close
+        remove(consumer)
+        consumer.close
       }
     }
   }

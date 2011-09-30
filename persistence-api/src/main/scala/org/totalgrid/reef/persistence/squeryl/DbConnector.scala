@@ -22,16 +22,37 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.persistence.AsyncBufferReactor
 import org.totalgrid.reef.persistence.ConnectionReactor.Observer
 import org.totalgrid.reef.executor.Executor
+import org.osgi.framework.BundleContext
+import com.weiglewilczek.scalamodules._
+import java.lang.Exception
 
 object DbConnector {
 
-  private val connectedAdapters = scala.collection.mutable.Map.empty[String, DbConnectorBase]
+  private val connectedAdapters = scala.collection.mutable.Map.empty[String, DbConnector]
+
+  def connect(dbInfo: DbInfo, context: BundleContext): Option[Boolean] = connectedAdapters.synchronized {
+    val connector = connectedAdapters.get(dbInfo.dbType) match {
+      case None =>
+        val services = context.getServiceReferences(classOf[DbConnector].getName, "(org.totalgrid.reef.sql.type=" + dbInfo.dbType + ")")
+
+        services.headOption match {
+          case Some(srvRef) =>
+            val connector = context.getService(srvRef).asInstanceOf[DbConnector]
+            connectedAdapters.put(dbInfo.dbType, connector)
+            connector
+          case None => throw new Exception("No connector found for " + dbInfo.dbType)
+        }
+      case Some(c) => c
+    }
+    connector.connect(dbInfo)
+
+  }
 
   def connect(dbInfo: DbInfo): Option[Boolean] = connectedAdapters.synchronized {
     val connector = connectedAdapters.get(dbInfo.dbType) match {
       case None =>
         val klass = Class.forName("org.totalgrid.reef.persistence.squeryl." + dbInfo.dbType + ".Connector")
-        val connector = klass.newInstance.asInstanceOf[DbConnectorBase]
+        val connector = klass.newInstance.asInstanceOf[DbConnector]
         connectedAdapters.put(dbInfo.dbType, connector)
         connector
       case Some(c) => c
@@ -40,10 +61,14 @@ object DbConnector {
   }
 }
 
-abstract class DbConnectorBase extends Logging {
+trait DbConnector {
+  def connect(dbInfo: DbInfo): Option[Boolean]
+}
+
+abstract class DbConnectorBase extends DbConnector with Logging {
   private var connected = false
 
-  def _connect(dbInfo: DbInfo)
+  protected def _connect(dbInfo: DbInfo)
 
   def connect(dbInfo: DbInfo): Option[Boolean] = {
     try {
@@ -63,6 +88,12 @@ abstract class DbConnectorBase extends Logging {
         throw e
     }
   }
+}
+
+class DbOperations(connect: () => Option[Boolean], executor: Executor)(obs: Observer)
+    extends AsyncBufferReactor[Boolean](executor, obs) {
+
+  override def connectFun() = connect()
 }
 
 class SimpleDbConnection(connInfo: DbInfo, reactor: Executor)(obs: Observer)

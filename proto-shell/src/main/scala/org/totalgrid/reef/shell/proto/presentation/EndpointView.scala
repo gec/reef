@@ -21,13 +21,15 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.proto.OptionalProtos._
 
+import org.totalgrid.reef.util.Table
+
 object EndpointView {
   def printTable(endpoints: List[CommEndpointConnection]) = {
     Table.printTable(header, endpoints.map(row(_)))
   }
 
   def header = {
-    "Endpoint" :: "Protocol" :: "State" :: "Enabled" :: "FrontEnd" :: "LastUpdated" :: Nil
+    "Endpoint" :: "Protocol" :: "State" :: "Enabled" :: "FrontEnd" :: "Port" :: "Port State" :: Nil
   }
 
   def row(a: CommEndpointConnection) = {
@@ -36,7 +38,8 @@ object EndpointView {
       a.getState.toString ::
       a.getEnabled.toString ::
       a.frontEnd.appConfig.instanceName.getOrElse("Unassigned") ::
-      new java.util.Date(a.getLastUpdate).toString ::
+      a.endpoint.channel.name.getOrElse("unknown") ::
+      a.endpoint.channel.state.map { _.toString }.getOrElse("unknown") ::
       Nil
   }
 }
