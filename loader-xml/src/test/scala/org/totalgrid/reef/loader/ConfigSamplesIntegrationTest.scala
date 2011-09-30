@@ -56,6 +56,6 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("dnp3-sample") {
-    loadFile(BuildEnv.configPath + "protocol-dnp3/src/test/resources/sample-model.xml", 72)
+    loadFile(BuildEnv.configPath + "protocol-dnp3/src/test/resources/sample-model.xml", 75)
   }
 }
