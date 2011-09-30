@@ -6,7 +6,7 @@
 	<feature name="javax-replacements">
 		<feature>java-mail-in-osgi</feature>
 	</feature>
-	<feature name="reef-system-preload" version="0.3.1-SNAPSHOT">
+	<feature name="reef-system-preload" version="0.4.1-SNAPSHOT">
 		<feature>javax-replacements</feature>
 	</feature>
 </features>
