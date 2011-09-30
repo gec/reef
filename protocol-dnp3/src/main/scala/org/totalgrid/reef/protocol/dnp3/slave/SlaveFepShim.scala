@@ -22,7 +22,7 @@ import org.totalgrid.reef.broker.BrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
+import org.totalgrid.reef.messaging.AmqpClientSession
 import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.api.{ Protocol, AddRemoveValidation }
@@ -30,18 +30,20 @@ import org.totalgrid.reef.japi.client.{ ConnectionListener, UserSettings }
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.executor.{ Executor, LifecycleManager, ReactActorExecutor }
+import org.totalgrid.reef.util.{ Logging, Timer }
 
 /**
  * this class is a stop gap measure until we get the FEP reimplemented to provide a Client and exe to the
  * Protocols.
  * TODO: reimplement FEP to give client to Protocols
  */
-class SlaveFepShim {
+class SlaveFepShim extends Logging {
 
   private val manager = new LifecycleManager
 
   private var protocol: Option[Dnp3SlaveProtocol] = None
   private var registration: Option[ServiceRegistration] = None
+  private var reconnect: Option[Timer] = None
 
   def start(context: BundleContext) {
     org.totalgrid.reef.executor.Executor.setupThreadPools
@@ -63,8 +65,7 @@ class SlaveFepShim {
       }
 
       def onConnectionClosed(expected: Boolean) {
-        protocol.foreach { _.Shutdown() }
-        registration.foreach { _.unregister() }
+        stopConnecting()
       }
     })
 
@@ -74,22 +75,33 @@ class SlaveFepShim {
   }
 
   def stop(context: BundleContext) {
+    stopConnecting()
+    manager.stop()
+  }
+
+  private def stopConnecting() {
+    reconnect.foreach { _.cancel() }
     protocol.foreach { _.Shutdown() }
     protocol = None
     registration.foreach { _.unregister() }
     registration = None
-    manager.stop()
   }
 
   private def createProtocol(factory: AMQPSyncFactory, userSettings: UserSettings, exe: Executor, context: BundleContext) {
-    val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with SingleSessionClientSource {
-      def session = this
-    }
-    val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
-    client.getDefaultHeaders.setAuthToken(token)
+    try {
+      val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with SingleSessionClientSource {
+        def session = this
+      }
+      val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
+      client.getDefaultHeaders.setAuthToken(token)
 
-    val slaveProtocol = new Dnp3SlaveProtocol(client, exe) with AddRemoveValidation
-    protocol = Some(slaveProtocol)
-    registration = Some(context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol]))
+      val slaveProtocol = new Dnp3SlaveProtocol(client, exe) with AddRemoveValidation
+      protocol = Some(slaveProtocol)
+      registration = Some(context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol]))
+    } catch {
+      case ex: Exception =>
+        logger.warn("Dnp3 Slave shim couldn't connect.")
+        reconnect = Some(exe.delay(1000) { createProtocol(factory, userSettings, exe, context) })
+    }
   }
 }
