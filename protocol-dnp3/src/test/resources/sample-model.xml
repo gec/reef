@@ -102,7 +102,7 @@
 
 		</equip:profiles>
 
-		<equip:equipment name="SimulatedSubstation">
+		<equip:equipment name="OriginalSubstation">
 			<equip:equipmentProfile name="Substation"/>
 
 			<equip:equipment name="Breaker01">
@@ -129,17 +129,24 @@
 			</equip:equipment>
 		</equip:equipment>
 
+		<equip:equipment name="Substations" addParentNames="false">
+			<equip:type name="Root"/>
+			<equip:type name="Substation"/>
+			<equip:equipment name="OriginalSubstation"/>
+			<equip:equipment name="RoundtripSubstation"/>
+		</equip:equipment>
+
 	</equip:equipmentModel>
 
 
 	<comm:communicationsModel>
 
-		<comm:endpoint name="SimulatedEndpoint">
+		<comm:endpoint name="OriginalEndpoint" dataSource="true">
 			<comm:protocol name="benchmark">
 				<comm:simOptions delay="1000"/>
 			</comm:protocol>
 
-			<comm:equipment name="SimulatedSubstation">
+			<comm:equipment name="OriginalSubstation">
 				<comm:equipment name="Breaker01">
 					<comm:status name="Bkr" index="0"/>
 					<comm:status name="Tripped" index="1"/>
@@ -159,7 +166,7 @@
 				<common:configFile fileName="sample-slave-config.xml" mimeType="text/xml"/>
 			</comm:protocol>
 			<comm:interface name="DNPIn" port="9999" network="any" serverSocket="true"/>
-			<comm:equipment name="SimulatedSubstation">
+			<comm:equipment name="OriginalSubstation">
 				<comm:equipment name="Breaker01">
 					<comm:status name="Bkr" index="0"/>
 					<comm:status name="Tripped" index="1"/>
