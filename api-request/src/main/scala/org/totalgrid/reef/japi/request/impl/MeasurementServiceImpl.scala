@@ -112,20 +112,6 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
     session.get(meas, sub).await().expectOne
   }
 
-  //  private def checkAndReturn(points: java.util.List[Point], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
-  //    checkAndReturnByNames(points.map { _.getName }, retrievedMeas)
-  //  }
-  //  private def checkAndReturnByNames(names: java.util.List[String], retrievedMeas: java.util.List[Measurement]): java.util.List[Measurement] = {
-  //    // TODO: measurement snapshot service should except on unknown point	 reef_techdebt-6
-  //    if (names.length != retrievedMeas.length) {
-  //      val retrievedNames = retrievedMeas.map { _.getName }
-  //      val missing = names.diff(retrievedNames)
-  //      throw new ExpectationException("Measurement service didn't have values for: " + missing.toList)
-  //    }
-  //
-  //    retrievedMeas
-  //  }
-
   private def getMeasurementHistory(session: RestOperations, request: MeasurementHistory) = {
     session.get(request).await().expectOne.getMeasurementsList
   }

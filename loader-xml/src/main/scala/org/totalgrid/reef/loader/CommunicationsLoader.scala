@@ -43,9 +43,6 @@ object CommunicationsLoader {
 /**
  * Loader for the communications model.
  *
- * TODO: Implement EquipmentProfiles
- * TODO: Handle exceptions when a referenced profile is invalid
- * TODO: Add setpoints
  * TODO: Add serial interfaces
  *
  */
@@ -168,7 +165,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     val statuses = HashMap[String, PointType]()
     val analogs = HashMap[String, PointType]()
     val counters = HashMap[String, PointType]()
-    // TODO: should the endpoint name be used as the starting prefixed ?
+
     profiles.flatMap(_.getEquipment).foreach(findControlsAndPoints(_, None, controls, setpoints, statuses, analogs, counters))
     logger.trace("loadEndpoint: " + endpointName + " with controls: " + controls.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with setpoints: " + setpoints.keys.mkString(", "))
@@ -348,9 +345,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       // interface. The endpoint's interface can override individual properties
       // of the reference interface
 
-      // TODO: the ip may be empty string or illegal.
-      // TODO: the network may be empty string.
-
       val server = getAttributeDefault[Boolean](interface, reference, _.isSetServerSocket, _.isServerSocket, false)
 
       val ip = if (!server) getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
@@ -467,7 +461,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
           case Some(u) =>
             if (unit != u)
               throw new LoadingException("Endpoint '" + endpointName + "': <scale ... engUnit=\"" + unit + "\"/> does not match point '" + name + "' unit=\"" + u + "\" in equipment model.")
-          case _ => // OK: the equipment point doesn't have to be in this config file. TODO: could check the database.
+          case _ => // OK: the equipment point doesn't have to be in this config file.
         }
 
         val point = toPoint(name)
@@ -620,7 +614,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
   def setpointToCommandMap(endpointName: String, name: String, setpoint: Setpoint): Mapping.CommandMap.Builder = {
 
     // Profiles is a list of profiles plus this setpoint
-    // TODO: Handle exceptions when referenced profile doesn't exist.
     val profiles: List[ControlType] = setpoint.getControlProfile.toList.map(p => controlProfiles(p.getName)) ::: List[ControlType](setpoint)
     val reverseProfiles = profiles.reverse
 
@@ -646,7 +639,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
   def controlToCommandMap(endpointName: String, name: String, control: Control): Mapping.CommandMap.Builder = {
 
     // Profiles is a list of profiles plus this control
-    // TODO: Handle exceptions when referenced profile doesn't exist.
     val profiles: List[ControlType] = control.getControlProfile.toList.map(p => controlProfiles(p.getName)) ::: List[ControlType](control)
     val reverseProfiles = profiles.reverse
 

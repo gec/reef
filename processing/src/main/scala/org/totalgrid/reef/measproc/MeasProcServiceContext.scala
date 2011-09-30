@@ -22,7 +22,6 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.app.ServiceContext
 
-// TODO better comments please
 // Tailored for some of the measproc classes
 trait MeasProcServiceContext[A] extends ServiceContext[A] with Logging {
 
