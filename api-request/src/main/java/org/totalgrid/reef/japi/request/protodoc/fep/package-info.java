@@ -105,6 +105,8 @@
  *     optional CommChannel       channel      = 4;
  *     optional EndpointOwnership ownerships   = 6;
  *     repeated org.totalgrid.reef.proto.Model.ConfigFile        config_files = 5;
+ *     // some endpoints produce data and need measurement processors
+ *     optional bool dataSource = 8;
  * }
  * 
  * message CommEndpointConnection {

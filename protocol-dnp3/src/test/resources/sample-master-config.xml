@@ -19,15 +19,15 @@
     the License.
 
 -->
-<Slave xmlns:psi="org.psi.xml" xmlns="org.psi.xml.dnp3">
-    <Stack>
-        <LinkLayer NumRetries="3" AckTimeoutMS="1000" UseConfirmations="false" 
-          RemoteAddress="100" LocalAddress="500" IsMaster="false"/>
-        <AppLayer NumRetries="0" MaxFragSize="2048" TimeoutMS="5000"/>
-    </Stack>
-    <psi:Log Filter="LOG_WARNING"/>
-    <SlaveConfig OpenLayerDelay="1000" MaxCounterEvents="100" MaxAnalogEvents="100" MaxBinaryEvents="100">
-        <TimeIINTask PeriodMS="60000" DoTask="true"/>
-        <UnsolDefaults RetryMS="5000" PackDelayMS="50" DoClass3="true" DoClass2="true" DoClass1="true"/>
-    </SlaveConfig>
-</Slave>
+<Master xmlns="org.psi.xml.dnp3" xmlns:psi="org.psi.xml">
+  <Stack>
+    <LinkLayer RemoteBuffFullTimeoutMS="0" NumRetries="3" AckTimeoutMS="1000" UseConfirmations="false" 
+    RemoteAddress="500" LocalAddress="100" IsMaster="true"/>
+    <AppLayer NumRetries="0" MaxFragSize="2048" TimeoutMS="5000"/>
+  </Stack>
+  <MasterSettings IntegrityPeriodMS="60000" TaskRetryMS="5000" AllowTimeSync="true"/>
+  <ScanList>
+    <!-- <ExceptionScan PeriodMS="2000" Class3="true" Class2="true" Class1="true"/> -->
+  </ScanList>
+  <Unsol Class3="true" Class2="true" Class1="true" Enable="true" DoTask="true"/>
+</Master>

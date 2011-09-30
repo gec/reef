@@ -45,6 +45,7 @@ class SlaveMeasurementProxy(service: MeasurementService, mapping: IndexMapping, 
 
   def stop() {
     subscription.foreach { _.cancel }
+    packTimer.cancel()
   }
 
   def onEvent(event: SubscriptionEvent[Measurement]) {

@@ -24,8 +24,13 @@ import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.dnp3.IStackObserver
+import org.totalgrid.reef.util.Cancelable
 
-case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver, batchPublisher: Publisher[MeasurementBatch], commandAdapter: CommandAdapter)
+case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver,
+  batchPublisher: Publisher[MeasurementBatch], commandAdapter: CommandAdapter)
+    extends Cancelable {
+  def cancel() = {}
+}
 
 class Dnp3MasterProtocol extends Dnp3ProtocolBase[MasterObjectsContainer] {
 

@@ -63,20 +63,6 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
   def getCommands(names: List[String]): Query[Command] = {
     Command.findByNames(names)
   }
-  def createAndSetOwningNode(context: RequestContext, commands: List[String], dataSource: Entity): Unit = {
-    if (commands.size == 0) return
-
-    val allreadyExistingCommands = Entity.asType(ApplicationSchema.commands, EntityQueryManager.findEntitiesByName(commands).toList, Some("Command"))
-    val newCommands = commands.diff(allreadyExistingCommands.map(_.entityName).toList)
-    if (!newCommands.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newCommands)
-
-    val changeCommandOwner = allreadyExistingCommands.filter { c => c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true) }
-    changeCommandOwner.foreach(p => {
-      p.sourceEdge.value.foreach(EntityQueryManager.deleteEdge(_))
-      EntityQueryManager.addEdge(dataSource, p.entity.value, "source")
-      update(context, p, p)
-    })
-  }
 
   override def preDelete(context: RequestContext, entry: Command) {
     entry.logicalNode.value match {

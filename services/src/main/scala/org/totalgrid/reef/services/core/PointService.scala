@@ -79,23 +79,6 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     (proto, key :: Nil)
   }
 
-  def createAndSetOwningNode(context: RequestContext, points: List[String], dataSource: Entity): Unit = {
-    if (points.size == 0) return
-    //TODO: combine the createAndSet for points and commands
-    val alreadyExistingPoints = Entity.asType(ApplicationSchema.points, EntityQueryManager.findEntitiesByName(points).toList, Some("Point"))
-    val newPoints = points.diff(alreadyExistingPoints.map(_.entityName).toList)
-    if (!newPoints.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown points: " + newPoints)
-
-    val changePointOwner = alreadyExistingPoints.filter { c =>
-      c.sourceEdge.value.map(_.parentId != dataSource.id) getOrElse (true)
-    }
-    changePointOwner.foreach(p => {
-      p.sourceEdge.value.foreach(EntityQueryManager.deleteEdge(_))
-      EntityQueryManager.addEdge(dataSource, p.entity.value, "source")
-      update(context, p, p)
-    })
-  }
-
   override def postCreate(context: RequestContext, entry: Point) {
     markPointsOffline(entry :: Nil)
   }
