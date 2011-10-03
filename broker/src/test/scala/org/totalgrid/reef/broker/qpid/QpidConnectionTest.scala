@@ -121,7 +121,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
   }
 
   /*
-  // TODO: get authorized qpidd running on build server
+  // TODO: get authorized qpidd running on build server - backlog-64
 
   test("Bad Credentials fails fast") {
     // qpidd running with the --auth=no flag will accept any username/password combination

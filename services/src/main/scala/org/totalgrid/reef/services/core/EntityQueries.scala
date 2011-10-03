@@ -641,7 +641,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      // TODO: get entitiy queries to use and respect requestContext
+      // TODO: get entitiy queries to use and respect requestContext - backlog-70
       EntitySearches.findRecord(new HeadersRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))

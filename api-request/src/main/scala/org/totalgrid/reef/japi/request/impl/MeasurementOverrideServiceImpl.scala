@@ -40,7 +40,7 @@ trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with Measureme
   }
 
   override def deleteMeasurementOverride(measOverride: MeasOverride) = {
-    // TODO: measurementOverride needs uid
+    // TODO: measurementOverride needs uid - backlog-63
     ops("Couldn't delete measurementOverride: " + measOverride.meas + " on: " + measOverride.point) {
       _.delete(measOverride).await().expectOne
     }

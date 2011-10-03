@@ -43,7 +43,7 @@ object CommunicationsLoader {
 /**
  * Loader for the communications model.
  *
- * TODO: Add serial interfaces
+ * TODO: Add serial interfaces - backlog-65
  *
  */
 class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommunication, exceptionCollector: ExceptionCollector,

@@ -87,10 +87,9 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 
   override def getCommandLockOnCommand(id: Command): CommandAccess = {
     ops("couldn't find command lock for command: " + id) {
-      // TODO: better error message for getCommandLockOnCommand
       _.get(CommandAccessRequestBuilders.getByCommand(id)).await().expectOneOrNone match {
         case Some(x) => x
-        case None => null // TODO - Java API, so returning null probably okay, but may want to evaulate throwing
+        case None => null // TODO: change name to findCommandLockOnCommand - reef-149
       }
     }
   }
