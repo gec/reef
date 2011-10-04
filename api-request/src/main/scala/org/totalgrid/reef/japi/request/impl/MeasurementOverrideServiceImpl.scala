@@ -49,8 +49,8 @@ trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with Measureme
   override def clearMeasurementOverridesOnPoint(point: Point) = {
     ops("Couldn't clear measurementOverrides on point uuid: " + point.uuid + " name: " + point.name) {
       _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).await().expectMany() match {
-        case Nil => false
-        case _ => true
+        case List(one) => one
+        case _ => null
       }
     }
   }

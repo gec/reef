@@ -19,6 +19,8 @@
 package org.totalgrid.reef.japi.request;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.proto.Auth;
+import org.totalgrid.reef.proto.Auth.AuthToken;
 
 /**
  * A service for retrieving and deleting authorization tokens needed to access all other Reef services.
@@ -52,5 +54,5 @@ public interface AuthTokenService
      * Revoke the specified authorization token. This means all future requests using this authorization token will fail.
      * @param authorizationToken
      */
-    void deleteAuthorizationToken( String authorizationToken ) throws ReefServiceException;
+    AuthToken deleteAuthorizationToken( String authorizationToken ) throws ReefServiceException;
 }

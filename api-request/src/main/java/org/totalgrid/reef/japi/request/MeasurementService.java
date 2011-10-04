@@ -129,5 +129,5 @@ public interface MeasurementService extends SubscriptionCreator
      * </ul>
      * TODO protocol checking on publishMeasurements
      */
-    void publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
+    List<Measurement> publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 }

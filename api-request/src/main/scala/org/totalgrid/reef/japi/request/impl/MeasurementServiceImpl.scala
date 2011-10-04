@@ -67,7 +67,7 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
 
   override def publishMeasurements(measurements: java.util.List[Measurement]) = {
     ops("Couldn't publish measurements. size: " + measurements.size) {
-      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).await().expectOne
+      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).await().expectOne.getMeasList
     }
   }
 
