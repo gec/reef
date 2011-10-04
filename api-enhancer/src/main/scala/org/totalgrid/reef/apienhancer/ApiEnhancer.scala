@@ -22,27 +22,40 @@ import com.sun.javadoc._
 
 import scala.collection.JavaConversions._
 import java.io.{ FileOutputStream, File, PrintStream }
+import scala.collection.Map
 
 object ApiEnhancer {
   def start(root: RootDoc): Boolean = {
 
-    val rootDir = new File("c:/code/scada/reef/api-request/src/main/java")
+    val rootDir = new File("c:/code/scada/reef/api-request/target/generated-sources")
 
-    root.classes.toList.foreach { c =>
-      val packageStr = c.containingPackage().toString.replaceAllLiterally(".japi.", ".japi2.")
-      val packageDir = new File(rootDir, packageStr.replaceAllLiterally(".", "/"))
-      packageDir.mkdirs()
+    root.classes.toList.filter {
+      _.containingPackage.toString.indexOf(".japi.request") != -1
+    }.foreach { c =>
+      val packageStr = c.containingPackage().toString
+      makeJavaClass(c, packageStr, rootDir)
 
-      val classFile = new File(packageDir, c.name + ".java")
-      val stream = new PrintStream(new FileOutputStream(classFile))
-      handleClass(c, stream, packageStr)
-      stream.close
+      makeJavaFuture(c, packageStr, rootDir)
+
+      makeScalaPackage(c, packageStr, rootDir)
     }
 
     true
   }
 
-  private def handleClass(c: ClassDoc, stream: PrintStream, packageName: String) {
+  private def makeJavaClass(c: ClassDoc, packageStr: String, rootDir: File) {
+    val javaPackage = packageStr.replaceAllLiterally(".japi.", ".japi2.")
+    val packageDir = new File(rootDir, "java/" + javaPackage.replaceAllLiterally(".", "/"))
+    packageDir.mkdirs()
+
+    val classFile = new File(packageDir, c.name + ".java")
+    println(classFile.getAbsolutePath)
+    val stream = new PrintStream(new FileOutputStream(classFile))
+    duplicateJava(c, stream, javaPackage)
+    stream.close
+  }
+
+  private def duplicateJava(c: ClassDoc, stream: PrintStream, packageName: String) {
     stream.println("package " + packageName + ";")
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName() + ";"))
     stream.println(commentString(c.getRawCommentText()))
@@ -55,6 +68,80 @@ object ApiEnhancer {
         typeString(p.`type`) + " " + p.name
       }.mkString(", ")
       msg += ") throws ReefServiceException;"
+      stream.println(commentString(m.getRawCommentText()))
+      stream.println(msg)
+    }
+    stream.println("}")
+  }
+
+  private def makeJavaFuture(c: ClassDoc, packageStr: String, rootDir: File) {
+    val javaPackage = packageStr.replaceAllLiterally(".japi.", ".japiF.")
+    val packageDir = new File(rootDir, "java/" + javaPackage.replaceAllLiterally(".", "/"))
+    packageDir.mkdirs()
+
+    val classFile = new File(packageDir, c.name + "Futures.java")
+    println(classFile.getAbsolutePath)
+    val stream = new PrintStream(new FileOutputStream(classFile))
+    javaFuture(c, stream, javaPackage)
+    stream.close
+  }
+
+  private def javaFuture(c: ClassDoc, stream: PrintStream, packageName: String) {
+    stream.println("package " + packageName + ";")
+    c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName() + ";"))
+    stream.println("import org.totalgrid.reef.promise.Promise;")
+    stream.println(commentString(c.getRawCommentText()))
+    stream.println("public interface " + c.name + "Futures" + "{")
+
+    c.methods.toList.foreach { m =>
+
+      var msg = "\t" + "Promise<" + typeString(m.returnType) + "> " + m.name + "("
+      msg += m.parameters().toList.map { p =>
+        typeString(p.`type`) + " " + p.name
+      }.mkString(", ")
+      msg += ") throws ReefServiceException;"
+      stream.println(commentString(m.getRawCommentText()))
+      stream.println(msg)
+    }
+
+    stream.println("}")
+  }
+
+  private def makeScalaPackage(c: ClassDoc, packageStr: String, rootDir: File) {
+    val javaPackage = packageStr.replaceAllLiterally(".japi.", ".sapi.")
+    val packageDir = new File(rootDir, "scala/" + javaPackage.replaceAllLiterally(".", "/"))
+    packageDir.mkdirs()
+
+    val classFile = new File(packageDir, c.name + ".scala")
+    println(classFile.getAbsolutePath)
+    val stream = new PrintStream(new FileOutputStream(classFile))
+    scalaClass(c, stream, javaPackage)
+    stream.close
+  }
+
+  private def scalaClass(c: ClassDoc, stream: PrintStream, packageName: String) {
+    stream.println("package " + packageName + ";")
+
+    val importMap = Map("java.util.List" -> "")
+
+    c.importedClasses().toList.foreach(p => importMap.get(p.qualifiedTypeName()) match {
+      case None => stream.println("import " + p.qualifiedTypeName())
+      case _ =>
+    })
+    stream.println("import org.totalgrid.reef.promise.Promise;")
+    stream.println(commentString(c.getRawCommentText()))
+    stream.println("trait " + c.name + "{")
+
+    c.methods.toList.foreach { m =>
+
+      var msg = "\t" + "def " + m.name + "("
+      msg += m.parameters().toList.map { p =>
+        p.name + ": " + scalaTypeString(p.`type`)
+      }.mkString(", ")
+      msg += ")"
+      if (m.returnType.toString != "void")
+        msg += ": Promise[" + scalaTypeString(m.returnType) + "]"
+
       stream.println(commentString(m.getRawCommentText()))
       stream.println(msg)
     }
@@ -72,7 +159,26 @@ object ApiEnhancer {
       val argumentTypes = ptype.asParameterizedType().typeArguments().toList
       ptype.typeName() + "< " + argumentTypes.map { typeString(_) }.mkString(", ") + " >"
     } else {
-      ptype.simpleTypeName()
+      ptype.simpleTypeName() + ptype.dimension()
+    }
+  }
+
+  private def scalaTypeString(ptype: Type): String = {
+
+    val map = Map(
+      "int" -> "Int",
+      "boolean" -> "Boolean",
+      "long" -> "Long",
+      "double" -> "Double",
+      "byte" -> "Array[Byte]")
+
+    if (ptype.asParameterizedType() != null) {
+
+      val argumentTypes = ptype.asParameterizedType().typeArguments().toList
+      ptype.typeName() + "[ " + argumentTypes.map { scalaTypeString(_) }.mkString(", ") + "]"
+    } else {
+      val simpleType = ptype.simpleTypeName()
+      map.get(simpleType).getOrElse(simpleType)
     }
   }
 
