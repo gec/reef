@@ -28,7 +28,7 @@ import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.messaging.{ AMQPMessageConsumers, QueuePatterns }
 import org.totalgrid.reef.japi.Envelope.ServiceResponse
 import org.totalgrid.reef.broker.api._
-import net.agileautomata.executor4s.{ Strand, Executor }
+import net.agileautomata.executor4s._
 
 /** Implements all of the higher-level rest functions */
 final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor: Executor, timeoutms: Long)
@@ -45,7 +45,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
   def removeListener(listener: ConnectionListener) = conn.removeListener(listener)
 
   private var state: Option[CurrentState] = None
-  private val correlator = new ResponseCorrelator(strand)
+  private val correlator = new ResponseCorrelator(executor)
 
   conn.addListener(listener)
   this.setState()
@@ -77,7 +77,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
 
     state match {
       case Some(CurrentState(channel, queue)) =>
-        val uuid = correlator.register(onResponse, timeoutms)
+        val uuid = correlator.register(timeoutms.milliseconds)(onResponse)
         val request = RestOperations.buildServiceRequest(verb, payload, info.descriptor, uuid, mergeHeaders(env))
         conn.publish(info.descriptor.id, dest.key, request.toByteArray, Some(Destination("amq.direct", queue)))
       case None =>

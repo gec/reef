@@ -42,19 +42,19 @@ class ResponseCorrelator(executor: Executor) extends Logging with MessageConsume
   private def getNextUuid() = UUID.randomUUID().toString
 
   /// mutable state
-  private val map = mutable.Map.empty[String, Tuple3[Cancelable, ResponseCallback, Long]]
+  private val map = mutable.Map.empty[String, Tuple2[Cancelable, ResponseCallback]]
 
-  def register(callback: ResponseCallback, timeoutms: Long): String = map.synchronized {
+  def register(interval: TimeInterval)(callback: ResponseCallback) = map.synchronized {
     val uuid = getNextUuid()
-    val timer = executor.delay(timeoutms.milliseconds)(onTimeout(uuid))
-    map.put(uuid, (timer, callback, timeoutms))
+    val timer = executor.delay(interval)(onTimeout(uuid))
+    map.put(uuid, (timer, callback))
     uuid
   }
 
   // terminates all existing registered callbacks with an exception
   def flush() = map.synchronized {
     map.foreach {
-      case (_, (timer, callback, _)) =>
+      case (_, (timer, callback)) =>
         timer.cancel()
         executor.execute(callback(None))
     }
@@ -63,9 +63,9 @@ class ResponseCorrelator(executor: Executor) extends Logging with MessageConsume
 
   private def onTimeout(uuid: String) = map.synchronized {
     map.get(uuid) match {
-      case Some((timer, callback, timeout)) =>
+      case Some((timer, callback)) =>
         map.remove(uuid)
-        executor.execute(callback(None))
+        callback(None)
       case None =>
         logger.warn("Unexpected service response timeout w/ uuid: " + uuid)
     }
@@ -81,10 +81,10 @@ class ResponseCorrelator(executor: Executor) extends Logging with MessageConsume
 
   private def onResponse(rsp: ServiceResponse) = map.synchronized {
     map.get(rsp.getId) match {
-      case Some((timer, callback, _)) =>
+      case Some((timer, callback)) =>
         timer.cancel()
         map.remove(rsp.getId)
-        executor.execute(callback(Some(rsp)))
+        callback(Some(rsp))
       case None =>
         logger.warn("Unexpected request response w/ uuid: " + rsp.getId)
     }

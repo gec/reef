@@ -26,23 +26,22 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.broker.api.BrokerConnection
 import org.mockito.Mockito._
-import org.jmock.lib.concurrent.DeterministicScheduler
 import net.agileautomata.executor4s._
+import net.agileautomata.executor4s.testing.MockExecutor
 import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class BrokerConnectionManagerTest extends FunSuite with ShouldMatchers {
 
-  def fixture(initial: Int, max: Long)(test: (BrokerConnection, DeterministicScheduler, BrokerConnectionManager) => Unit): Unit = {
+  def fixture(initial: Int, max: Long)(test: (BrokerConnection, MockExecutor, BrokerConnectionManager) => Unit): Unit = {
     val broker = mock(classOf[BrokerConnection])
-    val scheduler = new DeterministicScheduler()
-    val strand = Strand(Executors.newCustomExecutor(scheduler))
-    val manager = new BrokerConnectionManager(broker, initial, max, strand)
+    val mockExe = new MockExecutor
+    val manager = new BrokerConnectionManager(broker, initial, max, Strand(mockExe))
     verify(broker).addListener(manager) // mananger adds itself as a listener on construction
-    test(broker, scheduler, manager)
+    test(broker, mockExe, manager)
   }
 
-  def fixture(test: (BrokerConnection, DeterministicScheduler, BrokerConnectionManager) => Unit): Unit = fixture(1000, 60000)(test)
+  def fixture(test: (BrokerConnection, MockExecutor, BrokerConnectionManager) => Unit): Unit = fixture(1000, 60000)(test)
 
   test("No actions until started") {
     fixture { (broker, exe, manager) =>
@@ -55,7 +54,7 @@ class BrokerConnectionManagerTest extends FunSuite with ShouldMatchers {
     fixture { (broker, exe, manager) =>
       manager.start()
       when(broker.connect()).thenReturn(true)
-      exe.runNextPendingCommand()
+      exe.runNextPendingAction()
       verify(broker).connect()
       exe.isIdle should be(true)
     }
@@ -65,18 +64,18 @@ class BrokerConnectionManagerTest extends FunSuite with ShouldMatchers {
     fixture(2000, 5000) { (broker, exe, manager) =>
       manager.start()
       when(broker.connect()).thenReturn(false)
-      exe.runNextPendingCommand()
+      exe.runNextPendingAction()
       verify(broker).connect()
       reset(broker)
-      exe.tick(1000, TimeUnit.MILLISECONDS)
+      exe.tick(1000.milliseconds)
       verifyNoMoreInteractions(broker)
-      exe.tick(1000, TimeUnit.MILLISECONDS)
+      exe.tick(1000.milliseconds)
       verify(broker).connect()
       reset(broker)
-      exe.tick(4000, TimeUnit.MILLISECONDS)
+      exe.tick(4000.milliseconds)
       verify(broker).connect()
       reset(broker)
-      exe.tick(5000, TimeUnit.MILLISECONDS)
+      exe.tick(5000.milliseconds)
       verify(broker).connect()
     }
   }
@@ -85,12 +84,12 @@ class BrokerConnectionManagerTest extends FunSuite with ShouldMatchers {
     fixture(2000, 5000) { (broker, exe, manager) =>
       manager.start()
       when(broker.connect()).thenReturn(true)
-      exe.runNextPendingCommand()
+      exe.runNextPendingAction()
       reset(broker)
       manager.onConnectionClosed(false)
       verifyNoMoreInteractions(broker)
       exe.isIdle should be(true)
-      exe.tick(2000, TimeUnit.MILLISECONDS)
+      exe.tick(2000.milliseconds)
       verify(broker).connect()
     }
   }
