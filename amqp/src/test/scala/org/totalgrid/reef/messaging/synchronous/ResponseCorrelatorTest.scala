@@ -31,7 +31,6 @@ import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.commons.testing._
 
-
 @RunWith(classOf[JUnitRunner])
 class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
 

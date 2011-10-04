@@ -29,7 +29,7 @@ import net.agileautomata.executor4s._
 /**
  * Keeps the connection to the broker open
  */
-class BrokerConnectionManager(broker: BrokerConnection, initialDelay: Long, maxDelay: Long, strand: Strand)
+class BrokerConnectionManager(broker: BrokerConnection, initialDelay: Long, maxDelay: Long, strand: StrandLifeCycle)
     extends Lifecycle with ConnectionListener with Logging {
 
   broker.addListener(this)
