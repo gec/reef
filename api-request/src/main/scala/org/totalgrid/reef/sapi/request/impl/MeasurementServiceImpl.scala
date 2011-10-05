@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
-
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.japi.ExpectationException
 import org.totalgrid.reef.sapi.request.MeasurementService
@@ -29,6 +29,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.sapi.client.{ Subscription, RestOperations }
 import org.totalgrid.reef.sapi.Destination
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
+
+import org.totalgrid.reef.sapi.request.framework.ReefServiceBaseClass
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 

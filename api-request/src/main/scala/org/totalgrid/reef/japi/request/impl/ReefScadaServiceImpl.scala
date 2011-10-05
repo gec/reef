@@ -18,16 +18,17 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-import org.totalgrid.reef.sapi.request._
 import org.totalgrid.reef.japi.request.AllScadaService
-import org.totalgrid.reef.japi.client.{ SubscriptionCreationListener, Session, SessionExecutionPool }
-import org.totalgrid.reef.sapi.client.{ ClientSession, SubscriptionManagement, RestOperations, SessionPool }
+import org.totalgrid.reef.japi.client.{ SubscriptionCreationListener, SessionExecutionPool }
+import org.totalgrid.reef.sapi.client.{ ClientSession }
+import org.totalgrid.reef.sapi.request.{ AllScadaService => ScalaAllScadaService }
+import org.totalgrid.reef.sapi.request.impl.{ AllScadaServiceScalaSingleSession, AllScadaServiceExecutionPool }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class AllScadaServicePooledWrapper(scalaClient: AllScadaServiceImpl)
+class AllScadaServicePooledWrapper(scalaClient: ScalaAllScadaService)
     extends AllScadaService with AllScadaServiceJavaShim {
 
   def this(pool: SessionExecutionPool, authToken: String) = this(new AllScadaServiceExecutionPool(pool, authToken))
@@ -35,26 +36,6 @@ class AllScadaServicePooledWrapper(scalaClient: AllScadaServiceImpl)
   def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = scalaClient.addSubscriptionCreationListener(listener)
 
   def service = scalaClient
-}
-
-class AllScadaServiceExecutionPool(_sessionPool: SessionExecutionPool, _authToken: String)
-    extends AllScadaServiceImpl with AuthorizedAndPooledClientSource {
-  def authToken = _authToken
-  def sessionPool = _sessionPool
-}
-
-class AllScadaServicePooled(sessionPool: SessionPool, authToken: String)
-    extends AllScadaServiceImpl with ClientSource {
-
-  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken)(block)
-  }
-}
-
-class AllScadaServiceScalaSingleSession(_session: ClientSession)
-    extends AllScadaServiceImpl with SingleSessionClientSource {
-
-  def session = _session
 }
 
 class AllScadaServiceSingleSession(scalaClient: AllScadaServiceScalaSingleSession)

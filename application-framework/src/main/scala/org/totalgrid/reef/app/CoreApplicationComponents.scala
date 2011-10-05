@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.ReefServicesList
 
 import org.totalgrid.reef.metrics.{ MetricsSink }
-import org.totalgrid.reef.japi.request.impl.AllScadaServicePooled
+import org.totalgrid.reef.sapi.request.impl.AllScadaServicePooled
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.messaging.{ BasicSessionPool, AMQPProtoFactory, AMQPProtoRegistry }
 
@@ -38,7 +38,7 @@ class CoreApplicationComponents(
     // the current appConfig, contains the instanceName and userName
     val appConfig: ApplicationConfig,
     // authToken we are running the application as
-    authToken: String) {
+    val authToken: String) {
 
   // registry is recreated here so we get service registry from bus if necessary
   val registry = new AMQPProtoRegistry(amqp, 5000, ReefServicesList, Some(authToken))

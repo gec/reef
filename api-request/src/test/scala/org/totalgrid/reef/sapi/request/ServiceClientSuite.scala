@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.sapi.request
 
-import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
@@ -32,6 +31,8 @@ import org.totalgrid.reef.broker.BrokerConnectionInfo
 
 import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 import org.totalgrid.reef.japi.request.utils.InteractionRecorder
+import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
+import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 
 class SubscriptionEventAcceptorShim[T](fun: SubscriptionEvent[T] => _) extends SubscriptionEventAcceptor[T] {
   def onEvent(event: SubscriptionEvent[T]) = fun(event)

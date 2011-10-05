@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,14 +18,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
-
 import org.totalgrid.reef.sapi.request.MeasurementOverrideService
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.MeasOverride
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.japi.request.builders.MeasurementOverrideRequestBuilders
+
+import org.totalgrid.reef.sapi.request.framework.ReefServiceBaseClass
 
 trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with MeasurementOverrideService {
 

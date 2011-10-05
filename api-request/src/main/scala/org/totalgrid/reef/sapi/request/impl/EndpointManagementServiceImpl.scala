@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
-
 import org.totalgrid.reef.sapi.request.EndpointManagementService
 
 import org.totalgrid.reef.proto.Model.ReefUUID
@@ -26,6 +26,8 @@ import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
+
+import org.totalgrid.reef.sapi.request.framework.ReefServiceBaseClass
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
 

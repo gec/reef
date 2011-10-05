@@ -23,7 +23,8 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.AmqpClientSession
-import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
+import org.totalgrid.reef.sapi.request.impl.{ AllScadaServiceImpl }
+import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.api.{ Protocol, AddRemoveValidation }
 import org.totalgrid.reef.japi.client.{ ConnectionListener, UserSettings }

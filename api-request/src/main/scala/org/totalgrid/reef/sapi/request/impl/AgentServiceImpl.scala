@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,14 +18,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
-
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.sapi.request.AgentService
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.sapi.request.framework.ReefServiceBaseClass
 
 trait AgentServiceImpl extends ReefServiceBaseClass with AgentService {
   override def getAgent(name: String) = ops("Couldn't get agent with name: " + name) {

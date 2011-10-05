@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,13 +18,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
-
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.totalgrid.reef.sapi.request.CommandService
+
+import org.totalgrid.reef.sapi.request.framework.ReefServiceBaseClass
 
 trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 

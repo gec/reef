@@ -18,27 +18,7 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-/**
- * "Super" implementation of all of the service interfaces
- */
-trait AllScadaServiceImpl
-  extends AuthTokenServiceImpl
-  with EntityServiceImpl
-  with ConfigFileServiceImpl
-  with MeasurementServiceImpl
-  with MeasurementOverrideServiceImpl
-  with EventServiceImpl
-  with EventCreationServiceImpl
-  with EventConfigServiceImpl
-  with CommandServiceImpl
-  with PointServiceImpl
-  with AlarmServiceImpl
-  with AgentServiceImpl
-  with EndpointManagementServiceImpl
-  with ApplicationServiceImpl
-  with CommunicationChannelServiceImpl
-
-import org.totalgrid.reef.sapi.request.impl._
+import org.totalgrid.reef.sapi.request.AllScadaService
 
 trait AllScadaServiceJavaShim
     extends AuthTokenServiceJavaShim
@@ -56,6 +36,5 @@ trait AllScadaServiceJavaShim
     with EndpointManagementServiceJavaShim
     with ApplicationServiceJavaShim
     with CommunicationChannelServiceJavaShim {
-  def service: AllScadaServiceImpl
+  def service: AllScadaService
 }
-

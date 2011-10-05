@@ -36,7 +36,7 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
   val targetEx = if (isFuture) "Futures" else ""
 
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
-    getFileStream(packageStr, rootDir, sourceFile, ".sapi.request.impl", true, c.name + exName) { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".japi.request.impl", true, c.name + exName) { (stream, javaPackage) =>
       javaShimClass(c, stream, javaPackage)
     }
   }
@@ -46,16 +46,16 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
 
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName()))
     stream.println("import scala.collection.JavaConversions._")
-    stream.println("import org.totalgrid.reef.japi.request.impl.Converters._")
+    stream.println("import org.totalgrid.reef.sapi.request.framework.Converters._")
     stream.println("import org.totalgrid.reef." + japiPackage + ".request.{" + c.name + targetEx + "=> JInterface }")
     stream.println("import org.totalgrid.reef.sapi.request." + c.name)
-    stream.println("import org.totalgrid.reef.japi.request.impl.AllScadaServiceImpl")
+    stream.println("import org.totalgrid.reef.sapi.request.AllScadaService")
 
     if (isFuture) stream.println("import org.totalgrid.reef.promise.Promise")
 
     stream.println("trait " + c.name + exName + " extends JInterface{")
 
-    stream.println("\tdef service: AllScadaServiceImpl")
+    stream.println("\tdef service: AllScadaService")
 
     c.methods.toList.foreach { m =>
 

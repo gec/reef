@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.request.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
-
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
@@ -27,6 +27,8 @@ import org.totalgrid.reef.japi.request.builders.{ EntityRequestBuilders, ConfigF
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile, ReefUUID }
 import collection.mutable.Buffer
+
+import org.totalgrid.reef.sapi.request.framework.ReefServiceBaseClass
 
 /**
  * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever

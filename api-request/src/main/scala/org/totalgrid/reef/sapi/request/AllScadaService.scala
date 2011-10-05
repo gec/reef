@@ -16,23 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.impl
+package org.totalgrid.reef.sapi.request
 
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
-import org.totalgrid.reef.japi.request.builders.ApplicationConfigBuilders
+import org.totalgrid.reef.japi.client.SubscriptionCreator
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.japi.client.NodeSettings
-import org.totalgrid.reef.sapi.request.ApplicationService
-
-trait ApplicationServiceImpl extends ReefServiceBaseClass with ApplicationService {
-
-  override def registerApplication(config: NodeSettings, instanceName: String, capabilities: List[String]) = {
-    ops("Failed registering application") {
-      _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).map { _.expectOne }
-    }
-  }
-  override def sendHeartbeat(statusSnapshot: StatusSnapshot) = ops("Heartbeat failed") {
-    _.put(statusSnapshot).map { _.expectOne() }
-  }
-}
+trait AllScadaService
+  extends SubscriptionCreator
+  with AuthTokenService
+  with EntityService
+  with ConfigFileService
+  with MeasurementService
+  with MeasurementOverrideService
+  with EventService
+  with EventCreationService
+  with EventConfigService
+  with CommandService
+  with PointService
+  with AlarmService
+  with AgentService
+  with EndpointManagementService
+  with ApplicationService
+  with CommunicationChannelService
