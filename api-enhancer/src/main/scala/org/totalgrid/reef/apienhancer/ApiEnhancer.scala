@@ -29,8 +29,9 @@ object ApiEnhancer {
 
     val rootDir = new File("c:/code/scada/reef/api-request/target/generated-sources")
 
-    root.classes.toList.filter {
-      _.containingPackage.toString.indexOf(".japi.request") != -1
+    root.classes.toList.filter { c =>
+      c.containingPackage.toString.indexOf(".japi.request") != -1 &&
+        c.qualifiedName.toString.indexOf("AllScadaService") == -1
     }.foreach { c =>
       val packageStr = c.containingPackage().toString
       makeJavaClass(c, packageStr, rootDir)
@@ -38,6 +39,8 @@ object ApiEnhancer {
       makeJavaFuture(c, packageStr, rootDir)
 
       makeScalaPackage(c, packageStr, rootDir)
+
+      makeJavaShim(c, packageStr, rootDir)
     }
 
     true
@@ -149,6 +152,59 @@ object ApiEnhancer {
     stream.println("}")
   }
 
+  private def makeJavaShim(c: ClassDoc, packageStr: String, rootDir: File) {
+    val javaPackage = packageStr.replaceAllLiterally(".japi.request", ".sapi.request.impl")
+    val packageDir = new File(rootDir, "scala/" + javaPackage.replaceAllLiterally(".", "/"))
+    packageDir.mkdirs()
+
+    val classFile = new File(packageDir, c.name + "JavaShim.scala")
+    println(classFile.getAbsolutePath)
+    val stream = new PrintStream(new FileOutputStream(classFile))
+    javaShimClass(c, stream, javaPackage)
+    stream.close
+  }
+
+  private def javaShimClass(c: ClassDoc, stream: PrintStream, packageName: String) {
+    stream.println("package " + packageName + ";")
+
+    val importMap = Map("java.util.List" -> "")
+
+    c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName()))
+    stream.println("import scala.collection.JavaConversions._")
+    stream.println("import org.totalgrid.reef.japi.request.impl.Converters._")
+    stream.println("import org.totalgrid.reef.japi.request.{" + c.name + "=> JInterface }")
+    stream.println("import org.totalgrid.reef.sapi.request." + c.name)
+    stream.println("import org.totalgrid.reef.japi.request.impl.AllScadaServiceImpl")
+
+    stream.println("trait " + c.name + "JavaShim extends JInterface{")
+
+    stream.println("\tdef service: AllScadaServiceImpl")
+
+    c.methods.toList.foreach { m =>
+
+      var msg = "\t" + "override def " + m.name + "("
+      msg += m.parameters().toList.map { p =>
+        p.name + ": " + javaAsScalaTypeString(p.`type`)
+      }.mkString(", ")
+      msg += ")"
+      if (m.returnType.toString != "void")
+        msg += ": " + javaAsScalaTypeString(m.returnType)
+
+      msg += " = "
+      if (m.returnType.simpleTypeName() == "SubscriptionResult") msg += "convert("
+      msg += "service." + m.name + "("
+      msg += m.parameters().toList.map { p =>
+        if (p.`type`().simpleTypeName == "List") p.name + ".toList"
+        else p.name
+      }.mkString(", ")
+      msg += ").await()"
+      if (m.returnType.simpleTypeName() == "SubscriptionResult") msg += ")"
+      stream.println(msg)
+    }
+
+    stream.println("}")
+  }
+
   private def commentString(commentText: String): String = {
     "/**\n" + commentText.lines.toList.map { " *" + _ }.mkString("\n") + "\n*/"
   }
@@ -176,6 +232,25 @@ object ApiEnhancer {
 
       val argumentTypes = ptype.asParameterizedType().typeArguments().toList
       ptype.typeName() + "[ " + argumentTypes.map { scalaTypeString(_) }.mkString(", ") + "]"
+    } else {
+      val simpleType = ptype.simpleTypeName()
+      map.get(simpleType).getOrElse(simpleType)
+    }
+  }
+
+  private def javaAsScalaTypeString(ptype: Type): String = {
+
+    val map = Map(
+      "int" -> "Int",
+      "boolean" -> "Boolean",
+      "long" -> "Long",
+      "double" -> "Double",
+      "byte" -> "Array[Byte]", "List" -> "java.util.List")
+
+    if (ptype.asParameterizedType() != null) {
+
+      val argumentTypes = ptype.asParameterizedType().typeArguments().toList
+      ptype.simpleTypeName() + "[ " + argumentTypes.map { javaAsScalaTypeString(_) }.mkString(", ") + "]"
     } else {
       val simpleType = ptype.simpleTypeName()
       map.get(simpleType).getOrElse(simpleType)
