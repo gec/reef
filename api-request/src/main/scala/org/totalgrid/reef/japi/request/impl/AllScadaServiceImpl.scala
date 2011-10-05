@@ -36,6 +36,7 @@ trait AllScadaServiceImpl
   with AgentServiceImpl
   with EndpointManagementServiceImpl
   with ApplicationServiceImpl
+  with CommunicationChannelServiceImpl
 
 import org.totalgrid.reef.sapi.request.impl._
 
@@ -53,7 +54,8 @@ trait AllScadaServiceJavaShim
     with AlarmServiceJavaShim
     with AgentServiceJavaShim
     with EndpointManagementServiceJavaShim
-    with ApplicationServiceJavaShim {
+    with ApplicationServiceJavaShim
+    with CommunicationChannelServiceJavaShim {
   def service: AllScadaServiceImpl
 }
 

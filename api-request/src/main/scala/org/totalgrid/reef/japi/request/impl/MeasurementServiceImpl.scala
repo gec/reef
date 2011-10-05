@@ -27,7 +27,8 @@ import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.sapi.client.{ Subscription, RestOperations }
-import org.totalgrid.reef.proto.Measurements.{ MeasurementHistory, MeasurementSnapshot, Measurement }
+import org.totalgrid.reef.sapi.Destination
+import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 
 trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementService {
 
@@ -67,6 +68,12 @@ trait MeasurementServiceImpl extends ReefServiceBaseClass with MeasurementServic
   override def publishMeasurements(measurements: List[Measurement]) = {
     ops("Couldn't publish measurements. size: " + measurements.size) {
       _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).map { _.expectOne.getMeasList.toList }
+    }
+  }
+
+  override def publishMeasurements(mBatch: MeasurementBatch, dest: Destination) = {
+    ops("Couldn't publish mearurement batch. size: " + mBatch.getMeasCount) {
+      _.put(mBatch, destination = dest).map { _.expectOne }
     }
   }
 

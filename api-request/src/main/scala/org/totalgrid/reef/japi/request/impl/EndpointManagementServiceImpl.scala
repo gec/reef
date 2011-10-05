@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig, CommEndpointConnection }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
 
@@ -53,6 +53,12 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
     }
   }
 
+  override def alterEndpointConnectionState(connectionUid: String, state: CommEndpointConnection.State) = {
+    ops("Couldn't alter endpoint connection: " + connectionUid + " to : " + state) {
+      _.post(CommEndpointConnection.newBuilder.setUid(connectionUid).setState(state).build).map { _.expectOne }
+    }
+  }
+
   override def getAllEndpointConnections() = ops("Couldn't get list of all endpoint connections") {
     _.get(CommEndpointConnection.newBuilder.setUid("*").build).map { _.expectMany() }
   }
@@ -65,18 +71,6 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
 
   override def getEndpointConnection(endpointUuid: ReefUUID) = ops("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map { _.expectOne }
-  }
-
-  override def getAllCommunicationChannels = ops("Couldn't get list of all channels") {
-    _.get(CommChannel.newBuilder().setName("*").build).map { _.expectMany() }
-  }
-
-  override def getCommunicationChannelByName(channelName: String) = ops("Couldn't get channel with name: " + channelName) {
-    _.get(CommChannel.newBuilder().setName(channelName).build).map { _.expectOne }
-  }
-
-  override def getCommunicationChannel(channelUuid: ReefUUID) = ops("Couldn't get channel with uuid: " + channelUuid) {
-    _.get(CommChannel.newBuilder().setUuid(channelUuid).build).map { _.expectOne }
   }
 
 }
