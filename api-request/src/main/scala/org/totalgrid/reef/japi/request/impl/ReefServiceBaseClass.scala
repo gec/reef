@@ -66,9 +66,21 @@ trait ClientSource {
   // TODO - find a type-safe replacement
   def convertByCasting(session: Session): RestOperations with SubscriptionManagement = session.asInstanceOf[SessionWrapper].client
 
-  protected def ops[A](errorMsg: => String)(block: RestOperations with SubscriptionManagement => A): A = {
+  protected def ops[A](errorMsg: => String)(block: RestOperations with SubscriptionManagement => Prom[A]): Prom[A] = {
+    val original = _ops(block)
+    new Prom[A] {
+      def await() = catchErrors(errorMsg) { original.await }
+
+      // TODO: what should we do on listen with exceptions
+      def listen(fun: (A) => Unit) = catchErrors(errorMsg) { original.listen(fun) }
+
+      def isComplete = original.isComplete
+    }
+  }
+
+  private def catchErrors[A](errorMsg: String)(func: => A): A = {
     try {
-      _ops(block)
+      func
     } catch {
       case rse: ReefServiceException =>
         // we are just trying to verify that only ReefService derived Execeptions bubble out of the
