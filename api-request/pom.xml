@@ -109,6 +109,9 @@
 		</profile>
 		<profile>
 			<id>update-apis</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
