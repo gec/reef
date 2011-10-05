@@ -66,7 +66,7 @@ object ProtoShellApplication {
       def session = client
     }
 
-    val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
+    val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await
     client.getDefaultHeaders.setAuthToken(token)
 
     client

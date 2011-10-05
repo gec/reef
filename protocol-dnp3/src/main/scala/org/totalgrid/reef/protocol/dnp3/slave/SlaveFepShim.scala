@@ -92,7 +92,7 @@ class SlaveFepShim extends Logging {
       val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with SingleSessionClientSource {
         def session = this
       }
-      val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
+      val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await
       client.getDefaultHeaders.setAuthToken(token)
 
       val slaveProtocol = new Dnp3SlaveProtocol(client, exe) with AddRemoveValidation

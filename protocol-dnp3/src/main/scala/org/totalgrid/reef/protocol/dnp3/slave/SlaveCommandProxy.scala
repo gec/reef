@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.japi.request.CommandService
+import org.totalgrid.reef.sapi.request.CommandService
 import org.totalgrid.reef.proto.Model.Command
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.Logging
@@ -53,7 +53,7 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Exe
         logger.warn("Got wrong command type for command: " + command.getName + " got: " + obj.GetCode() + " not: " + rawCode)
         ProtoCommandStatus.FORMAT_ERROR
       } else {
-        service.executeCommandAsControl(command)
+        service.executeCommandAsControl(command).await
       }
     }
   }
@@ -62,8 +62,8 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Exe
     handleCommand(Index(true, index), seq, accept) { (command, config) =>
       import SetpointEncodingType._
       obj.GetOptimalEncodingType() match {
-        case SPET_AUTO_DOUBLE | SPET_DOUBLE | SPET_FLOAT => service.executeCommandAsSetpoint(command, obj.GetValue())
-        case SPET_AUTO_INT | SPET_INT16 | SPET_INT32 => service.executeCommandAsSetpoint(command, obj.GetIntValue())
+        case SPET_AUTO_DOUBLE | SPET_DOUBLE | SPET_FLOAT => service.executeCommandAsSetpoint(command, obj.GetValue()).await
+        case SPET_AUTO_INT | SPET_INT16 | SPET_INT32 => service.executeCommandAsSetpoint(command, obj.GetIntValue()).await
         case _ =>
           logger.error("Unknown setpoint encoding type: " + obj.GetOptimalEncodingType())
           ProtoCommandStatus.FORMAT_ERROR
@@ -73,8 +73,8 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Exe
 
   private def proxyCommandRequest(commandMapping: CommandMap, executeCommand: (Command, CommandMap) => ProtoCommandStatus): ProtoCommandStatus = {
     try {
-      val command = service.getCommandByName(commandMapping.getCommandName)
-      val lock = service.createCommandExecutionLock(command)
+      val command = service.getCommandByName(commandMapping.getCommandName).await
+      val lock = service.createCommandExecutionLock(command).await
       try {
         executeCommand(command, commandMapping)
       } catch {
@@ -83,7 +83,7 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Exe
           ProtoCommandStatus.HARDWARE_ERROR
       }
       finally {
-        service.deleteCommandLock(lock)
+        service.deleteCommandLock(lock).await
       }
     } catch {
       case rse: ReefServiceException =>

@@ -33,7 +33,6 @@ import org.totalgrid.reef.japi.client.Session;
 import org.totalgrid.reef.japi.client.SessionExecutionPool;
 import org.totalgrid.reef.japi.request.AllScadaService;
 import org.totalgrid.reef.japi.request.impl.AllScadaServicePooledWrapper;
-import org.totalgrid.reef.japi.request.impl.AuthTokenServicePooledWrapper;
 import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
 
 /**
@@ -90,6 +89,7 @@ public class ReefConnectionTestBase
             // TODO can we just fail here?
             e.printStackTrace();
             // we'll then throw an exception when trying to load from emtpy properties file
+            throw new RuntimeException(e);
         }
 
         return new AMQPConnectionSettingImpl( props );
@@ -101,7 +101,10 @@ public class ReefConnectionTestBase
         connection.connect( 5000 );
         client = connection.newSession();
         SessionExecutionPool pool = connection.newSessionPool();
-        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
+
+        AllScadaService service = new AllScadaServicePooledWrapper( pool, "" );
+
+        String authToken = service.createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
         {
             client.getDefaultHeaders().setAuthToken( authToken );

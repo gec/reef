@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.japi.request.MeasurementService
+import org.totalgrid.reef.sapi.request.MeasurementService
 import org.totalgrid.reef.proto.Mapping.{ IndexMapping }
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.protocol.dnp3._
@@ -37,7 +37,7 @@ class SlaveMeasurementProxy(service: MeasurementService, mapping: IndexMapping, 
   private var subscription: Option[Subscription[_]] = None
 
   exe.execute {
-    val subscriptionResult = service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName })
+    val subscriptionResult = service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName }).await
     subscription = Some(subscriptionResult.getSubscription)
     packTimer.addEntries(subscriptionResult.getResult.toList)
     subscriptionResult.getSubscription.start(this)

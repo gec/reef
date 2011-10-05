@@ -20,8 +20,8 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.sapi.client.{ ClientSession }
+import org.totalgrid.reef.japi.request.impl.{ AllScadaServiceSingleSession, SingleSessionClientSource, AllScadaServiceImpl }
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -51,9 +51,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
   /**
    * "all services" wrapper around the reefSession
    */
-  protected lazy val services = new AllScadaServiceImpl with SingleSessionClientSource {
-    def session = reefSession
-  }
+  protected lazy val services = new AllScadaServiceSingleSession(reefSession)
 
   protected def getLoginString = isLoggedIn match {
     case true => "Logged in as User: " + this.get("user").get + " on Reef Node: " + this.get("context").get

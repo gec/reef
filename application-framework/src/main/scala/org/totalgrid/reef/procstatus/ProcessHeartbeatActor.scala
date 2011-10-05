@@ -25,7 +25,7 @@ import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.{ Timer, Logging }
-import org.totalgrid.reef.japi.request.ApplicationService
+import org.totalgrid.reef.sapi.request.ApplicationService
 
 abstract class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig)
     extends Executor with Lifecycle with Logging {
@@ -54,7 +54,7 @@ abstract class ProcessHeartbeatActor(services: ApplicationService, configuration
 
   private def publish(ss: StatusSnapshot) {
     try {
-      services.sendHeartbeat(ss)
+      services.sendHeartbeat(ss).await()
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Problem sending heartbeat: " + rse.getMessage)
