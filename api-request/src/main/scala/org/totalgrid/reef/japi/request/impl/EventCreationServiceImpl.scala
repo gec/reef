@@ -21,17 +21,16 @@ package org.totalgrid.reef.japi.request.impl
 import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
 
-import java.util.List
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.japi.request.EventCreationService
+import org.totalgrid.reef.sapi.request.EventCreationService
 import org.totalgrid.reef.sapi.client.RestOperations
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
 trait EventCreationServiceImpl extends ReefServiceBaseClass with EventCreationService {
 
   override def publishEvent(event: Event) = ops("Couldn't publish event: " + event) {
-    _.put(event).await().expectOne
+    _.put(event).map { _.expectOne }
   }
 
   override def publishEvent(eventType: String, subsystem: String) = {
@@ -92,6 +91,6 @@ trait EventCreationServiceImpl extends ReefServiceBaseClass with EventCreationSe
       argList.toList.foreach { aList.addAttribute(_) }
       b.setArgs(aList)
     }
-    session.put(b.build).await().expectOne
+    session.put(b.build).map { _.expectOne }
   }
 }

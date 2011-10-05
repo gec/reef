@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
-import builders.{ EntityRequestBuilders, PointRequestBuilders }
+import org.totalgrid.reef.japi.request.builders.{ EntityRequestBuilders, PointRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -48,10 +48,10 @@ class PointRequestTest
     val allResp = client.getAllPoints
 
     client.addExplanation("Get by UID", "Get point that matches a certain UID.")
-    client.getPointByUid(allResp.head.getUuid)
+    client.getPointByUid(allResp.await.head.getUuid)
 
     client.addExplanation("Get by name", "Get point that matches a certain name.")
-    client.getPointByName(allResp.head.getName)
+    client.getPointByName(allResp.await.head.getName)
   }
 
   test("Entity tree query") {
@@ -61,7 +61,7 @@ class PointRequestTest
       type "Point" that are found will have their corresponding Point objects added to the result set.
                </div>
 
-    val entity = client.getEntityByName("StaticSubstation.Breaker02")
+    val entity = client.getEntityByName("StaticSubstation.Breaker02").await
 
     client.addExplanation("Get points owned by equipment", desc)
     client.getPointsOwnedByEntity(entity)

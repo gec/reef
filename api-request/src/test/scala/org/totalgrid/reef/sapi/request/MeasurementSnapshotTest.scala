@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
-import builders.PointRequestBuilders
+import org.totalgrid.reef.japi.request.builders.PointRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -41,7 +41,7 @@ class MeasurementSnapshotTest
     val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
 
     client.addExplanation("Get single measurement", "Get the current state of a single measurement.")
-    client.getMeasurementsByNames(names.subList(0, 1))
+    client.getMeasurementsByNames(names.slice(0, 1))
 
     client.addExplanation("Get multiple measurements", "Get the current state of multiple measurements. Notice that they are all returned wrapped in a single parent object.")
     client.getMeasurementsByNames(names)
@@ -51,12 +51,12 @@ class MeasurementSnapshotTest
 
     intercept[BadRequestException] {
       client.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
-      client.getMeasurementsByNames("UnknownPoint" :: Nil)
+      client.getMeasurementsByNames("UnknownPoint" :: Nil).await
     }
 
     intercept[ExpectationException] {
       client.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")
-      client.getPointByName("UnknownPoint")
+      client.getPointByName("UnknownPoint").await
     }
   }
 }

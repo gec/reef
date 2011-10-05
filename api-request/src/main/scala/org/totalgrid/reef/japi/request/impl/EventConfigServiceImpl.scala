@@ -20,20 +20,20 @@ package org.totalgrid.reef.japi.request.impl
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Alarms.{ Alarm, EventConfig }
-import org.totalgrid.reef.japi.request.EventConfigService
+import org.totalgrid.reef.sapi.request.EventConfigService
 
 trait EventConfigServiceImpl extends ReefServiceBaseClass with EventConfigService {
 
   override def getAllEventConfigurations = ops("Couldn't get all event configs") {
-    _.get(EventConfig.newBuilder.setEventType("*").build).await().expectMany
+    _.get(EventConfig.newBuilder.setEventType("*").build).map { _.expectMany() }
   }
 
   override def getAllEventConfigurations(builtIn: Boolean) = ops("Couldn't get all " + (if (builtIn) "builtIn" else "custom") + " event configs") {
-    _.get(EventConfig.newBuilder.setBuiltIn(builtIn).build).await().expectMany
+    _.get(EventConfig.newBuilder.setBuiltIn(builtIn).build).map { _.expectMany() }
   }
 
   override def getEventConfiguration(eventType: String) = ops("Couldn't get event config with type: " + eventType) {
-    _.get(EventConfig.newBuilder.setEventType(eventType).build).await().expectOne
+    _.get(EventConfig.newBuilder.setEventType(eventType).build).map { _.expectOne }
   }
 
   override def setEventConfigAsLogOnly(eventType: String, severity: Int, resourceString: String) = {
@@ -59,11 +59,11 @@ trait EventConfigServiceImpl extends ReefServiceBaseClass with EventConfigServic
         .setResource(resourceString)
         .setAlarmState(alarmState)
 
-      session.put(b.build).await().expectOne
+      session.put(b.build).map { _.expectOne }
     }
   }
 
   override def deleteEventConfig(config: EventConfig) = ops("Couldn't delete event config with type: " + config.getEventType) {
-    _.delete(config).await().expectOne
+    _.delete(config).map { _.expectOne }
   }
 }

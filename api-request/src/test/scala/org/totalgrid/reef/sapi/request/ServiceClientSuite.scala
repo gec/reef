@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
 import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.executor.ReactActorExecutor
@@ -25,13 +25,13 @@ import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.proto.ReefServicesList
-import utils.InteractionRecorder
 import xml.Node
 import org.totalgrid.reef.util.SystemPropertyConfigReader
 import org.totalgrid.reef.messaging.AmqpClientSession
 import org.totalgrid.reef.broker.BrokerConnectionInfo
 
 import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.japi.request.utils.InteractionRecorder
 
 class SubscriptionEventAcceptorShim[T](fun: SubscriptionEvent[T] => _) extends SubscriptionEventAcceptor[T] {
   def onEvent(event: SubscriptionEvent[T]) = fun(event)

@@ -26,4 +26,14 @@ trait Promise[A] {
 
   def isComplete: Boolean
 
+  def map[B](func: A => B): Promise[B] = {
+    val parent = this
+    new Promise[B] {
+      def listen(fun: (B) => Unit) = parent.listen(a => fun(func(a)))
+
+      def isComplete = parent.isComplete
+
+      def await() = func(parent.await)
+    }
+  }
 }

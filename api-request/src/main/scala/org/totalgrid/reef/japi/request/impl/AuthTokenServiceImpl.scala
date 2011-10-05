@@ -18,17 +18,17 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-import org.totalgrid.reef.japi.request.AuthTokenService
+import org.totalgrid.reef.sapi.request.AuthTokenService
 import org.totalgrid.reef.japi.request.builders.{ AuthTokenRequestBuilders => Builder }
 
 trait AuthTokenServiceImpl extends ReefServiceBaseClass with AuthTokenService {
 
-  override def createNewAuthorizationToken(user: String, password: String): String = ops("Failed to get auth token for user: " + user) {
-    _.put(Builder.requestAuthToken(user, password)).await().expectOne.getToken
+  override def createNewAuthorizationToken(user: String, password: String) = ops("Failed to get auth token for user: " + user) {
+    _.put(Builder.requestAuthToken(user, password)).map { _.expectOne.getToken }
   }
 
   override def deleteAuthorizationToken(token: String) = ops("Couldn't delete auth token") {
-    _.delete(Builder.deleteAuthToken(token)).await().expectOne
+    _.delete(Builder.deleteAuthToken(token)).map { _.expectOne }
   }
 }
 

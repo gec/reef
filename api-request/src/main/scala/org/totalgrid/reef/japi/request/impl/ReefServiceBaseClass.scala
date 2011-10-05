@@ -26,17 +26,18 @@ import org.totalgrid.reef.japi.client.{ Subscription => JavaSubscription }
 import org.totalgrid.reef.sapi.client.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
 import org.totalgrid.reef.japi.client._
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.promise.{ FixedPromise, Promise => Prom }
 
 // TODO rename BaseReefService or similar, class is redundant.
 trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
 
-  def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S): SubscriptionResult[S, R] = {
+  def useSubscription[S, R](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => Prom[S]): Prom[SubscriptionResult[S, R]] = {
     val sub: Subscription[R] = session.addSubscription[R](klass)
     try {
 
       val result = block(sub)
-      val ret = new SubscriptionResultWrapper(result, sub)
-      onSubscriptionCreated(ret.getSubscription)
+      val ret = new FixedPromise[SubscriptionResult[S, R]](new SubscriptionResultWrapper(result.await, sub))
+      onSubscriptionCreated(ret.await.getSubscription)
       ret
     } catch {
       case x =>

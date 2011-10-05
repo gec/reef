@@ -18,22 +18,21 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-import java.util.List
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.japi.request.builders.ApplicationConfigBuilders
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.client.NodeSettings
-import org.totalgrid.reef.japi.request.ApplicationService
+import org.totalgrid.reef.sapi.request.ApplicationService
 
 trait ApplicationServiceImpl extends ReefServiceBaseClass with ApplicationService {
 
   override def registerApplication(config: NodeSettings, instanceName: String, capabilities: List[String]) = {
     ops("Failed registering application") {
-      _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).await().expectOne
+      _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).map { _.expectOne }
     }
   }
   override def sendHeartbeat(statusSnapshot: StatusSnapshot) = ops("Heartbeat failed") {
-    _.put(statusSnapshot).await().expectOne()
+    _.put(statusSnapshot).map { _.expectOne() }
   }
 }

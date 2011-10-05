@@ -19,7 +19,7 @@
 package org.totalgrid.reef.japi.request.impl
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.japi.request.{ EventService }
+import org.totalgrid.reef.sapi.request.EventService
 import org.totalgrid.reef.japi.request.builders.{ EventRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.proto.Events.{ EventSelect, Event }
 
@@ -28,43 +28,43 @@ import scala.collection.JavaConversions._
 trait EventServiceImpl extends ReefServiceBaseClass with EventService {
 
   override def getEvent(uid: String) = ops("Couldn't get event with uid: " + uid) {
-    _.get(EventRequestBuilders.getByUID(uid)).await().expectOne
+    _.get(EventRequestBuilders.getByUID(uid)).map { _.expectOne }
   }
 
   override def getRecentEvents(limit: Int) = ops("Couldn't get the last " + limit + " recent events") {
-    _.get(EventListRequestBuilders.getAll(limit)).await().expectOne.getEventsList
+    _.get(EventListRequestBuilders.getAll(limit)).map { _.expectOne.getEventsList.toList }
   }
 
   override def subscribeToRecentEvents(limit: Int) = {
     ops("Couldn't subscribe to recent events") { session =>
       useSubscription(session, Descriptors.event.getKlass) { sub =>
-        session.get(EventListRequestBuilders.getAll(limit), sub).await().expectOne.getEventsList
+        session.get(EventListRequestBuilders.getAll(limit), sub).map { _.expectOne.getEventsList.toList }
       }
     }
   }
 
-  override def subscribeToRecentEvents(types: java.util.List[String], limit: Int) = {
+  override def subscribeToRecentEvents(types: List[String], limit: Int) = {
     ops("Couldn't subscribe to recent events") { session =>
       useSubscription(session, Descriptors.event.getKlass) { sub =>
-        session.get(EventListRequestBuilders.getAllByEventTypes(types, limit), sub).await().expectOne.getEventsList
+        session.get(EventListRequestBuilders.getAllByEventTypes(types, limit), sub).map { _.expectOne.getEventsList.toList }
       }
     }
   }
 
-  override def getRecentEvents(types: java.util.List[String], limit: Int) = {
+  override def getRecentEvents(types: List[String], limit: Int) = {
     ops("Couldn't get recent events with types: " + types) {
-      _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).await().expectOne.getEventsList
+      _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).map { _.expectOne.getEventsList.toList }
     }
   }
 
   override def getEvents(selector: EventSelect) = ops("Couldn't get events matching: " + selector) {
-    _.get(EventListRequestBuilders.getByEventSelect(selector)).await().expectOne.getEventsList
+    _.get(EventListRequestBuilders.getByEventSelect(selector)).map { _.expectOne.getEventsList.toList }
   }
 
   override def subscribeToEvents(selector: EventSelect) = {
     ops("Couldn't subscribe to events matching: " + selector) { session =>
       useSubscription(session, Descriptors.event.getKlass) { sub =>
-        session.get(EventListRequestBuilders.getByEventSelect(selector), sub).await().expectOne.getEventsList
+        session.get(EventListRequestBuilders.getByEventSelect(selector), sub).map { _.expectOne.getEventsList.toList }
       }
     }
   }

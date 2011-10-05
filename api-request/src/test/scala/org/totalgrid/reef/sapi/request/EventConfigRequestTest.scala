@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -60,27 +60,27 @@ class EventConfigRequestTest
     var configs = List.empty[EventConfig]
 
     client.addExplanation("Treat as Log", "When ")
-    configs ::= client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message")
+    configs ::= client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message").await
 
     client.addExplanation("Treat as Event", "")
-    configs ::= client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message")
+    configs ::= client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message").await
 
     client.addExplanation("Treat as Alarm", "")
-    configs ::= client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message")
+    configs ::= client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message").await
 
     client.addExplanation("Post an Event", "Post an event that is configured to make an event entry in the table.")
-    client.publishEvent("Demo.AsEvent", "Tests")
+    client.publishEvent("Demo.AsEvent", "Tests").await
 
     client.addExplanation("Post a Log", "When we post an event that is downgraded to a log message the result doesn't have the UID field set since they werenot stored in database")
-    client.publishEvent("Demo.AsLog", "Tests")
+    client.publishEvent("Demo.AsLog", "Tests").await
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    configs ::= client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}")
+    configs ::= client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}").await
 
     client.addExplanation("Use attribute formatting", "The resource string can be dynamic based on the data passed with the event")
-    client.publishEvent("Demo.Formatting", "Tests", makeAttributeList("name" -> "abra", "value" -> "cadabra"))
+    client.publishEvent("Demo.Formatting", "Tests", makeAttributeList("name" -> "abra", "value" -> "cadabra")).await
 
-    configs.foreach(client.deleteEventConfig(_))
+    configs.foreach(client.deleteEventConfig(_).await)
   }
 
   def makeAttributeList(tuples: Tuple2[String, String]*): List[Attribute] = {

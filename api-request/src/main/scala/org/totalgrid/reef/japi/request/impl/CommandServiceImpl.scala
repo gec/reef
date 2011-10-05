@@ -22,109 +22,111 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCom
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
-import org.totalgrid.reef.japi.request.{ CommandService }
+import org.totalgrid.reef.sapi.request.CommandService
 
 trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 
-  override def createCommandExecutionLock(id: Command): CommandAccess = createCommandExecutionLock(id :: Nil)
+  override def createCommandExecutionLock(id: Command) = createCommandExecutionLock(id :: Nil)
 
-  override def createCommandExecutionLock(id: Command, expirationTimeMilli: Long): CommandAccess = createCommandExecutionLock(id :: Nil, expirationTimeMilli)
+  override def createCommandExecutionLock(id: Command, expirationTimeMilli: Long) = createCommandExecutionLock(id :: Nil, expirationTimeMilli)
 
-  override def createCommandExecutionLock(ids: java.util.List[Command]): CommandAccess = {
+  override def createCommandExecutionLock(ids: List[Command]) = {
     ops("Couldn't get command execution lock for: " + ids.map { _.getName }) {
-      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids)).await().expectOne
+      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids)).map { _.expectOne }
     }
   }
 
-  override def createCommandExecutionLock(ids: java.util.List[Command], expirationTimeMilli: Long): CommandAccess = {
+  override def createCommandExecutionLock(ids: List[Command], expirationTimeMilli: Long) = {
     ops("Couldn't get command execution lock for: " + ids.map { _.getName }) {
-      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids, Option(expirationTimeMilli))).await().expectOne
+      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids, Option(expirationTimeMilli))).map { _.expectOne }
     }
   }
 
-  override def deleteCommandLock(uid: String): CommandAccess = ops("Couldn't delete command lock with uid: " + uid) {
-    _.delete(CommandAccessRequestBuilders.getForUid(uid)).await().expectOne
+  override def deleteCommandLock(uid: String) = ops("Couldn't delete command lock with uid: " + uid) {
+    _.delete(CommandAccessRequestBuilders.getForUid(uid)).map { _.expectOne }
   }
 
-  override def deleteCommandLock(ca: CommandAccess): CommandAccess = ops("Couldn't delete command lock: " + ca) {
-    _.delete(CommandAccessRequestBuilders.getForUid(ca.getUid)).await().expectOne
+  override def deleteCommandLock(ca: CommandAccess) = ops("Couldn't delete command lock: " + ca) {
+    _.delete(CommandAccessRequestBuilders.getForUid(ca.getUid)).map { _.expectOne }
 
   }
 
-  override def clearCommandLocks(): java.util.List[CommandAccess] = ops("Couldn't delete all command locks in system.") {
-    _.delete(CommandAccessRequestBuilders.getAll).await().expectMany
+  override def clearCommandLocks() = ops("Couldn't delete all command locks in system.") {
+    _.delete(CommandAccessRequestBuilders.getAll).map { _.expectMany() }
   }
 
-  override def executeCommandAsControl(id: Command): CommandStatus = ops("Couldn't execute control: " + id) {
-    _.put(UserCommandRequestBuilders.executeControl(id)).await().expectOne.getStatus
+  override def executeCommandAsControl(id: Command) = ops("Couldn't execute control: " + id) {
+    _.put(UserCommandRequestBuilders.executeControl(id)).map { _.expectOne.getStatus }
   }
 
-  override def executeCommandAsSetpoint(id: Command, value: Double): CommandStatus = {
+  override def executeCommandAsSetpoint(id: Command, value: Double) = {
     ops("Couldn't execute setpoint: " + id + " with double value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).await().expectOne.getStatus
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map { _.expectOne.getStatus }
     }
   }
 
-  override def executeCommandAsSetpoint(id: Command, value: Int): CommandStatus = {
+  override def executeCommandAsSetpoint(id: Command, value: Int) = {
     ops("Couldn't execute setpoint: " + id + " with integer value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).await().expectOne.getStatus
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map { _.expectOne.getStatus }
     }
   }
 
-  override def createCommandDenialLock(ids: java.util.List[Command]): CommandAccess = {
+  override def createCommandDenialLock(ids: List[Command]) = {
     ops("Couldn't create denial lock on ids: " + ids) {
-      _.put(CommandAccessRequestBuilders.blockAccessForCommands(ids)).await().expectOne
+      _.put(CommandAccessRequestBuilders.blockAccessForCommands(ids)).map { _.expectOne }
     }
   }
 
-  override def getCommandLocks(): java.util.List[CommandAccess] = ops("Couldn't get all command locks in system") {
-    _.get(CommandAccessRequestBuilders.getAll).await().expectMany
+  override def getCommandLocks() = ops("Couldn't get all command locks in system") {
+    _.get(CommandAccessRequestBuilders.getAll).map { _.expectMany() }
   }
 
   override def getCommandLock(uid: String) = ops("Couldn't get command lock with uid: " + uid) {
-    _.get(CommandAccessRequestBuilders.getForUid(uid)).await().expectOne
+    _.get(CommandAccessRequestBuilders.getForUid(uid)).map { _.expectOne }
   }
 
-  override def getCommandLockOnCommand(id: Command): CommandAccess = {
+  override def getCommandLockOnCommand(id: Command) = {
     ops("couldn't find command lock for command: " + id) {
-      _.get(CommandAccessRequestBuilders.getByCommand(id)).await().expectOneOrNone match {
-        case Some(x) => x
-        case None => null // TODO: change name to findCommandLockOnCommand - reef-149
+      _.get(CommandAccessRequestBuilders.getByCommand(id)).map {
+        _.expectOneOrNone match {
+          case Some(x) => x
+          case None => null // TODO: change name to findCommandLockOnCommand - reef-149
+        }
       }
     }
   }
 
-  override def getCommandLocksOnCommands(ids: java.util.List[Command]): java.util.List[CommandAccess] = {
+  override def getCommandLocksOnCommands(ids: List[Command]) = {
     ops("Couldn't get command locks for: " + ids) {
-      _.get(CommandAccessRequestBuilders.getByCommands(ids)).await().expectMany
+      _.get(CommandAccessRequestBuilders.getByCommands(ids)).map { _.expectMany() }
     }
   }
 
-  override def getCommandHistory(): java.util.List[UserCommandRequest] = ops("Couldn't get command history") {
-    _.get(UserCommandRequestBuilders.getForUid("*")).await().expectMany
+  override def getCommandHistory() = ops("Couldn't get command history") {
+    _.get(UserCommandRequestBuilders.getForUid("*")).map { _.expectMany() }
   }
 
-  override def getCommandHistory(cmd: Command): java.util.List[UserCommandRequest] = ops("Couldn't get command history") {
-    _.get(UserCommandRequestBuilders.getForName(cmd.getName)).await().expectMany
+  override def getCommandHistory(cmd: Command) = ops("Couldn't get command history") {
+    _.get(UserCommandRequestBuilders.getForName(cmd.getName)).map { _.expectMany() }
   }
 
-  override def getCommands(): java.util.List[Command] = ops("Couldn't get all commands") {
-    _.get(CommandRequestBuilders.getAll).await().expectMany
+  override def getCommands() = ops("Couldn't get all commands") {
+    _.get(CommandRequestBuilders.getAll).map { _.expectMany() }
   }
 
   override def getCommandByName(name: String) = ops("Couldn't get command with name: " + name) {
-    _.get(CommandRequestBuilders.getByEntityName(name)).await().expectOne
+    _.get(CommandRequestBuilders.getByEntityName(name)).map { _.expectOne }
   }
 
   override def getCommandsOwnedByEntity(parentUuid: ReefUUID) = {
     ops("Couldn't find commands owned by parent entity: " + parentUuid.getUuid) {
-      _.get(CommandRequestBuilders.getOwnedByEntityWithUuid(parentUuid)).await().expectMany
+      _.get(CommandRequestBuilders.getOwnedByEntityWithUuid(parentUuid)).map { _.expectMany() }
     }
   }
 
   override def getCommandsBelongingToEndpoint(endpointUuid: ReefUUID) = {
     ops("Couldn't find commands sourced by endpoint: " + endpointUuid.getUuid) {
-      _.get(CommandRequestBuilders.getSourcedByEndpoint(endpointUuid)).await().expectMany
+      _.get(CommandRequestBuilders.getSourcedByEndpoint(endpointUuid)).map { _.expectMany() }
     }
   }
 }

@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
-import builders.PointRequestBuilders
+import org.totalgrid.reef.japi.request.builders.PointRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -39,28 +39,28 @@ class MeasurementOverrideTest
     val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
 
     client.addExplanation("Clear old overrides", "Removed any leftover overrides from previous tests.")
-    client.clearMeasurementOverridesOnPoint(point)
+    client.clearMeasurementOverridesOnPoint(point).await
 
     client.addExplanation("Read Original Value", "Get current value for the point")
-    val originalMeas = client.getMeasurementByPoint(point)
+    val originalMeas = client.getMeasurementByPoint(point).await
 
     client.addExplanation("Mark Point NIS", "Creating an override with no overriding measurement attached implies NIS.")
-    val nis = client.setPointOutOfService(point)
+    val nis = client.setPointOutOfService(point).await
 
     client.addExplanation("Read NIS value", "Check that value is marked appropriately.")
-    val nised = client.getMeasurementByPoint(point)
+    val nised = client.getMeasurementByPoint(point).await
 
     client.addExplanation("Override point", "Override the value to 100. Notice the uid is the same as for the NIS.")
-    val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build)
+    val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build).await
 
     // TODO: add uid to measurement override - backlog-63
     //over.getUid should equal(nis.getUid)
 
     client.addExplanation("Read Overriden Value", "Check that value is marked appropriately.")
-    val overriden = client.getMeasurementByPoint(point)
+    val overriden = client.getMeasurementByPoint(point).await
 
     client.addExplanation("Delete Override", "Clear the override we set (could have cleared)")
-    client.deleteMeasurementOverride(over)
+    client.deleteMeasurementOverride(over).await
 
     //    // TODO: fix overrides time ordering reef-23
     //    nised.getQuality.getOperatorBlocked should equal(true)

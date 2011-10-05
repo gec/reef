@@ -17,7 +17,7 @@
  * the License.
  */
 
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -50,39 +50,39 @@ class ConfigFileServiceTest
 
   test("Create config files") {
     client.addExplanation("Create a free floating config file", "Config files can be created without being attached to an Entity")
-    val cf = client.createConfigFile("Test-Config-File", "text/plain", "Data".getBytes())
+    val cf = client.createConfigFile("Test-Config-File", "text/plain", "Data".getBytes()).await
     registerConfigFile(cf)
 
     client.addExplanation("Config File Data Updates", "Config Files can be updated 'in place'")
-    client.updateConfigFile(cf, "New Data".getBytes())
+    client.updateConfigFile(cf, "New Data".getBytes()).await
 
     client.addExplanation("Config Files must be deleted by uid", "")
-    client.deleteConfigFile(cf)
+    client.deleteConfigFile(cf).await
   }
 
   test("Associate Config File to Entity") {
-    val entity = client.getEntityByName("StaticSubstation")
+    val entity = client.getEntityByName("StaticSubstation").await
 
     client.addExplanation("Attach Config File to Entity", "If we specify an entity with the config file they will be associated")
-    val cf1 = client.createConfigFile("Test-Entity-Text-File", "text/plain", "Data".getBytes(), entity.getUuid)
+    val cf1 = client.createConfigFile("Test-Entity-Text-File", "text/plain", "Data".getBytes(), entity.getUuid).await
     registerConfigFile(cf1)
 
-    val cf2 = client.createConfigFile("Test-Entity-XML-File", "text/xml", "<Data/>".getBytes(), entity.getUuid)
+    val cf2 = client.createConfigFile("Test-Entity-XML-File", "text/xml", "<Data/>".getBytes(), entity.getUuid).await
     registerConfigFile(cf1)
 
     client.addExplanation("Get Config File by Entity", "We can now search for all config files that are associated to an entity")
-    client.getConfigFilesUsedByEntity(entity.getUuid)
+    client.getConfigFilesUsedByEntity(entity.getUuid).await
 
     client.addExplanation("Get Config File by Entity and MimeType", "We can also filter by mimeType (with or without Entity)")
-    client.getConfigFilesUsedByEntity(entity.getUuid, "text/xml")
+    client.getConfigFilesUsedByEntity(entity.getUuid, "text/xml").await
 
-    val entity2 = client.getEntityByName("SimulatedSubstation")
+    val entity2 = client.getEntityByName("SimulatedSubstation").await
     client.addExplanation("Add Entity as User of Config File",
       "We can attach more than one entity user to a config file, notice the returned file now has both entities as users")
-    client.addConfigFileUsedByEntity(cf1, entity2.getUuid)
+    client.addConfigFileUsedByEntity(cf1, entity2.getUuid).await
 
-    client.deleteConfigFile(cf1)
-    client.deleteConfigFile(cf2)
+    client.deleteConfigFile(cf1).await
+    client.deleteConfigFile(cf2).await
   }
 
   private def convertToScalaSequence(files: List[ConfigFile]): Seq[ConfigFile] =

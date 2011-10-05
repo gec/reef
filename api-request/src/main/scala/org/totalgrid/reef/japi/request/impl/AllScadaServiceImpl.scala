@@ -37,3 +37,23 @@ trait AllScadaServiceImpl
   with EndpointManagementServiceImpl
   with ApplicationServiceImpl
 
+import org.totalgrid.reef.sapi.request.impl._
+
+trait AllScadaServiceJavaShim
+    extends AuthTokenServiceJavaShim
+    with EntityServiceJavaShim
+    with ConfigFileServiceJavaShim
+    with MeasurementServiceJavaShim
+    with MeasurementOverrideServiceJavaShim
+    with EventServiceJavaShim
+    with EventCreationServiceJavaShim
+    with EventConfigServiceJavaShim
+    with CommandServiceJavaShim
+    with PointServiceJavaShim
+    with AlarmServiceJavaShim
+    with AgentServiceJavaShim
+    with EndpointManagementServiceJavaShim
+    with ApplicationServiceJavaShim {
+  def service: AllScadaServiceImpl
+}
+

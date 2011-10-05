@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-import org.totalgrid.reef.japi.request.MeasurementOverrideService
+import org.totalgrid.reef.sapi.request.MeasurementOverrideService
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.MeasOverride
 import org.totalgrid.reef.proto.Measurements.Measurement
@@ -27,30 +27,32 @@ import org.totalgrid.reef.japi.request.builders.MeasurementOverrideRequestBuilde
 
 trait MeasurementOverrideServiceImpl extends ReefServiceBaseClass with MeasurementOverrideService {
 
-  override def setPointOutOfService(point: Point): MeasOverride = {
+  override def setPointOutOfService(point: Point) = {
     ops("Couldn't set point uuid:" + point.uuid + " name: " + point.name + " out of service") {
-      _.put(MeasurementOverrideRequestBuilders.makeNotInService(point)).await().expectOne
+      _.put(MeasurementOverrideRequestBuilders.makeNotInService(point)).map { _.expectOne }
     }
   }
 
   override def setPointOverride(point: Point, measurement: Measurement) = {
     ops("Couldn't override point uuid:" + point.uuid + " name: " + point.name + " to: " + measurement) {
-      _.put(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)).await().expectOne
+      _.put(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)).map { _.expectOne }
     }
   }
 
   override def deleteMeasurementOverride(measOverride: MeasOverride) = {
     // TODO: measurementOverride needs uid - backlog-63
     ops("Couldn't delete measurementOverride: " + measOverride.meas + " on: " + measOverride.point) {
-      _.delete(measOverride).await().expectOne
+      _.delete(measOverride).map { _.expectOne }
     }
   }
 
   override def clearMeasurementOverridesOnPoint(point: Point) = {
     ops("Couldn't clear measurementOverrides on point uuid: " + point.uuid + " name: " + point.name) {
-      _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).await().expectMany() match {
-        case List(one) => one
-        case _ => null
+      _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).map {
+        _.expectMany() match {
+          case List(one) => one
+          case _ => null
+        }
       }
     }
   }

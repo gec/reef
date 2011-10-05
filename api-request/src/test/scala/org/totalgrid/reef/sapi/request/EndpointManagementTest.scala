@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -40,14 +40,14 @@ class EndpointManagementTest
   test("Endpoint operations") {
 
     client.addExplanation("Get all endpoints", "")
-    val endpoints = client.getAllEndpoints()
+    val endpoints = client.getAllEndpoints().await
 
     endpoints.isEmpty should equal(false)
 
     val syncVar = new EmptySyncVar[CommEndpointConnection]
 
     client.addExplanation("Get all endpoint connections", "")
-    val result = client.subscribeToAllEndpointConnections()
+    val result = client.subscribeToAllEndpointConnections().await
     val connections = result.getResult
     val sub = result.getSubscription
 
@@ -71,12 +71,12 @@ class EndpointManagementTest
         x.getEndpoint.getUuid.getUuid == endpointUuid.getUuid)
     }
 
-    client.disableEndpointConnection(endpointUuid)
+    client.disableEndpointConnection(endpointUuid).await
 
     checkState(false, CommEndpointConnection.State.COMMS_UP)
     checkState(false, CommEndpointConnection.State.COMMS_DOWN)
 
-    client.enableEndpointConnection(endpoints.head.getUuid)
+    client.enableEndpointConnection(endpoints.head.getUuid).await
 
     checkState(true, CommEndpointConnection.State.COMMS_DOWN)
     checkState(true, CommEndpointConnection.State.COMMS_UP)

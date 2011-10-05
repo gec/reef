@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -36,13 +36,13 @@ class MeasurementBatchTest
       </div>)
     with ShouldMatchers {
 
-  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil)
-  def putAll(m: List[Measurement]) = client.publishMeasurements(m)
+  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil).await
+  def putAll(m: List[Measurement]) = client.publishMeasurements(m).await
 
   test("Simple puts") {
     val pointName = "StaticSubstation.Line02.Current"
     // read the current value so we can edit it
-    val original = client.getMeasurementByName(pointName)
+    val original = client.getMeasurementByName(pointName).await
 
     client.addExplanation("Put measurement", "Put a single new measurement.")
 
@@ -55,7 +55,7 @@ class MeasurementBatchTest
 
   test("Multi put") {
     val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
-    val originals = client.getMeasurementsByNames(names)
+    val originals = client.getMeasurementsByNames(names).await
 
     val updated = originals.map { m =>
       if (m.getType == Measurement.Type.DOUBLE)

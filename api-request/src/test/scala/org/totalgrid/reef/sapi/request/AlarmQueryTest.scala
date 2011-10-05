@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request
+package org.totalgrid.reef.sapi.request
 
-import builders.AlarmListRequestBuilders
+import org.totalgrid.reef.japi.request.builders.AlarmListRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -77,7 +77,7 @@ class AlarmQueryTest
 
   test("Test alarm failure") {
     val exc = intercept[ReefServiceException] {
-      client.getAlarm("1234567890123456789")
+      client.getAlarm("1234567890123456789").await
     }.getMessage
     exc.contains("1234567890123456789") should equal(true)
     exc.contains("uid") should equal(true)
