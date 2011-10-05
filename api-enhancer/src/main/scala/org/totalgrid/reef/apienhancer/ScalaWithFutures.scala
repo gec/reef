@@ -43,7 +43,7 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
       case None => stream.println("import " + p.qualifiedTypeName())
       case _ =>
     })
-    stream.println("import org.totalgrid.reef.promise.Promise;")
+    stream.println("import org.totalgrid.reef.promise.Promise")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("trait " + c.name + "{")
 

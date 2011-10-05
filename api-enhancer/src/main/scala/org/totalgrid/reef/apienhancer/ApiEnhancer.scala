@@ -34,7 +34,7 @@ object ApiEnhancer {
     val rootDir = new File(".")
     val sourceDir = new File(rootDir, "../../src/main/java")
 
-    val transformers = List(new JavaFutures, new ScalaJavaShims, new ScalaWithFutures)
+    val transformers = List(new JavaFutures, new ScalaWithFutures, new ScalaJavaShims(false))
 
     root.classes.toList.filter { c =>
       c.containingPackage.toString.indexOf(".japi.request") != -1 &&

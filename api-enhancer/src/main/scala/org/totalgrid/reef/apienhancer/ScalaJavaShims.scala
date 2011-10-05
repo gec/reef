@@ -23,9 +23,20 @@ import scala.collection.JavaConversions._
 import com.sun.javadoc.ClassDoc
 import java.io.{ PrintStream, File }
 
-class ScalaJavaShims extends ApiTransformer with GeneratorFunctions {
+/**
+ * TODO: finish java shim for futures
+ *
+ * currently the implicts to convert to java objects can't see into the Promises to know to
+ * change the type in a map
+ */
+class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFunctions {
+
+  val exName = if (isFuture) "FuturesJavaShim" else "JavaShim"
+  val japiPackage = if (isFuture) "japiF" else "japi"
+  val targetEx = if (isFuture) "Futures" else ""
+
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
-    getFileStream(packageStr, rootDir, sourceFile, ".sapi.request.impl", true, c.name + "JavaShim") { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".sapi.request.impl", true, c.name + exName) { (stream, javaPackage) =>
       javaShimClass(c, stream, javaPackage)
     }
   }
@@ -36,11 +47,13 @@ class ScalaJavaShims extends ApiTransformer with GeneratorFunctions {
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName()))
     stream.println("import scala.collection.JavaConversions._")
     stream.println("import org.totalgrid.reef.japi.request.impl.Converters._")
-    stream.println("import org.totalgrid.reef.japi.request.{" + c.name + "=> JInterface }")
+    stream.println("import org.totalgrid.reef." + japiPackage + ".request.{" + c.name + targetEx + "=> JInterface }")
     stream.println("import org.totalgrid.reef.sapi.request." + c.name)
     stream.println("import org.totalgrid.reef.japi.request.impl.AllScadaServiceImpl")
 
-    stream.println("trait " + c.name + "JavaShim extends JInterface{")
+    if (isFuture) stream.println("import org.totalgrid.reef.promise.Promise")
+
+    stream.println("trait " + c.name + exName + " extends JInterface{")
 
     stream.println("\tdef service: AllScadaServiceImpl")
 
@@ -51,8 +64,13 @@ class ScalaJavaShims extends ApiTransformer with GeneratorFunctions {
         p.name + ": " + javaAsScalaTypeString(p.`type`)
       }.mkString(", ")
       msg += ")"
-      if (m.returnType.toString != "void")
-        msg += ": " + javaAsScalaTypeString(m.returnType)
+      if (m.returnType.toString != "void") {
+        if (isFuture) {
+          msg += ": Promise[" + javaAsScalaTypeString(m.returnType) + "]"
+        } else {
+          msg += ": " + javaAsScalaTypeString(m.returnType)
+        }
+      }
 
       msg += " = "
       if (m.returnType.simpleTypeName() == "SubscriptionResult") msg += "convert("
@@ -61,7 +79,8 @@ class ScalaJavaShims extends ApiTransformer with GeneratorFunctions {
         if (p.`type`().simpleTypeName == "List") p.name + ".toList"
         else p.name
       }.mkString(", ")
-      msg += ").await()"
+      msg += ")"
+      if (!isFuture) msg += ".await"
       if (m.returnType.simpleTypeName() == "SubscriptionResult") msg += ")"
       stream.println(msg)
     }
