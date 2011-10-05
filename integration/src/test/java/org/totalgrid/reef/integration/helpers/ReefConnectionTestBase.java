@@ -86,10 +86,8 @@ public class ReefConnectionTestBase
         }
         catch ( IOException e )
         {
-            // TODO can we just fail here?
-            e.printStackTrace();
             // we'll then throw an exception when trying to load from emtpy properties file
-            throw new RuntimeException(e);
+            throw new RuntimeException( e );
         }
 
         return new AMQPConnectionSettingImpl( props );

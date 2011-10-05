@@ -27,7 +27,8 @@ import scala.collection.Map
 object ApiEnhancer {
   def start(root: RootDoc): Boolean = {
 
-    val rootDir = new File("c:/code/scada/reef/api-request/target/generated-sources")
+    // we use the destDir setting in javadoc
+    val rootDir = new File(".")
 
     root.classes.toList.filter { c =>
       c.containingPackage.toString.indexOf(".japi.request") != -1 &&

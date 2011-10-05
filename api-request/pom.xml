@@ -108,16 +108,13 @@
 			</build>
 		</profile>
 		<profile>
-			<id>generate-api</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
+			<id>update-apis</id>
 			<build>
 				<plugins>
 					<plugin>
 						<executions>
 							<execution>
+								<inherited>false</inherited>
 								<id>magic</id>
 								<phase>
 									generate-sources
@@ -127,39 +124,20 @@
 								</goals>
 								<configuration>
 									<doclet>org.totalgrid.reef.apienhancer.ApiEnhancer</doclet>
-									<!-- <docletPath>/path/to/UmlGraph.jar</docletPath> -->
 									<docletArtifact>
 										<groupId>org.totalgrid.reef</groupId>
 										<artifactId>reef-api-enhancer</artifactId>
 										<version>0.4.0-SNAPSHOT</version>
 									</docletArtifact>
-									<!--<additionalparam>-views</additionalparam>-->
+									<destDir>../../generated-sources</destDir>
 									<useStandardDocletOptions>false</useStandardDocletOptions>
 								</configuration>
 							</execution>
 						</executions>
+						<inherited>false</inherited>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>2.8</version>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>1.1</version>
-						<executions>
-							<execution>
-								<id>add-source</id>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>add-source</goal>
-								</goals>
-								<configuration>
-									<sources>
-										<source>target/generated-sources</source>
-									</sources>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
@@ -168,6 +146,25 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>target/generated-sources</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
