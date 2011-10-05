@@ -137,7 +137,9 @@ object ApiEnhancer {
 
     c.methods.toList.foreach { m =>
 
-      var msg = "\t" + "def " + m.name + "("
+      var msg = "\t@throws(classOf[ReefServiceException])\n"
+
+      msg += "\t" + "def " + m.name + "("
       msg += m.parameters().toList.map { p =>
         p.name + ": " + scalaTypeString(p.`type`)
       }.mkString(", ")
