@@ -20,16 +20,23 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Logging
 
-import org.totalgrid.reef.util.Conversion.convertIterableToMapified
+/**
+ * simple interface that KeyedMap implements to hide implementation details from consumers
+ */
+trait ClearableMap[A] {
+  def add(obj: A)
+  def modify(obj: A)
+  def remove(obj: A)
+
+  def clear()
+}
 
 /**
  * mixin that handles the add/remove/modify/subscribed behavior by keeping protos in a map and freeing up the
  * user code to handle only the "payload" add/remove behavior. User code can therefore skip any checks to make
  * sure that the object isn't already created/removed.
- *
- * This class can be mixed in to implement the abstract functions of ServiceContext[A]
  */
-trait KeyedMap[A] extends Logging {
+trait KeyedMap[A] extends ClearableMap[A] with Logging {
 
   protected def hasChangedEnoughForReload(updated: A, existing: A): Boolean
 
@@ -47,28 +54,8 @@ trait KeyedMap[A] extends Logging {
   /* ----- Mutable state -----  */
   private var active = Map.empty[String, A]
 
-  /**
-   *    Load a list of slave device connections
-   */
-  def subscribed(list: List[A]): Unit = {
-    val map = list.mapify { x => getKey(x) }
-    active.values.foreach { c =>
-      map.get(getKey(c)) match {
-        case Some(x) => remove(c)
-        case None =>
-      }
-    }
-
-    list.foreach { c =>
-      active.get(getKey(c)) match {
-        case Some(x) => modify(c)
-        case None => add(c)
-      }
-    }
-  }
-
   /* --  Handlers for device connections --*/
-  def add(connection: A): Unit = {
+  def add(connection: A) {
     active.get(getKey(connection)) match {
       case Some(x) => modify(connection)
       case None =>
@@ -79,7 +66,7 @@ trait KeyedMap[A] extends Logging {
 
   }
 
-  def remove(connection: A): Unit = {
+  def remove(connection: A) {
     active.get(getKey(connection)) match {
       case None => logger.warn("Remove on unregistered key: " + getKey(connection) + ", connection: " + connection)
       case Some(x) =>
@@ -90,7 +77,7 @@ trait KeyedMap[A] extends Logging {
     }
   }
 
-  def modify(connection: A): Unit = {
+  def modify(connection: A) {
     active.get(getKey(connection)) match {
       case Some(x) =>
         if (hasChangedEnoughForReload(connection, x)) {

@@ -34,7 +34,7 @@ abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNo
   def add(obj: ConnProto) = if (running) map.add(obj)
   def remove(obj: ConnProto) = if (running) map.remove(obj)
   def modify(obj: ConnProto) = if (running) map.modify(obj)
-  def subscribed(list: List[ConnProto]) = if (running) map.subscribed(list)
+  def subscribed(list: List[ConnProto]) = if (running) list.foreach(map.add(_))
 
   def clear = map.clear
 }
