@@ -30,8 +30,11 @@ import Model._
 
 import org.totalgrid.reef.metrics.{ MetricsHooks, MetricsHookContainer }
 
-trait ProcessingNode {
+trait MeasurementBatchProcessor {
   def process(m: MeasurementBatch)
+}
+
+trait ProcessingNode extends MeasurementBatchProcessor {
 
   def add(over: MeasOverride)
   def remove(over: MeasOverride)
