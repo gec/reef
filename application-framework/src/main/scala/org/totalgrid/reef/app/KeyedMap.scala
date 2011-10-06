@@ -59,9 +59,10 @@ trait KeyedMap[A] extends ClearableMap[A] with Logging {
     active.get(getKey(connection)) match {
       case Some(x) => modify(connection)
       case None =>
+        logger.info("adding key " + getKey(connection))
         addEntry(connection)
         active += getKey(connection) -> connection
-        logger.info("added key " + getKey(connection) + ", connection: " + connection)
+        logger.info("added key " + getKey(connection))
     }
 
   }
@@ -70,10 +71,10 @@ trait KeyedMap[A] extends ClearableMap[A] with Logging {
     active.get(getKey(connection)) match {
       case None => logger.warn("Remove on unregistered key: " + getKey(connection) + ", connection: " + connection)
       case Some(x) =>
-        logger.info("removing key: " + getKey(connection) + ", connection: " + connection)
+        logger.info("removing key: " + getKey(connection))
         removeEntry(x)
         active -= getKey(connection)
-        logger.info("removed key: " + getKey(connection) + ", connection: " + connection)
+        logger.info("removed key: " + getKey(connection))
     }
   }
 

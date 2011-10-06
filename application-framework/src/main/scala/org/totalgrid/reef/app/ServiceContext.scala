@@ -44,8 +44,6 @@ object ServiceContext {
   }
 }
 
-trait O
-
 /**
  * Implements a single resource service consumer.
  * Treats subscription and addition as the same (push).
