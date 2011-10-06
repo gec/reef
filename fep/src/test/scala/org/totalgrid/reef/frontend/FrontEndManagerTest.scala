@@ -22,60 +22,21 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.mockito.Mockito
 
 import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.mockito.Mockito
 import org.totalgrid.test.MockitoStubbedOnly
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
-import org.totalgrid.reef.japi.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
+import org.totalgrid.reef.japi.client.SubscriptionResult
 import org.totalgrid.reef.japi.BadRequestException
 
-class MockFepServiceContext extends FepServiceContext {
-  var sub = Option.empty[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]]
-  var canceled = false
-
-  def setSubscription(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) = {
-    sub = Some(result)
-  }
-  def cancel() = {
-    canceled = true
-  }
-}
-
-class MockSubscription[A](id: String = "queue") extends Subscription[A] {
-  var canceled = false
-  var acceptor = Option.empty[SubscriptionEventAcceptor[A]]
-  def start(acc: SubscriptionEventAcceptor[A]) = acceptor = Some(acc)
-  def getId = id
-  def cancel() = canceled = true
-}
-
-class MockSubscriptionResult[A](result: List[A]) extends SubscriptionResult[List[A], A] {
-
-  def this(one: A) = this(one :: Nil)
-
-  val mockSub = new MockSubscription[A]()
-
-  def getSubscription = mockSub
-  def getResult = result
-}
-
-class ThrowsPromise[A <: Exception, B](ex: A) extends Promise[B] {
-  def listen(fun: (B) => Unit) = throw ex
-
-  def isComplete = true
-
-  def await() = throw ex
-}
+import FrontEndTestHelpers._
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndManagerTest extends FunSuite with ShouldMatchers {
-
-  private def makeUuid(str: String) = ReefUUID.newBuilder.setUuid(str).build
-  implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
 
   val applicationUuid: ReefUUID = "0"
   val protocolList = List("mock")

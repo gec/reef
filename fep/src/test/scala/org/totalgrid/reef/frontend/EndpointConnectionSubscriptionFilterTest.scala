@@ -24,8 +24,9 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.app.ClearableMap
 import org.mockito.Mockito
-import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointRouting, CommEndpointConnection, CommEndpointConfig }
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+
+import FrontEndTestHelpers._
 
 @RunWith(classOf[JUnitRunner])
 class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatchers {
@@ -34,8 +35,8 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
     val filter = new EndpointConnectionSubscriptionFilter(map, populator)
 
-    val populated = getConfig(true, Some("routing2"))
-    val config = getConfig(true, Some("routing"))
+    val populated = getConnectionProto(true, Some("routing2"))
+    val config = getConnectionProto(true, Some("routing"))
     Mockito.doReturn(populated).when(populator).populate(config)
 
     filter.add(config)
@@ -56,11 +57,11 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
       Mockito.verify(map, Mockito.times(2)).remove(obj)
     }
 
-    testAddOrModifyBecomesRemove(getConfig(false, None))
-    testAddOrModifyBecomesRemove(getConfig(false, Some("routing")))
-    testAddOrModifyBecomesRemove(getConfig(true, None))
+    testAddOrModifyBecomesRemove(getConnectionProto(false, None))
+    testAddOrModifyBecomesRemove(getConnectionProto(false, Some("routing")))
+    testAddOrModifyBecomesRemove(getConnectionProto(true, None))
 
-    val remove = getConfig(true, Some("routing"))
+    val remove = getConnectionProto(true, Some("routing"))
     filter.remove(remove)
     Mockito.verify(map).remove(remove)
 
@@ -73,8 +74,8 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
     val filter = new EndpointConnectionSubscriptionFilter(map, populator)
 
-    val populated = getConfig(true, Some("routing2"))
-    val config = getConfig(true, Some("routing"))
+    val populated = getConnectionProto(true, Some("routing2"))
+    val config = getConnectionProto(true, Some("routing"))
     Mockito.doReturn(populated).when(populator).populate(config)
 
     val result = new MockSubscriptionResult(config)
@@ -92,14 +93,4 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
     Mockito.verify(map).clear()
   }
 
-  private def makeUuid(str: String) = ReefUUID.newBuilder.setUuid(str).build
-  implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
-
-  def getConfig(enabled: Boolean, routingKey: Option[String]) = {
-    val pt = CommChannel.newBuilder.setUuid("port")
-    val cfg = CommEndpointConfig.newBuilder.setUuid("config").setChannel(pt).setName("endpoint1")
-    val b = CommEndpointConnection.newBuilder.setUid("connection").setEndpoint(cfg).setEnabled(enabled)
-    routingKey.foreach { s => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(s).build) }
-    b.build
-  }
 }
