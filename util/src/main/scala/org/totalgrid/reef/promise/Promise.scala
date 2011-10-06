@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.promise
 
-trait Promise[A] {
+trait Promise[+A] {
 
   def await(): A
 
