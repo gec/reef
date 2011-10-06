@@ -20,12 +20,10 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleWrapper, Lifecycle, LifecycleManager }
 
-import org.totalgrid.reef.frontend.FrontEndManager
 import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
 import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.util.Logging
@@ -35,6 +33,9 @@ import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.broker.BrokerProperties
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.messaging.{ BasicSessionPool, AMQPProtoFactory }
+import org.totalgrid.reef.sapi.request.impl.AllScadaServicePooled
+import org.totalgrid.reef.frontend._
 
 class FepActivator extends BundleActivator with Logging {
 
@@ -89,13 +90,20 @@ class FepActivator extends BundleActivator with Logging {
 
     val exe = new ReactActorExecutor {}
 
+    val services = new AllScadaServicePooled(new BasicSessionPool(components.registry), components.authToken) with FrontEndProviderServices
+
+    val frontEndConnections = new FrontEndConnections(protocols, services)
+    val populator = new EndpointConnectionPopulatorAction(services)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator)
+
     // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events
     val fem = new FrontEndManager(
-      components.registry,
+      services,
       exe,
-      protocols,
+      connectionContext,
       components.appConfig,
+      protocols.map { _.name }.toList,
       5000)
 
     new LifecycleWrapper(components.heartbeatActor :: exe :: fem :: Nil)

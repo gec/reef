@@ -18,29 +18,12 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.Destination
-import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.promise.Promise
-import org.totalgrid.reef.messaging.OrderedServiceTransmitter
+import org.totalgrid.reef.japi.client.SubscriptionResult
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 
-class IdentityOrderedPublisher[A](
-    tx: OrderedServiceTransmitter,
-    verb: Envelope.Verb,
-    address: Destination,
-    maxRetries: Int) extends OrderedPublisher[A, A](tx, verb, address, maxRetries)(x => x) {
+trait FepServiceContext {
 
-  override def toString = "IdentityOrderedPublisher{ address: " + address + " }"
+  def setSubscription(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection])
+
+  def cancel()
 }
-
-class OrderedPublisher[A, B](
-    tx: OrderedServiceTransmitter,
-    verb: Envelope.Verb,
-    address: Destination,
-    maxRetries: Int)(transform: A => B) extends Publisher[A] {
-
-  def publish(value: A): Promise[Boolean] = tx.publish(transform(value), verb, address, maxRetries)
-
-  override def toString = "OrderedPublisher{ address: " + address + " }"
-}
-

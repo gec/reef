@@ -18,9 +18,29 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.Observable
-
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.util.{ Cancelable, Observable }
+import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
+
+object ServiceContext {
+  def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U]): Cancelable = {
+    context.handleResponse(result.getResult)
+
+    val sub = result.getSubscription
+
+    sub.start(new SubscriptionEventAcceptor[U] {
+      def onEvent(event: SubscriptionEvent[U]) {
+        context.handleEvent(event.getEventType, event.getValue)
+      }
+    })
+
+    new Cancelable {
+      def cancel() = sub.cancel
+    }
+  }
+}
+
+trait O
 
 /**
  * Implements a single resource service consumer.
