@@ -31,13 +31,30 @@ import org.totalgrid.reef.proto.Descriptors
 
 import scala.collection.JavaConversions._
 
-trait FrontEndProviderServices extends AllScadaServiceImpl {
-  def bindCommandHandler(connection: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
+import org.totalgrid.reef.sapi.request.framework.{ ClientSourceProxy, ReefServiceBaseClass }
+import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
+import org.totalgrid.reef.sapi.AddressableDestination
+import org.totalgrid.reef.executor.Executor
 
-    // TODO: implement command handler
+trait FrontEndProviderServices extends AllScadaServiceImpl {
+  def bindCommandHandler(connection: CommEndpointConnection, commandHandler: CommandHandler): Cancelable
+
+  def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]]
+
+  def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor]
+}
+
+class FrontEndProviderServicesImpl(protected val clientSource: AllScadaServiceImpl, factory: AMQPSyncFactory, exe: Executor)
+    extends FrontEndProviderServices with ReefServiceBaseClass with ClientSourceProxy {
+
+  def bindCommandHandler(connection: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
+    val destination = AddressableDestination(connection.getRouting.getServiceRoutingKey)
+    val service = new SingleEndpointCommandService(commandHandler)
+
+    val closeable = factory.bindService(service.descriptor.id, service.respond, exe, destination)
 
     new Cancelable {
-      def cancel() = {}
+      def cancel() = closeable.close()
     }
   }
 

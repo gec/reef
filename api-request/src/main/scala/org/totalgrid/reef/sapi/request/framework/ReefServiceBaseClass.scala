@@ -103,7 +103,8 @@ trait ClientSource {
     }
   }
 
-  protected def _ops[A](block: RestOperations with SubscriptionManagement => A): A
+  // TODO: make _ops protected again once we figure out client creation plan
+  def _ops[A](block: RestOperations with SubscriptionManagement => A): A
 }
 
 /**
@@ -114,6 +115,15 @@ trait SingleSessionClientSource extends ClientSource {
   def session: RestOperations with SubscriptionManagement
 
   override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = block(session)
+}
+
+/**
+ * temporary solution to generating a new interface from existing impl
+ * TODO: remove ClientSourceProxy
+ */
+trait ClientSourceProxy extends ClientSource {
+  protected def clientSource: ClientSource
+  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = clientSource._ops(block)
 }
 
 /**
