@@ -23,6 +23,12 @@ import org.totalgrid.reef.app.{ ServiceContext, ClearableMap }
 import org.totalgrid.reef.util.{ Cancelable, Logging }
 import org.totalgrid.reef.japi.client.SubscriptionResult
 
+/**
+ * When we have subscribed to handle a set of endpoints we need to make sure that we only add enabled and routed
+ * endpoints, we remove all other endpoints.
+ *
+ * Keep in mind that most "live system" updates are going to be modifies of the enabled bit
+ */
 class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction)
     extends ServiceContext[CommEndpointConnection]
     with FepServiceContext
@@ -46,12 +52,12 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
   def add(c: CommEndpointConnection) = tryWrap("Error adding connProto: " + c) {
     // the coordinator assigns FEPs when available but meas procs may not be online yet
     // re sends with routing information when meas_proc is online
-    if (c.hasRouting && c.hasEnabled && c.getEnabled) connections.add(populator.populate(c))
+    if (shouldStart(c)) connections.add(populator.populate(c))
     else connections.remove(c)
   }
 
   def modify(c: CommEndpointConnection) = tryWrap("Error modifying connProto: " + c) {
-    if (c.hasRouting && c.hasEnabled && c.getEnabled) connections.modify(populator.populate(c))
+    if (shouldStart(c)) connections.modify(populator.populate(c))
     else connections.remove(c)
   }
 
@@ -60,6 +66,13 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
   }
 
   def subscribed(list: List[CommEndpointConnection]) = list.foreach(add(_))
+
+  /**
+   * we will get messages regardless of whether the endpoint is usable, we need to check that it is
+   * still enabled and that there is a routing key (meas proc is ready for us) before adding it.
+   * otherwise we remove it
+   */
+  private def shouldStart(c: CommEndpointConnection) = c.hasRouting && c.hasEnabled && c.getEnabled
 
   /**
    * when setting up asynchronous callbacks it is doubly important to catch exceptions

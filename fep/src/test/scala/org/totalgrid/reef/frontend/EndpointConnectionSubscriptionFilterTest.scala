@@ -82,6 +82,10 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
     filter.setSubscription(result)
     Mockito.verify(map).add(populated)
 
+    intercept[IllegalArgumentException] {
+      filter.setSubscription(result)
+    }
+
     result.mockSub.canceled should equal(false)
     filter.cancel()
     result.mockSub.canceled should equal(true)
