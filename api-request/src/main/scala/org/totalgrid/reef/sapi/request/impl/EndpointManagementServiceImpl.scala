@@ -51,7 +51,7 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
     // TODO: fix getEndpointConnection futureness
     val connection = getEndpointConnection(endpointUuid).await()
     ops("Couldn't alter endpoint: " + endpointUuid.uuid + " to enabled: " + enabled) {
-      _.put(connection.toBuilder.setEnabled(enabled).build).map { _.expectOne }
+      _.post(connection.toBuilder.setEnabled(enabled).build).map { _.expectOne }
     }
   }
 
