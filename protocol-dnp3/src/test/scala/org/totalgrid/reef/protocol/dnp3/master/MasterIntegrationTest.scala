@@ -30,7 +30,6 @@ import org.totalgrid.reef.proto.{ Model, FEP }
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
-import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
 import org.totalgrid.reef.protocol.dnp3._
@@ -108,19 +107,17 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
 
   class LastValueListener[A](verbose: Boolean = true) extends Publisher[A] {
     val lastValue = new EmptySyncVar[A]
-    def publish(proto: A): Promise[Boolean] = {
+    def publish(proto: A) {
       if (verbose) logger.info(proto.toString)
       lastValue.update(proto)
-      new FixedPromise(true)
     }
   }
 
   def issueAndWaitForCommandResponse(cmdAcceptor: CommandHandler, commandRequest: CommandRequestProto) {
     val response = new EmptySyncVar[CommandStatusProto]
     val rspHandler = new Publisher[CommandResponseProto] {
-      def publish(proto: CommandResponseProto): Promise[Boolean] = {
+      def publish(proto: CommandResponseProto) {
         response.update(proto.getStatus)
-        new FixedPromise(true)
       }
     }
     cmdAcceptor.issue(commandRequest, rspHandler)
