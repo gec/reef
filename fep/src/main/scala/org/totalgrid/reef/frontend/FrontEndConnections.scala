@@ -61,8 +61,8 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     val endpointName = c.getEndpoint.getName
 
     val batchPublisher = newMeasBatchPublisher(c.getRouting.getServiceRoutingKey)
-    val channelListener = newChannelStatePublisher(port.getUuid)
-    val endpointListener = newEndpointStatePublisher(c.getUid)
+    val channelListener = newChannelStatePublisher(port.getUuid, port.getName)
+    val endpointListener = newEndpointStatePublisher(c.getUid, endpointName)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
@@ -101,15 +101,17 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     }
   }
 
-  private def newEndpointStatePublisher(connectionUid: String) = new Protocol.EndpointPublisher {
+  private def newEndpointStatePublisher(connectionUid: String, endpointName: String) = new Protocol.EndpointPublisher {
     def publish(state: CommEndpointConnection.State) = tryPublishing("Couldn't update endpointState: ") {
       client.alterEndpointConnectionState(connectionUid, state).await
+      logger.info("Updated endpoint state: " + endpointName + " state: " + state)
     }
   }
 
-  private def newChannelStatePublisher(channelUuid: ReefUUID) = new Protocol.ChannelPublisher {
+  private def newChannelStatePublisher(channelUuid: ReefUUID, channelName: String) = new Protocol.ChannelPublisher {
     def publish(state: CommChannel.State) = tryPublishing("Couldn't update channelState: ") {
       client.alterCommunicationChannelState(channelUuid, state).await
+      logger.info("Updated channel state: " + channelName + " state: " + state)
     }
   }
 
