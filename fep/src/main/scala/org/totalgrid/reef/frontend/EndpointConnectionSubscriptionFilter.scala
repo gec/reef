@@ -22,6 +22,7 @@ import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.app.{ ServiceContext, ClearableMap }
 import org.totalgrid.reef.util.{ Cancelable, Logging }
 import org.totalgrid.reef.japi.client.SubscriptionResult
+import org.totalgrid.reef.executor.Executor
 
 /**
  * When we have subscribed to handle a set of endpoints we need to make sure that we only add enabled and routed
@@ -29,7 +30,7 @@ import org.totalgrid.reef.japi.client.SubscriptionResult
  *
  * Keep in mind that most "live system" updates are going to be modifies of the enabled bit
  */
-class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction)
+class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction, exe: Executor)
     extends ServiceContext[CommEndpointConnection]
     with FepServiceContext
     with Logging {
@@ -38,7 +39,7 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
 
   def setSubscription(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) = {
     if (subscription.isDefined) throw new IllegalArgumentException("Subscription already set.")
-    subscription = Some(ServiceContext.attachToServiceContext(result, this))
+    subscription = Some(ServiceContext.attachToServiceContext(result, this, exe))
   }
 
   def cancel() = {
