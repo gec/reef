@@ -1,5 +1,3 @@
-package org.totalgrid.reef.broker.api
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,10 @@ package org.totalgrid.reef.broker.api
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-trait BrokerConnectionFactory {
-  def newBrokerConnection: BrokerConnection
+package org.totalgrid.reef.broker.newapi
+
+trait BrokerConnectionListener {
+
+  def onDisconnect(expected: Boolean): Unit
+
 }

@@ -72,8 +72,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
       }
     } catch {
       case ex => println("Reset failed: " + ex.toString)
-    }
-    finally {
+    } finally {
       exe.stop()
     }
   }

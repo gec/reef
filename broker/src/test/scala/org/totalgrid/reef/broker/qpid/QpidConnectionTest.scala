@@ -66,15 +66,15 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     val channel = broker.newChannel()
 
     channel.declareExchange("test")
-    channel.declareQueue("magic")
-    channel.bindQueue("magic", "test", "hi", false)
-    channel.bindQueue("magic", "test", "hi", false)
+    val queue = channel.declareQueue("*")
+    channel.bindQueue(queue, "test", "hi", false)
+    channel.bindQueue(queue, "test", "hi", false)
 
     import java.util.concurrent.atomic.AtomicInteger
     val value = new AtomicInteger(0)
     val sv = new SyncVar(value)
 
-    channel.listen("magic", new MessageConsumer() {
+    channel.listen(queue, new MessageConsumer() {
       def receive(bytes: Array[Byte], replyTo: Option[Destination]) {
         value.addAndGet(1)
         sv.update(value)
@@ -86,7 +86,7 @@ class QpidConnectionTest extends FunSuite with ShouldMatchers {
     // TODO: figure out why multiple bindings dont cause us to get duplicate messages
     sv.waitFor({ _.get == 1 }, 1000)
 
-    channel.unbindQueue("magic", "test", "hi")
+    channel.unbindQueue(queue, "test", "hi")
     value.set(0)
 
     channel.publish("test", "hi", "hi".getBytes, None)

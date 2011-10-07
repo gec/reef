@@ -81,8 +81,7 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Exe
         case ex: ReefServiceException =>
           logger.warn("Error trying to proxy command: " + commandMapping.getCommandName + " - " + ex.getMessage, ex)
           ProtoCommandStatus.HARDWARE_ERROR
-      }
-      finally {
+      } finally {
         service.deleteCommandLock(lock)
       }
     } catch {
