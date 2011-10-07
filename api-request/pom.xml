@@ -132,7 +132,8 @@
 										<artifactId>reef-api-enhancer</artifactId>
 										<version>0.4.0-SNAPSHOT</version>
 									</docletArtifact>
-									<destDir>../../generated-sources</destDir>
+									<reportOutputDirectory>.</reportOutputDirectory>
+									<destDir>target/generated-sources</destDir>
 									<useStandardDocletOptions>false</useStandardDocletOptions>
 								</configuration>
 							</execution>
@@ -162,7 +163,7 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>target/generated-sources</source>
+								<source>${project.build.directory}/generated-sources</source>
 							</sources>
 						</configuration>
 					</execution>
