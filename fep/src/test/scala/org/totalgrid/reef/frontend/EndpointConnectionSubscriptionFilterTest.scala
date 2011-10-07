@@ -34,7 +34,7 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
   test("Adds and modifies are populated") {
     val map = Mockito.mock(classOf[ClearableMap[CommEndpointConnection]])
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
-    val filter = new EndpointConnectionSubscriptionFilter(map, populator, new InstantExecutor)
+    val filter = new EndpointConnectionSubscriptionFilter(map, populator)
 
     val populated = getConnectionProto(true, Some("routing2"))
     val config = getConnectionProto(true, Some("routing"))
@@ -50,7 +50,7 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
   test("Ignores Disabled or unrouted endpoints") {
     val map = Mockito.mock(classOf[ClearableMap[CommEndpointConnection]])
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
-    val filter = new EndpointConnectionSubscriptionFilter(map, populator, new InstantExecutor)
+    val filter = new EndpointConnectionSubscriptionFilter(map, populator)
 
     def testAddOrModifyBecomesRemove(obj: CommEndpointConnection) {
       filter.add(obj)
@@ -73,7 +73,7 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
   test("Handles subscription and canceling") {
     val map = Mockito.mock(classOf[ClearableMap[CommEndpointConnection]])
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
-    val filter = new EndpointConnectionSubscriptionFilter(map, populator, new InstantExecutor)
+    val filter = new EndpointConnectionSubscriptionFilter(map, populator)
 
     val populated = getConnectionProto(true, Some("routing2"))
     val config = getConnectionProto(true, Some("routing"))
@@ -81,11 +81,11 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
 
     val result = new MockSubscriptionResult(config)
 
-    filter.setSubscription(result)
+    filter.setSubscription(result, new InstantExecutor)
     Mockito.verify(map).add(populated)
 
     intercept[IllegalArgumentException] {
-      filter.setSubscription(result)
+      filter.setSubscription(result, new InstantExecutor)
     }
 
     result.mockSub.canceled should equal(false)

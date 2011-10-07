@@ -41,11 +41,11 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
   val applicationUuid: ReefUUID = "0"
   val protocolList = List("mock")
 
-  def fixture(services: FrontEndProviderServices, autoStart: Boolean = true)(test: (FrontEndProviderServices, MockExecutor, MockFepServiceContext, FrontEndManager) => Unit) = {
+  def fixture(services: FrontEndProviderServices, autoStart: Boolean = true)(test: (FrontEndProviderServices, MockExecutor, MockSubscriptionHandler[CommEndpointConnection], FrontEndManager) => Unit) = {
 
     val exe = new MockExecutor
 
-    val mp = new MockFepServiceContext
+    val mp = new MockSubscriptionHandler[CommEndpointConnection]
     val appConfig = ApplicationConfig.newBuilder.setUuid(applicationUuid).build
     val fem = new FrontEndManager(services, exe, mp, appConfig, protocolList, 5000)
 

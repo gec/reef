@@ -23,6 +23,8 @@ import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
 import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.app.SubscriptionHandler
+import org.totalgrid.reef.executor.Executor
 
 object FrontEndTestHelpers {
 
@@ -37,12 +39,13 @@ object FrontEndTestHelpers {
     b.build
   }
 
-  class MockFepServiceContext extends FepServiceContext {
-    var sub = Option.empty[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]]
+  class MockSubscriptionHandler[A] extends SubscriptionHandler[A] with Cancelable {
+    var sub = Option.empty[SubscriptionResult[List[A], A]]
     var canceled = false
 
-    def setSubscription(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) = {
+    def setSubscription(result: SubscriptionResult[List[A], A], executor: Executor) = {
       sub = Some(result)
+      this
     }
     def cancel() = {
       canceled = true

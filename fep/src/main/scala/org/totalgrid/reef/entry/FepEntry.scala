@@ -97,7 +97,7 @@ class FepActivator extends BundleActivator with Logging {
 
     val frontEndConnections = new FrontEndConnections(protocols, services)
     val populator = new EndpointConnectionPopulatorAction(services)
-    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, exe)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator)
 
     // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events

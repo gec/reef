@@ -19,10 +19,8 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.app.{ ServiceContext, ClearableMap }
-import org.totalgrid.reef.util.{ Cancelable, Logging }
-import org.totalgrid.reef.japi.client.SubscriptionResult
-import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, ClearableMap }
 
 /**
  * When we have subscribed to handle a set of endpoints we need to make sure that we only add enabled and routed
@@ -30,23 +28,10 @@ import org.totalgrid.reef.executor.Executor
  *
  * Keep in mind that most "live system" updates are going to be modifies of the enabled bit
  */
-class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction, exe: Executor)
+class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction)
     extends ServiceContext[CommEndpointConnection]
-    with FepServiceContext
+    with SubscriptionHandlerBase[CommEndpointConnection]
     with Logging {
-
-  var subscription: Option[Cancelable] = None
-
-  def setSubscription(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) = {
-    if (subscription.isDefined) throw new IllegalArgumentException("Subscription already set.")
-    subscription = Some(ServiceContext.attachToServiceContext(result, this, exe))
-  }
-
-  def cancel() = {
-    subscription.foreach(_.cancel())
-    connections.clear
-    subscription = None
-  }
 
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
@@ -67,6 +52,8 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
   }
 
   def subscribed(list: List[CommEndpointConnection]) = list.foreach(add(_))
+
+  def clear() = connections.clear()
 
   /**
    * we will get messages regardless of whether the endpoint is usable, we need to check that it is

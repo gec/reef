@@ -58,6 +58,7 @@ trait ServiceContext[A] extends Observable {
   def remove(obj: A)
   def modify(obj: A)
   def subscribed(list: List[A])
+  def clear()
 
   def handleResponse(result: List[A]) = {
     subscribed(result)

@@ -22,8 +22,17 @@ import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.{ Timer, Logging }
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.app.SubscriptionHandler
 
-class FrontEndManager(client: FrontEndProviderServices, exe: Executor, connectionContext: FepServiceContext, appConfig: ApplicationConfig, protocolNames: List[String], retryms: Long) extends Lifecycle with Logging {
+class FrontEndManager(
+  client: FrontEndProviderServices,
+  exe: Executor,
+  connectionContext: SubscriptionHandler[CommEndpointConnection],
+  appConfig: ApplicationConfig,
+  protocolNames: List[String],
+  retryms: Long)
+    extends Lifecycle with Logging {
 
   private var delayedAnnounce = Option.empty[Timer]
 
@@ -45,7 +54,7 @@ class FrontEndManager(client: FrontEndProviderServices, exe: Executor, connectio
       val fep = client.registerApplicationAsFrontEnd(appConfig.getUuid, protocolNames).await()
       logger.info("Registered application as FEP with uid: " + fep.getUuid.getUuid)
       val result = client.subscribeToEndpointConnectionsForFrontEnd(fep).await()
-      connectionContext.setSubscription(result)
+      connectionContext.setSubscription(result, exe)
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Error getting endpoints to talk to: " + rse.toString, rse)
