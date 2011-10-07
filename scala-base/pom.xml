@@ -94,21 +94,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- logging implementation for test -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>0.9.27</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>0.9.27</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 </project>
