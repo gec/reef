@@ -87,9 +87,13 @@ class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServi
     }
   }
 
+  private def serializeMeas(meas: Measurement) = EventOperations.getEvent(Envelope.Event.MODIFIED, meas).toByteArray()
+  private val measExchange = EventOperations.getExchange(Descriptors.measurement)
+  private val measBroadcaster = factory.broadcast(factory.getChannel, serializeMeas)
+
   override def publishIndividualMeasurementAsEvent(meas: Measurement) {
-    // TODO: publish individual meas updates
-    EventOperations.getEvent(Envelope.Event.MODIFIED, meas)
+    // TODO: replace hacky measBroadcaster with client impl
+    measBroadcaster(meas, measExchange, meas.getName)
   }
 
   override def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long) = {
