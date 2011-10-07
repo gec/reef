@@ -17,7 +17,7 @@
 			<plugin>
 				<groupId>org.scala-tools</groupId>
 				<artifactId>maven-scala-plugin</artifactId>
-				<version>2.15.0</version>
+				<version>2.15.2</version>
 
 				<executions>
 					<execution>
@@ -47,7 +47,7 @@
 			<plugin>
 				<groupId>org.scalariform</groupId>
 				<artifactId>scalariform-maven-plugin</artifactId>
-				<version>0.0.9</version>
+				<version>0.1.0</version>
 				<executions>
 					<execution>
 						<goals>
