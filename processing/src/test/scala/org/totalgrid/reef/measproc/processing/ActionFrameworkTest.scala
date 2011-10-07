@@ -16,22 +16,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.measproc
+package org.totalgrid.reef.measproc.processing
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.measproc.processing._
 import scala.collection.mutable
-import org.totalgrid.reef.measproc.ProtoHelper._
-
-import org.totalgrid.reef.proto.Measurements._
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.measproc.ProtoHelper
 
 @RunWith(classOf[JUnitRunner])
 class ActionFrameworkTest extends Suite with ShouldMatchers {
   import Action._
+  import ProtoHelper._
 
   class TestRig {
     val evalCalls = mutable.Queue[Measurement]()

@@ -18,41 +18,28 @@
  */
 package org.totalgrid.reef.measproc
 
+import org.totalgrid.reef.app.{ KeyedMap, SubscriptionHandlerBase, ServiceContext }
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
-import org.totalgrid.reef.executor.{ Lifecycle, Executor }
-import org.totalgrid.reef.app.{ KeyedMap, ServiceHandler, ServiceContext }
+import org.totalgrid.reef.util.Cancelable
 
-abstract class ConnectionHandler(fun: ConnProto => MeasurementStreamProcessingNode)
-    extends ServiceContext[ConnProto] with Executor with Lifecycle {
+class ProcessingNodeMap(connector: MeasStreamConnector)
+    extends KeyedMap[ConnProto]
+    with ServiceContext[ConnProto]
+    with SubscriptionHandlerBase[ConnProto] {
 
-  val serviceHandler = new ServiceHandler(this)
-
-  var running = true
-
-  private val map = new ConnectionMap(fun)
-
-  def add(obj: ConnProto) = if (running) map.add(obj)
-  def remove(obj: ConnProto) = if (running) map.remove(obj)
-  def modify(obj: ConnProto) = if (running) map.modify(obj)
-  def subscribed(list: List[ConnProto]) = if (running) list.foreach(map.add(_))
-
-  def clear = map.clear
-}
-
-class ConnectionMap(fun: ConnProto => MeasurementStreamProcessingNode) extends KeyedMap[ConnProto] {
+  def subscribed(list: List[ConnProto]) = list.foreach(add(_))
 
   protected override def getKey(c: ConnProto) = c.getUid
 
-  private var map = Map.empty[String, MeasurementStreamProcessingNode]
+  private var map = Map.empty[String, Cancelable]
 
   override def addEntry(ep: ConnProto) = {
-    val entry = fun(ep)
+    val entry = connector.addStreamProcessor(ep)
     map += getKey(ep) -> entry
-    entry.start
   }
 
   override def removeEntry(ep: ConnProto) = {
-    map.get(getKey(ep)).get.stop
+    map.get(getKey(ep)).get.cancel
     map -= getKey(ep)
   }
 

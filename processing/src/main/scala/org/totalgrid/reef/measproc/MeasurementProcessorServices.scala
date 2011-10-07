@@ -29,25 +29,28 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.sapi.AddressableDestination
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
+import org.totalgrid.reef.sapi.{ EventOperations, AddressableDestination }
+import org.totalgrid.reef.japi.Envelope
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
-  def subscribeToEndpointConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
+  def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
 
-  def subscribeToTriggerSetsForEndpoint(conn: MeasurementProcessingConnection): Promise[SubscriptionResult[List[TriggerSet], TriggerSet]]
+  def subscribeToTriggerSetsForConnection(conn: MeasurementProcessingConnection): Promise[SubscriptionResult[List[TriggerSet], TriggerSet]]
 
-  def subscribeToOverridesForEndpoint(conn: MeasurementProcessingConnection): Promise[SubscriptionResult[List[MeasOverride], MeasOverride]]
+  def subscribeToOverridesForConnection(conn: MeasurementProcessingConnection): Promise[SubscriptionResult[List[MeasOverride], MeasOverride]]
 
   def publishIndividualMeasurementAsEvent(meas: Measurement)
 
-  def bindMeasurementProcessingNode(handler: MeasurementBatchProcessor, conn: MeasurementProcessingConnection): Cancelable
+  def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection): Cancelable
+
+  def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long): Promise[MeasurementProcessingConnection]
 }
 
 class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServiceImpl, factory: AMQPSyncFactory, exe: Executor)
     extends MeasurementProcessorServices with ReefServiceBaseClass with ClientSourceProxy {
 
-  override def subscribeToEndpointConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
+  override def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
     ops("Couldn't subscribe for endpoints assigned to: " + measProc.getInstanceName) { session =>
       useSubscription(session, Descriptors.measurementProcessingConnection().getKlass) { sub =>
         session.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measProc).build, sub).map { _.expectMany() }
@@ -55,7 +58,7 @@ class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServi
     }
   }
 
-  override def subscribeToTriggerSetsForEndpoint(conn: MeasurementProcessingConnection) = {
+  override def subscribeToTriggerSetsForConnection(conn: MeasurementProcessingConnection) = {
     ops("Couldn't subscribe for triggers associated with endpoint: " + conn.getLogicalNode.getName) { session =>
       useSubscription(session, Descriptors.triggerSet.getKlass) { sub =>
         val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
@@ -64,7 +67,7 @@ class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServi
     }
   }
 
-  override def subscribeToOverridesForEndpoint(conn: MeasurementProcessingConnection) = {
+  override def subscribeToOverridesForConnection(conn: MeasurementProcessingConnection) = {
     ops("Couldn't subscribe for measurement overrides associated with endpoint: " + conn.getLogicalNode.getName) { session =>
       useSubscription(session, Descriptors.measOverride.getKlass) { sub =>
         val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
@@ -73,7 +76,7 @@ class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServi
     }
   }
 
-  override def bindMeasurementProcessingNode(handler: MeasurementBatchProcessor, conn: MeasurementProcessingConnection) = {
+  override def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection) = {
     val destination = AddressableDestination(conn.getRouting.getServiceRoutingKey)
     val service = new AddressableMeasurementBatchService(handler)
 
@@ -86,5 +89,12 @@ class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServi
 
   override def publishIndividualMeasurementAsEvent(meas: Measurement) {
     // TODO: publish individual meas updates
+    EventOperations.getEvent(Envelope.Event.MODIFIED, meas)
+  }
+
+  override def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long) = {
+    ops("Failed updating measproc: " + conn.getMeasProc.getUuid + " readyTime: " + time) {
+      _.put(conn.toBuilder.setReadyTime(time).build).map { _.expectOne }
+    }
   }
 }

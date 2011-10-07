@@ -16,14 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.frontend
+package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.japi.client.SubscriptionResult
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.persistence.ObjectCache
+import org.totalgrid.reef.proto.Measurements.Measurement
 
-trait FepServiceContext {
-
-  def setSubscription(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection])
-
-  def cancel()
-}
+case class MeasProcObjectCaches(
+  measCache: ObjectCache[Measurement],
+  overCache: ObjectCache[Measurement],
+  stateCache: ObjectCache[Boolean])

@@ -18,37 +18,29 @@
  */
 package org.totalgrid.reef.measproc
 
-import scala.collection.immutable
+import org.totalgrid.reef.persistence.ObjectCache
+import scala.collection.mutable
 
-class CompoundNotifier {
-  class Handle(check: () => Unit) {
-    var isReady = false
-    def apply() = {
-      isReady = true
-      check()
-    }
+class MockObjectCache[A] extends ObjectCache[A] {
+
+  val delQueue = mutable.Queue[String]()
+  val putQueue = mutable.Queue[(String, A)]()
+
+  val map = mutable.Map[String, A]()
+
+  def update(name: String, obj: A) {
+    map.update(name, obj)
   }
 
-  protected var list = immutable.List.empty[Handle]
-  protected var fun: Option[() => Unit] = None
-  protected var finished = false
-
-  def notifier: () => Unit = {
-    val h = new Handle(check)
-    list ::= h
-    h.apply
+  def put(name: String, obj: A) {
+    putQueue.enqueue((name, obj))
+    map.update(name, obj)
   }
-
-  def observe(f: => Unit) = {
-    fun = Some(() => f)
-    check()
+  def get(name: String): Option[A] = {
+    map.get(name)
   }
-
-  protected def check() {
-    if (!finished && fun != None && list.forall(_.isReady)) {
-      finished = true
-      (fun.get)()
-    }
+  def delete(name: String) {
+    delQueue.enqueue(name)
+    map -= name
   }
-
 }

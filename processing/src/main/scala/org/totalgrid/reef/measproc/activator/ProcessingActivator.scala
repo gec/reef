@@ -1,5 +1,3 @@
-package org.totalgrid.reef.measproc.activator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,54 +16,84 @@ package org.totalgrid.reef.measproc.activator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.osgi.framework._
+package org.totalgrid.reef.measproc.activator
 
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.broker.BrokerProperties
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
-import org.totalgrid.reef.app.ApplicationEnroller
-import org.totalgrid.reef.measproc.FullProcessor
-import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, LifecycleWrapper }
+
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
+import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
+import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
+import org.totalgrid.reef.app._
+import org.totalgrid.reef.util.Cancelable
+import org.osgi.framework.{ BundleContext, BundleActivator }
+import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreFinder }
+import org.totalgrid.reef.executor._
+
+object ProcessingActivator {
+  def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
+    val appConfigConsumer = new AppEnrollerConsumer {
+      // Downside of using classes not functions, we can't partially evalute
+      def applicationRegistered(factory: AMQPSyncFactory, client: AllScadaServiceImpl, appConfig: ApplicationConfig) = {
+        val exe = new ReactActorExecutor {}
+
+        val services = new MeasurementProcessorServicesImpl(client, factory, exe)
+
+        val connector = new MeasStreamConnector(services, measStore, appConfig.getInstanceName)
+        val connectionHandler = new ProcessingNodeMap(connector)
+
+        val measProc = new FullProcessor(services, connectionHandler, appConfig, exe)
+
+        exe.start
+        measProc.start
+
+        new Cancelable {
+          def cancel() {
+            measProc.stop
+            exe.stop
+          }
+        }
+      }
+    }
+    val appEnroller = new ApplicationEnrollerEx(nodeSettings, "Processing-" + nodeSettings.getDefaultNodeName, List("Processing"), appConfigConsumer)
+    val userLogin = new UserLogin(userSettings, appEnroller)
+    userLogin
+  }
+}
 
 class ProcessingActivator extends BundleActivator {
 
-  var manager: Option[LifecycleManager] = None
+  private var manager = Option.empty[ConnectionManagerEx]
+  private var measExecutor = Option.empty[Lifecycle]
 
   def start(context: BundleContext) {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val mgr = new LifecycleManager
-    manager = Some(mgr)
-
-    val brokerInfo = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
-    val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
+    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(brokerInfo)
-    }
-    mgr.add(amqp)
+    val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
 
-    val measExecutor = new ReactActorExecutor {}
-    val measStore = MeasurementStoreFinder.getInstance(dbInfo, measExecutor, context)
-    mgr.add(measExecutor)
+    val measExec = new ReactActorExecutor {}
+    measExecutor = Some(measExec)
+    measExec.start
+    val measStore = MeasurementStoreFinder.getInstance(dbInfo, measExec, context)
 
-    val enroller = new ApplicationEnroller(amqp, userSettings, nodeSettings,
-      nodeSettings.getDefaultNodeName + "-meas_proc", List("Processing"),
-      new FullProcessor(_, measStore)) with ReactActorExecutor
-    mgr.add(enroller)
+    manager = Some(new ConnectionManagerEx(brokerOptions))
 
-    mgr.start()
+    manager.get.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measStore))
+
+    manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) {
-    manager.foreach(_.stop())
+  def stop(context: BundleContext) = {
+    manager.foreach { _.stop }
+    measExecutor.foreach { _.stop }
   }
 
 }

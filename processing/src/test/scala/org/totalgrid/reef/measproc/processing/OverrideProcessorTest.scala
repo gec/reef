@@ -16,28 +16,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.measproc
-
-import org.totalgrid.reef.measproc.processing._
-
-import scala.collection.mutable.Queue
-
-import org.totalgrid.reef.proto.{ Measurements, Processing }
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.measproc._
-import org.totalgrid.reef.messaging._
+package org.totalgrid.reef.measproc.processing
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.concurrent.MailBox
-import scala.actors._
 
-import ProtoHelper._
-import Processing._
-import Measurements._
+import scala.collection.mutable
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.measproc.{ ProtoHelper, MockObjectCache }
+import org.totalgrid.reef.proto.Processing.MeasOverride
+import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class OverrideProcessorTest extends Suite with ShouldMatchers {
@@ -45,7 +37,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
 
   class TestRig {
 
-    val measQueue = new Queue[Measurement]()
+    val measQueue = new mutable.Queue[Measurement]()
 
     val overCache = new MockObjectCache[Measurement]
     val measCache = new MockObjectCache[Measurement]
@@ -90,7 +82,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
       .setMeas(Measurement.newBuilder
         .setTime(85)
         .setName(name)
-        .setType(Measurements.Measurement.Type.DOUBLE)
+        .setType(Measurement.Type.DOUBLE)
         .setDoubleVal(value)
         .setQuality(Measurements.Quality.newBuilder.setDetailQual(Measurements.DetailQual.newBuilder))
         .setUnit(unit))
@@ -131,7 +123,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
   def checkReplaced(repl: Measurement, pub: Measurement): Unit = {
     sameExceptQualityAndTimeIsGreater(repl, pub)
     pub.getQuality.getDetailQual.getOldData should equal(false)
-    pub.getQuality.getSource should equal(Quality.Source.SUBSTITUTED)
+    pub.getQuality.getSource should equal(Measurements.Quality.Source.SUBSTITUTED)
   }
 
   def testNullOverride {

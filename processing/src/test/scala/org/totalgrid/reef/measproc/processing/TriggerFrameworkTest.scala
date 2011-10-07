@@ -16,45 +16,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.measproc
+package org.totalgrid.reef.measproc.processing
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.measproc.processing._
 import scala.collection.mutable
-import org.totalgrid.reef.measproc.ProtoHelper._
+import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.proto.Measurements._
-
-class MockObjectCache[A] extends ObjectCache[A] {
-
-  val delQueue = mutable.Queue[String]()
-  val putQueue = mutable.Queue[(String, A)]()
-
-  val map = mutable.Map[String, A]()
-
-  def update(name: String, obj: A) {
-    map.update(name, obj)
-  }
-
-  def put(name: String, obj: A) {
-    putQueue.enqueue((name, obj))
-    map.update(name, obj)
-  }
-  def get(name: String): Option[A] = {
-    map.get(name)
-  }
-  def delete(name: String) {
-    delQueue.enqueue(name)
-    map -= name
-  }
-}
+import org.totalgrid.reef.measproc.{ ProtoHelper, MockObjectCache }
 
 @RunWith(classOf[JUnitRunner])
 class TriggerFrameworkTest extends Suite with ShouldMatchers {
+
+  import ProtoHelper._
 
   class TestRig {
     val triggerCalls = mutable.Queue[Measurement]()
