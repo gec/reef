@@ -69,7 +69,7 @@ class ConnectionManagerEx(amqpSettings: BrokerConnectionInfo)
     cancelDelays()
     if (!expected) {
       logger.warn("Connection to broker " + amqpSettings + " lost.")
-      consumers.map { case (generator, cancelable) => doBrokerConnectionLost(generator) }
+      consumers.keys.foreach { doBrokerConnectionLost(_) }
       // try reconnecting
       afterStart()
     }
@@ -93,7 +93,7 @@ class ConnectionManagerEx(amqpSettings: BrokerConnectionInfo)
         }
         consumers += generator -> application
 
-        if (cancelable.isEmpty) {
+        if (application.isEmpty) {
           delays += generator -> exe.delay(5000) { doBrokerConnectionStarted(generator) }
         }
     }

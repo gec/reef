@@ -64,6 +64,8 @@ class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, ca
 
     val heartBeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg) with ReactActorExecutor
 
+    heartBeater.start()
+
     val userApp = applicationCreator.applicationRegistered(factory, client, appConfig)
 
     new Cancelable {

@@ -120,7 +120,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
       func
     } catch {
       case rse: ReefServiceException =>
-        logger.warn(msg + rse.getMessage, rse)
+        logger.warn(msg + rse.getMessage)
       // TODO: handle errors with protocols talking to services
     }
   }
