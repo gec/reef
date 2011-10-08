@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.client.Event
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
@@ -49,8 +49,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     val start = System.currentTimeMillis
 
     val deps = ServiceDependencies(new ServiceEventPublisherRegistry(amqp, ReefServicesList))
-    val headers = new RequestEnv()
-    headers.setUserName("user1")
+    val headers = BasicRequestHeaders.empty.setUserName("user1")
+
     val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps)
@@ -92,8 +92,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
       // wait for the queue name to get populated (actor srtup delay)
       eventQueueName.waitWhile("")
 
-      val env = new RequestEnv
-      env.setSubscribeQueue(eventQueueName.current)
+      val env = BasicRequestHeaders.empty.setSubscribeQueue(eventQueueName.current)
+
       val config = client.get(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env).await().expectOne()
       // do some basic checks to make sure we got the correct initial state
       config.getInstanceName should equal(appConfig.getInstanceName)

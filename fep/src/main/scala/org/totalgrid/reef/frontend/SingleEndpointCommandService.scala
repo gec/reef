@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.protocol.api.CommandHandler
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.promise.FixedPromise
 
 class SingleEndpointCommandService(handler: CommandHandler) extends AsyncServiceBase[Command] {
@@ -34,7 +34,7 @@ class SingleEndpointCommandService(handler: CommandHandler) extends AsyncService
 
   val descriptor = Descriptors.userCommandRequest
 
-  override def putAsync(req: Command, env: RequestEnv)(callback: Response[Command] => Unit): Unit = {
+  override def putAsync(req: Command, env: BasicRequestHeaders)(callback: Response[Command] => Unit): Unit = {
 
     val rspPublisher = new ResponsePublisher {
       def publish(rsp: CommandResponse) = {

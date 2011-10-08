@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.client.Event
 import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 
@@ -76,8 +76,7 @@ class PointServiceIntegrationTest extends EndpointRelatedTestBase {
       // wait for the queue name to get populated (actor startup delay)
       eventQueueName.waitWhile("")
 
-      val env = new RequestEnv
-      env.setSubscribeQueue(eventQueueName.current)
+      val env = BasicRequestHeaders.empty.setSubscribeQueue(eventQueueName.current)
       pointService.get(req, env).expectMany()
     }
 

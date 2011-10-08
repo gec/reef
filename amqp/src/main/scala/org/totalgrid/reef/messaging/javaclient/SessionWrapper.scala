@@ -19,7 +19,7 @@
 package org.totalgrid.reef.messaging.javaclient
 
 import org.totalgrid.reef.japi.client._
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.promise.{ Promise => ScalaPromise }
 import org.totalgrid.reef.sapi.client.{ ClientSession, Response => ScalaResponse }
 import org.totalgrid.reef.japi.TypeDescriptor
@@ -36,11 +36,8 @@ class SessionWrapper(val client: ClientSession) extends Session {
   final override def post[A](request: A): Promise[Response[A]] = client.post(request)
   final override def put[A](request: A): Promise[Response[A]] = client.put(request)
 
-  private implicit def convertSubscription[A](sub: Subscription[A]): RequestEnv = {
-    val headers = new RequestEnv
-    headers.setSubscribeQueue(sub.getId)
-    headers
-  }
+  private implicit def convertSubscription[A](sub: Subscription[A]): BasicRequestHeaders =
+    BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
 
   final override def get[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.get(request, hdr)
   final override def delete[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.delete(request, hdr)
@@ -59,7 +56,7 @@ class SessionWrapper(val client: ClientSession) extends Session {
     wrapped
   }
 
-  final override def getDefaultHeaders = client.getDefaultHeaders
+  final override def getDefaultHeaders = client.getHeaders
 
   final override def close() = client.close()
 }

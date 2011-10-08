@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.service.ServiceResponseCallback
 
 import org.scalatest.junit.JUnitRunner
@@ -192,8 +192,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     }
 
     def testRequest(status: Status, verb: Verb, authTokens: List[String]) = {
-      val env = new RequestEnv
-      env.setAuthTokens(authTokens)
+      val env = BasicRequestHeaders.empty.setAuthTokens(authTokens)
       val callback = new ServiceResponseCallback {
         var response: Option[ServiceResponse] = None
         def onResponse(rsp: ServiceResponse) = response = Some(rsp)

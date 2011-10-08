@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.{ ServiceList, RequestEnv, Destination, AnyNodeDestination }
+import org.totalgrid.reef.sapi.{ ServiceList, BasicRequestHeaders, Destination, AnyNodeDestination }
 import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.broker.CloseableChannel
@@ -58,7 +58,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
 
   final override def newSession(): ClientSession = {
     val client = new AmqpClientSession(factory, lookup, timeoutms)
-    authToken.foreach(client.getDefaultHeaders.setAuthToken)
+    authToken.foreach(token => client.modifyHeaders(_.setAuthToken(token)))
     client
   }
 

@@ -20,7 +20,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied }
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.models.ApplicationSchema
 
 import org.squeryl.PrimitiveTypeMode._
@@ -32,7 +32,7 @@ trait SqlAuthzService extends AuthService {
   private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) =
     Some(AuthDenied(msg, status))
 
-  def isAuthorized(componentId: String, actionId: String, headers: RequestEnv): Option[AuthDenied] = inTransaction {
+  def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders): Option[AuthDenied] = inTransaction {
 
     val authTokens = headers.authTokens
 

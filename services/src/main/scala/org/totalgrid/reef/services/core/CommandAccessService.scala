@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 import ServiceBehaviors._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 class CommandAccessService(protected val model: CommandAccessServiceModel)
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]

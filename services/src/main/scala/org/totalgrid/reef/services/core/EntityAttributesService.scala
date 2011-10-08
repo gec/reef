@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.japi.Envelope.Status
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
@@ -40,7 +40,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
 
   override val descriptor = Descriptors.entityAttributes
 
-  override def put(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+  override def put(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
@@ -67,7 +67,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     }
   }
 
-  override def delete(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+  override def delete(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
@@ -86,7 +86,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     }
   }
 
-  override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+  override def get(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 

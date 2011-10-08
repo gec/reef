@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.auth.AuthService
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
@@ -43,7 +43,7 @@ class RestAuthzWrapper[A](service: AsyncService[A], metrics: RestAuthzMetrics, a
 
   override val descriptor = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
+  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
     metrics.countHook(1)
     metrics.timerHook(checkAuth(req, env)) match {
       case Some(rsp) => callback.onResponse(rsp) //callback immediately with the failure
@@ -52,7 +52,7 @@ class RestAuthzWrapper[A](service: AsyncService[A], metrics: RestAuthzMetrics, a
   }
 
   /// we either return a failure response or None if it passed all of the auth checks 
-  private def checkAuth(req: Envelope.ServiceRequest, env: RequestEnv): Option[Envelope.ServiceResponse] = {
+  private def checkAuth(req: Envelope.ServiceRequest, env: BasicRequestHeaders): Option[Envelope.ServiceResponse] = {
     auth.isAuthorized(service.descriptor.id, req.getVerb.toString.toLowerCase, env) match {
       case Some(AuthDenied(reason, status)) =>
         val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)

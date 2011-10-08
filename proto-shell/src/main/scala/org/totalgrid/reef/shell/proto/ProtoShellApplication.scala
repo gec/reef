@@ -67,7 +67,7 @@ object ProtoShellApplication {
     }
 
     val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
-    client.getDefaultHeaders.setAuthToken(token)
+    client.modifyHeaders(_.setAuthToken(token))
 
     client
   }

@@ -131,7 +131,7 @@ public interface Session
      * Returns the Service headers to set or clear AuthTokens
      * @return A reference to the mutable ServiceHeaders object used by the client.
      */
-    ServiceHeaders getDefaultHeaders();
+    RequestHeaders getDefaultHeaders();
 
     /**
      * Close the session, releasing the underlying resource. The session is dead and can never be used again.

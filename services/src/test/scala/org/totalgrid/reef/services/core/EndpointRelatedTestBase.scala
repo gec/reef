@@ -127,8 +127,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val eventSink = new CountingEventSink
-    val headers = new RequestEnv
-    headers.setUserName("user")
+    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     val deps = ServiceDependencies(pubs, new SilentSummaryPoints, rtDb, eventSink)
     val contextSource = new MockRequestContextSource(deps, headers)
@@ -185,8 +184,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
 
       queueName.waitWhile("")
 
-      val env = new RequestEnv
-      env.setSubscribeQueue(queueName.current)
+      val env = BasicRequestHeaders.empty.setSubscribeQueue(queueName.current)
 
       val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env).expectMany()
 

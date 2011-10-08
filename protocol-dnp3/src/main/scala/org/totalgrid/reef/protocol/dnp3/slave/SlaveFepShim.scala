@@ -93,7 +93,7 @@ class SlaveFepShim extends Logging {
         def session = this
       }
       val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
-      client.getDefaultHeaders.setAuthToken(token)
+      client.modifyHeaders(_.setAuthToken(token))
 
       val slaveProtocol = new Dnp3SlaveProtocol(client, exe) with AddRemoveValidation
       protocol = Some(slaveProtocol)

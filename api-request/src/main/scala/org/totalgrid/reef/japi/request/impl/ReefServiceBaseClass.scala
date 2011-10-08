@@ -112,11 +112,12 @@ trait AuthorizedSingleSessionClientSource extends ClientSource {
   def authToken: String
 
   override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
+    val headers = session.getHeaders
     try {
-      session.getDefaultHeaders.setAuthToken(authToken)
+      session.setHeaders(headers.setAuthToken(authToken))
       block(session)
     } finally {
-      session.getDefaultHeaders.clear()
+      session.setHeaders(headers)
     }
   }
 }

@@ -24,10 +24,10 @@ import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
 
 trait AsyncRestAdapter extends RestOperations { self: DefaultHeaders =>
 
-  protected def asyncRequest[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: Destination = AnyNodeDestination)(callback: Response[A] => Unit)
+  protected def asyncRequest[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = getHeaders, dest: Destination = AnyNodeDestination)(callback: Response[A] => Unit)
 
   // Implement request in terms of an abstract asynchronous request
-  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination): Promise[Response[A]] = {
+  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders, dest: Destination): Promise[Response[A]] = {
     val promise = new SynchronizedPromise[Response[A]]
     this.asyncRequest(verb, payload, env, dest)(promise.onResponse(_))
     promise

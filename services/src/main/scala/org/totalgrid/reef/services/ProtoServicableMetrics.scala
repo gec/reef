@@ -21,7 +21,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.util._
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ RequestEnv, StatusCodes }
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, StatusCodes }
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
@@ -53,7 +53,7 @@ class ServiceMetrics[A](service: AsyncService[A], hooks: ServiceMetricHooks, slo
 
   override val descriptor = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
+  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
 
     def recordMetrics(metrics: ServiceVerbHooks)(time: Long, rsp: Envelope.ServiceResponse) {
       metrics.countHook(1)

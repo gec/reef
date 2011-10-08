@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.sapi.client
 
-import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.japi._
-import org.totalgrid.reef.japi.client.SubscriptionEvent
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.japi.client._
 
 /* ---- Case classes that make the service api easier to use ---- */
 
-case class Request[+A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: Destination = AnyNodeDestination)
+case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty, destination: Destination = AnyNodeDestination)
 
 object Response {
 

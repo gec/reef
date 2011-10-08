@@ -27,7 +27,7 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 @RunWith(classOf[JUnitRunner])
@@ -151,23 +151,19 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     }
 
     val query = ConfigFile.newBuilder.setName("*").build
-    val env = new RequestEnv()
 
-    env.setResultLimit(1000)
-    s.get(query, env).expectMany(50)
+    val env = BasicRequestHeaders.empty
 
-    env.setResultLimit(0)
-    s.get(query, env).expectMany(0)
+    s.get(query, env.setResultLimit(1000)).expectMany(50)
 
-    env.setResultLimit(1)
-    s.get(query, env).expectMany(1)
+    s.get(query, env.setResultLimit(0)).expectMany(0)
 
-    env.setResultLimit(45)
-    s.get(query, env).expectMany(45)
+    s.get(query, env.setResultLimit(1)).expectMany(1)
+
+    s.get(query, env.setResultLimit(45)).expectMany(45)
 
     intercept[BadRequestException] {
-      env.setResultLimit(-1)
-      s.get(query, env)
+      s.get(query, env.setResultLimit(-1))
     }
   }
 

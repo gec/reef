@@ -28,7 +28,7 @@ import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
@@ -123,7 +123,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
     val userId = if (!request.hasUserId) {
-      context.headers.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
+      context.getHeaders.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
     } else {
       request.getUserId
     }

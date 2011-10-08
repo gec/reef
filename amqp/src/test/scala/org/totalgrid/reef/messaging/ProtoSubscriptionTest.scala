@@ -25,14 +25,14 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.util.SyncVar
 import serviceprovider.ServiceSubscriptionHandler
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi._
+import client.{ Event, Subscription, Response }
 import org.totalgrid.reef.messaging.sync.SyncSubscriptionHandler
 import org.totalgrid.reef.sapi.service.SyncServiceBase
-import org.totalgrid.reef.sapi.client.{ Subscription, Response }
+import net.agileautomata.commons.testing.SynchronizedList
 
 @RunWith(classOf[JUnitRunner])
 class MockProtoSubscriptionTest extends ProtoSubscriptionTestBase {
@@ -68,7 +68,7 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
     // list of entries
     private var entries = List.empty[Envelope.RequestHeader]
 
-    private def handleSub(req: Envelope.RequestHeader, env: RequestEnv) =
+    private def handleSub(req: Envelope.RequestHeader, env: BasicRequestHeaders) =
       env.subQueue.foreach(subHandler.bind(_, req.getKey, req))
 
     private def publish(evt: Envelope.Event, changes: List[Envelope.RequestHeader]) =
@@ -76,7 +76,7 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
 
     val descriptor = TestDescriptors.requestHeader
 
-    override def get(req: Envelope.RequestHeader, env: RequestEnv) = {
+    override def get(req: Envelope.RequestHeader, env: BasicRequestHeaders) = {
       handleSub(req, env)
 
       val response = req.getKey match {
@@ -87,9 +87,9 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
       Response(Envelope.Status.OK, response)
     }
 
-    override def post(req: Envelope.RequestHeader, env: RequestEnv) = put(req, env)
+    override def post(req: Envelope.RequestHeader, env: BasicRequestHeaders) = put(req, env)
 
-    override def put(req: Envelope.RequestHeader, env: RequestEnv) = {
+    override def put(req: Envelope.RequestHeader, env: BasicRequestHeaders) = {
       handleSub(req, env)
 
       val status = entries.find(_.getKey == req.getKey) match {
@@ -105,7 +105,7 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
       Response(status, List(req))
     }
 
-    override def delete(req: Envelope.RequestHeader, env: RequestEnv) = {
+    override def delete(req: Envelope.RequestHeader, env: BasicRequestHeaders) = {
       handleSub(req, env)
       val _entries = entries.partition(_.getKey == req.getKey)
       entries = _entries._2
@@ -118,23 +118,27 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
   test("ProtoClient ISubscriptions") {
     setupTest { client =>
 
-      val updates = new SyncVar[List[(Envelope.Event, Envelope.RequestHeader)]](Nil)
-      val headerSubFunc = (evt: Envelope.Event, header: Envelope.RequestHeader) => updates.atomic(l => l ::: List((evt, header)))
-      val headerSub = client.addSubscription(TestDescriptors.requestHeader.getKlass)
+      def header(key: String, value: String) = Envelope.RequestHeader.newBuilder.setKey(key).setValue(value).build()
 
-      headerSub.start(headerSubFunc)
+      val updates = new SynchronizedList[Event[Envelope.RequestHeader]]
+
+      def prepend(event: Event[Envelope.RequestHeader]) = updates.append(event)
+      val sub = client.addSubscription(TestDescriptors.requestHeader.getKlass).start(prepend _)
 
       import Subscription.convertSubscriptionToRequestEnv
-      val integrity = client.get(Envelope.RequestHeader.newBuilder.setKey("*").setValue("*").build, headerSub).await().expectMany()
+      val integrity = client.get(header("*", "*"), sub).await().expectMany()
 
-      val created = client.put(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("abra").build).await().expectOne
-      val modified = client.put(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("cadabra").build).await().expectOne
-      val deleted = client.delete(Envelope.RequestHeader.newBuilder.setKey("magic").setValue("cadabra").build).await().expectOne
+      val created = client.put(header("magic", "abra")).await().expectOne
+      val modified = client.put(header("magic", "cadabra")).await().expectOne
+      val deleted = client.delete(header("magic", "cadabra")).await().expectOne
 
-      updates.waitFor(_.size == 3)
+      val expected = List(
+        Event(Envelope.Event.REMOVED, deleted),
+        Event(Envelope.Event.MODIFIED, modified),
+        Event(Envelope.Event.ADDED, created))
 
-      updates.current.map { _._1 } should equal(List(Envelope.Event.ADDED, Envelope.Event.MODIFIED, Envelope.Event.REMOVED))
-      updates.current.map { _._2 } should equal(List(created, modified, deleted))
+      updates shouldEqual (expected) within (5000)
     }
   }
+
 }

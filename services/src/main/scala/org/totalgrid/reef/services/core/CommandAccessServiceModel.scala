@@ -48,7 +48,7 @@ class CommandAccessServiceModel
 
   override def createFromProto(context: RequestContext, req: AccessProto): AccessModel = {
 
-    val user = context.headers.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    val user = context.getHeaders.userName getOrElse { throw new BadRequestException("User must be in header.") }
     req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }
 
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {

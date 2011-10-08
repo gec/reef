@@ -24,14 +24,14 @@ import org.totalgrid.reef.sapi.service.SyncServiceBase
 
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 class AddressableMeasurementBatchService(measProc: ProcessingNode) extends SyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def post(req: MeasurementBatch, env: RequestEnv) = put(req, env)
-  override def put(req: MeasurementBatch, env: RequestEnv) = {
+  override def post(req: MeasurementBatch, env: BasicRequestHeaders) = put(req, env)
+  override def put(req: MeasurementBatch, env: BasicRequestHeaders) = {
     measProc.process(req)
     Response(Envelope.Status.OK, req :: Nil)
   }

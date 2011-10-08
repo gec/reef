@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.client.{ Success, Failure, SingleSuccess }
 
 import org.totalgrid.reef.util.Logging
@@ -99,9 +99,7 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSet
       c.put(buildLogin(userSettings)).listen { rsp =>
         rsp match {
           case SingleSuccess(status, single) =>
-            val env = new RequestEnv
-            env.addAuthToken(single.getToken)
-            c.setDefaultHeaders(env)
+            c.modifyHeaders(_.addAuthToken(single.getToken))
             putAppConfig(c, single.getToken, configProto)
           case Success(_, list) =>
             logger.error("Expected 1 AuthToken, but received " + rsp.list)

@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied, NullAuthService }
 import org.totalgrid.reef.japi.UnauthorizedException
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.service.HasComponentId
 
 trait HasAuthActions {
@@ -33,7 +33,7 @@ trait HasAuthService {
 
 trait AuthTranslator extends HasAuthActions with HasComponentId with HasAuthService {
 
-  protected def authorize(context: RequestContext, componentId: String, action: String, headers: RequestEnv): Unit = {
+  protected def authorize(context: RequestContext, componentId: String, action: String, headers: BasicRequestHeaders): Unit = {
     authService.isAuthorized(componentId, action, headers) match {
       case Some(AuthDenied(reason, _)) => throw new UnauthorizedException(reason)
       case None =>
@@ -47,7 +47,7 @@ trait AuthorizesCreate extends CanAuthorizeCreate with AuthTranslator {
   protected val actionForCreate = "create"
 
   final override def authorizeCreate(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForCreate, context.headers)
+    authorize(context, componentId, actionForCreate, context.getHeaders)
     request
   }
 }
@@ -58,7 +58,7 @@ trait AuthorizesRead extends CanAuthorizeRead with AuthTranslator {
   protected val actionForRead = "read"
 
   final override def authorizeRead(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForRead, context.headers)
+    authorize(context, componentId, actionForRead, context.getHeaders)
     request
   }
 }
@@ -69,7 +69,7 @@ trait AuthorizesUpdate extends CanAuthorizeUpdate with AuthTranslator {
   protected val actionForUpdate = "update"
 
   final override def authorizeUpdate(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForUpdate, context.headers)
+    authorize(context, componentId, actionForUpdate, context.getHeaders)
     request
   }
 }
@@ -80,7 +80,7 @@ trait AuthorizesDelete extends CanAuthorizeDelete with AuthTranslator {
   protected val actionForDelete = "delete"
 
   final override def authorizeDelete(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForDelete, context.headers)
+    authorize(context, componentId, actionForDelete, context.getHeaders)
     request
   }
 }
