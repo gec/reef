@@ -46,20 +46,20 @@ class RestAuthzWrapper[A](service: AsyncService[A], metrics: RestAuthzMetrics, a
   def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
     metrics.countHook(1)
     metrics.timerHook(checkAuth(req, env)) match {
-      case Some(rsp) => callback.onResponse(rsp) //callback immediately with the failure
-      case None => service.respond(req, env, callback) // invoke normally
+      case Left(rsp) => callback.onResponse(rsp) //callback immediately with the failure
+      case Right(headers) => service.respond(req, headers, callback) // invoke normally
     }
   }
 
   /// we either return a failure response or None if it passed all of the auth checks 
-  private def checkAuth(req: Envelope.ServiceRequest, env: BasicRequestHeaders): Option[Envelope.ServiceResponse] = {
+  private def checkAuth(req: Envelope.ServiceRequest, env: BasicRequestHeaders): Either[Envelope.ServiceResponse, BasicRequestHeaders] = {
     auth.isAuthorized(service.descriptor.id, req.getVerb.toString.toLowerCase, env) match {
-      case Some(AuthDenied(reason, status)) =>
+      case Left(AuthDenied(reason, status)) =>
         val rsp = Envelope.ServiceResponse.newBuilder.setId(req.getId)
         rsp.setStatus(status)
         rsp.setErrorMessage(reason)
-        Some(rsp.build)
-      case None => None
+        Left(rsp.build)
+      case Right(headers) => Right(headers)
     }
   }
 }

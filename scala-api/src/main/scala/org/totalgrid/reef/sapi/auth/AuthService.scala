@@ -21,7 +21,7 @@ package org.totalgrid.reef.sapi.auth
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 
-case class AuthDenied(val reason: String, val status: Envelope.Status)
+case class AuthDenied(reason: String, status: Envelope.Status)
 
 /**
  *   Interface that acts as a Policy Decision Point (PDP) that can be invoked from multiple locations
@@ -33,7 +33,7 @@ trait AuthService {
    *     @param action - Component specific action. Could be anything like Rest Verb or CRUD verb
    *     @return None if authorization is given, Some(AuthDenied) otherwise
    */
-  def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders): Option[AuthDenied]
+  def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders): Either[AuthDenied, BasicRequestHeaders]
 }
 
 /**
@@ -41,6 +41,6 @@ trait AuthService {
  */
 object NullAuthService extends AuthService {
 
-  final override def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders) = None
+  final override def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders) = Right(headers)
 
 }

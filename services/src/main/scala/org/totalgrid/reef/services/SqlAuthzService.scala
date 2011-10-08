@@ -29,10 +29,9 @@ object SqlAuthzService extends SqlAuthzService
 
 trait SqlAuthzService extends AuthService {
 
-  private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) =
-    Some(AuthDenied(msg, status))
+  private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) = Left(AuthDenied(msg, status))
 
-  def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders): Option[AuthDenied] = inTransaction {
+  def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders): Either[AuthDenied, BasicRequestHeaders] = inTransaction {
 
     val authTokens = headers.authTokens
 
@@ -57,11 +56,10 @@ trait SqlAuthzService extends AuthService {
         } else {
 
           val denied = relevant.find(p => p.allow == false)
-          if (denied.isDefined)
+          if (denied.isDefined) {
             deny("Access to resource: " + componentId + ":" + actionId + " explictly denied by permission: " + denied.get)
-          else {
-            headers.setUserName(userName)
-            None
+          } else {
+            Right(headers.setUserName(userName))
           }
         }
       }
