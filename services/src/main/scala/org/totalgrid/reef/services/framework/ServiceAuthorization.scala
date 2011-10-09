@@ -58,7 +58,7 @@ trait AuthorizesRead extends CanAuthorizeRead with AuthTranslator {
   protected val actionForRead = "read"
 
   final override def authorizeRead(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForRead, context.getHeaders)
+    context.modifyHeaders(authorize(context, componentId, actionForRead, _))
     request
   }
 }
@@ -69,7 +69,7 @@ trait AuthorizesUpdate extends CanAuthorizeUpdate with AuthTranslator {
   protected val actionForUpdate = "update"
 
   final override def authorizeUpdate(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForUpdate, context.getHeaders)
+    context.modifyHeaders(authorize(context, componentId, actionForUpdate, _))
     request
   }
 }
@@ -80,7 +80,7 @@ trait AuthorizesDelete extends CanAuthorizeDelete with AuthTranslator {
   protected val actionForDelete = "delete"
 
   final override def authorizeDelete(context: RequestContext, request: ServiceType): ServiceType = {
-    authorize(context, componentId, actionForDelete, context.getHeaders)
+    context.modifyHeaders(authorize(context, componentId, actionForDelete, _))
     request
   }
 }
