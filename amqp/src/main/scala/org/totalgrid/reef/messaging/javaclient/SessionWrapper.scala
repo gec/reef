@@ -21,43 +21,46 @@ package org.totalgrid.reef.messaging.javaclient
 import org.totalgrid.reef.japi.client._
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.promise.{ Promise => ScalaPromise }
-import org.totalgrid.reef.sapi.client.{ ClientSession, Response => ScalaResponse }
 import org.totalgrid.reef.japi.TypeDescriptor
+import org.totalgrid.reef.sapi.client.{ ClientSession, Response => ScalaResponse }
 
 /**
  * wraps a ProtoClient with some java helpers to convert to and from java lists
  */
-class SessionWrapper(val client: ClientSession) extends Session {
+final class SessionWrapper(val client: ClientSession) extends Session {
 
   private implicit def convertPromise[A](promise: ScalaPromise[ScalaResponse[A]]): Promise[Response[A]] = new PromiseWrapper[A](promise)
 
-  final override def get[A](request: A): Promise[Response[A]] = client.get(request)
-  final override def delete[A](request: A): Promise[Response[A]] = client.delete(request)
-  final override def post[A](request: A): Promise[Response[A]] = client.post(request)
-  final override def put[A](request: A): Promise[Response[A]] = client.put(request)
+  override def get[A](request: A): Promise[Response[A]] = client.get(request)
+  override def delete[A](request: A): Promise[Response[A]] = client.delete(request)
+  override def post[A](request: A): Promise[Response[A]] = client.post(request)
+  override def put[A](request: A): Promise[Response[A]] = client.put(request)
 
   private implicit def convertSubscription[A](sub: Subscription[A]): BasicRequestHeaders =
     BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
 
-  final override def get[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.get(request, hdr)
-  final override def delete[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.delete(request, hdr)
-  final override def put[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.put(request, hdr)
-  final override def post[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.post(request, hdr)
+  override def get[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.get(request, hdr)
+  override def delete[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.delete(request, hdr)
+  override def put[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.put(request, hdr)
+  override def post[A](request: A, hdr: Subscription[A]): Promise[Response[A]] = client.post(request, hdr)
 
-  final override def addSubscription[A](pd: TypeDescriptor[A]): Subscription[A] = {
+  override def addSubscription[A](pd: TypeDescriptor[A]): Subscription[A] = {
     val sub = client.addSubscription[A](pd.getKlass)
     new SubscriptionWrapper(sub)
   }
 
-  final override def addSubscription[A](pd: TypeDescriptor[A], ea: SubscriptionEventAcceptor[A]): Subscription[A] = {
+  override def addSubscription[A](pd: TypeDescriptor[A], ea: SubscriptionEventAcceptor[A]): Subscription[A] = {
     val sub = client.addSubscription[A](pd.getKlass)
     val wrapped = new SubscriptionWrapper(sub)
     wrapped.start(ea)
     wrapped
   }
 
-  final override def getDefaultHeaders = client.getHeaders
+  override def getHeaders = client.getHeaders
 
-  final override def close() = client.close()
+  //TODO - the cast here is a smell
+  override def setHeaders(headers: RequestHeaders) = client.setHeaders(headers.asInstanceOf[BasicRequestHeaders])
+
+  override def close() = client.close()
 }
 
