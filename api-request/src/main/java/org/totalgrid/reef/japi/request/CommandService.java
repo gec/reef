@@ -81,8 +81,7 @@ import org.totalgrid.reef.proto.Model.ReefUUID;
  * <p>
  *   By default, Denial locks do not timeout like "execution locks".</p>
  *
- * <p>
- *   TODO command names to UUIDs</p>
+ *  TODO command names to UUID - reef-149
  */
 public interface CommandService
 {
@@ -173,7 +172,7 @@ public interface CommandService
      */
     List<CommandAccess> clearCommandLocks() throws ReefServiceException;
 
-    // TODO add checks for control vs. setpoint execution
+    // TODO add checks for control vs. setpoint execution - backlog-62
     /**
      * Execute a control on a field device.
      * One type of Command in SCADA systems are referred to as "Controls". These can be thought of as

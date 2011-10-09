@@ -82,10 +82,26 @@ class CommEndCfgServiceModel(
     EntityQueryManager.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
   }
 
+  private def findEntites(names: List[String], typ: String): List[Entity] = {
+    if (!names.isEmpty) {
+      val entities = EntityQueryManager.findEntities(names, typ :: Nil).toList
+      val missing = names.diff(entities.map(_.name))
+      if (!missing.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown " + typ + ": " + missing)
+      entities
+    } else {
+      Nil
+    }
+  }
+
   import org.totalgrid.reef.proto.OptionalProtos._
   def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, entity: Entity) {
-    pointModel.createAndSetOwningNode(context, request.ownerships.points.getOrElse(Nil), entity)
-    commandModel.createAndSetOwningNode(context, request.ownerships.commands.getOrElse(Nil), entity)
+
+    val pointEntities = findEntites(request.ownerships.points.getOrElse(Nil), "Point")
+    val commandEntities = findEntites(request.ownerships.commands.getOrElse(Nil), "Command")
+
+    val (relationship, exclusive) = if (sql.dataSource) ("source", true) else ("sink", false)
+    EntityQueryManager.addEdges(entity, pointEntities ::: commandEntities, relationship, exclusive)
+
     configModel.addOwningEntity(context, request.getConfigFilesList.toList, entity)
   }
 
@@ -102,7 +118,8 @@ class CommEndCfgServiceModel(
     new CommunicationEndpoint(
       entity.id,
       proto.getProtocol(),
-      linkedPort.map { _.entityId })
+      linkedPort.map { _.entityId },
+      proto.dataSource.getOrElse(true))
   }
 }
 

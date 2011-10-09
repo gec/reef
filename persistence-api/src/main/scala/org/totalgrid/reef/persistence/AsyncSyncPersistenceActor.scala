@@ -96,10 +96,9 @@ abstract class AsyncBufferReactor[ConnType](val exe: Executor, obs: ConnectionRe
 
   def doSync[A](fun: SyncOperation[A]): Option[A] = {
     gets(1)
-    //TODO : fix the timingHook so that it doesn't require a dynamic cast
     getLatency {
       exe.request(op(fun)).apply()
-    }.asInstanceOf[Option[A]]
+    }
   }
 
   protected def op(f: (ConnType) => Unit): Boolean = {

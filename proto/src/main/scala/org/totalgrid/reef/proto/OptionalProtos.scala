@@ -209,6 +209,7 @@ object OptionalProtos {
     val channel = new OptFEPCommChannel(optionally(_.hasChannel, _.getChannel))
     val ownerships = new OptFEPEndpointOwnership(optionally(_.hasOwnerships, _.getOwnerships))
     val configFiles = optionally(_.getConfigFilesList.toList.map { i => new OptModelConfigFile(Some(i)) })
+    val dataSource = optionally(_.hasDataSource, _.getDataSource)
   }
   implicit def proto2OptFEPCommEndpointConnection(a: org.totalgrid.reef.proto.FEP.CommEndpointConnection): OptFEPCommEndpointConnection = new OptFEPCommEndpointConnection(Some(a))
   class OptFEPCommEndpointConnection(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConnection]) extends OptionalStruct(real) {

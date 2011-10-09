@@ -65,8 +65,8 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
   final override protected def asyncRequest[A](
     verb: Envelope.Verb,
     payload: A,
-    env: RequestEnv = getDefaultHeaders,
-    dest: Routable = AnyNodeDestination)(callback: Response[A] => Unit) = {
+    headers: BasicRequestHeaders,
+    dest: Routable)(callback: Response[A] => Unit) = {
 
     val info = lookup.getServiceInfo(ClassLookup[A](payload))
 
@@ -78,7 +78,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
     state match {
       case Some(CurrentState(channel, queue)) =>
         val uuid = correlator.register(timeoutms.milliseconds)(onResponse)
-        val request = RestOperations.buildServiceRequest(verb, payload, info.descriptor, uuid, mergeHeaders(env))
+        val request = RestOperations.buildServiceRequest(verb, payload, info.descriptor, uuid, getHeaders.merge(headers))
         conn.publish(info.descriptor.id, dest.key, request.toByteArray, Some(Destination("amq.direct", queue)))
       case None =>
         throw new Exception("Connection is closed, service client cannot perform service call")

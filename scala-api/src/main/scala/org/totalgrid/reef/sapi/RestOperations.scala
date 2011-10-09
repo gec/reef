@@ -34,12 +34,9 @@ object RestOperations {
   def getEvent[A](typ: Event, value: A, desc: TypeDescriptor[A]): ServiceNotification =
     Envelope.ServiceNotification.newBuilder.setEvent(typ).setPayload(ByteString.copyFrom(desc.serialize(value))).build
 
-  def buildServiceRequest[A](verb: Envelope.Verb, request: A, desc: TypeDescriptor[A], uuid: String, env: RequestEnv): ServiceRequest = {
+  def buildServiceRequest[A](verb: Envelope.Verb, request: A, desc: TypeDescriptor[A], uuid: String, env: BasicRequestHeaders): ServiceRequest = {
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId(uuid).setPayload(ByteString.copyFrom(desc.serialize(request)))
-    env.asKeyValueList.foreach {
-      case (key, value) =>
-        builder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(key).setValue(value).build)
-    }
+    env.toEnvelopeRequestHeaders.foreach(builder.addHeaders)
     builder.build()
   }
 

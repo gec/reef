@@ -55,7 +55,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   // This is a functionally defined service that just echos the payload back 3x with an OK status
-  def x3Service(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
+  def x3Service(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)
@@ -121,7 +121,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
+  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)

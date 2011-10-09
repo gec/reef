@@ -27,7 +27,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.proto.Model.{ PointType, Point, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
@@ -93,8 +93,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
 
     val s = new OverrideConfigService(new OverrideConfigServiceModel)
 
-    val headers = new RequestEnv
-    headers.setUserName("user")
+    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     // first NIS the points
     s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build, headers).expectOne

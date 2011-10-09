@@ -37,7 +37,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
@@ -56,11 +56,13 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   val commandService = new CommandService(modelFac.cmds)
   val portService = new FrontEndPortService(modelFac.fepPort)
 
-  val headers = new RequestEnv
-  headers.setUserName("user")
+  val headers = BasicRequestHeaders.empty.setUserName("user")
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
     CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
+  }
+  def getSinkEndpoint(name: String = "device", protocol: String = "benchmark") = {
+    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name).setDataSource(false)
   }
   def getIPPort(name: String = "device") = {
     CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork("any").setAddress("localhost").setPort(1200))
@@ -261,5 +263,18 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     commandService.get(getCommand("*").build).expectOne().getUuid should equal(commandUUID)
 
     configFileService.get(getConfigFile(Some("*")).build).expectOne().getUuid should equal(configFileUUID)
+  }
+
+  test("Add Sink Endpoint") {
+
+    pointService.put(getPoint().build).expectOne()
+    commandService.put(getCommand().build).expectOne()
+
+    val endpoint = getSinkEndpoint().setOwnerships(getOwnership())
+
+    val returned = endpointService.put(endpoint.build).expectOne()
+
+    returned.getOwnerships.getPointsCount should equal(1)
+    returned.getOwnerships.getCommandsCount should equal(1)
   }
 }

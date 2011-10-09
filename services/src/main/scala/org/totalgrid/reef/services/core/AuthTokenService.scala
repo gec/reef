@@ -176,7 +176,7 @@ class AuthTokenServiceModel
 
       val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
       // set the user name for systemEvent publishing
-      context.headers.setUserName(agentName)
+      context.modifyHeaders(_.setUserName(agentName))
 
       // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
       val agentRecord: Option[Agent] = AgentConversions.findRecord(context, authToken.getAgent)
@@ -253,7 +253,7 @@ class AuthTokenServiceModel
     entry.expirationTime = -1
     table.update(entry)
 
-    context.headers.setUserName(entry.agent.value.entityName)
+    context.modifyHeaders(_.setUserName(entry.agent.value.entityName))
     postSystemEvent(context, EventType.System.UserLogout)
 
     onUpdated(context, entry)

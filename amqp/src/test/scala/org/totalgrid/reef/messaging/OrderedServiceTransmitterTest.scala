@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.sapi.{ Routable, RequestEnv }
+import org.totalgrid.reef.sapi.{ Routable, BasicRequestHeaders }
 import org.totalgrid.reef.japi.{ Envelope, ServiceIOException }
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
@@ -55,7 +55,7 @@ class OrderedServiceTransmitterTest extends FunSuite with ShouldMatchers {
 
     def addSubscription[A](klass: Class[_]): Subscription[A] = throw new ServiceIOException("Unimplemented")
 
-    final override def request[A](verb: Verb, payload: A, env: RequestEnv, destination: Routable): Promise[Response[A]] = queue.synchronized {
+    final override def request[A](verb: Verb, payload: A, env: BasicRequestHeaders, destination: Routable): Promise[Response[A]] = queue.synchronized {
       numRequests += 1
       val rsp = if (queue.size > 0) Response(queue.dequeue(), payload) else Failure()
       val promise = new SynchronizedPromise[Response[A]]

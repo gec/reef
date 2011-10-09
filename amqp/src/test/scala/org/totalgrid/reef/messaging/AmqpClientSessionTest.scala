@@ -52,7 +52,7 @@ class ServiceNotificationServiceX3 extends SyncServiceBase[Envelope.ServiceNotif
 
   val descriptor = TestDescriptors.serviceNotification
 
-  override def get(foo: Envelope.ServiceNotification, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo, foo))
+  override def get(foo: Envelope.ServiceNotification, env: BasicRequestHeaders) = Response(Envelope.Status.OK, List(foo, foo, foo))
 
 }
 
@@ -62,7 +62,7 @@ class HeadersX2 extends SyncServiceBase[Envelope.RequestHeader] {
 
   def deserialize(bytes: Array[Byte]) = Envelope.RequestHeader.parseFrom(bytes)
 
-  override def get(foo: Envelope.RequestHeader, env: RequestEnv) = Response(Envelope.Status.OK, List(foo, foo))
+  override def get(foo: Envelope.RequestHeader, env: BasicRequestHeaders) = Response(Envelope.Status.OK, List(foo, foo))
 
 }
 
@@ -127,7 +127,7 @@ class AmqpClientSessionTest extends AmqpClientSessionTestBase {
   test("Client fails quickly when closed") {
     setupTest(false) { (client, amqp) =>
 
-      def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
+      def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
         // kill the client rather than returning any data
         client.close
       }

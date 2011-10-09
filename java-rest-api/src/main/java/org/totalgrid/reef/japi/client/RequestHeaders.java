@@ -19,30 +19,35 @@
 package org.totalgrid.reef.japi.client;
 
 /**
- * Interface that defines what operations can be done to service header
+ * Immutable interface that defines what operations can be done to service headers
  */
-public interface ServiceHeaders
+public interface RequestHeaders
 {
 
     /**
-     * Sets the AuthToken field in the header
+     * Sets the auth token
      * @param token A string representing the auth token
+     * @return A new RequestHeaders with the auth token set
      */
-    void setAuthToken( String token );
+    RequestHeaders setAuthToken( String token );
 
     /**
-     * Clears the AuthToken field in the header
+     * Clears the auth token
+     * @return A new RequestHeaders with the auth token cleared
      */
-    void clearAuthToken();
+    RequestHeaders clearAuthToken();
 
     /**
      * overrides the system default for maximum # of results to return at a time
      * @param resultLimit must be a positive integer
+     * @reutrn a new RequestHeaders with the result limit set
      */
-    void setResultLimit( int resultLimit );
+    RequestHeaders setResultLimit( int resultLimit );
 
     /**
-     * unset the result limit to return to using the system default
+     * Clears the result limit
+     * @return A new RequestHeader with the result limit set to the system default
      */
-    void clearResultLimit();
+    RequestHeaders clearResultLimit();
+
 }

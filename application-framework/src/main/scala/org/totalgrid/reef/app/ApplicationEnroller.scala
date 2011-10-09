@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.client.{ Success, Failure, SingleSuccess }
 
 import org.totalgrid.reef.util.Logging
@@ -75,13 +75,14 @@ import ApplicationEnroller._
  * handles the creation of the ApplicationConfig registration proto and then constructing the major components that
  * depend on the result of the registration (for output channels etc.).
  *
- * This object also handles the lifecycle of the
+ * This object also handles the lifecycle of the ???
  *
  * @param amqp bus interface
  * @param processType should be either FEP or Processing
  * @param setupFun the construction function for the class using the components, must be StartStoppable
  */
-abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSettings, nodeSettings: NodeSettings, instanceName: String, capabilites: List[String], setupFun: CoreApplicationComponents => Lifecycle) extends Executor with Lifecycle with Logging {
+abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSettings, nodeSettings: NodeSettings, instanceName: String,
+    capabilites: List[String], setupFun: CoreApplicationComponents => Lifecycle) extends Executor with Lifecycle with Logging {
 
   private var container: Option[Lifecycle] = None
 
@@ -90,20 +91,21 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSet
   private var client: Option[AmqpClientSession] = None
 
   private def enroll() {
-    freshClient
+    freshClient()
+    val configProto: ApplicationConfig = buildConfig(nodeSettings, instanceName, capabilites)
+    logger.info("enrolling application: " + configProto)
+
     client.foreach { c =>
       c.put(buildLogin(userSettings)).listen { rsp =>
         rsp match {
           case SingleSuccess(status, single) =>
-            val env = new RequestEnv
-            env.addAuthToken(single.getToken)
-            c.setDefaultHeaders(env)
-            putAppConfig(c, single.getToken, buildConfig(nodeSettings, instanceName, capabilites))
+            c.modifyHeaders(_.addAuthToken(single.getToken))
+            putAppConfig(c, single.getToken, configProto)
           case Success(_, list) =>
             logger.error("Expected 1 AuthToken, but received " + rsp.list)
             reenroll()
           case x: Failure =>
-            logger.error("Error getting auth token. " + x)
+            logger.error("Unable to enroll application, error getting auth token, unable to login user: " + userSettings.getUserName + ". config: " + configProto + ".  error: " + x)
             reenroll()
         }
       }

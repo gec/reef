@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.services
 
-import org.scalatest.matchers.ShouldMatchers
-
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
 
@@ -28,9 +26,9 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client.Event
 
-object ServiceResponseTestingHelpers extends ShouldMatchers {
+object ServiceResponseTestingHelpers {
 
-  def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], RequestEnv) = {
+  def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], BasicRequestHeaders) = {
 
     val updates = new BlockingQueue[A]
     val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt.value) })
@@ -38,7 +36,7 @@ object ServiceResponseTestingHelpers extends ShouldMatchers {
     (updates, env)
   }
 
-  def getEventQueueWithCode[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[Event[A]], RequestEnv) = {
+  def getEventQueueWithCode[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
     val updates = new BlockingQueue[Event[A]]
 
     val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt) })
@@ -54,9 +52,7 @@ object ServiceResponseTestingHelpers extends ShouldMatchers {
     // wait for the queue name to get populated (actor startup delay)
     eventQueueName.waitWhile("")
 
-    val env = new RequestEnv
-    env.setSubscribeQueue(eventQueueName.current)
+    BasicRequestHeaders.empty.setSubscribeQueue(eventQueueName.current)
 
-    env
   }
 }

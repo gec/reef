@@ -23,6 +23,7 @@ import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
+import org.totalgrid.reef.protocol.dnp3.slave.SlaveFepShim
 
 class Activator extends BundleActivator {
 
@@ -30,13 +31,16 @@ class Activator extends BundleActivator {
   System.loadLibrary("dnp3java")
   System.setProperty("reef.protocol.dnp3.nostaticload", "")
   val protocol = new Dnp3MasterProtocol with AddRemoveValidation
+  val slaveShim = new SlaveFepShim
 
   override def start(context: BundleContext) {
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+    slaveShim.start(context)
   }
 
   override def stop(context: BundleContext) {
     protocol.Shutdown()
+    slaveShim.stop(context)
   }
 
 }

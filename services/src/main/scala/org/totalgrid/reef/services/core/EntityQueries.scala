@@ -555,6 +555,24 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     edges.delete(edge.id)
   }
 
+  def addEdges(parent: Entity, children: List[Entity], relation: String, exclusive: Boolean) {
+    val childIds = children.map { _.id }
+    if (exclusive) {
+      val oldEdges = edges.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and (e.parentId <> parent.id)).toList
+      deleteEdges(oldEdges)
+    }
+    val existingEdges = edges.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and e.parentId === parent.id).toList
+    val childrenNeedingEdges = children.filterNot { child => existingEdges.find(_.childId == child.id).isDefined }
+    childrenNeedingEdges.foreach { child => addEdge(parent, child, relation) }
+  }
+
+  def deleteEdges(edgeList: List[Edge]) = {
+    val edgeIds = edgeList.map { _.id }
+    val derivedEdgeIds = deriveds.where(t => t.parentEdgeId in edgeIds).toList.map { _.id }
+    edges.deleteWhere(e => (e.id in edgeIds) or (e.id in derivedEdgeIds))
+    deriveds.deleteWhere(t => t.parentEdgeId in edgeIds)
+  }
+
   private def addDerivedEdge(parent: Entity, child: Entity, relation: String, depth: Int, sourceEdge: Edge) = {
     assert(depth > 1)
     val derivedEdge = edges.insert(new Edge(parent.id, child.id, relation, depth))
@@ -623,7 +641,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      // TODO: get entitiy queries to use and respect requestContext
+      // TODO: get entitiy queries to use and respect requestContext - backlog-70
       EntitySearches.findRecord(new HeadersRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))

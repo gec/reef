@@ -53,7 +53,7 @@ class MeasurementOverrideTest
     client.addExplanation("Override point", "Override the value to 100. Notice the uid is the same as for the NIS.")
     val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build)
 
-    // TODO: add uid to measurement override reef_techdebt-5
+    // TODO: add uid to measurement override - backlog-63
     //over.getUid should equal(nis.getUid)
 
     client.addExplanation("Read Overriden Value", "Check that value is marked appropriately.")

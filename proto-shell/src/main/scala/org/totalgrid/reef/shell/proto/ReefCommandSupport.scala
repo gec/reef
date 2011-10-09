@@ -68,7 +68,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
   protected def login(user: String, auth: String) = {
     this.set("user", user)
     this.set("authToken", auth)
-    reefSession.getDefaultHeaders.setAuthToken(auth)
+    reefSession.modifyHeaders(_.setAuthToken(auth))
   }
 
   protected def logout() = {

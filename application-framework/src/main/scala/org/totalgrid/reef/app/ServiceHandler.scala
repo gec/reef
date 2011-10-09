@@ -23,7 +23,7 @@ import org.totalgrid.reef.util.{ Timer, Logging }
 import org.totalgrid.reef.messaging.Connection
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.sapi.client._
 
@@ -49,8 +49,8 @@ class ServiceHandler(executor: Executor) extends Logging {
         executor.delay(retryMS)(subscribe(client, queue, searchObj, retryMS, subHandler)) //defined recursively
     }
 
-    val env = new RequestEnv
-    env.setSubscribeQueue(queue)
+    val env = BasicRequestHeaders.empty.setSubscribeQueue(queue)
+
     client.get(searchObj, env).listen(handleResponse)
   }
 

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.app.{ CoreApplicationComponents, ApplicationEnroller }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 import org.totalgrid.reef.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.messaging.AMQPProtoFactory
@@ -38,8 +38,8 @@ object ServiceBootstrap {
   def bootstrapComponents(amqp: AMQPProtoFactory, systemUser: UserSettings, appSettings: NodeSettings): CoreApplicationComponents = {
     val pubs = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
     val deps = ServiceDependencies(pubs)
-    val headers = new RequestEnv
-    headers.setUserName(systemUser.getUserName)
+    val headers = BasicRequestHeaders.empty.setUserName(systemUser.getUserName)
+
     val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(deps), headers)
     val modelFac = new core.ModelFactories(deps, contextSource)
     val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)

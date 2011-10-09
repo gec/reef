@@ -58,7 +58,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
 
   final override def newSession(): ClientSession = {
     val client = new AmqpClientSession(factory, lookup, timeoutms)
-    authToken.foreach(client.getDefaultHeaders.setAuthToken)
+    authToken.foreach(t => client.modifyHeaders(_.setAuthToken(t)))
     client
   }
 

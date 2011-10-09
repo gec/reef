@@ -19,17 +19,17 @@
 package org.totalgrid.reef.sapi.service
 
 import org.totalgrid.reef.japi.{ Envelope, TypeDescriptor }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 object AsyncService {
-  type ServiceFunction = (Envelope.ServiceRequest, RequestEnv, ServiceResponseCallback) => Unit
+  type ServiceFunction = (Envelope.ServiceRequest, BasicRequestHeaders, ServiceResponseCallback) => Unit
 }
 
 /**
  * Defines how to complete a service call with a ServiceResponse
  */
 trait AsyncService[A] extends ServiceDescriptor[A] {
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback): Unit
+  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback): Unit
 }
 
 /**
@@ -40,7 +40,7 @@ class NoOpService extends AsyncService[Any] {
   import Envelope._
 
   /// noOpService that returns OK
-  def respond(request: ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) =
+  def respond(request: ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) =
     callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
 
   override val descriptor = new TypeDescriptor[Any] {

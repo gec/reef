@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.sapi.service
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.japi.{ Envelope, ReefServiceException }
 import org.totalgrid.reef.sapi.client.Response
 
@@ -32,17 +32,17 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
 
   /* overloaded helpers */
 
-  def getAsync(req: A)(callback: Response[A] => Unit): Unit = getAsync(req, new RequestEnv)(callback)
+  def getAsync(req: A)(callback: Response[A] => Unit): Unit = getAsync(req, BasicRequestHeaders.empty)(callback)
 
-  def putAsync(req: A)(callback: Response[A] => Unit): Unit = putAsync(req, new RequestEnv)(callback)
+  def putAsync(req: A)(callback: Response[A] => Unit): Unit = putAsync(req, BasicRequestHeaders.empty)(callback)
 
-  def deleteAsync(req: A)(callback: Response[A] => Unit): Unit = deleteAsync(req, new RequestEnv)(callback)
+  def deleteAsync(req: A)(callback: Response[A] => Unit): Unit = deleteAsync(req, BasicRequestHeaders.empty)(callback)
 
-  def postAsync(req: A)(callback: Response[A] => Unit): Unit = postAsync(req, new RequestEnv)(callback)
+  def postAsync(req: A)(callback: Response[A] => Unit): Unit = postAsync(req, BasicRequestHeaders.empty)(callback)
 
   /* Implement AsyncService */
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
+  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
     try {
       handleRequest(req, env, callback)
     } catch {
@@ -56,7 +56,7 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
     }
   }
 
-  private def handleRequest(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
+  private def handleRequest(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
 
     def onResponse(response: Response[A]) = callback.onResponse(getResponse(request.getId, response))
 

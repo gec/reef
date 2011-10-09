@@ -40,7 +40,7 @@ object ConnectionReactor {
 
 import ConnectionReactor._
 
-/// Implements connection/reconnection behavior on a 
+// Implements connection/reconnection behavior on a
 trait ConnectionReactor[ConnType] extends Logging {
 
   val exe: Executor

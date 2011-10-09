@@ -104,7 +104,7 @@ public class ReefConnectionTestBase
         String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
         {
-            client.getDefaultHeaders().setAuthToken( authToken );
+            client.setHeaders( client.getHeaders().setAuthToken( authToken ) );
             helpers = new AllScadaServicePooledWrapper( pool, authToken );
         }
         else

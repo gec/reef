@@ -25,7 +25,6 @@ import org.osgi.framework.{ ServiceReference, BundleContext }
 
 object MeasurementStoreFinder extends Logging {
 
-  import org.totalgrid.reef.executor.{ Lifecycle, ReactActorExecutor }
   import org.totalgrid.reef.util.BuildEnv.ConnInfo
   import org.totalgrid.reef.persistence.squeryl._
   /**
@@ -33,7 +32,6 @@ object MeasurementStoreFinder extends Logging {
    * @param lifecyleSink if the store generates any Lifecycle objects throw them here TODO: fix with with DI?
    * @return measurement store
    */
-
   def getInstance(config: ConnInfo, executor: Executor, context: BundleContext): MeasurementStore = {
     config match {
       case di: DbInfo =>
@@ -47,31 +45,6 @@ object MeasurementStoreFinder extends Logging {
           case None => throw new Exception("SQL Measurement Store not found")
         }
       case _ => throw new Exception("Unknown measurementStore Implementation: " + config)
-    }
-  }
-
-  def getInstance(config: ConnInfo, lifecyleSink: Lifecycle => Unit): MeasurementStore = {
-    config match {
-      case di: DbInfo =>
-        null
-      /*val actor = new ReactActorExecutor {}
-        val connection = new SimpleDbConnection(di, actor)(x => logger.info("connected to db: " + x))
-        lifecyleSink(actor)
-        new SqlMeasurementStore(connection)*/
-      case _ => throw new Exception("Unknown measurementStore Implementation: " + config)
-    }
-  }
-
-  /**
-   * loads the default measurement store configuration information
-   */
-  def getConfig(): ConnInfo = {
-    val measurementStore = Option(System.getProperty("measurement_store")) getOrElse {
-      throw new Exception("Measurement store not specified")
-    }
-    measurementStore match {
-      case "sql" => DbInfo.loadInfo
-      case _ => throw new Exception("Unknown measurementStore Implementation: " + measurementStore)
     }
   }
 }

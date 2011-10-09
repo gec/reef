@@ -81,7 +81,7 @@ class AlarmQueryService
   }
 
   override def subscribe(context: RequestContext, req: ServiceType) = {
-    context.headers.subQueue.foreach { subQueue =>
+    context.getHeaders.subQueue.foreach { subQueue =>
       val keys = getSubscribeKeys(req)
       // have to pass an alarm object so the binding is done to the correct queue
       keys.foreach(context.subHandler.bind(subQueue, _, Alarm.newBuilder.build))

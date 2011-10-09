@@ -49,8 +49,6 @@ case class Point(
 
   val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
 
-  val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
-
   /**
    * updated when the abnormal state is changed so we can "tunnel" this update through
    * to the service event.
@@ -93,8 +91,6 @@ case class Command(
   def this() = this(new UUID(0, 0), "", -1, false, Some(0), Some(0))
 
   val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
-
-  val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
 
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
@@ -141,10 +137,11 @@ case class ConfigFile(
 case class CommunicationEndpoint(
     _entityId: UUID,
     val protocol: String,
-    var frontEndPortId: Option[UUID]) extends EntityBasedModel(_entityId) {
+    var frontEndPortId: Option[UUID],
+    val dataSource: Boolean) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", Some(new UUID(0, 0)))
-  def this(entityId: UUID, protocol: String) = this(entityId, protocol, Some(new UUID(0, 0)))
+  def this() = this(new UUID(0, 0), "", Some(new UUID(0, 0)), false)
+  def this(entityId: UUID, protocol: String, dataSource: Boolean) = this(entityId, protocol, Some(new UUID(0, 0)), dataSource)
 
   val port = LazyVar(mayHaveOneByEntityUuid(ApplicationSchema.frontEndPorts, frontEndPortId))
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
@@ -154,8 +151,10 @@ case class CommunicationEndpoint(
     .asType(ApplicationSchema.configFiles, EntityQueryManager.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList,
       Some("ConfigurationFile")))
 
+  def relationship = if (dataSource) "source" else "sink"
+
   val points = LazyVar(
-    Entity.asType(ApplicationSchema.points, EntityQueryManager.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))
+    Entity.asType(ApplicationSchema.points, EntityQueryManager.getChildrenOfType(entity.value.id, relationship, "Point").toList, Some("Point")))
   val commands = LazyVar(
-    Entity.asType(ApplicationSchema.commands, EntityQueryManager.getChildrenOfType(entity.value.id, "source", "Command").toList, Some("Command")))
+    Entity.asType(ApplicationSchema.commands, EntityQueryManager.getChildrenOfType(entity.value.id, relationship, "Command").toList, Some("Command")))
 }

@@ -41,13 +41,12 @@ class AmqpClientSession(
   final override def isOpen = correlator.isOpen
   override def close() = correlator.close()
 
-  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Routable)(callback: Response[A] => Unit) {
+  final override def asyncRequest[A](verb: Envelope.Verb, request: A, headers: BasicRequestHeaders, dest: Routable)(callback: Response[A] => Unit) {
 
     val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
     val requestBuilder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))
 
-    val sendEnv: RequestEnv = mergeHeaders(env)
-    sendEnv.asKeyValueList.foreach(kv => requestBuilder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
+    getHeaders.merge(headers).toEnvelopeRequestHeaders.foreach(requestBuilder.addHeaders)
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {
       val response: Option[Response[A]] = resp match {

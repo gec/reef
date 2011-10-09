@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.sapi.client
 
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.japi.client.SubscriptionEvent
 import org.totalgrid.reef.japi._
+import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.japi.client._
 
 /* ---- Case classes that make the service api easier to use ---- */
 
-case class Request[+A](verb: Envelope.Verb, payload: A, env: RequestEnv = new RequestEnv, destination: Routable = AnyNodeDestination)
+case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty, destination: Routable = AnyNodeDestination)
 
 object Response {
 
@@ -52,11 +52,6 @@ trait Response[+A] extends Expectations[A] {
   val list: List[A]
   val error: String
   val success: Boolean
-
-  def many(): Either[ReefServiceException, List[A]] = this match {
-    case Success(_, list) => Right(list)
-    case Failure(status, error) => Left(StatusCodes.toException(status, error))
-  }
 
   final override def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A] = {
 
@@ -92,6 +87,8 @@ case class Success[A](status: Envelope.Status = Envelope.Status.OK, val list: Li
 
   final override val error = ""
   final override val success = true
+
+  final override def many = Right(list)
 }
 
 case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, error: String = "")
@@ -99,6 +96,8 @@ case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, err
 
   final override val list = Nil
   final override val success = false
+
+  final override def many = Left(new ReefServiceException(error, status))
 
   final override def toString = "Request failed with status: " + status + ", msg: " + error
 }

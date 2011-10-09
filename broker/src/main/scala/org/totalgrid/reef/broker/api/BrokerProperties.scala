@@ -22,18 +22,18 @@ import org.totalgrid.reef.util.ConfigReader
 
 object BrokerProperties {
 
-  def get(cr: ConfigReader): BrokerConnectionInfo = {
-    val host = cr.getString("org.totalgrid.reef.amqp.host", "127.0.0.1")
-    val port = cr.getInt("org.totalgrid.reef.amqp.port", 5672)
-    val user = cr.getString("org.totalgrid.reef.amqp.user", "guest")
-    val password = cr.getString("org.totalgrid.reef.amqp.password", "guest")
-    val virtualHost = cr.getString("org.totalgrid.reef.amqp.virtualHost", "test")
+  def get(configReader: ConfigReader): BrokerConnectionInfo = {
+    val host = configReader.getString("org.totalgrid.reef.amqp.host", "127.0.0.1")
+    val port = configReader.getInt("org.totalgrid.reef.amqp.port", 5672)
+    val user = configReader.getString("org.totalgrid.reef.amqp.user", "guest")
+    val password = configReader.getString("org.totalgrid.reef.amqp.password", "guest")
+    val virtualHost = configReader.getString("org.totalgrid.reef.amqp.virtualHost", "test")
 
-    val ssl = cr.getBoolean("org.totalgrid.reef.amqp.ssl", false)
-    val trustStore = cr.getString("org.totalgrid.reef.amqp.trustStore", "")
-    val trustStorePassword = cr.getString("org.totalgrid.reef.amqp.trustStorePassword", "")
-    val keyStore = cr.getString("org.totalgrid.reef.amqp.keyStore", "")
-    val keyStorePassword = cr.getString("org.totalgrid.reef.amqp.keyStorePassword", "")
+    val ssl = configReader.getBoolean("org.totalgrid.reef.amqp.ssl", false)
+    val trustStore = configReader.getString("org.totalgrid.reef.amqp.trustStore", "")
+    val trustStorePassword = configReader.getString("org.totalgrid.reef.amqp.trustStorePassword", "")
+    val keyStore = configReader.getString("org.totalgrid.reef.amqp.keyStore", "")
+    val keyStorePassword = configReader.getString("org.totalgrid.reef.amqp.keyStorePassword", "")
 
     new BrokerConnectionInfo(host, port, user, password, virtualHost, ssl, trustStore, trustStorePassword, keyStore, keyStorePassword)
   }

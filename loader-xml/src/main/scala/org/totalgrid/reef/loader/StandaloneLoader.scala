@@ -23,7 +23,7 @@ import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.executor.ReactActorExecutor
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 import org.totalgrid.reef.util.FileConfigReader
 
@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 
 object StandaloneLoader {
-  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean, create: Boolean, username: String, password: String): Unit = {
+  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean, username: String, password: String): Unit = {
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
@@ -46,14 +46,12 @@ object StandaloneLoader {
         val request = AuthToken.newBuilder.setAgent(agent).build
 
         val authToken = client.put(request).await().expectOne
-        val env = new RequestEnv
-        env.addAuthToken(authToken.getToken)
-        client.setDefaultHeaders(env)
+        client.modifyHeaders(_.addAuthToken(authToken.getToken))
 
         client
       }
 
-      LoadManager.loadFile(client, filename, benchmark, dryRun, false, create)
+      LoadManager.loadFile(client, filename, benchmark, dryRun, ignoreWarnings, true)
 
     } finally {
       amqp.disconnect(5000)
@@ -72,7 +70,7 @@ object StandaloneLoader {
     var filename: Option[String] = None
     var benchmark = false
     var dryRun = false
-    var create = true
+    var ignoreWarnings = false
     var username = "system"
     var password = "system"
 
@@ -91,8 +89,8 @@ object StandaloneLoader {
             filename = Some(args.head)
           case "-benchmark" =>
             benchmark = true
-          case "-d" =>
-            create = false
+          case "-ignoreWarnings" =>
+            ignoreWarnings = true
           case "-dryRun" =>
             dryRun = true
           case "-u" =>
@@ -120,7 +118,7 @@ object StandaloneLoader {
       val broker = new QpidBrokerConnection(dbInfo)
     }
 
-    run(amqp, filename.get, benchmark, dryRun, create, username, password)
+    run(amqp, filename.get, benchmark, dryRun, ignoreWarnings, username, password)
   }
 
   /**
@@ -148,7 +146,7 @@ object StandaloneLoader {
     println("  -benchmark         Override endpoint protocol to force all endpoints in")
     println("                     configuration file to be simulated.")
     println("  -dryRun            Only validate the file, dont upload to server")
-    println("  -d                 Delete represented model from server")
+    println("  -ignoreWarnings    Ignore warnings")
     println("  -u <username>      Set the username to load as.")
     println("  -p <password>      Set the password for username")
     println("")

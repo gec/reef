@@ -73,9 +73,7 @@ object AMQPMessageConsumers extends Logging {
 
             import scala.collection.JavaConversions._
 
-            val env = new RequestEnv
-            // convert the headers back into the RequestEnv object
-            request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
+            val env = BasicRequestHeaders.from(request.getHeadersList.toList)
 
             val callback = new ServiceResponseCallback {
               def onResponse(serviceResponse: Envelope.ServiceResponse) = publish(serviceResponse, responseExchange, responseKey)

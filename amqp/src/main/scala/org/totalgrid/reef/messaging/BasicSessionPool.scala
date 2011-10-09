@@ -31,7 +31,7 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
 
   class ErroredClientSession(exception: ReefServiceException) extends ClientSession {
 
-    final override def request[A](verb: Verb, payload: A, env: RequestEnv = getDefaultHeaders, destination: Routable = AnyNodeDestination): Promise[Response[A]] =
+    final override def request[A](verb: Verb, payload: A, env: BasicRequestHeaders, destination: Routable): Promise[Response[A]] =
       new FixedPromise[Response[A]](Failure(Envelope.Status.BUS_UNAVAILABLE, "The session pool could not obtain a session: " + exception.toString))
 
     final override def isOpen: Boolean = false
@@ -91,11 +91,12 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
   }
 
   final override def borrow[A](authToken: String)(fun: ClientSession => A): A = borrow { session =>
+    val headers = session.getHeaders
     try {
-      session.getDefaultHeaders.setAuthToken(authToken)
+      session.modifyHeaders(_.setAuthToken(authToken))
       fun(session)
     } finally {
-      session.getDefaultHeaders.clear()
+      session.setHeaders(headers)
     }
   }
 

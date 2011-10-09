@@ -33,12 +33,13 @@ class SynchronousSubscription[A](channel: BrokerChannel, executor: Executor, des
   override def id() = queueName
   override def cancel() = channel.close()
 
-  def start(callback: Event[A] => Unit): Unit = {
+  def start(callback: Event[A] => Unit): Subscription[A] = {
     val consumer = AMQPMessageConsumers.makeEventConsumer(deserialize, callback)
     val proxy = new MessageConsumer {
       def receive(bytes: Array[Byte], replyTo: Option[Destination]) = executor.execute(consumer.receive(bytes, replyTo))
     }
     channel.listen(queueName, proxy)
+    this
   }
 
 }

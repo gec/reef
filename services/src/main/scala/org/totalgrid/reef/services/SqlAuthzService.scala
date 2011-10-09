@@ -20,7 +20,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied }
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.models.ApplicationSchema
 
 import org.squeryl.PrimitiveTypeMode._
@@ -29,10 +29,9 @@ object SqlAuthzService extends SqlAuthzService
 
 trait SqlAuthzService extends AuthService {
 
-  private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) =
-    Some(AuthDenied(msg, status))
+  private def deny(msg: String, status: Envelope.Status = Envelope.Status.UNAUTHORIZED) = Left(AuthDenied(msg, status))
 
-  def isAuthorized(componentId: String, actionId: String, headers: RequestEnv): Option[AuthDenied] = inTransaction {
+  def isAuthorized(componentId: String, actionId: String, headers: BasicRequestHeaders): Either[AuthDenied, BasicRequestHeaders] = inTransaction {
 
     val authTokens = headers.authTokens
 
@@ -57,11 +56,10 @@ trait SqlAuthzService extends AuthService {
         } else {
 
           val denied = relevant.find(p => p.allow == false)
-          if (denied.isDefined)
+          if (denied.isDefined) {
             deny("Access to resource: " + componentId + ":" + actionId + " explictly denied by permission: " + denied.get)
-          else {
-            headers.setUserName(userName)
-            None
+          } else {
+            Right(headers.setUserName(userName))
           }
         }
       }

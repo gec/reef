@@ -36,7 +36,7 @@ import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => Eve
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
@@ -45,8 +45,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     val publishers = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
     val summaries = new SilentSummaryPoints
     val deps = ServiceDependencies(publishers, summaries)
-    val env = new RequestEnv()
-    env.setUserName("user")
+    val env = BasicRequestHeaders.empty.setUserName("user")
     val contextSource = new MockRequestContextSource(deps, env)
 
     val factories = new ModelFactories(deps, contextSource)

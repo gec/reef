@@ -54,7 +54,7 @@ import CommandAccess._
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.BasicSessionPool
-import org.totalgrid.reef.sapi.{ RequestEnv, client, AddressableDestination }
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, client, AddressableDestination }
 import org.totalgrid.reef.japi.Envelope
 
 import client.Response
@@ -67,8 +67,8 @@ class CommandRequestServicesIntegration
     extends EndpointRelatedTestBase {
 
   import ServiceResponseTestingHelpers._
-  val env = new RequestEnv()
-  env.setUserName("user01")
+  val env = BasicRequestHeaders.empty.setUserName("user01")
+
   implicit val contextSource = new MockRequestContextSource(new ServiceDependencies, env)
   import org.totalgrid.reef.services.core.CustomServiceShims._
 
@@ -190,7 +190,7 @@ class CommandRequestServicesIntegration
 
       val descriptor = Descriptors.userCommandRequest
 
-      override def put(req: UserCommandRequest, env: RequestEnv): Response[UserCommandRequest] =
+      override def put(req: UserCommandRequest, env: BasicRequestHeaders): Response[UserCommandRequest] =
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 

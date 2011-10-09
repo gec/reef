@@ -60,4 +60,8 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
     queuedEvent.foreach { _.cancel }
     queuedEvent = None
   }
+
+  def cancel() = this.synchronized {
+    queuedEvent.foreach { _.cancel }
+  }
 }

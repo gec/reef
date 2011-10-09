@@ -58,8 +58,7 @@ class MockSyncOperations(
   def getDelQueue = delQueue
 
   /**
-   *   Assert that the elements in the internal putQueue are the same as
-   * the elements in the specified putQ.
+   * Assert that the elements in the internal putQueue are the same as the elements in the specified putQ.
    * TODO: report which element is not equal (report the index, proto class diff, etc.).
    */
   def assertPuts(putQ: Queue[AnyRef]): Boolean = {
@@ -70,7 +69,7 @@ class MockSyncOperations(
   /**
    * Override request to define all of the verb helpers
    */
-  final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders, dest: Routable = AnyNodeDestination): Promise[Response[A]] = verb match {
+  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders, dest: Routable): Promise[Response[A]] = verb match {
     case Envelope.Verb.GET => new SynchronizedPromise(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]])
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload.asInstanceOf[AnyRef])

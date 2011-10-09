@@ -30,7 +30,7 @@ import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.ServiceDependencies
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 @RunWith(classOf[JUnitRunner])
@@ -68,8 +68,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val pubs = new CountingEventPublishers
     val deps = ServiceDependencies(pubs)
-    val headers = new RequestEnv()
-    headers.setUserName("user1")
+    val headers = BasicRequestHeaders.empty.setUserName("user1")
     val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps, contextSource)

@@ -98,7 +98,7 @@ class UserCommandRequestServiceModel(
 
   override def createFromProto(context: RequestContext, req: UserCommandRequest): UserCommandModel = {
 
-    val user = context.headers.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    val user = context.getHeaders.userName getOrElse { throw new BadRequestException("User must be in header.") }
 
     val (id, cmdProto) = if (req.commandRequest.correlationId.isEmpty) {
       val cid = System.currentTimeMillis + "-" + user

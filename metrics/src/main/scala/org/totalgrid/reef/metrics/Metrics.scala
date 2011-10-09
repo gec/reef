@@ -23,7 +23,6 @@ import org.totalgrid.reef.util.Timing
 class UnHookedException(msg: String) extends Exception(msg)
 
 object MetricsHooks {
-  /// 
   var forceHooks = false
 
   sealed abstract class HookType
