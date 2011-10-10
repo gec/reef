@@ -11,7 +11,7 @@
 	<properties>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
-        <executor4s.version>0.1.4</executor4s.version>
+        <executor4s.version>0.1.5</executor4s.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

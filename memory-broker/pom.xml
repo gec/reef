@@ -35,12 +35,12 @@
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
             <artifactId>executor4s_2.9.0-1</artifactId>
-            <version>0.1.2</version>
+            <version>${executor4s.version}</version>
         </dependency>
         <dependency>
             <groupId>net.agile-automata.nio4s</groupId>
             <artifactId>commons_2.9.0-1</artifactId>
-            <version>0.1.2</version>
+            <version>${executor4s.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
