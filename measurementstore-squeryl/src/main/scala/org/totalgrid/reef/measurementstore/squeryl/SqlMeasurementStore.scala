@@ -86,11 +86,11 @@ class SqlMeasurementStore(connection: ConnectionOperations[Boolean]) extends Mea
   }
 
   def remove(names: Seq[String]): Unit = {
-    connection.doAsync { r =>
-      transaction {
+    connection.doSync[Unit] { r =>
+      Some(transaction {
         SqlMeasurementStoreOperations.remove(names)
-      }
-    }
+      })
+    }.getOrElse(throw new Exception("Couldn't remove points: " + names))
   }
 
   def getInRange(meas_name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
