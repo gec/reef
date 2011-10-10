@@ -21,14 +21,14 @@ package org.totalgrid.reef.messaging.synchronous
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.sapi._
 
-import client.{Subscription, ResponseTimeout, Response, Failure => FailureResponse}
-import newclient.{Client, Connection}
+import client.{ Subscription, ResponseTimeout, Response, Failure => FailureResponse }
+import newclient.{ Client, Connection }
 import org.totalgrid.reef.broker.newapi._
 import org.totalgrid.reef.japi.{ TypeDescriptor, Envelope }
 import org.totalgrid.reef.japi.Envelope.Verb
 import service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.proto.Auth.{AuthToken, Agent}
+import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 
 final class BasicConnection(lookup: ServiceList, conn: BrokerConnection, executor: Executor, timeoutms: Long) extends Connection with Logging {
 
@@ -37,20 +37,22 @@ final class BasicConnection(lookup: ServiceList, conn: BrokerConnection, executo
   private val subscription = conn.listen().start(correlator)
   conn.bindQueue(subscription.getQueue, "amq.direct", subscription.getQueue)
 
-  def login(authToken: String): Client = {
-    val client = new BasicClient(this, Strand(executor))
-    client.modifyHeaders(_.addAuthToken(authToken))
-    client
-  }
+  def login(authToken: String): Client = createClient(authToken, Strand(executor))
 
-  def login(userName: String,  password: String): Future[Result[Client]] = {
+  def login(userName: String, password: String): Future[Result[Client]] = {
     val strand = Strand(executor)
     val agent = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(userName).setPassword(password)).build()
     def convert(response: Response[AuthToken]): Result[Client] = response.one match {
       case Left(ex) => Failure(ex)
-      case Right(token) => Success(login(token.getToken))
+      case Right(token) => Success(createClient(token.getToken, strand))
     }
     request(Verb.PUT, agent, BasicRequestHeaders.empty, strand).map(convert)
+  }
+
+  private def createClient(authToken: String, strand: Strand) = {
+    val client = new BasicClient(this, strand)
+    client.modifyHeaders(_.addAuthToken(authToken))
+    client
   }
 
   def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders, executor: Executor): Future[Response[A]] = {

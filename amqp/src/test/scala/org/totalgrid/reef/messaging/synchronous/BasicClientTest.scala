@@ -31,7 +31,7 @@ import org.totalgrid.reef.sapi.client.Event
 
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.sapi.newclient.{Client, Connection}
+import org.totalgrid.reef.sapi.newclient.{ Client, Connection }
 
 @RunWith(classOf[JUnitRunner])
 class QpidServiceClientTest extends BasicClientTest with QpidBrokerTestFixture
