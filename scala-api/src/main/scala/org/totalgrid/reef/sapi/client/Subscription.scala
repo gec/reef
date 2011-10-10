@@ -27,10 +27,12 @@ trait Subscription[A] {
 
   def start(callback: Event[A] => Unit): Subscription[A]
 
+  /*
   def start(callback: (Envelope.Event, A) => Unit): Subscription[A] = {
     val proxy = { (evt: Event[A]) => callback(evt.event, evt.value) }
     start(proxy)
   }
+  */
 
   def id(): String
 }

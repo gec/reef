@@ -61,8 +61,8 @@ trait ServiceClientTest extends BrokerTestFixture with FunSuite with ShouldMatch
       client.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       client.publishEvent(Envelope.Event.ADDED, si, "foobar")
       val events = new SynchronizedList[Event[SomeInteger]]
-      sub.start(events.append(_))
-      events shouldEqual (Event(Envelope.Event.ADDED, si)) within (5000)
+      sub.start(events.append)
+      events shouldBecome Event(Envelope.Event.ADDED, si) within 5000
     }
   }
 
@@ -74,7 +74,7 @@ trait ServiceClientTest extends BrokerTestFixture with FunSuite with ShouldMatch
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.start(events.append(_))
       client.publishEvent(Envelope.Event.ADDED, si, "foobar")
-      events shouldEqual (Event(Envelope.Event.ADDED, si)) within (5000)
+      events shouldBecome Event(Envelope.Event.ADDED, si) within 5000
     }
   }
 

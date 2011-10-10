@@ -66,8 +66,8 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
       val events = new SynchronizedList[SomeInteger]
       val sub = c.prepareSubscription(SomeIntegerTypeDescriptor)
       c.put(SomeInteger(1), sub).await() should equal(SingleSuccess(single = SomeInteger(2)))
-      sub.start((a, b) => events.append(b))
-      events shouldEqual (SomeInteger(2)) within (5000)
+      sub.start(e => events.append(e.value))
+      events shouldBecome SomeInteger(2) within 5000
       sub.cancel()
     }
   }

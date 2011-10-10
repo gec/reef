@@ -121,9 +121,9 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
       def header(key: String, value: String) = Envelope.RequestHeader.newBuilder.setKey(key).setValue(value).build()
 
       val updates = new SynchronizedList[Event[Envelope.RequestHeader]]
-
-      def prepend(event: Event[Envelope.RequestHeader]) = updates.append(event)
-      val sub = client.addSubscription(TestDescriptors.requestHeader.getKlass).start(prepend _)
+      def append(e: Event[Envelope.RequestHeader]) = updates.append(e)
+      val sub = client.addSubscription[Envelope.RequestHeader](TestDescriptors.requestHeader.getKlass)
+      sub.start(updates.append)
 
       import Subscription.convertSubscriptionToRequestEnv
       val integrity = client.get(header("*", "*"), sub).await().expectMany()
@@ -133,11 +133,11 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
       val deleted = client.delete(header("magic", "cadabra")).await().expectOne
 
       val expected = List(
-        Event(Envelope.Event.REMOVED, deleted),
+        Event(Envelope.Event.ADDED, deleted),
         Event(Envelope.Event.MODIFIED, modified),
-        Event(Envelope.Event.ADDED, created))
+        Event(Envelope.Event.REMOVED, created))
 
-      updates shouldEqual (expected) within (5000)
+      updates shouldBecome expected within 5000
     }
   }
 
