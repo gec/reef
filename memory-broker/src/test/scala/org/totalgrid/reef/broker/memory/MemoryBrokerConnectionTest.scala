@@ -23,26 +23,27 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.broker.api._
+import org.totalgrid.reef.broker.newapi._
 import net.agileautomata.commons.testing._
+import net.agileautomata.executor4s.Executors
 
 @RunWith(classOf[JUnitRunner])
 class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
-  class MockConsumer extends MessageConsumer {
+  class MockConsumer extends BrokerMessageConsumer {
     val messages = new SynchronizedList[Array[Byte]]
-    def receive(bytes: Array[Byte], replyTo: Option[Destination]) = messages.append(bytes)
+    def onMessage(msg: BrokerMessage) = messages.append(msg.bytes)
   }
 
   val testBytes: Array[Byte] = Array(0x0A, 0x0B)
 
   def fixture(test: BrokerConnection => Unit) = {
-    val conn = new MemoryBrokerConnection
-    conn.connect() should equal(true)
+    val exe = Executors.newScheduledSingleThread()
+    val factory = new MemoryBrokerConnectionFactory(exe)
     try {
-      test(conn)
+      test(factory.connect)
     } finally {
-      conn.shutdown()
+      exe.shutdown()
     }
   }
 
@@ -53,8 +54,8 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
       conn.bindQueue(queue, "ex1", "#")
       val mc1 = new MockConsumer
       val mc2 = new MockConsumer
-      conn.listen(queue, mc1)
-      conn.listen(queue, mc2)
+      conn.listen(queue).start(mc1)
+      conn.listen(queue).start(mc2)
       2.times(conn.publish("ex1", "foobar", testBytes, None))
 
       mc1.messages shouldBecome testBytes within 5000
@@ -71,8 +72,8 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
       conn.bindQueue(q2, "ex1", "#")
       val mc1 = new MockConsumer
       val mc2 = new MockConsumer
-      conn.listen(q1, mc1)
-      conn.listen(q2, mc2)
+      conn.listen(q1).start(mc1)
+      conn.listen(q2).start(mc2)
       conn.publish("ex1", "foobar", testBytes, None)
 
       mc1.messages shouldBecome testBytes within 5000

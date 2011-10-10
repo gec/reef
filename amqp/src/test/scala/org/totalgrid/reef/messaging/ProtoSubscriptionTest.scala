@@ -133,9 +133,9 @@ abstract class ProtoSubscriptionTestBase extends FunSuite with ShouldMatchers {
       val deleted = client.delete(header("magic", "cadabra")).await().expectOne
 
       val expected = List(
-        Event(Envelope.Event.ADDED, deleted),
+        Event(Envelope.Event.ADDED, created),
         Event(Envelope.Event.MODIFIED, modified),
-        Event(Envelope.Event.REMOVED, created))
+        Event(Envelope.Event.REMOVED, deleted))
 
       updates shouldBecome expected within 5000
     }

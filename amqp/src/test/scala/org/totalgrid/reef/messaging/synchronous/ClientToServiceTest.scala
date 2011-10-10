@@ -24,30 +24,30 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.sapi.ServiceList
 import org.totalgrid.reef.sapi.example._
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.client.{ SingleSuccess, Response }
 import net.agileautomata.commons.testing._
-import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s._
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, ServiceList }
+import org.totalgrid.reef.sapi.newclient.Client
 
 @RunWith(classOf[JUnitRunner])
-class QpidClientToService extends ClientToServiceTest with QpidBrokerTestFixture
+class QpidClientToService extends ConnectionToServiceTest with QpidBrokerTestFixture
 
 @RunWith(classOf[JUnitRunner])
-class MemoryClientToService extends ClientToServiceTest with MemoryBrokerTestFixture
+class MemoryClientToService extends ConnectionToServiceTest with MemoryBrokerTestFixture
 
 // provides a specification for how the client should interact with brokers. testable on multiple brokers via minx
-trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
+trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
 
-  def fixture(fun: ServiceClient => Unit) = broker { b =>
+  def fixture(fun: Client => Unit) = broker { b =>
     val executor = Executors.newScheduledSingleThread()
     var binding: Option[Cancelable] = None
     try {
-      val client = new ServiceClient(ServiceList(SomeIntegerTypeDescriptor), b, executor, 5000)
-      binding = Some(client.bindService(new SomeIntegerIncrementService(client)))
-      fun(client)
+      val conn = new BasicConnection(ServiceList(SomeIntegerTypeDescriptor), b, executor, 5000)
+      binding = Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, AnyNodeDestination, true))
+      fun(conn.login("foo"))
     } finally {
       binding.foreach(_.cancel())
       executor.terminate()
@@ -57,7 +57,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
   test("Service calls are successful") {
     fixture { c =>
       val i = SomeInteger(1)
-      c.put(i).await() should equal(Response(Envelope.Status.OK, i.increment))
+      c.put(i).await should equal(Response(Envelope.Status.OK, i.increment))
     }
   }
 
@@ -65,7 +65,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     fixture { c =>
       val events = new SynchronizedList[SomeInteger]
       val sub = c.prepareSubscription(SomeIntegerTypeDescriptor)
-      c.put(SomeInteger(1), sub).await() should equal(SingleSuccess(single = SomeInteger(2)))
+      c.put(SomeInteger(1), sub).await should equal(SingleSuccess(single = SomeInteger(2)))
       sub.start(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
       sub.cancel()

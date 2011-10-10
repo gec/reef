@@ -19,8 +19,8 @@
 package org.totalgrid.reef.broker.memory
 
 import collection.immutable.{ Queue => ScalaQueue }
-import org.totalgrid.reef.broker.api.{ Destination, MessageConsumer }
 import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.broker.newapi.{ BrokerMessageConsumer, BrokerDestination, BrokerMessage }
 
 // classes are 100% immutable and safe to read on multiple threads or to use with STM
 object MemoryBrokerState {
@@ -38,8 +38,6 @@ object MemoryBrokerState {
     nh.forall(tuple => tuple._2.matches(tuple._1.replaceAll("\\*", ".*")))
   }
 
-  case class Message(bytes: Array[Byte], replyTo: Option[Destination])
-
   case class State(
       exchanges: Map[String, Exchange] = Map.empty[String, Exchange],
       queues: Map[String, Queue] = Map.empty[String, Queue]) {
@@ -49,7 +47,7 @@ object MemoryBrokerState {
     private def withQueueAndExchange[A](queue: String, exchange: String)(fun: (Queue, Exchange) => A): A =
       withQueue(queue)(q => withExchange(exchange)(ex => fun(q, ex)))
 
-    def publish(exchange: String, key: String, msg: Message): State = withExchange(exchange) { ex =>
+    def publish(exchange: String, key: String, msg: BrokerMessage): State = withExchange(exchange) { ex =>
       val tuples = ex.getMatches(key).map { name =>
         withQueue(name)(q => (name, q.publish(msg)))
       }
@@ -57,27 +55,31 @@ object MemoryBrokerState {
     }
 
     def declareQueue(name: String, exe: Executor): State = queues.get(name) match {
-      case Some(q) => this
+      case Some(q) =>
+        this
       case None => this.copy(queues = queues + (name -> Queue(name, exe)))
     }
 
-    def declareExchange(name: String, typ: String): State = exchanges.get(name) match {
-      case Some(ex) =>
-        if (ex.typ == typ) this
-        else throw new Exception("Exchange already declared with type: " + ex.typ)
-      case None =>
-        this.copy(exchanges = exchanges + (name -> Exchange(name, typ)))
+    def declareExchange(name: String, typ: String): State = {
+      exchanges.get(name) match {
+        case Some(ex) =>
+          if (ex.typ == typ) this
+          else throw new Exception("Exchange already declared with type: " + ex.typ)
+        case None =>
+          this.copy(exchanges = exchanges + (name -> Exchange(name, typ)))
+      }
     }
 
     def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean): State =
       withQueueAndExchange(queue, exchange) { (q, ex) =>
+        println("Bound q: " + queue + " to exchange: " + exchange + " with key: " + key)
         this.copy(exchanges = exchanges + (exchange -> ex.bindQueue(q.name, key)))
       }
 
     def unbindQueue(queue: String, exchange: String, key: String): State =
       withQueueAndExchange(queue, exchange)((q, ex) => this.copy(exchanges = exchanges + (exchange -> ex.unbindQueue(q.name, key))))
 
-    def listen(queue: String, mc: MessageConsumer): State = withQueue(queue) { q =>
+    def listen(queue: String, mc: BrokerMessageConsumer): State = withQueue(queue) { q =>
       this.copy(queues = queues + (queue -> q.addConsumer(mc)))
     }
 
@@ -114,25 +116,25 @@ object MemoryBrokerState {
     }
   }
 
-  case class Queue(name: String, exe: Executor, unread: ScalaQueue[Message] = ScalaQueue.empty[Message], consumers: List[MessageConsumer] = Nil) {
+  case class Queue(name: String, exe: Executor, unread: ScalaQueue[BrokerMessage] = ScalaQueue.empty[BrokerMessage], consumers: List[BrokerMessageConsumer] = Nil) {
 
-    def publish(msg: Message): Queue = consumers match {
+    def publish(msg: BrokerMessage): Queue = consumers match {
       case Nil =>
         this.copy(unread = unread.enqueue(msg))
-      case x :: tail =>
-        exe.execute(x.receive(msg.bytes, msg.replyTo))
-        this.copy(consumers = tail ::: List(x)) //moves x to end of the list
+      case next :: tail =>
+        exe.execute(next.onMessage(msg))
+        this.copy(consumers = tail ::: List(next)) //moves x to end of the list
     }
 
-    def addConsumer(mc: MessageConsumer): Queue = consumers match {
+    def addConsumer(mc: BrokerMessageConsumer): Queue = consumers match {
       case Nil =>
-        unread.foreach(msg => exe.execute(mc.receive(msg.bytes, msg.replyTo)))
-        this.copy(unread = ScalaQueue.empty[Message], consumers = List(mc))
+        unread.foreach(msg => exe.execute(mc.onMessage(msg)))
+        this.copy(unread = ScalaQueue.empty[BrokerMessage], consumers = List(mc))
       case x =>
         this.copy(consumers = mc :: x)
     }
 
-    def removeConsumer(mc: MessageConsumer): Queue = this.copy(consumers = consumers.filterNot(_.equals(mc)))
+    def removeConsumer(mc: BrokerMessageConsumer): Queue = this.copy(consumers = consumers.filterNot(_.equals(mc)))
   }
 
 }

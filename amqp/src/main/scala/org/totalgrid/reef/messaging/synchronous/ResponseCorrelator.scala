@@ -23,8 +23,8 @@ import scala.collection.mutable
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.japi.Envelope._
 import java.util.UUID
-import org.totalgrid.reef.broker.api._
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.broker.newapi.{ BrokerMessageConsumer, BrokerMessage }
 
 /**
  * Synchronizes and correlates the send/receive operations on a ProtoServiceChannel
@@ -33,7 +33,7 @@ import net.agileautomata.executor4s._
  * @param channel The ProtoServiceChannel on which requests and responses will be received
  *
  */
-class ResponseCorrelator extends Logging with MessageConsumer {
+class ResponseCorrelator extends Logging with BrokerMessageConsumer {
 
   type Response = Option[ServiceResponse]
   type ResponseCallback = Response => Unit
@@ -45,11 +45,12 @@ class ResponseCorrelator extends Logging with MessageConsumer {
   private case class Record(timer: Cancelable, callback: ResponseCallback, executor: Executor)
   private val map = mutable.Map.empty[String, Record]
 
-  def register(executor: Executor, interval: TimeInterval)(callback: ResponseCallback) = map.synchronized {
+  def register[A](executor: Executor, interval: TimeInterval, callback: ResponseCallback)(withUUID: String => A): A = map.synchronized {
     val uuid = nextUuid
+    val ret = withUUID(uuid)
     val timer = executor.delay(interval)(onTimeout(uuid))
     map.put(uuid, Record(timer, callback, executor))
-    uuid
+    ret
   }
 
   // terminates all existing registered callbacks with an exception
@@ -72,9 +73,9 @@ class ResponseCorrelator extends Logging with MessageConsumer {
     }
   }
 
-  def receive(bytes: Array[Byte], replyTo: Option[Destination]) = {
+  def onMessage(msg: BrokerMessage) = {
     try {
-      onResponse(ServiceResponse.parseFrom(bytes))
+      onResponse(ServiceResponse.parseFrom(msg.bytes))
     } catch {
       case ex: Exception => logger.error("Failed to parse service response", ex)
     }

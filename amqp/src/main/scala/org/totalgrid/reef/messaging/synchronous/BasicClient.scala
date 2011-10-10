@@ -1,5 +1,3 @@
-package org.totalgrid.reef.sapi.newclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,21 +16,24 @@ package org.totalgrid.reef.sapi.newclient
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.messaging.synchronous
+
+import org.totalgrid.reef.japi._
+import org.totalgrid.reef.sapi.client._
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.sapi._
-import client.DefaultHeaders
+import newclient._
 import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.sapi.client.Response
-import net.agileautomata.executor4s.Future
 
-trait RestOperations {
+final class BasicClient(conn: BasicConnection, strand: Strand) extends Client {
 
-  self: DefaultHeaders =>
+  override def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders) =
+    conn.request(verb, payload, getHeaders.merge(headers), strand)
 
-  def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders): Future[Response[A]]
+  override def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A] =
+    conn.prepareSubscription(strand, descriptor.getKlass)
 
-  final def get[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.GET, payload, headers)
-  final def delete[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.DELETE, payload, headers)
-  final def post[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.POST, payload, headers)
-  final def put[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.PUT, payload, headers)
-
+  override def execute(fun: => Unit): Unit = strand.execute(fun)
+  override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
+  override def delay(interval: TimeInterval)(fun: => Unit): Cancelable = strand.delay(interval)(fun)
 }

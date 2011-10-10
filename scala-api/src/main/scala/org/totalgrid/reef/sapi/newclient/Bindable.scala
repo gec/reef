@@ -20,11 +20,11 @@ package org.totalgrid.reef.sapi.newclient
  */
 
 import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable }
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.{ Cancelable, Executor }
+import org.totalgrid.reef.sapi.Routable
 
 trait Bindable {
 
-  def bindService[A](service: AsyncService[A], destination: Routable = AnyNodeDestination, competing: Boolean = false): Cancelable
+  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean): Cancelable
 
 }

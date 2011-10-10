@@ -25,10 +25,8 @@ import org.junit.runner.RunWith
 
 import org.mockito.Mockito._
 import collection.immutable.{ Queue => ScalaQueue }
-import org.totalgrid.reef.broker.api._
-import org.totalgrid.reef.executor.mock.MockExecutor
-import net.agileautomata.executor4s.Executors
-import org.jmock.lib.concurrent.DeterministicScheduler
+import net.agileautomata.executor4s.testing.MockExecutor
+import org.totalgrid.reef.broker.newapi.{ BrokerDestination, BrokerMessageConsumer, BrokerMessage }
 
 @RunWith(classOf[JUnitRunner])
 class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
@@ -36,30 +34,29 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
   import MemoryBrokerState._
 
   test("Publishing to queue writes to first consumer and rotates consumers") {
-    val msg = mock(classOf[Message])
-    val mc1 = mock(classOf[MessageConsumer])
-    val mc2 = mock(classOf[MessageConsumer])
-    val mc3 = mock(classOf[MessageConsumer])
-    val mockExe = new DeterministicScheduler
-    val exe = Executors.newCustomExecutor(mockExe)
+    val msg = mock(classOf[BrokerMessage])
+    val mc1 = mock(classOf[BrokerMessageConsumer])
+    val mc2 = mock(classOf[BrokerMessageConsumer])
+    val mc3 = mock(classOf[BrokerMessageConsumer])
+
+    val exe = new MockExecutor
 
     Queue("q1", exe, consumers = List(mc1, mc2, mc3)).publish(msg) should equal(Queue("q1", exe, consumers = List(mc2, mc3, mc1)))
 
-    mockExe.runNextPendingCommand()
+    exe.runNextPendingAction()
 
-    verify(mc1).receive(msg.bytes, msg.replyTo)
+    verify(mc1).onMessage(msg)
     verifyZeroInteractions(mc2, mc3)
   }
 
   test("Publishing to queue with no consumers will enqueue message") {
-    val msg1 = mock(classOf[Message])
-    val msg2 = mock(classOf[Message])
-    val mockExe = new DeterministicScheduler
-    val exe = Executors.newCustomExecutor(mockExe)
+    val msg1 = mock(classOf[BrokerMessage])
+    val msg2 = mock(classOf[BrokerMessage])
+    val exe = new MockExecutor
     val afterMsg1 = Queue("q1", exe).publish(msg1)
-    afterMsg1 should equal(Queue("q1", exe, unread = ScalaQueue.empty[Message] ++ List(msg1)))
+    afterMsg1 should equal(Queue("q1", exe, unread = ScalaQueue.empty[BrokerMessage] ++ List(msg1)))
     val afterMsg2 = afterMsg1.publish(msg2)
-    afterMsg2 should equal(Queue("q1", exe, unread = ScalaQueue.empty[Message] ++ List(msg1, msg2)))
+    afterMsg2 should equal(Queue("q1", exe, unread = ScalaQueue.empty[BrokerMessage] ++ List(msg1, msg2)))
   }
 
   test("Exchange can match queues") {
@@ -72,23 +69,20 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
   }
 
   test("Broker state declares queues") {
-    val mockExe = new DeterministicScheduler
-    val exe = Executors.newCustomExecutor(mockExe)
+    val exe = new MockExecutor()
     State().declareQueue("queue", exe) should equal(State(queues = Map("queue" -> Queue("queue", exe))))
   }
 
   test("Broker state binds queues") {
-    val testMsg = Message(Array(0xFF.toByte), None)
-    var msg: Option[Message] = None
-    val consumer = new MessageConsumer {
-      def receive(bytes: Array[Byte], replyTo: Option[Destination]) = msg = Some(Message(bytes, replyTo))
-    }
-    val mockExe = new DeterministicScheduler
-    val exe = Executors.newCustomExecutor(mockExe)
+    val testMsg = BrokerMessage(Array(0xFF.toByte), None)
+    var msg: Option[BrokerMessage] = None
+    val consumer = new BrokerMessageConsumer { def onMessage(m: BrokerMessage) = msg = Some(m) }
+
+    val exe = new MockExecutor
     val state = State().declareExchange("ex", "topic").declareQueue("q", exe).bindQueue("q", "ex", "#", false).listen("q", consumer)
     state.exchanges("ex").bindings(0).queue should equal("q")
     state.publish("ex", "key", testMsg)
-    mockExe.runNextPendingCommand()
+    exe.runNextPendingAction()
     msg should equal(Some(testMsg))
   }
 }

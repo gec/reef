@@ -33,7 +33,7 @@ import scala.{ Option => ScalaOption }
 */
 final class QpidBrokerSubscription(session: Session, queue: String) extends BrokerSubscription with Logging {
 
-  class Listener(callback: BrokerMessage => Unit) extends SessionListener {
+  class Listener(consumer: BrokerMessageConsumer) extends SessionListener {
 
     override def closed(s: Session) = logger.info("Qpid session closed")
     override def exception(s: Session, e: SessionException) = logger.error("Qpid session exception", e)
@@ -43,13 +43,13 @@ final class QpidBrokerSubscription(session: Session, queue: String) extends Brok
     override def message(s: Session, msg: MessageTransfer): Unit = {
       val replyTo = ScalaOption(msg.getHeader.get(classOf[MessageProperties]).getReplyTo)
       val dest = replyTo.map(r => new BrokerDestination(r.getExchange, r.getRoutingKey))
-      callback(BrokerMessage(msg.getBodyBytes, dest))
+      consumer.onMessage(BrokerMessage(msg.getBodyBytes, dest))
       s.processed(msg)
     }
   }
 
-  def start(callback: BrokerMessage => Unit): BrokerSubscription = {
-    session.setSessionListener(new Listener(callback))
+  def start(consumer: BrokerMessageConsumer): BrokerSubscription = {
+    session.setSessionListener(new Listener(consumer))
     QpidChannelOperations.subscribe(session, queue)
     this
   }

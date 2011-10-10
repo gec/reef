@@ -18,8 +18,12 @@
  */
 package org.totalgrid.reef.broker.newapi
 
+trait BrokerMessageConsumer {
+  def onMessage(msg: BrokerMessage): Unit
+}
+
 trait BrokerSubscription {
   def close(): Unit
   def getQueue: String
-  def start(callback: BrokerMessage => Unit): BrokerSubscription
+  def start(consumer: BrokerMessageConsumer): BrokerSubscription
 }

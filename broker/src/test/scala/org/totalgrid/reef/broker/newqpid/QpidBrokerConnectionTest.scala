@@ -63,7 +63,10 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
     fixture(defaults) { broker =>
 
       val list = new SynchronizedList[Int]
-      val sub = broker.listen("*").start(msg => list.append(msg.bytes.length))
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = list.append(msg.bytes.length)
+      }
+      val sub = broker.listen().start(consumer)
 
       // bind the queue to the test exchange and send it a message
       broker.declareExchange("test")

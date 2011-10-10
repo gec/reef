@@ -24,7 +24,7 @@ import org.totalgrid.reef.japi.Envelope.{ ServiceResponse, ServiceRequest, Servi
 import collection.JavaConversions._
 import com.google.protobuf.{ GeneratedMessage, ByteString }
 
-object RestOperations {
+object RestHelpers {
 
   def getEventExchange(descriptor: TypeDescriptor[_]) = descriptor.id + "_events"
 

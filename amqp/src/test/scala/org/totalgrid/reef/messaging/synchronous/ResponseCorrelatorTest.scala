@@ -30,6 +30,7 @@ import org.totalgrid.reef.japi.Envelope
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.commons.testing._
+import org.totalgrid.reef.broker.newapi.BrokerMessage
 
 @RunWith(classOf[JUnitRunner])
 class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
@@ -40,7 +41,7 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
     val mock = new MockExecutor
     val rc = new ResponseCorrelator
     var list: List[Option[ServiceResponse]] = Nil
-    rc.register(mock, 1.milliseconds)(list ::= _)
+    rc.register(mock, 1.milliseconds, list ::= _) { uuid => }
     list should equal(Nil)
     mock.tick(1.milliseconds)
     list should equal(List(None))
@@ -50,9 +51,9 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
     val mock = new MockExecutor
     val rc = new ResponseCorrelator
     var list: List[Option[ServiceResponse]] = Nil
-    val uuid = rc.register(mock, 200.milliseconds)(list ::= _)
+    val uuid = rc.register(mock, 200.milliseconds, list ::= _)(uuid => uuid)
     val response = getResponse(uuid)
-    rc.receive(response.toByteArray, None)
+    rc.onMessage(BrokerMessage(response.toByteArray, None))
     list should equal(List(Some(response)))
   }
 
@@ -60,9 +61,9 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
     val mock = new MockExecutor
     val rc = new ResponseCorrelator
     var list: List[Option[ServiceResponse]] = Nil
-    val uuid = rc.register(mock, 200.milliseconds)(list ::= _)
+    val uuid = rc.register(mock, 200.milliseconds, list ::= _)(uuid => uuid)
     val response = getResponse(uuid)
-    4.times(rc.receive(response.toByteArray, None))
+    4.times(rc.onMessage(BrokerMessage(response.toByteArray, None)))
     list should equal(List(Some(response)))
   }
 

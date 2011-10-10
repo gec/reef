@@ -19,26 +19,32 @@ package org.totalgrid.reef.messaging.synchronous
  * the License.
  */
 import org.totalgrid.reef.sapi.client.{ Subscription, Event }
-import org.totalgrid.reef.messaging.{ AMQPMessageConsumers, QueuePatterns }
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.broker.api.{ Destination, MessageConsumer, BrokerChannel }
+import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.broker.newapi.{ BrokerMessageConsumer, BrokerMessage, BrokerSubscription }
 
 /**
  * synchronous subscription object, allows canceling and a delayed starting
  */
-class SynchronousSubscription[A](channel: BrokerChannel, executor: Executor, deserialize: Array[Byte] => A) extends Subscription[A] {
+final class BasicSubscription[A](subscription: BrokerSubscription, executor: Executor, deserialize: Array[Byte] => A) extends Subscription[A] with Logging {
 
-  private val queueName = QueuePatterns.getLateBoundPrivateUnboundQueue(channel)
+  override def id() = subscription.getQueue
+  override def cancel() = subscription.close()
 
-  override def id() = queueName
-  override def cancel() = channel.close()
-
-  def start(callback: Event[A] => Unit): Subscription[A] = {
-    val consumer = AMQPMessageConsumers.makeEventConsumer(deserialize, callback)
-    val proxy = new MessageConsumer {
-      def receive(bytes: Array[Byte], replyTo: Option[Destination]) = executor.execute(consumer.receive(bytes, replyTo))
+  override def start(callback: Event[A] => Unit): Subscription[A] = {
+    val consumer = new BrokerMessageConsumer {
+      def onMessage(msg: BrokerMessage) {
+        try {
+          val event = Envelope.ServiceNotification.parseFrom(msg.bytes)
+          val value = deserialize(event.getPayload.toByteArray)
+          executor.execute(callback(Event(event.getEvent, value)))
+        } catch {
+          case ex: Exception => logger.error("Unable to deserialize incoming event: " + msg)
+        }
+      }
     }
-    channel.listen(queueName, proxy)
+    subscription.start(consumer)
     this
   }
 

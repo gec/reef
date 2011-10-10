@@ -50,14 +50,14 @@ trait BrokerConnection {
   def publish(exchange: String, key: String, bytes: Array[Byte], replyTo: Option[BrokerDestination] = None): Unit
 
   /**
-   * Bind to an existing queue
-   */
-  def bind(queue: String): BrokerSubscription
-
-  /**
-   * Create a queue that is exclusive to this subscription and bind to it
+   * Listen to a named, non-exclusive system queue (competing consumer)
    */
   def listen(queue: String): BrokerSubscription
+
+  /*
+    * Listen to a newly created queue exclusive, ephemeral queue
+    */
+  def listen(): BrokerSubscription
 
   /// Set of connection listeners, also used as a mutex
   protected val mutex = new Object

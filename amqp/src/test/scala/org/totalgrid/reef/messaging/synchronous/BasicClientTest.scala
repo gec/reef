@@ -27,28 +27,28 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.sapi.ServiceList
 import org.totalgrid.reef.sapi.example._
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.sapi.client.Event
 
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.Executors
+import org.totalgrid.reef.sapi.newclient.{Client, Connection}
 
 @RunWith(classOf[JUnitRunner])
-class QpidServiceClientTest extends ServiceClientTest with QpidBrokerTestFixture
+class QpidServiceClientTest extends BasicClientTest with QpidBrokerTestFixture
 
 @RunWith(classOf[JUnitRunner])
-class MemoryServiceClientTest extends ServiceClientTest with MemoryBrokerTestFixture
+class MemoryServiceClientTest extends BasicClientTest with MemoryBrokerTestFixture
 
 // common base class with non-broker specific tests
-trait ServiceClientTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
+trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
 
-  def fixture(fun: (ServiceClient, BrokerConnection) => Unit): Unit = broker { b =>
+  def fixture(fun: (Client, Connection) => Unit): Unit = broker { b =>
     val list = ServiceList(SomeIntegerTypeDescriptor)
     val executor = Executors.newScheduledSingleThread()
     try {
       b.declareExchange(list.getServiceInfo(classOf[SomeInteger]).subExchange) //normally a service would do this in bindService
-      val client = new ServiceClient(list, b, executor, 5000)
-      fun(client, b)
+      val conn = new BasicConnection(list, b, executor, 5000)
+      fun(conn.login("foo"), conn)
     } finally {
       executor.terminate()
     }
@@ -58,8 +58,8 @@ trait ServiceClientTest extends BrokerTestFixture with FunSuite with ShouldMatch
     fixture { (client, conn) =>
       val si = SomeInteger(42)
       val sub = client.prepareSubscription(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
-      client.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
-      client.publishEvent(Envelope.Event.ADDED, si, "foobar")
+      conn.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
+      conn.publishEvent(Envelope.Event.ADDED, si, "foobar")
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.start(events.append)
       events shouldBecome Event(Envelope.Event.ADDED, si) within 5000
@@ -70,10 +70,10 @@ trait ServiceClientTest extends BrokerTestFixture with FunSuite with ShouldMatch
     fixture { (client, conn) =>
       val si = SomeInteger(42)
       val sub = client.prepareSubscription(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
-      client.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
+      conn.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.start(events.append(_))
-      client.publishEvent(Envelope.Event.ADDED, si, "foobar")
+      conn.publishEvent(Envelope.Event.ADDED, si, "foobar")
       events shouldBecome Event(Envelope.Event.ADDED, si) within 5000
     }
   }

@@ -38,15 +38,17 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
     } else true
   }
 
-  def bind(queue: String): BrokerSubscription = {
+  def listen(): BrokerSubscription = {
     val session = conn.createSession(0)
-    val subscription = new QpidBrokerSubscription(session, queue)
+    val q = QpidChannelOperations.declareQueue(session, "*", true, true)
+    val subscription = new QpidBrokerSubscription(session, q)
     subscription
   }
 
   def listen(queue: String): BrokerSubscription = {
     val session = conn.createSession(0)
-    val q = QpidChannelOperations.declareQueue(session, queue, true, true)
+    val q = QpidChannelOperations.declareQueue(session, queue, false, false)
+    assert(queue == q)
     val subscription = new QpidBrokerSubscription(session, q)
     subscription
   }

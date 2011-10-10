@@ -18,22 +18,25 @@ package org.totalgrid.reef.messaging.synchronous
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 
-import org.totalgrid.reef.broker.memory.MemoryBrokerConnection
-import org.totalgrid.reef.broker.api._
+import org.totalgrid.reef.broker.newapi._
+import org.totalgrid.reef.broker.api.BrokerConnectionInfo
+import org.totalgrid.reef.broker.newqpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
+import net.agileautomata.executor4s.Executors
 
 trait BrokerTestFixture {
 
-  protected def getBroker: BrokerConnection
+  protected def getFactory: (BrokerConnectionFactory, () => Unit)
 
   def broker[A](test: BrokerConnection => A): A = {
-    val broker = getBroker
-    assert(broker.connect())
+    val (factory, cleanup) = getFactory
+    val conn = factory.connect
     try {
-      test(broker)
+      test(conn)
     } finally {
-      broker.disconnect()
+      conn.disconnect()
+      cleanup()
     }
   }
 
@@ -41,9 +44,14 @@ trait BrokerTestFixture {
 
 trait QpidBrokerTestFixture extends BrokerTestFixture {
   lazy val config = BrokerConnectionInfo.loadInfo("test")
-  def getBroker = new QpidBrokerConnection(config)
+  def getFactory = (new QpidBrokerConnectionFactory(config), () => {})
 }
 
 trait MemoryBrokerTestFixture extends BrokerTestFixture {
-  def getBroker = new MemoryBrokerConnection
+
+  def getFactory = {
+    val exe = Executors.newScheduledSingleThread()
+    (new MemoryBrokerConnectionFactory(exe), () => exe.shutdown())
+  }
+
 }
