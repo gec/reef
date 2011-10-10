@@ -6,7 +6,7 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3.1</version>
+	<version>0.3.2</version>
 
 	<properties>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
