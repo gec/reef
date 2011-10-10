@@ -26,11 +26,11 @@ trait RestOperations {
 
   self: DefaultHeaders =>
 
-  def request[A](verb: Verb, payload: A, env: BasicRequestHeaders = getHeaders, destination: Routable = AnyNodeDestination): Promise[Response[A]]
+  def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders): Promise[Response[A]]
 
-  final def get[A](payload: A, env: BasicRequestHeaders = getHeaders, destination: Routable = AnyNodeDestination) = request(Verb.GET, payload, env, destination)
-  final def delete[A](payload: A, env: BasicRequestHeaders = getHeaders, destination: Routable = AnyNodeDestination) = request(Verb.DELETE, payload, env, destination)
-  final def post[A](payload: A, env: BasicRequestHeaders = getHeaders, destination: Routable = AnyNodeDestination) = request(Verb.POST, payload, env, destination)
-  final def put[A](payload: A, env: BasicRequestHeaders = getHeaders, destination: Routable = AnyNodeDestination) = request(Verb.PUT, payload, env, destination)
+  final def get[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.GET, payload, headers)
+  final def delete[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.DELETE, payload, headers)
+  final def post[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.POST, payload, headers)
+  final def put[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.PUT, payload, headers)
 
 }

@@ -24,7 +24,7 @@ import org.totalgrid.reef.japi.client._
 
 /* ---- Case classes that make the service api easier to use ---- */
 
-case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty, destination: Routable = AnyNodeDestination)
+case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty)
 
 object Response {
 

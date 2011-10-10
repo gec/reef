@@ -87,7 +87,7 @@ trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
-  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders, dest: Routable = AnyNodeDestination): Promise[Response[A]] = {
+  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders): Promise[Response[A]] = {
 
     val klass = ClassLookup.get(payload)
 

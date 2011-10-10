@@ -20,10 +20,10 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable }
 import org.totalgrid.reef.sapi.client.{ Failure, Response, SessionPool }
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.promise.{ FixedPromise, SynchronizedPromise, Promise }
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AnyNodeDestination, Routable }
 
 /**
  * allows for the ordered publishing of service requests to multiple services to be completed in the order
@@ -70,7 +70,8 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     }
 
   private def publish(record: Record, retries: Int): Unit = pool.borrow { s =>
-    s.request(record.verb, record.value, destination = record.destination).listen(onResponse(record, retries))
+    val headers = BasicRequestHeaders.empty.setDestination(record.destination)
+    s.request(record.verb, record.value, headers).listen(onResponse(record, retries))
   }
 
   private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {

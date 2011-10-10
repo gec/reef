@@ -23,8 +23,8 @@ import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.sapi.{ Routable, AddressableDestination }
 import org.totalgrid.reef.models.Point
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, Routable, AddressableDestination }
 
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying
@@ -222,7 +222,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
     }
     try {
       lastAttempt.nextTime = now + 5000
-      client.put(mb, destination = dest).await().expectMany()
+      client.put(mb, BasicRequestHeaders.empty.setDestination(dest)).await().expectMany()
       lastAttempt.success = true
     } catch {
       case ex: Exception =>

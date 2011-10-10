@@ -37,10 +37,9 @@ trait RequestSpyHook extends RestOperations with DefaultHeaders with RequestSpyM
   abstract override def request[A](
     verb: Envelope.Verb,
     request: A,
-    headers: BasicRequestHeaders,
-    destination: Routable): Promise[Response[A]] = {
+    headers: BasicRequestHeaders): Promise[Response[A]] = {
 
-    val promise = super.request(verb, request, headers, destination)
+    val promise = super.request(verb, request, headers)
 
     requestSpys.foreach { _.onRequestReply(verb, request, promise) }
 
