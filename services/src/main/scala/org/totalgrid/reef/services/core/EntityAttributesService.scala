@@ -48,10 +48,12 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
       val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
-      val withoutIds = existingAttrs.map { a => a.id = 0; a }
       val newAtttributes = req.getAttributesList.map { convertProtoToEntry(entEntry.id, _) }.toList
 
-      val differences = newAtttributes.diff(withoutIds)
+      // cant use diff to calculate difference because the attribute type is a squeryl type and it does
+      // weird things with the hashCodes (apparently used in the diff algorithm)
+      // TODO: look for all usages of diff involving squeryl objects
+      val differences = newAtttributes.filterNot(e => existingAttrs.find(e.equals(_)).isDefined)
 
       if (!differences.isEmpty || newAtttributes.size != existingAttrs.size) {
         deleteAllFromEntity(entEntry.id)
