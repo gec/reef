@@ -43,7 +43,7 @@ class AmqpClientSession(
 
   final override def asyncRequest[A](verb: Envelope.Verb, request: A, headers: BasicRequestHeaders, dest: Routable)(callback: Response[A] => Unit) {
 
-    val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
+    val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup.get(request))
     val requestBuilder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))
 
     getHeaders.merge(headers).toEnvelopeRequestHeaders.foreach(requestBuilder.addHeaders)

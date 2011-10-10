@@ -89,7 +89,7 @@ trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
   override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders, dest: Routable = AnyNodeDestination): Promise[Response[A]] = {
 
-    val klass = ClassLookup[A](payload)
+    val klass = ClassLookup.get(payload)
 
     val rsp = ReefServicesList.getServiceOption(klass) match {
       case Some(info) =>

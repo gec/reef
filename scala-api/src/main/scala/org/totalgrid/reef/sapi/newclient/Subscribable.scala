@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.sapi.newclient
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -18,12 +18,9 @@ package org.totalgrid.reef.sapi.client
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.japi.TypeDescriptor
+import org.totalgrid.reef.sapi.client.Subscription
 
-trait SubscriptionHandler {
-
-  def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit
-
-  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit
+trait Subscribable {
+  def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A]
 }
-

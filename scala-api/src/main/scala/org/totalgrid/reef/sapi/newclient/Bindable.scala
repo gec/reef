@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.newclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,10 +18,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client
 
-import org.totalgrid.reef.japi.TypeDescriptor
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable }
+import org.totalgrid.reef.util.Cancelable
 
-trait Subscribable {
-  def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A]
+trait Bindable {
+
+  def bindService[A](service: AsyncService[A], destination: Routable = AnyNodeDestination, competing: Boolean = false): Cancelable
+
 }

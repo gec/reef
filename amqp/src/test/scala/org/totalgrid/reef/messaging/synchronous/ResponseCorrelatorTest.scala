@@ -38,9 +38,9 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
 
   test("Calls back on timeout") {
     val mock = new MockExecutor
-    val rc = new ResponseCorrelator(mock)
+    val rc = new ResponseCorrelator
     var list: List[Option[ServiceResponse]] = Nil
-    rc.register(1.milliseconds)(list ::= _)
+    rc.register(mock, 1.milliseconds)(list ::= _)
     list should equal(Nil)
     mock.tick(1.milliseconds)
     list should equal(List(None))
@@ -48,9 +48,9 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
 
   test("Marshall responses to executor") {
     val mock = new MockExecutor
-    val rc = new ResponseCorrelator(mock)
+    val rc = new ResponseCorrelator
     var list: List[Option[ServiceResponse]] = Nil
-    val uuid = rc.register(200.milliseconds)(list ::= _)
+    val uuid = rc.register(mock, 200.milliseconds)(list ::= _)
     val response = getResponse(uuid)
     rc.receive(response.toByteArray, None)
     list should equal(List(Some(response)))
@@ -58,9 +58,9 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
 
   test("Multiple callbacks have no effect") {
     val mock = new MockExecutor
-    val rc = new ResponseCorrelator(mock)
+    val rc = new ResponseCorrelator
     var list: List[Option[ServiceResponse]] = Nil
-    val uuid = rc.register(200.milliseconds)(list ::= _)
+    val uuid = rc.register(mock, 200.milliseconds)(list ::= _)
     val response = getResponse(uuid)
     4.times(rc.receive(response.toByteArray, None))
     list should equal(List(Some(response)))

@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi.client
+package org.totalgrid.reef.sapi.newclient
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -18,13 +18,12 @@ package org.totalgrid.reef.sapi.client
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable }
-import org.totalgrid.reef.util.Cancelable
+trait SubscriptionHandler {
 
-trait Bindable {
+  def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit
 
-  def bindService[A](service: AsyncService[A], destination: Routable = AnyNodeDestination, competing: Boolean = false): Cancelable
-
+  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit
 }
+

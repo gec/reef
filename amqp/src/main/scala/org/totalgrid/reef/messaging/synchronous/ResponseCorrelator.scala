@@ -33,28 +33,29 @@ import net.agileautomata.executor4s._
  * @param channel The ProtoServiceChannel on which requests and responses will be received
  *
  */
-class ResponseCorrelator(executor: Executor) extends Logging with MessageConsumer {
+class ResponseCorrelator extends Logging with MessageConsumer {
 
   type Response = Option[ServiceResponse]
   type ResponseCallback = Response => Unit
 
   // use uuid to map these
-  private def getNextUuid() = UUID.randomUUID().toString
+  private def nextUuid = UUID.randomUUID().toString
 
   /// mutable state
-  private val map = mutable.Map.empty[String, Tuple2[Cancelable, ResponseCallback]]
+  private case class Record(timer: Cancelable, callback: ResponseCallback, executor: Executor)
+  private val map = mutable.Map.empty[String, Record]
 
-  def register(interval: TimeInterval)(callback: ResponseCallback) = map.synchronized {
-    val uuid = getNextUuid()
+  def register(executor: Executor, interval: TimeInterval)(callback: ResponseCallback) = map.synchronized {
+    val uuid = nextUuid
     val timer = executor.delay(interval)(onTimeout(uuid))
-    map.put(uuid, (timer, callback))
+    map.put(uuid, Record(timer, callback, executor))
     uuid
   }
 
   // terminates all existing registered callbacks with an exception
   def flush() = map.synchronized {
-    map.foreach {
-      case (_, (timer, callback)) =>
+    map.values.foreach {
+      case Record(timer, callback, executor) =>
         timer.cancel()
         executor.execute(callback(None))
     }
@@ -63,7 +64,7 @@ class ResponseCorrelator(executor: Executor) extends Logging with MessageConsume
 
   private def onTimeout(uuid: String) = map.synchronized {
     map.get(uuid) match {
-      case Some((timer, callback)) =>
+      case Some(Record(timer, callback, executor)) =>
         map.remove(uuid)
         callback(None)
       case None =>
@@ -81,7 +82,7 @@ class ResponseCorrelator(executor: Executor) extends Logging with MessageConsume
 
   private def onResponse(rsp: ServiceResponse) = map.synchronized {
     map.get(rsp.getId) match {
-      case Some((timer, callback)) =>
+      case Some(Record(timer, callback, _)) =>
         timer.cancel()
         map.remove(rsp.getId)
         callback(Some(rsp))

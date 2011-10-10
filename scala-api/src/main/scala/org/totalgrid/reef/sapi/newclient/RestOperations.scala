@@ -1,3 +1,5 @@
+package org.totalgrid.reef.sapi.newclient
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,22 +18,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.example
+import org.totalgrid.reef.sapi._
+import client.DefaultHeaders
+import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.japi.client.Response
+import net.agileautomata.executor4s.Future
 
-import org.totalgrid.reef.sapi.service.SyncServiceBase
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.newclient.SubscriptionHandler
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.japi.Envelope.Event
-import org.totalgrid.reef.sapi.BasicRequestHeaders
+trait RestOperations {
 
-class SomeIntegerIncrementService(handler: SubscriptionHandler) extends SyncServiceBase[SomeInteger] {
-  val descriptor = SomeIntegerTypeDescriptor
+  self: DefaultHeaders =>
 
-  final override def put(req: SomeInteger, headers: BasicRequestHeaders): Response[ServiceType] = {
-    val rsp = req.increment
-    headers.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
-    handler.publishEvent(Event.MODIFIED, req.increment, "all")
-    Response(Envelope.Status.OK, rsp)
-  }
+  def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders): Future[Response[A]]
+
+  final def get[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.GET, payload, headers)
+  final def delete[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.DELETE, payload, headers)
+  final def post[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.POST, payload, headers)
+  final def put[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.PUT, payload, headers)
+
 }

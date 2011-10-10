@@ -22,6 +22,7 @@ import org.totalgrid.reef.japi.client.ConnectionListener
 import org.totalgrid.reef.japi._
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.sapi._
+import newclient.{SubscriptionHandler, Bindable, Subscribable}
 import service.AsyncService
 import org.totalgrid.reef.util.Cancelable
 
@@ -45,7 +46,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
   def removeListener(listener: ConnectionListener) = conn.removeListener(listener)
 
   private var state: Option[CurrentState] = None
-  private val correlator = new ResponseCorrelator(executor)
+  private val correlator = new ResponseCorrelator
 
   conn.addListener(listener)
   this.setState()
@@ -68,7 +69,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
     headers: BasicRequestHeaders,
     dest: Routable)(callback: Response[A] => Unit) = {
 
-    val info = lookup.getServiceInfo(ClassLookup[A](payload))
+    val info = lookup.getServiceInfo(ClassLookup.get(payload))
 
     def onResponse(result: Option[Envelope.ServiceResponse]) = result match {
       case Some(envelope) => callback(RestOperations.readServiceResponse(info.descriptor, envelope))
@@ -77,7 +78,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
 
     state match {
       case Some(CurrentState(channel, queue)) =>
-        val uuid = correlator.register(timeoutms.milliseconds)(onResponse)
+        val uuid = correlator.register(strand, timeoutms.milliseconds)(onResponse)
         val request = RestOperations.buildServiceRequest(verb, payload, info.descriptor, uuid, getHeaders.merge(headers))
         conn.publish(info.descriptor.id, dest.key, request.toByteArray, Some(Destination("amq.direct", queue)))
       case None =>
@@ -108,7 +109,7 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
   }
 
   final override def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit = {
-    val info = lookup.getServiceInfo(ClassLookup[A](value))
+    val info = lookup.getServiceInfo(ClassLookup.get(value))
     val desc = info.subType.asInstanceOf[TypeDescriptor[A]]
     val event = RestOperations.getEvent(typ, value, desc)
     conn.publish(info.subExchange, key, event.toByteArray)
