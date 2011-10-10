@@ -57,8 +57,8 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
       conn.listen(queue, mc2)
       2.times(conn.publish("ex1", "foobar", testBytes, None))
 
-      mc1.messages shouldEqual (testBytes) within (5000)
-      mc2.messages shouldEqual (testBytes) within (5000)
+      mc1.messages shouldBecome testBytes within 5000
+      mc2.messages shouldBecome testBytes within 5000
     }
   }
 
@@ -75,8 +75,8 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
       conn.listen(q2, mc2)
       conn.publish("ex1", "foobar", testBytes, None)
 
-      mc1.messages shouldEqual (testBytes) within (5000)
-      mc2.messages shouldEqual (testBytes) within (5000)
+      mc1.messages shouldBecome testBytes within 5000
+      mc2.messages shouldBecome testBytes within 5000
     }
   }
 
