@@ -523,8 +523,12 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def addTypeToEntity(ent: Entity, typ: String) = {
-    addEntityTypes(typ :: Nil)
-    entityTypes.insert(new EntityToTypeJoins(ent.id, typ))
+    addTypesToEntity(ent, typ :: Nil)
+  }
+
+  def addTypesToEntity(ent: Entity, types: List[String]) = {
+    addEntityTypes(types)
+    entityTypes.insert(types.map { new EntityToTypeJoins(ent.id, _) })
     entities.lookup(ent.id).get
   }
 
