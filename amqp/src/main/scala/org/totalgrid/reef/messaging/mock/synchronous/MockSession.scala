@@ -28,7 +28,7 @@ object MockSession {
   type RequestHandler[A] = Request[A] => Response[A]
 }
 
-class MockSession extends ClientSession {
+final class MockSession extends ClientSession {
 
   import MockSession._
 
@@ -59,9 +59,9 @@ class MockSession extends ClientSession {
     def isComplete: Boolean = option.isDefined
   }
 
-  final override def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, dest: Routable): Promise[Response[A]] = {
+  override def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders): Promise[Response[A]] = {
     if (!open) throw new IllegalStateException("Session is not open")
-    val request = Request[A](verb, payload, headers, dest)
+    val request = Request[A](verb, payload, headers)
     nextHandler[A]() match {
       case Some(handler) => new FixedPromise[Response[A]](handler(request))
       case None =>
@@ -71,11 +71,11 @@ class MockSession extends ClientSession {
     }
   }
 
-  final override def close() = open = false
+  override def close() = open = false
 
-  final override def isOpen = open
+  override def isOpen = open
 
-  final override def addSubscription[A](klass: Class[_]): Subscription[A] = throw new Exception("Unimplemented")
+  override def addSubscription[A](klass: Class[_]): Subscription[A] = throw new Exception("Unimplemented")
 
   // Testing functions
 

@@ -27,6 +27,7 @@ object BasicRequestHeaders {
   val authToken = "AUTH_TOKEN"
   val user = "USER"
   val resultLimit = "RESULT_LIMIT"
+  val destination = "DESTINATION"
 
   def from(list: List[Envelope.RequestHeader]): BasicRequestHeaders =
     list.foldLeft(BasicRequestHeaders.empty)((sum, i) => sum.addHeader(i.getKey, i.getValue))
@@ -54,7 +55,16 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   override def clearResultLimit() = clearHeader(BasicRequestHeaders.resultLimit)
 
-  /* --- Done RequestHeaders --- */
+  /* --- Specific getters/setters not part of RequestHeaders --- */
+
+  def setDestination(destination: Routable) = setHeader(BasicRequestHeaders.destination, destination.key)
+
+  def clearDestination() = clearHeader(BasicRequestHeaders.destination)
+
+  def getDestination: Routable =
+    getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key)).getOrElse(AnyNodeDestination)
+
+  /* --- Helpers --- */
 
   def addHeader(key: String, value: String) = headers.get(key) match {
     case Some(list) => new BasicRequestHeaders((headers - key) + (key -> (value :: list)))

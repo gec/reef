@@ -52,15 +52,15 @@ class MeasurementBatchService(pool: SessionPool)
       commEndpoints.size match {
         //fails with exception if any batch can't be routed
         case 0 => throw new BadRequestException("No Logical Nodes on points: ")
-        case 1 => Request(Envelope.Verb.PUT, req, destination = convertEndpointToDestination(commEndpoints.head._1)) :: Nil
+        case 1 =>
+          val headers = BasicRequestHeaders.empty.setDestination(convertEndpointToDestination(commEndpoints.head._1))
+          Request(Envelope.Verb.PUT, req, headers) :: Nil
         case _ => getRequests(req, commEndpoints)
       }
     }
 
     val promises = pool.borrow { client =>
-      requests.map { req =>
-        client.request(req.verb, req.payload, req.env, req.destination)
-      }
+      requests.map(req => client.request(req.verb, req.payload, req.env))
     }
 
     ScatterGather.collect(promises) { results =>
@@ -92,7 +92,8 @@ class MeasurementBatchService(pool: SessionPool)
         points.foreach { p =>
           batch.addMeas(measList.find(_.getName == p.entityName).get)
         }
-        Request(Envelope.Verb.PUT, batch.build, destination = convertEndpointToDestination(ce)) :: sum
+        val headers = BasicRequestHeaders.empty.setDestination(convertEndpointToDestination(ce))
+        Request(Envelope.Verb.PUT, batch.build, headers) :: sum
     }
 
   }

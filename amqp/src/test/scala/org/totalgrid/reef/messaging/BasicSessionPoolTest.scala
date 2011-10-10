@@ -44,11 +44,10 @@ class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
 
     def addSubscription[A](klass: Class[_]): Subscription[A] = throw new ServiceIOException("Unimplemented")
 
-    final override def request[A](
+    override def request[A](
       verb: Verb,
       payload: A,
-      env: BasicRequestHeaders,
-      destination: Routable): Promise[Response[A]] = {
+      headers: BasicRequestHeaders): Promise[Response[A]] = {
       numRequests += 1
       new FixedPromise(SingleSuccess(single = payload))
     }

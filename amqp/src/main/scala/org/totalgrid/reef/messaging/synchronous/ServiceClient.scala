@@ -62,11 +62,10 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
     }
   }
 
-  final override protected def asyncRequest[A](
+  override protected def asyncRequest[A](
     verb: Envelope.Verb,
     payload: A,
-    headers: BasicRequestHeaders,
-    dest: Routable)(callback: Response[A] => Unit) = {
+    headers: BasicRequestHeaders)(callback: Response[A] => Unit) = {
 
     val info = lookup.getServiceInfo(ClassLookup[A](payload))
 
@@ -79,17 +78,17 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
       case Some(CurrentState(channel, queue)) =>
         val uuid = correlator.register(timeoutms.milliseconds)(onResponse)
         val request = RestOperations.buildServiceRequest(verb, payload, info.descriptor, uuid, getHeaders.merge(headers))
-        conn.publish(info.descriptor.id, dest.key, request.toByteArray, Some(Destination("amq.direct", queue)))
+        conn.publish(info.descriptor.id, headers.getDestination.key, request.toByteArray, Some(Destination("amq.direct", queue)))
       case None =>
         throw new Exception("Connection is closed, service client cannot perform service call")
     }
   }
 
-  final override def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A] = {
+  override def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A] = {
     new SynchronousSubscription[A](conn.newChannel(), executor, descriptor.deserialize)
   }
 
-  final override def bindService[A](service: AsyncService[A], destination: Routable = AnyNodeDestination, competing: Boolean = false): Cancelable = {
+  override def bindService[A](service: AsyncService[A], destination: Routable = AnyNodeDestination, competing: Boolean = false): Cancelable = {
     def publish(response: ServiceResponse, exchange: String, key: String) = conn.publish(exchange, key, response.toByteArray)
     val channel = conn.newChannel()
     val mc = AMQPMessageConsumers.makeServiceBinding(publish, service.respond)
@@ -107,14 +106,14 @@ final class ServiceClient(lookup: ServiceList, conn: BrokerConnection, executor:
     new Cancelable { def cancel() = channel.close() }
   }
 
-  final override def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit = {
+  override def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit = {
     val info = lookup.getServiceInfo(ClassLookup[A](value))
     val desc = info.subType.asInstanceOf[TypeDescriptor[A]]
     val event = RestOperations.getEvent(typ, value, desc)
     conn.publish(info.subExchange, key, event.toByteArray)
   }
 
-  final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit = {
+  override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit = {
     val info = lookup.getServiceInfo(klass)
     //println("Binding queue " + subQueue +  to " + info.subExchange + " with key " + key)
     conn.bindQueue(subQueue, info.subExchange, key)
