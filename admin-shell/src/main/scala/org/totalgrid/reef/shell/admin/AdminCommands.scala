@@ -45,7 +45,11 @@ class ResetDatabaseCommand extends ReefCommandSupport {
       case None =>
         val stdIn = new BufferedReader(new InputStreamReader(System.in))
         System.out.println("Enter New System Password: ")
-        stdIn.readLine.trim
+        val p1 = stdIn.readLine.trim
+        System.out.println("Repeat System Password: ")
+        val p2 = stdIn.readLine.trim
+        if (p1 != p2) throw new Exception("Passwords do not match, please try again.")
+        p2
     }
 
     val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql"))

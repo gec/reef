@@ -44,22 +44,22 @@ class EntityService extends SyncServiceBase[EntityProto] {
         throw new BadRequestException("Must include name and atleast one entity type to create entity.")
       }
 
-      val typ = protoRequest.getTypesList.head
+      val types = protoRequest.getTypesList.toList
       val name = protoRequest.getName
-      val list = EntityQueryManager.nameTypeQuery(Some(name), Some(List(typ)))
+      val list = EntityQueryManager.nameTypeQuery(Some(name), None)
 
       var (status, ent) = list match {
-        case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " type:" + typ)
+        case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " types:" + types)
         case List(ent) => (Status.NOT_MODIFIED, list.head)
-        case Nil => (Status.CREATED, EntityQueryManager.addEntity(name, typ :: Nil, protoRequest.uuid))
+        case Nil => (Status.CREATED, EntityQueryManager.addEntity(name, types, protoRequest.uuid))
       }
 
-      protoRequest.getTypesList.tail.foreach(t => {
-        if (ent.types.value.find(_ == t).isEmpty) {
-          ent = EntityQueryManager.addTypeToEntity(ent, t)
-          if (status == Status.NOT_MODIFIED) status = Status.UPDATED
-        }
-      })
+      val additionalTypes = types.diff(ent.types.value)
+
+      if (!additionalTypes.isEmpty) {
+        ent = EntityQueryManager.addTypesToEntity(ent, additionalTypes)
+        if (status == Status.NOT_MODIFIED) status = Status.UPDATED
+      }
       Response(status, EntityQueryManager.entityToProto(ent).build :: Nil)
     }
   }

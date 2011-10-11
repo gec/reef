@@ -9,6 +9,19 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.3.2
+==============
+
+Minor bug fix release.
+
+### Bug Fixes:
+
+* Loader timeouts increased to handle removing points with large measurement counts
+* Measurement removal happens during point removal
+* reef:resetdb command asks for system password twice
+* Minor fixes to entity and entity attributes services
+
+
 Version 0.3.1
 ==============
 

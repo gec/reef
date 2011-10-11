@@ -24,6 +24,7 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity }
 
 import SyncServiceShims._
 import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.japi.Envelope.Status
 
 class EntityServiceTest extends DatabaseUsingTestBase {
 
@@ -52,5 +53,17 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     intercept[ReefServiceException] {
       service.put(upload2).expectOne
     }
+  }
+
+  test("Put Entity with 2 types") {
+
+    val upload1 = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType1").addTypes("TestType3").build
+    val upload2 = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType4").addTypes("TestType2").build
+
+    service.put(upload1).expectOne(Status.CREATED)
+    service.put(upload2).expectOne(Status.UPDATED)
+
+    service.put(upload1).expectOne(Status.NOT_MODIFIED)
+    service.put(upload2).expectOne(Status.NOT_MODIFIED)
   }
 }
