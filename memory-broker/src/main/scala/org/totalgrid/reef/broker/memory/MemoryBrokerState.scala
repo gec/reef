@@ -72,7 +72,6 @@ object MemoryBrokerState {
 
     def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean): State =
       withQueueAndExchange(queue, exchange) { (q, ex) =>
-        println("Bound q: " + queue + " to exchange: " + exchange + " with key: " + key)
         this.copy(exchanges = exchanges + (exchange -> ex.bindQueue(q.name, key)))
       }
 

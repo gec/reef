@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.broker.newapi._
 import net.agileautomata.commons.testing._
-import net.agileautomata.executor4s.Executors
+import net.agileautomata.executor4s._
 
 @RunWith(classOf[JUnitRunner])
 class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
@@ -35,10 +35,17 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
     def onMessage(msg: BrokerMessage) = messages.append(msg.bytes)
   }
 
-  val testBytes: Array[Byte] = Array(0x0A, 0x0B)
+  val r = new java.util.Random
+  def randomBytes(count: Int) = {
+    val arr = new Array[Byte](count)
+    r.nextBytes(arr)
+    arr
+  }
+
+  val testBytes: Array[Byte] = randomBytes(100)
 
   def fixture(test: BrokerConnection => Unit) = {
-    val exe = Executors.newScheduledSingleThread()
+    val exe = Executors.newScheduledThreadPool()
     val factory = new MemoryBrokerConnectionFactory(exe)
     try {
       test(factory.connect)
@@ -78,6 +85,24 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
       mc1.messages shouldBecome testBytes within 5000
       mc2.messages shouldBecome testBytes within 5000
+    }
+  }
+
+  test("All messages are received when connection is used concurrently") {
+    fixture { conn =>
+      val q = conn.declareQueue()
+      val count = new SynchronizedVariable[Int](0)
+      val mc = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = count.modify(_ + 1)
+      }
+      conn.declareExchange("ex")
+      val sub = conn.listen().start(mc)
+      conn.bindQueue(sub.getQueue, "ex", "#")
+      val bytes = 100.create(randomBytes(1))
+      bytes.foreach(arr => onAnotherThread(conn.publish("ex","foo", arr, None)))
+
+      count shouldBecome 100 within 5000
+      count shouldRemain 100 during 500
     }
   }
 
