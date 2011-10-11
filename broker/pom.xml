@@ -2,15 +2,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>reef-broker</artifactId>
-    <packaging>bundle</packaging>
-
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
         <version>0.4.0-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
+
+    <artifactId>reef-broker</artifactId>
+    <packaging>bundle</packaging>
 
 
     <licenses>
@@ -33,8 +33,10 @@
                         <Bundle-Name>Reef Broker Adapters</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.broker.api,
+                            org.totalgrid.reef.broker.newapi,
                             org.totalgrid.reef.broker.embedded,
-                            org.totalgrid.reef.broker.qpid
+                            org.totalgrid.reef.broker.qpid,
+                            org.totalgrid.reef.broker.newqpid
                         </Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
