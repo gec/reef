@@ -27,8 +27,9 @@ import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 
 import org.totalgrid.reef.executor.mock.{ MockExecutorTrait }
-import org.totalgrid.reef.japi.request.{ ApplicationService }
+import org.totalgrid.reef.sapi.request.{ ApplicationService }
 import org.mockito.{ ArgumentCaptor, Mockito }
+import org.totalgrid.reef.promise.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
@@ -45,7 +46,8 @@ class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
   test("Heartbeats are sent") {
     val services = Mockito.mock(classOf[ApplicationService])
     val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
-    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(null)
+    val promise = new FixedPromise[StatusSnapshot](StatusSnapshot.getDefaultInstance)
+    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(promise)
 
     val actor = new ProcessHeartbeatActor(services, makeConfig) with MockExecutorTrait
 

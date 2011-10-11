@@ -27,9 +27,10 @@ import java.io.{ PrintStream, InputStream }
 
 import org.totalgrid.reef.util.FileConfigReader
 import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
 import org.totalgrid.reef.japi.client.UserSettings
 import org.totalgrid.reef.broker.api.{ BrokerConnectionInfo, BrokerProperties }
+import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
+import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {
@@ -66,7 +67,7 @@ object ProtoShellApplication {
       def session = client
     }
 
-    val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
+    val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await()
     client.modifyHeaders(_.setAuthToken(token))
 
     client

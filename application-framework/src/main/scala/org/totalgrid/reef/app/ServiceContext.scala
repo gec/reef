@@ -18,9 +18,31 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.Observable
-
 import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.util.{ Cancelable, Observable }
+import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
+import org.totalgrid.reef.executor.Executor
+
+object ServiceContext {
+  // TODO: remove exe when clients are fully stranded
+  def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U], exe: Executor): Cancelable = {
+    context.handleResponse(result.getResult)
+
+    val sub = result.getSubscription
+
+    sub.start(new SubscriptionEventAcceptor[U] {
+      def onEvent(event: SubscriptionEvent[U]) {
+        exe.execute {
+          context.handleEvent(event.getEventType, event.getValue)
+        }
+      }
+    })
+
+    new Cancelable {
+      def cancel() = sub.cancel
+    }
+  }
+}
 
 /**
  * Implements a single resource service consumer.
@@ -36,6 +58,7 @@ trait ServiceContext[A] extends Observable {
   def remove(obj: A)
   def modify(obj: A)
   def subscribed(list: List[A])
+  def clear()
 
   def handleResponse(result: List[A]) = {
     subscribed(result)

@@ -98,11 +98,11 @@ public class TestEntityService extends ReefConnectionTestBase
     public void getSubstationEntities() throws ReefServiceException
     {
         EntityService es = helpers;
-        List<Entity> list = es.getAllEntitiesWithType( "Substation" );
+        List<Entity> list = es.getAllEntitiesWithType( "EquipmentGroup" );
         assertEquals( 2, list.size() );
         for ( Entity e : list )
         {
-            assertTrue( e.getTypesList().contains( "Substation" ) );
+            assertTrue( e.getTypesList().contains( "EquipmentGroup" ) );
         }
     }
 
@@ -295,7 +295,7 @@ public class TestEntityService extends ReefConnectionTestBase
     {
         EntityService es = helpers;
 
-        Entity substation = es.getAllEntitiesWithType( "Substation" ).get( 0 );
+        Entity substation = es.getAllEntitiesWithType( "EquipmentGroup" ).get( 0 );
 
         List<Entity> entities = es.getEntityRelatedChildrenOfType( substation.getUuid(), "owns", "Equipment" );
 

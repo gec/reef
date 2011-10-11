@@ -26,7 +26,11 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 
-class AddressableMeasurementBatchService(measProc: ProcessingNode) extends SyncServiceBase[MeasurementBatch] {
+trait MeasBatchProcessor {
+  def process(m: MeasurementBatch)
+}
+
+class AddressableMeasurementBatchService(measProc: MeasBatchProcessor) extends SyncServiceBase[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 

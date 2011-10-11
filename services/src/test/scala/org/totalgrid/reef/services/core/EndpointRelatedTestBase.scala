@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.measproc.MeasurementStreamProcessingNode
-
 import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
@@ -45,6 +43,7 @@ import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService, MeasurementStreamProcessingNode }
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 
@@ -100,19 +99,18 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
       val measProcAssign = event.value
       if (event.event != Envelope.Event.ADDED) return
 
-      val measProc = new org.totalgrid.reef.measproc.ProcessingNode {
+      val measProc = new MeasBatchProcessor {
         def process(m: MeasurementBatch) {
           rtDb.set(m.getMeasList.toList)
           mb.atomic(x => ((measProcAssign.getLogicalNode.getName, m) :: x).reverse)
         }
-
-        def add(over: MeasOverride) {}
-        def remove(over: MeasOverride) {}
-
-        def add(set: TriggerSet) {}
-        def remove(set: TriggerSet) {}
       }
-      MeasurementStreamProcessingNode.attachNode(measProc, measProcAssign, amqp, new InstantExecutor {})
+
+      val measBatchService = new AddressableMeasurementBatchService(measProc)
+      val exchange = measBatchService.descriptor.id
+      val destination = AddressableDestination(measProcAssign.getRouting.getServiceRoutingKey)
+
+      amqp.bindService(exchange, measBatchService.respond, destination, false, Some(new InstantExecutor))
 
       logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
 

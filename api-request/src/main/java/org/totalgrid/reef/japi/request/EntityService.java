@@ -100,11 +100,11 @@ public interface EntityService
     /**
      * Find all entities with a specified type.
      *
-     * @param type The entity type to search for.
+     * @param typeName The entity type to search for.
      * @return The list of entities that have the specified type.
      * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-    List<Entity> getAllEntitiesWithType( String type ) throws ReefServiceException;
+    List<Entity> getAllEntitiesWithType( String typeName ) throws ReefServiceException;
 
     /**
      * Find all entities matching at least one of the specified types.
@@ -123,11 +123,11 @@ public interface EntityService
      *
      * @param parent       a reference to the parent entity on which to root the request
      * @param relationship the "color" of the edge between the parent and child, common ones are "owns", "source", "feedback
-     * @param type          the "type" or "class" the matching children need to have
+     * @param typeName     the "type" or "class" the matching children need to have
      * @return list of all children in arbitrary order
      * @throws org.totalgrid.reef.japi.ReefServiceException
      */
-    List<Entity> getEntityRelatedChildrenOfType( ReefUUID parent, String relationship, String type ) throws ReefServiceException;
+    List<Entity> getEntityRelatedChildrenOfType( ReefUUID parent, String relationship, String typeName ) throws ReefServiceException;
 
     /**
      * Return direct children of the parent Entity (distance of 1). Just children are returned.

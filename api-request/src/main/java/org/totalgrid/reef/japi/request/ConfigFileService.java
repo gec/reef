@@ -95,5 +95,5 @@ public interface ConfigFileService
     /**
      * delete the passed in config file and all "using" relationships to Entities
      */
-    ConfigFile deleteConfigFile( ConfigFile configFile );
+    ConfigFile deleteConfigFile( ConfigFile configFile ) throws ReefServiceException;
 }

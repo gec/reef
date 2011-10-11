@@ -20,6 +20,7 @@
 		<module>test-util</module>
 		<module>proto</module>
 		<module>scala-api</module>
+		<module>api-enhancer</module>
 		<module>api-request</module>
 		<module>java-rest-api</module>
 		<module>util</module>

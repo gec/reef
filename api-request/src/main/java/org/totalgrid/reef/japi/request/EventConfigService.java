@@ -20,6 +20,7 @@ package org.totalgrid.reef.japi.request;
 
 import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.proto.Alarms.EventConfig;
+import org.totalgrid.reef.proto.Alarms.EventConfig.Designation;
 
 import java.util.List;
 
@@ -84,7 +85,7 @@ public interface EventConfigService
      * @param resourceString format string to render while replacing the named attributes
      * @return newly generated event routing configuration
      */
-    EventConfig setEventConfig( String eventType, int severity, EventConfig.Designation designation, boolean audibleAlarm, String resourceString )
+    EventConfig setEventConfig( String eventType, int severity, Designation designation, boolean audibleAlarm, String resourceString )
         throws ReefServiceException;
 
     /**

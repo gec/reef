@@ -85,7 +85,13 @@ trait ReactorBase extends Actor with Logging {
     if (running) {
       this.!?(10000, Stop) match {
         case Some(Stop) =>
-        case None => logger.error("Actor deadlock detected on stop")
+        case None =>
+          try {
+            throw new RuntimeException("Actor deadlock detected on stop")
+          } catch {
+            case rt: RuntimeException =>
+              logger.error("Actor deadlock detected on stop", rt)
+          }
       }
     }
   }

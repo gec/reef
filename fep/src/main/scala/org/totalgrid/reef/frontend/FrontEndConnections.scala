@@ -18,102 +18,111 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
-import org.totalgrid.reef.proto.FEP.CommChannel
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
-import org.totalgrid.reef.protocol.api._
-import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.broker.api.CloseableChannel
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.messaging.{ OrderedServiceTransmitter, Connection }
+
 import org.totalgrid.reef.app.KeyedMap
+import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
+import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.protocol.api.Protocol
+import org.totalgrid.reef.sapi.AddressableDestination
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[Protocol], conn: Connection) extends KeyedMap[ConnProto] {
+class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices) extends KeyedMap[CommEndpointConnection] {
 
-  val retries = 3
-
-  def getKey(c: ConnProto) = c.getUid
-
-  val protocols = comms.mapify { _.name }
-
-  case class EndpointComponent(commandAdapter: CloseableChannel, transmitter: OrderedServiceTransmitter)
+  case class EndpointComponent(commandAdapter: Cancelable)
 
   var endpointComponents = Map.empty[String, EndpointComponent]
-
-  val pool = conn.getSessionPool
 
   private def getProtocol(name: String): Protocol = protocols.get(name) match {
     case Some(p) => p
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
 
-  def hasChangedEnoughForReload(updated: ConnProto, existing: ConnProto) = {
+  def getKey(c: CommEndpointConnection) = c.getUid
+
+  val protocols = comms.mapify { _.name }
+
+  def hasChangedEnoughForReload(updated: CommEndpointConnection, existing: CommEndpointConnection) = {
     updated.hasRouting != existing.hasRouting ||
       (updated.hasRouting && updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey)
   }
 
-  def addEntry(commEndpointConnection: ConnProto) = {
+  def addEntry(c: CommEndpointConnection) = {
 
-    val protocol = getProtocol(commEndpointConnection.getEndpoint.getProtocol)
-    val endpoint = commEndpointConnection.getEndpoint
-    val port = commEndpointConnection.getEndpoint.getChannel
+    val protocol = getProtocol(c.getEndpoint.getProtocol)
+    val endpoint = c.getEndpoint
+    val port = c.getEndpoint.getChannel
 
-    val transmitter = new OrderedServiceTransmitter(pool)
+    val endpointName = c.getEndpoint.getName
 
-    val batchPublisher = newMeasBatchPublisher(transmitter, commEndpointConnection.getRouting.getServiceRoutingKey)
-    val channelListener = newChannelStatePublisher(transmitter, port.getUuid)
-    val endpointListener = newEndpointStatePublisher(transmitter, commEndpointConnection.getUid)
+    val batchPublisher = newMeasBatchPublisher(c.getRouting.getServiceRoutingKey)
+    val channelListener = newChannelStatePublisher(port.getUuid, port.getName)
+    val endpointListener = newEndpointStatePublisher(c.getUid, endpointName)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
-    val cmdHandler = protocol.addEndpoint(endpoint.getName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
-    logger.info("Added endpoint: " + commEndpointConnection.getEndpoint.getName + " on protocol: " + protocol.name + ", routing key: " +
-      commEndpointConnection.getRouting.getServiceRoutingKey)
+    val cmdHandler = protocol.addEndpoint(endpointName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
 
-    val service = conn.bindService(new SingleEndpointCommandService(cmdHandler), AddressableDestination(commEndpointConnection.getRouting.getServiceRoutingKey))
-    endpointComponents += commEndpointConnection.getEndpoint.getName -> EndpointComponent(service, transmitter)
+    val service = client.bindCommandHandler(c, cmdHandler)
+    endpointComponents += endpointName -> EndpointComponent(service)
+
+    logger.info("Added endpoint: " + endpointName + " on protocol: " + protocol.name + ", routing key: " + c.getRouting.getServiceRoutingKey)
   }
 
-  def removeEntry(c: ConnProto) {
-    logger.info("Removing endpoint: " + c.getEndpoint.getName)
+  def removeEntry(c: CommEndpointConnection) {
+
+    val endpointName = c.getEndpoint.getName
+
+    logger.info("Removing endpoint: " + endpointName)
     val protocol = getProtocol(c.getEndpoint.getProtocol)
 
     // need to make sure we close the addressable service so no new commands
     // are sent to endpoint while we are removing it
-    endpointComponents.get(c.getEndpoint.getName) match {
-      case Some(EndpointComponent(serviceBinding, t)) => serviceBinding.close
+    endpointComponents.get(endpointName) match {
+      case Some(EndpointComponent(serviceBinding)) => serviceBinding.cancel
       case None =>
     }
 
-    protocol.removeEndpoint(c.getEndpoint.getName)
+    protocol.removeEndpoint(endpointName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
 
-    // now that all of the endpoints callbacks should have fired we stop the transmitter and
-    // flush the pending messages
-    endpointComponents.get(c.getEndpoint.getName) match {
-      case Some(EndpointComponent(s, transmitter)) => transmitter.shutdown
-      case None =>
+    endpointComponents -= endpointName
+    logger.info("Removed endpoint: " + endpointName + " on protocol: " + protocol.name)
+  }
+
+  private def newMeasBatchPublisher(routingKey: String) = new Protocol.BatchPublisher {
+    def publish(value: MeasurementBatch) = tryPublishing("Couldn't publish measurements: ") {
+      client.publishMeasurements(value, AddressableDestination(routingKey)).await
     }
-    endpointComponents -= c.getEndpoint.getName
-    logger.info("Removed endpoint: " + c.getEndpoint.getName + " on protocol: " + protocol.name)
   }
 
-  private def newMeasBatchPublisher(tx: OrderedServiceTransmitter, routingKey: String) =
-    new IdentityOrderedPublisher[MeasurementBatch](tx, Envelope.Verb.POST, AddressableDestination(routingKey), retries)
-
-  private def newEndpointStatePublisher(tx: OrderedServiceTransmitter, connectionUid: String) = {
-    def transform(x: ConnProto.State): ConnProto = ConnProto.newBuilder.setUid(connectionUid).setState(x).build
-    new OrderedPublisher(tx, Envelope.Verb.POST, AnyNodeDestination, retries)(transform)
+  private def newEndpointStatePublisher(connectionUid: String, endpointName: String) = new Protocol.EndpointPublisher {
+    def publish(state: CommEndpointConnection.State) = tryPublishing("Couldn't update endpointState: ") {
+      client.alterEndpointConnectionState(connectionUid, state).await
+      logger.info("Updated endpoint state: " + endpointName + " state: " + state)
+    }
   }
 
-  private def newChannelStatePublisher(tx: OrderedServiceTransmitter, channelUid: ReefUUID) = {
-    def transform(x: CommChannel.State): CommChannel = CommChannel.newBuilder.setUuid(channelUid).setState(x).build
-    new OrderedPublisher(tx, Envelope.Verb.POST, AnyNodeDestination, retries)(transform)
+  private def newChannelStatePublisher(channelUuid: ReefUUID, channelName: String) = new Protocol.ChannelPublisher {
+    def publish(state: CommChannel.State) = tryPublishing("Couldn't update channelState: ") {
+      client.alterCommunicationChannelState(channelUuid, state).await
+      logger.info("Updated channel state: " + channelName + " state: " + state)
+    }
+  }
+
+  private def tryPublishing[A](msg: String)(func: => A) {
+    try {
+      func
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn(msg + rse.getMessage)
+      // TODO: handle errors with protocols talking to services
+    }
   }
 }
 

@@ -68,5 +68,5 @@ public interface MeasurementOverrideService
      *
      * @return whether an override was cleared.
      */
-    boolean clearMeasurementOverridesOnPoint( Point point ) throws ReefServiceException;
+    MeasOverride clearMeasurementOverridesOnPoint( Point point ) throws ReefServiceException;
 }
