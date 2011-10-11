@@ -36,12 +36,12 @@ class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Execut
       case None => throw new Exception("Connection is closed")
     }
 
-    def declareQueue(name: String) : ConnectionState = {
+    def declareQueue(name: String): ConnectionState = {
       factory.update(s => s.declareQueue(name, exe))
       this.copy(queues = queues + name)
     }
 
-    def disconnect : ConnectionState = fac match {
+    def disconnect: ConnectionState = fac match {
       case Some(f) =>
         f.update(s => queues.foldLeft(s)((old, q) => old.dropQueue(q)))
         ConnectionState(None, Set.empty[String])
@@ -67,10 +67,8 @@ class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Execut
   def bindQueue(queue: String, exchange: String, key: String = "#", unbindFirst: Boolean = false) =
     state.factory.update(_.bindQueue(queue, exchange, key, unbindFirst))
 
-
   def unbindQueue(queue: String, exchange: String, key: String = "#") =
     state.factory.update(_.unbindQueue(queue, exchange, key))
-
 
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: Option[BrokerDestination] = None) =
     state.factory.update(state => state.publish(exchange, key, BrokerMessage(b, replyTo)))

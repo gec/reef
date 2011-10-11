@@ -99,7 +99,7 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
       val sub = conn.listen().start(mc)
       conn.bindQueue(sub.getQueue, "ex", "#")
       val bytes = 100.create(randomBytes(1))
-      bytes.foreach(arr => onAnotherThread(conn.publish("ex","foo", arr, None)))
+      bytes.foreach(arr => onAnotherThread(conn.publish("ex", "foo", arr, None)))
 
       count shouldBecome 100 within 5000
       count shouldRemain 100 during 500
