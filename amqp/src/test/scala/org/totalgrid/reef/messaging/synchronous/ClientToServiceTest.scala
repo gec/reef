@@ -26,11 +26,11 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.sapi.example._
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.client.{ SingleSuccess, Response }
 import net.agileautomata.commons.testing._
-import net.agileautomata.executor4s._
+import net.agileautomata.executor4s.{ Executors, Cancelable }
 import org.totalgrid.reef.sapi.{ AnyNodeDestination, ServiceList }
 import org.totalgrid.reef.sapi.newclient.Client
+import org.totalgrid.reef.sapi.client.{ Success, Response }
 
 @RunWith(classOf[JUnitRunner])
 class QpidClientToService extends ConnectionToServiceTest with QpidBrokerTestFixture
@@ -65,7 +65,7 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     fixture { c =>
       val events = new SynchronizedList[SomeInteger]
       val sub = c.prepareSubscription(SomeIntegerTypeDescriptor)
-      c.put(SomeInteger(1), sub).await should equal(SingleSuccess(single = SomeInteger(2)))
+      c.put(SomeInteger(1), sub).await should equal(Success(list = List(SomeInteger(2))))
       sub.start(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
       sub.cancel()

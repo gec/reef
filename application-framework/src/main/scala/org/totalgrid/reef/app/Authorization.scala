@@ -20,7 +20,7 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.sapi.client.{ Response, SingleSuccess, SessionPool }
+import org.totalgrid.reef.sapi.client.SessionPool
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.Logging
 
@@ -45,11 +45,10 @@ object Authorization extends Logging {
 
     def initiate = pool.borrow {
       _.put(buildLogin()).listen {
-        _ match {
-          case SingleSuccess(status, auth) =>
-            callback(auth)
-          case rsp: Response[AuthToken] =>
-            logger.error("Error getting auth token: " + rsp)
+        _.one match {
+          case Right(auth) => callback(auth)
+          case Left(ex) =>
+            logger.error("Error getting auth token: " + ex.getMessage)
             retry
         }
       }

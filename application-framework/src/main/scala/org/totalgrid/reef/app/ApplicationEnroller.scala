@@ -23,8 +23,7 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.sapi.client.{ Success, Failure, SingleSuccess }
+import org.totalgrid.reef.sapi.client.{ Success, Failure }
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._
@@ -97,15 +96,12 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSet
 
     client.foreach { c =>
       c.put(buildLogin(userSettings)).listen { rsp =>
-        rsp match {
-          case SingleSuccess(status, single) =>
-            c.modifyHeaders(_.addAuthToken(single.getToken))
-            putAppConfig(c, single.getToken, configProto)
-          case Success(_, list) =>
-            logger.error("Expected 1 AuthToken, but received " + rsp.list)
-            reenroll()
-          case x: Failure =>
-            logger.error("Unable to enroll application, error getting auth token, unable to login user: " + userSettings.getUserName + ". config: " + configProto + ".  error: " + x)
+        rsp.one match {
+          case Right(one) =>
+            c.modifyHeaders(_.addAuthToken(one.getToken))
+            putAppConfig(c, one.getToken, configProto)
+          case Left(ex) =>
+            logger.error("Unable to enroll application, error getting auth token, unable to login user: " + userSettings.getUserName + ". config: " + configProto + ".  error: " + ex.getMessage)
             reenroll()
         }
       }
@@ -115,13 +111,14 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSet
   private def reenroll() = delay(2000) { enroll() }
 
   def putAppConfig(client: AmqpClientSession, auth: String, configRequest: ApplicationConfig) = client.put(configRequest).listen {
-    _ match {
-      case SingleSuccess(_, config) =>
+    _.one match {
+      case Right(config) =>
         val components = new CoreApplicationComponents(amqp, config, auth)
-        container = Some(setupFun(components))
-        container.get.start
-      case Failure(status, err) =>
-        logger.error("Error registering application: " + err)
+        val lifecycle = setupFun(components)
+        container = Some(lifecycle)
+        lifecycle.start
+      case Left(ex) =>
+        logger.error("Error registering application: " + ex.getMessage)
         reenroll()
     }
   }

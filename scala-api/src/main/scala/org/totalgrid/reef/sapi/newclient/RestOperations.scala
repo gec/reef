@@ -19,10 +19,10 @@ package org.totalgrid.reef.sapi.newclient
  * the License.
  */
 import org.totalgrid.reef.sapi._
-import client.DefaultHeaders
+import client.{ Subscription, DefaultHeaders, Response }
 import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.sapi.client.Response
 import net.agileautomata.executor4s.Future
+import org.totalgrid.reef.japi.TypeDescriptor
 
 trait RestOperations {
 
@@ -34,5 +34,7 @@ trait RestOperations {
   final def delete[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.DELETE, payload, headers)
   final def post[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.POST, payload, headers)
   final def put[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.PUT, payload, headers)
+
+  def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A]
 
 }

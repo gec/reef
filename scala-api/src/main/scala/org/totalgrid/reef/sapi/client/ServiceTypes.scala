@@ -34,24 +34,19 @@ object Response {
   }
 
   def apply[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, list: List[A] = Nil, error: String = ""): Response[A] = {
-    if (StatusCodes.isSuccess(status)) list match {
-      case List(x) => SingleSuccess(status, x)
-      case list: List[A] => Success(status, list)
-    }
+    if (StatusCodes.isSuccess(status)) Success(status, list)
     else Failure(status, error)
   }
 
   def apply[A](status: Envelope.Status, single: A): Response[A] = apply(status, single :: Nil, "")
 }
 
-object ResponseTimeout extends Failure(Envelope.Status.RESPONSE_TIMEOUT)
+sealed trait Response[+A] extends Expectations[A] {
 
-trait Response[+A] extends Expectations[A] {
-
-  val status: Envelope.Status
-  val list: List[A]
-  val error: String
-  val success: Boolean
+  def status: Envelope.Status
+  def list: List[A]
+  def error: String
+  def success: Boolean
 
   final override def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A] = {
 
@@ -82,34 +77,28 @@ trait Response[+A] extends Expectations[A] {
 
 }
 
-case class Success[A](status: Envelope.Status = Envelope.Status.OK, val list: List[A])
+final case class Success[A](status: Envelope.Status = Envelope.Status.OK, list: List[A])
     extends Response[A] {
 
-  final override val error = ""
-  final override val success = true
-
-  final override def many = Right(list)
+  override val error = ""
+  override val success = true
+  override def many = Right(list)
 }
 
-case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, error: String = "")
+sealed case class Failure(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, error: String = "")
     extends Response[Nothing] {
 
-  final override val list = Nil
-  final override val success = false
-
-  final override def many = Left(new ReefServiceException(error, status))
-
-  final override def toString = "Request failed with status: " + status + ", msg: " + error
+  override val list = Nil
+  override val success = false
+  override def many = Left(new ReefServiceException(error, status))
+  override def toString = "Request failed with status: " + status + ", msg: " + error
 }
 
-case class SingleSuccess[A](override val status: Envelope.Status = Envelope.Status.OK, single: A)
-  extends Success[A](status, List(single))
+object ResponseTimeout extends Failure(Envelope.Status.RESPONSE_TIMEOUT)
 
 case class Event[A](event: Envelope.Event, value: A) extends SubscriptionEvent[A] {
 
   final override def getEventType() = event
-
   final override def getValue() = value
-
 }
 

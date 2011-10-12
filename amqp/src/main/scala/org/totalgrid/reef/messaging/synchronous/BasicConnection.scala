@@ -22,7 +22,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.sapi._
 
 import client.{ Subscription, ResponseTimeout, Response, Failure => FailureResponse }
-import newclient.{ Client, Connection }
+import newclient.{ Promise, Client, Connection }
 import org.totalgrid.reef.broker.newapi._
 import org.totalgrid.reef.japi.{ TypeDescriptor, Envelope }
 import org.totalgrid.reef.japi.Envelope.Verb
@@ -39,14 +39,14 @@ final class BasicConnection(lookup: ServiceList, conn: BrokerConnection, executo
 
   def login(authToken: String): Client = createClient(authToken, Strand(executor))
 
-  def login(userName: String, password: String): Future[Result[Client]] = {
+  def login(userName: String, password: String): Promise[Client] = {
     val strand = Strand(executor)
     val agent = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(userName).setPassword(password)).build()
     def convert(response: Response[AuthToken]): Result[Client] = response.one match {
       case Left(ex) => Failure(ex)
       case Right(token) => Success(createClient(token.getToken, strand))
     }
-    request(Verb.PUT, agent, BasicRequestHeaders.empty, strand).map(convert)
+    Promise.from(request(Verb.PUT, agent, BasicRequestHeaders.empty, strand).map(convert))
   }
 
   private def createClient(authToken: String, strand: Strand) = {

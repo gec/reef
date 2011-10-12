@@ -49,7 +49,7 @@ class BasicSessionPoolTest extends FunSuite with ShouldMatchers {
       payload: A,
       headers: BasicRequestHeaders): Promise[Response[A]] = {
       numRequests += 1
-      new FixedPromise(SingleSuccess(single = payload))
+      new FixedPromise(Success(list = List(payload)))
     }
 
   }

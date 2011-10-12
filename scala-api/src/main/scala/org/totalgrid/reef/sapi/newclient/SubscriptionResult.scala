@@ -18,11 +18,18 @@
  */
 package org.totalgrid.reef.sapi.newclient
 
-import net.agileautomata.executor4s._
+import org.totalgrid.reef.sapi.client.Subscription
+import org.totalgrid.reef.japi.client.{ SubscriptionEventAcceptor, SubscriptionResult => JSubscriptionResult, Subscription => JSubscription }
 
-trait Login {
+case class SubscriptionResult[A, B](result: A, subscription: Subscription[B]) extends JSubscriptionResult[A, B] {
 
-  def login(authToken: String): Client
-  def login(userName: String, password: String): Promise[Client]
+  def getResult() = result
 
+  def getSubscription() = new JSubscription[B] {
+    def cancel() = subscription.cancel()
+    def getId() = subscription.id()
+    def start(acceptor: SubscriptionEventAcceptor[B]) = subscription.start { evt =>
+      acceptor.onEvent(evt)
+    }
+  }
 }

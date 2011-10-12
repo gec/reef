@@ -19,13 +19,13 @@
 package org.totalgrid.reef.messaging.synchronous
 
 import org.totalgrid.reef.japi._
-import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.sapi.client.Subscription
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.sapi._
-import newclient._
+import org.totalgrid.reef.sapi.newclient._
 import org.totalgrid.reef.japi.Envelope.Verb
 
-final class BasicClient(conn: BasicConnection, strand: Strand) extends Client {
+final class BasicClient(conn: BasicConnection, strand: Strand) extends Client with RestOperations {
 
   override def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders) =
     conn.request(verb, payload, getHeaders.merge(headers), strand)
@@ -36,4 +36,5 @@ final class BasicClient(conn: BasicConnection, strand: Strand) extends Client {
   override def execute(fun: => Unit): Unit = strand.execute(fun)
   override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
   override def delay(interval: TimeInterval)(fun: => Unit): Cancelable = strand.delay(interval)(fun)
+
 }

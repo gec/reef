@@ -1,5 +1,3 @@
-package org.totalgrid.reef.sapi.newclient
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,9 +16,30 @@ package org.totalgrid.reef.sapi.newclient
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.japi.TypeDescriptor
-import org.totalgrid.reef.sapi.client.Subscription
+package org.totalgrid.reef.sapi.newclient
 
-trait Subscribable {
-  def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A]
+import net.agileautomata.executor4s.{ Future, Result }
+
+object Promise {
+  def from[A](future: Future[Result[A]]): Promise[A] = new PromiseFutureConverter(future)
+}
+
+trait Promise[+A] {
+
+  def await: A
+
+  def extract: Result[A]
+
+  def listen(fun: Promise[A] => Unit): Unit
+
+  def map[B](convert: A => B): Promise[B]
+}
+
+private class PromiseFutureConverter[A](future: Future[Result[A]]) extends Promise[A] {
+
+  def await: A = future.await.get
+  def listen(fun: Promise[A] => Unit) = future.listen(result => fun(this))
+  def extract: Result[A] = future.await
+  def map[B](convert: A => B) = Promise.from(future.map(_.map(convert)))
+
 }
