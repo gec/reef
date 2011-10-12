@@ -87,7 +87,8 @@ class ReefLoginCommand extends ReefLoginCommandBase {
     }
 
     amqp.connect(5000)
-    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
+    // TODO: replace this with per request timeout updates (load and unload can take more than 5 seconds)
+    val client = new AmqpClientSession(amqp, ReefServicesList, 20000) {
       override def close() {
         super.close()
         amqp.disconnect(5000)
