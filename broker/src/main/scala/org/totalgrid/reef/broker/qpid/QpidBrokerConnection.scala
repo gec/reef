@@ -56,7 +56,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
       val listener = new Listener(this)
       conn.addConnectionListener(listener)
 
-      logger.info("Connecting to " + config)
+      logger.info("connecting to qpid: " + config + ", with ssl: " + config.ssl)
 
       if (config.ssl) {
         if (config.trustStore == null || config.trustStore == "") {
@@ -80,7 +80,7 @@ class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnectio
         true
       } catch {
         case ex: Exception =>
-          logger.error(ex.getMessage, ex)
+          logger.error("failed to connect to qpid: " + config + ", ssl: " + config.ssl + ", exception: " + ex.getMessage, ex)
           false
       }
   }

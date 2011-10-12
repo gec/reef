@@ -31,7 +31,7 @@ import org.totalgrid.reef.broker._
 trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     with ConnectionListener with Logging {
 
-  /// must be defined in concrete class
+  // must be defined in concrete class
   protected val broker: BrokerConnection
 
   /**
@@ -62,7 +62,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
 
   def getChannel(): BrokerChannel = broker.newChannel()
 
-  /// mutable state
+  // mutable state
   private var listeners = Queue.empty[ConnectionListener]
   private var queue = Queue.empty[ChannelObserver]
   private var connectedState = new BrokerConnectionState
@@ -73,10 +73,10 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     super.start()
 
     try {
-      connectedState.waitUntilConnected(timeoutMs, "Couldn't connect to message broker: " + broker.toString)
+      connectedState.waitUntilConnected(timeoutMs, "failed to connect to message broker: " + broker.toString)
     } catch {
       case se: ServiceIOException =>
-        logger.info("Syncronous start failed, stopping actor")
+        logger.info("Syncronous start failed, stopping actor.  broker: " + broker.toString)
         super.stop()
         throw se
     }
@@ -93,7 +93,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     this.reconnect()
   }
 
-  /// overriders base class. Terminates all the connections and machinery
+  // overriders base class. Terminates all the connections and machinery
   override def beforeStop() = {
     broker.disconnect()
   }
@@ -106,8 +106,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
   // helper for starting a new connection chain
   private def reconnect() = execute { attemptConnection(1000) }
 
-  /// Makes a connection attempt. Retries if with exponential backoff
-  /// if the attempt fails
+  // Makes a connection attempt. Retries if with exponential backoff if the attempt fails
   private def attemptConnection(retryms: Long): Unit = {
     if (broker.connect()) {
       queue.foreach { createChannel(_, broker.newChannel()) }
@@ -117,7 +116,7 @@ trait AMQPConnectionReactor extends ActorExecutor with Lifecycle
     }
   }
 
-  /// gives a broker object its session. May fail.
+  // gives a broker object its session. May fail.
   private def createChannel(co: ChannelObserver, channel: BrokerChannel) = {
     try {
       co.online(channel)
