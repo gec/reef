@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.messaging.mock._
 import org.totalgrid.reef.messaging.{ TestDescriptors, HeadersX2 }
-import org.totalgrid.reef.broker.BrokerConnectionInfo
+import org.totalgrid.reef.broker.api.BrokerConnectionInfo
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 
 import org.totalgrid.reef.sapi._
@@ -43,7 +43,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   val payload = Envelope.RequestHeader.newBuilder.setKey("test").setValue("test").build
   val request = Envelope.ServiceRequest.newBuilder.setId("1").setVerb(Envelope.Verb.GET).setPayload(payload.toByteString).build
   val exchange = TestDescriptors.requestHeader.id
-  val servicelist = new ServiceListOnMap(Map(classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
+  val servicelist = new ServiceListOnMap(Map(classOf[Envelope.RequestHeader] -> ServiceInfo(TestDescriptors.requestHeader)))
 
   test("Timeout") {
     AMQPFixture.run(new BrokerConnectionInfo("127.0.0.1", 10000, "", "", ""), false) { amqp =>
@@ -55,7 +55,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   // This is a functionally defined service that just echos the payload back 3x with an OK status
-  def x3Service(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
+  def x3Service(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)
@@ -66,7 +66,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
   // same service except that it only responds to get, and only works with validated type Foo
 
   val serviceList = new ServiceListOnMap(Map(
-    classOf[Envelope.RequestHeader] -> ServiceInfo.get(TestDescriptors.requestHeader)))
+    classOf[Envelope.RequestHeader] -> ServiceInfo(TestDescriptors.requestHeader)))
 
   test("SimpleServiceEchoSuccess") {
     AMQPFixture.run() { amqp =>
@@ -121,7 +121,7 @@ class QpidIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
+  def respondWithServiceName(serviceNum: Long)(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
     val rsp = Envelope.ServiceResponse.newBuilder
     rsp.setStatus(Envelope.Status.OK)
     rsp.setId(request.getId)

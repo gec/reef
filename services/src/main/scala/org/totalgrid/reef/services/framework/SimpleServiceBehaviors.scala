@@ -36,7 +36,7 @@ object SimpleServiceBehaviors {
     }
 
     def subscribe(context: RequestContext, req: ServiceType) = {
-      context.headers.subQueue.foreach { subQueue =>
+      context.getHeaders.subQueue.foreach { subQueue =>
         val keys = getSubscribeKeys(req)
         keys.foreach(context.subHandler.bind(subQueue, _, req))
       }

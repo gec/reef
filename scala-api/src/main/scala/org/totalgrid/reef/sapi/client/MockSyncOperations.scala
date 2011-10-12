@@ -34,7 +34,7 @@ import org.totalgrid.reef.promise.{ SynchronizedPromise, Promise }
  * @param delQueue Mutable queue where deletes are enqueued.
  *
  */
-class MockSyncOperations(
+final class MockSyncOperations(
     doGet: (AnyRef) => Response[AnyRef],
     putQueue: Queue[AnyRef] = Queue[AnyRef](),
     delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends RestOperations with DefaultHeaders {
@@ -69,8 +69,7 @@ class MockSyncOperations(
   /**
    * Override request to define all of the verb helpers
    */
-  final override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv = getDefaultHeaders,
-    dest: Destination = AnyNodeDestination): Promise[Response[A]] = verb match {
+  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders): Promise[Response[A]] = verb match {
     case Envelope.Verb.GET => new SynchronizedPromise(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]])
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload.asInstanceOf[AnyRef])

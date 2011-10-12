@@ -33,7 +33,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
-import org.totalgrid.reef.sapi.{ RequestEnv, AllMessages }
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AllMessages }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 

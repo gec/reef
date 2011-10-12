@@ -25,13 +25,12 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.{ AddressableDestination }
-
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
 import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AddressableDestination }
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel, pool: SessionPool)
@@ -70,7 +69,7 @@ class UserCommandRequestService(
     }
 
     pool.borrow { session =>
-      session.put(request, destination = address).listen { response =>
+      session.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
         contextSource.transaction { context =>
           model.findRecord(context, request) match {
             case Some(record) =>

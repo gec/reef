@@ -26,7 +26,7 @@ import service.AsyncService
 
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.broker.{ ChannelObserver, CloseableChannel, MessageConsumer }
+import org.totalgrid.reef.broker.api.{ ChannelObserver, CloseableChannel, MessageConsumer }
 
 /**
  * Extends the AMQPConnectionReactor with functions for reading and writing google protobuf classes.
@@ -146,7 +146,7 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
    * @param competing  false => (everyone gets a copy of the messages) or true => (only one handler gets each message)
    * @param reactor    if not None messaging handling is dispatched to a user defined reactor using execute
    */
-  def bindService(exchange: String, service: AsyncService.ServiceFunction, destination: Destination = AnyNodeDestination, competing: Boolean = false,
+  def bindService(exchange: String, service: AsyncService.ServiceFunction, destination: Routable = AnyNodeDestination, competing: Boolean = false,
     reactor: Option[Executor] = None): CloseableChannel =
     {
       val pub = broadcast[Envelope.ServiceResponse]((x: Envelope.ServiceResponse) => x.toByteArray)

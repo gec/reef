@@ -28,6 +28,7 @@ import RequestFailure._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.helpers.SymbolResponseProgressRenderer
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.japi.BadRequestException
 
 @Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
 class LoadConfigCommand extends ReefCommandSupport {
@@ -58,11 +59,18 @@ class UnloadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
 
-    services.session.getDefaultHeaders.setResultLimit(50000)
+    services.session.modifyHeaders(_.setResultLimit(50000))
 
     // needed to add explict typing to this list, scala compiler eats up all memory in system and never completes
     val endpoints: List[GeneratedMessage] = services.getAllEndpoints().toList
-    val entities: List[GeneratedMessage] = services.getAllEntitiesWithTypes("Equipment" :: "EquipmentGroup" :: Nil).toList
+    val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
+    val entities: List[GeneratedMessage] = try {
+      services.getAllEntitiesWithTypes(types).toList
+    } catch {
+      // do nothing, system probably totally empty
+      // TODO: remove once "meta-model" implemented in services
+      case rse: BadRequestException => Nil
+    }
     val channels: List[GeneratedMessage] = services.getAllCommunicationChannels().toList
     val cfs: List[GeneratedMessage] = services.getAllConfigFiles().toList
     // we need to remove the logicalNode since its been deleted by this time and therefore the delete

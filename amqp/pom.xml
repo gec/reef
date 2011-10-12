@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.4.0-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -46,21 +46,38 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>net.agile-automata.executor4s</groupId>
+            <artifactId>executor4s_2.9.0-1</artifactId>
+            <version>${executor4s.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.agile-automata.nio4s</groupId>
+            <artifactId>commons_2.9.0-1</artifactId>
+            <version>${executor4s.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-proto</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-scala-api</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-broker</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-memory-broker</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

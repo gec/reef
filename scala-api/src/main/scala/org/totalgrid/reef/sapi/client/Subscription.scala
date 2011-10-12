@@ -20,17 +20,19 @@ package org.totalgrid.reef.sapi.client
 
 import org.totalgrid.reef.japi.Envelope
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 trait Subscription[A] {
   def cancel()
 
-  def start(callback: Event[A] => Unit): Unit
+  def start(callback: Event[A] => Unit): Subscription[A]
 
-  def start(callback: (Envelope.Event, A) => Unit): Unit = {
+  /*
+  def start(callback: (Envelope.Event, A) => Unit): Subscription[A] = {
     val proxy = { (evt: Event[A]) => callback(evt.event, evt.value) }
     start(proxy)
   }
+  */
 
   def id(): String
 }
@@ -42,9 +44,7 @@ object Subscription {
    * TODO should this todo really be in the scaladoc?
    * TODO: rationalize RequestEnv and Subscription interfaces
    */
-  implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): RequestEnv = {
-    val env = new RequestEnv
-    env.setSubscribeQueue(sub.id)
-    env
+  implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): BasicRequestHeaders = {
+    BasicRequestHeaders.empty.setSubscribeQueue(sub.id)
   }
 }

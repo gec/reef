@@ -18,6 +18,9 @@
  */
 package org.totalgrid.reef.util
 
+/**
+ * TODO: remove all references to buildenv
+ */
 object BuildEnv {
 
   /**

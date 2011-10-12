@@ -22,7 +22,7 @@ import org.totalgrid.reef.util.Logging
 
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.EventOperations
-import org.totalgrid.reef.broker.ChannelSender
+import org.totalgrid.reef.broker.api.ChannelSender
 import com.google.protobuf.GeneratedMessage
 
 trait PublishingSubscriptionHandler extends ServiceSubscriptionHandler with ChannelSender with Logging {

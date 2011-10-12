@@ -22,9 +22,14 @@ import org.totalgrid.reef.japi.BadRequestException
 
 object ClassLookup {
 
-  def apply[A](value: Any): Class[A] = value match {
-    case x: AnyRef => x.getClass.asInstanceOf[Class[A]]
-    case _ => throw new BadRequestException("Request is not of type AnyRef: " + value.toString)
+  def get[A](value: A) = apply[A](value) match {
+    case Some(x) => x
+    case None => throw new BadRequestException("Value types are not allowed")
+  }
+
+  def apply[A](value: A): Option[Class[A]] = value match {
+    case x: AnyRef => Some(x.getClass.asInstanceOf[Class[A]])
+    case _ => None
   }
 
 }

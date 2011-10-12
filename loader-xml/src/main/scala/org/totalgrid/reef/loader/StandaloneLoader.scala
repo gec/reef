@@ -19,11 +19,11 @@
 package org.totalgrid.reef.loader
 
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.executor.ReactActorExecutor
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 import org.totalgrid.reef.util.FileConfigReader
 
@@ -46,9 +46,7 @@ object StandaloneLoader {
         val request = AuthToken.newBuilder.setAgent(agent).build
 
         val authToken = client.put(request).await().expectOne
-        val env = new RequestEnv
-        env.addAuthToken(authToken.getToken)
-        client.setDefaultHeaders(env)
+        client.modifyHeaders(_.addAuthToken(authToken.getToken))
 
         client
       }

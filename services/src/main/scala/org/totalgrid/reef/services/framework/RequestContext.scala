@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
 import org.totalgrid.reef.event.SystemEventSink
 
@@ -52,7 +52,13 @@ trait RequestContext {
   /**
    * request headers as received from the client
    */
-  def headers: RequestEnv
+  def getHeaders: BasicRequestHeaders
+
+  /**
+   * Change the request headers and return the modified version
+   */
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders
+
 }
 
 /**
@@ -67,11 +73,11 @@ trait RequestContextSource {
 /**
  * wrapper class that takes a source and merges in some extra RequestEnv headers before the transaction
  */
-class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: RequestEnv)
+class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: BasicRequestHeaders)
     extends RequestContextSource {
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>
-      context.headers.merge(headers)
+      context.modifyHeaders(_.merge(headers))
       f(context)
     }
   }

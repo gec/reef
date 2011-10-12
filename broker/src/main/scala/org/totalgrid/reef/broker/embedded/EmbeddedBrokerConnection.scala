@@ -20,8 +20,9 @@ package org.totalgrid.reef.broker.embedded
 
 import scala.collection.immutable
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 import org.totalgrid.reef.japi.ServiceIOException
+import java.lang.Exception
 
 /**
  * Very simple round robin implementation for mocking purposes
@@ -116,7 +117,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
   final override def connect(): Boolean = {
     if (!connectCorrectly) false
     else {
-      this.setOpen()
+      this.setState(BrokerState.Connected)
       true
     }
   }
@@ -124,7 +125,7 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
   /// nothing special is needed to shut down the mock broker, there are no circular
   /// dependencies or listeners to unravel
   final override def disconnect(): Boolean = {
-    this.setClosed(true)
+    this.setState(BrokerState.Closed)
     channels.foreach(_.close())
     true
   }
@@ -138,25 +139,22 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
   def publishInternal(exchange: String, routingKey: String, b: Array[Byte], replyTo: Option[Destination]) = {
     // we get all the destinations before sending any messages so we are not synchronized when we make the callback
     // because that will lead to a deadlock if the callback causes another message to be sent on the same thread
-    getDestinations(exchange, routingKey).foreach(mc => mc.receive(b, replyTo))
+    val dest = getDestinations(exchange, routingKey)
+    dest.foreach(mc => mc.receive(b, replyTo))
   }
 
-  private def getDestinations(exchange: String, routingKey: String): List[MessageConsumer] = {
-    synchronized {
-      exchanges.get(exchange) match {
-        case Some(l: List[_]) =>
-          val matching: List[String] = l.filter { eb: ExchangeBinding => matches(routingKey, eb.key) }.map { eb: ExchangeBinding => eb.queue }
-          matching.map { queue: String =>
-            //println("publishing: " + exchange + " + " + routingKey + " => " + queue)
-            queues.get(queue) match {
-              case Some(roundRobin) =>
-                Some(roundRobin.next())
-              case None =>
-                None
-            }
-          }.flatten
-        case None => throw new Exception("undefined exchange")
-      }
+  private def getDestinations(exchange: String, routingKey: String): List[MessageConsumer] = synchronized {
+    def getMessageConsumerFromQueue(queue: String) = queues.get(queue) match {
+      case Some(roundRobin) =>
+        Some(roundRobin.next())
+      case None =>
+        None
+    }
+    exchanges.get(exchange) match {
+      case Some(bindings) =>
+        bindings.filter(
+          eb => matches(routingKey, eb.key)).map(_.queue).map(getMessageConsumerFromQueue).flatten
+      case None => throw new Exception("undefined exchange")
     }
   }
 
@@ -164,7 +162,6 @@ class EmbeddedBrokerConnection(connectCorrectly: Boolean = true, reportCorrectCl
     synchronized {
       queues.get(queue) match {
         case Some(roundRobin) =>
-          //println("added "+mc+" as listener on " + queue)
           roundRobin.add(mc)
         case None =>
           queues = queues + (queue -> new RoundRobinList[MessageConsumer] {})

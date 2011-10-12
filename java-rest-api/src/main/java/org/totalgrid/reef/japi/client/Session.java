@@ -128,10 +128,16 @@ public interface Session
     <A> Subscription<A> addSubscription( TypeDescriptor<A> descriptor, SubscriptionEventAcceptor<A> acceptor ) throws ServiceIOException;
 
     /**
-     * Returns the Service headers to set or clear AuthTokens
-     * @return A reference to the mutable ServiceHeaders object used by the client.
+     * Returns the immutable RequestHeaders
+     * @return A reference to the immutable RequestHeaders object currently being used by the client.
      */
-    ServiceHeaders getDefaultHeaders();
+    RequestHeaders getHeaders();
+
+    /**
+     * Changes the
+     * @param headers New RequestHeaders object to use as a default
+     */
+    void setHeaders( RequestHeaders headers );
 
     /**
      * Close the session, releasing the underlying resource. The session is dead and can never be used again.

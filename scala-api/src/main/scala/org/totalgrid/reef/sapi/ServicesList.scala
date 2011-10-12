@@ -18,7 +18,9 @@
  */
 package org.totalgrid.reef.sapi
 
-import org.totalgrid.reef.japi.UnknownServiceException
+import org.totalgrid.reef.japi.{ TypeDescriptor, UnknownServiceException }
+
+import org.totalgrid.reef.util.Conversion._
 
 object ServiceList {
 
@@ -29,6 +31,10 @@ object ServiceList {
     case Some(info) => info.asInstanceOf[ServiceInfo[A, Any]]
     case None => throw new UnknownServiceException("Unknown service for klass: " + klass)
   }
+
+  def apply(desc: TypeDescriptor[_]*): ServiceList =
+    new ServiceListOnMap(desc.map(x => (x.getKlass, ServiceInfo(x))).toMap)
+
 }
 
 trait ServiceList {

@@ -23,8 +23,8 @@ import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.sapi.{ Destination, AddressableDestination }
 import org.totalgrid.reef.models.Point
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, Routable, AddressableDestination }
 
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying
@@ -214,7 +214,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
 
   // TODO - refactor this code to be more functional
 
-  private def publishMeasurement(client: ClientSession, lastAttempt: LastAttempt, dest: Destination)(mb: Measurements.MeasurementBatch) {
+  private def publishMeasurement(client: ClientSession, lastAttempt: LastAttempt, dest: Routable)(mb: Measurements.MeasurementBatch) {
     val now = System.currentTimeMillis
     if (!lastAttempt.success && now < lastAttempt.nextTime) {
       logger.info("failed last time, skipping publishing summary until: " + lastAttempt.nextTime)
@@ -222,7 +222,7 @@ class SummaryPointPublisher(amqp: AMQPProtoFactory) extends SummaryPointHolder w
     }
     try {
       lastAttempt.nextTime = now + 5000
-      client.put(mb, destination = dest).await().expectMany()
+      client.put(mb, BasicRequestHeaders.empty.setDestination(dest)).await().expectMany()
       lastAttempt.success = true
     } catch {
       case ex: Exception =>

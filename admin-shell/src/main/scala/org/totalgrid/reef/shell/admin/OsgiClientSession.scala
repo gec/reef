@@ -38,7 +38,7 @@ import org.totalgrid.reef.messaging.RequestSpyHook
 
 class ServiceDispatcher[A](rh: AsyncService[A]) {
 
-  def request(verb: Verb, payload: A, env: RequestEnv, timeoutms: Long = 5000): Response[A] = {
+  def request(verb: Verb, payload: A, env: BasicRequestHeaders, timeoutms: Long = 5000): Response[A] = {
 
     val mutex = new Object
     var ret: Option[Envelope.ServiceResponse] = None
@@ -74,12 +74,10 @@ class ServiceDispatcher[A](rh: AsyncService[A]) {
     Response(rsp.getStatus, result, rsp.getErrorMessage)
   }
 
-  private def getRequest(verb: Envelope.Verb, payload: A, env: RequestEnv): Envelope.ServiceRequest = {
+  private def getRequest(verb: Envelope.Verb, payload: A, env: BasicRequestHeaders): Envelope.ServiceRequest = {
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId("Console")
     builder.setPayload(rh.descriptor.serialize(payload))
-    env.asKeyValueList.foreach { x =>
-      builder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(x._1).setValue(x._2))
-    }
+    env.toEnvelopeRequestHeaders.foreach(builder.addHeaders)
     builder.build
   }
 
@@ -89,15 +87,13 @@ trait OsgiSyncOperations extends RestOperations with DefaultHeaders {
 
   def getBundleContext: BundleContext
 
-  override def request[A](verb: Envelope.Verb, payload: A, env: RequestEnv, dest: Destination = AnyNodeDestination): Promise[Response[A]] = {
+  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders): Promise[Response[A]] = {
 
-    val klass = ClassLookup[A](payload)
+    val klass = ClassLookup.get(payload)
 
     val rsp = ReefServicesList.getServiceOption(klass) match {
       case Some(info) =>
-        val singleRequestEnv = new RequestEnv
-        singleRequestEnv.merge(env)
-        new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, singleRequestEnv)
+        new ServiceDispatcher[A](getService[A](info.descriptor.id)).request(verb, payload, env)
       case None =>
         Failure(Envelope.Status.LOCAL_ERROR, "Proto not registered: " + klass)
     }

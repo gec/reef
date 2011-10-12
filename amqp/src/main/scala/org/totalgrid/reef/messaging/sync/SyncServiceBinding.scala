@@ -19,14 +19,14 @@
 package org.totalgrid.reef.messaging.sync
 
 import org.totalgrid.reef.messaging.QueuePatterns
-import org.totalgrid.reef.sapi.Destination
-import org.totalgrid.reef.broker.{ CloseableChannel, MessageConsumer, BrokerChannel }
+import org.totalgrid.reef.sapi.Routable
+import org.totalgrid.reef.broker.api.{ CloseableChannel, MessageConsumer, BrokerChannel }
 
 /**
  * synchronous service binding, useful for testing, not ready for production use until we have a good
  * synchronous restarting policy
  */
-class SyncServiceBinding(channel: BrokerChannel, exchange: String, destination: Destination, competing: Boolean, mc: MessageConsumer) extends CloseableChannel {
+class SyncServiceBinding(channel: BrokerChannel, exchange: String, destination: Routable, competing: Boolean, mc: MessageConsumer) extends CloseableChannel {
 
   if (competing)
     QueuePatterns.getCompetingConsumer(channel, exchange, exchange + "_server", destination.key, mc)

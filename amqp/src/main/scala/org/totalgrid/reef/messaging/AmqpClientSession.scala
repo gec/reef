@@ -38,16 +38,15 @@ class AmqpClientSession(
 
   private val correlator = factory.getServiceResponseCorrelator(timeoutms)
 
-  final override def isOpen = correlator.isOpen
+  override def isOpen = correlator.isOpen
   override def close() = correlator.close()
 
-  final override def asyncRequest[A](verb: Envelope.Verb, request: A, env: RequestEnv, dest: Destination)(callback: Response[A] => Unit) {
+  override def asyncRequest[A](verb: Envelope.Verb, request: A, headers: BasicRequestHeaders)(callback: Response[A] => Unit) {
 
-    val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup[A](request))
+    val info: ServiceInfo[A, _] = lookup.getServiceInfo(ClassLookup.get(request))
     val requestBuilder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setPayload(info.descriptor.serialize(request))
 
-    val sendEnv: RequestEnv = mergeHeaders(env)
-    sendEnv.asKeyValueList.foreach(kv => requestBuilder.addHeaders(Envelope.RequestHeader.newBuilder.setKey(kv._1).setValue(kv._2).build))
+    getHeaders.merge(headers).toEnvelopeRequestHeaders.foreach(requestBuilder.addHeaders)
 
     def handleResponse(resp: Option[Envelope.ServiceResponse]) {
       val response: Option[Response[A]] = resp match {
@@ -67,10 +66,10 @@ class AmqpClientSession(
       callback(Response.convert(response))
     }
 
-    correlator.send(requestBuilder, info.descriptor.id, dest.key, handleResponse)
+    correlator.send(requestBuilder, info.descriptor.id, headers.getDestination.key, handleResponse)
   }
 
-  final override def addSubscription[A](klass: Class[_]): Subscription[A] = {
+  override def addSubscription[A](klass: Class[_]): Subscription[A] = {
 
     val info = lookup.getServiceInfo(klass)
     val deser = (info.subType.deserialize _).asInstanceOf[Array[Byte] => A]

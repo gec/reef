@@ -18,12 +18,7 @@
  */
 package org.totalgrid.reef.sapi.client
 
-trait ClientSession
-  extends RestOperations
-  with SubscriptionManagement
-  with SessionLifecycle
-  with DefaultHeaders
-  with RequestSpyManager
+trait ClientSession extends RestOperations with SubscriptionManagement with SessionLifecycle with DefaultHeaders
 
 /**
  * all ClientSessions should be closeable and able to report their state

@@ -19,8 +19,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope._
-import org.totalgrid.reef.broker._
-import org.totalgrid.reef.proto.FEP.SerialPort
+import org.totalgrid.reef.broker.api._
 
 /**
  * trait used to present a simple interface to a request/reply interface as a simple async channel

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.messaging.sync
 
-import org.totalgrid.reef.broker.BrokerChannel
+import org.totalgrid.reef.broker.api.BrokerChannel
 import org.totalgrid.reef.messaging.serviceprovider.PublishingSubscriptionHandler
 
 /**

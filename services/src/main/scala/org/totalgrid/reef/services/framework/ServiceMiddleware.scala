@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.service.{ ServiceResponseCallback, ServiceHelpers, AsyncService }
 import org.totalgrid.reef.japi.{ ReefServiceException, Envelope, TypeDescriptor }
 import org.totalgrid.reef.sapi.client.Response
@@ -28,7 +28,7 @@ class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, servic
 
   val descriptor: TypeDescriptor[A] = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) = {
+  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
     try {
       handleRequest(req, env, callback)
     } catch {
@@ -42,7 +42,7 @@ class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, servic
     }
   }
 
-  private def handleRequest(request: Envelope.ServiceRequest, env: RequestEnv, callback: ServiceResponseCallback) {
+  private def handleRequest(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
 
     def onResponse(response: Response[A]) = callback.onResponse(getResponse(request.getId, response))
 

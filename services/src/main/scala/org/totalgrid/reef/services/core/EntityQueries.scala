@@ -523,8 +523,12 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def addTypeToEntity(ent: Entity, typ: String) = {
-    addEntityTypes(typ :: Nil)
-    entityTypes.insert(new EntityToTypeJoins(ent.id, typ))
+    addTypesToEntity(ent, typ :: Nil)
+  }
+
+  def addTypesToEntity(ent: Entity, types: List[String]) = {
+    addEntityTypes(types)
+    entityTypes.insert(types.map { new EntityToTypeJoins(ent.id, _) })
     entities.lookup(ent.id).get
   }
 
@@ -641,7 +645,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      // TODO: get entitiy queries to use and respect requestContext
+      // TODO: get entitiy queries to use and respect requestContext - backlog-70
       EntitySearches.findRecord(new HeadersRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))

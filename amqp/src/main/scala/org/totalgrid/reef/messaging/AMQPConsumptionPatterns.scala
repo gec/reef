@@ -20,7 +20,7 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.sapi.RoutingKey
 
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 
 /**
  * base class for AMQP subscripton modes, provides online/offline notifiers

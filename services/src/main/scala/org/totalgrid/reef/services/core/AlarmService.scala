@@ -31,7 +31,7 @@ import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, Se
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
@@ -113,7 +113,6 @@ class AlarmServiceModel(summary: SummaryPoints)
     if (existing.isNextStateValid(proto.getState.getNumber))
       update(context, updateModelEntry(proto, existing), existing)
     else {
-      // TODO: access the proto to print the state names in the exception.
       throw new BadRequestException("Invalid state transistion from " + Alarm.State.valueOf(existing.state) + " to " + proto.getState, Envelope.Status.BAD_REQUEST)
     }
   }

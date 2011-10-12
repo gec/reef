@@ -22,10 +22,10 @@ import org.totalgrid.reef.messaging._
 
 import org.totalgrid.reef.sapi.client.{ Subscription, Event }
 import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination }
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.broker.{ BrokerChannel, CloseableChannel }
+import org.totalgrid.reef.broker.api.{ BrokerChannel, CloseableChannel }
 
 trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
   import AMQPMessageConsumers._
@@ -58,7 +58,7 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
    *                 connection thread and make any sort of call to a broker channel it will deadlock the connection.
    *                 If using the MockBroker an InstantReactor can be passed in to keep tests single threaded
    */
-  def bindService(exchange: String, service: AsyncService.ServiceFunction, executor: Executor, destination: Destination = AnyNodeDestination, competing: Boolean = false): CloseableChannel = {
+  def bindService(exchange: String, service: AsyncService.ServiceFunction, executor: Executor, destination: Routable = AnyNodeDestination, competing: Boolean = false): CloseableChannel = {
 
     logger.info("bindService(): exchange: " + exchange + ", service: " + service + ", destination: " + destination + ", competing: " + competing)
     val channel = getChannel()

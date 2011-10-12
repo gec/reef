@@ -32,7 +32,6 @@ import org.totalgrid.reef.loader.EnhancedXmlClasses._
 /**
  * EquipmentLoader loads the logical model.
  *
- * TODO: generic_type is not set
  */
 class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, exceptionCollector: ExceptionCollector, commonLoader: CommonLoader)
     extends Logging with BaseConfigurationLoader {
@@ -335,7 +334,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   }
 
   /**
-   * Commands are controls and setpoints. TODO: setpoints
+   * Commands are controls and setpoints.
    */
   def toCommand(name: String, displayName: String, entity: Entity, commandType: CommandTypeProto): CommandProto = {
     val builder = CommandProto.newBuilder

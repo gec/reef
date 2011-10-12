@@ -49,7 +49,7 @@ public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase
     {
         try
         {
-            client.getDefaultHeaders().setAuthToken( null );
+            client.setHeaders( client.getHeaders().setAuthToken( null ) );
             assertTrue( false );
         }
         catch ( IllegalArgumentException e )

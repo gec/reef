@@ -6,11 +6,12 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.4.0-SNAPSHOT</version>
 
 	<properties>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
+        <executor4s.version>0.1.6</executor4s.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -19,6 +20,7 @@
 		<module>test-util</module>
 		<module>proto</module>
 		<module>scala-api</module>
+		<module>api-enhancer</module>
 		<module>api-request</module>
 		<module>java-rest-api</module>
 		<module>util</module>
@@ -30,6 +32,7 @@
 		<module>persistence-postgresql</module>
 		<module>measurementstore-api</module>
 		<module>measurementstore-squeryl</module>
+        <module>memory-broker</module>
 		<module>application-framework</module>
 		<module>integration</module>
 		<module>services</module>

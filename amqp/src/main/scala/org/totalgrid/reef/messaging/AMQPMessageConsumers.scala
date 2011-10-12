@@ -25,7 +25,7 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
-import org.totalgrid.reef.broker.{ MessageConsumer, Destination }
+import org.totalgrid.reef.broker.api.{ MessageConsumer, Destination }
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.japi.Envelope.ServiceNotification
 
@@ -73,9 +73,7 @@ object AMQPMessageConsumers extends Logging {
 
             import scala.collection.JavaConversions._
 
-            val env = new RequestEnv
-            // convert the headers back into the RequestEnv object
-            request.getHeadersList.toList.foreach(h => env.addHeader(h.getKey, h.getValue))
+            val env = BasicRequestHeaders.from(request.getHeadersList.toList)
 
             val callback = new ServiceResponseCallback {
               def onResponse(serviceResponse: Envelope.ServiceResponse) = publish(serviceResponse, responseExchange, responseKey)

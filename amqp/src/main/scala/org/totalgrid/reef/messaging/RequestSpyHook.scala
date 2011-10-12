@@ -20,7 +20,7 @@ package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.client.DefaultHeaders
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, RequestEnv }
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Routable, BasicRequestHeaders }
 import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.sapi.client._
 
@@ -37,10 +37,9 @@ trait RequestSpyHook extends RestOperations with DefaultHeaders with RequestSpyM
   abstract override def request[A](
     verb: Envelope.Verb,
     request: A,
-    env: RequestEnv = getDefaultHeaders,
-    destination: Destination = AnyNodeDestination): Promise[Response[A]] = {
+    headers: BasicRequestHeaders): Promise[Response[A]] = {
 
-    val promise = super.request(verb, request, env, destination)
+    val promise = super.request(verb, request, headers)
 
     requestSpys.foreach { _.onRequestReply(verb, request, promise) }
 

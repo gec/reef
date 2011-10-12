@@ -98,7 +98,7 @@ class EventQueryService
   }
 
   override def subscribe(context: RequestContext, req: ServiceType) = {
-    context.headers.subQueue.foreach { subQueue =>
+    context.getHeaders.subQueue.foreach { subQueue =>
       val keys = getSubscribeKeys(req)
       // have to pass an event object so the binding is done to the correct queue
       keys.foreach(context.subHandler.bind(subQueue, _, Event.newBuilder.build))

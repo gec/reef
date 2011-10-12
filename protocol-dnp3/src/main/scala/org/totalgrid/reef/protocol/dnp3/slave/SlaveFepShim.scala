@@ -18,12 +18,13 @@
  */
 package org.totalgrid.reef.protocol.dnp3.slave
 
-import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.messaging.AmqpClientSession
-import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
+import org.totalgrid.reef.sapi.request.impl.{ AllScadaServiceImpl }
+import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.api.{ Protocol, AddRemoveValidation }
 import org.totalgrid.reef.japi.client.{ ConnectionListener, UserSettings }
@@ -92,8 +93,8 @@ class SlaveFepShim extends Logging {
       val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with SingleSessionClientSource {
         def session = this
       }
-      val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
-      client.getDefaultHeaders.setAuthToken(token)
+      val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await()
+      client.modifyHeaders(_.setAuthToken(token))
 
       val slaveProtocol = new Dnp3SlaveProtocol(client, exe) with AddRemoveValidation
       protocol = Some(slaveProtocol)

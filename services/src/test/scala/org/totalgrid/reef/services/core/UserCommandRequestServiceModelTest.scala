@@ -44,7 +44,7 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, Comman
 import CommandAccess._
 
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
 import org.totalgrid.reef.services.HeadersRequestContext
 
@@ -69,8 +69,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
   }
 
-  val env = new RequestEnv
-  env.setUserName("user01")
+  val env = BasicRequestHeaders.empty.setUserName("user01")
   val context = new HeadersRequestContext(env)
 
   def markCompleted(status: CommandStatus) {

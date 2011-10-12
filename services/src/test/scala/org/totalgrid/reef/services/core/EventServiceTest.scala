@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.proto.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import SyncServiceShims._
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
@@ -40,8 +40,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
     val eventService = new EventService(factories.events)
     val eventConfigService = new EventConfigService(factories.eventConfig)
     val alarmService = new AlarmService(factories.alarms)
-    val headers = new RequestEnv
-    headers.setUserName("user")
+    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     def publishEvent(evt: EventProto): EventProto = {
       eventService.put(evt, headers).expectOne

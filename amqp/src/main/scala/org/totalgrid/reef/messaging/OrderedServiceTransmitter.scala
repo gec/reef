@@ -20,10 +20,10 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination }
 import org.totalgrid.reef.sapi.client.{ Failure, Response, SessionPool }
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.promise.{ FixedPromise, SynchronizedPromise, Promise }
+import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AnyNodeDestination, Routable }
 
 /**
  * allows for the ordered publishing of service requests to multiple services to be completed in the order
@@ -32,13 +32,13 @@ import org.totalgrid.reef.promise.{ FixedPromise, SynchronizedPromise, Promise }
  * called to flush all of the pending messages and stop any more being queued.
  */
 class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) extends Logging {
-  private case class Record(value: Any, verb: Envelope.Verb, destination: Destination, maxRetries: Int, promise: SynchronizedPromise[Boolean])
+  private case class Record(value: Any, verb: Envelope.Verb, destination: Routable, maxRetries: Int, promise: SynchronizedPromise[Boolean])
 
   private val queue = new scala.collection.mutable.Queue[Record]
   private var transmitting = false
   private var isShutdown = false
 
-  def publish(value: Any, verb: Envelope.Verb = Envelope.Verb.POST, address: Destination = AnyNodeDestination,
+  def publish(value: Any, verb: Envelope.Verb = Envelope.Verb.POST, address: Routable = AnyNodeDestination,
     maxRetries: Int = 0): Promise[Boolean] = queue.synchronized {
     if (isShutdown) {
       // could throw exception instead if all producers are guaranteed to be shutdown before
@@ -70,7 +70,8 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
     }
 
   private def publish(record: Record, retries: Int): Unit = pool.borrow { s =>
-    s.request(record.verb, record.value, destination = record.destination).listen(onResponse(record, retries))
+    val headers = BasicRequestHeaders.empty.setDestination(record.destination)
+    s.request(record.verb, record.value, headers).listen(onResponse(record, retries))
   }
 
   private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {

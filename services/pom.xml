@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.4.0-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-services</artifactId>
@@ -53,24 +53,24 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-application-framework</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-processing</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-processing</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util-osgi</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

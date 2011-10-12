@@ -21,7 +21,7 @@ package org.totalgrid.reef.shell.proto
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
 import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.broker.BrokerProperties
+import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 /**
@@ -87,7 +87,8 @@ class ReefLoginCommand extends ReefLoginCommandBase {
     }
 
     amqp.connect(5000)
-    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
+    // TODO: replace this with per request timeout updates (load and unload can take more than 5 seconds)
+    val client = new AmqpClientSession(amqp, ReefServicesList, 20000) {
       override def close() {
         super.close()
         amqp.disconnect(5000)

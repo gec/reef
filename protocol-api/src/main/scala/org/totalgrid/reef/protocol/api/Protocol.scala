@@ -29,9 +29,8 @@ import org.totalgrid.reef.util.Logging
 trait Publisher[A] {
   /**
    * @param value Value that will be updated
-   * @return A promise that can be used synchronously or asynchronously to determine completion
    */
-  def publish(value: A): Promise[Boolean]
+  def publish(value: A): Unit
 }
 
 object Protocol {
@@ -56,7 +55,7 @@ trait CommandHandler {
 }
 
 trait NullPublisher[A] extends Publisher[A] {
-  def publish(value: A): Promise[Boolean] = new FixedPromise(true)
+  def publish(value: A) = {}
 }
 
 case object NullBatchPublisher extends NullPublisher[MeasurementBatch]

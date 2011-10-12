@@ -27,7 +27,7 @@ public class NodeSettings
     private String defaultNodeName;
     private String location;
 
-    // TODO: make network a list
+    // TODO: make network a list - backlog-65
     private String network;
 
     public NodeSettings( String defaultNodeName, String location, String network )

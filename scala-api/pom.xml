@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.4.0-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -44,19 +44,27 @@
         </plugins>
     </build>
 
+
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-java-rest-api</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.agile-automata.executor4s</groupId>
+            <artifactId>executor4s_2.9.0-1</artifactId>
+            <version>${executor4s.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
 
 </project>

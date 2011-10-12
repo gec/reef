@@ -18,37 +18,35 @@
  */
 package org.totalgrid.reef.japi.request.impl
 
-import org.totalgrid.reef.japi.request._
-import org.totalgrid.reef.japi.client.{ Session, SessionExecutionPool }
-import org.totalgrid.reef.sapi.client.{ SubscriptionManagement, RestOperations, SessionPool }
+import org.totalgrid.reef.japi.request.AllScadaService
+import org.totalgrid.reef.japi.client.{ SubscriptionCreationListener, SessionExecutionPool }
+import org.totalgrid.reef.sapi.client.{ ClientSession }
+import org.totalgrid.reef.sapi.request.{ AllScadaService => ScalaAllScadaService }
+import org.totalgrid.reef.sapi.request.impl.{ AllScadaServiceScalaSingleSession, AllScadaServiceExecutionPool }
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
  * into smaller functionality based sections or not created at all.
  */
-class AllScadaServicePooledWrapper(_sessionPool: SessionExecutionPool, _authToken: String)
-    extends AllScadaService with AllScadaServiceImpl with AuthorizedAndPooledClientSource {
-  def authToken = _authToken
-  def sessionPool = _sessionPool
+class AllScadaServicePooledWrapper(scalaClient: ScalaAllScadaService)
+    extends AllScadaService with AllScadaServiceJavaShim {
+
+  def this(pool: SessionExecutionPool, authToken: String) = this(new AllScadaServiceExecutionPool(pool, authToken))
+
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = scalaClient.addSubscriptionCreationListener(listener)
+
+  def service = scalaClient
 }
 
-class AllScadaServiceWrapper(_session: Session) extends AllScadaService with AllScadaServiceImpl with SingleSessionClientSource {
-  def session = convertByCasting(_session)
-}
+class AllScadaServiceSingleSession(scalaClient: AllScadaServiceScalaSingleSession)
+    extends AllScadaService with AllScadaServiceJavaShim {
 
-class AuthTokenServicePooledWrapper(_sessionPool: SessionExecutionPool) extends AuthTokenService with AuthTokenServiceImpl with PooledClientSource {
-  def sessionPool = _sessionPool
-}
+  def this(session: ClientSession) = this(new AllScadaServiceScalaSingleSession(session))
 
-class AuthTokenServiceWrapper(_session: Session) extends AuthTokenService with AuthTokenServiceImpl with SingleSessionClientSource {
-  def session = convertByCasting(_session)
-}
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = scalaClient.addSubscriptionCreationListener(listener)
 
-class AllScadaServicePooled(sessionPool: SessionPool, authToken: String)
-    extends AllScadaService with AllScadaServiceImpl with ClientSource {
+  def service = scalaClient
 
-  override def _ops[A](block: RestOperations with SubscriptionManagement => A): A = {
-    sessionPool.borrow(authToken)(block)
-  }
+  def session = scalaClient.session
 }
 

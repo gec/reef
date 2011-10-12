@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.broker
 
+import api.BrokerConnectionInfo
+
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner

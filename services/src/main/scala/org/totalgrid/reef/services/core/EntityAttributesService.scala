@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.japi.Envelope.Status
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.service.SyncServiceBase
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
@@ -40,7 +40,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
 
   override val descriptor = Descriptors.entityAttributes
 
-  override def put(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+  override def put(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
@@ -48,10 +48,12 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
       val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
-      val withoutIds = existingAttrs.map { a => a.id = 0; a }
       val newAtttributes = req.getAttributesList.map { convertProtoToEntry(entEntry.id, _) }.toList
 
-      val differences = newAtttributes.diff(withoutIds)
+      // cant use diff to calculate difference because the attribute type is a squeryl type and it does
+      // weird things with the hashCodes (apparently used in the diff algorithm)
+      // TODO: look for all usages of diff involving squeryl objects
+      val differences = newAtttributes.filterNot(e => existingAttrs.find(e.equals(_)).isDefined)
 
       if (!differences.isEmpty || newAtttributes.size != existingAttrs.size) {
         deleteAllFromEntity(entEntry.id)
@@ -67,7 +69,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     }
   }
 
-  override def delete(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+  override def delete(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 
@@ -86,7 +88,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
     }
   }
 
-  override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
+  override def get(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
     if (!req.hasEntity)
       throw new BadRequestException("Must specify Entity in request.")
 

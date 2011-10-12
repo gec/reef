@@ -23,7 +23,7 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.executor.{ ActorExecutor, Lifecycle }
 import org.totalgrid.reef.japi.client.ConnectionListener
 import org.totalgrid.reef.japi.ServiceIOException
-import org.totalgrid.reef.broker._
+import org.totalgrid.reef.broker.api._
 
 /**
  * Keeps the connection to qpid up. Notifies linked AMQPSessionHandler

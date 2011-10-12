@@ -21,7 +21,7 @@ package org.totalgrid.reef.messaging.sync
 import org.totalgrid.reef.sapi.client.{ Subscription, Event }
 import org.totalgrid.reef.messaging.QueuePatterns
 
-import org.totalgrid.reef.broker.{ MessageConsumer, BrokerChannel }
+import org.totalgrid.reef.broker.api.{ MessageConsumer, BrokerChannel }
 
 /**
  * synchronous subscription object, allows canceling and a delayed starting
@@ -33,8 +33,9 @@ class SyncSubscription[A](channel: BrokerChannel, consumerCreator: (Event[A] => 
   override def id() = queueName
   override def cancel() = channel.close()
 
-  def start(callback: Event[A] => Unit): Unit = {
+  def start(callback: Event[A] => Unit): Subscription[A] = {
     channel.listen(queueName, consumerCreator(callback))
+    this
   }
 
 }

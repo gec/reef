@@ -22,7 +22,9 @@ import org.totalgrid.reef.japi.ReefServiceException;
 import org.totalgrid.reef.japi.client.SubscriptionCreator;
 import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.proto.Measurements.Measurement;
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch;
 import org.totalgrid.reef.proto.Model.Point;
+import org.totalgrid.reef.sapi.Routable;
 
 import java.util.List;
 
@@ -129,5 +131,18 @@ public interface MeasurementService extends SubscriptionCreator
      * </ul>
      * TODO protocol checking on publishMeasurements
      */
-    void publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
+    List<Measurement> publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
+
+    /**
+     * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
+     * should not use this function. If any point is not publishable, the whole group will fail.
+     *
+     * <p>Preconditions for  success:</p>
+     * <ul>
+     *   <li>Every point listed in the measurements exists</li>
+     *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
+     *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
+     * </ul>
+     */
+    MeasurementBatch publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 }

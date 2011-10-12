@@ -77,22 +77,15 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
   }
 
   override def removeEndpoint(endpointName: String) = {
-    logger.debug("Not removing stack " + endpointName + " as per workaround")
+    logger.info { "removing stack with name: " + endpointName }
+
+    dnp3.RemoveStack(endpointName)
 
     map.get(endpointName).foreach { _.cancel }
 
     map -= endpointName
 
-    // TODO: re-enable endpoint removal once we have good integration tests
-    //    logger.info { "removing stack with name: " + endpointName }
-    //    try {
-    //      dnp3.RemoveStack(endpointName)
-    //      map -= endpointName
-    //    } catch {
-    //      case x: Exception =>
-    //        logger.error("Failed removing stack: " + x.getMessage, x)
-    //    }
-    //    logger.info { "removed stack with name: " + endpointName }
+    logger.info { "removed stack with name: " + endpointName }
   }
 
   protected def getMappingProto(files: List[Model.ConfigFile]) = {

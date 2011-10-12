@@ -24,6 +24,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.japi.BadRequestException
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 
@@ -49,7 +50,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     with ApplicationConfigConversion {
 
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
-    val sql = create(context, createModelEntry(req, context.headers.userName.get))
+    val sql = create(context, createModelEntry(req, context.getHeaders.userName.get))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
@@ -62,7 +63,9 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
-    val (sql, updated) = update(context, createModelEntry(req, context.headers.userName.get), existing)
+
+    val username = context.getHeaders.userName.getOrElse(throw new BadRequestException("No username in headers"))
+    val (sql, updated) = update(context, createModelEntry(req, username), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
     val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }

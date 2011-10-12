@@ -23,7 +23,7 @@ import org.totalgrid.reef.services.core.{ SilentSummaryPoints, SummaryPoints }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, SilentEventPublishers, ServiceEventPublishers }
 import org.totalgrid.reef.japi.Envelope.Event
 import com.google.protobuf.GeneratedMessage
@@ -36,10 +36,10 @@ case class ServiceDependencies(pubs: ServiceEventPublishers = new SilentEventPub
   coordinatorExecutor: Executor = new InstantExecutor)
 
 class HeadersRequestContext(
-  extraHeaders: RequestEnv = new RequestEnv,
+  extraHeaders: BasicRequestHeaders = BasicRequestHeaders.empty,
   dependencies: ServiceDependencies = new ServiceDependencies)
     extends DependenciesRequestContext(dependencies) {
-  headers.merge(extraHeaders)
+  modifyHeaders(_.merge(extraHeaders))
 }
 
 class AllTypeServiceSubscriptionHandler(dependencies: ServiceDependencies) extends ServiceSubscriptionHandler {
@@ -54,7 +54,15 @@ class AllTypeServiceSubscriptionHandler(dependencies: ServiceDependencies) exten
 
 class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
 
-  val headers = new RequestEnv
+  private var headers = BasicRequestHeaders.empty
+
+  def getHeaders = headers
+
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders = {
+    val newHeaders = modify(headers)
+    headers = newHeaders
+    newHeaders
+  }
 
   val operationBuffer = new BasicOperationBuffer
 
