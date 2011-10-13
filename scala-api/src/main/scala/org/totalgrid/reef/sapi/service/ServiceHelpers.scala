@@ -19,7 +19,7 @@
 package org.totalgrid.reef.sapi.service
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.client.{ Failure, Response }
+import org.totalgrid.reef.sapi.client.{ FailureResponse, Response }
 import com.google.protobuf.ByteString
 
 trait ServiceHelpers[A] {
@@ -32,6 +32,6 @@ trait ServiceHelpers[A] {
     ret.build()
   }
 
-  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, Failure(status, errorMsg))
+  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, FailureResponse(status, errorMsg))
 
 }

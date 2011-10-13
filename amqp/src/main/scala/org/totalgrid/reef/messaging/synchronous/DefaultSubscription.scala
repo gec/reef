@@ -27,7 +27,7 @@ import org.totalgrid.reef.broker.newapi.{ BrokerMessageConsumer, BrokerMessage, 
 /**
  * synchronous subscription object, allows canceling and a delayed starting
  */
-final class BasicSubscription[A](subscription: BrokerSubscription, executor: Executor, deserialize: Array[Byte] => A) extends Subscription[A] with Logging {
+final class DefaultSubscription[A](subscription: BrokerSubscription, executor: Executor, deserialize: Array[Byte] => A) extends Subscription[A] with Logging {
 
   override def id() = subscription.getQueue
   override def cancel() = subscription.close()

@@ -60,8 +60,8 @@ object Documenter {
   }
 
   def getResponse[A](rsp: Response[A]): Node = rsp match {
-    case Success(status, list) => getResponse(status, list)
-    case Failure(status, error) => getErrorResponse(error, status)
+    case SuccessResponse(status, list) => getResponse(status, list)
+    case FailureResponse(status, error) => getErrorResponse(error, status)
   }
 
   def getExplainedCase[A](req: RequestWithExplanation[A]): Node = {

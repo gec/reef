@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.matchers.ShouldMatchers
 
-import org.totalgrid.reef.sapi.client.{ Success, Failure, Event }
+import org.totalgrid.reef.sapi.client.{ SuccessResponse, FailureResponse, Event }
 import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
 import org.totalgrid.reef.messaging.mock.synchronous.{ MockSession, MockConnection }
 
@@ -67,7 +67,7 @@ class ServiceHandlerTest extends FunSuite with ShouldMatchers {
           request.verb should equal(Envelope.Verb.GET)
           request.env.subQueue should equal(Some("queue01"))
           request.payload should equal(3)
-          Failure(Envelope.Status.INTERNAL_ERROR)
+          FailureResponse(Envelope.Status.INTERNAL_ERROR)
         }
         exe.delayNext(1, 0) should equal(5000)
       }
@@ -82,7 +82,7 @@ class ServiceHandlerTest extends FunSuite with ShouldMatchers {
       conn.eventQueueSize should equal(0)
       record.onNewQueue("queue01")
 
-      conn.session.respond[Int](request => Success(Envelope.Status.OK, list))
+      conn.session.respond[Int](request => SuccessResponse(Envelope.Status.OK, list))
       conn.session.numRequestsPending should equal(0)
 
       receiver.responses.size should equal(0) //posting the successful response is deferred

@@ -43,8 +43,8 @@ class ServiceHandler(executor: Executor) extends Logging {
   private def subscribe[A](client: ClientSession, queue: String, searchObj: A, retryMS: Long, subHandler: ResponseHandler[A]): Unit = {
 
     def handleResponse(rsp: Response[A]) = rsp match {
-      case Success(_, list) => executor.execute(subHandler(list))
-      case Failure(status, msg) =>
+      case SuccessResponse(_, list) => executor.execute(subHandler(list))
+      case FailureResponse(status, msg) =>
         logger.error("Error getting subscription for " + searchObj)
         executor.delay(retryMS)(subscribe(client, queue, searchObj, retryMS, subHandler)) //defined recursively
     }

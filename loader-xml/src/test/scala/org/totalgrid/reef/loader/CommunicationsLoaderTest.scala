@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.{ Logging, BuildEnv }
 import org.scalatest.{ Assertions, BeforeAndAfterAll }
 import collection.mutable.{ HashMap }
 
-import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
+import org.totalgrid.reef.sapi.client.{ MockSyncOperations, SuccessResponse }
 import org.totalgrid.reef.japi.Envelope
 import collection.Seq
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
@@ -59,7 +59,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
+    val client = new MockSyncOperations((AnyRef) => SuccessResponse(Envelope.Status.OK, List[AnyRef]()))
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
     val exceptionCollector = new LoadingExceptionCollector

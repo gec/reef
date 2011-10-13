@@ -65,7 +65,7 @@ final class MockSession extends ClientSession {
     nextHandler[A]() match {
       case Some(handler) => new FixedPromise[Response[A]](handler(request))
       case None =>
-        val promise = new SimplePromise[Response[A]](Failure(Envelope.Status.RESPONSE_TIMEOUT))
+        val promise = new SimplePromise[Response[A]](FailureResponse(Envelope.Status.RESPONSE_TIMEOUT))
         requests.enqueue(Record[A](request, promise))
         promise
     }

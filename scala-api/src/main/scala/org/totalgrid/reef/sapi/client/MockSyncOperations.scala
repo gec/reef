@@ -73,10 +73,10 @@ final class MockSyncOperations(
     case Envelope.Verb.GET => new SynchronizedPromise(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]])
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload.asInstanceOf[AnyRef])
-      new SynchronizedPromise(Success(Envelope.Status.OK, List[A](payload)))
+      new SynchronizedPromise(SuccessResponse(Envelope.Status.OK, List[A](payload)))
     case Envelope.Verb.PUT =>
       putQueue.enqueue(payload.asInstanceOf[AnyRef])
-      new SynchronizedPromise(Success(Envelope.Status.OK, List[A](payload)))
+      new SynchronizedPromise(SuccessResponse(Envelope.Status.OK, List[A](payload)))
     case Envelope.Verb.POST => throw new Exception("unimplemented")
   }
 

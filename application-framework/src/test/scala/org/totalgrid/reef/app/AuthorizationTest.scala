@@ -26,7 +26,7 @@ import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.scalatest.{ BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.proto.Auth.AuthToken
 import org.junit.runner.RunWith
-import org.totalgrid.reef.sapi.client.{ Response, Failure }
+import org.totalgrid.reef.sapi.client.{ Response, FailureResponse }
 import org.totalgrid.reef.japi.Envelope
 import scala.Some
 
@@ -63,7 +63,7 @@ class AuthorizationTest extends FunSuite with ShouldMatchers with BeforeAndAfter
     conn.session.numRequestsPending should equal(1)
 
     conn.session.respond[AuthToken] { request =>
-      Failure(Envelope.Status.INTERNAL_ERROR)
+      FailureResponse(Envelope.Status.INTERNAL_ERROR)
     }
 
     conn.session.numRequestsPending should equal(1)

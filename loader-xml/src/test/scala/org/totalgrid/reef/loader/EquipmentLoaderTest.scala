@@ -36,7 +36,7 @@ import sx.communications.CommunicationsModel
 import sx.{ InfoXmlBean, ConfigFileXmlBean }
 import scala.None
 
-import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
+import org.totalgrid.reef.sapi.client.{ MockSyncOperations, SuccessResponse }
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.proto.Model
 

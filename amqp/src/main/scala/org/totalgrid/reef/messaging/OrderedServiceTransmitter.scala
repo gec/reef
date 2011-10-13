@@ -20,7 +20,7 @@
 package org.totalgrid.reef.messaging
 
 import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.client.{ Failure, Response, SessionPool }
+import org.totalgrid.reef.sapi.client.{ FailureResponse, Response, SessionPool }
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.promise.{ FixedPromise, SynchronizedPromise, Promise }
 import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AnyNodeDestination, Routable }
@@ -75,7 +75,7 @@ class OrderedServiceTransmitter(pool: SessionPool, maxQueueSize: Int = 100) exte
   }
 
   private def onResponse(record: Record, retries: Int)(response: Response[Any]) = response match {
-    case failure: Failure =>
+    case failure: FailureResponse =>
       logger.warn("ordered publisher failure: " + failure)
       if (retries > 0) {
         publish(record, retries - 1)

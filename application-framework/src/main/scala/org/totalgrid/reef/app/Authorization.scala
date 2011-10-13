@@ -23,6 +23,7 @@ import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.sapi.client.SessionPool
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.Logging
+import net.agileautomata.executor4s.{ Failure, Success }
 
 object Authorization extends Logging {
 
@@ -46,8 +47,8 @@ object Authorization extends Logging {
     def initiate = pool.borrow {
       _.put(buildLogin()).listen {
         _.one match {
-          case Right(auth) => callback(auth)
-          case Left(ex) =>
+          case Success(auth) => callback(auth)
+          case Failure(ex) =>
             logger.error("Error getting auth token: " + ex.getMessage)
             retry
         }

@@ -23,12 +23,11 @@ import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
-import org.totalgrid.reef.sapi.client.{ Success, Failure }
-
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._
 import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import net.agileautomata.executor4s.{ Failure, Success }
 
 object ApplicationEnroller extends Logging {
 
@@ -97,10 +96,10 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSet
     client.foreach { c =>
       c.put(buildLogin(userSettings)).listen { rsp =>
         rsp.one match {
-          case Right(one) =>
-            c.modifyHeaders(_.addAuthToken(one.getToken))
-            putAppConfig(c, one.getToken, configProto)
-          case Left(ex) =>
+          case Success(auth) =>
+            c.modifyHeaders(_.addAuthToken(auth.getToken))
+            putAppConfig(c, auth.getToken, configProto)
+          case Failure(ex) =>
             logger.error("Unable to enroll application, error getting auth token, unable to login user: " + userSettings.getUserName + ". config: " + configProto + ".  error: " + ex.getMessage)
             reenroll()
         }
@@ -112,12 +111,12 @@ abstract class ApplicationEnroller(amqp: AMQPProtoFactory, userSettings: UserSet
 
   def putAppConfig(client: AmqpClientSession, auth: String, configRequest: ApplicationConfig) = client.put(configRequest).listen {
     _.one match {
-      case Right(config) =>
+      case Success(config) =>
         val components = new CoreApplicationComponents(amqp, config, auth)
         val lifecycle = setupFun(components)
         container = Some(lifecycle)
         lifecycle.start
-      case Left(ex) =>
+      case Failure(ex) =>
         logger.error("Error registering application: " + ex.getMessage)
         reenroll()
     }

@@ -65,10 +65,10 @@ class MeasurementBatchService(pool: SessionPool)
 
     ScatterGather.collect(promises) { results =>
       val failures = results.filterNot(_.success)
-      val response = if (failures.size == 0) Success(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
+      val response = if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
       else {
         val msg = failures.mkString(",")
-        Failure(Envelope.Status.INTERNAL_ERROR, msg)
+        FailureResponse(Envelope.Status.INTERNAL_ERROR, msg)
       }
       callback(response)
     }

@@ -25,13 +25,13 @@ import org.totalgrid.reef.sapi._
 import org.totalgrid.reef.sapi.newclient._
 import org.totalgrid.reef.japi.Envelope.Verb
 
-final class BasicClient(conn: BasicConnection, strand: Strand) extends Client with RestOperations {
+final class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RestOperations {
 
   override def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders) =
     conn.request(verb, payload, getHeaders.merge(headers), strand)
 
-  override def prepareSubscription[A](descriptor: TypeDescriptor[A]): Subscription[A] =
-    conn.prepareSubscription(strand, descriptor.getKlass)
+  override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
+    conn.subscribe(strand, descriptor.getKlass)
 
   override def execute(fun: => Unit): Unit = strand.execute(fun)
   override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)

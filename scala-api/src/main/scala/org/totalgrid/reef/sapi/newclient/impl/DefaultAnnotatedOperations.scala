@@ -54,16 +54,17 @@ final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperatio
     Promise.from(opWithFuture[A](err)(fun))
 
   final def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
-    try {
-      val sub = client.prepareSubscription(desc)
-      val future = opWithFuture(err)(fun(sub, _))
-      Promise.from(future.map(_.map(a => SubscriptionResult(a, sub))))
-    } catch {
-      case ex: Exception =>
+    val future = client.subscribe(desc) match {
+      case Success(sub) =>
+        val future = opWithFuture(err)(fun(sub, _))
+        future.listen(r => if (r.isFailure) sub.cancel())
+        future.map(_.map(a => SubscriptionResult(a, sub)))
+      case Failure(ex) =>
         val future = client.future[Result[SubscriptionResult[A, B]]]
         future.set(Failure("Subscribe failed - " + renderErrorMsg(err) + " - " + ex.getMessage))
-        Promise.from(future)
+        future
     }
 
+    Promise.from(future)
   }
 }

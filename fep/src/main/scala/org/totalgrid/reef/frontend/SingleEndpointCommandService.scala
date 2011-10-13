@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.sapi.client.{ Response, Success }
+import org.totalgrid.reef.sapi.client.{ Response, SuccessResponse }
 import org.totalgrid.reef.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
 import org.totalgrid.reef.proto.Descriptors
@@ -39,7 +39,7 @@ class SingleEndpointCommandService(handler: CommandHandler) extends AsyncService
     val rspPublisher = new ResponsePublisher {
       def publish(rsp: CommandResponse) = {
         val response = Command.newBuilder(req).setStatus(rsp.getStatus).build()
-        callback(Success(Envelope.Status.OK, List(response)))
+        callback(SuccessResponse(Envelope.Status.OK, List(response)))
         new FixedPromise(true)
       }
     }

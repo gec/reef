@@ -30,7 +30,7 @@ import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.{ Executors, Cancelable }
 import org.totalgrid.reef.sapi.{ AnyNodeDestination, ServiceList }
 import org.totalgrid.reef.sapi.newclient.Client
-import org.totalgrid.reef.sapi.client.{ Success, Response }
+import org.totalgrid.reef.sapi.client.{ SuccessResponse, Response }
 
 @RunWith(classOf[JUnitRunner])
 class QpidClientToService extends ConnectionToServiceTest with QpidBrokerTestFixture
@@ -45,7 +45,7 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     val executor = Executors.newScheduledSingleThread()
     var binding: Option[Cancelable] = None
     try {
-      val conn = new BasicConnection(ServiceList(SomeIntegerTypeDescriptor), b, executor, 5000)
+      val conn = new DefaultConnection(ServiceList(SomeIntegerTypeDescriptor), b, executor, 5000)
       binding = Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, AnyNodeDestination, true))
       fun(conn.login("foo"))
     } finally {
@@ -64,8 +64,8 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
   test("Subscription calls work") { //subscriptions not currently working with embedded broker
     fixture { c =>
       val events = new SynchronizedList[SomeInteger]
-      val sub = c.prepareSubscription(SomeIntegerTypeDescriptor)
-      c.put(SomeInteger(1), sub).await should equal(Success(list = List(SomeInteger(2))))
+      val sub = c.subscribe(SomeIntegerTypeDescriptor).get
+      c.put(SomeInteger(1), sub).await should equal(SuccessResponse(list = List(SomeInteger(2))))
       sub.start(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
       sub.cancel()
