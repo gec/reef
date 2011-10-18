@@ -20,6 +20,8 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  */
 
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.ApiBase
 
 /**
  * "Super" implementation of all of the service interfaces
@@ -41,4 +43,6 @@ trait AllScadaServiceImpl
   with EndpointManagementServiceImpl
   with ApplicationServiceImpl
   with CommunicationChannelServiceImpl
+
+class AllScadaServiceWrapper(client: Client) extends ApiBase(client) with AllScadaServiceImpl
 

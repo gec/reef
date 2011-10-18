@@ -25,7 +25,6 @@ import org.totalgrid.reef.api.japi.client.{ Promise, ResponseListener, Response 
 
 final class PromiseWrapper[A](promise: ScalaPromise[ScalaResponse[A]]) extends Promise[Response[A]] {
 
-
   override def await(): Response[A] = new ResponseWrapper(promise.await)
 
   override def addListener(listener: ResponseListener[Response[A]]): Unit = promise.listen { rsp =>

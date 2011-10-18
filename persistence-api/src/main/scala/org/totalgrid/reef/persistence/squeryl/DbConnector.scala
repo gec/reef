@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.AsyncBufferReactor
 import org.totalgrid.reef.persistence.ConnectionReactor.Observer
 import org.totalgrid.reef.executor.Executor

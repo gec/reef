@@ -22,11 +22,11 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.request.AlarmService;
-import org.totalgrid.reef.api.japi.request.EntityService;
-import org.totalgrid.reef.api.japi.request.EventConfigService;
-import org.totalgrid.reef.api.japi.request.EventCreationService;
-import org.totalgrid.reef.api.japi.client.rpc.builders.EntityRequestBuilders;
+import org.totalgrid.reef.api.japi.client.rpc.AlarmService;
+import org.totalgrid.reef.api.japi.client.rpc.EntityService;
+import org.totalgrid.reef.api.japi.client.rpc.EventConfigService;
+import org.totalgrid.reef.api.japi.client.rpc.EventCreationService;
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.EntityRequestBuilders;
 import org.totalgrid.reef.api.proto.Alarms.*;
 import org.totalgrid.reef.api.proto.Model.Entity;
 

@@ -21,8 +21,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 import org.totalgrid.reef.api.proto.Commands.CommandAccess
 import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.japi.client.rpc.impl.builder.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
-
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
 
 import org.totalgrid.reef.api.sapi.client.rpc.CommandService
 import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations

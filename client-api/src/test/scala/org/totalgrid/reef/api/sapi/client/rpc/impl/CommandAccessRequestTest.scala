@@ -18,13 +18,12 @@ package org.totalgrid.reef.sapi.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.japi.client.rpc.impl.builder.CommandAccessRequestBuilders
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.CommandAccessRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.japi.ReefServiceException
-
 
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest

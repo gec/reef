@@ -21,7 +21,7 @@ package org.totalgrid.reef.japi.request.utils
 import xml.Node
 import scala.collection.mutable.Queue
 import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.api.sapi.client.{Response, Promise, RequestSpy}
+import org.totalgrid.reef.api.sapi.client.{ Response, Promise, RequestSpy }
 import net.agileautomata.executor4s.Future
 
 /**

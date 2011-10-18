@@ -18,10 +18,15 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl
 
+import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceWrapper
+import org.totalgrid.reef.api.japi.client.SubscriptionCreationListener
+import org.totalgrid.reef.api.japi.client.rpc.{ AllScadaService => JavaAllScadaService }
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 
 trait AllScadaServiceJavaShim
-    extends AuthTokenServiceJavaShim
+    extends JavaAllScadaService
+    with AuthTokenServiceJavaShim
     with EntityServiceJavaShim
     with ConfigFileServiceJavaShim
     with MeasurementServiceJavaShim
@@ -38,4 +43,10 @@ trait AllScadaServiceJavaShim
     with CommunicationChannelServiceJavaShim {
 
   def service: AllScadaService
+}
+
+class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServiceJavaShim {
+  def service = new AllScadaServiceWrapper(client)
+
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {}
 }

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.persistence
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
-import org.totalgrid.reef.util.{ Logging, Timer }
+import com.weiglewilczek.slf4s.Logging
 
 import scala.actors.Actor._
 

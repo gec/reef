@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.totalgrid.reef.api.japi.client.ConnectionSettings;
 import org.totalgrid.reef.api.japi.client.util.PropertyLoading;
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo;
 
 /**
  * Settings class that defines properties for an AMQP connection
@@ -106,6 +107,12 @@ public class AMQPConnectionSettingImpl implements ConnectionSettings
             trustStore = "";
             trustStorePassword = "";
         }
+    }
+
+    public QpidBrokerConnectionInfo asInfo()
+    {
+        // TODO: standardize qpid config information into a single java class
+        return new QpidBrokerConnectionInfo( host, port, user, password, virtualHost, ssl, trustStore, trustStorePassword, "", "" );
     }
 
     @Override

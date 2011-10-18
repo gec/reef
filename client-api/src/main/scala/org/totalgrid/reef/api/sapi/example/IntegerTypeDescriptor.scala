@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.api.sapi.example
 
-
 import java.io._
 import org.totalgrid.reef.api.japi.TypeDescriptor
 

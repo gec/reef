@@ -91,7 +91,7 @@ sealed case class FailureResponse(status: Envelope.Status = Envelope.Status.INTE
 
   override val list = Nil
   override val success = false
-  override def many = Failure(new ReefServiceException(error, status))
+  override def many = Failure(StatusCodes.toException(status, error))
   override def toString = "Request failed with status: " + status + ", msg: " + error
 }
 

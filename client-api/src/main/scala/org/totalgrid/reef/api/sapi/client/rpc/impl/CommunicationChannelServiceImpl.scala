@@ -22,7 +22,6 @@ import org.totalgrid.reef.api.proto.Model.ReefUUID
 
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommChannel }
 
-
 import org.totalgrid.reef.api.sapi.client.rpc.CommunicationChannelService
 import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
 

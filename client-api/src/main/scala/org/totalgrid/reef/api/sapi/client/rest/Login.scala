@@ -20,7 +20,6 @@ package org.totalgrid.reef.api.sapi.client.rest
 
 import org.totalgrid.reef.api.sapi.client.Promise
 
-
 trait Login {
 
   def login(authToken: String): Client

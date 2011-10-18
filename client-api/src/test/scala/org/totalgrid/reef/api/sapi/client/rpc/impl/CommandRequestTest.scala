@@ -18,7 +18,7 @@ package org.totalgrid.reef.sapi.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.japi.client.rpc.impl.builder.CommandRequestBuilders
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.CommandRequestBuilders
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

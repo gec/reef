@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client.rpc.impl.builder
+package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.proto.Commands.CommandAccess

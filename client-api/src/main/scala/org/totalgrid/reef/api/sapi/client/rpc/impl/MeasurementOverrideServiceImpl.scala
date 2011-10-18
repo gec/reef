@@ -23,7 +23,7 @@ import org.totalgrid.reef.api.proto.Model.Point
 import org.totalgrid.reef.api.proto.Processing.MeasOverride
 import org.totalgrid.reef.api.proto.Measurements.Measurement
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
-import org.totalgrid.reef.api.japi.client.rpc.impl.builder.MeasurementOverrideRequestBuilders
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.MeasurementOverrideRequestBuilders
 
 import org.totalgrid.reef.api.sapi.client.rpc.MeasurementOverrideService
 import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations

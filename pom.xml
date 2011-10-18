@@ -31,8 +31,8 @@
 		<module>measurementstore-api</module>
 		<module>measurementstore-squeryl</module>
         <module>memory-broker</module>
-		<module>application-framework</module>
 		<module>integration</module>
+		<module>application-framework</module>
 		<module>services</module>
 		<module>processing</module>
 		<module>fep</module>

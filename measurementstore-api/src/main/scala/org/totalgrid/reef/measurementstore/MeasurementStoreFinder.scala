@@ -19,20 +19,19 @@
 
 package org.totalgrid.reef.measurementstore
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.executor.Executor
 import org.osgi.framework.{ ServiceReference, BundleContext }
 
 object MeasurementStoreFinder extends Logging {
 
-  import org.totalgrid.reef.util.BuildEnv.ConnInfo
   import org.totalgrid.reef.persistence.squeryl._
   /**
    * Get a measurement store implementation depending on the system configuration
    * @param lifecyleSink if the store generates any Lifecycle objects throw them here TODO: fix with with DI?
    * @return measurement store
    */
-  def getInstance(config: ConnInfo, executor: Executor, context: BundleContext): MeasurementStore = {
+  def getInstance(config: AnyRef, executor: Executor, context: BundleContext): MeasurementStore = {
     config match {
       case di: DbInfo =>
         val services: List[ServiceReference] = Option(context.getServiceReferences(classOf[MeasurementStoreFactory].getName, "(org.totalgrid.reef.mstore=sql)")).map(_.toList).getOrElse(Nil)

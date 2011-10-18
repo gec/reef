@@ -23,8 +23,6 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-
-
 @RunWith(classOf[JUnitRunner])
 class PointRequestTest
     extends ClientSessionSuite("Point.xml", "Point",

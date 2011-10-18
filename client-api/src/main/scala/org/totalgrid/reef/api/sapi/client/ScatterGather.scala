@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.api.sapi.client
 
-
 object ScatterGather {
 
   /**

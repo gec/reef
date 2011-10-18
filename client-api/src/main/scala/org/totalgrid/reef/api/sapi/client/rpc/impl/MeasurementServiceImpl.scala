@@ -19,14 +19,14 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * the License.
  */
 import org.totalgrid.reef.api.proto.Model.Point
-import org.totalgrid.reef.api.japi.client.rpc.impl.builder.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 import org.totalgrid.reef.api.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 import org.totalgrid.reef.api.sapi.client.rpc.MeasurementService
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.api.japi.ExpectationException
 import org.totalgrid.reef.api.sapi.client.rest.RestOperations
-import org.totalgrid.reef.api.sapi.client.{Subscription, BasicRequestHeaders}
+import org.totalgrid.reef.api.sapi.client.{ Subscription, BasicRequestHeaders }
 import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
 
 import scala.collection.JavaConversions._

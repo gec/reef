@@ -26,8 +26,6 @@ import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperati
 
 import org.totalgrid.reef.api.proto.Utils.{ AttributeList, Attribute }
 
-
-
 import org.totalgrid.reef.api.sapi.client.rpc.EventCreationService
 import org.totalgrid.reef.api.sapi.client.rest.RestOperations
 

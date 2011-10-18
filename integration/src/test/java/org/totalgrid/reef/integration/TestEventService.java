@@ -20,8 +20,9 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.client.SubscriptionBinding;
 import org.totalgrid.reef.api.japi.client.SubscriptionCreationListener;
-import org.totalgrid.reef.api.japi.request.*;
+import org.totalgrid.reef.api.japi.client.rpc.*;
 import org.totalgrid.reef.integration.helpers.BlockingQueue;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
@@ -186,13 +187,13 @@ public class TestEventService extends ReefConnectionTestBase
     public void subscriptionCreationCallback() throws ReefServiceException, InterruptedException
     {
 
-        final BlockingQueue<Subscription<?>> callback = new BlockingQueue<Subscription<?>>();
+        final BlockingQueue<SubscriptionBinding> callback = new BlockingQueue<SubscriptionBinding>();
 
         EventService es = helpers;
 
         es.addSubscriptionCreationListener( new SubscriptionCreationListener() {
             @Override
-            public void onSubscriptionCreated( Subscription<?> sub )
+            public void onSubscriptionCreated( SubscriptionBinding sub )
             {
                 callback.push( sub );
             }

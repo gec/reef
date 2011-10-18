@@ -23,8 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.request.CommandService;
-import org.totalgrid.reef.api.japi.request.PointService;
+import org.totalgrid.reef.api.japi.client.rpc.CommandService;
+import org.totalgrid.reef.api.japi.client.rpc.PointService;
 import org.totalgrid.reef.api.proto.Model.*;
 
 import java.util.List;
@@ -44,30 +44,6 @@ public class TestPointService extends ReefConnectionTestBase
         assertTrue( "expected at least one point: " + allPoints.size(), allPoints.size() > 0 );
     }
 
-    /** Test point searching by entity */
-    @Test
-    public void pointsInSubstation() throws ReefServiceException
-    {
-        // Specify all point entities that are under equipment
-        Entity eqRequest =
-            Entity.newBuilder().addTypes( "Substation" ).addRelations(
-                    Relationship.newBuilder().setRelationship( "owns" ).setDescendantOf( true ).addEntities(
-                            Entity.newBuilder().addTypes( "Equipment" ).addRelations(
-                                    Relationship.newBuilder().setRelationship( "owns" ).setDescendantOf( true ).addEntities(
-                                            Entity.newBuilder().addTypes( "Point" ) ) ) ) ).build();
-
-        // Build the point service request using the entity descriptor
-        Point p = Point.newBuilder().setEntity( eqRequest ).build();
-        List<Point> list = client.get( p ).await().expectMany();
-
-        assertNotNull( list );
-        assertTrue( "expected at least one point: " + list.size(), list.size() > 0 );
-        /*
-         * // Verify that all retrieved points start their full name with "Apex" for(Point pt :
-         * list) { String[] names = pt.getName().split("\\."); assert(names[0] == "Apex"); }
-         */
-    }
-
     /** Given a command, find the feedback point using the point service's entity query. */
     @Test
     public void pointFeedback() throws ReefServiceException
@@ -78,6 +54,8 @@ public class TestPointService extends ReefConnectionTestBase
         assertTrue( commands.size() > 0 );
         Command cmd = commands.get( 0 );
 
+        // TODO: implement getPointFeedbackCommands() function
+        /*
         // Use the entity of the command to get the feedback point
         Entity eqRequest =
             Entity.newBuilder( cmd.getEntity() ).addRelations(
@@ -90,6 +68,7 @@ public class TestPointService extends ReefConnectionTestBase
 
         assertNotNull( list );
         assertEquals( 1, list.size() );
+         */
     }
 
 }

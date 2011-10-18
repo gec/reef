@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client.rpc.impl.builder
+package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
 import org.totalgrid.reef.api.proto.Model.Point
 import org.totalgrid.reef.api.proto.Measurements.MeasurementHistory

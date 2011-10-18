@@ -22,15 +22,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import net.agileautomata.executor4s.ExecutorService;
+import net.agileautomata.executor4s.Executors;
 import org.junit.After;
 import org.junit.Before;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.client.impl.AMQPConnectionSettingImpl;
-import org.totalgrid.reef.api.japi.client.ConnectionSettings;
-import org.totalgrid.reef.api.japi.client.Connection;
-import org.totalgrid.reef.api.japi.client.Session;
-import org.totalgrid.reef.api.japi.client.SessionExecutionPool;
+
+import org.totalgrid.reef.api.japi.client.rpc.AllScadaService;
+import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServiceJavaShimWrapper;
+import org.totalgrid.reef.api.sapi.client.rest.Connection;
+import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection;
+import org.totalgrid.reef.api.sapi.impl.ReefServicesList;
+import org.totalgrid.reef.broker.BrokerConnection;
+import org.totalgrid.reef.broker.BrokerConnectionFactory;
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -42,8 +50,13 @@ public class ReefConnectionTestBase
     /**
      * connector to the bus, restarted for every test connected for
      */
-    protected final Connection connection = new AMQPConnection( getConnectionInfo(), 5000 );
-    protected Session client;
+    protected final BrokerConnectionFactory factory = new QpidBrokerConnectionFactory( getConnectionInfo() );
+
+    protected final ExecutorService exe = Executors.newScheduledThreadPool( 4 );
+
+    protected BrokerConnection broker;
+    protected Connection connection;
+
     protected AllScadaService helpers;
 
     /**
@@ -71,7 +84,7 @@ public class ReefConnectionTestBase
      * gets the ip of the qpid server, defaults to 127.0.0.1 but can be override with java property
      * -Dreef_node_ip=192.168.100.10
      */
-    private ConnectionSettings getConnectionInfo()
+    private QpidBrokerConnectionInfo getConnectionInfo()
     {
         Properties props = new Properties();
 
@@ -87,34 +100,35 @@ public class ReefConnectionTestBase
             throw new RuntimeException( e );
         }
 
-        return new AMQPConnectionSettingImpl( props );
+        AMQPConnectionSettingImpl settings = new AMQPConnectionSettingImpl( props );
+
+        return settings.asInfo();
+
     }
 
     @Before
     public void startBridge() throws InterruptedException, ReefServiceException
     {
-        connection.connect( 5000 );
-        client = connection.newSession();
-        SessionExecutionPool pool = connection.newSessionPool();
+        broker = factory.connect();
 
-        AllScadaService service = new AllScadaServicePooledWrapper( pool, "" );
+        connection = new DefaultConnection( ReefServicesList.getInstance(), broker, exe, 20000 );
 
-        String authToken = service.createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
         {
-            client.setHeaders( client.getHeaders().setAuthToken( authToken ) );
-            helpers = new AllScadaServicePooledWrapper( pool, authToken );
+
+            helpers = new AllScadaServiceJavaShimWrapper( connection.login( "system", "system" ).await() );
         }
         else
         {
-            helpers = new AllScadaServicePooledWrapper( pool, "" );
+            helpers = new AllScadaServiceJavaShimWrapper( connection.login( "" ) );
         }
     }
 
     @After
     public void stopBridge() throws InterruptedException, ReefServiceException
     {
-        client.close();
-        connection.disconnect( 5000 );
+        if ( broker != null )
+            broker.disconnect();
+        exe.shutdown();
     }
 }

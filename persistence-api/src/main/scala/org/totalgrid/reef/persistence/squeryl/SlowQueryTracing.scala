@@ -23,7 +23,7 @@ import org.squeryl.Session
 import java.sql.SQLException
 
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 trait SlowQueryTracing extends DatabaseAdapter with Logging {
 

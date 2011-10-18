@@ -25,7 +25,6 @@ import org.totalgrid.reef.api.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.PointRequestBuilders
 import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
 
-
 trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
   override def getAllPoints() = ops.operation("Failed getting all points in system") {

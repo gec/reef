@@ -23,8 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.assertEquals;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.request.MeasurementService;
-import org.totalgrid.reef.api.japi.request.PointService;
+import org.totalgrid.reef.api.japi.client.rpc.MeasurementService;
+import org.totalgrid.reef.api.japi.client.rpc.PointService;
 import org.totalgrid.reef.api.proto.Measurements.*;
 import org.totalgrid.reef.api.proto.Model.*;
 import java.util.List;

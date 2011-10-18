@@ -24,10 +24,10 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.client.SubscriptionResult;
-import org.totalgrid.reef.api.japi.request.MeasurementOverrideService;
-import org.totalgrid.reef.api.japi.request.MeasurementService;
+import org.totalgrid.reef.api.japi.client.rpc.MeasurementOverrideService;
+import org.totalgrid.reef.api.japi.client.rpc.MeasurementService;
 
-import org.totalgrid.reef.api.japi.client.rpc.builders.MeasurementRequestBuilders;
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.MeasurementRequestBuilders;
 import org.totalgrid.reef.api.proto.Measurements.*;
 import org.totalgrid.reef.api.proto.Model.*;
 import org.totalgrid.reef.api.proto.Processing.MeasOverride;

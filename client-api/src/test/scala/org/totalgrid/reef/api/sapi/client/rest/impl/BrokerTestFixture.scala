@@ -19,11 +19,10 @@ package org.totalgrid.reef.messaging.synchronous
  * the License.
  */
 
-
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.broker.{BrokerConnection, BrokerConnectionFactory}
-import org.totalgrid.reef.broker.qpid.{QpidBrokerConnectionInfo, QpidBrokerConnectionFactory}
+import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory }
+import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
 
 trait BrokerTestFixture {
 

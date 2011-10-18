@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
+import org.totalgrid.reef.api.japi.Envelope;
 import org.totalgrid.reef.api.japi.client.SubscriptionEvent;
 import org.totalgrid.reef.api.japi.client.SubscriptionEventAcceptor;
 

@@ -21,7 +21,6 @@ package org.totalgrid.reef.sapi.auth
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 
-
 case class AuthDenied(reason: String, status: Envelope.Status)
 
 /**

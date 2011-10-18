@@ -28,7 +28,6 @@ import org.totalgrid.reef.api.japi.client.rpc.impl.builders.PointRequestBuilders
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.japi.client.SubscriptionEvent
 
-
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryTest
     extends ClientSessionSuite("MeasurementHistory.xml", "MeasurementHistory",
