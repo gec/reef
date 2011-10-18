@@ -22,10 +22,10 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.japi.request.CommandService;
-import org.totalgrid.reef.japi.request.PointService;
-import org.totalgrid.reef.proto.Model.*;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.request.CommandService;
+import org.totalgrid.reef.api.japi.request.PointService;
+import org.totalgrid.reef.api.proto.Model.*;
 
 import java.util.List;
 

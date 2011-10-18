@@ -19,10 +19,10 @@
 package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.services.core.{ MeasurementProcessingConnectionServiceModel, CommunicationEndpointConnectionServiceModel }
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.models._
 
-import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.api.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.framework._

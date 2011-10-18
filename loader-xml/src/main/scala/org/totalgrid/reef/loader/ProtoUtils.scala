@@ -21,11 +21,11 @@ package org.totalgrid.reef.loader
 import equipment._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
 
-import org.totalgrid.reef.proto.Model.{ EntityEdge, Point, Entity, PointType => PointTypeProto }
+import org.totalgrid.reef.api.proto.Model.{ EntityEdge, Point, Entity, PointType => PointTypeProto }
 
 /**
  * Utility methods to crate protos
@@ -329,7 +329,7 @@ object ProtoUtils {
   }
 
   def toActionSetAbnormal(name: String, aType: ActivationType): Action.Builder = {
-    import org.totalgrid.reef.proto.Measurements._
+    import org.totalgrid.reef.api.proto.Measurements._
     val q = Quality.newBuilder()
       .setValidity(Quality.Validity.QUESTIONABLE)
       .setDetailQual(DetailQual.newBuilder.setInconsistent(true))

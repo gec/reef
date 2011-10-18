@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.api.proto.Auth._
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.sapi.client.SessionPool
 import org.totalgrid.reef.japi.ReefServiceException

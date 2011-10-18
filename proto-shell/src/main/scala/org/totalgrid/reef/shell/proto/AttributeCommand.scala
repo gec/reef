@@ -25,7 +25,7 @@ import org.totalgrid.reef.shell.proto.presentation.AttributeView
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Conversion
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.api.proto.Model.ReefUUID
 
 @Command(scope = "attr", name = "attr", description = "Prints the attributes for an entity.")
 class AttributeCommand extends ReefCommandSupport {

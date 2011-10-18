@@ -21,14 +21,14 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.japi.Envelope;
+import org.totalgrid.reef.api.japi.Envelope;
 
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.japi.UnauthorizedException;
-import org.totalgrid.reef.japi.request.AuthTokenService;
-import org.totalgrid.reef.japi.request.PointService;
-import org.totalgrid.reef.japi.request.impl.AllScadaServicePooledWrapper;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.UnauthorizedException;
+import org.totalgrid.reef.api.japi.request.AuthTokenService;
+import org.totalgrid.reef.api.japi.request.PointService;
+import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServicePooledWrapper;
 
 public class TestAuthService extends ReefConnectionTestBase
 {

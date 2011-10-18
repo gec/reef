@@ -20,11 +20,11 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.ReefServicesList
 
 import org.totalgrid.reef.metrics.{ MetricsSink }
-import org.totalgrid.reef.sapi.request.impl.AllScadaServicePooled
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServicePooled
 import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.messaging.{ BasicSessionPool, AMQPProtoFactory, AMQPProtoRegistry }
 

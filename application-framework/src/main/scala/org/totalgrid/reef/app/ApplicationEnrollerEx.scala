@@ -21,13 +21,13 @@ package org.totalgrid.reef.app
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.japi.client.{ UserSettings, NodeSettings }
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 import org.totalgrid.reef.messaging.{ BasicSessionPool, AmqpClientSession, SessionSource }
 import org.totalgrid.reef.sapi.request.AllScadaService
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.executor.{ ReactActorExecutor, Lifecycle, LifecycleManager }
-import org.totalgrid.reef.sapi.request.impl.{ AllScadaServiceImpl, AllScadaServicePooled }
+import org.totalgrid.reef.api.sapi.client.rpc.impl.{ AllScadaServiceImpl, AllScadaServicePooled }
 
 trait ConnectionConsumer {
   def newConnection(factory: AMQPSyncFactory): Cancelable

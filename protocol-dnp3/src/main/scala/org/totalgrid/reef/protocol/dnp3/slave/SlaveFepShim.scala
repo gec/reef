@@ -16,18 +16,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.slave
+package org.totalgrid.reef.api.protocol.dnp3.slave
 
 import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 import org.totalgrid.reef.messaging.AmqpClientSession
-import org.totalgrid.reef.sapi.request.impl.{ AllScadaServiceImpl }
+import org.totalgrid.reef.api.sapi.client.rpc.impl.{ AllScadaServiceImpl }
 import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.protocol.api.{ Protocol, AddRemoveValidation }
-import org.totalgrid.reef.japi.client.{ ConnectionListener, UserSettings }
+import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
+import org.totalgrid.reef.japi.client.{ ConnectionCloseListener, UserSettings }
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.executor.{ Executor, LifecycleManager, ReactActorExecutor }
@@ -58,7 +58,7 @@ class SlaveFepShim extends Logging {
 
     val exe = new ReactActorExecutor {}
 
-    factory.addConnectionListener(new ConnectionListener {
+    factory.addConnectionListener(new ConnectionCloseListener {
 
       def onConnectionOpened() {
         // need to get off this callback thread

@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.Auth._
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 import net.agileautomata.executor4s.{ Failure, Success }
 

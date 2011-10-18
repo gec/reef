@@ -22,7 +22,7 @@ import java.lang.{ Double => JDouble }
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, Quality, MeasArchive, MeasArchiveUnit }
+import org.totalgrid.reef.api.proto.Measurements.{ Measurement => Meas, Quality, MeasArchive, MeasArchiveUnit }
 
 class NullMeasEncoder extends MeasEncoder {
 

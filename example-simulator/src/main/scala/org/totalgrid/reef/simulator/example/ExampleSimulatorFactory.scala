@@ -19,9 +19,9 @@
 package org.totalgrid.reef.simulator.example
 
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
-import org.totalgrid.reef.proto.{ Commands, Measurements, SimMapping }
+import org.totalgrid.reef.api.protocol.api.Publisher
+import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
+import org.totalgrid.reef.api.proto.{ Commands, Measurements, SimMapping }
 import org.totalgrid.reef.util.Logging
 import scala.collection.JavaConversions._
 

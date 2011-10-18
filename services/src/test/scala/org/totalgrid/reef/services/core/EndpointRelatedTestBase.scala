@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.api.proto.Measurements._
+import org.totalgrid.reef.api.proto.FEP._
+import org.totalgrid.reef.api.proto.Processing._
+import org.totalgrid.reef.api.proto.Model._
+import org.totalgrid.reef.api.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
@@ -33,7 +33,7 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasureme
 import org.totalgrid.reef.util.{ Logging, SyncVar }
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
-import org.totalgrid.reef.proto.{ ReefServicesList }
+import org.totalgrid.reef.api.proto.{ ReefServicesList }
 
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi._
@@ -42,7 +42,7 @@ import org.totalgrid.reef.sapi.service.AsyncService
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.event.SystemEventSink
-import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.api.proto.Events.Event
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService, MeasurementStreamProcessingNode }
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {

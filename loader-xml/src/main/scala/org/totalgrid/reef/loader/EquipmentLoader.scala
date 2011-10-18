@@ -22,9 +22,9 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
-import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
+import org.totalgrid.reef.api.proto.Processing._
+import org.totalgrid.reef.api.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
+import org.totalgrid.reef.api.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 import org.totalgrid.reef.loader.equipment._
 
 import org.totalgrid.reef.loader.EnhancedXmlClasses._

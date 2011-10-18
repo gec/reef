@@ -90,7 +90,7 @@ end
 def processLines(opt_file, deserializers, lines)
   inEnum = false
   built_ins = ['string','bytes','uint32','bool', 'double', 'sint64', 'uint64','int32', 'int64','Severity', 'Type', 'CommandStatus']
-  ns = "org.totalgrid.reef.proto"
+  ns = "org.totalgrid.reef.api.proto"
   cn = false
   lines.each do |line|
     if starts_with?(line, "//")
@@ -172,11 +172,11 @@ f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/total
 
 types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth]
 
-scala_imports = types.collect{|t| "import org.totalgrid.reef.proto.#{t}._"}.join("\n")
+scala_imports = types.collect{|t| "import org.totalgrid.reef.api.proto.#{t}._"}.join("\n")
 java_imports = scala_imports.gsub("_","*")
 
 f.puts <<EOF
-package org.totalgrid.reef.proto
+package org.totalgrid.reef.api.proto
 
 #{scala_imports}
 
@@ -190,7 +190,7 @@ EOF
 deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/Descriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
-package org.totalgrid.reef.proto
+package org.totalgrid.reef.api.proto
 
 import org.totalgrid.reef.japi.TypeDescriptor
 

@@ -20,14 +20,14 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.japi.client.SubscriptionResult
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
+import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.protocol.api.CommandHandler
-import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.api.protocol.api.CommandHandler
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.proto.Model.ReefUUID
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.Descriptors
 
 import scala.collection.JavaConversions._
 
@@ -59,7 +59,7 @@ class FrontEndProviderServicesImpl(protected val clientSource: AllScadaServiceIm
   }
 
   def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]] = {
-    ops("Couldn't subscribe for endpoints assigned to: " + fep.getAppConfig.getInstanceName) { session =>
+    ops.operation("Couldn't subscribe for endpoints assigned to: " + fep.getAppConfig.getInstanceName) { session =>
       useSubscription(session, Descriptors.commEndpointConnection.getKlass) { sub =>
         session.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, sub).map { _.expectMany() }
       }
@@ -67,7 +67,7 @@ class FrontEndProviderServicesImpl(protected val clientSource: AllScadaServiceIm
   }
 
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor] = {
-    ops("Failed registering application: " + applicationUuid.getUuid + " as frontend") {
+    ops.operation("Failed registering application: " + applicationUuid.getUuid + " as frontend") {
       _.put(FrontEndProcessor.newBuilder.setAppConfig(ApplicationConfig.newBuilder.setUuid(applicationUuid)).addAllProtocols(protocols).build).map { _.expectOne }
     }
   }

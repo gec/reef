@@ -1,6 +1,6 @@
-package org.totalgrid.reef.proto.ProcessStatus;
+package org.totalgrid.reef.api.proto.ProcessStatus;
 
-option java_package = "org.totalgrid.reef.proto";
+option java_package = "org.totalgrid.reef.api.proto";
 import "Model.proto";
 
 message StatusSnapshot {

@@ -19,10 +19,10 @@
 package org.totalgrid.reef.loader
 
 import helpers.ModelContainer
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.proto.Model._
+import org.totalgrid.reef.api.proto.Alarms._
+import org.totalgrid.reef.api.proto.FEP._
+import org.totalgrid.reef.api.proto.Processing._
 
 trait ModelLoader {
   def putOrThrow(e: Entity)

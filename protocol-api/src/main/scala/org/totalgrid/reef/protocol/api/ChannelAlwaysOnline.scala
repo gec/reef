@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.api
+package org.totalgrid.reef.api.protocol.api
 
-import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.api.proto.FEP.CommChannel
 import org.totalgrid.reef.util.Logging
 
 trait ChannelAlwaysOnline extends Protocol with Logging {

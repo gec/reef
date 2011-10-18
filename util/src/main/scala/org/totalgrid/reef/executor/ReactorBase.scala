@@ -20,9 +20,8 @@ package org.totalgrid.reef.executor
 
 import scala.actors.{ Actor, Exit }
 
-import org.totalgrid.reef.util.Logging
-
 import ActorExecutorMessages._
+import com.weiglewilczek.slf4s.Logging
 
 trait ReactorBase extends Actor with Logging {
 

@@ -24,8 +24,8 @@ import org.totalgrid.reef.broker.api.BrokerProperties
 
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
 import org.totalgrid.reef.app._
 import org.totalgrid.reef.util.Cancelable
@@ -66,7 +66,7 @@ object ProcessingActivator {
 
 class ProcessingActivator extends BundleActivator {
 
-  private var manager = Option.empty[ConnectionManagerEx]
+  private var manager = Option.empty[ConnectionCloseManagerEx]
   private var measExecutor = Option.empty[Lifecycle]
 
   def start(context: BundleContext) {
@@ -84,7 +84,7 @@ class ProcessingActivator extends BundleActivator {
     measExec.start
     val measStore = MeasurementStoreFinder.getInstance(dbInfo, measExec, context)
 
-    manager = Some(new ConnectionManagerEx(brokerOptions))
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions))
 
     manager.get.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measStore))
 

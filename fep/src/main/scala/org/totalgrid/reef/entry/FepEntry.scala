@@ -22,7 +22,7 @@ import org.osgi.framework._
 
 import org.totalgrid.reef.executor.ReactActorExecutor
 
-import org.totalgrid.reef.protocol.api.Protocol
+import org.totalgrid.reef.api.protocol.api.Protocol
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
@@ -32,15 +32,15 @@ import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.frontend._
 import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.app._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.{ Cancelable, Logging }
-import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 
 class FepActivator extends BundleActivator with Logging {
 
   private var map = Map.empty[Protocol, ConnectionConsumer]
 
-  private var manager = Option.empty[ConnectionManagerEx]
+  private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
 
@@ -50,7 +50,7 @@ class FepActivator extends BundleActivator with Logging {
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    manager = Some(new ConnectionManagerEx(brokerOptions))
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions))
 
     context watchServices withInterface[Protocol] andHandle {
       case AddingService(p, _) => addProtocol(p, userSettings, nodeSettings)

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.util.BuildEnv
+import org.totalgrid.reef.sapi.BuildEnv
 
 object DbInfo {
 

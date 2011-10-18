@@ -29,7 +29,7 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
 
   private var components: Option[(RequestContextSource, EventServiceModel)] = None
 
-  def publishSystemEvent(evt: org.totalgrid.reef.proto.Events.Event) {
+  def publishSystemEvent(evt: org.totalgrid.reef.api.proto.Events.Event) {
     try {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error

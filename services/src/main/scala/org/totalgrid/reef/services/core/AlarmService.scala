@@ -18,18 +18,18 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.Events.{ Event => EventProto }
+import org.totalgrid.reef.api.proto.Alarms._
+import org.totalgrid.reef.api.proto.Events.{ Event => EventProto }
 import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, AlarmModel, EventStore }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.Descriptors
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }

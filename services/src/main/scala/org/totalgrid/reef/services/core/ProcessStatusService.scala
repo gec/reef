@@ -21,8 +21,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.models.HeartbeatStatus
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.ProcessStatus._
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.ProcessStatus._
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
@@ -30,12 +30,12 @@ import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.japi.BadRequestException
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // Implicits
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.api.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import org.totalgrid.reef.messaging.ProtoSerializer._

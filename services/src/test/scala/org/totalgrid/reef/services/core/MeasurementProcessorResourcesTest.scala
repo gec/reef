@@ -24,11 +24,11 @@ import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
 import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.proto.Model.{ PointType, Point, Entity }
+import org.totalgrid.reef.api.proto.Model.{ PointType, Point, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 

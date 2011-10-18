@@ -23,7 +23,7 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics
 
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 import org.totalgrid.reef.messaging.BasicSessionPool
 
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry

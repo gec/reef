@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
+import org.totalgrid.reef.api.proto.Events._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Utils.{ AttributeList => AttributeListProto }
+import org.totalgrid.reef.api.proto.Utils.{ AttributeList => AttributeListProto }
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
@@ -35,8 +35,8 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.services.core.util.MessageFormatter
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
 

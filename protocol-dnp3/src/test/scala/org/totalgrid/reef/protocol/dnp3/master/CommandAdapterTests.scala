@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.master
+package org.totalgrid.reef.api.protocol.dnp3.master
 
-import org.totalgrid.reef.proto.{ Mapping, Commands }
+import org.totalgrid.reef.api.proto.{ Mapping, Commands }
 import scala.collection.mutable
 import org.totalgrid.reef.promise.FixedPromise
 
@@ -26,13 +26,13 @@ import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.protocol.dnp3.mock.MockCommandAcceptor
-import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.api.protocol.dnp3.mock.MockCommandAcceptor
+import org.totalgrid.reef.api.protocol.dnp3._
 
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {
 
-  import org.totalgrid.reef.protocol.api.Protocol._
+  import org.totalgrid.reef.api.protocol.api.Protocol._
 
   class MockResponseHandler extends ResponsePublisher {
     val responses = new mutable.Queue[Commands.CommandResponse]

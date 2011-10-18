@@ -21,7 +21,7 @@ package org.totalgrid.reef.shell.admin
 import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 import org.osgi.framework.BundleContext
 
 import scala.annotation.tailrec

@@ -21,11 +21,11 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.proto.FEP._
+import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.util.Logging
 import java.io.File
-import org.totalgrid.reef.proto._
+import org.totalgrid.reef.api.proto._
 
 import EnhancedXmlClasses._
 import org.totalgrid.reef.loader.common.ConfigFile
@@ -573,7 +573,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
   def toConfigFile(name: String, indexMapping: Mapping.IndexMapping): Model.ConfigFile.Builder = {
     val proto = Model.ConfigFile.newBuilder
       .setName(name + "-mapping.pi")
-      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping")
+      .setMimeType("application/vnd.google.protobuf; proto=reef.api.proto.Mapping.IndexMapping")
       .setFile(indexMapping.toByteString)
 
     proto
@@ -758,7 +758,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
   def toConfigFile(endpointName: String, simMapping: SimMapping.SimulatorMapping): Model.ConfigFile.Builder = {
     val configFileBuilder = Model.ConfigFile.newBuilder
       .setName(endpointName + "-sim.pi")
-      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
+      .setMimeType("application/vnd.google.protobuf; proto=reef.api.proto.SimMapping.SimulatorMapping")
       .setFile(simMapping.toByteString)
 
     logger.info("simulator mapping: endpoint: " + endpointName + ", mapping: " + simMapping.toString)

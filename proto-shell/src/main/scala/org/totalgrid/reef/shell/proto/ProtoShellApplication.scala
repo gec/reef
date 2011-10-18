@@ -29,7 +29,7 @@ import org.totalgrid.reef.util.FileConfigReader
 import org.totalgrid.reef.sapi.client.ClientSession
 import org.totalgrid.reef.japi.client.UserSettings
 import org.totalgrid.reef.broker.api.{ BrokerConnectionInfo, BrokerProperties }
-import org.totalgrid.reef.sapi.request.impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 
 object ProtoShellApplication {
@@ -49,7 +49,7 @@ object ProtoShellApplication {
     import org.totalgrid.reef.executor.ReactActorExecutor
     import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
     import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
-    import org.totalgrid.reef.proto.ReefServicesList
+    import org.totalgrid.reef.api.proto.ReefServicesList
 
     val amqp = new AMQPProtoFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(connectionInfo)

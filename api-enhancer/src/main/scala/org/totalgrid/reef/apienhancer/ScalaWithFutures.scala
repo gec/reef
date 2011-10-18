@@ -28,7 +28,7 @@ import java.io.{ PrintStream, File }
  */
 class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
-    getFileStream(packageStr, rootDir, sourceFile, ".sapi.request", true, c.name) { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".sapi.client.rpc", true, c.name) { (stream, javaPackage) =>
       scalaClass(c, stream, javaPackage)
     }
   }
@@ -43,7 +43,7 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
       case None => stream.println("import " + p.qualifiedTypeName())
       case _ =>
     })
-    stream.println("import org.totalgrid.reef.promise.Promise")
+    stream.println("import org.totalgrid.reef.api.sapi.client.Promise")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("trait " + c.name + "{")
 

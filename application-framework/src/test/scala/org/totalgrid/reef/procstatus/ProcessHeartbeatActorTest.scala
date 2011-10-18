@@ -23,8 +23,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
-import org.totalgrid.reef.proto.Application.HeartbeatConfig
+import org.totalgrid.reef.api.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.api.proto.Application.HeartbeatConfig
 
 import org.totalgrid.reef.executor.mock.{ MockExecutorTrait }
 import org.totalgrid.reef.sapi.request.{ ApplicationService }

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.broker.memory
 
 import java.util.UUID
-import org.totalgrid.reef.broker.newapi._
+import org.totalgrid.reef.broker._
 import net.agileautomata.executor4s.Executor
 
 import collection.immutable.Set

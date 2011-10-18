@@ -22,7 +22,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 
 import org.totalgrid.reef.shell.proto.presentation.{ AlarmView }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.api.proto.Model.ReefUUID
 
 @Command(scope = "alarm", name = "list", description = "List alarms.")
 class AlarmListCommand extends ReefCommandSupport {

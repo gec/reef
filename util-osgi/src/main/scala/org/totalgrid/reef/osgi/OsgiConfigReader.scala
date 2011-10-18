@@ -19,16 +19,14 @@
 package org.totalgrid.reef.osgi
 
 import org.osgi.framework._
-import org.osgi.service.cm.{ ConfigurationAdmin, Configuration }
+import org.osgi.service.cm.ConfigurationAdmin
 
 import com.weiglewilczek.scalamodules._
 
-import scala.collection.immutable.Map
-import scala.collection.JavaConversions._
-
-import org.totalgrid.reef.util.{ ConfigReader, Logging }
-
 import java.util.{ Dictionary, Hashtable }
+import com.weiglewilczek.slf4s.Logging
+
+import org.totalgrid.reef.sapi.ConfigReader
 
 class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader with Logging {
 

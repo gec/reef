@@ -29,7 +29,7 @@ import java.io.{ PrintStream, File }
 class JavaFutures extends ApiTransformer with GeneratorFunctions {
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
 
-    getFileStream(packageStr, rootDir, sourceFile, ".japiF.request", false, c.name + "Futures") { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".japi.client.rpc.futures", false, c.name + "Futures") { (stream, javaPackage) =>
       javaFuture(c, stream, javaPackage)
     }
   }
@@ -37,7 +37,7 @@ class JavaFutures extends ApiTransformer with GeneratorFunctions {
   private def javaFuture(c: ClassDoc, stream: PrintStream, packageName: String) {
     stream.println("package " + packageName + ";")
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName() + ";"))
-    stream.println("import org.totalgrid.reef.promise.Promise;")
+    stream.println("import org.totalgrid.reef.api.japi.client.Promise;")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("public interface " + c.name + "Futures" + "{")
 

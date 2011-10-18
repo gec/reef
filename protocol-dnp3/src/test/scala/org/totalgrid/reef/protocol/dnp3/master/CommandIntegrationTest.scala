@@ -16,17 +16,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.master
+package org.totalgrid.reef.api.protocol.dnp3.master
 
-import org.totalgrid.reef.protocol.dnp3.mock._
+import org.totalgrid.reef.api.protocol.dnp3.mock._
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.protocol.dnp3.common.LogAdapter
+import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.api.protocol.dnp3.common.LogAdapter
 
 @RunWith(classOf[JUnitRunner]) //disabled because it hangs under eclipse
 class CommandIntegrationTest extends FunSuite with ShouldMatchers {

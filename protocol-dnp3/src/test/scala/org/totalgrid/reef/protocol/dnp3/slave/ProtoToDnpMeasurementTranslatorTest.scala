@@ -16,18 +16,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.slave
+package org.totalgrid.reef.api.protocol.dnp3.slave
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.protocol.dnp3.{ Analog, AnalogQuality }
+import org.totalgrid.reef.api.protocol.dnp3.{ Analog, AnalogQuality }
 
 @RunWith(classOf[JUnitRunner])
 class ProtoToDnpMeasurementTranslatorTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
   import ProtoToDnpMeasurementTranslator._
-  import org.totalgrid.reef.protocol.dnp3.DNPTestHelpers._
+  import org.totalgrid.reef.api.protocol.dnp3.DNPTestHelpers._
 
   private val goodQuality = AnalogQuality.AQ_ONLINE.swigValue().toShort
   private val badQuality = AnalogQuality.AQ_COMM_LOST.swigValue().toShort

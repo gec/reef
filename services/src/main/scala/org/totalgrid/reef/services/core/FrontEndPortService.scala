@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
+import org.totalgrid.reef.api.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
@@ -49,7 +49,7 @@ class FrontEndPortService(protected val model: FrontEndPortServiceModel)
 
   override def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType = {
 
-    import org.totalgrid.reef.proto.OptionalProtos._
+    import org.totalgrid.reef.api.proto.OptionalProtos._
 
     val builder = FrontEndPortConversion.convertToProto(current).toBuilder
     req.state.foreach { builder.setState(_) }

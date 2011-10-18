@@ -23,11 +23,11 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
-import org.totalgrid.reef.japi.Envelope;
-import org.totalgrid.reef.japi.request.CommandService;
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.proto.Commands.*;
-import org.totalgrid.reef.proto.Model.Command;
+import org.totalgrid.reef.api.japi.Envelope;
+import org.totalgrid.reef.api.japi.request.CommandService;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.proto.Commands.*;
+import org.totalgrid.reef.api.proto.Model.Command;
 
 import java.util.List;
 

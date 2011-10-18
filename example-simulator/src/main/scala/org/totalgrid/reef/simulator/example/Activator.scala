@@ -20,8 +20,8 @@ package org.totalgrid.reef.simulator.example
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory
 import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.api.protocol.simulator.SimulatorPluginFactory
 
 class Activator extends BundleActivator with Logging {
 

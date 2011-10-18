@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.api.proto.Auth._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.framework.SquerylModel._

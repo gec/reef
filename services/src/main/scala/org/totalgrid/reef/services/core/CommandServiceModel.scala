@@ -21,17 +21,17 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.util.Optional._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import SquerylModel._
 
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
+import org.totalgrid.reef.api.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
 
 class CommandService(protected val model: CommandServiceModel)

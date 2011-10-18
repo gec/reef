@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.api.proto.Events._
+import org.totalgrid.reef.api.proto.Alarms._
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
@@ -35,7 +35,7 @@ import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
+import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Entity => EntityProto }
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.{ HeadersRequestContext, ServiceDependencies }
 

@@ -18,7 +18,7 @@ package org.totalgrid.reef.measurementstore.squeryl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas }
+import org.totalgrid.reef.api.proto.Measurements.{ Measurement => Meas }
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 

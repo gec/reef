@@ -40,7 +40,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandAccess }
+import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandRequest, CommandAccess }
 import CommandAccess._
 
 import org.totalgrid.reef.models._

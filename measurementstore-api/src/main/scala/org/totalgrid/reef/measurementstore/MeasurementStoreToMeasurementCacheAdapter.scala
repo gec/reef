@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.api.proto.Measurements.Measurement
 
 import org.totalgrid.reef.persistence.{ ObjectCache, KeyValue }
 

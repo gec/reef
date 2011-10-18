@@ -16,14 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.slave
+package org.totalgrid.reef.api.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.sapi.request.MeasurementService
-import org.totalgrid.reef.proto.Mapping.{ IndexMapping }
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.api.proto.Mapping.{ IndexMapping }
+import org.totalgrid.reef.api.proto.Measurements.Measurement
+import org.totalgrid.reef.api.protocol.dnp3._
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor, Subscription }
 import org.totalgrid.reef.executor.Executor

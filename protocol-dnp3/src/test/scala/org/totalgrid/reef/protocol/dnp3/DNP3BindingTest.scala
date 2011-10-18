@@ -16,15 +16,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.api.protocol.dnp3
 
-import org.totalgrid.reef.protocol.dnp3.mock._
+import org.totalgrid.reef.api.protocol.dnp3.mock._
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.totalgrid.reef.protocol.dnp3.common.LogAdapter
+import org.totalgrid.reef.api.protocol.dnp3.common.LogAdapter
 
 @RunWith(classOf[JUnitRunner])
 class DNP3BindingTest extends FunSuite with ShouldMatchers {

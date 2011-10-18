@@ -20,8 +20,8 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.japi.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
 import org.totalgrid.reef.promise.Promise
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
+import org.totalgrid.reef.api.proto.Model.ReefUUID
+import org.totalgrid.reef.api.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.executor.Executor

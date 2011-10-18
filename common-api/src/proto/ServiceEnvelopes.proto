@@ -1,0 +1,63 @@
+package org.totalgrid.reef.api.japi.Envelope;
+
+option java_package = "org.totalgrid.reef.api.japi";
+option java_outer_classname = "Envelope";
+
+enum Verb{
+    GET       = 1; // can result in 0-many response objects
+    PUT       = 2; // will result in error or filled out object (like GET), needs to be fully defined object
+    DELETE    = 3; // will result in error or deleted object
+    POST      = 4; // handled like PUT but allows partial updates
+}
+
+enum Event{
+    ADDED     = 1;
+    MODIFIED  = 2;
+    REMOVED   = 3;
+}
+
+// these are modeled directly on the HTTP status codes, anything in the 2-- range is Success
+// values in 400 range are "bad request types", 5-- range is internal server issues, 
+// http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+enum Status{
+    OK            = 200;
+    CREATED       = 201;
+    UPDATED       = 202;
+    DELETED       = 204;
+    NOT_MODIFIED   = 205;
+    BAD_REQUEST    = 400;
+    UNAUTHORIZED  = 401;
+    NOT_ALLOWED    = 405;
+    INTERNAL_ERROR = 500;
+    LOCAL_ERROR         = 501;
+    UNEXPECTED_RESPONSE = 502;
+    RESPONSE_TIMEOUT    = 503;
+    BUS_UNAVAILABLE     = 504;
+}
+
+// out-of-band information is encoded here and sent to the server
+message RequestHeader{
+    required string key   = 1;
+    required string value = 2;
+}
+
+// all requests to the scada_bus services will be wrapped with this request envelope
+message ServiceRequest{
+    required string        id              = 1; // correlation id for the request, will be mirrored in request
+    required Verb          verb            = 2; // the operation we are trying to preform
+    repeated RequestHeader headers         = 6; // 
+    required bytes         payload         = 4; // a protobuf encoded field of the approriate type
+}
+
+// all responses will be wrapped in this envelope
+message ServiceResponse{
+    required string id            = 1; // correlation id will match request id
+    required Status status        = 2; // status code, check for 2-- or print error message
+    optional string error_message = 3; // error message if applicable
+    repeated bytes  payload       = 4; // can be one or many depending on request
+}
+
+message ServiceNotification{
+    required Event event   = 1;   // updated, created or deleted
+    required bytes payload = 2;   // will only be one payload message per event
+}

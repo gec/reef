@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito._
 import collection.immutable.{ Queue => ScalaQueue }
 import net.agileautomata.executor4s.testing.MockExecutor
-import org.totalgrid.reef.broker.newapi.{ BrokerDestination, BrokerMessageConsumer, BrokerMessage }
+import org.totalgrid.reef.broker._
 
 @RunWith(classOf[JUnitRunner])
 class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {

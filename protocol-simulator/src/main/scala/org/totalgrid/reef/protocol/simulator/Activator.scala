@@ -16,11 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.simulator
+package org.totalgrid.reef.api.protocol.simulator
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import org.totalgrid.reef.executor.ReactActorExecutor
-import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
+import org.totalgrid.reef.api.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.util.Logging

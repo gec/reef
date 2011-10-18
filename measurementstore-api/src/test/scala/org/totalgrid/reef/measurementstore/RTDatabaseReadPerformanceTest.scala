@@ -20,7 +20,7 @@ package org.totalgrid.reef.measurementstore
 
 import scala.actors.Actor._
 
-import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.api.proto.Measurements
 
 import scala.util.Random
 import org.totalgrid.reef.util.Timing

@@ -19,17 +19,17 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.api.proto.Application._
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.japi.BadRequestException
 
 //import org.totalgrid.reef.messaging.ProtoSerializer._
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

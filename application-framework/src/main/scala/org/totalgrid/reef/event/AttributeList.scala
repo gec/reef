@@ -18,7 +18,7 @@ package org.totalgrid.reef.event
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.proto.Utils
+import org.totalgrid.reef.api.proto.Utils
 import com.google.protobuf.ByteString
 import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._ // toList
@@ -49,7 +49,7 @@ import scala.collection.JavaConversions._ // toList
  */
 abstract class ValueType(val id: Int)
 object ValueType {
-  import org.totalgrid.reef.proto.Utils.Attribute.Type
+  import org.totalgrid.reef.api.proto.Utils.Attribute.Type
 
   case object STRING extends ValueType(Type.STRING.getNumber)
   case object LONG extends ValueType(Type.SINT64.getNumber)
@@ -92,12 +92,12 @@ case class AttributeByteArray(val value: Array[Byte], override val vdescriptor: 
 
 /**
  *  A list of attribute-value pairs with conversions to and
- *  from reef.proto.Utils.AttributeList.
+ *  from reef.api.proto.Utils.AttributeList.
  */
 class AttributeList extends HashMap[String, Attribute] {
 
   /**
-   *  Construct an AttributeList from a reef.proto.Utils.AttributeList
+   *  Construct an AttributeList from a reef.api.proto.Utils.AttributeList
    */
   def this(alist: Utils.AttributeList) = {
     this() // invoke primary constructor

@@ -33,8 +33,8 @@ import collection.mutable.{ HashMap }
 import org.totalgrid.reef.sapi.client.{ MockSyncOperations, SuccessResponse }
 import org.totalgrid.reef.japi.Envelope
 import collection.Seq
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommChannel }
+import org.totalgrid.reef.api.proto.Model.ConfigFile
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with Assertions with Logging {

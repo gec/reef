@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.FrontEndProcessor
+import org.totalgrid.reef.api.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.models.{ ApplicationInstance, CommunicationProtocolApplicationInstance, ApplicationSchema }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.services
 import java.util.UUID
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
@@ -31,7 +31,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 import scala.collection.JavaConversions._

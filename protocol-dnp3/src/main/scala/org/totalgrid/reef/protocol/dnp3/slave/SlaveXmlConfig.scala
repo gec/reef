@@ -16,20 +16,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.slave
+package org.totalgrid.reef.api.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.protocol.dnp3.common.XmlToProtoTranslations
+import org.totalgrid.reef.api.protocol.dnp3.common.XmlToProtoTranslations
 import org.totalgrid.reef.util.XMLHelper
-import org.totalgrid.reef.protocol.api.Protocol
-import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig
-import org.totalgrid.reef.proto.Mapping.{ DataType, IndexMapping, CommandType }
-import org.totalgrid.reef.proto.Model.{ ConfigFile }
-import org.totalgrid.reef.protocol.dnp3.master.{ MasterXmlConfig }
-import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig.{ TimeIINTask, UnsolDefaults }
-import org.totalgrid.reef.protocol.dnp3.xml._
-import org.totalgrid.reef.protocol.dnp3.{ GrpVar, CommandModes, ClassMask, ControlRecord, PointRecord, EventPointRecord, DeadbandPointRecord, DeviceTemplate, PointClass, EventMaxConfig, SlaveConfig => DnpSlaveConfig, FilterLevel, SlaveStackConfig }
+import org.totalgrid.reef.api.protocol.api.Protocol
+import org.totalgrid.reef.api.protocol.dnp3.xml.Slave.SlaveConfig
+import org.totalgrid.reef.api.proto.Mapping.{ DataType, IndexMapping, CommandType }
+import org.totalgrid.reef.api.proto.Model.{ ConfigFile }
+import org.totalgrid.reef.api.protocol.dnp3.master.{ MasterXmlConfig }
+import org.totalgrid.reef.api.protocol.dnp3.xml.Slave.SlaveConfig.{ TimeIINTask, UnsolDefaults }
+import org.totalgrid.reef.api.protocol.dnp3.xml._
+import org.totalgrid.reef.api.protocol.dnp3.{ GrpVar, CommandModes, ClassMask, ControlRecord, PointRecord, EventPointRecord, DeadbandPointRecord, DeviceTemplate, PointClass, EventMaxConfig, SlaveConfig => DnpSlaveConfig, FilterLevel, SlaveStackConfig }
 
 object SlaveXmlConfig {
   def getSlaveConfigFromConfigFiles(files: List[ConfigFile], mapping: IndexMapping): (SlaveStackConfig, FilterLevel) = {

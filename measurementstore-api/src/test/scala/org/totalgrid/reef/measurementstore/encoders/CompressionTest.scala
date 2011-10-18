@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import java.util.Random
 
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, Quality }
+import org.totalgrid.reef.api.proto.Measurements.{ Measurement => Meas, Quality }
 
 @RunWith(classOf[JUnitRunner])
 class CompressionTest extends FunSuite with ShouldMatchers {

@@ -25,15 +25,12 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.japi.client.AMQPConnectionSettingImpl;
-import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
-import org.totalgrid.reef.japi.client.Connection;
-import org.totalgrid.reef.japi.client.Session;
-import org.totalgrid.reef.japi.client.SessionExecutionPool;
-import org.totalgrid.reef.japi.request.AllScadaService;
-import org.totalgrid.reef.japi.request.impl.AllScadaServicePooledWrapper;
-import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.client.impl.AMQPConnectionSettingImpl;
+import org.totalgrid.reef.api.japi.client.ConnectionSettings;
+import org.totalgrid.reef.api.japi.client.Connection;
+import org.totalgrid.reef.api.japi.client.Session;
+import org.totalgrid.reef.api.japi.client.SessionExecutionPool;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -74,7 +71,7 @@ public class ReefConnectionTestBase
      * gets the ip of the qpid server, defaults to 127.0.0.1 but can be override with java property
      * -Dreef_node_ip=192.168.100.10
      */
-    private AMQPConnectionSettings getConnectionInfo()
+    private ConnectionSettings getConnectionInfo()
     {
         Properties props = new Properties();
 

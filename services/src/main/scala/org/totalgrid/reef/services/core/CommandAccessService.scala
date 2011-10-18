@@ -19,12 +19,12 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.api.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models.{ CommandAccessModel => AccessModel }
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 
 import ServiceBehaviors._
 import org.totalgrid.reef.japi.{ BadRequestException, Envelope }

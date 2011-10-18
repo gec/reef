@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.procstatus
 
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.api.proto.ProcessStatus.StatusSnapshot
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 
-import org.totalgrid.reef.proto.Application.HeartbeatConfig
+import org.totalgrid.reef.api.proto.Application.HeartbeatConfig
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.util.{ Timer, Logging }
 import org.totalgrid.reef.sapi.request.ApplicationService

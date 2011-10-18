@@ -10,7 +10,7 @@ http://code.google.com/apis/protocolbuffers/docs/style.html
 
 1) Package name:
 
-  package reef.proto.PackageName;
+  package reef.api.proto.PackageName;
 
 The package name serves at the protobuf namespace as well as the Java outer class all proto messages are contained in. The package name should be the same as the filename. Package names must NOT be the same as any object type contained in the file. Names should be capitalized and camel-cased and follow one of two rules:
 
@@ -20,7 +20,7 @@ The package name serves at the protobuf namespace as well as the Java outer clas
 
 2) Java package: 
 
-  option java_package = "reef.proto";
+  option java_package = "reef.api.proto";
 
 This is necessary to produce correct Java source, and should always be included exactly like this.
 

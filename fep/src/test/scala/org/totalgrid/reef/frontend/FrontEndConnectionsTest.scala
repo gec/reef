@@ -26,10 +26,10 @@ import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.test.MockitoStubbedOnly
 
 import FrontEndTestHelpers._
-import org.totalgrid.reef.protocol.api.mock.{ NullProtocol, RecordingProtocol }
-import org.totalgrid.reef.protocol.api.mock.RecordingProtocol._
+import org.totalgrid.reef.api.protocol.api.mock.{ NullProtocol, RecordingProtocol }
+import org.totalgrid.reef.api.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
-import org.totalgrid.reef.protocol.api.CommandHandler
+import org.totalgrid.reef.api.protocol.api.CommandHandler
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {

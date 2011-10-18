@@ -21,11 +21,11 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.api.proto.Application._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.japi.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.api.proto.Model.ReefUUID
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.ServiceDependencies

@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.api
+package org.totalgrid.reef.api.protocol.api
 
 import mock.{ NullProtocol, RecordingProtocol }
 import org.scalatest.FunSuite
@@ -24,7 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.FEP
+import org.totalgrid.reef.api.proto.FEP
 
 @RunWith(classOf[JUnitRunner])
 class AddRemoveValidationTest extends FunSuite with ShouldMatchers {

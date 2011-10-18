@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.persistence
 
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.api.proto.Measurements.Measurement
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.api.proto.Measurements
 
 @RunWith(classOf[JUnitRunner])
 class InMemoryMeasurementCacheTest extends MeasurementCacheTest {

@@ -23,6 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import collection.immutable.Map
 import collection.immutable.Range.Inclusive
 import org.totalgrid.test.MockitoFunSuite
+import com.weiglewilczek.slf4s.Logging
 
 @RunWith(classOf[JUnitRunner])
 class RandomTest extends MockitoFunSuite with Logging {

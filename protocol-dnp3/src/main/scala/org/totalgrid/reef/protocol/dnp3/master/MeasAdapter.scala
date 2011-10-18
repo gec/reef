@@ -16,13 +16,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.master
+package org.totalgrid.reef.api.protocol.dnp3.master
 
 import org.totalgrid.reef.util.{ SafeExecution, Logging }
 
-import org.totalgrid.reef.proto.Mapping
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
-import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.api.proto.Mapping
+import org.totalgrid.reef.api.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
+import org.totalgrid.reef.api.protocol.dnp3._
 
 /**
  * Transforms dnp3 values as they come in from the stack and forwards them.

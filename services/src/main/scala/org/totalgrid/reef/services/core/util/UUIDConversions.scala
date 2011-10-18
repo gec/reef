@@ -19,8 +19,8 @@
 package org.totalgrid.reef.services.core.util
 
 import java.util.UUID
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.OptionalProtos.OptModelReefUUID
+import org.totalgrid.reef.api.proto.Model.ReefUUID
+import org.totalgrid.reef.api.proto.OptionalProtos.OptModelReefUUID
 
 object UUIDConversions {
 

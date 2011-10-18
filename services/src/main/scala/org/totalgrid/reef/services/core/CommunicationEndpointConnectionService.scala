@@ -18,19 +18,19 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
-import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection => ConnProto }
+import org.totalgrid.reef.api.proto.FEP._
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, CommunicationEndpoint, ApplicationInstance, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 import ServiceBehaviors._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.japi.BadRequestException
@@ -50,7 +50,7 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
   override val descriptor = Descriptors.commEndpointConnection
 
   override def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType = {
-    import org.totalgrid.reef.proto.OptionalProtos._
+    import org.totalgrid.reef.api.proto.OptionalProtos._
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
     req.state.foreach { builder.setState(_) }

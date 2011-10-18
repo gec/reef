@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
+import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto, Relationship }
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.japi.BadRequestException
 
 import SquerylModel._

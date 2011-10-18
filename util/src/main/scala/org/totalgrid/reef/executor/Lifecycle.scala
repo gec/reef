@@ -18,7 +18,8 @@
  */
 package org.totalgrid.reef.executor
 
-import org.totalgrid.reef.util.{ ShutdownHook, Logging }
+import org.totalgrid.reef.util.ShutdownHook
+import com.weiglewilczek.slf4s.Logging
 
 object Lifecycle extends ShutdownHook {
 

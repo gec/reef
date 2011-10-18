@@ -23,15 +23,15 @@ import org.junit.Test;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
-import org.totalgrid.reef.japi.request.MeasurementService;
+import org.totalgrid.reef.api.japi.request.MeasurementService;
 
-import org.totalgrid.reef.japi.*;
-import org.totalgrid.reef.japi.client.Subscription;
-import org.totalgrid.reef.japi.client.SubscriptionEvent;
-import org.totalgrid.reef.japi.client.SubscriptionResult;
-import org.totalgrid.reef.japi.request.PointService;
-import org.totalgrid.reef.proto.Measurements;
-import org.totalgrid.reef.proto.Model;
+import org.totalgrid.reef.api.japi.*;
+import org.totalgrid.reef.api.japi.client.Subscription;
+import org.totalgrid.reef.api.japi.client.SubscriptionEvent;
+import org.totalgrid.reef.api.japi.client.SubscriptionResult;
+import org.totalgrid.reef.api.japi.request.PointService;
+import org.totalgrid.reef.api.proto.Measurements;
+import org.totalgrid.reef.api.proto.Model;
 
 import java.util.List;
 

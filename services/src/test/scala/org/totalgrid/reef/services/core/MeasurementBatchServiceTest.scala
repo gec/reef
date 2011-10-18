@@ -25,7 +25,7 @@ import org.totalgrid.reef.sapi.client.Response
 import org.totalgrid.reef.util.AsyncValue
 
 import org.totalgrid.reef.messaging.BasicSessionPool
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -35,7 +35,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+  import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 
   class BatchFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
     val conn = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)

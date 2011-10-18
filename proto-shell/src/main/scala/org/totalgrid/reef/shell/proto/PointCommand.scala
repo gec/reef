@@ -43,8 +43,8 @@ class PointCommandsCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    import org.totalgrid.reef.japi.request.builders.EntityRequestBuilders
-    import org.totalgrid.reef.proto.Model.Entity
+    import org.totalgrid.reef.api.japi.client.rpc.impl.builder.EntityRequestBuilders
+    import org.totalgrid.reef.api.proto.Model.Entity
 
     val query = Option(pointName) match {
       case Some(entName) => Entity.newBuilder().setName(pointName).addRelations(EntityRequestBuilders.getAllFeedBackCommands).build

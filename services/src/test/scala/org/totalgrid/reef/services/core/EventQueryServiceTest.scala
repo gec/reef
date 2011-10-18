@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.api.proto.Events._
+import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto }
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

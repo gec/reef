@@ -21,8 +21,8 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheAdapter, MeasurementStore }
 import org.totalgrid.reef.persistence.InMemoryObjectCache
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.api.proto.Measurements.Measurement
+import org.totalgrid.reef.api.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.executor.ReactActorExecutor
 

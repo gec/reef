@@ -37,7 +37,7 @@ object ApiEnhancer {
     val transformers = List(new JavaFutures, new ScalaWithFutures, new ScalaJavaShims(false))
 
     root.classes.toList.filter { c =>
-      c.containingPackage.toString.indexOf(".japi.request") != -1 &&
+      c.containingPackage.toString.indexOf(".japi.client.rpc") != -1 &&
         c.qualifiedName.toString.indexOf("AllScadaService") == -1
     }.foreach { c =>
 

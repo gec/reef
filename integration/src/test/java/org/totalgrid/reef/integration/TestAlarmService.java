@@ -21,14 +21,14 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.japi.request.AlarmService;
-import org.totalgrid.reef.japi.request.EntityService;
-import org.totalgrid.reef.japi.request.EventConfigService;
-import org.totalgrid.reef.japi.request.EventCreationService;
-import org.totalgrid.reef.japi.request.builders.EntityRequestBuilders;
-import org.totalgrid.reef.proto.Alarms.*;
-import org.totalgrid.reef.proto.Model.Entity;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.request.AlarmService;
+import org.totalgrid.reef.api.japi.request.EntityService;
+import org.totalgrid.reef.api.japi.request.EventConfigService;
+import org.totalgrid.reef.api.japi.request.EventCreationService;
+import org.totalgrid.reef.api.japi.client.rpc.builders.EntityRequestBuilders;
+import org.totalgrid.reef.api.proto.Alarms.*;
+import org.totalgrid.reef.api.proto.Model.Entity;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -25,7 +25,7 @@ import org.totalgrid.reef.sapi.service.{ NoOpService, AsyncService }
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.proto.{ ReefServicesList }
+import org.totalgrid.reef.api.proto.{ ReefServicesList }
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

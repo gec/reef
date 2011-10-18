@@ -19,19 +19,19 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.japi.client.SubscriptionCreationListener;
-import org.totalgrid.reef.japi.request.*;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.client.SubscriptionCreationListener;
+import org.totalgrid.reef.api.japi.request.*;
 import org.totalgrid.reef.integration.helpers.BlockingQueue;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
-import org.totalgrid.reef.japi.client.Subscription;
-import org.totalgrid.reef.japi.client.SubscriptionResult;
-import org.totalgrid.reef.proto.Alarms;
-import org.totalgrid.reef.proto.Alarms.Alarm;
-import org.totalgrid.reef.proto.Events;
-import org.totalgrid.reef.proto.Model;
-import org.totalgrid.reef.proto.Utils;
+import org.totalgrid.reef.api.japi.client.Subscription;
+import org.totalgrid.reef.api.japi.client.SubscriptionResult;
+import org.totalgrid.reef.api.proto.Alarms;
+import org.totalgrid.reef.api.proto.Alarms.Alarm;
+import org.totalgrid.reef.api.proto.Events;
+import org.totalgrid.reef.api.proto.Model;
+import org.totalgrid.reef.api.proto.Utils;
 
 import java.util.Arrays;
 import java.util.LinkedList;

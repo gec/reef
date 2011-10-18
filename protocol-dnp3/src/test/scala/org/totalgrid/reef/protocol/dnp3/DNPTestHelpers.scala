@@ -16,13 +16,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3
+package org.totalgrid.reef.api.protocol.dnp3
 
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.api.proto.Measurements.{ Quality, Measurement }
 
 object DNPTestHelpers {
   def makeMappingProto(numBinary: Int, numAnalog: Int, numCounter: Int, numControlStatus: Int, numSetpointStatus: Int, numControl: Int, numSetpoint: Int) = {
-    import org.totalgrid.reef.proto.Mapping._
+    import org.totalgrid.reef.api.proto.Mapping._
 
     val index = IndexMapping.newBuilder
 

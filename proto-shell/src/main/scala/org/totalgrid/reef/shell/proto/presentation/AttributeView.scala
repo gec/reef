@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Model.EntityAttributes
-import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.api.proto.Model.EntityAttributes
+import org.totalgrid.reef.api.proto.Utils.Attribute
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Table

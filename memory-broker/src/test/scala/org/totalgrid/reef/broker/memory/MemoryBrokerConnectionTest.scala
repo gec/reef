@@ -23,7 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.broker.newapi._
+import org.totalgrid.reef.broker._
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s._
 

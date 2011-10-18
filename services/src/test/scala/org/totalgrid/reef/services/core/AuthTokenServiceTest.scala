@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.api.proto.Auth._
 import org.totalgrid.reef.japi.Envelope._
 import org.totalgrid.reef.sapi.service.NoOpService
 

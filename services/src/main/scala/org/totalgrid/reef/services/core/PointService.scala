@@ -23,16 +23,16 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
+import org.totalgrid.reef.api.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AllMessages }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
@@ -191,7 +191,7 @@ object PointTiedModel {
 }
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.proto.Measurements.{ Measurement, Quality }
+import org.totalgrid.reef.api.proto.Measurements.{ Measurement, Quality }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 

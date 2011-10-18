@@ -24,7 +24,7 @@ import org.totalgrid.reef.messaging.mock.synchronous.MockConnection
 import org.totalgrid.reef.executor.mock.InstantExecutor
 
 import org.scalatest.{ BeforeAndAfterEach, FunSuite }
-import org.totalgrid.reef.proto.Auth.AuthToken
+import org.totalgrid.reef.api.proto.Auth.AuthToken
 import org.junit.runner.RunWith
 import org.totalgrid.reef.sapi.client.{ Response, FailureResponse }
 import org.totalgrid.reef.japi.Envelope

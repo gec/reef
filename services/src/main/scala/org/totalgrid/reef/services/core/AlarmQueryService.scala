@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.api.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity }
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.api.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.services.ProtoRoutingKeys

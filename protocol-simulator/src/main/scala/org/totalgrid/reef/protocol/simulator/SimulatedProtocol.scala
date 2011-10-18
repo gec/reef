@@ -16,15 +16,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.simulator
+package org.totalgrid.reef.api.protocol.simulator
 
-import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
+import org.totalgrid.reef.api.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.util.{ Logging }
 
-import org.totalgrid.reef.protocol.api._
+import org.totalgrid.reef.api.protocol.api._
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
-import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.api.proto.SimMapping.SimulatorMapping
+import org.totalgrid.reef.api.proto.FEP.CommChannel
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
@@ -54,7 +54,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
       case Some(x) =>
         throw new IllegalStateException("Endpoint has already been added: " + endpoint)
       case None =>
-        val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
+        val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.api.proto.SimMapping.SimulatorMapping").getFile
         val mapping = SimMapping.SimulatorMapping.parseFrom(file)
         val emptyRecord = new PluginRecord(endpoint, mapping, batchPublisher, None)
         endpoints += endpoint -> emptyRecord

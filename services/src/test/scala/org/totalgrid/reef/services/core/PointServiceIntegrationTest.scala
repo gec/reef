@@ -24,13 +24,13 @@ import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 
-import org.totalgrid.reef.proto.Measurements._
+import org.totalgrid.reef.api.proto.Measurements._
 import org.totalgrid.reef.util.BlockingQueue
 
-import org.totalgrid.reef.proto.{ Descriptors, ReefServicesList }
+import org.totalgrid.reef.api.proto.{ Descriptors, ReefServicesList }
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.client.Event
-import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
+import org.totalgrid.reef.api.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 
 //implicits
 import org.squeryl.PrimitiveTypeMode._

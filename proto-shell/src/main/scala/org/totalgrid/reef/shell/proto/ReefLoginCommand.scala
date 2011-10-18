@@ -78,7 +78,7 @@ class ReefLoginCommand extends ReefLoginCommandBase {
     import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
     import org.totalgrid.reef.messaging.{ AmqpClientSession }
     import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-    import org.totalgrid.reef.proto.ReefServicesList
+    import org.totalgrid.reef.api.proto.ReefServicesList
 
     val connectionInfo = BrokerProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
 

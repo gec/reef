@@ -21,7 +21,7 @@ package org.totalgrid.reef.measproc.activator
 import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
-import org.totalgrid.reef.app.ConnectionManagerEx
+import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.util.{ ShutdownHook, FileConfigReader }
 
@@ -39,7 +39,7 @@ object ProcessingEntryPoint extends ShutdownHook {
 
     val measStore = new InMemoryMeasurementStore
 
-    val manager = new ConnectionManagerEx(brokerOptions)
+    val manager = new ConnectionCloseManagerEx(brokerOptions)
 
     manager.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measStore))
 

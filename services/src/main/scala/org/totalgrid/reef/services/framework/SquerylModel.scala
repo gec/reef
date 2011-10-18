@@ -165,7 +165,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 }
 
 object SquerylModel {
-  import org.totalgrid.reef.proto.Model.ReefUUID
+  import org.totalgrid.reef.api.proto.Model.ReefUUID
   def makeUid(entry: ModelWithId) = {
     entry.id.toString
   }

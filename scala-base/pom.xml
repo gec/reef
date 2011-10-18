@@ -64,6 +64,7 @@
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>2.9.0-1</version>
+            <scope>compile</scope>
 		</dependency>
 
 		<dependency>
@@ -73,6 +74,13 @@
 			<scope>compile</scope>
 		</dependency>
 
+        <dependency>
+            <groupId>com.weiglewilczek.slf4s</groupId>
+            <artifactId>slf4s_2.9.0-1</artifactId>
+            <version>1.0.7</version>
+            <scope>compile</scope>
+        </dependency>
+
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_2.9.0-1</artifactId>
@@ -81,9 +89,10 @@
 		</dependency>
 
         <dependency>
-            <groupId>com.borachio</groupId>
-            <artifactId>borachio-scalatest-support_2.9.0-1</artifactId>
-            <version>1.4</version>
+            <groupId>net.agile-automata.nio4s</groupId>
+            <artifactId>commons_2.9.0-1</artifactId>
+            <version>0.1.6</version>
+            <scope>test</scope>
         </dependency>
 
 		<dependency>

@@ -16,10 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.api
+package org.totalgrid.reef.api.protocol.api
 
-import org.totalgrid.reef.protocol.api.mock.{ RecordingProtocol, NullProtocol }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
+import org.totalgrid.reef.api.protocol.api.mock.{ RecordingProtocol, NullProtocol }
+import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, CommChannel }
 
 import scala.collection.immutable.Queue
 

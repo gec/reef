@@ -1,7 +1,7 @@
 package org.totalgrid.reef.broker.memory
 
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.broker.newapi.BrokerConnectionFactory
+import org.totalgrid.reef.broker.BrokerConnectionFactory
 
 final class MemoryBrokerConnectionFactory(exe: Executor) extends BrokerConnectionFactory {
 

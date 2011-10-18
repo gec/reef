@@ -22,17 +22,17 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.ProcessStatus._
+import org.totalgrid.reef.api.proto.ProcessStatus._
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
+import org.totalgrid.reef.api.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.sapi.client.Event
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.ReefServicesList
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies, ServiceBootstrap }
 import org.totalgrid.reef.services.framework.ServiceMiddleware

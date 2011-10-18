@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.master
+package org.totalgrid.reef.api.protocol.dnp3.master
 
-import org.totalgrid.reef.proto.Mapping
+import org.totalgrid.reef.api.proto.Mapping
 
 import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers

@@ -27,8 +27,8 @@ import org.totalgrid.reef.sapi.BasicRequestHeaders
 
 import org.totalgrid.reef.util.FileConfigReader
 
-import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.api.proto.ReefServicesList
+import org.totalgrid.reef.api.proto.Auth.{ AuthToken, Agent }
 
 object StandaloneLoader {
   def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean, username: String, password: String): Unit = {

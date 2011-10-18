@@ -22,7 +22,7 @@ package org.totalgrid.reef.loader.helpers
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.api.proto.Model.ConfigFile
 import org.scalatest.{ Assertions, FunSuite }
 import org.totalgrid.reef.loader.LoadingException
 

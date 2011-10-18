@@ -19,14 +19,12 @@
 		<module>scala-base</module>
 		<module>test-util</module>
 		<module>proto</module>
-		<module>scala-api</module>
 		<module>api-enhancer</module>
-		<module>api-request</module>
-		<module>java-rest-api</module>
+        <module>common-api</module>
+        <module>client-api</module>
 		<module>util</module>
 		<module>util-osgi</module>
 		<module>metrics</module>
-		<module>amqp</module>
 		<module>broker</module>
 		<module>persistence-api</module>
 		<module>persistence-postgresql</module>
@@ -49,7 +47,9 @@
 		<module>branding</module>
 		<module>loader-xml</module>
 		<module>assemblies</module>
-	</modules>
+
+
+    </modules>
 
 	<repositories>
 		<repository>
@@ -110,6 +110,12 @@
 			<id>scala-tools-releases</id>
 			<url>http://scala-tools.org/repo-releases</url>
 		</pluginRepository>
+
+
+      <pluginRepository>
+        <id>dtrott</id>
+        <url>http://maven.davidtrott.com/repository</url>
+      </pluginRepository>
 	</pluginRepositories>
 
 	<reporting>

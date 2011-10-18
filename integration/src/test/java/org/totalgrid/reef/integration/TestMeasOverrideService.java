@@ -22,15 +22,15 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.japi.ReefServiceException;
-import org.totalgrid.reef.japi.client.SubscriptionResult;
-import org.totalgrid.reef.japi.request.MeasurementOverrideService;
-import org.totalgrid.reef.japi.request.MeasurementService;
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.client.SubscriptionResult;
+import org.totalgrid.reef.api.japi.request.MeasurementOverrideService;
+import org.totalgrid.reef.api.japi.request.MeasurementService;
 
-import org.totalgrid.reef.japi.request.builders.MeasurementRequestBuilders;
-import org.totalgrid.reef.proto.Measurements.*;
-import org.totalgrid.reef.proto.Model.*;
-import org.totalgrid.reef.proto.Processing.MeasOverride;
+import org.totalgrid.reef.api.japi.client.rpc.builders.MeasurementRequestBuilders;
+import org.totalgrid.reef.api.proto.Measurements.*;
+import org.totalgrid.reef.api.proto.Model.*;
+import org.totalgrid.reef.api.proto.Processing.MeasOverride;
 
 import java.util.Comparator;
 import java.util.LinkedList;

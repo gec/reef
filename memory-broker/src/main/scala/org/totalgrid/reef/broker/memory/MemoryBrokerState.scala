@@ -20,7 +20,7 @@ package org.totalgrid.reef.broker.memory
 
 import collection.immutable.{ Queue => ScalaQueue }
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.broker.newapi.{ BrokerMessageConsumer, BrokerDestination, BrokerMessage }
+import org.totalgrid.reef.broker._
 
 // classes are 100% immutable and safe to read on multiple threads or to use with STM
 object MemoryBrokerState {

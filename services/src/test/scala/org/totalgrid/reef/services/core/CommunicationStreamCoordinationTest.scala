@@ -24,8 +24,8 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.proto.FEP._
+import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.japi.Envelope.Event
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

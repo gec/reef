@@ -16,24 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.master
+package org.totalgrid.reef.api.protocol.dnp3.master
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.FEP.IpPort
-import org.totalgrid.reef.protocol.dnp3.xml.{ LinkLayer, AppLayer, Stack, Master }
+import org.totalgrid.reef.api.proto.FEP.IpPort
+import org.totalgrid.reef.api.protocol.dnp3.xml.{ LinkLayer, AppLayer, Stack, Master }
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.proto.{ Model, FEP }
+import org.totalgrid.reef.api.proto.{ Model, FEP }
 
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
-import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
+import org.totalgrid.reef.api.protocol.api.{ CommandHandler, Publisher }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
-import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
+import org.totalgrid.reef.api.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
+import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.api.protocol.dnp3.mock.InstantCommandResponder
 
 @RunWith(classOf[JUnitRunner])
 class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
@@ -139,7 +139,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
       numControlStatus, numSetpointStatus, numControl, numSetpoint)
 
     Model.ConfigFile.newBuilder().setName("mapping.pi")
-      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping")
+      .setMimeType("application/vnd.google.protobuf; proto=reef.api.proto.Mapping.IndexMapping")
       .setFile(indexProto.toByteString).build
   }
 

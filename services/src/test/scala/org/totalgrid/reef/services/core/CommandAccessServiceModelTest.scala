@@ -40,7 +40,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.api.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException }
 import org.totalgrid.reef.sapi.BasicRequestHeaders

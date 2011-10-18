@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
 import org.totalgrid.reef.japi.BadRequestException
@@ -32,7 +32,7 @@ import org.totalgrid.reef.japi.BadRequestException
 //implicits
 import org.totalgrid.reef.messaging.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.api.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.util.Optional._
 
