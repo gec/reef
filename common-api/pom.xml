@@ -17,10 +17,10 @@
             <plugin>
                 <groupId>com.google.protobuf.tools</groupId>
                 <artifactId>maven-protoc-plugin</artifactId>
-                <version>0.1.10</version>
+                <version>0.1.9-GEC</version>
                 <configuration>
                     <protoSourceRoot>src/proto</protoSourceRoot>
-                    <checkStaleness>true</checkStaleness>
+                    <!--<checkStaleness>true</checkStaleness>-->
                 </configuration>
                 <executions>
                     <execution>

@@ -111,11 +111,6 @@
 			<url>http://scala-tools.org/repo-releases</url>
 		</pluginRepository>
 
-
-      <pluginRepository>
-        <id>dtrott</id>
-        <url>http://maven.davidtrott.com/repository</url>
-      </pluginRepository>
 	</pluginRepositories>
 
 	<reporting>
