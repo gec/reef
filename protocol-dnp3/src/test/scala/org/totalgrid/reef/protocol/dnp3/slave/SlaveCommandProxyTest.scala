@@ -16,22 +16,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.sapi.request.CommandService
+import org.totalgrid.reef.api.sapi.client.rpc.CommandService
 
 import org.mockito.{ Mockito, Matchers }
 import org.totalgrid.reef.api.proto.Model.Command
 import org.totalgrid.reef.api.proto.Mapping._
 import org.totalgrid.reef.api.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandAccess }
-import org.totalgrid.reef.api.protocol.dnp3._
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.promise.FixedPromise
+
+/*
 import org.totalgrid.test.MockitoStubbedOnly
 
 @RunWith(classOf[JUnitRunner])
@@ -178,3 +179,4 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     map.build
   }
 }
+*/

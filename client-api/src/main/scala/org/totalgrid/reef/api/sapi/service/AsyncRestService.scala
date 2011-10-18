@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.sapi.service
 
-import org.totalgrid.reef.api.sapi.client.{BasicRequestHeaders, Response}
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
 
 trait HasAsyncRestGet extends HasServiceType {
   def getAsync(req: ServiceType, env: BasicRequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])

@@ -17,14 +17,14 @@
  * the License.
  */
 
-package org.totalgrid.reef.api.protocol.api
+package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.api.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
 import FEP.CommChannel
-import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.totalgrid.reef.api.proto.Model.ConfigFile
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
+
 
 trait Publisher[A] {
   /**

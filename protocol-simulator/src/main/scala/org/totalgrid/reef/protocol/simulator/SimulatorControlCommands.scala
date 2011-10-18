@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.protocol.simulator
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }

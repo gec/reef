@@ -33,7 +33,7 @@ import org.totalgrid.reef.api.sapi.client._
 
 import rest.Client
 import org.totalgrid.reef.sapi.rest.impl.DefaultAnnotatedOperations
-import org.totalgrid.reef.api.sapi.example.{SomeIntegerTypeDescriptor, SomeInteger}
+import org.totalgrid.reef.api.sapi.example.{ SomeIntegerTypeDescriptor, SomeInteger }
 
 @RunWith(classOf[JUnitRunner])
 class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {

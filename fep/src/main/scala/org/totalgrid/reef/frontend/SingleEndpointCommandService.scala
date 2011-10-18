@@ -23,14 +23,14 @@ import org.totalgrid.reef.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.api.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
 import org.totalgrid.reef.api.proto.Descriptors
 
-import org.totalgrid.reef.api.protocol.api.CommandHandler
+import org.totalgrid.reef.protocol.api.CommandHandler
 import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.sapi.BasicRequestHeaders
 import org.totalgrid.reef.promise.FixedPromise
 
 class SingleEndpointCommandService(handler: CommandHandler) extends AsyncServiceBase[Command] {
 
-  import org.totalgrid.reef.api.protocol.api.Protocol.ResponsePublisher
+  import org.totalgrid.reef.protocol.api.Protocol.ResponsePublisher
 
   val descriptor = Descriptors.userCommandRequest
 

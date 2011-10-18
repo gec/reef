@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.sapi.client.rpc.impl.framework
 
-import org.totalgrid.reef.api.sapi.client.rest.{Client, AnnotatedOperations}
+import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
 import org.totalgrid.reef.sapi.rest.impl.DefaultAnnotatedOperations
 
 trait HasAnnotatedOperations {

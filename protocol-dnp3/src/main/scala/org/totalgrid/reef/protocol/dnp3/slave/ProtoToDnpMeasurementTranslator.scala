@@ -16,10 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
 import org.totalgrid.reef.api.proto.Mapping.{ DataType, MeasMap }
-import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.api.proto.Measurements.{ Quality, Measurement }
 import org.totalgrid.reef.api.proto.Measurements.Quality.Validity
 

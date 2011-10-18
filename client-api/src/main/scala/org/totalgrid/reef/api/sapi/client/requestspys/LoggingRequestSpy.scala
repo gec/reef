@@ -19,7 +19,7 @@
 package org.totalgrid.reef.sapi.client.requestspys
 
 import org.totalgrid.reef.api.japi.Envelope.Verb
-import org.totalgrid.reef.api.sapi.client.{Response, RequestSpy}
+import org.totalgrid.reef.api.sapi.client.{ Response, RequestSpy }
 import net.agileautomata.executor4s.Future
 
 /**

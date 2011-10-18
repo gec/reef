@@ -16,28 +16,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
-import org.totalgrid.reef.broker.api.BrokerProperties
+import org.totalgrid.reef.broker.qpid.QpidBrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.api.proto.ReefServicesList
-import org.totalgrid.reef.messaging.AmqpClientSession
 import org.totalgrid.reef.api.sapi.client.rpc.impl.{ AllScadaServiceImpl }
-import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
-import org.totalgrid.reef.japi.client.{ ConnectionCloseListener, UserSettings }
+import org.totalgrid.reef.protocol.api.{ Protocol, AddRemoveValidation }
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.executor.{ Executor, LifecycleManager, ReactActorExecutor }
-import org.totalgrid.reef.util.{ Logging, Timer }
+import org.totalgrid.reef.util.{ Timer }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.japi.client.UserSettings
 
 /**
  * this class is a stop gap measure until we get the FEP reimplemented to provide a Client and exe to the
  * Protocols.
  * TODO: reimplement FEP to give client to Protocols
  */
+/*
 class SlaveFepShim extends Logging {
 
   private val manager = new LifecycleManager
@@ -49,8 +46,9 @@ class SlaveFepShim extends Logging {
   def start(context: BundleContext) {
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val brokerOptions = QpidBrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
     val userSettings = new UserSettings(new OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+
 
     val factory = new AMQPSyncFactory with ReactActorExecutor {
       val broker = new QpidBrokerConnection(brokerOptions)
@@ -73,12 +71,14 @@ class SlaveFepShim extends Logging {
     manager.add(factory)
     manager.add(exe)
     manager.start()
+
   }
 
   def stop(context: BundleContext) {
-    stopConnecting()
-    manager.stop()
+    //  stopConnecting()
+    //manager.stop()
   }
+
 
   private def stopConnecting() {
     reconnect.foreach { _.cancel() }
@@ -105,4 +105,6 @@ class SlaveFepShim extends Logging {
         reconnect = Some(exe.delay(1000) { createProtocol(factory, userSettings, exe, context) })
     }
   }
+
 }
+*/

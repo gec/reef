@@ -16,15 +16,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
-import org.totalgrid.reef.api.protocol.dnp3.common.Dnp3ProtocolBase
+import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
 import org.totalgrid.reef.api.proto.Model.ConfigFile
-import org.totalgrid.reef.api.protocol.api.Protocol._
+import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.api.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
-import org.totalgrid.reef.api.protocol.api.{ CommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
+import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.api.proto.Commands.CommandRequest
 import org.totalgrid.reef.util.Cancelable
 
@@ -34,6 +34,7 @@ case class SlaveObjectsContainer(stackObserver: IStackObserver, commandProxy: IC
   def cancel() = measProxy.stop()
 }
 
+/*
 class Dnp3SlaveProtocol(services: AllScadaServiceImpl, exe: Executor) extends Dnp3ProtocolBase[SlaveObjectsContainer] {
 
   final override val name = "dnp3-slave"
@@ -65,3 +66,4 @@ class Dnp3SlaveProtocol(services: AllScadaServiceImpl, exe: Executor) extends Dn
     }
   }
 }
+*/

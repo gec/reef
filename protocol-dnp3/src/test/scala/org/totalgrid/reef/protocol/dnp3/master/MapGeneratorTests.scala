@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.master
+package org.totalgrid.reef.protocol.dnp3.master
 
 import org.totalgrid.reef.api.proto.Mapping
 
@@ -24,6 +24,7 @@ import org.scalatest.Suite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+
 
 @RunWith(classOf[JUnitRunner])
 class MapGeneratorTests extends Suite with ShouldMatchers {

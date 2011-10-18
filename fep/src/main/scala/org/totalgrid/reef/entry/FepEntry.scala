@@ -22,7 +22,7 @@ import org.osgi.framework._
 
 import org.totalgrid.reef.executor.ReactActorExecutor
 
-import org.totalgrid.reef.api.protocol.api.Protocol
+import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._

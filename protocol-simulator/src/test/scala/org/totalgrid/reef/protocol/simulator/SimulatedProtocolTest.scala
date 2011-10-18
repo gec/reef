@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.protocol.simulator
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.promise.FixedPromise
-import org.totalgrid.reef.api.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
+import org.totalgrid.reef.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
 import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.executor.Executor
 import java.lang.Exception

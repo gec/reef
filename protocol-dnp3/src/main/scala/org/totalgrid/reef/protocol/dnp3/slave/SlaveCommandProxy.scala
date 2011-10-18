@@ -16,19 +16,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.sapi.request.CommandService
 import org.totalgrid.reef.api.proto.Model.Command
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.proto.Mapping.{ CommandMap, CommandType => ProtoCommandType, IndexMapping }
-import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.api.proto.Commands.{ CommandStatus => ProtoCommandStatus }
-import org.totalgrid.reef.api.protocol.dnp3.master.DNPTranslator
+import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
 import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.api.sapi.client.rpc.CommandService
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.japi.ReefServiceException
 
 class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Executor)
     extends ICommandAcceptor with Logging {

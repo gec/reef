@@ -16,10 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.api.mock
+package org.totalgrid.reef.protocol.api.mock
 
-import org.totalgrid.reef.api.protocol.api.Protocol._
-import org.totalgrid.reef.api.protocol.api._
+import org.totalgrid.reef.protocol.api.Protocol._
+import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.api.proto.{ FEP, Model }
 
 class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {

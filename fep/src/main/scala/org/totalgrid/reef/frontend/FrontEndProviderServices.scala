@@ -22,7 +22,7 @@ import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.japi.client.SubscriptionResult
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.protocol.api.CommandHandler
+import org.totalgrid.reef.protocol.api.CommandHandler
 import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.api.proto.Model.ReefUUID
 

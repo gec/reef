@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.japi.ReefServiceException
 
-
 @RunWith(classOf[JUnitRunner])
 class CommandAccessRequestTest
     extends ClientSessionSuite("CommandAccess.xml", "CommandAccess",

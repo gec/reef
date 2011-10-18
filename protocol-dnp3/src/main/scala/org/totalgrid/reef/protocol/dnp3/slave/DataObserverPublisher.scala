@@ -16,14 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.api.proto.Measurements.{ Measurement }
-import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.api.proto.Mapping.{ DataType, IndexMapping, MeasMap }
+import com.weiglewilczek.slf4s.Logging
 
 class DataObserverPublisher(mappingProto: IndexMapping, dataObserver: IDataObserver) extends Logging {
 

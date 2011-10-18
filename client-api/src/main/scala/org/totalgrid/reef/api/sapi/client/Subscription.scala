@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.api.sapi.client
 
-
 trait Subscription[A] {
   def cancel()
 

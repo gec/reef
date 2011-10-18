@@ -28,7 +28,7 @@ import org.totalgrid.reef.app.KeyedMap
 import org.totalgrid.reef.japi.ReefServiceException
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, CommChannel }
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.protocol.api.Protocol
+import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.sapi.AddressableDestination
 
 // Data structure for handling the life cycle of connections

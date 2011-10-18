@@ -18,8 +18,7 @@
  */
 package org.totalgrid.reef.api.sapi.service
 
-import org.totalgrid.reef.api.sapi.client.{BasicRequestHeaders, Response}
-
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
 
 trait HasSyncRestGet extends HasServiceType {
   def get(req: ServiceType, env: BasicRequestHeaders): Response[ServiceType] = RestResponses.noGet[ServiceType]

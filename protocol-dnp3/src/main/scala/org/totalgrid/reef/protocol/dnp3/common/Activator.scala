@@ -16,31 +16,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.common
+package org.totalgrid.reef.protocol.dnp3.common
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
-import org.totalgrid.reef.api.protocol.api.{ AddRemoveValidation, Protocol }
+import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.api.protocol.dnp3.master.Dnp3MasterProtocol
-import org.totalgrid.reef.api.protocol.dnp3.slave.SlaveFepShim
+import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
+//import org.totalgrid.reef.protocol.dnp3.slave.SlaveFepShim
 
 class Activator extends BundleActivator {
 
   // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
   System.loadLibrary("dnp3java")
-  System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
+  System.setProperty("reef.protocol.dnp3.nostaticload", "")
   val protocol = new Dnp3MasterProtocol with AddRemoveValidation
-  val slaveShim = new SlaveFepShim
+  //val slaveShim = new SlaveFepShim
 
   override def start(context: BundleContext) {
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
-    slaveShim.start(context)
+    //slaveShim.start(context)
   }
 
   override def stop(context: BundleContext) {
     protocol.Shutdown()
-    slaveShim.stop(context)
+    //slaveShim.stop(context)
   }
 
 }

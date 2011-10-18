@@ -20,9 +20,9 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  */
 import org.totalgrid.reef.api.japi.TypeDescriptor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.api.sapi.client.rest.{RestOperations, Client}
+import org.totalgrid.reef.api.sapi.client.rest.{ RestOperations, Client }
 import org.totalgrid.reef.api.japi.Envelope.Verb
-import org.totalgrid.reef.api.sapi.client.{BasicRequestHeaders, Subscription}
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Subscription }
 
 final class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RestOperations {
 

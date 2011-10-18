@@ -16,12 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.protocol.simulator
 
 import org.totalgrid.reef.api.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.util.{ Logging }
 
-import org.totalgrid.reef.api.protocol.api._
+import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.proto.SimMapping.SimulatorMapping
 import org.totalgrid.reef.api.proto.FEP.CommChannel

@@ -19,11 +19,9 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * the License.
  */
 
-
 import org.totalgrid.reef.api.proto.Model.ReefUUID
 
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
-
 
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 

@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.api
+package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.api.protocol.api.mock.{ RecordingProtocol, NullProtocol }
+import org.totalgrid.reef.protocol.api.mock.{ RecordingProtocol, NullProtocol }
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, CommChannel }
 
 import scala.collection.immutable.Queue
@@ -27,17 +27,14 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.promise.FixedPromise
+
 
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
   class MockPublisher[A] extends Publisher[A] {
     var queue = Queue.empty[A]
-    def publish(state: A) = {
-      queue += state
-      new FixedPromise(true)
-    }
+    def publish(state: A) = queue += state
   }
 
   test("Channel callbacks") {

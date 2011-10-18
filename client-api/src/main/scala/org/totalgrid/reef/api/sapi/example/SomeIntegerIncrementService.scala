@@ -21,7 +21,7 @@ package org.totalgrid.reef.api.sapi.example
 import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.api.sapi.service.SyncServiceBase
 
-import org.totalgrid.reef.api.sapi.client.{Response, BasicRequestHeaders}
+import org.totalgrid.reef.api.sapi.client.{ Response, BasicRequestHeaders }
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.japi.Envelope.Event
 
