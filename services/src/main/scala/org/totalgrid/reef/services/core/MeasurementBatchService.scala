@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.api.japi.{ Envelope, BadRequestException }
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
 import org.totalgrid.reef.api.japi.client.Routable
-import net.agileautomata.executor4s.Future
+import net.agileautomata.executor4s.Futures
 
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
@@ -39,7 +39,7 @@ class MeasurementBatchService
 
   override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
 
-    val promises = contextSource.transaction { context =>
+    val future = contextSource.transaction { context =>
       authorizeCreate(context, req)
 
       // TODO: load all endpoints efficiently
@@ -59,19 +59,18 @@ class MeasurementBatchService
           Request(Envelope.Verb.PUT, req, headers) :: Nil
         case _ => getRequests(req, commEndpoints)
       }
-      requests.map(req => context.client.request(req.verb, req.payload, req.env))
+      val futures = requests.map(req => context.client.request(req.verb, req.payload, req.env))
+      Futures.gather(context.client, futures)
     }
 
-    // TODO: implement scatter gather with futures
-    /*Future.collect(promises) { results =>
+    future.listen { results =>
       val failures = results.filterNot(_.success)
-      val response = if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
-      else {
-        val msg = failures.mkString(",")
-        FailureResponse(Envelope.Status.INTERNAL_ERROR, msg)
-      }
+      val response : Response[MeasurementBatch] =
+        if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
+        else FailureResponse(Envelope.Status.INTERNAL_ERROR, failures.mkString(","))
       callback(response)
-    }*/
+    }
+
 
   }
 

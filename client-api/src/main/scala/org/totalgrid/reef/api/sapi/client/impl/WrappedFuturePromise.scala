@@ -34,5 +34,3 @@ class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
 
 }
 
-
-

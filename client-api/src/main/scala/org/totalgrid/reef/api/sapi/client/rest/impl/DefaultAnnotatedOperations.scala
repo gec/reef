@@ -57,11 +57,11 @@ final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperatio
   /**
    * Forces the user of this class to provide a descriptive error message for the operation they're performing
    */
-  final def operation[A](err: => String)(fun: RestOperations => Future[Result[A]]): Promise[A] =
+  def operation[A](err: => String)(fun: RestOperations => Future[Result[A]]): Promise[A] =
     Promise.from(opWithFuture[A](err)(fun))
 
   // TODO - it's probably possible to make SubscriptionResult only polymorphic in one type
-  final def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
+  def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
     val future = client.subscribe(desc) match {
       case Success(sub) =>
         val future = opWithFuture(err)(fun(sub, _))
