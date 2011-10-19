@@ -18,44 +18,22 @@
  */
 package org.totalgrid.reef.util
 
-import scala.collection.mutable.Queue
+import java.util.concurrent.{ LinkedBlockingDeque, TimeUnit, BlockingQueue => JBlockingQueue }
+import java.lang.IllegalStateException
 
-// TODO use Java concurrent queue implementation
-class BlockingQueue[A] {
+object BlockingQueue {
+  def empty[A] = new BlockingQueue[A](new LinkedBlockingDeque[A])
+}
 
-  private val queue = new Queue[A]
+class BlockingQueue[A](queue: JBlockingQueue[A]) {
 
-  def push(o: A): Unit = {
-    queue.synchronized {
-      queue.enqueue(o)
-      queue.notifyAll()
-    }
-  }
+  def push(value: A): Unit = queue.put(value)
 
-  def pop(timeout: Long): A = {
-    queue.synchronized {
-      if (queue.size == 0) queue.wait(timeout)
-      queue.dequeue()
-    }
-  }
-
-  /**
-   * Block for timeout milliseconds until the queue has _atleast_ size entries (may have more than size).
-   * @return whether the queue has atleast size entries
-   */
-  def waitUntil(size: Int, timeout: Long): Boolean = {
-    queue.synchronized {
-      val end = System.currentTimeMillis + timeout
-      var waitFor = timeout
-      while (waitFor > 0 && queue.size < size) {
-        queue.wait(waitFor)
-        waitFor = end - System.currentTimeMillis
-      }
-      queue.size >= size
-    }
+  def pop(timeout: Long): A = Option(queue.poll(timeout, TimeUnit.MILLISECONDS)) match {
+    case Some(x) => x
+    case None => throw new IllegalStateException("No value in queue within " + timeout + " milliseconds")
   }
 
   def size: Int = queue.size
 
 }
-

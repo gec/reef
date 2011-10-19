@@ -30,6 +30,7 @@ import org.totalgrid.reef.api.japi.Envelope.Event
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.event.EventType
+import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {

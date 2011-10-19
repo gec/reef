@@ -31,14 +31,14 @@ object ServiceResponseTestingHelpers {
 
   def getEventQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
 
-    val updates = new BlockingQueue[A]
+    val updates = BlockingQueue.empty[A]
     val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt.value) })
 
     (updates, env)
   }
 
   def getEventQueueWithCode[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
-    val updates = new BlockingQueue[Event[A]]
+    val updates = BlockingQueue.empty[Event[A]]
 
     val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt) })
 

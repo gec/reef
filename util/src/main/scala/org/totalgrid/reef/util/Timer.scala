@@ -19,10 +19,6 @@
 
 package org.totalgrid.reef.util
 
-import scala.actors.TIMEOUT
-import scala.actors.Actor
-import scala.actors.Actor._
-
 trait Cancelable {
   /**
    *  Cancel the pending callback
@@ -40,67 +36,3 @@ trait Timer extends Cancelable {
    */
   def now()
 }
-
-/**
- *  Provides an actor based timer implementation that calls
- *  the specified function from an actor thread
- */
-@deprecated("Use Executor.delay instead, these timers don't get stopped automatically")
-object Timer {
-
-  case object Cancel
-
-  case object Now
-
-  private class ActorTimer(a: Actor) extends Timer {
-    def cancel() = a ! Cancel
-
-    def now() = a ! Now
-  }
-
-  /**
-   * Sleeps and then calls a function
-   *
-   * @param delayms delay in milliseconds
-   * @param fun function to call after delay
-   * @return Actor implementing the delay
-   */
-  def delay(delayms: Long)(fun: => Unit): Timer =
-    {
-      val a = actor {
-        self.reactWithin(delayms) {
-          case Timer.Cancel =>
-          case Timer.Now => fun
-          case TIMEOUT => fun
-        }
-      }
-      new ActorTimer(a)
-    }
-
-  def loop(delayms: Long)(fun: => Unit): Timer =
-    {
-      val a = actor {
-        self.loop {
-          self.reactWithin(delayms) {
-            case Timer.Cancel => exit
-            case Timer.Now =>
-              {
-                fun; exit
-              }
-            case TIMEOUT => fun
-          }
-        }
-      }
-      new ActorTimer(a)
-    }
-
-  /**
-   * Overload that fires instantly
-   *
-   * @param fun 	function to call after delay
-   * @return Actor 	implementing the delay
-   */
-  def now(fun: => Unit): Unit = delay(0)(fun)
-
-}
-
