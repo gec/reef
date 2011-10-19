@@ -45,22 +45,19 @@ import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandRequest, Us
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.util.EmptySyncVar
 
 import CommandAccess._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.messaging.BasicSessionPool
-import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, client, AddressableDestination }
+import org.totalgrid.reef.api.sapi.{ AddressableDestination }
 import org.totalgrid.reef.api.japi.Envelope
-
-import client.Response
 
 import org.totalgrid.reef.api.sapi.service.SyncServiceBase
 import org.totalgrid.reef.api.proto.Model.{ CommandType, Command }
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.api.sapi.client.rest.Connection
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -72,10 +69,10 @@ class CommandRequestServicesIntegration
   implicit val contextSource = new MockRequestContextSource(new ServiceDependencies, env)
   import org.totalgrid.reef.services.core.CustomServiceShims._
 
-  class CommandFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
+  class CommandFixture(amqp: Connection) extends CoordinatorFixture(amqp) {
 
     val command = new CommandService(modelFac.cmds)
-    val commandRequest = new UserCommandRequestService(modelFac.userRequests, new BasicSessionPool(connection))
+    val commandRequest = new UserCommandRequestService(modelFac.userRequests)
     val endpointService = new CommunicationEndpointService(modelFac.endpoints)
     val access = new CommandAccessService(modelFac.accesses)
 
@@ -200,7 +197,7 @@ class CommandRequestServicesIntegration
     fixture.setEndpointState(conn, CommEndpointConnection.State.COMMS_UP)
 
     //bind the 'proxied' service that will handle the call
-    fixture.connection.bindService(service, AddressableDestination(conn.getRouting.getServiceRoutingKey), reactor = Some(new InstantExecutor {}))
+    fixture.bindCommandHandler(service, conn.getRouting.getServiceRoutingKey)
 
     // Send the user command request
     val cmdReq = userRequest()
@@ -219,7 +216,7 @@ class CommandRequestServicesIntegration
   }
 
   test("Full") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val fixture = new CommandFixture(amqp)
 
       fixture.addCommands(List("cmd01"))

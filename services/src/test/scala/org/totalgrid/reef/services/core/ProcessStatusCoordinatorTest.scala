@@ -24,32 +24,31 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.api.proto.ProcessStatus._
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-
-import org.totalgrid.reef.api.proto.ReefServicesList
-import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.ServiceDependencies
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.api.japi.Envelope.Event
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
-  class CountingSubscriptionHandler extends ServiceSubscriptionHandler {
+  class CountingSubscriptionHandler extends SubscriptionHandler {
     var count = new SyncVar(0: Int)
     var lastEvent: Option[Envelope.Event] = None
     var lastKey: Option[String] = None
     var lastMessage: Option[AnyRef] = None
 
-    def publish(event: Envelope.Event, resp: GeneratedMessage, key: String) {
-      lastEvent = Some(event)
+    def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
+
+    def publishEvent[A](typ: Envelope.Event, resp: A, key: String) {
+      lastEvent = Some(typ)
       lastKey = Some(key)
-      lastMessage = Some(resp)
+      lastMessage = Some(resp.asInstanceOf[AnyRef])
       count.update(count.current + 1)
     }
-
-    def bind(subQueue: String, key: String, resp: AnyRef) {}
 
     def waitForNEvents(n: Int): Boolean = {
       // TODO: remove precondition check when syncvar is fixed
@@ -58,15 +57,9 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     }
   }
 
-  class CountingEventPublishers extends ServiceEventPublisherMap(ReefServicesList) {
-    def createPublisher(exchange: String): ServiceSubscriptionHandler = {
-      new CountingSubscriptionHandler
-    }
-  }
-
   class ProcessStatusFixture {
 
-    val pubs = new CountingEventPublishers
+    val pubs = new CountingSubscriptionHandler
     val deps = ServiceDependencies(pubs)
     val headers = BasicRequestHeaders.empty.setUserName("user1")
     val contextSource = new MockRequestContextSource(deps, headers)
@@ -79,7 +72,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
-    val eventSink = pubs.getEventSink(classOf[StatusSnapshot]).asInstanceOf[CountingSubscriptionHandler]
+    val eventSink = pubs
 
     val app = enrollApp("processId1")
 

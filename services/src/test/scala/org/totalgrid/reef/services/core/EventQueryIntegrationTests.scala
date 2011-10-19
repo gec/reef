@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.api.proto.Events.{ EventList => EventListProto, EventSelect }
@@ -33,7 +33,7 @@ class EventQueryIntegrationTests extends EventIntegrationTestsBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   test("Subscribe via EventQuery") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new AlarmTestFixture(amqp)
       fix.eventConfigs.put(makeEC("Test.Alarm", 6, EventConfigProto.Designation.ALARM))
 
@@ -61,7 +61,7 @@ class EventQueryIntegrationTests extends EventIntegrationTestsBase {
   }
 
   test("Illegal Subscriptions via EventQuery") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new AlarmTestFixture(amqp)
 
       intercept[BadRequestException] {

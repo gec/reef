@@ -16,6 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.proto.Measurements._
@@ -32,19 +50,18 @@ import _root_.scala.collection.JavaConversions._
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
-import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
-import org.totalgrid.reef.api.proto.{ ReefServicesList }
-
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi._
-import org.totalgrid.reef.api.sapi.service.AsyncService
-
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
-import org.totalgrid.reef.services._
 import org.totalgrid.reef.event.SystemEventSink
-import org.totalgrid.reef.api.proto.Events.Event
-import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService, MeasurementStreamProcessingNode }
+import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
+import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
+import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.api.sapi.service.SyncServiceBase
+import org.totalgrid.reef.api.proto.Events
+import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.api.sapi.client.{ Event, BasicRequestHeaders }
+import org.totalgrid.reef.api.proto.Commands.UserCommandRequest
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 
@@ -52,27 +69,16 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     ServiceBootstrap.resetDb
   }
 
-  class LockStepServiceEventPublisherRegistry(amqp: AMQPProtoFactory, lookup: ServiceList) extends ServiceEventPublisherMap(lookup) {
-
-    def createPublisher(exchange: String): ServiceSubscriptionHandler = {
-      val reactor = new InstantExecutor {}
-      val pubsub = new PublishingSubscriptionActor(exchange, reactor)
-      amqp.add(pubsub)
-      pubsub
-    }
-
-  }
-
   class CountingEventSink extends SystemEventSink {
     import scala.collection.mutable.{ Map, ListBuffer }
-    val received = Map.empty[String, ListBuffer[Event]]
+    val received = Map.empty[String, ListBuffer[Events.Event]]
 
-    def publishSystemEvent(evt: Event) = this.synchronized {
+    def publishSystemEvent(evt: Events.Event) = this.synchronized {
       val eventName = evt.getEventType
       received.get(eventName) match {
         case Some(l) => l.append(evt)
         case None =>
-          val lb = new ListBuffer[Event]
+          val lb = new ListBuffer[Events.Event]
           lb.append(evt)
           received.put(eventName, lb)
       }
@@ -91,11 +97,11 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
 
   }
 
-  class MockMeasProc(measProcConnection: SyncService[MeasurementProcessingConnection], rtDb: MeasurementStore, amqp: AMQPProtoFactory) {
+  class MockMeasProc(measProcConnection: SyncService[MeasurementProcessingConnection], rtDb: MeasurementStore, amqp: Connection, client: Client) {
 
     val mb = new SyncVar(Nil: List[(String, MeasurementBatch)])
 
-    def onMeasProcAssign(event: client.Event[MeasurementProcessingConnection]): Unit = {
+    def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
 
       val measProcAssign = event.value
       if (event.event != Envelope.Event.ADDED) return
@@ -111,7 +117,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
       val exchange = measBatchService.descriptor.id
       val destination = AddressableDestination(measProcAssign.getRouting.getServiceRoutingKey)
 
-      amqp.bindService(exchange, measBatchService.respond, destination, false, Some(new InstantExecutor))
+      amqp.bindService(measBatchService, client, destination, false)
 
       logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
 
@@ -119,19 +125,18 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     }
   }
 
-  class CoordinatorFixture(amqp: AMQPProtoFactory, publishEvents: Boolean = true) {
+  class CoordinatorFixture(amqp: Connection, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
+    val client = amqp.login("")
 
-    val connection = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
-    val pubs = if (publishEvents) new LockStepServiceEventPublisherRegistry(amqp, ReefServicesList) else new SilentEventPublishers
     val rtDb = new InMemoryMeasurementStore()
     val eventSink = new CountingEventSink
     val headers = BasicRequestHeaders.empty.setUserName("user")
 
-    val deps = ServiceDependencies(pubs, new SilentSummaryPoints, rtDb, eventSink)
+    val deps = new ServiceDependencies(amqp, rtDb, eventSink)
     val contextSource = new MockRequestContextSource(deps, headers)
 
-    val modelFac = new core.ModelFactories(deps, contextSource)
+    val modelFac = new ModelFactories(deps, contextSource)
 
     val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
@@ -139,10 +144,10 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val appService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
     val frontendService = new SyncService(new FrontEndProcessorService(modelFac.fep), contextSource)
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
-    val commEndpointService = new SyncService(new core.CommunicationEndpointService(modelFac.endpoints), contextSource)
+    val commEndpointService = new SyncService(new CommunicationEndpointService(modelFac.endpoints), contextSource)
     val entityService = new EntityService
-    val pointService = new SyncService(new core.PointService(modelFac.points), contextSource)
-    val commandService = new SyncService(new core.CommandService(modelFac.cmds), contextSource)
+    val pointService = new SyncService(new PointService(modelFac.points), contextSource)
+    val commandService = new SyncService(new CommandService(modelFac.cmds), contextSource)
     val frontEndConnection = new SyncService(new CommunicationEndpointConnectionService(modelFac.fepConn), contextSource)
     val measProcConnection = new SyncService(new MeasurementProcessingConnectionService(modelFac.measProcConn), contextSource)
 
@@ -175,19 +180,13 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     }
     def setupMockMeasProc(name: String, meas: ApplicationConfig) {
 
-      val mockMeas = new MockMeasProc(measProcConnection, rtDb, amqp)
+      val mockMeas = new MockMeasProc(measProcConnection, rtDb, amqp, client)
 
-      val queueName = new SyncVar("")
-      val sub = amqp.getEventQueue(MeasurementProcessingConnection.parseFrom, mockMeas.onMeasProcAssign _)
-      sub.observe((online: Boolean, qname: String) => queueName.update(qname))
-
-      queueName.waitWhile("")
-
-      val env = BasicRequestHeaders.empty.setSubscribeQueue(queueName.current)
+      val env = getSubscriptionQueue(client, Descriptors.measurementProcessingConnection, mockMeas.onMeasProcAssign _)
 
       val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env).expectMany()
 
-      conns.foreach(c => mockMeas.onMeasProcAssign(new client.Event(Envelope.Event.ADDED, c)))
+      conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.Event.ADDED, c)))
 
       measProcMap += (name -> mockMeas)
 
@@ -272,7 +271,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     }
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {
-      val (updates, env) = getEventQueueWithCode[CommEndpointConnection](amqp, CommEndpointConnection.parseFrom)
+      val (updates, env) = getEventQueueWithCode(client, Descriptors.commEndpointConnection)
       frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
       updates.size should equal(0)
       updates
@@ -288,6 +287,10 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
       val ret = frontEndConnection.put(ce.toBuilder.setState(state).build, headers).expectOne()
       ret.getState should equal(state)
       ret
+    }
+
+    def bindCommandHandler(service: SyncServiceBase[UserCommandRequest], key: String) {
+      amqp.bindService(service, client, AddressableDestination(key), false)
     }
   }
 }

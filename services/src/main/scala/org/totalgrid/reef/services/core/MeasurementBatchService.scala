@@ -65,12 +65,11 @@ class MeasurementBatchService
 
     future.listen { results =>
       val failures = results.filterNot(_.success)
-      val response : Response[MeasurementBatch] =
+      val response: Response[MeasurementBatch] =
         if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
         else FailureResponse(Envelope.Status.INTERNAL_ERROR, failures.mkString(","))
       callback(response)
     }
-
 
   }
 

@@ -21,19 +21,17 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import org.totalgrid.reef.api.japi.Envelope.Event
-import org.totalgrid.reef.api.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
   test("One device, dead apps noticed, point taken offline") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val device = coord.addDevice("dev1")
@@ -60,7 +58,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
   }
 
   test("Switch FEP when protocol changes") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")
@@ -91,7 +89,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
   }
 
   test("Reassign FEP when protocol changes") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")

@@ -31,7 +31,7 @@ import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.metrics.{ IMetricsSink, MetricsHookSource, MappedMetricsHolder, MetricsSink }
+import org.totalgrid.reef.metrics.IMetricsSink
 
 /**
  * list of all of the service providers in the system

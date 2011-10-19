@@ -18,14 +18,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
+import org.totalgrid.reef.services.ConnectionFixture
+import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.sapi.client.Response
 import org.totalgrid.reef.util.AsyncValue
-
-import org.totalgrid.reef.messaging.BasicSessionPool
-import org.totalgrid.reef.api.proto.ReefServicesList
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -37,10 +34,9 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
 
   import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 
-  class BatchFixture(amqp: AMQPProtoFactory) extends CoordinatorFixture(amqp) {
-    val conn = new AMQPProtoRegistry(amqp, 5000, ReefServicesList)
+  class BatchFixture(amqp: Connection) extends CoordinatorFixture(amqp) {
 
-    val batchService = new MeasurementBatchService(new BasicSessionPool(conn))
+    val batchService = new MeasurementBatchService()
 
     def addFepAndMeasProc() {
       addFep("fep", List("benchmark"))
@@ -55,7 +51,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   }
 
   test("Putting Batch when no FEP Fails") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new BatchFixture(amqp)
 
       coord.addDevice("dev1")
@@ -67,7 +63,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   }
 
   test("Putting A Batch succeeds") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new BatchFixture(amqp)
 
       coord.addDevice("dev1")
@@ -95,7 +91,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   }
 
   test("Multiple Batchs are routed correctly") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new BatchFixture(amqp)
 
       coord.addDevice("dev1")

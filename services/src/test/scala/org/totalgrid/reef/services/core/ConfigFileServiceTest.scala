@@ -28,20 +28,19 @@ import org.totalgrid.reef.api.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
   def makeConfigFile(name: String, mime: String, data: String, owner: Option[Entity] = None) = {
-    import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
     val cfb = ConfigFile.newBuilder.setName(name).setMimeType(mime).setFile(data)
     owner.foreach(cfb.addEntities(_))
     cfb.build
   }
 
   def makeConfigFile(mime: String, data: String, owner: Option[Entity]) = {
-    import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
     val cfb = ConfigFile.newBuilder.setMimeType(mime).setFile(data)
     owner.foreach(cfb.addEntities(_))
     cfb.build

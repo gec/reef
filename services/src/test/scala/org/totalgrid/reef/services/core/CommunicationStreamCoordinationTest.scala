@@ -21,8 +21,7 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.api.proto.FEP._
 import org.totalgrid.reef.api.proto.Processing._
@@ -36,7 +35,7 @@ import org.totalgrid.reef.event.EventType
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 
   test("Add Order: Device, FEP, Meas") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val device = coord.addDnp3Device("dev1")
@@ -58,7 +57,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Add Order: Device, Meas, FEP") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val device = coord.addDnp3Device("dev1")
@@ -74,7 +73,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Add Order: Meas, FEP, Device") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val fep = coord.addFep("fep")
@@ -87,7 +86,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Add Order: Combo(Meas, FEP), Device") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val bothApp = coord.addApp("both", List("FEP", "Processing"))
@@ -100,7 +99,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Many devices, one handler") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       for (i <- 1 to 3) yield coord.addDevice("dev" + i)
@@ -116,7 +115,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Many devices, many balanced handlers") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val feps = for (i <- 1 to 3) yield coord.addFep("fep" + i)
@@ -138,7 +137,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Search for Endpoints by channel") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val serialLocA1 = coord.addDnp3Device("serialLocA1", None, Some("locA"), Some("SerialA"))
@@ -168,7 +167,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("FEPS have correct ports") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")
@@ -199,7 +198,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Disable/Enable Endpoint") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val fep = coord.addFep("fep")
@@ -235,7 +234,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Search connections by state") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val fep = coord.addFep("fep")

@@ -18,41 +18,38 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
 import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.util.SyncVar
 
 import org.totalgrid.reef.api.sapi._
-import org.totalgrid.reef.api.sapi.client.Event
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Event }
+import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.japi.TypeDescriptor
 
 object ServiceResponseTestingHelpers {
 
-  def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], BasicRequestHeaders) = {
+  def getEventQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
 
     val updates = new BlockingQueue[A]
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt.value) })
+    val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt.value) })
 
     (updates, env)
   }
 
-  def getEventQueueWithCode[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
+  def getEventQueueWithCode[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
     val updates = new BlockingQueue[Event[A]]
 
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt) })
+    val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt) })
 
     (updates, env)
   }
 
-  def getSubscriptionQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A, func: Event[A] => Unit) = {
+  def getSubscriptionQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
-    val eventQueueName = new SyncVar("")
-    val pointSource = amqp.getEventQueue[A](convert, func, { q => eventQueueName.update(q) })
+    val sub = amqp.subscribe(descriptor).get
 
-    // wait for the queue name to get populated (actor startup delay)
-    eventQueueName.waitWhile("")
-
-    BasicRequestHeaders.empty.setSubscribeQueue(eventQueueName.current)
+    BasicRequestHeaders.empty.setSubscribeQueue(sub.id)
 
   }
 }

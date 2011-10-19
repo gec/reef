@@ -19,7 +19,7 @@ package org.totalgrid.reef.api.sapi.client.impl
  * the License.
  */
 import org.totalgrid.reef.api.sapi.client.Promise
-import net.agileautomata.executor4s.{Settable, Success, Result}
+import net.agileautomata.executor4s.{ Settable, Success, Result }
 
 final class SynchronizedPromise[A] private (private var result: Option[A]) extends Promise[A] with Settable[A] {
 

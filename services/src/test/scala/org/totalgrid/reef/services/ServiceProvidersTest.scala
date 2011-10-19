@@ -22,16 +22,17 @@ import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.api.sapi.auth.NullAuthService
 import org.totalgrid.reef.api.sapi.service.{ NoOpService, AsyncService }
 
-import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.api.proto.{ ReefServicesList }
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.app.ApplicationEnroller
+import org.totalgrid.reef.services.framework.ServerSideProcess
+import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.api.japi.client.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.metrics.MetricsSink
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
@@ -40,7 +41,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
   }
 
   class ExchangeCheckingServiceContainer extends ServiceContainer {
-    def addCoordinator(coord: ProtoServiceCoordinator) {}
+    def addCoordinator(coord: ServerSideProcess) {}
 
     def addLifecycleObject(obj: Lifecycle) {}
 
@@ -51,20 +52,20 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
   }
 
   test("All Service Providers are in services list") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       ServiceBootstrap.resetDb
       ServiceBootstrap.seed("system")
 
-      val userSettings = ApplicationEnroller.getDefaultUserSettings
-      val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+      val userSettings = new UserSettings("system", "system")
+      val nodeSettings = new NodeSettings("node1", "network", "location")
+      val serviceOptions = ServiceOptions.loadInfo
 
       val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
       val serviceContainer = new ExchangeCheckingServiceContainer
+      val metrics = MetricsSink.getInstance("test")
 
-      val serviceOptions = ServiceOptions.loadInfo
-
-      val provider = new ServiceProviders(components, measStore, serviceOptions, NullAuthService, new InstantExecutor)
+      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, new InstantExecutor, metrics)
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

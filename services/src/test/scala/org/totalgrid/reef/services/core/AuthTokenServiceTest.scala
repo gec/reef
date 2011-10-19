@@ -28,7 +28,6 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.api.sapi.service.ServiceResponseCallback

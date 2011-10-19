@@ -31,7 +31,6 @@ import org.totalgrid.reef.api.proto.Model._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import java.util.UUID
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -44,9 +43,8 @@ import org.totalgrid.reef.services.core.SyncServiceShims._
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
-  val pubs = new SilentEventPublishers
   val rtDb = new InMemoryMeasurementStore()
-  val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb))
+  val modelFac = new core.ModelFactories(ServiceDependencies(cm = rtDb))
 
   val endpointService = new CommunicationEndpointService(modelFac.endpoints)
   val connectionService = new CommunicationEndpointConnectionService(modelFac.fepConn)

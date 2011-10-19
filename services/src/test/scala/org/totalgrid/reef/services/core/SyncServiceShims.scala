@@ -20,9 +20,9 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.api.sapi.client.Response
-import org.totalgrid.reef.promise.SynchronizedPromise
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.{ DependenciesRequestContext, ServiceDependencies }
+import org.totalgrid.reef.api.sapi.client.impl.SynchronizedPromise
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
@@ -30,7 +30,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def get(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.getAsync(cm, req)(response.onResponse)
+    service.getAsync(cm, req)(response.set _)
     response.await
   }
 
@@ -38,7 +38,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def put(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.putAsync(cm, req)(response.onResponse)
+    service.putAsync(cm, req)(response.set _)
     response.await
   }
 
@@ -46,7 +46,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def post(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.postAsync(cm, req)(response.onResponse)
+    service.postAsync(cm, req)(response.set _)
     response.await
   }
 
@@ -54,7 +54,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def delete(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.deleteAsync(cm, req)(response.onResponse)
+    service.deleteAsync(cm, req)(response.set _)
     response.await
   }
 }
