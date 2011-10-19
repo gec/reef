@@ -22,7 +22,6 @@ import org.totalgrid.reef.api.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.models.{ ApplicationInstance, CommunicationProtocolApplicationInstance, ApplicationSchema }
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.services
 import java.util.UUID
@@ -35,7 +34,7 @@ import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.api.sapi.Optional._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 
 class FrontEndProcessorService(protected val model: FrontEndProcessorServiceModel)
     extends SyncModeledServiceBase[FrontEndProcessor, ApplicationInstance, FrontEndProcessorServiceModel]

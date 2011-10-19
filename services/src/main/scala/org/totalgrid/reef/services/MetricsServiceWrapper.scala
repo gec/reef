@@ -19,17 +19,19 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.service.AsyncService
+import org.totalgrid.reef.metrics.{ IMetricsSink, MappedMetricsHolder }
+
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
  *  - auth wrapper that does high level access granting based on resource and verb
  *  - metrics collectors that monitor how many and how long the requests are taking
  */
-class MetricsServiceWrapper(components: CoreApplicationComponents, serviceConfiguration: ServiceOptions) {
+class MetricsServiceWrapper(sink: IMetricsSink, serviceConfiguration: ServiceOptions) {
 
   /// creates a shared hook to hand to all of the services so they all update the same
   /// statistic #s.
   private def generateHooks(id: String) = {
-    val allServiceHolder = components.metricsPublisher.getStore(id)
+    val allServiceHolder = sink.getStore(id)
     ProtoServicableMetrics.generateMetricsHooks(allServiceHolder, serviceConfiguration.metricsSplitByVerb)
   }
 

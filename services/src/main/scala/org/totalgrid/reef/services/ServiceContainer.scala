@@ -19,6 +19,7 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.service.AsyncService
+import org.totalgrid.reef.services.framework.ServerSideProcess
 
 /**
  * ServiceProviders use a container to add themselves to the collection of running service providers.
@@ -29,9 +30,9 @@ trait ServiceContainer extends ServiceAttacher {
    * calls the addProcesses and addAMQPConsumer functions of the ProtoServiceCoordinator which attaches
    * it to the bus
    */
-  def addCoordinator(coord: ProtoServiceCoordinator): Unit
+  def addCoordinator(coord: ServerSideProcess): Unit
 
-  def addCoordinator(seq: Seq[ProtoServiceCoordinator]): Unit = seq.foreach(addCoordinator)
+  def addCoordinator(seq: Seq[ServerSideProcess]): Unit = seq.foreach(addCoordinator)
 
 }
 

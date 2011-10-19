@@ -20,32 +20,28 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.service.AsyncService
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.sapi.client.rest.Connection
+import org.totalgrid.reef.services.framework.ServerSideProcess
+import org.totalgrid.reef.api.sapi.AllMessages
+import net.agileautomata.executor4s.Executor
 
 /**
  * sets up the "production" ServiceContainer for the service providers
  */
-class ServiceContext(manager: LifecycleManager, amqp: AMQPProtoFactory, metrics: MetricsServiceWrapper) extends ServiceContainer with Logging {
+class ServiceContext(connection: Connection, metrics: MetricsServiceWrapper, executor: Executor) extends ServiceContainer with Logging {
 
-  def addCoordinator(coord: ProtoServiceCoordinator) {
-    val reactor = new ReactActorExecutor {}
-    manager.add(reactor)
-    coord.addAMQPConsumers(amqp, reactor)
+  def addCoordinator(coord: ServerSideProcess) {
+    coord.startProcess(executor)
   }
 
   def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
 
     val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
 
-    // each service gets its own actor so a slow service can't block a fast service but
-    // a slow query will block the next query to that service
-    val serviceReactor = new ReactActorExecutor {}
-    manager.add(serviceReactor)
-
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    amqp.bindService(endpoint.descriptor.id, instrumentedEndpoint.respond, competing = true, reactor = Some(serviceReactor))
+    connection.bindService(instrumentedEndpoint, executor, AllMessages, true)
     instrumentedEndpoint
   }
 }

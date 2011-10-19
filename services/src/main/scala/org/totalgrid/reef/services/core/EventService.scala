@@ -30,14 +30,13 @@ import org.squeryl.dsl.fsm.{ SelectState }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 
-//import org.totalgrid.reef.messaging.ProtoSerializer._
+//import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.services.core.util.MessageFormatter
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.api.sapi.impl.Descriptors
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.japi.{ Envelope, BadRequestException }
 
 // implicit proto properties

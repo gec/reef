@@ -23,7 +23,6 @@ import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandRequest, Us
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }

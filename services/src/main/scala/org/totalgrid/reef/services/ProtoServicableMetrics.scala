@@ -18,10 +18,11 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.util._
+import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, StatusCodes }
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.StatusCodes
 import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }

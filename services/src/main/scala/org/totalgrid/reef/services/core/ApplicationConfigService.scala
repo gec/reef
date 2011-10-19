@@ -21,12 +21,12 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
 import org.totalgrid.reef.api.proto.Application._
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.api.japi.BadRequestException
 
-//import org.totalgrid.reef.messaging.ProtoSerializer._
+//import org.totalgrid.reef.services.framework.ProtoSerializer._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._

@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
@@ -159,7 +158,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
     sql
   }
 
-  import org.totalgrid.reef.messaging.ProtoSerializer.convertBytesToByteString
+  import org.totalgrid.reef.services.framework.ProtoSerializer.convertBytesToByteString
   def convertToProto(entry: ConfigFile): ConfigProto = {
     val configProtoBuilder = ConfigProto.newBuilder
       .setUuid(makeUuid(entry))

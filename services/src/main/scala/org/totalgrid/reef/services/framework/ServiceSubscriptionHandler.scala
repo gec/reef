@@ -16,17 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.services
+package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.messaging.AMQPProtoFactory
+import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.api.japi.Envelope.Event
 
-/**
- * Interface for "coordinator" functionality, allows classes to get given a reactor for delayed
- * actions and a "raw" AMQP factory to hook themselves to custom data channels
- */
-trait ProtoServiceCoordinator {
+class SilentServiceSubscriptionHandler extends SubscriptionHandler {
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor)
+  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
+
+  def publishEvent[A](typ: Event, value: A, key: String) {}
 }
-

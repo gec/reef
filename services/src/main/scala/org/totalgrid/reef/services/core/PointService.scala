@@ -25,15 +25,14 @@ import org.squeryl.PrimitiveTypeMode._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
-import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, AllMessages }
+import org.totalgrid.reef.api.sapi.{ AllMessages }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 
@@ -189,64 +188,3 @@ object PointTiedModel {
     pb
   }
 }
-
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.api.proto.Measurements.{ Measurement, Quality }
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.services.ProtoServiceCoordinator
-
-import org.totalgrid.reef.util.Conversion.convertIterableToMapified
-
-/**
- * Watches the measurement stream looking for transitions in the abnormal value of points
- * TODO: move to its own file
- */
-class PointAbnormalsThunker(model: PointServiceModel, summary: SummaryPoints, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
-
-  val pointMap = scala.collection.mutable.Map.empty[String, Point]
-
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
-    // TODO: assign abnormal thunkers to communication streams
-    reactor.execute {
-      transaction {
-        ApplicationSchema.points.where(p => true === true).toList.foreach { p: Point => pointMap.put(p.entityName, p) }
-      }
-      val startedAbnormal = pointMap.values.foldLeft(0) { case (sum, p) => if (p.abnormal) sum + 1 else sum }
-      summary.setSummary("summary.abnormals", startedAbnormal)
-    }
-    amqp.subscribe("measurement", AllMessages, Measurement.parseFrom(_), { msg: Measurement => reactor.execute { handleMeasurement(msg) } })
-  }
-
-  def handleMeasurement(m: Measurement): Unit = {
-
-    val point = pointMap.get(m.getName) match {
-      case Some(p) => p
-      case None =>
-        val p = transaction {
-          Point.findByName(m.getName).headOption
-        }
-        if (p.isEmpty) {
-          logger.error { "Got measurement for unknown point: " + m.getName }
-          return
-        } else {
-          if (p.get.abnormal) summary.incrementSummary("summary.abnormals", 1)
-          pointMap.put(m.getName, p.get)
-          p.get
-        }
-    }
-
-    val currentlyAbnormal = m.getQuality.getValidity != Quality.Validity.GOOD
-
-    if (currentlyAbnormal != point.abnormal) {
-      contextSource.transaction { context =>
-        logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
-        val updated = point.copy(abnormal = currentlyAbnormal)
-        updated.abnormalUpdated = true
-        model.update(context, updated, point)
-        point.abnormal = currentlyAbnormal
-        summary.incrementSummary("summary.abnormals", if (point.abnormal) 1 else -1)
-      }
-    }
-  }
-}
-

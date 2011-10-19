@@ -29,15 +29,17 @@ import org.totalgrid.reef.api.sapi.client._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.api.japi.{ Envelope, BadRequestException }
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
+import org.totalgrid.reef.api.japi.client.Routable
+import net.agileautomata.executor4s.Future
 
-class MeasurementBatchService(pool: SessionPool)
+class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
 
   override val descriptor = Descriptors.measurementBatch
 
   override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
 
-    val requests = contextSource.transaction { context =>
+    val promises = contextSource.transaction { context =>
       authorizeCreate(context, req)
 
       // TODO: load all endpoints efficiently
@@ -49,7 +51,7 @@ class MeasurementBatchService(pool: SessionPool)
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
 
-      commEndpoints.size match {
+      val requests = commEndpoints.size match {
         //fails with exception if any batch can't be routed
         case 0 => throw new BadRequestException("No Logical Nodes on points: ")
         case 1 =>
@@ -57,13 +59,11 @@ class MeasurementBatchService(pool: SessionPool)
           Request(Envelope.Verb.PUT, req, headers) :: Nil
         case _ => getRequests(req, commEndpoints)
       }
+      requests.map(req => context.client.request(req.verb, req.payload, req.env))
     }
 
-    val promises = pool.borrow { client =>
-      requests.map(req => client.request(req.verb, req.payload, req.env))
-    }
-
-    ScatterGather.collect(promises) { results =>
+    // TODO: implement scatter gather with futures
+    /*Future.collect(promises) { results =>
       val failures = results.filterNot(_.success)
       val response = if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
       else {
@@ -71,7 +71,7 @@ class MeasurementBatchService(pool: SessionPool)
         FailureResponse(Envelope.Status.INTERNAL_ERROR, msg)
       }
       callback(response)
-    }
+    }*/
 
   }
 

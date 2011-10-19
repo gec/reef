@@ -19,15 +19,13 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.messaging.AMQPProtoFactory
 
 import org.totalgrid.reef.models._
 import org.squeryl.PrimitiveTypeMode._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.services.ProtoServiceCoordinator
+import net.agileautomata.executor4s._
 
-class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
+class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: RequestContextSource) extends ServerSideProcess with Logging {
 
   def startTimeoutChecks(react: Executor) {
     // we need to delay the timeout check a bit to make sure any already queued heartbeat messages are waiting
@@ -35,18 +33,19 @@ class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: 
     // all applications if this coordinator had been turned off for longer than periodMs even if the other apps
     // had been sending heartbeats the whole.
     // TODO: implement a "sentinal" callback for when all pending messages processed on a queue
-    react.delay(10000) {
-      react.repeat(10000) {
-        try {
-          checkTimeouts(System.currentTimeMillis)
-        } catch {
-          case e: Exception => logger.error("Error checking timeout", e)
-        }
-      }
-    }
+    react.delay(10000.milliseconds) { doCheckTimeouts(react) }
   }
 
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
+  private def doCheckTimeouts(react: Executor) {
+    try {
+      checkTimeouts(System.currentTimeMillis)
+    } catch {
+      case e: Exception => logger.error("Error checking timeout", e)
+    }
+    react.delay(10000.milliseconds) { doCheckTimeouts(react) }
+  }
+
+  def startProcess(reactor: Executor) {
     startTimeoutChecks(reactor)
   }
 

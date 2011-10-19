@@ -16,24 +16,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.services.core.util
+package org.totalgrid.reef.services.framework
 
-import com.weiglewilczek.slf4s.Logging
+import com.google.protobuf.{ GeneratedMessage, ByteString }
 
-import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.services.framework.ServerSideProcess
-import net.agileautomata.executor4s._
+/**
+ * 	Provides some implicits useful for dealing with google protobuf bindings.
+ */
+object ProtoSerializer {
 
-class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long) extends ServerSideProcess with Logging {
-  def startProcess(reactor: Executor) {
-    if (ms.supportsTrim) reactor.delay(period.milliseconds) { doTrimOperation(reactor) }
+  implicit def convertProtoToBytes(m: GeneratedMessage): Array[Byte] = {
+    m.toByteArray
   }
 
-  private def doTrimOperation(reactor: Executor) {
-    val num = ms.trim(totalMeasurements)
-    if (num > 0) {
-      logger.debug("trimmed: " + num + " measurements")
-    }
-    reactor.delay(period.milliseconds) { doTrimOperation(reactor) }
+  implicit def convertProtoToByteString(m: GeneratedMessage): ByteString = {
+    m.toByteString
+  }
+
+  implicit def convertBytesToByteString(arr: Array[Byte]) = {
+    ByteString.copyFrom(arr)
+  }
+
+  implicit def convertStringToByteString(s: String) = {
+    ByteString.copyFrom(s.getBytes("utf-8"))
   }
 }

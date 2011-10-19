@@ -58,7 +58,7 @@ class ModelFactories(dependencies: ServiceDependencies, contextSource: RequestCo
   val configFiles = new ConfigFileServiceModel
   val endpoints = new CommEndCfgServiceModel(cmds, configFiles, points, fepPort, coordinator)
 
-  val alarms = new AlarmServiceModel(dependencies.summaries)
+  val alarms = new AlarmServiceModel
   val eventConfig = new EventConfigServiceModel
   val events = new EventServiceModel(eventConfig, alarms)
   alarms.eventModel = Some(events)

@@ -19,18 +19,16 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
-import org.totalgrid.reef.services.core.{ SilentSummaryPoints, SummaryPoints }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, SilentEventPublishers, ServiceEventPublishers }
 import org.totalgrid.reef.api.japi.Envelope.Event
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
 
-case class ServiceDependencies(pubs: ServiceEventPublishers = new SilentEventPublishers,
-  summaries: SummaryPoints = new SilentSummaryPoints,
+case class ServiceDependencies(pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
   cm: MeasurementStore = new InMemoryMeasurementStore,
   eventSink: SystemEventSink = new SilentEventSink,
   coordinatorExecutor: Executor = new InstantExecutor)
@@ -40,16 +38,6 @@ class HeadersRequestContext(
   dependencies: ServiceDependencies = new ServiceDependencies)
     extends DependenciesRequestContext(dependencies) {
   modifyHeaders(_.merge(extraHeaders))
-}
-
-class AllTypeServiceSubscriptionHandler(dependencies: ServiceDependencies) extends ServiceSubscriptionHandler {
-  def publish(event: Event, resp: GeneratedMessage, key: String) = {
-    dependencies.pubs.getEventSink(resp.getClass).publish(event, resp, key)
-  }
-
-  def bind(subQueue: String, key: String, request: AnyRef) = {
-    dependencies.pubs.getEventSink(request.getClass).bind(subQueue, key, request)
-  }
 }
 
 class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
@@ -66,9 +54,11 @@ class DependenciesRequestContext(dependencies: ServiceDependencies) extends Requ
 
   val operationBuffer = new BasicOperationBuffer
 
-  val subHandler = new AllTypeServiceSubscriptionHandler(dependencies)
+  val subHandler = dependencies.pubs
 
   val eventSink = dependencies.eventSink
+
+  def client = throw new IllegalArgumentException("")
 }
 
 class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {

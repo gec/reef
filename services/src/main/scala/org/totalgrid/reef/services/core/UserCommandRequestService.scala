@@ -18,22 +18,20 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.sapi.client.SessionPool
-
 import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.api.sapi.client.Response
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, AddressableDestination }
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.api.sapi.{ AddressableDestination }
 
 class UserCommandRequestService(
-  protected val model: UserCommandRequestServiceModel, pool: SessionPool)
+  protected val model: UserCommandRequestServiceModel)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled
@@ -46,11 +44,11 @@ class UserCommandRequestService(
   override def doAsyncPutPost(contextSource: RequestContextSource, rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
     val request = rsp.expectOne
 
-    val address = contextSource.transaction { context =>
+    contextSource.transaction { context =>
 
       val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
 
-      command.endpoint.value match {
+      val address = command.endpoint.value match {
         case Some(ep) =>
           val frontEndAssignment = ep.frontEndAssignment.value
 
@@ -66,10 +64,7 @@ class UserCommandRequestService(
           }
         case None => throw new BadRequestException("Command has no endpoint set: " + request)
       }
-    }
-
-    pool.borrow { session =>
-      session.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
+      context.client.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
         contextSource.transaction { context =>
           model.findRecord(context, request) match {
             case Some(record) =>

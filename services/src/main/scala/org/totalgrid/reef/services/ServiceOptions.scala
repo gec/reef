@@ -18,9 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import scala.collection.immutable._
-
-import org.totalgrid.reef.util.{ ConfigReader, BuildEnv }
+import org.totalgrid.reef.api.sapi.{ ConfigReader, BuildEnv }
 
 object ServiceOptions {
 

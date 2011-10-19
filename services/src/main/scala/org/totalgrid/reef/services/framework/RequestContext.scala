@@ -20,6 +20,7 @@ package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionHandler, Client }
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -40,13 +41,15 @@ trait RequestContext {
    * subscription handler that handles the publish and bind calls. Differs from the original subHandler since it will
    * accept any service event and lookup the exchange rather than needing a different publisher for each object type
    */
-  def subHandler: ServiceSubscriptionHandler
+  def subHandler: SubscriptionHandler
 
   /**
    * for publishing system messages (System.LogOn, Subsystem.Starting) etc, publishes these messages immediately and
    * even if the rest of the transaction rolls back
    */
   def eventSink: SystemEventSink
+
+  def client: Client
 
   /**
    * request headers as received from the client

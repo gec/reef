@@ -30,7 +30,6 @@ import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import SquerylModel._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }

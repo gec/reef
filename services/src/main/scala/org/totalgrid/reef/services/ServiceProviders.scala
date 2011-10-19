@@ -22,10 +22,7 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics
 
 import org.totalgrid.reef.services.core._
 import org.totalgrid.reef.services.coordinators._
-import org.totalgrid.reef.api.proto.ReefServicesList
-import org.totalgrid.reef.messaging.BasicSessionPool
 
-import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
 import org.totalgrid.reef.api.sapi.service.AsyncService
@@ -33,15 +30,23 @@ import org.totalgrid.reef.api.sapi.auth.AuthService
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.framework._
 
+import org.totalgrid.reef.api.sapi.client.rest.Connection
+import org.totalgrid.reef.metrics.{ IMetricsSink, MetricsHookSource, MappedMetricsHolder, MetricsSink }
+
 /**
  * list of all of the service providers in the system
  */
-class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementStore, serviceConfiguration: ServiceOptions, authzService: AuthService, coordinatorExecutor: Executor) {
+class ServiceProviders(
+    connection: Connection,
+    cm: MeasurementStore,
+    serviceConfiguration: ServiceOptions,
+    authzService: AuthService,
+    coordinatorExecutor: Executor,
+    metricsPublisher: IMetricsSink) {
 
-  private val pubs = new ServiceEventPublisherRegistry(components.amqp, ReefServicesList)
-  private val summaries = new SummaryPointPublisher(components.amqp)
+  private val pubs = connection
   private val eventPublisher = new LocalSystemEventSink
-  private val dependencies = ServiceDependencies(pubs, summaries, cm, eventPublisher, coordinatorExecutor)
+  private val dependencies = ServiceDependencies(pubs, cm, eventPublisher, coordinatorExecutor)
 
   private val contextSource = new DependenciesSource(dependencies)
 
@@ -51,15 +56,13 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services
   eventPublisher.setComponents(modelFac.events, contextSource)
 
-  private val wrappedDb = new RTDatabaseMetrics(cm, components.metricsPublisher.getStore("rtdatbase.rt"))
-  private val wrappedHistorian = new HistorianMetrics(cm, components.metricsPublisher.getStore("historian.hist"))
-
-  private val sessionPool = new BasicSessionPool(components.registry)
+  private val wrappedDb = new RTDatabaseMetrics(cm, metricsPublisher.getStore("rtdatbase.rt"))
+  private val wrappedHistorian = new HistorianMetrics(cm, metricsPublisher.getStore("historian.hist"))
 
   private val authzMetrics = {
     val hooks = new RestAuthzMetrics("")
     if (serviceConfiguration.metrics) {
-      hooks.setHookSource(components.metricsPublisher.getStore("all"))
+      hooks.setHookSource(metricsPublisher.getStore("all"))
     }
     hooks
   }
@@ -76,13 +79,13 @@ class ServiceProviders(components: CoreApplicationComponents, cm: MeasurementSto
     new MeasurementSnapshotService(wrappedDb),
     new EventQueryService,
     new AlarmQueryService,
-    new MeasurementBatchService(sessionPool),
+    new MeasurementBatchService,
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
 
     new CommandAccessService(modelFac.accesses),
 
-    new UserCommandRequestService(modelFac.userRequests, sessionPool),
+    new UserCommandRequestService(modelFac.userRequests),
 
     new CommandService(modelFac.cmds),
     new CommunicationEndpointService(modelFac.endpoints),

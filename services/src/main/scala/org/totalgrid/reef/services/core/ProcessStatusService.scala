@@ -29,7 +29,6 @@ import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.japi.BadRequestException
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
@@ -38,7 +37,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.api.sapi.Optional._
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 class ProcessStatusService(val model: ProcessStatusServiceModel)

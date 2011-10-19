@@ -25,7 +25,6 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }

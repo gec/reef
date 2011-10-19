@@ -23,14 +23,13 @@ import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler }
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
 import org.totalgrid.reef.api.japi.BadRequestException
 
 //implicits
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
