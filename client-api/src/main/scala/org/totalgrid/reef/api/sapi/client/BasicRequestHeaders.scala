@@ -29,6 +29,7 @@ object BasicRequestHeaders {
   val user = "USER"
   val resultLimit = "RESULT_LIMIT"
   val destination = "DESTINATION"
+  val timeoutMs = "TIMEOUT_MS"
 
   def from(list: List[Envelope.RequestHeader]): BasicRequestHeaders =
     list.foldLeft(BasicRequestHeaders.empty)((sum, i) => sum.addHeader(i.getKey, i.getValue))
@@ -56,11 +57,15 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   override def clearResultLimit() = clearHeader(BasicRequestHeaders.resultLimit)
 
+  override def setTimeout(timeoutMillis: Long) = setHeader(BasicRequestHeaders.timeoutMs, timeoutMillis.toString)
+
+  override def clearTimeout() = clearHeader(BasicRequestHeaders.timeoutMs)
+
+  override def setDestination(key: Routable) = setHeader(BasicRequestHeaders.destination, key.getKey)
+
+  override def clearDestination() = clearHeader(BasicRequestHeaders.destination)
+
   /* --- Specific getters/setters not part of RequestHeaders --- */
-
-  def setDestination(destination: Routable) = setHeader(BasicRequestHeaders.destination, destination.getKey)
-
-  def clearDestination() = clearHeader(BasicRequestHeaders.destination)
 
   def getDestination: Routable =
     getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key)).getOrElse(AnyNodeDestination)
