@@ -77,8 +77,4 @@ object FrontEndTestHelpers {
     def this(many: List[A]) = this(many, new MockSubscription[A]())
   }
 
-  // TODO: fix promise and futures to be interfaces
-  //  class ThrowsPromise[A <: ReefServiceException, B](ex: A) extends Promise(new MockFuture(Some(FailureResponse(ex.getStatus, ex.getMessage))))
-  //
-  //  class FixedPromise[A](result: A) extends Promise(new MockFuture(Some(SuccessResponse(list = result))))
 }
