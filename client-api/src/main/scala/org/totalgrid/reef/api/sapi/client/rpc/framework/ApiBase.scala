@@ -20,14 +20,17 @@ package org.totalgrid.reef.api.sapi.client.rpc.framework
 
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
 import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
+import org.totalgrid.reef.api.japi.client.{SubscriptionCreationListener, SubscriptionCreator}
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
 }
 
-abstract class ApiBase(client: Client) extends HasAnnotatedOperations {
+abstract class ApiBase(client: Client) extends HasAnnotatedOperations with SubscriptionCreator {
 
   override val ops = new DefaultAnnotatedOperations(client)
+
+  override def addSubscriptionCreationListener(listener:  SubscriptionCreationListener) = ops.addSubscriptionCreationListener(listener)
 
   def getHeaders() = client.getHeaders
 

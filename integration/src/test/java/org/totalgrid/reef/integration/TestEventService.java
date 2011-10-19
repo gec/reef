@@ -203,7 +203,7 @@ public class TestEventService extends ReefConnectionTestBase
         List<Events.Event> events = result.getResult();
         assertEquals( events.size(), 1 );
 
-        assertEquals( callback.pop( 1000 ), result.getSubscription() );
+        assertEquals( callback.pop( 1000 ).getId(), result.getSubscription().getId() );
     }
 
 

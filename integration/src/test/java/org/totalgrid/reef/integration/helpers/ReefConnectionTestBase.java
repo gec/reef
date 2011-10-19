@@ -115,7 +115,6 @@ public class ReefConnectionTestBase
 
         if ( autoLogon )
         {
-
             helpers = new AllScadaServiceJavaShimWrapper( connection.login( "system", "system" ).await() );
         }
         else

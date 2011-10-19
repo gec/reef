@@ -45,8 +45,11 @@ trait AllScadaServiceJavaShim
   def service: AllScadaService
 }
 
-class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServiceJavaShim {
-  def service = new AllScadaServiceWrapper(client)
+final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServiceJavaShim {
 
-  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {}
+  private val srv = new AllScadaServiceWrapper(client)
+
+  override def service = srv
+
+  override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.addSubscriptionCreationListener(listener)
 }
