@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.sapi.client
+package org.totalgrid.reef.api.sapi.client.impl
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -18,19 +18,21 @@ package org.totalgrid.reef.api.sapi.client
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-import impl.WrappedFuturePromise
 import net.agileautomata.executor4s.{ Future, Result }
+import org.totalgrid.reef.api.sapi.client.Promise
 
-object Promise {
-  def from[A](future: Future[Result[A]]): Promise[A] = new WrappedFuturePromise(future)
+class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
+
+  def await: A = future.await.get
+  def listen(fun: Promise[A] => Unit) = {
+    future.listen(result => fun(this))
+    this
+  }
+  def extract: Result[A] = future.await
+  def map[B](fun: A => B) = Promise.from(future.map(_.map(fun)))
+  def isComplete: Boolean = future.isComplete
+
 }
 
-trait Promise[+A] {
-  def await: A
-  def listen(fun: Promise[A] => Unit): Promise[A]
-  def extract: Result[A]
-  def map[B](fun: A => B): Promise[B]
-  def isComplete: Boolean
-}
+
 
