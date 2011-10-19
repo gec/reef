@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.master
+package org.totalgrid.reef.protocol.dnp3.master
 
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.scalatest.matchers.ShouldMatchers
@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.protocol.dnp3.xml.{ Master, Stack, AppLayer, LinkLayer }
+import org.totalgrid.reef.protocol.dnp3.xml.{ Master, Stack, AppLayer, LinkLayer }
 import java.io.{ FileWriter, File }
 import org.totalgrid.reef.util.XMLHelper
 

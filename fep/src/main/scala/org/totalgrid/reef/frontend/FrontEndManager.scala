@@ -20,10 +20,11 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.util.{ Timer, Logging }
+import org.totalgrid.reef.util.Timer
 import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.japi.ReefServiceException
 
 class FrontEndManager(
   client: FrontEndProviderServices,
@@ -51,9 +52,9 @@ class FrontEndManager(
   private def announceAsFep() {
 
     try {
-      val fep = client.registerApplicationAsFrontEnd(appConfig.getUuid, protocolNames).await()
+      val fep = client.registerApplicationAsFrontEnd(appConfig.getUuid, protocolNames).await
       logger.info("Registered application as FEP with uid: " + fep.getUuid.getUuid)
-      val result = client.subscribeToEndpointConnectionsForFrontEnd(fep).await()
+      val result = client.subscribeToEndpointConnectionsForFrontEnd(fep).await
       connectionContext.setSubscription(result, exe)
     } catch {
       case rse: ReefServiceException =>

@@ -49,12 +49,6 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-amqp</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-loader-xml</artifactId>
             <version>0.4.0-SNAPSHOT</version>
         </dependency>
@@ -66,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-api-request</artifactId>
+            <artifactId>reef-client-api</artifactId>
             <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

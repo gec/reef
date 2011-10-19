@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied }
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.auth.{ AuthService, AuthDenied }
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.models.ApplicationSchema
 
 import org.squeryl.PrimitiveTypeMode._

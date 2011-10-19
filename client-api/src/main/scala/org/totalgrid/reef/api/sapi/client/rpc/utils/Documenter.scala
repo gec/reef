@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.japi.request.utils
+package org.totalgrid.reef.api.sapi.client.rpc.utils
 
 import scala.collection.JavaConversions._
 
@@ -28,7 +28,7 @@ import xml.{ Node, XML, NodeSeq }
 
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.{ FailureResponse, SuccessResponse, Response }
-import org.totalgrid.reef.sapi.BuildEnv
+import org.totalgrid.reef.api.sapi.BuildEnv
 
 object Documenter {
 

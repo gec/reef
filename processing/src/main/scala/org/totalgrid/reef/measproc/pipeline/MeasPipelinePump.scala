@@ -19,7 +19,7 @@
 package org.totalgrid.reef.measproc.pipeline
 
 import org.totalgrid.reef.metrics.MetricsHooks
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.proto.Measurements.{ MeasurementBatch, Measurement }
 
 class MeasPipelinePump(procFun: Measurement => Unit, flushCache: () => Unit)

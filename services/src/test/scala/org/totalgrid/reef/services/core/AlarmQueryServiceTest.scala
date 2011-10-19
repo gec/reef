@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 
 import org.squeryl.PrimitiveTypeMode._
 

@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.japi.client.SubscriptionResult
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
 
 trait SubscriptionHandler[A] {
 

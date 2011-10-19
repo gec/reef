@@ -18,12 +18,13 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.util.{ Logging, Timer }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.Timer
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.api.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.api.japi.ReefServiceException
 
 /**
  *  Non-entry point meas processor setup
@@ -51,7 +52,7 @@ class FullProcessor(
   private def subscribeToStreams() {
 
     try {
-      val result = client.subscribeToConnectionsForMeasurementProcessor(appConfig).await()
+      val result = client.subscribeToConnectionsForMeasurementProcessor(appConfig).await
       connectionContext.setSubscription(result, exe)
     } catch {
       case rse: ReefServiceException =>

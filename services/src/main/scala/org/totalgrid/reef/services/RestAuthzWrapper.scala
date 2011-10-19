@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.auth.AuthService
-import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
-import org.totalgrid.reef.sapi.auth.AuthDenied
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.sapi.auth.AuthService
+import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback }
+import org.totalgrid.reef.api.sapi.auth.AuthDenied
 import org.totalgrid.reef.metrics.MetricsHooks
 
 /// the metrics collected on any single service request

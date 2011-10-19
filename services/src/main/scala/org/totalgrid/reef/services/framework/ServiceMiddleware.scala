@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.sapi.service.{ ServiceResponseCallback, ServiceHelpers, AsyncService }
-import org.totalgrid.reef.japi.{ ReefServiceException, Envelope, TypeDescriptor }
-import org.totalgrid.reef.sapi.client.Response
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, ServiceHelpers, AsyncService }
+import org.totalgrid.reef.api.japi.{ ReefServiceException, Envelope, TypeDescriptor }
+import org.totalgrid.reef.api.sapi.client.Response
 
 class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, service: ServiceEntryPoint[A]) extends AsyncService[A] with Logging with ServiceHelpers[A] {
 

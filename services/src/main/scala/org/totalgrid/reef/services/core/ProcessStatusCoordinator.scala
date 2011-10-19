@@ -23,7 +23,7 @@ import org.totalgrid.reef.messaging.AMQPProtoFactory
 
 import org.totalgrid.reef.models._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 

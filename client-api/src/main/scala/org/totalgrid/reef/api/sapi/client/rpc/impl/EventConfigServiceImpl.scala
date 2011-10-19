@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 import org.totalgrid.reef.api.proto.Alarms.{ Alarm, EventConfig }
 
 import org.totalgrid.reef.api.sapi.client.rpc.EventConfigService
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait EventConfigServiceImpl extends HasAnnotatedOperations with EventConfigService {
 

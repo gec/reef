@@ -22,7 +22,7 @@ import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
 import org.totalgrid.reef.api.proto.{ Commands, Measurements, SimMapping }
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import scala.collection.JavaConversions._
 
 object ExampleSimulatorFactory extends SimulatorPluginFactory with Logging {

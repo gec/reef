@@ -29,7 +29,7 @@ import collection.mutable
 import java.lang.IllegalStateException
 import org.totalgrid.reef.api.proto.Model
 import org.totalgrid.reef.api.proto.Processing.TriggerSet
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.LoadingException
 
 class ModelContainer extends Logging {

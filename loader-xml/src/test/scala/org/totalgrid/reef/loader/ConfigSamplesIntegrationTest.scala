@@ -22,16 +22,15 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.util.BuildEnv
-import org.totalgrid.reef.sapi.client.MockSyncOperations
-import org.totalgrid.reef.sapi.client.SuccessResponse
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.sapi.client.SuccessResponse
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.loader.helpers.MockSyncOperations
 
 @RunWith(classOf[JUnitRunner])
 class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
 
-  val samplesPath = BuildEnv.configPath + "assemblies/assembly-common/filtered-resources/samples/"
-  def createClient: MockSyncOperations = new MockSyncOperations((AnyRef) => SuccessResponse(Envelope.Status.OK, List[AnyRef]()))
+  val samplesPath = "../" + "assemblies/assembly-common/filtered-resources/samples/"
+  def createClient = new MockSyncOperations((AnyRef) => SuccessResponse(Envelope.Status.OK, List[AnyRef]()))
 
   private def loadFile(fileName: String, numExpected: Int) = {
     val client = createClient
@@ -56,6 +55,6 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("dnp3-sample") {
-    loadFile(BuildEnv.configPath + "protocol-dnp3/src/test/resources/sample-model.xml", 75)
+    loadFile("../" + "protocol-dnp3/src/test/resources/sample-model.xml", 75)
   }
 }

@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi
+package org.totalgrid.reef.api.sapi
 
 import org.totalgrid.reef.api.japi.BadRequestException
 

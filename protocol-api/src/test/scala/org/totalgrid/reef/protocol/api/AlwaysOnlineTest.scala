@@ -27,7 +27,6 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.promise.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
@@ -36,7 +35,6 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     var queue = Queue.empty[A]
     def publish(state: A) = {
       queue += state
-      new FixedPromise(true)
     }
   }
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.simulator.default
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
 import org.totalgrid.reef.util.Timer
 

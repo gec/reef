@@ -22,24 +22,24 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.api.proto.Descriptors
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.sapi.impl.Descriptors
 
 import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
-import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AllMessages }
+import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, AllMessages }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.api.sapi.Optional._
 
 class PointService(protected val model: PointServiceModel)
     extends SyncModeledServiceBase[PointProto, Point, PointServiceModel]

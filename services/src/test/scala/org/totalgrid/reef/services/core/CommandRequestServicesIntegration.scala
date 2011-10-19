@@ -42,7 +42,7 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.api.proto.Descriptors
+import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
@@ -54,12 +54,12 @@ import CommandAccess._
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.messaging.BasicSessionPool
-import org.totalgrid.reef.sapi.{ BasicRequestHeaders, client, AddressableDestination }
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, client, AddressableDestination }
+import org.totalgrid.reef.api.japi.Envelope
 
 import client.Response
 
-import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.api.sapi.service.SyncServiceBase
 import org.totalgrid.reef.api.proto.Model.{ CommandType, Command }
 
 @RunWith(classOf[JUnitRunner])

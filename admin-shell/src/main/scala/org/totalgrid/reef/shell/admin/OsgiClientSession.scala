@@ -18,17 +18,17 @@ package org.totalgrid.reef.shell.admin
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback }
+import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback }
 
-import org.totalgrid.reef.japi.Envelope.Verb
+import org.totalgrid.reef.api.japi.Envelope.Verb
 import org.totalgrid.reef.api.proto.ReefServicesList
 import org.osgi.framework.BundleContext
 
 import scala.annotation.tailrec
 
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.sapi.client._
-import org.totalgrid.reef.japi._
+import org.totalgrid.reef.api.sapi._
+import org.totalgrid.reef.api.sapi.client._
+import org.totalgrid.reef.api.japi._
 
 import com.weiglewilczek.scalamodules._
 import scala.collection.JavaConversions._

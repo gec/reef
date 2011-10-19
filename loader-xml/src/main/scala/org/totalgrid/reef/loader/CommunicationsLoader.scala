@@ -23,7 +23,7 @@ import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
 import org.totalgrid.reef.api.proto.FEP._
 import org.totalgrid.reef.api.proto.Processing._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import java.io.File
 import org.totalgrid.reef.api.proto._
 

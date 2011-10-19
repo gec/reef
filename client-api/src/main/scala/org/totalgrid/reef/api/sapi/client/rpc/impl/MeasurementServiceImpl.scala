@@ -27,7 +27,7 @@ import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.api.japi.ExpectationException
 import org.totalgrid.reef.api.sapi.client.rest.RestOperations
 import org.totalgrid.reef.api.sapi.client.{ Subscription, BasicRequestHeaders }
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s.{ Failure, Success, Future, Result }

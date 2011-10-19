@@ -23,7 +23,7 @@ import dsl.ast.LogicalBoolean
 import dsl.fsm.{ Conditioned, SelectState, WhereState }
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.QueryYield
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.japi.BadRequestException
 
 /**
  * defines a simple to integrate implementation of the findRecord and findRecords functions

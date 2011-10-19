@@ -23,9 +23,9 @@ import org.totalgrid.reef.services.core.{ SilentSummaryPoints, SummaryPoints }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.sapi.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, SilentEventPublishers, ServiceEventPublishers }
-import org.totalgrid.reef.japi.Envelope.Event
+import org.totalgrid.reef.api.japi.Envelope.Event
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.services.framework._
 

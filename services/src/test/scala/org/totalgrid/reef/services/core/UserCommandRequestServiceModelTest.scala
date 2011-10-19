@@ -44,8 +44,8 @@ import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandRequest, Co
 import CommandAccess._
 
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.japi.{ BadRequestException, ReefServiceException }
 import org.totalgrid.reef.services.HeadersRequestContext
 
 @RunWith(classOf[JUnitRunner])

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.api.sapi.service.AsyncService
 
 /**
  * ServiceProviders use a container to add themselves to the collection of running service providers.

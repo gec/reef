@@ -18,13 +18,11 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.api.proto.Descriptors
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.SyncServiceBase
-
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.service.SyncServiceBase
+import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.api.sapi.client.{ Response, BasicRequestHeaders }
+import org.totalgrid.reef.api.japi.Envelope
 
 trait MeasBatchProcessor {
   def process(m: MeasurementBatch)

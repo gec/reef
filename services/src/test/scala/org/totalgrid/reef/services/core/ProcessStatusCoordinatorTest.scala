@@ -30,8 +30,8 @@ import org.totalgrid.reef.messaging.serviceprovider._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.ServiceDependencies
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {

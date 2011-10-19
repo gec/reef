@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.sapi.client.Response
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.client.Response
 import org.totalgrid.reef.promise.SynchronizedPromise
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.{ DependenciesRequestContext, ServiceDependencies }

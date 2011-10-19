@@ -1,4 +1,4 @@
-package org.totalgrid.reef.japi.impl
+package org.totalgrid.reef.api.japi.client.impl
 
 /**
  * Copyright 2011 Green Energy Corp.

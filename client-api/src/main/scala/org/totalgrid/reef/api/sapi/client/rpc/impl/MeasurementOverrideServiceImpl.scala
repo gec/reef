@@ -26,7 +26,7 @@ import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.MeasurementOverrideRequestBuilders
 
 import org.totalgrid.reef.api.sapi.client.rpc.MeasurementOverrideService
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait MeasurementOverrideServiceImpl extends HasAnnotatedOperations with MeasurementOverrideService {
 

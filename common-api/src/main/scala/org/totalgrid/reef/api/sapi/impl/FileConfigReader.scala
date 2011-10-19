@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi.impl
+package org.totalgrid.reef.api.sapi.impl
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -21,7 +21,7 @@ package org.totalgrid.reef.sapi.impl
 
 import java.util.{ Properties }
 import java.io.FileInputStream
-import org.totalgrid.reef.sapi.ConfigReader
+import org.totalgrid.reef.api.sapi.ConfigReader
 
 class FileConfigReader(file: String) extends ConfigReader {
   val fis = new FileInputStream(file)

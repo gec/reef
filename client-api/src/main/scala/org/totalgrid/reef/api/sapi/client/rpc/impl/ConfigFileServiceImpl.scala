@@ -26,7 +26,7 @@ import org.totalgrid.reef.api.proto.Model.{ ConfigFile, ReefUUID }
 
 import org.totalgrid.reef.api.sapi.client.rpc.ConfigFileService
 import org.totalgrid.reef.api.japi.ExpectationException
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 /**
  * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever

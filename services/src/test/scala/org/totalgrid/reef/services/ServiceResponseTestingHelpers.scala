@@ -23,8 +23,8 @@ import org.totalgrid.reef.util.BlockingQueue
 
 import org.totalgrid.reef.util.SyncVar
 
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.sapi.client.Event
+import org.totalgrid.reef.api.sapi._
+import org.totalgrid.reef.api.sapi.client.Event
 
 object ServiceResponseTestingHelpers {
 

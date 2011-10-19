@@ -20,9 +20,17 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
-import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.broker.api.BrokerProperties
+
 import org.totalgrid.reef.osgi.OsgiConfigReader
+import net.agileautomata.executor4s.Executors
+import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+
+import org.totalgrid.reef.util.Cancelable
+
+import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServiceJavaShimWrapper
+import org.totalgrid.reef.api.sapi.client.rest.Connection
+import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to
@@ -52,21 +60,23 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
         System.out.println("WARNING: Password will be visible in karaf command history!")
       }
 
-      val (client, context) = setupReefSession()
+      val (connection, context, cancel) = setupReefSession()
 
       try {
-        setReefSession(client, context)
-        this.login(userName, services.createNewAuthorizationToken(userName, password))
+        setReefSession(null, null, cancel)
+        val session = connection.login(userName, password).await /// TODO - should load user out of config file
+        val client = new AllScadaServiceJavaShimWrapper(session)
+        setReefSession(client, context, cancel)
       } catch {
         case x: Exception =>
-          setReefSession(null, null)
+          setReefSession(null, null, null)
           println("Couldn't login to Reef: " + x.getMessage)
           logger.error(x.getStackTraceString)
       }
     }
   }
 
-  def setupReefSession(): (ClientSession, String)
+  def setupReefSession(): (Connection, String, Cancelable)
 }
 
 @Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
@@ -74,28 +84,21 @@ class ReefLoginCommand extends ReefLoginCommandBase {
 
   def setupReefSession() = {
 
-    import org.totalgrid.reef.executor.ReactActorExecutor
-    import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.messaging.{ AmqpClientSession }
-    import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-    import org.totalgrid.reef.api.proto.ReefServicesList
+    val connectionInfo = QpidBrokerConnectionInfo.loadInfo(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
 
-    val connectionInfo = BrokerProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
+    val factory = new QpidBrokerConnectionFactory(connectionInfo)
+    val broker = factory.connect
+    val exe = Executors.newScheduledThreadPool()
+    val conn = new DefaultConnection(ReefServicesList, broker, exe, 20000)
 
-    val amqp = new AMQPSyncFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(connectionInfo)
-    }
-
-    amqp.connect(5000)
-    // TODO: replace this with per request timeout updates (load and unload can take more than 5 seconds)
-    val client = new AmqpClientSession(amqp, ReefServicesList, 20000) {
-      override def close() {
-        super.close()
-        amqp.disconnect(5000)
+    val cancel = new Cancelable {
+      def cancel() = {
+        broker.disconnect()
+        exe.shutdown()
       }
     }
 
-    (client, connectionInfo.toString)
+    (conn, connectionInfo.toString, cancel)
   }
 }
 

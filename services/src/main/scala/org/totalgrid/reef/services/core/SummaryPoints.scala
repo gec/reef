@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.proto.Measurements
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.api.proto.ReefServicesList
-import org.totalgrid.reef.sapi.client.ClientSession
+import org.totalgrid.reef.api.sapi.client.ClientSession
 import org.totalgrid.reef.models.Point
-import org.totalgrid.reef.sapi.{ BasicRequestHeaders, Routable, AddressableDestination }
+import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, Routable, AddressableDestination }
 
 /**
  * interface for publishing the current values of summary points. When there are many processes all trying

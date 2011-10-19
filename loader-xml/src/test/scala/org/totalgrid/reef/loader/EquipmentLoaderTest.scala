@@ -29,15 +29,14 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.loader.sx.equipment._
 import org.scalatest.mock.MockitoSugar
 import collection.mutable.{ Seq, Queue, HashMap }
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.junit.Assert
 import org.totalgrid.reef.api.proto.Model.{ Entity, ConfigFile }
 import sx.communications.CommunicationsModel
 import sx.{ InfoXmlBean, ConfigFileXmlBean }
 import scala.None
 
-import org.totalgrid.reef.sapi.client.{ MockSyncOperations, SuccessResponse }
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.sapi.client.SuccessResponse
 import org.totalgrid.reef.api.proto.Model
 
 @RunWith(classOf[JUnitRunner])

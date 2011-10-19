@@ -19,7 +19,7 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  * the License.
  */
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.sapi._
+import org.totalgrid.reef.api.sapi._
 
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.api.japi.{ TypeDescriptor, Envelope }

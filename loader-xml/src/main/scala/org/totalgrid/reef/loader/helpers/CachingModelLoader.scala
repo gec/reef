@@ -23,12 +23,13 @@ import org.totalgrid.reef.api.proto.Model._
 import org.totalgrid.reef.api.proto.Alarms._
 import org.totalgrid.reef.api.proto.FEP._
 import org.totalgrid.reef.api.proto.Processing._
-import org.totalgrid.reef.promise.Promise
-import org.totalgrid.reef.sapi.client.{ Response, RestOperations }
 import org.totalgrid.reef.loader.ModelLoader
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.api.japi.ReefServiceException
+import com.weiglewilczek.slf4s.Logging
 import collection.mutable.Map
+import org.totalgrid.reef.api.sapi.client.rest.RestOperations
+import org.totalgrid.reef.api.sapi.client.{ Response, Promise }
+import net.agileautomata.executor4s.Future
 
 class CachingModelLoader(client: Option[RestOperations], create: Boolean = true) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
@@ -98,7 +99,7 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
   def getOrThrow(e: TriggerSet): List[TriggerSet] =
     {
       client.map {
-        _.get(e).await().expectMany()
+        _.get(e).await.expectMany()
       }.getOrElse(triggers.get(e.getPoint.getName).map {
         _ :: Nil
       }.getOrElse(Nil))
@@ -117,7 +118,7 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
       logger.debug("flushing")
       progressMeter.foreach(_.start(puts.size + triggers.size))
 
-      def handle[A <: AnyRef](promise: Promise[Response[A]], request: AnyRef) {
+      def handle[A <: AnyRef](promise: Future[Response[A]], request: AnyRef) {
         val response = promise.await
 
         // check the response for any non-successful requests

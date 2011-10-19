@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 import org.squeryl.Query
 import org.squeryl.PrimitiveTypeMode._

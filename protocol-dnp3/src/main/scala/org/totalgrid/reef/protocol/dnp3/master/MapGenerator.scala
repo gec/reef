@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.master
+package org.totalgrid.reef.protocol.dnp3.master
 
 import scala.collection.immutable
 import scala.collection.JavaConversions._

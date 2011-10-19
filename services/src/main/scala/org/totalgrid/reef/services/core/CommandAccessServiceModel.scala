@@ -26,9 +26,9 @@ import org.totalgrid.reef.api.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.japi.{ BadRequestException, UnauthorizedException, Envelope }
+import org.totalgrid.reef.api.japi.{ BadRequestException, UnauthorizedException, Envelope }
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import java.util.Date
@@ -177,7 +177,7 @@ trait CommandAccessConversion
 
   import org.squeryl.PrimitiveTypeMode._
   import AccessProto._
-  import org.totalgrid.reef.api.proto.OptionalProtos._
+  import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: AccessProto) = ProtoRoutingKeys.generateRoutingKey {

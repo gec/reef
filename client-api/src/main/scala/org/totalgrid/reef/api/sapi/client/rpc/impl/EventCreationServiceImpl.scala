@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  */
 import org.totalgrid.reef.api.proto.Events.Event
 import org.totalgrid.reef.api.proto.Model.{ Entity, ReefUUID }
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 //import scala.collection.JavaConversions._
 

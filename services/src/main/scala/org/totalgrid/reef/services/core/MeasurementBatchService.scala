@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Descriptors
+import org.totalgrid.reef.api.sapi.impl.Descriptors
 
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.sapi.client._
+import org.totalgrid.reef.api.sapi._
+import org.totalgrid.reef.api.sapi.client._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
-import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
+import org.totalgrid.reef.api.japi.{ Envelope, BadRequestException }
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
 
 class MeasurementBatchService(pool: SessionPool)

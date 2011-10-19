@@ -27,7 +27,8 @@ import presentation.ApplicationView
 class ApplicationListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = reefSession.get(ApplicationConfig.newBuilder.setInstanceName("*").build).await().expectMany()
-    ApplicationView.printTable(results)
+    // TODO: re-enable application and trigger view commands
+    //    val results = reefSession.get(ApplicationConfig.newBuilder.setInstanceName("*").build).await().expectMany()
+    //    ApplicationView.printTable(results)
   }
 }

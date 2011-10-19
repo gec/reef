@@ -19,57 +19,56 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-import org.totalgrid.reef.japi.client.{ UserSettings, NodeSettings }
-import org.totalgrid.reef.api.proto.ReefServicesList
-import org.totalgrid.reef.messaging.{ BasicSessionPool, AmqpClientSession, SessionSource }
-import org.totalgrid.reef.sapi.request.AllScadaService
+import org.totalgrid.reef.broker.BrokerConnection
+import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.executor.{ ReactActorExecutor, Lifecycle, LifecycleManager }
-import org.totalgrid.reef.api.sapi.client.rpc.impl.{ AllScadaServiceImpl, AllScadaServicePooled }
+import net.agileautomata.executor4s.ExecutorService
+import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 
 trait ConnectionConsumer {
-  def newConnection(factory: AMQPSyncFactory): Cancelable
+  def newConnection(brokerConnection: BrokerConnection, exe: ExecutorService): Cancelable
 }
 
 trait ClientConsumer {
   // TODO: should be main client type not AllScadaServiceImpl
   // TODO: remove factory when the client can bind serviceCalls
-  def newClient(factory: AMQPSyncFactory, client: AllScadaServiceImpl): Cancelable
+  def newClient(conn: Connection, client: Client): Cancelable
 }
 
 trait AppEnrollerConsumer {
-  def applicationRegistered(factory: AMQPSyncFactory, client: AllScadaServiceImpl, appConfig: ApplicationConfig): Cancelable
-}
-
-class SessionSourceShim(factory: AMQPSyncFactory) extends SessionSource {
-  def newSession() = new AmqpClientSession(factory, ReefServicesList, 5000)
+  def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig): Cancelable
 }
 
 class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
-  def newConnection(factory: AMQPSyncFactory) = {
-    val pool = new BasicSessionPool(new SessionSourceShim(factory))
-    val client = new AllScadaServicePooled(pool, "")
-    val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await
+  def newConnection(brokerConnection: BrokerConnection, exe: ExecutorService) = {
+    // TODO: move defaultTimeout to userSettings file/object
+    val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 20000)
+    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
 
-    val newClient = new AllScadaServicePooled(pool, token)
-    consumer.newClient(factory, newClient)
+    consumer.newClient(connection, client)
   }
 }
 
 class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, capabilities: List[String], applicationCreator: AppEnrollerConsumer) extends ClientConsumer {
-  def newClient(factory: AMQPSyncFactory, client: AllScadaServiceImpl) = {
-    val appConfig = client.registerApplication(nodeSettings, instanceName, capabilities).await
+  def newClient(connection: Connection, client: Client) = {
 
-    val heartBeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg) with ReactActorExecutor
+    val services = new AllScadaServiceWrapper(client)
+
+    val appConfig = services.registerApplication(nodeSettings, instanceName, capabilities).await
+
+    val heartBeater = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg, client)
 
     heartBeater.start()
 
-    val userApp = applicationCreator.applicationRegistered(factory, client, appConfig)
+    val userApp = applicationCreator.applicationRegistered(connection, client, services, appConfig)
 
     new Cancelable {
-      def cancel() {
+      override def cancel() {
         userApp.cancel
         heartBeater.stop()
       }

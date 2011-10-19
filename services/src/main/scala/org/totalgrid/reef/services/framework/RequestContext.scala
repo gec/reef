@@ -18,9 +18,8 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
 import org.totalgrid.reef.event.SystemEventSink
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models

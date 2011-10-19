@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.japi.Envelope
 
 trait ResponseProgressRenderer {
   def start(size: Int)

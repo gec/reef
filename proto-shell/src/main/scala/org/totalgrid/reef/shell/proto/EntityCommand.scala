@@ -22,7 +22,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.shell.proto.presentation.{ EntityView }
-import org.totalgrid.reef.api.japi.client.rpc.impl.builder.EntityRequestBuilders
+import org.totalgrid.reef.api.japi.client.rpc.impl.builders.EntityRequestBuilders
 
 @Command(scope = "entity", name = "entity", description = "Prints all entities or information on a specific entity.")
 class EntityCommand extends ReefCommandSupport {

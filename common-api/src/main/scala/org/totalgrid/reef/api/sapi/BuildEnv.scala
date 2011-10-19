@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi
+package org.totalgrid.reef.api.sapi
 
 import impl.FileConfigReader
 

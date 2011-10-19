@@ -16,16 +16,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.api.proto.Mapping.{ DataType, MeasMap }
-import org.totalgrid.reef.api.protocol.dnp3.mock.MockDataObserver
+import org.totalgrid.reef.protocol.dnp3.mock.MockDataObserver
 import org.totalgrid.reef.api.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.api.protocol.dnp3.{ DNPTestHelpers, AnalogQuality }
+import org.totalgrid.reef.protocol.dnp3.{ DNPTestHelpers, AnalogQuality }
 
 @RunWith(classOf[JUnitRunner])
 class DataObserverPublisherTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll {

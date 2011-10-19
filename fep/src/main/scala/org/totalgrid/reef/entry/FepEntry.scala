@@ -27,14 +27,15 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import com.weiglewilczek.scalamodules._
 
-import org.totalgrid.reef.broker.api.BrokerProperties
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.frontend._
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
 import org.totalgrid.reef.app._
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.util.{ Cancelable, Logging }
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.util.Cancelable
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo
+import org.totalgrid.reef.frontend._
 
 class FepActivator extends BundleActivator with Logging {
 
@@ -46,7 +47,7 @@ class FepActivator extends BundleActivator with Logging {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
@@ -68,8 +69,8 @@ class FepActivator extends BundleActivator with Logging {
       case None =>
         val appConfigConsumer = new AppEnrollerConsumer {
           // Downside of using classes not functions, we can't partially evalute
-          def applicationRegistered(factory: AMQPSyncFactory, client: AllScadaServiceImpl, appConfig: ApplicationConfig) = {
-            create(factory, client, appConfig, List(p))
+          def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+            create(conn, client, services, appConfig, List(p))
           }
         }
         val appEnroller = new ApplicationEnrollerEx(nodeSettings, "FEP-" + p.name, List("FEP"), appConfigConsumer)
@@ -89,11 +90,11 @@ class FepActivator extends BundleActivator with Logging {
     }
   }
 
-  private def create(factory: AMQPSyncFactory, client: AllScadaServiceImpl, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
+  private def create(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
 
     val exe = new ReactActorExecutor {}
 
-    val services = new FrontEndProviderServicesImpl(client, factory, exe)
+    val services = new FrontEndProviderServicesImpl(conn, client)
 
     val frontEndConnections = new FrontEndConnections(protocols, services)
     val populator = new EndpointConnectionPopulatorAction(services)

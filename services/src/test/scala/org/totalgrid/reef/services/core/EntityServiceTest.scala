@@ -23,8 +23,8 @@ import java.util.UUID
 import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Entity }
 
 import SyncServiceShims._
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.api.japi.Envelope.Status
 
 class EntityServiceTest extends DatabaseUsingTestBase {
 

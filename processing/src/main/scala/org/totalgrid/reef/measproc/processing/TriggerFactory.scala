@@ -22,8 +22,8 @@ import org.totalgrid.reef.api.proto.Measurements._
 import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.api.proto.Processing.{ Trigger => TriggerProto, AnalogLimit => AnalogLimitProto, ActivationType => TypeProto }
 import collection.JavaConversions._
-import org.totalgrid.reef.util.Optional._
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
 object TriggerFactory {
   import Triggers._
@@ -164,7 +164,7 @@ object Triggers {
   }
 
   class QualityCondition(qual: Quality) extends Trigger.Condition {
-    import org.totalgrid.reef.api.proto.OptionalProtos._
+    import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
     def apply(m: Measurement, prev: Boolean): Boolean = {
       val q = m.getQuality

@@ -21,7 +21,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.ApiBase
+import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
 
 /**
  * "Super" implementation of all of the service interfaces

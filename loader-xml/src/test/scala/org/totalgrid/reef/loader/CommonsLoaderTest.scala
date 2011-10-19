@@ -27,10 +27,10 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import java.io.File
-import org.totalgrid.reef.sapi.client.MockSyncOperations
-import org.totalgrid.reef.sapi.client.SuccessResponse
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.loader.helpers.CachingModelLoader
+
+import org.totalgrid.reef.loader.helpers.{ MockSyncOperations, CachingModelLoader }
+import org.totalgrid.reef.api.sapi.client.SuccessResponse
+import org.totalgrid.reef.api.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class CommonsLoaderTest extends FunSuite with ShouldMatchers {

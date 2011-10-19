@@ -25,7 +25,7 @@ import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.api.proto.Events.{ EventList => EventListProto, EventSelect }
 import org.totalgrid.reef.api.proto.Alarms.{ EventConfig => EventConfigProto }
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.japi.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryIntegrationTests extends EventIntegrationTestsBase {

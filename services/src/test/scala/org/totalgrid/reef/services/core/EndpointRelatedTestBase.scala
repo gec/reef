@@ -30,14 +30,15 @@ import org.totalgrid.reef.executor.mock.InstantExecutor
 import _root_.scala.collection.JavaConversions._
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
-import org.totalgrid.reef.util.{ Logging, SyncVar }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.messaging.{ AMQPProtoFactory, AMQPProtoRegistry }
 import org.totalgrid.reef.messaging.serviceprovider.{ SilentEventPublishers, PublishingSubscriptionActor, ServiceSubscriptionHandler, ServiceEventPublisherMap }
 import org.totalgrid.reef.api.proto.{ ReefServicesList }
 
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.sapi._
+import org.totalgrid.reef.api.sapi.service.AsyncService
 
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services._

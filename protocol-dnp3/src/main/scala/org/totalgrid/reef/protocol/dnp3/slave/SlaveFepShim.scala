@@ -16,22 +16,51 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.dnp3.slave
 
-import org.totalgrid.reef.broker.api.BrokerProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.api.proto.ReefServicesList
-import org.totalgrid.reef.messaging.AmqpClientSession
-import org.totalgrid.reef.api.sapi.client.rpc.impl.{ AllScadaServiceImpl }
-import org.totalgrid.reef.sapi.request.framework.SingleSessionClientSource
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
-import org.totalgrid.reef.japi.client.{ ConnectionCloseListener, UserSettings }
-import org.osgi.framework.{ ServiceRegistration, BundleContext }
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-import org.totalgrid.reef.executor.{ Executor, LifecycleManager, ReactActorExecutor }
-import org.totalgrid.reef.util.{ Logging, Timer }
+
+import org.osgi.framework.BundleContext
+
+import org.totalgrid.reef.executor.ReactActorExecutor
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo }
+import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+
+import org.totalgrid.reef.util.{ Cancelable, Timer }
+import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ApplicationEnrollerEx, AppEnrollerConsumer, UserLogin }
+
+object SlaveFepShim {
+  def createFepShim(userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext): UserLogin = {
+    val appConfigConsumer = new AppEnrollerConsumer {
+      def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+        val exe = new ReactActorExecutor {}
+
+        val slaveProtocol = new Dnp3SlaveProtocol(services, exe) with AddRemoveValidation
+        val protocol = Some(slaveProtocol)
+        val registration = Some(context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol]))
+
+        exe.start
+
+        new Cancelable {
+          def cancel() {
+            protocol.foreach(_.Shutdown)
+            registration.foreach { _.unregister() }
+            exe.stop
+          }
+        }
+      }
+    }
+    val appEnroller = new ApplicationEnrollerEx(nodeSettings, "Processing-" + nodeSettings.getDefaultNodeName, List("Processing"), appConfigConsumer)
+    val userLogin = new UserLogin(userSettings, appEnroller)
+    userLogin
+  }
+}
 
 /**
  * this class is a stop gap measure until we get the FEP reimplemented to provide a Client and exe to the
@@ -40,69 +69,23 @@ import org.totalgrid.reef.util.{ Logging, Timer }
  */
 class SlaveFepShim extends Logging {
 
-  private val manager = new LifecycleManager
-
-  private var protocol: Option[Dnp3SlaveProtocol] = None
-  private var registration: Option[ServiceRegistration] = None
-  private var reconnect: Option[Timer] = None
+  private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
-    val userSettings = new UserSettings(new OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    val factory = new AMQPSyncFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(brokerOptions)
-    }
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions))
 
-    val exe = new ReactActorExecutor {}
+    manager.get.addConsumer(SlaveFepShim.createFepShim(userSettings, nodeSettings, context))
 
-    factory.addConnectionListener(new ConnectionCloseListener {
-
-      def onConnectionOpened() {
-        // need to get off this callback thread
-        exe.execute { createProtocol(factory, userSettings, exe, context) }
-      }
-
-      def onConnectionClosed(expected: Boolean) {
-        stopConnecting()
-      }
-    })
-
-    manager.add(factory)
-    manager.add(exe)
-    manager.start()
+    manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) {
-    stopConnecting()
-    manager.stop()
-  }
-
-  private def stopConnecting() {
-    reconnect.foreach { _.cancel() }
-    protocol.foreach { _.Shutdown() }
-    protocol = None
-    registration.foreach { _.unregister() }
-    registration = None
-  }
-
-  private def createProtocol(factory: AMQPSyncFactory, userSettings: UserSettings, exe: Executor, context: BundleContext) {
-    try {
-      val client = new AmqpClientSession(factory, ReefServicesList, 5000) with AllScadaServiceImpl with SingleSessionClientSource {
-        def session = this
-      }
-      val token = client.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await()
-      client.modifyHeaders(_.setAuthToken(token))
-
-      val slaveProtocol = new Dnp3SlaveProtocol(client, exe) with AddRemoveValidation
-      protocol = Some(slaveProtocol)
-      registration = Some(context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol]))
-    } catch {
-      case ex: Exception =>
-        logger.warn("Dnp3 Slave shim couldn't connect.")
-        reconnect = Some(exe.delay(1000) { createProtocol(factory, userSettings, exe, context) })
-    }
+  def stop(context: BundleContext) = {
+    manager.foreach { _.stop }
   }
 }

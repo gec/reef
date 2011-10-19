@@ -21,7 +21,7 @@ package org.totalgrid.reef.api.protocol.api
 import org.totalgrid.reef.api.proto.{ FEP, Model }
 import scala.collection.immutable
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 trait AddRemoveValidation extends Protocol with Logging {
 

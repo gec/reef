@@ -25,7 +25,7 @@ import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFil
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 
 class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {

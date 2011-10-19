@@ -21,7 +21,7 @@ package org.totalgrid.reef.measproc.processing
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 import org.totalgrid.reef.persistence.ObjectCache
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.metrics.{ MetricsHooks }
 import org.totalgrid.reef.api.proto.Processing.MeasOverride
 import org.totalgrid.reef.api.proto.Measurements.{ DetailQual, Quality, Measurement }

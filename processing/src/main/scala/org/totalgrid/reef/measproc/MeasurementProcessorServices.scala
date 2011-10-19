@@ -18,20 +18,19 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.sapi.request.framework.{ ClientSourceProxy, ReefServiceBaseClass }
-import org.totalgrid.reef.promise.Promise
-import org.totalgrid.reef.japi.client.SubscriptionResult
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.proto.Descriptors
 import org.totalgrid.reef.api.proto.Measurements.Measurement
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.proto.Model.Point
 import org.totalgrid.reef.api.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
-import org.totalgrid.reef.sapi.{ EventOperations, AddressableDestination }
-import org.totalgrid.reef.japi.Envelope
+
+import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.api.sapi.client.Promise
+import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, Client, Connection }
+import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.api.sapi.AddressableDestination
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
@@ -47,32 +46,26 @@ trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long): Promise[MeasurementProcessingConnection]
 }
 
-class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServiceImpl, factory: AMQPSyncFactory, exe: Executor)
-    extends MeasurementProcessorServices with ReefServiceBaseClass with ClientSourceProxy {
+class MeasurementProcessorServicesImpl(client: Client, connection: Connection)
+    extends ApiBase(client) with MeasurementProcessorServices {
 
   override def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
-    ops.operation("Couldn't subscribe for endpoints assigned to: " + measProc.getInstanceName) { session =>
-      useSubscription(session, Descriptors.measurementProcessingConnection().getKlass) { sub =>
-        session.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measProc).build, sub).map { _.expectMany() }
-      }
+    ops.subscription(Descriptors.measurementProcessingConnection, "Couldn't subscribe for endpoints assigned to: " + measProc.getInstanceName) { (sub, client) =>
+      client.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measProc).build, sub).map { _.many }
     }
   }
 
   override def subscribeToTriggerSetsForConnection(conn: MeasurementProcessingConnection) = {
-    ops.operation("Couldn't subscribe for triggers associated with endpoint: " + conn.getLogicalNode.getName) { session =>
-      useSubscription(session, Descriptors.triggerSet.getKlass) { sub =>
-        val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
-        session.get(TriggerSet.newBuilder.setPoint(point).build, sub).map { _.expectMany() }
-      }
+    ops.subscription(Descriptors.triggerSet, "Couldn't subscribe for triggers associated with endpoint: " + conn.getLogicalNode.getName) { (sub, client) =>
+      val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
+      client.get(TriggerSet.newBuilder.setPoint(point).build, sub).map { _.many }
     }
   }
 
   override def subscribeToOverridesForConnection(conn: MeasurementProcessingConnection) = {
-    ops.operation("Couldn't subscribe for measurement overrides associated with endpoint: " + conn.getLogicalNode.getName) { session =>
-      useSubscription(session, Descriptors.measOverride.getKlass) { sub =>
-        val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
-        session.get(MeasOverride.newBuilder.setPoint(point).build, sub).map { _.expectMany() }
-      }
+    ops.subscription(Descriptors.measOverride, "Couldn't subscribe for measurement overrides associated with endpoint: " + conn.getLogicalNode.getName) { (sub, client) =>
+      val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
+      client.get(MeasOverride.newBuilder.setPoint(point).build, sub).map { _.many }
     }
   }
 
@@ -80,25 +73,20 @@ class MeasurementProcessorServicesImpl(protected val clientSource: AllScadaServi
     val destination = AddressableDestination(conn.getRouting.getServiceRoutingKey)
     val service = new AddressableMeasurementBatchService(handler)
 
-    val closeable = factory.bindService(Descriptors.measurementBatch.id, service.respond, exe, destination)
+    val closeable = connection.bindService(service, client, destination, false)
 
     new Cancelable {
-      def cancel() = closeable.close()
+      def cancel() = closeable.cancel()
     }
   }
 
-  private def serializeMeas(meas: Measurement) = EventOperations.getEvent(Envelope.Event.MODIFIED, meas).toByteArray()
-  private val measExchange = EventOperations.getExchange(Descriptors.measurement)
-  private val measBroadcaster = factory.broadcast(factory.getChannel, serializeMeas)
-
   override def publishIndividualMeasurementAsEvent(meas: Measurement) {
-    // TODO: replace hacky measBroadcaster with client impl
-    measBroadcaster(meas, measExchange, meas.getName)
+    connection.publishEvent(Envelope.Event.MODIFIED, meas, meas.getName)
   }
 
   override def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long) = {
     ops.operation("Failed updating measproc: " + conn.getMeasProc.getUuid + " readyTime: " + time) {
-      _.put(conn.toBuilder.setReadyTime(time).build).map { _.expectOne }
+      _.put(conn.toBuilder.setReadyTime(time).build).map { _.one }
     }
   }
 }

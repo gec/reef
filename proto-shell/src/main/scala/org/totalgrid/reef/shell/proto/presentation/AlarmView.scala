@@ -19,7 +19,7 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.api.proto.Alarms.Alarm
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.api.proto.Events.Event
 import org.totalgrid.reef.util.Table
 

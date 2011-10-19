@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.app.{ CoreApplicationComponents, ApplicationEnroller }
-import org.totalgrid.reef.sapi.BasicRequestHeaders
+import org.totalgrid.reef.app.{ ApplicationEnroller }
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 
 import org.totalgrid.reef.api.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.messaging.AMQPProtoFactory
@@ -27,7 +27,7 @@ import org.totalgrid.reef.api.proto.ReefServicesList
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
 import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
 
 object ServiceBootstrap {
   /**

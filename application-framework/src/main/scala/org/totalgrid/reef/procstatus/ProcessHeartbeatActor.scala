@@ -20,15 +20,17 @@ package org.totalgrid.reef.procstatus
 
 import org.totalgrid.reef.api.proto.ProcessStatus.StatusSnapshot
 
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
+import org.totalgrid.reef.executor.Lifecycle
 
 import org.totalgrid.reef.api.proto.Application.HeartbeatConfig
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.util.{ Timer, Logging }
-import org.totalgrid.reef.sapi.request.ApplicationService
+import com.weiglewilczek.slf4s.Logging
 
-abstract class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig)
-    extends Executor with Lifecycle with Logging {
+import org.totalgrid.reef.api.sapi.client.rpc.ApplicationService
+import org.totalgrid.reef.api.japi.ReefServiceException
+import net.agileautomata.executor4s._
+
+class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig, exe: Executor)
+    extends Lifecycle with Logging {
 
   private def makeProto(online: Boolean): StatusSnapshot = {
     StatusSnapshot.newBuilder
@@ -38,10 +40,16 @@ abstract class ProcessHeartbeatActor(services: ApplicationService, configuration
       .setOnline(online).build
   }
 
-  private var repeater: Option[Timer] = None
+  private var repeater: Option[Cancelable] = None
 
   override def afterStart() = {
-    repeater = Some(this.repeat(configuration.getPeriodMs)(heartbeat))
+    exe.execute(doHeartbeat(configuration.getPeriodMs.milliseconds))
+  }
+
+  def doHeartbeat(time: TimeInterval) {
+    heartbeat
+
+    repeater = Some(exe.delay(time)(doHeartbeat(time)))
   }
 
   override def beforeStop() = {
@@ -54,7 +62,7 @@ abstract class ProcessHeartbeatActor(services: ApplicationService, configuration
 
   private def publish(ss: StatusSnapshot) {
     try {
-      services.sendHeartbeat(ss).await()
+      services.sendHeartbeat(ss).await
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Problem sending heartbeat: " + rse.getMessage)

@@ -18,16 +18,17 @@
  */
 package org.totalgrid.reef.measproc.activator
 
-import org.totalgrid.reef.broker.api.BrokerProperties
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
-import org.totalgrid.reef.util.{ ShutdownHook, FileConfigReader }
+import org.totalgrid.reef.util.ShutdownHook
+import org.totalgrid.reef.api.sapi.impl.FileConfigReader
 
 object ProcessingEntryPoint extends ShutdownHook {
   def main(args: Array[String]) = {
-    val brokerOptions = BrokerProperties.get(new FileConfigReader("org.totalgrid.reef.amqp.cfg"))
+    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(new FileConfigReader("org.totalgrid.reef.amqp.cfg"))
     val userSettings = new UserSettings(new FileConfigReader("org.totalgrid.reef.user.cfg").props)
     val nodeSettings = new NodeSettings(new FileConfigReader("org.totalgrid.reef.node.cfg").props)
 

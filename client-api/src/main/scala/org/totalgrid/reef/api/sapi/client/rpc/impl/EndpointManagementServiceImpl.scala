@@ -29,7 +29,7 @@ import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.api.sapi.client.rpc.EndpointManagementService
 import org.totalgrid.reef.api.sapi.client.Promise
 import org.totalgrid.reef.api.sapi.impl.Descriptors
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.HasAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait EndpointManagementServiceImpl extends HasAnnotatedOperations with EndpointManagementService {
 

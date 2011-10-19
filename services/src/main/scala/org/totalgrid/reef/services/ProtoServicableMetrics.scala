@@ -20,9 +20,9 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.util._
 
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.sapi.{ BasicRequestHeaders, StatusCodes }
-import org.totalgrid.reef.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, StatusCodes }
+import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 

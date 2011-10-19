@@ -27,7 +27,7 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.services.ServiceDependencies
 
 import org.totalgrid.reef.api.proto.Alarms.EventConfig.Designation
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.japi.BadRequestException
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 

@@ -28,7 +28,6 @@ import org.totalgrid.reef.simulator.example.ExampleSimulatorFactory
 import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.promise.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
@@ -76,7 +75,6 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
       val queue = new scala.collection.mutable.Queue[MeasurementBatch]
       def publish(batch: MeasurementBatch) = {
         queue.enqueue(batch)
-        new FixedPromise[Boolean](true)
       }
     }
 

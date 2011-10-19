@@ -16,15 +16,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.common
+package org.totalgrid.reef.protocol.dnp3.common
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.util.{ Cancelable, Logging }
+import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.proto.{ FEP, Mapping, Model }
 
 import org.totalgrid.reef.api.protocol.api._
-import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3._
+import com.weiglewilczek.slf4s.Logging
 
 abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol with Logging {
 

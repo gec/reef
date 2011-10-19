@@ -20,7 +20,7 @@ package org.totalgrid.reef.loader
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.api.proto.Model.{ Entity, EntityEdge, Command => CommandProto }

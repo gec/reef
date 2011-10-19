@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi.client.rest.impl
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -32,7 +32,7 @@ import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.sapi.client._
 
 import rest.Client
-import org.totalgrid.reef.sapi.rest.impl.DefaultAnnotatedOperations
+import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.sapi.example.{ SomeIntegerTypeDescriptor, SomeInteger }
 
 @RunWith(classOf[JUnitRunner])

@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.app.CoreApplicationComponents
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, RTDatabaseMetrics, HistorianMetrics }
 
 import org.totalgrid.reef.services.core._
@@ -29,8 +28,8 @@ import org.totalgrid.reef.messaging.BasicSessionPool
 import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.sapi.auth.AuthService
+import org.totalgrid.reef.api.sapi.service.AsyncService
+import org.totalgrid.reef.api.sapi.auth.AuthService
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.framework._
 

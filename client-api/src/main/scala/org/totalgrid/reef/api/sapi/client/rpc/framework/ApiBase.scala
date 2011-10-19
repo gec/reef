@@ -16,10 +16,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi.client.rpc.impl.framework
+package org.totalgrid.reef.api.sapi.client.rpc.framework
 
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
-import org.totalgrid.reef.sapi.rest.impl.DefaultAnnotatedOperations
+import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations

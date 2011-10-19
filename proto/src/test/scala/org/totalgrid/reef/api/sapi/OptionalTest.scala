@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi
+package org.totalgrid.reef.api.sapi
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -22,7 +22,6 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.sapi.Optional
 
 @RunWith(classOf[JUnitRunner])
 class OptionalTest extends FunSuite with ShouldMatchers {

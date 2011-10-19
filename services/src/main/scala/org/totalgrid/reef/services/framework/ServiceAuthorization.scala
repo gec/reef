@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.auth.{ AuthService, AuthDenied, NullAuthService }
-import org.totalgrid.reef.japi.UnauthorizedException
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.sapi.service.HasComponentId
+import org.totalgrid.reef.api.sapi.auth.{ AuthService, AuthDenied, NullAuthService }
+import org.totalgrid.reef.api.japi.UnauthorizedException
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.service.HasComponentId
 
 trait HasAuthActions {
   def actions: List[String] = Nil

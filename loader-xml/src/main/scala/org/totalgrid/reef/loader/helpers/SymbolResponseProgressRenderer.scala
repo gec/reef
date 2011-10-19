@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.japi.Envelope.Status
 import java.io.PrintStream
+import org.totalgrid.reef.api.japi.Envelope.Status
 
 class SymbolResponseProgressRenderer(stream: PrintStream, width: Int = 50) extends ResponseProgressRenderer {
 

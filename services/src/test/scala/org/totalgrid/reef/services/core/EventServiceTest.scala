@@ -24,13 +24,13 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.api.proto.Events.{ Event => EventProto }
 import org.totalgrid.reef.api.proto.Alarms._
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
-import org.totalgrid.reef.sapi.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import SyncServiceShims._
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
+import org.totalgrid.reef.api.japi.{ BadRequestException, ReefServiceException }
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {

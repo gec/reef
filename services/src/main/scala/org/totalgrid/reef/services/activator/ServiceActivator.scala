@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.activator
  */
 import org.osgi.framework._
 
-import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.api.sapi.service.AsyncService
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
@@ -32,7 +32,7 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor }
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
 
 class ServiceActivator extends BundleActivator {
 

@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.api.sapi.service.AsyncService
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
 import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
-import org.totalgrid.reef.util.{ Logging }
+import com.weiglewilczek.slf4s.Logging
 
 /**
  * sets up the "production" ServiceContainer for the service providers

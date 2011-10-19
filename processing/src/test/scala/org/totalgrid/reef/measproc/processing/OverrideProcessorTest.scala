@@ -29,7 +29,7 @@ import org.totalgrid.reef.measproc.{ ProtoHelper, MockObjectCache }
 import org.totalgrid.reef.api.proto.Processing.MeasOverride
 import org.totalgrid.reef.api.proto.Model.Point
 import org.totalgrid.reef.api.proto.Measurements
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class OverrideProcessorTest extends Suite with ShouldMatchers {

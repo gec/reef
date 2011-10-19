@@ -1,6 +1,6 @@
 package org.totalgrid.reef.broker.qpid
 
-import org.totalgrid.reef.sapi.ConfigReader
+import org.totalgrid.reef.api.sapi.ConfigReader
 
 /**
  * Copyright 2011 Green Energy Corp.

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Descriptors
+import org.totalgrid.reef.api.sapi.impl.Descriptors
 
 import org.totalgrid.reef.api.proto.Measurements.MeasurementSnapshot
 
@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.services.framework.{ RequestContext, ServiceEntryPoint }
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.japi.BadRequestException
 
 class MeasurementSnapshotService(cm: RTDatabase)
     extends ServiceEntryPoint[MeasurementSnapshot]

@@ -23,8 +23,8 @@ import org.apache.felix.gogo.commands.{ Option => GogoOption, Argument, Command 
 import scala.collection.JavaConversions._
 import java.io.File
 
-import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.util.IOHelpers
+import org.totalgrid.reef.api.japi.BadRequestException
 
 @Command(scope = "configfile", name = "list", description = "Prints all config files")
 class ConfigFileListCommand extends ReefCommandSupport {

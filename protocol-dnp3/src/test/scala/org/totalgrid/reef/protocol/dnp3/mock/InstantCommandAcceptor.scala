@@ -16,9 +16,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.mock
+package org.totalgrid.reef.protocol.dnp3.mock
 
-import org.totalgrid.reef.api.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3._
 
 class InstantCommandResponder(status: CommandStatus) extends ICommandAcceptor {
 

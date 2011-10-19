@@ -22,12 +22,12 @@ import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.configuration._
 
-import org.totalgrid.reef.sapi.client.RestOperations
-
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.XMLHelper
 import java.io.File
 import org.totalgrid.reef.loader.helpers.{ CachingModelLoader, SymbolResponseProgressRenderer }
 import org.totalgrid.reef.loader.common.ConfigFile
+import org.totalgrid.reef.api.sapi.client.rest.RestOperations
 
 object LoadManager extends Logging {
 

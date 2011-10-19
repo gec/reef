@@ -23,7 +23,7 @@ import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.api.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 class Activator extends BundleActivator with Logging {
 

@@ -25,11 +25,11 @@ import org.totalgrid.reef.api.proto.Model.ReefUUID
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
-import org.totalgrid.reef.japi.ReefServiceException
+import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, CommChannel }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.protocol.api.Protocol
-import org.totalgrid.reef.sapi.AddressableDestination
+import org.totalgrid.reef.api.sapi.AddressableDestination
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices) extends KeyedMap[CommEndpointConnection] {

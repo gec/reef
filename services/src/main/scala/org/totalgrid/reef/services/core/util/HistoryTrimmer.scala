@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core.util
 
 import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.services.ProtoServiceCoordinator
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.measurementstore.MeasurementStore

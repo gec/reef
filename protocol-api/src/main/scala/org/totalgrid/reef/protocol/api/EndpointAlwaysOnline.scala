@@ -19,7 +19,7 @@
 package org.totalgrid.reef.api.protocol.api
 
 import org.totalgrid.reef.api.proto.{ Model, FEP }
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 trait EndpointAlwaysOnline extends Protocol with Logging {
 

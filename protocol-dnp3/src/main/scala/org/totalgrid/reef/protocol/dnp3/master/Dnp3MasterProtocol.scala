@@ -16,14 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.master
+package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.api.protocol.dnp3.common.Dnp3ProtocolBase
+import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
 import org.totalgrid.reef.api.proto.Model
 import org.totalgrid.reef.api.protocol.api.Protocol._
 import org.totalgrid.reef.api.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.api.protocol.dnp3.IStackObserver
+import org.totalgrid.reef.protocol.dnp3.IStackObserver
 import org.totalgrid.reef.util.Cancelable
 
 case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver,

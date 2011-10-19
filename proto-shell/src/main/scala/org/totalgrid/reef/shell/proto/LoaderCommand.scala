@@ -28,7 +28,7 @@ import RequestFailure._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.helpers.SymbolResponseProgressRenderer
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.japi.BadRequestException
 
 @Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
 class LoadConfigCommand extends ReefCommandSupport {
@@ -50,7 +50,9 @@ class LoadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
     import org.totalgrid.reef.loader.LoadManager
-    LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings, !delete)
+    // re-neable loading from karaf
+    // LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings, !delete)
+    println("Disabled")
   }
 }
 
@@ -59,7 +61,8 @@ class UnloadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
 
-    services.session.modifyHeaders(_.setResultLimit(50000))
+    // TODO: re-enable result limit
+    //    services.session.modifyHeaders(_.setResultLimit(50000))
 
     // needed to add explict typing to this list, scala compiler eats up all memory in system and never completes
     val endpoints: List[GeneratedMessage] = services.getAllEndpoints().toList
@@ -85,9 +88,10 @@ class UnloadConfigCommand extends ReefCommandSupport {
     val renderer = new SymbolResponseProgressRenderer(Console.out)
     renderer.start(protos.size)
     protos.foreach { p =>
-      val result = reefSession.delete(p).await()
-      result.expectMany()
-      renderer.update(result.status, p)
+      // TODO: re-enable deletion
+      //      val result = reefSession.delete(p).await()
+      //      result.expectMany()
+      //      renderer.update(result.status, p)
     }
     renderer.finish
   }
@@ -113,19 +117,19 @@ class TriggerCommand extends ReefCommandSupport {
   var pointName: String = null
 
   def doCommand() = {
-    Option(pointName) match {
-      case Some(entId) =>
-        val point = services.getPointByName(pointName)
-        val trigger = interpretAs("Trigger set not found.") {
-          reefSession.get(TriggerSet.newBuilder.setPoint(point).build).await().expectOne
-        }
-        TriggerView.inspectTrigger(trigger)
-      case None =>
-        val triggers = interpretAs("No trigger sets found.") {
-          reefSession.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build).await().expectMany()
-        }
-        TriggerView.printTable(triggers)
-    }
+    //    Option(pointName) match {
+    //      case Some(entId) =>
+    //        val point = services.getPointByName(pointName)
+    //        val trigger = interpretAs("Trigger set not found.") {
+    //          reefSession.get(TriggerSet.newBuilder.setPoint(point).build).await().expectOne
+    //        }
+    //        TriggerView.inspectTrigger(trigger)
+    //      case None =>
+    //        val triggers = interpretAs("No trigger sets found.") {
+    //          reefSession.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build).await().expectMany()
+    //        }
+    //        TriggerView.printTable(triggers)
+    //    }
   }
 
 }

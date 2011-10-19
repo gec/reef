@@ -26,8 +26,8 @@ import org.totalgrid.reef.messaging.mock.AMQPFixture
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.japi.Envelope.Event
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.japi.Envelope.Event
+import org.totalgrid.reef.api.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {

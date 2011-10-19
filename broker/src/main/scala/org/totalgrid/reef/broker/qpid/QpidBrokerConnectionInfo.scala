@@ -18,7 +18,7 @@ package org.totalgrid.reef.broker.qpid
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.sapi.{ ConfigReader, BuildEnv }
+import org.totalgrid.reef.api.sapi.{ ConfigReader, BuildEnv }
 import java.lang.Boolean
 
 object QpidBrokerConnectionInfo {

@@ -18,19 +18,19 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.sapi.client.SessionPool
+import org.totalgrid.reef.api.sapi.client.SessionPool
 
 import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.api.proto.Descriptors
-import org.totalgrid.reef.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.api.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.api.sapi.client.Response
+import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, UserCommandRequest }
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.sapi.{ BasicRequestHeaders, AddressableDestination }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.sapi.{ BasicRequestHeaders, AddressableDestination }
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel, pool: SessionPool)

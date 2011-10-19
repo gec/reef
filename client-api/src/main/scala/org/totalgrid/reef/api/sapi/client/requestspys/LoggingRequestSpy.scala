@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.sapi.client.requestspys
+package org.totalgrid.reef.api.sapi.client.requestspys
 
 import org.totalgrid.reef.api.japi.Envelope.Verb
 import org.totalgrid.reef.api.sapi.client.{ Response, RequestSpy }

@@ -19,18 +19,18 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.api.proto.Descriptors
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.sapi.service.SyncServiceBase
-import org.totalgrid.reef.japi.{ BadRequestException }
-import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.client.Response
+import org.totalgrid.reef.api.sapi.service.SyncServiceBase
+import org.totalgrid.reef.api.japi.{ BadRequestException }
+import org.totalgrid.reef.api.japi.Envelope.Status
 import org.totalgrid.reef.models.Entity
 
 class EntityService extends SyncServiceBase[EntityProto] {

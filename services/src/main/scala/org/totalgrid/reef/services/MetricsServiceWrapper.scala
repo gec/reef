@@ -18,9 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.sapi.service.AsyncService
-import org.totalgrid.reef.app.CoreApplicationComponents
-
+import org.totalgrid.reef.api.sapi.service.AsyncService
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
  *  - auth wrapper that does high level access granting based on resource and verb

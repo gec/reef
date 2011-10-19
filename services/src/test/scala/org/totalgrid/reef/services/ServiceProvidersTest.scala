@@ -19,8 +19,8 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.executor.Lifecycle
-import org.totalgrid.reef.sapi.auth.NullAuthService
-import org.totalgrid.reef.sapi.service.{ NoOpService, AsyncService }
+import org.totalgrid.reef.api.sapi.auth.NullAuthService
+import org.totalgrid.reef.api.sapi.service.{ NoOpService, AsyncService }
 
 import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore

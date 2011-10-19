@@ -18,37 +18,33 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.{ Logging, Cancelable, Timer }
-import org.totalgrid.reef.japi.client.ConnectionCloseListener
-import org.totalgrid.reef.broker.api.BrokerConnectionInfo
-import org.totalgrid.reef.executor.{ ReactActorExecutor, Lifecycle }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.{ Cancelable => UCancelable }
+import net.agileautomata.executor4s._
+import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
+import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionFactory, QpidBrokerConnectionInfo }
+import org.totalgrid.reef.executor.Lifecycle
 
 /**
  * handles the connection to an amqp broker, passing the valid and created Connection to the
  * applicationCreator function
  */
-class ConnectionCloseManagerEx(amqpSettings: BrokerConnectionInfo)
-    extends ConnectionCloseListener
+class ConnectionCloseManagerEx(amqpSettings: QpidBrokerConnectionInfo)
+    extends BrokerConnectionListener
     with Lifecycle
     with Logging {
 
-  private val remoteFactory: AMQPSyncFactory = new AMQPSyncFactory with ReactActorExecutor {
-    val broker = new QpidBrokerConnection(amqpSettings)
-  }
-  private val exe = new ReactActorExecutor {}
+  private val remoteFactory = new QpidBrokerConnectionFactory(amqpSettings)
 
-  private var isConnected = false
-  private var consumers = Map.empty[ConnectionConsumer, Option[Cancelable]]
-  private var delays = Map.empty[ConnectionConsumer, Timer]
+  private val exe = Executors.newScheduledThreadPool()
 
-  remoteFactory.addConnectionListener(this)
+  private var connection = Option.empty[BrokerConnection]
+  private var consumers = Map.empty[ConnectionConsumer, Option[UCancelable]]
+  private var delays = Map.empty[ConnectionConsumer, Cancelable]
 
   def addConsumer(generator: ConnectionConsumer) = this.synchronized {
     if (consumers.get(generator).isDefined) throw new IllegalArgumentException("Consumer already added")
-    val cancelable = if (isConnected) Some(generator.newConnection(remoteFactory))
-    else None
+    val cancelable = connection.map { generator.newConnection(_, exe) }
 
     consumers += generator -> cancelable
   }
@@ -58,14 +54,16 @@ class ConnectionCloseManagerEx(amqpSettings: BrokerConnectionInfo)
     consumers -= generator
   }
 
-  override def onConnectionOpened() = this.synchronized {
-    isConnected = true
+  def onConnectionOpened(conn: BrokerConnection) = this.synchronized {
+    connection = Some(conn)
+    conn.addListener(this)
     cancelDelays()
-    consumers.keys.foreach { doBrokerConnectionStarted(_) }
+    consumers.keys.foreach { doBrokerConnectionStarted(_, conn) }
   }
 
-  override def onConnectionClosed(expected: Boolean) = this.synchronized {
-    isConnected = false
+  override def onDisconnect(expected: Boolean) = this.synchronized {
+    connection.foreach(_.removeListener(this))
+    connection = None
     cancelDelays()
     if (!expected) {
       logger.warn("Connection to broker " + amqpSettings + " lost.")
@@ -77,11 +75,11 @@ class ConnectionCloseManagerEx(amqpSettings: BrokerConnectionInfo)
 
   private def cancelDelays() {
     delays.values.foreach { _.cancel }
-    delays = Map.empty[ConnectionConsumer, Timer]
+    delays = Map.empty[ConnectionConsumer, Cancelable]
   }
 
-  private def doBrokerConnectionStarted(generator: ConnectionConsumer): Unit = this.synchronized {
-    if (isConnected) consumers.foreach {
+  private def doBrokerConnectionStarted(generator: ConnectionConsumer, conn: BrokerConnection): Unit = this.synchronized {
+    consumers.foreach {
       case (generator, cancelable) =>
         if (cancelable.isDefined) {
           logger.error("Still have an active application instance onConnectionOpened!")
@@ -89,12 +87,12 @@ class ConnectionCloseManagerEx(amqpSettings: BrokerConnectionInfo)
         }
 
         val application = tryC("Couldn't start consumer successfully: ") {
-          generator.newConnection(remoteFactory)
+          generator.newConnection(conn, exe)
         }
         consumers += generator -> application
 
         if (application.isEmpty) {
-          delays += generator -> exe.delay(5000) { doBrokerConnectionStarted(generator) }
+          delays += generator -> exe.delay(5000.milliseconds) { connection.foreach(doBrokerConnectionStarted(generator, _)) }
         }
     }
   }
@@ -107,18 +105,20 @@ class ConnectionCloseManagerEx(amqpSettings: BrokerConnectionInfo)
   }
 
   override def afterStart() = this.synchronized {
-    exe.start()
-    tryC("Couldn't connect to " + amqpSettings + ": ") {
-      remoteFactory.connect(3000)
-    }
+    tryConnection(5000)
   }
 
   override def beforeStop() = this.synchronized {
     consumers.keys.foreach { doBrokerConnectionLost(_) }
-    tryC("Couldn't disconnect from broker: ") {
-      remoteFactory.disconnect(3000)
+    connection.foreach(_.disconnect)
+    exe.shutdown()
+  }
+
+  private def tryConnection(timeout: Long) {
+    tryC("Couldn't connect to " + amqpSettings + ": ") {
+      onConnectionOpened(remoteFactory.connect)
     }
-    exe.stop()
+    if (connection.isEmpty) exe.delay(timeout.milliseconds) { tryConnection(timeout * 2) }
   }
 
   private def tryC[A](message: => String)(func: => A): Option[A] = {

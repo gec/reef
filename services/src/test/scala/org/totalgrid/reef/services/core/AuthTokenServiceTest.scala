@@ -19,8 +19,8 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.api.proto.Auth._
-import org.totalgrid.reef.japi.Envelope._
-import org.totalgrid.reef.sapi.service.NoOpService
+import org.totalgrid.reef.api.japi.Envelope._
+import org.totalgrid.reef.api.sapi.service.NoOpService
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -29,9 +29,9 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.sapi.BasicRequestHeaders
-import org.totalgrid.reef.sapi.service.ServiceResponseCallback
+import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.service.ServiceResponseCallback
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith

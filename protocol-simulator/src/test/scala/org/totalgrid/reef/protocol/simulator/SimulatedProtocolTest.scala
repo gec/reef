@@ -23,8 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.api.proto.{ Model, SimMapping, Measurements, Commands }
-import org.totalgrid.reef.promise.FixedPromise
-import org.totalgrid.reef.api.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
+import org.totalgrid.reef.api.protocol.api.{ NullEndpointPublisher, Publisher }
 import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.executor.Executor
 import java.lang.Exception
@@ -68,7 +67,6 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
     val queue = new scala.collection.mutable.Queue[A]
     def publish(a: A) = {
       queue.enqueue(a)
-      new FixedPromise(true)
     }
   }
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.sapi.ConfigReader
+import org.totalgrid.reef.api.sapi.ConfigReader
 
 object SqlProperties {
 

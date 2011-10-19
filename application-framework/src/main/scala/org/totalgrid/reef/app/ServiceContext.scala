@@ -18,10 +18,12 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.util.{ Cancelable, Observable }
-import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
+
+import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {
   // TODO: remove exe when clients are fully stranded

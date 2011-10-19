@@ -23,7 +23,7 @@ import org.totalgrid.reef.models.{ ApplicationInstance, CommunicationProtocolApp
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.api.proto.Descriptors
+import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.services
 import java.util.UUID
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
@@ -31,9 +31,9 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.api.proto.OptionalProtos._
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.api.sapi.Optional._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.messaging.ProtoSerializer._
 

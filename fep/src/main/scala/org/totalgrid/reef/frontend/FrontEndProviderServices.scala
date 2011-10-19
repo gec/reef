@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.promise.Promise
-import org.totalgrid.reef.japi.client.SubscriptionResult
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.protocol.api.CommandHandler
@@ -27,14 +25,14 @@ import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.api.proto.Model.ReefUUID
 
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.proto.Descriptors
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.sapi.request.framework.{ ClientSourceProxy, ReefServiceBaseClass }
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-import org.totalgrid.reef.sapi.AddressableDestination
-import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.api.sapi.client.Promise
+import org.totalgrid.reef.api.sapi.AddressableDestination
+import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client, SubscriptionResult }
+import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
 
 trait FrontEndProviderServices extends AllScadaServiceImpl {
   def bindCommandHandler(connection: CommEndpointConnection, commandHandler: CommandHandler): Cancelable
@@ -44,31 +42,29 @@ trait FrontEndProviderServices extends AllScadaServiceImpl {
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor]
 }
 
-class FrontEndProviderServicesImpl(protected val clientSource: AllScadaServiceImpl, factory: AMQPSyncFactory, exe: Executor)
-    extends FrontEndProviderServices with ReefServiceBaseClass with ClientSourceProxy {
+class FrontEndProviderServicesImpl(protected val connection: Connection, client: Client)
+    extends ApiBase(client) with FrontEndProviderServices {
 
-  def bindCommandHandler(connection: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
-    val destination = AddressableDestination(connection.getRouting.getServiceRoutingKey)
+  def bindCommandHandler(connProto: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
+    val destination = AddressableDestination(connProto.getRouting.getServiceRoutingKey)
     val service = new SingleEndpointCommandService(commandHandler)
 
-    val closeable = factory.bindService(service.descriptor.id, service.respond, exe, destination)
+    val closeable = connection.bindService(service, client, destination, false)
 
     new Cancelable {
-      def cancel() = closeable.close()
+      def cancel() = closeable.cancel()
     }
   }
 
   def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]] = {
-    ops.operation("Couldn't subscribe for endpoints assigned to: " + fep.getAppConfig.getInstanceName) { session =>
-      useSubscription(session, Descriptors.commEndpointConnection.getKlass) { sub =>
-        session.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, sub).map { _.expectMany() }
-      }
+    ops.subscription(Descriptors.commEndpointConnection, "Couldn't subscribe for endpoints assigned to: " + fep.getAppConfig.getInstanceName) { (sub, client) =>
+      client.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, sub).map(_.many)
     }
   }
 
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor] = {
     ops.operation("Failed registering application: " + applicationUuid.getUuid + " as frontend") {
-      _.put(FrontEndProcessor.newBuilder.setAppConfig(ApplicationConfig.newBuilder.setUuid(applicationUuid)).addAllProtocols(protocols).build).map { _.expectOne }
+      _.put(FrontEndProcessor.newBuilder.setAppConfig(ApplicationConfig.newBuilder.setUuid(applicationUuid)).addAllProtocols(protocols).build).map(_.one)
     }
   }
 }

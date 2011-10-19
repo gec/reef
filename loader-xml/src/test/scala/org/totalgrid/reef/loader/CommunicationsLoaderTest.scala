@@ -25,16 +25,16 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.loader.sx.communications._
 
-import org.totalgrid.reef.loader.helpers.CachingModelLoader
-import org.totalgrid.reef.util.{ Logging, BuildEnv }
+import com.weiglewilczek.slf4s.Logging
 import org.scalatest.{ Assertions, BeforeAndAfterAll }
 import collection.mutable.{ HashMap }
 
-import org.totalgrid.reef.sapi.client.{ MockSyncOperations, SuccessResponse }
-import org.totalgrid.reef.japi.Envelope
 import collection.Seq
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommChannel }
 import org.totalgrid.reef.api.proto.Model.ConfigFile
+import org.totalgrid.reef.api.sapi.client.SuccessResponse
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.loader.helpers.{ MockSyncOperations, CachingModelLoader }
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with Assertions with Logging {
@@ -63,7 +63,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     val modelLoader = new CachingModelLoader(Some(client))
     val model = new CommunicationsModel
     val exceptionCollector = new LoadingExceptionCollector
-    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File(BuildEnv.configPath + samplesPath + "two_substations"))
+    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("../" + samplesPath + "two_substations"))
     val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCommunication, exceptionCollector, commonLoader)
 
     test(Fixture(client, modelLoader, exceptionCollector, loader, model))

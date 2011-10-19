@@ -1,4 +1,4 @@
-package org.totalgrid.reef.sapi.client.rpc.impl
+package org.totalgrid.reef.api.sapi.client.rpc.impl
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -21,15 +21,15 @@ package org.totalgrid.reef.sapi.client.rpc.impl
 
 import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
-import org.totalgrid.reef.sapi.impl.SystemPropertyConfigReader
+import org.totalgrid.reef.api.sapi.impl.SystemPropertyConfigReader
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
-import org.totalgrid.reef.japi.request.utils.InteractionRecorder
+
 import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
-import org.totalgrid.reef.api.sapi.client.rpc.impl.framework.ApiBase
+import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.api.sapi.client.rpc.utils.InteractionRecorder
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)

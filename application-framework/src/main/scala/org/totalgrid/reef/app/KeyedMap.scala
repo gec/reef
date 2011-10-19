@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 /**
  * simple interface that KeyedMap implements to hide implementation details from consumers

@@ -19,12 +19,12 @@
 package org.totalgrid.reef.api.protocol.simulator
 
 import org.totalgrid.reef.api.proto.{ SimMapping, Model, Commands }
-import org.totalgrid.reef.util.{ Logging }
 
 import org.totalgrid.reef.api.protocol.api._
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.proto.SimMapping.SimulatorMapping
 import org.totalgrid.reef.api.proto.FEP.CommChannel
+import com.weiglewilczek.slf4s.Logging
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior

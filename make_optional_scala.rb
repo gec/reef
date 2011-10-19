@@ -158,9 +158,9 @@ def generatePackageInfo(fname, file_text)
   overview += "<pre>"
   overview += file_text.gsub("*/", "*-/")
   overview += "</pre>\n*/\n"
-  overview += "package org.totalgrid.reef.japi.request.protodoc.#{proto_name.downcase};"
+  overview += "package org.totalgrid.reef.api.japi.client.rpc.protodoc.#{proto_name.downcase};"
 
-  dir_name = "./api-request/src/main/java/org/totalgrid/reef/japi/request/protodoc/#{proto_name.downcase}"
+  dir_name = "./client-api/src/main/java/org/totalgrid/reef/api/japi/client/rpc/protodoc/#{proto_name.downcase}"
   FileUtils.mkdir_p(dir_name)
 
   f = File.open(File.join(File.dirname(__FILE__),"#{dir_name}/package-info.java"), 'wb')
@@ -168,7 +168,7 @@ def generatePackageInfo(fname, file_text)
   f.close
 end
 
-f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
+f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/api/sapi/impl/OptionalProtos.scala"), 'wb')
 
 types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth]
 
@@ -176,23 +176,23 @@ scala_imports = types.collect{|t| "import org.totalgrid.reef.api.proto.#{t}._"}.
 java_imports = scala_imports.gsub("_","*")
 
 f.puts <<EOF
-package org.totalgrid.reef.api.proto
+package org.totalgrid.reef.api.sapi.impl
 
 #{scala_imports}
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.api.sapi.Optional._
 
 object OptionalProtos {
 
 EOF
 
-deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/Descriptors.scala"), 'wb')
+deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/api/sapi/impl/Descriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
-package org.totalgrid.reef.api.proto
+package org.totalgrid.reef.api.sapi.impl
 
-import org.totalgrid.reef.japi.TypeDescriptor
+import org.totalgrid.reef.api.japi.TypeDescriptor
 
 #{scala_imports}
 

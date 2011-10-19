@@ -19,9 +19,9 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.sapi.client.{ ClientSession }
-import org.totalgrid.reef.japi.request.impl.AllScadaServiceSingleSession
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.api.japi.client.rpc.AllScadaService
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -32,26 +32,27 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
    *
    * would like this to be called session but OsgiCommandSupport already defines session
    */
-  protected def reefSession: ClientSession = {
+  protected def reefSession: AllScadaService = {
     this.session.get("reefSession") match {
       case null => throw new Exception("No session configured!")
-      case x => x.asInstanceOf[ClientSession]
+      case x => x.asInstanceOf[AllScadaService]
     }
   }
 
-  def setReefSession(session: ClientSession, context: String) = {
+  def setReefSession(session: AllScadaService, context: String, cancelable: Cancelable) = {
     this.session.put("context", context)
-    this.session.get("reefSession") match {
-      case null => // nothing to close
-      case x => x.asInstanceOf[ClientSession].close
-    }
     this.session.put("reefSession", session)
+    this.session.get("cancelable") match {
+      case null => // nothing to close
+      case x => if (x != cancelable) x.asInstanceOf[Cancelable].cancel
+    }
+    this.session.put("cancelable", cancelable)
     session
   }
   /**
    * "all services" wrapper around the reefSession
    */
-  protected lazy val services = new AllScadaServiceSingleSession(reefSession)
+  protected def services = reefSession
 
   protected def getLoginString = isLoggedIn match {
     case true => "Logged in as User: " + this.get("user").get + " on Reef Node: " + this.get("context").get
@@ -63,16 +64,10 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     case x => true
   }
 
-  protected def login(user: String, auth: String) = {
-    this.set("user", user)
-    this.set("authToken", auth)
-    reefSession.modifyHeaders(_.setAuthToken(auth))
-  }
-
   protected def logout() = {
     this.unset("user")
     this.unset("authToken")
-    setReefSession(null, null)
+    setReefSession(null, null, null)
   }
 
   protected def get(name: String): Option[String] = {

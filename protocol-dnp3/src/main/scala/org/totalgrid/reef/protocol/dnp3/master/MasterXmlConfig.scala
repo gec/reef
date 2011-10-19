@@ -16,17 +16,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.dnp3.master
+package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.api.protocol.dnp3.xml._
+import org.totalgrid.reef.protocol.dnp3.xml._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.proto.Model.ConfigFile
 import org.totalgrid.reef.api.protocol.api.Protocol
 import org.totalgrid.reef.util.XMLHelper
 
-import org.totalgrid.reef.api.protocol.dnp3._
-import org.totalgrid.reef.api.protocol.dnp3.common.XmlToProtoTranslations
+import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.protocol.dnp3.common.XmlToProtoTranslations
 
 /**
  * Converts xml for the master stack to the dnp3 configuration objects

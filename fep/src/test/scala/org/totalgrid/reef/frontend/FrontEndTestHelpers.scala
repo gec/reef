@@ -18,13 +18,16 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.japi.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
-import org.totalgrid.reef.promise.Promise
 import org.totalgrid.reef.api.proto.Model.ReefUUID
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.api.japi.client.SubscriptionEventAcceptor
+import net.agileautomata.executor4s.testing.MockFuture
+import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.api.sapi.client._
 
 object FrontEndTestHelpers {
 
@@ -57,29 +60,25 @@ object FrontEndTestHelpers {
     def cancel() = canceled = true
   }
 
-  class MockSubscription[A](id: String = "queue") extends Subscription[A] {
+  class MockSubscription[A](val id: String = "queue") extends Subscription[A] {
     var canceled = false
-    var acceptor = Option.empty[SubscriptionEventAcceptor[A]]
-    def start(acc: SubscriptionEventAcceptor[A]) = acceptor = Some(acc)
-    def getId = id
+    var acceptor = Option.empty[Event[A] => Unit]
+    def start(acc: Event[A] => Unit) = {
+      acceptor = Some(acc)
+      this
+    }
+
     def cancel() = canceled = true
   }
 
-  class MockSubscriptionResult[A](result: List[A]) extends SubscriptionResult[List[A], A] {
+  class MockSubscriptionResult[A](result: List[A], val mockSub: MockSubscription[A]) extends SubscriptionResult[List[A], A](result, mockSub) {
 
-    def this(one: A) = this(one :: Nil)
-
-    val mockSub = new MockSubscription[A]()
-
-    def getSubscription = mockSub
-    def getResult = result
+    def this(one: A) = this(one :: Nil, new MockSubscription[A]())
+    def this(many: List[A]) = this(many, new MockSubscription[A]())
   }
 
-  class ThrowsPromise[A <: Exception, B](ex: A) extends Promise[B] {
-    def listen(fun: (B) => Unit) = throw ex
-
-    def isComplete = true
-
-    def await() = throw ex
-  }
+  // TODO: fix promise and futures to be interfaces
+  //  class ThrowsPromise[A <: ReefServiceException, B](ex: A) extends Promise(new MockFuture(Some(FailureResponse(ex.getStatus, ex.getMessage))))
+  //
+  //  class FixedPromise[A](result: A) extends Promise(new MockFuture(Some(SuccessResponse(list = result))))
 }

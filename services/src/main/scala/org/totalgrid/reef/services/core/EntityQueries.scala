@@ -25,17 +25,17 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
-import org.totalgrid.reef.api.proto.OptionalProtos._
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.api.japi.BadRequestException
 
 import SquerylModel._
 import java.util.UUID
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
 import org.totalgrid.reef.services.HeadersRequestContext
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.api.sapi.Optional._
 import scala.collection.JavaConversions._
 
 trait EntityTreeQueries { self: EntityQueries =>

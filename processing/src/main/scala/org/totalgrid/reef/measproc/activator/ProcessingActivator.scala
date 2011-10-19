@@ -20,11 +20,11 @@ package org.totalgrid.reef.measproc.activator
 
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.broker.api.BrokerProperties
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo
 
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.messaging.sync.AMQPSyncFactory
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.api.japi.client.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
 import org.totalgrid.reef.app._
@@ -37,10 +37,10 @@ object ProcessingActivator {
   def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
     val appConfigConsumer = new AppEnrollerConsumer {
       // Downside of using classes not functions, we can't partially evalute
-      def applicationRegistered(factory: AMQPSyncFactory, client: AllScadaServiceImpl, appConfig: ApplicationConfig) = {
+      def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
         val exe = new ReactActorExecutor {}
 
-        val services = new MeasurementProcessorServicesImpl(client, factory, exe)
+        val services = new MeasurementProcessorServicesImpl(client, conn)
 
         val connector = new MeasStreamConnector(services, measStore, appConfig.getInstanceName)
         val connectionHandler = new ProcessingNodeMap(connector)
@@ -73,7 +73,7 @@ class ProcessingActivator extends BundleActivator {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 

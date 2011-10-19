@@ -20,10 +20,10 @@ package org.totalgrid.reef.measproc.processing
 
 import org.totalgrid.reef.api.proto.Measurements._
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.sapi.Optional._
 
 object Trigger extends Logging {
-  import org.totalgrid.reef.util.Optional._
 
   /**
    * Super-type for condition logic.

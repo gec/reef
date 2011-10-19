@@ -18,9 +18,10 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.service.HasServiceType
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.api.sapi.service.HasServiceType
+import org.totalgrid.reef.api.sapi.client.Response
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.japi.Envelope
 
 object SimpleServiceBehaviors {
   trait SimpleRead extends HasServiceType with AsyncContextRestGet with AuthorizesRead {

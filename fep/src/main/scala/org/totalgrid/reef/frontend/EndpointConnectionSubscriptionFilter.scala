@@ -19,7 +19,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, ClearableMap }
 
 /**
