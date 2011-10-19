@@ -28,8 +28,9 @@ import org.totalgrid.reef.api.proto.Application.HeartbeatConfig
 
 import org.mockito.{ ArgumentCaptor, Mockito }
 import org.totalgrid.reef.api.sapi.client.rpc.ApplicationService
-import net.agileautomata.executor4s.testing.{ MockFuture, MockExecutor }
-import org.totalgrid.reef.api.sapi.client.{ SuccessResponse, Promise }
+import net.agileautomata.executor4s.testing.MockExecutor
+import net.agileautomata.executor4s.Success
+import org.totalgrid.reef.api.sapi.client.impl.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
@@ -43,26 +44,24 @@ class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
       .setPeriodMs(REPEAT_TIME).build
   }
 
-  // TODO: Promise need to be interface, futures need to be variant in type
+  test("Heartbeats are sent") {
+    val services = Mockito.mock(classOf[ApplicationService])
+    val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
+    val promise = new FixedPromise(Success(StatusSnapshot.getDefaultInstance))
+    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(promise)
 
-  //  test("Heartbeats are sent") {
-  //    val services = Mockito.mock(classOf[ApplicationService])
-  //    val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
-  //    val promise = new Promise(new MockFuture(Some(StatusSnapshot.getDefaultInstance :: Nil)))
-  //    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(promise)
-  //
-  //    val mockExecutor = new MockExecutor
-  //
-  //    val actor = new ProcessHeartbeatActor(services, makeConfig,mockExecutor)
-  //
-  //    actor.start()
-  //
-  //    mockExecutor.runNextPendingAction should equal(true)
-  //    argument.getValue.getOnline should equal(true)
-  //
-  //    actor.stop()
-  //
-  //    mockExecutor.isIdle should equal(true)
-  //    argument.getValue.getOnline should equal(false)
-  //  }
+    val mockExecutor = new MockExecutor
+
+    val actor = new ProcessHeartbeatActor(services, makeConfig, mockExecutor)
+
+    actor.start()
+
+    mockExecutor.runNextPendingAction should equal(true)
+    argument.getValue.getOnline should equal(true)
+
+    actor.stop()
+
+    mockExecutor.isIdle should equal(true)
+    argument.getValue.getOnline should equal(false)
+  }
 }

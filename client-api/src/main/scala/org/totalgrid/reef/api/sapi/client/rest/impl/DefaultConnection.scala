@@ -84,10 +84,9 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
     future
   }
 
-  def subscribe[A](exe: Executor, klass: Class[A]): Result[Subscription[A]] = {
+  def subscribe[A](exe: Executor, descriptor: TypeDescriptor[A]): Result[Subscription[A]] = {
     try {
-      val desc = lookup.getServiceInfo(klass).descriptor
-      Success(new DefaultSubscription[A](conn.listen(), exe, desc.deserialize))
+      Success(new DefaultSubscription[A](conn.listen(), exe, descriptor.deserialize))
     } catch {
       case ex: Exception => Failure(ex)
     }

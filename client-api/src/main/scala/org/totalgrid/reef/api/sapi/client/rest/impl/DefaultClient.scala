@@ -30,7 +30,7 @@ final class DefaultClient(conn: DefaultConnection, strand: Strand) extends Clien
     conn.request(verb, payload, getHeaders.merge(headers), strand)
 
   override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
-    conn.subscribe(strand, descriptor.getKlass)
+    conn.subscribe(strand, descriptor)
 
   override def execute(fun: => Unit): Unit = strand.execute(fun)
   override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
