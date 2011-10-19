@@ -23,7 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
+import net.agileautomata.commons.testing._
 
 @RunWith(classOf[JUnitRunner])
 class MockExecutorTest extends FunSuite with ShouldMatchers {
@@ -74,7 +74,7 @@ class MockExecutorTest extends FunSuite with ShouldMatchers {
     val iter = 1001
 
     iter.foreach { i =>
-      if (i.isOdd) exe.repeatNext(2, 2) should equal(100)
+      if ((i % 2) == 1) exe.repeatNext(2, 2) should equal(100)
       else exe.repeatNext(2, 2) should equal(50)
     }
 

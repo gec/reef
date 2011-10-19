@@ -19,7 +19,6 @@
 package org.totalgrid.reef.frontend
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.api.proto.Model.ReefUUID
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
@@ -45,7 +44,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
 
   def getKey(c: CommEndpointConnection) = c.getUid
 
-  val protocols = comms.mapify { _.name }
+  val protocols = comms.map(p => p.name -> p).toMap
 
   def hasChangedEnoughForReload(updated: CommEndpointConnection, existing: CommEndpointConnection) = {
     updated.hasRouting != existing.hasRouting ||

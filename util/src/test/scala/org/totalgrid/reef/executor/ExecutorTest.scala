@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.util.Conversion.convertIntToDecoratedInt
+import net.agileautomata.commons.testing._
 import org.scalatest.FunSuite
 import parallel.Future
 

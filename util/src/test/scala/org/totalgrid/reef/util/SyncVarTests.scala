@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 
 import scala.actors.Actor.actor
 import org.totalgrid.reef.util.Conversion._
+import net.agileautomata.commons.testing._
 
 @RunWith(classOf[JUnitRunner])
 class SyncVarTests extends FunSuite with ShouldMatchers {
@@ -51,7 +52,7 @@ class SyncVarTests extends FunSuite with ShouldMatchers {
       num.foreach(i => sv.update(i))
     }
 
-    num.count { i =>
+    num.foreach { i =>
       sv.waitFor(_ == i)
     }
 
