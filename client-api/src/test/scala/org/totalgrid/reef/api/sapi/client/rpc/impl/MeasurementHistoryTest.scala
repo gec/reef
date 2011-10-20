@@ -22,12 +22,11 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.util.BlockingQueue
+import org.totalgrid.reef.test.BlockingQueue
 import org.totalgrid.reef.api.proto.Measurements.Measurement
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.PointRequestBuilders
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.japi.client.SubscriptionEvent
-import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryTest
@@ -76,10 +75,10 @@ class MeasurementHistoryTest
     client.publishMeasurements(newMeasurements.toList).await
 
     queue.pop(1000) should equal(startValue + 11)
-    queue.pop(0) should equal(startValue + 12)
-    queue.pop(0) should equal(startValue + 13)
-    queue.pop(0) should equal(startValue + 14)
-    queue.pop(0) should equal(startValue + 15)
+    queue.pop(1000) should equal(startValue + 12)
+    queue.pop(1000) should equal(startValue + 13)
+    queue.pop(1000) should equal(startValue + 14)
+    queue.pop(1000) should equal(startValue + 15)
     queue.size should equal(0)
   }
 
