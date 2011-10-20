@@ -31,9 +31,11 @@ import net.agileautomata.executor4s.testing.MockFuture
 import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.sapi.client._
 
-import rest.Client
 import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.sapi.example.{ SomeIntegerTypeDescriptor, SomeInteger }
+import org.totalgrid.reef.test.MockitoStubbedOnly
+import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, Client }
+import org.mockito.{ Matchers, Mockito }
 
 @RunWith(classOf[JUnitRunner])
 class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
@@ -68,22 +70,17 @@ class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Failed subscription terminates sequence early") {
-    val client = mock(classOf[Client])
+    val client = mock(classOf[Client], new MockitoStubbedOnly)
     val ops = new DefaultAnnotatedOperations(client)
 
-    when(client.subscribe(SomeIntegerTypeDescriptor)) thenReturn Failure("foobar")
-    when(client.future[Result[SomeInteger]]) thenReturn MockFuture.undefined[Result[SomeInteger]]
+    Mockito.doReturn(Failure("foobar")).when(client).subscribe(SomeIntegerTypeDescriptor)
+    Mockito.doReturn(MockFuture.defined[Result[SubscriptionResult[_, _]]](Failure("bad"))).when(client).definedFuture(Matchers.any(classOf[Failure]))
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
       client.get(4).map(r => r.one)
     }
 
     promise.extract.isFailure should equal(true)
-    verify(client).subscribe(SomeIntegerTypeDescriptor)
-    verify(client).future[Result[SomeInteger]]
-    verify(client).future[Result[SomeInteger]]
-    verifyNoMoreInteractions(client)
-
   }
 
 }
