@@ -23,9 +23,8 @@ import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
-import org.totalgrid.reef.api.sapi.impl.SystemPropertyConfigReader
+import org.totalgrid.reef.api.sapi.impl.{ FileConfigReader, ReefServicesList }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList
 
 import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
@@ -42,7 +41,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
 
   // gets default connection settings or overrides using system properties
-  val config = QpidBrokerConnectionInfo.loadInfo(new SystemPropertyConfigReader)
+  val config = QpidBrokerConnectionInfo.loadInfo(new FileConfigReader("../org.totalgrid.reef.amqp.cfg"))
   val factory = new QpidBrokerConnectionFactory(config)
   val broker = factory.connect
   val exe = Executors.newScheduledThreadPool()
