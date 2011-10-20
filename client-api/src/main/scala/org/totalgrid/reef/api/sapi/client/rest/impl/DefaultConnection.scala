@@ -59,20 +59,21 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
 
     val future = executor.future[Response[A]]
 
-    def onResponse(descriptor: TypeDescriptor[A])(result: Option[Envelope.ServiceResponse]) = result match {
-      case Some(envelope) => future.set(RestHelpers.readServiceResponse(descriptor, envelope))
-      case None => future.set(ResponseTimeout)
+    def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
+      case Left(response) => future.set(response)
+      case Right(envelope) => future.set(RestHelpers.readServiceResponse(descriptor, envelope))
+
     }
 
     def send(info: ServiceInfo[A, _]) = {
+      val uuid = correlator.register(executor, timeoutms.milliseconds, onResponse(info.descriptor))
       try {
-        correlator.register(executor, timeoutms.milliseconds, onResponse(info.descriptor)) { uuid =>
-          val request = RestHelpers.buildServiceRequest(verb, payload, info.descriptor, uuid, headers)
-          val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
-          conn.publish(info.descriptor.id, headers.getDestination.getKey, request.toByteArray, replyTo)
-        }
+        val request = RestHelpers.buildServiceRequest(verb, payload, info.descriptor, uuid, headers)
+        val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
+        conn.publish(info.descriptor.id, headers.getDestination.getKey, request.toByteArray, replyTo)
       } catch {
-        case ex: Exception => future.set(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, ex.getMessage))
+        case ex: Exception =>
+          correlator.fail(uuid, FailureResponse(Envelope.Status.BUS_UNAVAILABLE, ex.getMessage))
       }
     }
 

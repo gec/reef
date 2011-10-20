@@ -25,6 +25,8 @@ import java.util.UUID
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerMessageConsumer, BrokerMessage }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.api.sapi.client.{ ResponseTimeout, FailureResponse }
 
 /**
  * Synchronizes and correlates the send/receive operations on a ProtoServiceChannel
@@ -35,7 +37,7 @@ import com.weiglewilczek.slf4s.Logging
  */
 class ResponseCorrelator extends Logging with BrokerMessageConsumer {
 
-  type Response = Option[ServiceResponse]
+  type Response = Either[FailureResponse, ServiceResponse]
   type ResponseCallback = Response => Unit
 
   // use uuid to map these
@@ -45,20 +47,29 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
   private case class Record(timer: Cancelable, callback: ResponseCallback, executor: Executor)
   private val map = mutable.Map.empty[String, Record]
 
-  def register[A](executor: Executor, interval: TimeInterval, callback: ResponseCallback)(withUUID: String => A): A = map.synchronized {
+  def register(executor: Executor, interval: TimeInterval, callback: ResponseCallback): String = map.synchronized {
     val uuid = nextUuid
-    val ret = withUUID(uuid)
     val timer = executor.delay(interval)(onTimeout(uuid))
     map.put(uuid, Record(timer, callback, executor))
-    ret
+    uuid
+  }
+
+  def fail(uuid: String, response: FailureResponse) = map.synchronized {
+    map.remove(uuid) match {
+      case Some(Record(timer, callback, executor)) =>
+        timer.cancel()
+        callback(Left(response))
+      case None =>
+        logger.warn("Couldn't fail unknown uuid: " + uuid)
+    }
   }
 
   // terminates all existing registered callbacks with an exception
-  def flush() = map.synchronized {
+  def close() = map.synchronized {
     map.values.foreach {
       case Record(timer, callback, executor) =>
         timer.cancel()
-        executor.execute(callback(None))
+        executor.execute(callback(Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close"))))
     }
     map.clear()
   }
@@ -67,7 +78,7 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
     map.get(uuid) match {
       case Some(Record(timer, callback, executor)) =>
         map.remove(uuid)
-        callback(None)
+        callback(Left(ResponseTimeout))
       case None =>
         logger.warn("Unexpected service response timeout w/ uuid: " + uuid)
     }
@@ -86,7 +97,7 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
       case Some(Record(timer, callback, _)) =>
         timer.cancel()
         map.remove(rsp.getId)
-        callback(Some(rsp))
+        callback(Right(rsp))
       case None =>
         logger.warn("Unexpected request response w/ uuid: " + rsp.getId)
     }
