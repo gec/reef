@@ -26,7 +26,6 @@ import java.util.Random
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.proto.{ SimMapping, Measurements, Commands }
-import org.totalgrid.reef.util.Conversion.convertIterableToMapified
 
 import org.totalgrid.reef.api.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.api.protocol.api.Publisher
