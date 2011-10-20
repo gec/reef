@@ -38,7 +38,9 @@ object ReefServiceMap {
     getEntry(Descriptors.point),
     getEntry(Descriptors.entity),
     getEntry(Descriptors.entityEdge),
-    getEntry(Descriptors.entityAttributes))
+    getEntry(Descriptors.entityAttributes),
+    // TODO: we only need this here to get event publishing to work
+    getEntry(Descriptors.measurement))
 
   private def getEntry[A, B](descriptor: TypeDescriptor[A], subClass: Option[TypeDescriptor[B]] = None): ServiceList.ServiceTuple = subClass match {
     case Some(subDescriptor) => descriptor.getKlass -> ServiceInfo(descriptor, subDescriptor)
