@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.synchronous
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -29,7 +29,6 @@ import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.api.sapi.ServiceList
 import org.totalgrid.reef.api.sapi.example.{ SomeInteger, SomeIntegerTypeDescriptor }
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.Event
 

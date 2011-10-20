@@ -21,8 +21,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.framework
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
 import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }
-import org.totalgrid.reef.api.japi.ServiceIOException
-import org.totalgrid.reef.api.sapi.client.{RequestSpy, RequestSpyManager, BasicRequestHeaders, HasHeaders}
+import org.totalgrid.reef.api.sapi.client.{ RequestSpy, RequestSpyManager, BasicRequestHeaders, HasHeaders }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations

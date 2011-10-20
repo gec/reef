@@ -19,11 +19,10 @@
 package org.totalgrid.reef.api.sapi.client
 
 trait HasHeaders {
-  def getHeaders : BasicRequestHeaders
+  def getHeaders: BasicRequestHeaders
   def setHeaders(headers: BasicRequestHeaders): Unit
   def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): Unit
 }
-
 
 trait DefaultHeaders extends HasHeaders {
 

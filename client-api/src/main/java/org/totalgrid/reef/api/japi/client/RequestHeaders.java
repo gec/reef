@@ -56,19 +56,19 @@ public interface RequestHeaders
      * @param timeoutMillis request timeout in milliseconds
      * @return a new RequestHeaders with the timeout set
      */
-    RequestHeaders setTimeout(long timeoutMillis);
+    RequestHeaders setTimeout( long timeoutMillis );
 
     /** Clear the timeout
      * @return   A new RequestHeaders with the timeout cleared to the system default
      */
     RequestHeaders clearTimeout();
 
-   /**
+    /**
      * Overrides the system default destination
      * @param key The Routable describining the destination
      * @return A new RequestHeaders with the specific destination set
      */
-    RequestHeaders setDestination(Routable key);
+    RequestHeaders setDestination( Routable key );
 
     /**
      * Clear the destination

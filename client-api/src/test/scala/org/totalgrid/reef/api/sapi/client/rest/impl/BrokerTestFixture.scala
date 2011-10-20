@@ -1,4 +1,4 @@
-package org.totalgrid.reef.messaging.synchronous
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 /**
  * Copyright 2011 Green Energy Corp.

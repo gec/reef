@@ -28,7 +28,7 @@ import net.agileautomata.executor4s.Future
  */
 trait RequestSpyHook extends RestOperations with RequestSpyManager {
 
-  self : DefaultHeaders =>
+  self: DefaultHeaders =>
 
   override def addRequestSpy(listener: RequestSpy) = requestSpys ::= listener
   override def removeRequestSpy(listener: RequestSpy) = requestSpys = requestSpys.filterNot(_ == listener)

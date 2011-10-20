@@ -19,7 +19,7 @@
 package org.totalgrid.reef.api.sapi.client.rest
 
 import net.agileautomata.executor4s.{ Future, Executor }
-import org.totalgrid.reef.api.sapi.client.{RequestSpyManager, DefaultHeaders}
+import org.totalgrid.reef.api.sapi.client.{ RequestSpyManager, DefaultHeaders }
 
 trait Client extends Executor with RestOperations with RequestSpyManager with DefaultHeaders {
   def definedFuture[A](a: A): Future[A] = {
