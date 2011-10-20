@@ -24,11 +24,11 @@ import org.totalgrid.reef.api.proto.Model.ReefUUID
 import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
-import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, CommChannel }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.protocol.api.Protocol
 import org.totalgrid.reef.api.sapi.AddressableDestination
+import net.agileautomata.executor4s.{ Failure, Success }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices) extends KeyedMap[CommEndpointConnection] {
@@ -83,8 +83,8 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     // need to make sure we close the addressable service so no new commands
     // are sent to endpoint while we are removing it
     endpointComponents.get(endpointName) match {
-      case Some(EndpointComponent(serviceBinding)) => serviceBinding.cancel
-      case None =>
+      case Some(EndpointComponent(serviceBinding)) => serviceBinding.cancel()
+      case None => // TODO - why not just use foreach if nothing is done here?
     }
 
     protocol.removeEndpoint(endpointName)
@@ -94,34 +94,34 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     logger.info("Removed endpoint: " + endpointName + " on protocol: " + protocol.name)
   }
 
+  // TODO -fail the process if we can't publish measurements or state?
+
   private def newMeasBatchPublisher(routingKey: String) = new Protocol.BatchPublisher {
-    def publish(value: MeasurementBatch) = tryPublishing("Couldn't publish measurements: ") {
-      client.publishMeasurements(value, AddressableDestination(routingKey)).await
+    def publish(value: MeasurementBatch) = {
+      client.publishMeasurements(value, AddressableDestination(routingKey)).extract match {
+        case Success(x) => logger.debug("Published a measurement batch of size: " + value.getMeasCount)
+        case Failure(ex) => logger.error("Couldn't publish measurements: " + ex.getMessage)
+      }
     }
   }
 
   private def newEndpointStatePublisher(connectionUid: String, endpointName: String) = new Protocol.EndpointPublisher {
-    def publish(state: CommEndpointConnection.State) = tryPublishing("Couldn't update endpointState: ") {
-      client.alterEndpointConnectionState(connectionUid, state).await
-      logger.info("Updated endpoint state: " + endpointName + " state: " + state)
+    def publish(state: CommEndpointConnection.State) = {
+      client.alterEndpointConnectionState(connectionUid, state).extract match {
+        case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
+        case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
+      }
     }
   }
 
   private def newChannelStatePublisher(channelUuid: ReefUUID, channelName: String) = new Protocol.ChannelPublisher {
-    def publish(state: CommChannel.State) = tryPublishing("Couldn't update channelState: ") {
-      client.alterCommunicationChannelState(channelUuid, state).await
-      logger.info("Updated channel state: " + channelName + " state: " + state)
+    def publish(state: CommChannel.State) = {
+      client.alterCommunicationChannelState(channelUuid, state).extract match {
+        case Success(x) => logger.info("Updated channel state: " + x.getName + " state: " + x.getState)
+        case Failure(ex) => logger.error("Couldn't update channelState: " + ex.getMessage)
+      }
     }
   }
 
-  private def tryPublishing[A](msg: String)(func: => A) {
-    try {
-      func
-    } catch {
-      case rse: ReefServiceException =>
-        logger.warn(msg + rse.getMessage)
-      // TODO: handle errors with protocols talking to services
-    }
-  }
 }
 
