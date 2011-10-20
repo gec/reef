@@ -20,20 +20,20 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  */
 import org.totalgrid.reef.api.japi.TypeDescriptor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.api.sapi.client.rest.{ RestOperations, Client }
+import org.totalgrid.reef.api.sapi.client.rest.Client
 import org.totalgrid.reef.api.japi.Envelope.Verb
-import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Subscription }
+import org.totalgrid.reef.api.sapi.client.{BasicRequestHeaders, Subscription}
 
-final class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RestOperations {
+class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
 
   override def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders) =
     conn.request(verb, payload, getHeaders.merge(headers), strand)
 
-  override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
+  final override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
     conn.subscribe(strand, descriptor)
 
-  override def execute(fun: => Unit): Unit = strand.execute(fun)
-  override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
-  override def delay(interval: TimeInterval)(fun: => Unit): Cancelable = strand.delay(interval)(fun)
+  final override def execute(fun: => Unit): Unit = strand.execute(fun)
+  final override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
+  final override def delay(interval: TimeInterval)(fun: => Unit): Cancelable = strand.delay(interval)(fun)
 
 }

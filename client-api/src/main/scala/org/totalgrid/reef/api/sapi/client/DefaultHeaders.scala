@@ -18,18 +18,25 @@
  */
 package org.totalgrid.reef.api.sapi.client
 
-trait DefaultHeaders {
+trait HasHeaders {
+  def getHeaders : BasicRequestHeaders
+  def setHeaders(headers: BasicRequestHeaders): Unit
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): Unit
+}
+
+
+trait DefaultHeaders extends HasHeaders {
 
   /** The default request headers */
-  private var defaultEnv = BasicRequestHeaders.empty
+  private var defaultHeaders = BasicRequestHeaders.empty
 
   /** The current value of the headers */
-  def getHeaders = defaultEnv
+  def getHeaders = defaultHeaders
 
   /** Set the default request headers */
-  def setHeaders(env: BasicRequestHeaders) = defaultEnv = env
+  def setHeaders(headers: BasicRequestHeaders) = defaultHeaders = headers
 
   /** Provide a little syntactic sugar for change the headers */
-  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = setHeaders(modify(defaultEnv))
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = setHeaders(modify(defaultHeaders))
 
 }

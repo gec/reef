@@ -26,7 +26,9 @@ import net.agileautomata.executor4s.Future
 /**
  * inserts itself into the request chain so we can see every request and its results
  */
-trait RequestSpyHook extends RestOperations with RequestSpyManager with DefaultHeaders {
+trait RequestSpyHook extends RestOperations with RequestSpyManager {
+
+  self : DefaultHeaders =>
 
   override def addRequestSpy(listener: RequestSpy) = requestSpys ::= listener
   override def removeRequestSpy(listener: RequestSpy) = requestSpys = requestSpys.filterNot(_ == listener)
