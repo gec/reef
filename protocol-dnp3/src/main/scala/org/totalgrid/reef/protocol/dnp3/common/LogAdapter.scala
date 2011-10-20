@@ -20,16 +20,16 @@ package org.totalgrid.reef.protocol.dnp3.common
 
 import org.totalgrid.reef.util.SafeExecution
 import org.totalgrid.reef.protocol.dnp3._
-import com.weiglewilczek.slf4s.Logging
+import com.weiglewilczek.slf4s.{ Logging, Logger }
 
 /**
  * Shim layer to push log messages from the c++ dnp3 world
  */
-class LogAdapter extends ILogBase with Logging with SafeExecution {
+class LogAdapter extends ILogBase with SafeExecution with Logging {
 
   // DNPLOG is common logger name for all dnp log messages
   // TODO: reimplement LoggerFactory, should be all customLogger calls
-  //val customLogger = LoggerFactory("DNPLOG")
+  val customLogger = Logger("DNPLOG")
 
   final override def SetVar(source: String, variable: String, value: Int) {}
 
@@ -40,14 +40,14 @@ class LogAdapter extends ILogBase with Logging with SafeExecution {
     // we need to upgrade all of the messages up to a usable logging level, we let the
     // filter settings we pass into the stack determine how much info we see
     entry.GetFilterLevel match {
-      case FilterLevel.LEV_COMM => logger.info(getMsg)
-      case FilterLevel.LEV_DEBUG => logger.info(getMsg)
-      case FilterLevel.LEV_ERROR => logger.error(getMsg)
-      case FilterLevel.LEV_EVENT => logger.error(getMsg)
-      case FilterLevel.LEV_INFO => logger.info(getMsg)
-      case FilterLevel.LEV_INTERPRET => logger.info(getMsg)
-      case FilterLevel.LEV_WARNING => logger.warn(getMsg)
-      case _ => logger.error(getMsg)
+      case FilterLevel.LEV_COMM => customLogger.info(getMsg)
+      case FilterLevel.LEV_DEBUG => customLogger.info(getMsg)
+      case FilterLevel.LEV_ERROR => customLogger.error(getMsg)
+      case FilterLevel.LEV_EVENT => customLogger.error(getMsg)
+      case FilterLevel.LEV_INFO => customLogger.info(getMsg)
+      case FilterLevel.LEV_INTERPRET => customLogger.info(getMsg)
+      case FilterLevel.LEV_WARNING => customLogger.warn(getMsg)
+      case _ => customLogger.error(getMsg)
     }
 
   }
