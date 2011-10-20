@@ -145,6 +145,11 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
     conn.bindQueue(subQueue, info.subExchange, key)
   }
 
+  def declareEventExchange(klass: Class[_]) = {
+    val info = lookup.getServiceInfo(klass)
+    conn.declareExchange(info.subExchange)
+  }
+
   private def safely(msg: String)(fun: => Unit): Unit = {
     try {
       fun
