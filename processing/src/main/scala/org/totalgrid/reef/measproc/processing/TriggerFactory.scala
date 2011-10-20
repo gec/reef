@@ -22,7 +22,7 @@ import org.totalgrid.reef.api.proto.Measurements._
 import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.api.proto.Processing.{ Trigger => TriggerProto, AnalogLimit => AnalogLimitProto, ActivationType => TypeProto }
 import collection.JavaConversions._
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
 object TriggerFactory {

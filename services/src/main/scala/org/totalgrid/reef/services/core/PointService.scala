@@ -29,16 +29,15 @@ import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
-import org.totalgrid.reef.api.sapi.{ AllMessages }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 class PointService(protected val model: PointServiceModel)
     extends SyncModeledServiceBase[PointProto, Point, PointServiceModel]

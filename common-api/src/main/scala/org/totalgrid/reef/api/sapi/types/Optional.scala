@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.sapi
+package org.totalgrid.reef.api.sapi.types
 
 /**
  * Copyright 2011 Green Energy Corp.

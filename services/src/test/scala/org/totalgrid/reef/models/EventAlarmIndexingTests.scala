@@ -37,7 +37,7 @@ import org.totalgrid.reef.api.proto.Events._
 class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
 
   override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
     ServiceBootstrap.resetDb
   }
 

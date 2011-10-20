@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.sapi
+package org.totalgrid.reef.api.sapi.types
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -18,14 +18,18 @@ package org.totalgrid.reef.api.sapi
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-trait ConfigReader {
+import org.totalgrid.reef.api.japi.TypeDescriptor
 
-  def getProp(key: String): Option[String]
+object ServiceInfo {
+  def getEventExchange[A](desc: TypeDescriptor[A]) = desc.id + "_events"
 
-  // TODO: remove defaults from most configuration options
-  def getString(key: String, default: String) = getProp(key) getOrElse (default)
-  def getInt(key: String, default: Int) = getProp(key).map(s => s.toInt) getOrElse (default)
-  def getLong(key: String, default: Long) = getProp(key).map(s => s.toLong) getOrElse (default)
-  def getBoolean(key: String, default: Boolean) = getProp(key).map(s => s.toBoolean) getOrElse (default)
+  def apply[A](descriptor: TypeDescriptor[A]): ServiceInfo[A, A] =
+    ServiceInfo[A, A](descriptor, descriptor, getEventExchange(descriptor))
+
+  def apply[A, B](descriptor: TypeDescriptor[A], subDescriptor: TypeDescriptor[B]): ServiceInfo[A, B] =
+    ServiceInfo[A, B](descriptor, subDescriptor, getEventExchange(subDescriptor))
+
 }
+
+case class ServiceInfo[A, B](descriptor: TypeDescriptor[A], subType: TypeDescriptor[B], subExchange: String)
 

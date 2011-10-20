@@ -1,7 +1,3 @@
-package org.totalgrid.reef.broker.qpid
-
-import org.totalgrid.reef.api.sapi.ConfigReader
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,6 +16,9 @@ import org.totalgrid.reef.api.sapi.ConfigReader
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.broker.qpid
+
+import org.totalgrid.reef.api.sapi.config.ConfigReader
 
 object QpidBrokerProperties {
 

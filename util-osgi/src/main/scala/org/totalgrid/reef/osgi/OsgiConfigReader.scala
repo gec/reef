@@ -26,7 +26,7 @@ import com.weiglewilczek.scalamodules._
 import java.util.{ Dictionary, Hashtable }
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.api.sapi.ConfigReader
+import org.totalgrid.reef.api.sapi.config.ConfigReader
 
 class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader with Logging {
 

@@ -22,6 +22,8 @@ import org.totalgrid.reef.api.proto.Events.EventSelect
 import org.totalgrid.reef.api.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
 import org.totalgrid.reef.api.proto.Model.Entity
 
+// TODO: move builders to under sapi.impl
+
 object AlarmListRequestBuilders {
   def getByAlarmSelect(select: AlarmSelect): AlarmList = AlarmList.newBuilder.setSelect(select).build
   def getByAlarmSelect(select: AlarmSelect.Builder): AlarmList = AlarmList.newBuilder.setSelect(select).build

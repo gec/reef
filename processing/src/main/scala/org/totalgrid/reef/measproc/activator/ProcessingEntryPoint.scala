@@ -24,7 +24,7 @@ import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.util.ShutdownHook
-import org.totalgrid.reef.api.sapi.impl.FileConfigReader
+import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
 
 object ProcessingEntryPoint extends ShutdownHook {
   def main(args: Array[String]) = {

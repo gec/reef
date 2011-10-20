@@ -16,9 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi
-
-import org.totalgrid.reef.api.japi.client.Routable
+package org.totalgrid.reef.api.japi.client
 
 case class AddressableDestination(key: String) extends Routable {
   override def getKey = key

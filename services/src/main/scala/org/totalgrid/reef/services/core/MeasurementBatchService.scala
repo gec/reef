@@ -24,13 +24,13 @@ import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.sapi._
-import org.totalgrid.reef.api.sapi.client._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.api.japi.{ Envelope, BadRequestException }
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
-import org.totalgrid.reef.api.japi.client.Routable
+
 import net.agileautomata.executor4s.Futures
+import org.totalgrid.reef.api.japi.client.AddressableDestination
+import org.totalgrid.reef.api.sapi.client._
 
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
@@ -73,7 +73,7 @@ class MeasurementBatchService
 
   }
 
-  private def convertEndpointToDestination(ce: CommunicationEndpoint): Routable = ce.frontEndAssignment.value.serviceRoutingKey match {
+  private def convertEndpointToDestination(ce: CommunicationEndpoint) = ce.frontEndAssignment.value.serviceRoutingKey match {
     case Some(key) => AddressableDestination(key)
     case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }

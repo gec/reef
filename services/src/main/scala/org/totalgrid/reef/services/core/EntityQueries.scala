@@ -35,7 +35,7 @@ import org.totalgrid.reef.services.HeadersRequestContext
 import com.weiglewilczek.slf4s.Logging
 
 // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 import scala.collection.JavaConversions._
 
 trait EntityTreeQueries { self: EntityQueries =>

@@ -13,7 +13,7 @@ import org.totalgrid.reef.api.proto.Model._
 import org.totalgrid.reef.api.proto.Auth._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 object OptionalProtos {
 

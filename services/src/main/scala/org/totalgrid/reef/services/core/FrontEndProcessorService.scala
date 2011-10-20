@@ -32,7 +32,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 

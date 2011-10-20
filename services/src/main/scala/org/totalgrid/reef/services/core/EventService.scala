@@ -41,7 +41,7 @@ import org.totalgrid.reef.api.japi.{ Envelope, BadRequestException }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 import ServiceBehaviors._
 
 class EventService(protected val model: EventServiceModel)

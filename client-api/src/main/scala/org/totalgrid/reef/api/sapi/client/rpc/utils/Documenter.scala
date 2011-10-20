@@ -28,7 +28,6 @@ import xml.{ Node, XML, NodeSeq }
 
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.{ FailureResponse, SuccessResponse, Response }
-import org.totalgrid.reef.api.sapi.BuildEnv
 
 object Documenter {
 
@@ -107,7 +106,7 @@ object Documenter {
     </message>
   }
 
-  def save(fileName: String, nodes: List[Node], title: String, desc: Node = <div/>, path: String = BuildEnv.configPath + "api-request/target/docxml") = {
+  def save(fileName: String, nodes: List[Node], title: String, desc: Node = <div/>, path: String = "../api-request/target/docxml") = {
     val content =
       <servicedoc>
         <title>{ title }</title>

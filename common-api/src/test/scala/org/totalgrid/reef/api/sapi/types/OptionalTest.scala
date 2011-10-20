@@ -1,3 +1,5 @@
+package org.totalgrid.reef.api.sapi.types
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,20 +18,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
 
-import org.totalgrid.reef.api.japi.BadRequestException
+@RunWith(classOf[JUnitRunner])
+class OptionalTest extends FunSuite with ShouldMatchers {
+  import Optional._
 
-object ClassLookup {
+  test("thenGet") {
+    var s: String = null
+    s != null thenGet s.concat("blah") // no null pointer exception
+    s = "meh "
+    (s != null thenGet s.concat("blah")).get should equal("meh blah")
 
-  def get[A](value: A) = apply[A](value) match {
-    case Some(x) => x
-    case None => throw new BadRequestException("Value types are not allowed")
   }
-
-  def apply[A](value: A): Option[Class[A]] = value match {
-    case x: AnyRef => Some(x.getClass.asInstanceOf[Class[A]])
-    case _ => None
-  }
-
 }

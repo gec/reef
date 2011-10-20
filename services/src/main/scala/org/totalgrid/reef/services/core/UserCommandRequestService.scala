@@ -28,9 +28,8 @@ import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.api.sapi.{ AddressableDestination }
 import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.japi.client.Routable
+import org.totalgrid.reef.api.japi.client.{ AddressableDestination, Routable }
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)

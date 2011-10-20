@@ -42,7 +42,7 @@ trait BrokerTestFixture {
 }
 
 trait QpidBrokerTestFixture extends BrokerTestFixture {
-  lazy val config = QpidBrokerConnectionInfo.loadInfo("test")
+  lazy val config = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
   def getFactory = (new QpidBrokerConnectionFactory(config), () => {})
 }
 

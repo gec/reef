@@ -1,7 +1,7 @@
 package org.totalgrid.reef.api.sapi.impl
 
 import org.totalgrid.reef.api.japi.TypeDescriptor
-import org.totalgrid.reef.api.sapi.{ ServiceListOnMap, ServiceInfo, ServiceList }
+import org.totalgrid.reef.api.sapi.types.{ ServiceListOnMap, ServiceInfo, ServiceList }
 
 object ReefServiceMap {
   val servicemap: ServiceList.ServiceMap = Map(

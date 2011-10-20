@@ -18,13 +18,12 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.sapi.{ ConfigReader, BuildEnv }
+import org.totalgrid.reef.api.sapi.config.ConfigReader
+import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
 
 object ServiceOptions {
 
-  def loadInfo(env: String): ServiceOptions = get(BuildEnv.cfgFileReader("services", env))
-
-  def loadInfo(): ServiceOptions = loadInfo(BuildEnv.environment)
+  def loadInfo(fileName: String): ServiceOptions = get(new FileConfigReader(fileName))
 
   def get(cr: ConfigReader): ServiceOptions = {
     val metrics = cr.getBoolean("org.totalgrid.reef.services.metrics", true)

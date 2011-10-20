@@ -36,7 +36,7 @@ import org.totalgrid.reef.api.japi.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 class CommunicationEndpointConnectionService(protected val model: CommunicationEndpointConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]

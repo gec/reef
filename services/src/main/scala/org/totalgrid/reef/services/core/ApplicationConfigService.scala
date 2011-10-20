@@ -33,7 +33,7 @@ import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 import scala.collection.JavaConversions._
 

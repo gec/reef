@@ -27,10 +27,11 @@ import org.junit.runner.RunWith
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.{ Executors, Cancelable }
 import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.sapi.{ ServiceList, AnyNodeDestination }
+import org.totalgrid.reef.api.sapi.types.ServiceList
 import org.totalgrid.reef.api.sapi.example.{ SomeInteger, SomeIntegerIncrementService, SomeIntegerTypeDescriptor }
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.{ SuccessResponse, Response }
+import org.totalgrid.reef.api.japi.client.AnyNodeDestination
 
 @RunWith(classOf[JUnitRunner])
 class QpidClientToService extends ConnectionToServiceTest with QpidBrokerTestFixture

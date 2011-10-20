@@ -34,7 +34,7 @@ import org.totalgrid.reef.services.ProtoRoutingKeys
 
 // implicit proto properties
 import SquerylModel._
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 class AlarmService(protected val model: AlarmServiceModel)
     extends SyncModeledServiceBase[Alarm, AlarmModel, AlarmServiceModel]

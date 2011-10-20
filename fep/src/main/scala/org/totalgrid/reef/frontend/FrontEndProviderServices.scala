@@ -29,7 +29,7 @@ import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.sapi.client.Promise
-import org.totalgrid.reef.api.sapi.AddressableDestination
+import org.totalgrid.reef.api.japi.client.AddressableDestination
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client, SubscriptionResult }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase

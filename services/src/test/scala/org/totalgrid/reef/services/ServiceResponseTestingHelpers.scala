@@ -20,7 +20,6 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.test.BlockingQueue
 
-import org.totalgrid.reef.api.sapi._
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Event }
 import org.totalgrid.reef.api.sapi.client.rest.Client
 import org.totalgrid.reef.api.japi.TypeDescriptor

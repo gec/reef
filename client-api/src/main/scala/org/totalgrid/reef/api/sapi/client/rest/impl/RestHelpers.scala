@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.sapi
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -19,7 +19,7 @@ package org.totalgrid.reef.api.sapi
  * the License.
  */
 
-import client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.api.japi.{ Envelope, TypeDescriptor }
 import org.totalgrid.reef.api.japi.Envelope.{ ServiceResponse, ServiceRequest, ServiceNotification, Event }
 import collection.JavaConversions._

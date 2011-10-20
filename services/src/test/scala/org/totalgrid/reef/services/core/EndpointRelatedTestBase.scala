@@ -62,6 +62,7 @@ import org.totalgrid.reef.api.proto.Events
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.api.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.api.proto.Commands.UserCommandRequest
+import org.totalgrid.reef.api.japi.client.AddressableDestination
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
 

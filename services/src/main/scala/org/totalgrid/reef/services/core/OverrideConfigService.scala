@@ -33,7 +33,7 @@ import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 class OverrideConfigService(protected val model: OverrideConfigServiceModel)
     extends SyncModeledServiceBase[MeasOverride, OverrideConfig, OverrideConfigServiceModel]

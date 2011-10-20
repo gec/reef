@@ -181,7 +181,7 @@ package org.totalgrid.reef.api.sapi.impl
 #{scala_imports}
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 
 object OptionalProtos {
 

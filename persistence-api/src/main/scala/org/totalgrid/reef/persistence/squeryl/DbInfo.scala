@@ -18,14 +18,13 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.api.sapi.BuildEnv
+import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
 
 object DbInfo {
 
-  def loadInfo(env: String): DbInfo = SqlProperties.get(BuildEnv.cfgFileReader("sql", env))
+  def loadInfo(fileName: String): DbInfo = SqlProperties.get(new FileConfigReader(fileName))
 
-  def loadInfo(): DbInfo = loadInfo(BuildEnv.environment)
 }
 
 case class DbInfo(dbType: String, host: String, port: Int, database: String, user: String, password: String,
-  slowQueryTimeMilli: Long) extends BuildEnv.ConnInfo
+  slowQueryTimeMilli: Long)

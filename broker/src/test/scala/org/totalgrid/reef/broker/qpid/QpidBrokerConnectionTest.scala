@@ -29,7 +29,7 @@ import net.agileautomata.commons.testing._
 @RunWith(classOf[JUnitRunner])
 class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
-  val defaults = QpidBrokerConnectionInfo.loadInfo("test")
+  val defaults = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
   val defaultTimeout = 5000
   def fixture(config: QpidBrokerConnectionInfo)(test: BrokerConnection => Unit): Unit = {
     val factory = new QpidBrokerConnectionFactory(config)

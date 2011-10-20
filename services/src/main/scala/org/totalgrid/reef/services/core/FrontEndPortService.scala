@@ -35,7 +35,7 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val model: FrontEndPortServiceModel)

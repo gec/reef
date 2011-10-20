@@ -24,10 +24,10 @@ import org.totalgrid.reef.persistence.squeryl.{ ExampleModelTest, DbInfo, Exclus
 
 @RunWith(classOf[JUnitRunner])
 class PostgreSqlExclusiveAccessTest extends ExclusiveAccessTest {
-  def getDbInfo = DbInfo.loadInfo("test").copy(dbType = "postgresql")
+  def getDbInfo = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg").copy(dbType = "postgresql")
 }
 
 @RunWith(classOf[JUnitRunner])
 class PostgreSqlExampleModelTest extends ExampleModelTest {
-  def getDbInfo = DbInfo.loadInfo("test").copy(dbType = "postgresql")
+  def getDbInfo = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg").copy(dbType = "postgresql")
 }

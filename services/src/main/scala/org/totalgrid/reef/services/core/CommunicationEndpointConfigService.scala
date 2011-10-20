@@ -23,7 +23,7 @@ import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Ent
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.sapi.Optional._
+import org.totalgrid.reef.api.sapi.types.Optional._
 import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
 import scala.collection.JavaConversions._

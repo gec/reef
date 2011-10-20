@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 class QpidBrokerConnectionInfoTest extends FunSuite with ShouldMatchers {
 
   test("Default Broker Info is populated") {
-    val b = QpidBrokerConnectionInfo.loadInfo("development")
+    val b = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
     b.host should equal("127.0.0.1")
     b.port should equal(5672)
   }

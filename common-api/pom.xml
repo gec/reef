@@ -11,6 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>reef-common-api</artifactId>
+	<packaging>bundle</packaging>
 
     <build>
         <plugins>
@@ -39,7 +40,11 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Common Api</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.api.*</Export-Package>
+                        <Export-Package>
+							org.totalgrid.reef.api.japi.*,
+							org.totalgrid.reef.api.sapi.config.*,
+							org.totalgrid.reef.api.sapi.types.*
+						</Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>

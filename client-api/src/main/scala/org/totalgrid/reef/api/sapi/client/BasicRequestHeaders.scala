@@ -19,8 +19,7 @@ package org.totalgrid.reef.api.sapi.client
  * the License.
  */
 import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.api.japi.client.{ Routable, RequestHeaders }
-import org.totalgrid.reef.api.sapi.{ AnyNodeDestination, AddressableDestination }
+import org.totalgrid.reef.api.japi.client.{ Routable, RequestHeaders, AnyNodeDestination, AddressableDestination }
 import org.totalgrid.reef.util.JavaInterop.notNull
 
 object BasicRequestHeaders {

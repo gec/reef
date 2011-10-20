@@ -18,8 +18,8 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.api.sapi._
 
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.api.japi.{ TypeDescriptor, Envelope }
@@ -27,11 +27,11 @@ import org.totalgrid.reef.api.japi.Envelope.Verb
 import org.totalgrid.reef.api.proto.Auth.{ AuthToken, Agent }
 import org.totalgrid.reef.api.sapi.client.rest._
 import org.totalgrid.reef.api.sapi.client._
-import org.totalgrid.reef.api.sapi._
-import org.totalgrid.reef.api.sapi.service._
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.japi.client.Routable
+import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, ServiceList }
+import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncService }
 
 final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, executor: Executor, timeoutms: Long) extends Connection with Logging {
 

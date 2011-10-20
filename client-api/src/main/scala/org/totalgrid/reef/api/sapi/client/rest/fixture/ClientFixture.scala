@@ -45,7 +45,7 @@ class MemoryBrokerFixture extends BrokerFixture {
 
 object ConnectionFixture {
 
-  val qpidDefault = QpidBrokerConnectionInfo.loadInfo("test")
+  val qpidDefault = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
 
   def qpid(config: QpidBrokerConnectionInfo = qpidDefault)(test: Connection => Unit): Unit = {
     using(new QpidBrokerFixture(config))(test)

@@ -37,7 +37,7 @@ import org.totalgrid.reef.metrics.MetricsSink
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
   override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
   }
 
   class ExchangeCheckingServiceContainer extends ServiceContainer {
@@ -58,7 +58,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val userSettings = new UserSettings("system", "system")
       val nodeSettings = new NodeSettings("node1", "network", "location")
-      val serviceOptions = ServiceOptions.loadInfo
+      val serviceOptions = ServiceOptions.loadInfo("../org.totalgrid.reef.test.cfg")
 
       val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore

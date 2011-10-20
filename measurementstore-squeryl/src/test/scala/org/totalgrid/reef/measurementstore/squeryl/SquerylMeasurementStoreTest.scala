@@ -35,7 +35,7 @@ import postgresql.PostgresqlReset
 class SqlMeasTest extends MeasurementStoreTest {
   def connect() = {
 
-    val conn_info = DbInfo.loadInfo("test")
+    val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
     val connection = DbConnector.connect(conn_info)
     PostgresqlReset.reset()
     transaction { SqlMeasurementStoreSchema.reset() }
@@ -50,7 +50,7 @@ class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTest
   def connect() = {
     import org.totalgrid.reef.persistence.squeryl._
     import org.totalgrid.reef.persistence.LockStepConnection
-    val conn_info = DbInfo.loadInfo("test")
+    val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
     val connection = DbConnector.connect(conn_info)
     import org.squeryl.PrimitiveTypeMode._
     PostgresqlReset.reset()
@@ -59,5 +59,5 @@ class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTest
     store
   }
   lazy val cm = connect()
-  def fname = DbInfo.loadInfo("test").dbType + ".plt"
+  def fname = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg").dbType + ".plt"
 }

@@ -20,12 +20,11 @@ package org.totalgrid.reef.services
 
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.sapi.StatusCodes
 import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
+import org.totalgrid.reef.api.japi.{ StatusCodes, Envelope }
 
 /// the metrics collected on any single service request
 class ServiceVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {

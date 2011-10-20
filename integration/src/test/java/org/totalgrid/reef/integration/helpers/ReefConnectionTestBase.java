@@ -90,7 +90,7 @@ public class ReefConnectionTestBase
 
         try
         {
-            FileInputStream fis = new FileInputStream( "../org.totalgrid.reef.amqp.cfg" );
+            FileInputStream fis = new FileInputStream( "../org.totalgrid.reef.test.cfg" );
             props.load( fis );
             fis.close();
         }
