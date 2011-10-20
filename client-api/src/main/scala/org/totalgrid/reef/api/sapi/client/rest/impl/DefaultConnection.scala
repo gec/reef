@@ -29,7 +29,7 @@ import org.totalgrid.reef.api.sapi.client.rest._
 import org.totalgrid.reef.api.sapi.client._
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.japi.client.Routable
+import org.totalgrid.reef.api.japi.client.{ AnyNodeDestination, Routable }
 import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, ServiceList }
 import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncService }
 
@@ -70,7 +70,8 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, info.descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
-        conn.publish(info.descriptor.id, headers.getDestination.getKey, request.toByteArray, replyTo)
+        val destination = headers.getDestination.getOrElse(AnyNodeDestination)
+        conn.publish(info.descriptor.id, destination.getKey, request.toByteArray, replyTo)
       } catch {
         case ex: Exception =>
           correlator.fail(uuid, FailureResponse(Envelope.Status.BUS_UNAVAILABLE, ex.getMessage))

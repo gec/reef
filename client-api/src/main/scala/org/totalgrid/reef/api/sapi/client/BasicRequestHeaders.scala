@@ -66,8 +66,7 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   /* --- Specific getters/setters not part of RequestHeaders --- */
 
-  def getDestination: Routable =
-    getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key)).getOrElse(AnyNodeDestination)
+  def getDestination = getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key))
 
   /* --- Helpers --- */
 
@@ -95,7 +94,7 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
   /**
    * Merge the headers together, if a key is already present in this headers, the value from the other header is discarded
    */
-  def merge(rhs: BasicRequestHeaders) = new BasicRequestHeaders(headers.foldLeft(rhs.headers)((map, x) => map + x))
+  def merge(rhs: BasicRequestHeaders) = new BasicRequestHeaders(rhs.headers.foldLeft(headers)((map, x) => map + x))
 
   def subQueue: Option[String] = getString(BasicRequestHeaders.subQueueName)
 
