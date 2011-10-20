@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import collection.immutable.Map
 import collection.immutable.Range.Inclusive
-import org.totalgrid.test.MockitoFunSuite
+import org.totalgrid.reef.test.MockitoFunSuite
 import com.weiglewilczek.slf4s.Logging
 
 @RunWith(classOf[JUnitRunner])

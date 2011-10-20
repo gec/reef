@@ -51,5 +51,4 @@ object Timing {
 
   def convertNanoToMilli[A](value: Long): Long = scala.math.floor(value / 1000000d).toLong
 
-
 }

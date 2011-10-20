@@ -16,24 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.util
+package org.totalgrid.reef.test
 
-import java.util.concurrent.{ LinkedBlockingDeque, TimeUnit, BlockingQueue => JBlockingQueue }
-import java.lang.IllegalStateException
+import org.mockito.stubbing.Answer
+import org.mockito.invocation.InvocationOnMock
 
-object BlockingQueue {
-  def empty[A] = new BlockingQueue[A](new LinkedBlockingDeque[A])
-}
-
-class BlockingQueue[A](queue: JBlockingQueue[A]) {
-
-  def push(value: A): Unit = queue.put(value)
-
-  def pop(timeout: Long): A = Option(queue.poll(timeout, TimeUnit.MILLISECONDS)) match {
-    case Some(x) => x
-    case None => throw new IllegalStateException("No value in queue within " + timeout + " milliseconds")
-  }
-
-  def size: Int = queue.size
-
+/**
+ * makes our mocked class fail any mocked call we didnt expect
+ */
+class MockitoStubbedOnly[A] extends Answer[A] {
+  override def answer(p1: InvocationOnMock) = throw new RuntimeException("Un-Stubbed function: " + p1.toString)
 }

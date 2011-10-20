@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
-import org.totalgrid.test.MockitoStubbedOnly
+import org.totalgrid.reef.test.MockitoStubbedOnly
 
 import FrontEndTestHelpers._
 import org.totalgrid.reef.api.protocol.api.mock.{ NullProtocol, RecordingProtocol }

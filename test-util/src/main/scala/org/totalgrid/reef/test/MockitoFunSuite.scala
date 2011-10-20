@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.test
+package org.totalgrid.reef.test
 
 /**
  * Copyright 2011 Green Energy Corp.

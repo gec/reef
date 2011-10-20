@@ -38,7 +38,6 @@ object Conversion {
   }
 }
 
-
 object Unappliers {
   object Int {
     def unapply(s: String): Option[Int] = try {
