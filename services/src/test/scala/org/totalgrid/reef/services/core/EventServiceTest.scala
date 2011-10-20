@@ -28,7 +28,6 @@ import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import SyncServiceShims._
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.api.japi.{ BadRequestException, ReefServiceException }
 
@@ -36,21 +35,24 @@ import org.totalgrid.reef.api.japi.{ BadRequestException, ReefServiceException }
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
   class Fixture {
-    val factories = new ModelFactories(new ServiceDependencies)
-    val eventService = new EventService(factories.events)
-    val eventConfigService = new EventConfigService(factories.eventConfig)
-    val alarmService = new AlarmService(factories.alarms)
+    val dependencies = new ServiceDependencies
+    val factories = new ModelFactories(dependencies)
     val headers = BasicRequestHeaders.empty.setUserName("user")
+    val contextSource = new MockRequestContextSource(dependencies, headers)
+
+    val eventService = new SyncService(new EventService(factories.events), contextSource)
+    val eventConfigService = new SyncService(new EventConfigService(factories.eventConfig), contextSource)
+    val alarmService = new SyncService(new AlarmService(factories.alarms), contextSource)
 
     def publishEvent(evt: EventProto): EventProto = {
-      eventService.put(evt, headers).expectOne
+      eventService.put(evt).expectOne
     }
     def createConfig(evt: EventConfig): EventConfig = {
-      eventConfigService.put(evt, headers).expectOne
+      eventConfigService.put(evt).expectOne
     }
 
     def updateAlarm(alarm: Alarm): Alarm = {
-      val ret = alarmService.put(alarm, headers).expectOne
+      val ret = alarmService.put(alarm).expectOne
       ret.state should equal(alarm.state)
       ret
     }

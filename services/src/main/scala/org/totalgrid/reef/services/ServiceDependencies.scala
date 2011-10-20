@@ -23,15 +23,44 @@ import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.japi.Envelope.Event
-import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.api.sapi.client.rest.{ Connection, SubscriptionHandler }
+import org.totalgrid.reef.api.japi.Envelope.Event
+import org.totalgrid.reef.api.sapi.service.AsyncService
+import net.agileautomata.executor4s.{ Executor => Executor4S }
+import org.totalgrid.reef.api.japi.client.Routable
+import org.totalgrid.reef.api.sapi.impl.ReefServicesList
 
-case class ServiceDependencies(pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
-  cm: MeasurementStore = new InMemoryMeasurementStore,
-  eventSink: SystemEventSink = new SilentEventSink,
-  coordinatorExecutor: Executor = new InstantExecutor)
+// TODO: move MockConnection down to test classes that use it
+class MockConnection extends Connection {
+  def declareEventExchange(klass: Class[_]) = null
+
+  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
+
+  def bindService[A](service: AsyncService[A], dispatcher: Executor4S, destination: Routable, competing: Boolean) = null
+
+  def login(authToken: String) = null
+
+  def login(userName: String, password: String) = null
+
+  def publishEvent[A](typ: Event, value: A, key: String) {}
+}
+
+case class ServiceDependencies(
+    connection: Connection = new MockConnection,
+    pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
+    cm: MeasurementStore = new InMemoryMeasurementStore,
+    eventSink: SystemEventSink = new SilentEventSink,
+    coordinatorExecutor: Executor = new InstantExecutor,
+    authToken: String = "") {
+
+  // TODO: is this the best place to define event exchanges?
+  def defineEventExchanges() {
+    ReefServicesList.getServicesList.foreach { serviceInfo =>
+      connection.declareEventExchange(serviceInfo.descriptor.getKlass)
+    }
+  }
+}
 
 class HeadersRequestContext(
   extraHeaders: BasicRequestHeaders = BasicRequestHeaders.empty,
@@ -58,7 +87,7 @@ class DependenciesRequestContext(dependencies: ServiceDependencies) extends Requ
 
   val eventSink = dependencies.eventSink
 
-  def client = throw new IllegalArgumentException("")
+  def client = dependencies.connection.login(dependencies.authToken)
 }
 
 class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {

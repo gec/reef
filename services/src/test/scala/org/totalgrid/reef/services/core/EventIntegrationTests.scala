@@ -41,7 +41,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: Connection) {
-    val deps = ServiceDependencies(amqp)
+    val deps = ServiceDependencies(amqp, amqp)
     val env = BasicRequestHeaders.empty.setUserName("user")
     val contextSource = new MockRequestContextSource(deps, env)
 

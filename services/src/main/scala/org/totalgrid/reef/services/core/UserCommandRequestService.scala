@@ -29,6 +29,8 @@ import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, UserCommandRequest
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.api.sapi.{ AddressableDestination }
+import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.japi.client.Routable
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)
@@ -64,26 +66,29 @@ class UserCommandRequestService(
           }
         case None => throw new BadRequestException("Command has no endpoint set: " + request)
       }
-      context.client.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
-        contextSource.transaction { context =>
-          model.findRecord(context, request) match {
-            case Some(record) =>
-              val updatedStatus = if (response.success) {
-                response.list.head.getStatus
-              } else {
-                logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
-                CommandStatus.UNDEFINED
-              }
-              model.update(context, record.copy(status = updatedStatus.getNumber), record)
-            case None =>
-              logger.warn { "Couldn't find command request record to update" }
-          }
-        }
-        callback(response)
-      }
+      requestCommand(context.client, request, address, contextSource, callback)
     }
   }
 
+  private def requestCommand(client: Client, request: UserCommandRequest, address: Routable, contextSource: RequestContextSource, callback: Response[UserCommandRequest] => Unit) {
+    client.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
+      contextSource.transaction { context =>
+        model.findRecord(context, request) match {
+          case Some(record) =>
+            val updatedStatus = if (response.success) {
+              response.list.head.getStatus
+            } else {
+              logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
+              CommandStatus.UNDEFINED
+            }
+            model.update(context, record.copy(status = updatedStatus.getNumber), record)
+          case None =>
+            logger.warn { "Couldn't find command request record to update" }
+        }
+      }
+      callback(response)
+    }
+  }
 }
 
 trait UserCommandRequestValidation extends HasCreate with HasUpdate {

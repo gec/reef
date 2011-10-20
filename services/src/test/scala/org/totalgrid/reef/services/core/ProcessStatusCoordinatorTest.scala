@@ -60,7 +60,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
   class ProcessStatusFixture {
 
     val pubs = new CountingSubscriptionHandler
-    val deps = ServiceDependencies(pubs)
+    val deps = ServiceDependencies(pubs = pubs)
     val headers = BasicRequestHeaders.empty.setUserName("user1")
     val contextSource = new MockRequestContextSource(deps, headers)
 
@@ -154,16 +154,16 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     ss.getOnline should equal(true)
     val failsAt = ss.getTime
 
-    fix.eventSink.waitForNEvents(1)
+    fix.eventSink.waitForNEvents(2)
     fix.eventSink.lastEvent should equal(Some(Envelope.Event.ADDED))
 
     // hasn't timeout out yet, no failure, no new events
     fix.coord.checkTimeouts(failsAt - 1)
-    fix.eventSink.waitForNEvents(1)
+    fix.eventSink.waitForNEvents(2)
 
     // check again, just after the timeout
     fix.coord.checkTimeouts(failsAt + 10)
-    fix.eventSink.waitForNEvents(2)
+    fix.eventSink.waitForNEvents(3)
     fix.eventSink.lastEvent should equal(Some(Envelope.Event.MODIFIED))
 
     val ss2 = fix.service.get(fix.namedProto.build).expectOne()

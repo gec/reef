@@ -60,6 +60,10 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 }
 
 class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders: BasicRequestHeaders) extends RequestContextSource {
+
+  // just define all of the event exchanges at the beginning of the test
+  dependencies.defineEventExchanges
+
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
     context.modifyHeaders(_.merge(commonHeaders))

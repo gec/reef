@@ -44,9 +44,8 @@ class ServiceProviders(
     coordinatorExecutor: Executor,
     metricsPublisher: IMetricsSink) {
 
-  private val pubs = connection
   private val eventPublisher = new LocalSystemEventSink
-  private val dependencies = ServiceDependencies(pubs, cm, eventPublisher, coordinatorExecutor)
+  private val dependencies = ServiceDependencies(connection, connection, cm, eventPublisher, coordinatorExecutor)
 
   private val contextSource = new DependenciesSource(dependencies)
 

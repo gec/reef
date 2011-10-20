@@ -18,9 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.util.BlockingQueue
-
-import org.totalgrid.reef.util.SyncVar
+import org.totalgrid.reef.test.BlockingQueue
 
 import org.totalgrid.reef.api.sapi._
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Event }
@@ -48,6 +46,8 @@ object ServiceResponseTestingHelpers {
   def getSubscriptionQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
     val sub = amqp.subscribe(descriptor).get
+
+    sub.start(func)
 
     BasicRequestHeaders.empty.setSubscribeQueue(sub.id)
 

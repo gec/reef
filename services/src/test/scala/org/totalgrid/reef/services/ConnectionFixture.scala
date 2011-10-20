@@ -20,12 +20,13 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
-import net.agileautomata.executor4s.{ Executors, ExecutorService }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import net.agileautomata.executor4s.testing.MockFuture
+import net.agileautomata.executor4s._
 
 object ConnectionFixture {
-  def mock(exe: ExecutorService = Executors.newScheduledSingleThread())(test: Connection => Unit): Unit = {
+  def mock(exe: ExecutorService = new InstantExecutorService4S())(test: Connection => Unit): Unit = {
     val broker = new MemoryBrokerConnectionFactory(exe)
 
     try {
@@ -37,4 +38,23 @@ object ConnectionFixture {
       exe.shutdown()
     }
   }
+}
+
+// TODO: move instant exeuctor into executor4s
+class InstantExecutor4S extends Executor {
+  def attempt[A](fun: => A) = new MockFuture(Some(Success(fun)))
+
+  def delay(interval: TimeInterval)(fun: => Unit) = {
+    new Cancelable {
+      def cancel() {}
+    }
+  }
+
+  def execute(fun: => Unit) = fun
+}
+
+class InstantExecutorService4S extends InstantExecutor4S with ExecutorService {
+  def shutdown() {}
+
+  def terminate(interval: TimeInterval) = false
 }

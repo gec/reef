@@ -28,6 +28,7 @@ import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
 import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.ApplicationConfigBuilders
+import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigService, AuthTokenService, FrontEndProcessorService }
 
 object ServiceBootstrap {
 
@@ -45,14 +46,16 @@ object ServiceBootstrap {
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val pubs = connection
-    val deps = ServiceDependencies(pubs)
+    val dependencies = ServiceDependencies(connection, connection)
+
+    // define the events exchanges before "logging in" which will generate some events
+    dependencies.defineEventExchanges()
     val headers = BasicRequestHeaders.empty.setUserName(systemUser.getUserName)
 
-    val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(deps), headers)
-    val modelFac = new core.ModelFactories(deps, contextSource)
-    val applicationConfigService = new core.ApplicationConfigService(modelFac.appConfig)
-    val authService = new core.AuthTokenService(modelFac.authTokens)
+    val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(dependencies), headers)
+    val modelFac = new ModelFactories(dependencies, contextSource)
+    val applicationConfigService = new ApplicationConfigService(modelFac.appConfig)
+    val authService = new AuthTokenService(modelFac.authTokens)
 
     val login = buildLogin(systemUser)
     val authToken = authService.put(contextSource, login).expectOne
@@ -64,7 +67,7 @@ object ServiceBootstrap {
     val msg = FrontEndProcessor.newBuilder
     msg.setAppConfig(appConfig)
     msg.addProtocols("null")
-    val fepService = new core.FrontEndProcessorService(modelFac.fep)
+    val fepService = new FrontEndProcessorService(modelFac.fep)
     fepService.put(contextSource, msg.build)
 
     (appConfig, authToken.getToken)

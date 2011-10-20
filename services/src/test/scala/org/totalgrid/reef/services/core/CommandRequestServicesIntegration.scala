@@ -45,13 +45,9 @@ import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandRequest, Us
 import org.totalgrid.reef.api.sapi.impl.Descriptors
 import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
-import org.totalgrid.reef.services.ConnectionFixture
-import org.totalgrid.reef.executor.mock.InstantExecutor
-
 import CommandAccess._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.api.sapi.{ AddressableDestination }
 import org.totalgrid.reef.api.japi.Envelope
 
 import org.totalgrid.reef.api.sapi.service.SyncServiceBase
@@ -64,17 +60,13 @@ class CommandRequestServicesIntegration
     extends EndpointRelatedTestBase {
 
   import ServiceResponseTestingHelpers._
-  val env = BasicRequestHeaders.empty.setUserName("user01")
-
-  implicit val contextSource = new MockRequestContextSource(new ServiceDependencies, env)
-  import org.totalgrid.reef.services.core.CustomServiceShims._
 
   class CommandFixture(amqp: Connection) extends CoordinatorFixture(amqp) {
 
-    val command = new CommandService(modelFac.cmds)
-    val commandRequest = new UserCommandRequestService(modelFac.userRequests)
-    val endpointService = new CommunicationEndpointService(modelFac.endpoints)
-    val access = new CommandAccessService(modelFac.accesses)
+    val command = new SyncService(new CommandService(modelFac.cmds), contextSource)
+    val commandRequest = new SyncService(new UserCommandRequestService(modelFac.userRequests), contextSource)
+    val endpointService = new SyncService(new CommunicationEndpointService(modelFac.endpoints), contextSource)
+    val access = new SyncService(new CommandAccessService(modelFac.accesses), contextSource)
 
     def addFepAndMeasProc() {
       addFep("fep", List("benchmark"))
@@ -221,6 +213,8 @@ class CommandRequestServicesIntegration
 
       fixture.addCommands(List("cmd01"))
       fixture.addFepAndMeasProc()
+
+      // TODO: figure out "Unexpected request response" errors
 
       // Run multiple times, state should be reset
       testCommandSequence(fixture, 0)

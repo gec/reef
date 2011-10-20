@@ -48,16 +48,16 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
 
     val start = System.currentTimeMillis
 
-    val deps = ServiceDependencies(amqp)
+    val deps = ServiceDependencies(amqp, amqp)
     val headers = BasicRequestHeaders.empty.setUserName("user1")
 
     val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps)
 
-    val processStatusService = new ServiceMiddleware(contextSource, new ProcessStatusService(modelFac.procStatus))
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
 
-    val applicationConfigService = new ServiceMiddleware(contextSource, new ApplicationConfigService(modelFac.appConfig))
+    val applicationConfigService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
 
     val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
@@ -70,7 +70,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     val appConfig = registerInstance()
 
     /// use the appConfig information to setup the heartbeat publisher
-    val hbeatSink = { hbeat: StatusSnapshot => client.put(hbeat).await.expectOne }
+    val hbeatSink = { hbeat: StatusSnapshot => processStatusService.put(hbeat).expectOne }
 
     /// setup the subscription to the Snapshot service so we track the current status of the application
     subscribeSnapshotStatus()
@@ -79,14 +79,14 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
       val b = ApplicationConfig.newBuilder()
       b.setUserName("proc").setInstanceName("proc01").setNetwork("any").setLocation("farm1").addCapabilites("Processing")
       b.setHeartbeatCfg(HeartbeatConfig.newBuilder.setPeriodMs(100)) // override the default period
-      client.put(b.build).await.expectOne()
+      applicationConfigService.put(b.build).expectOne
     }
 
     private def subscribeSnapshotStatus() {
 
       val env = getSubscriptionQueue(client, Descriptors.statusSnapshot, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.value)) })
 
-      val config = client.get(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env).await.expectOne()
+      val config = processStatusService.get(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env).expectOne()
       // do some basic checks to make sure we got the correct initial state
       config.getInstanceName should equal(appConfig.getInstanceName)
       config.getOnline should equal(true)
