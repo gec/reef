@@ -25,8 +25,3 @@ case class AddressableDestination(key: String) extends Routable {
 case object AnyNodeDestination extends Routable {
   override def getKey = "request"
 }
-
-case object AllMessages extends Routable {
-  override def getKey = "#"
-}
-

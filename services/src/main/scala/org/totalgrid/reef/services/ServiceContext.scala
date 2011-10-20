@@ -24,7 +24,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.services.framework.ServerSideProcess
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.api.japi.client.AllMessages
+import org.totalgrid.reef.api.japi.client.AnyNodeDestination
 
 /**
  * sets up the "production" ServiceContainer for the service providers
@@ -40,7 +40,7 @@ class ServiceContext(connection: Connection, metrics: MetricsServiceWrapper, exe
     val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    connection.bindService(instrumentedEndpoint, executor, AllMessages, true)
+    connection.bindService(instrumentedEndpoint, executor, AnyNodeDestination, true)
     instrumentedEndpoint
   }
 }
