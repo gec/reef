@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.totalgrid.reef.api.japi.settings.AmqpSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
@@ -46,11 +47,6 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
 public class ReefConnectionTestBase
 {
     private final boolean autoLogon;
-
-    /**
-     * connector to the bus, restarted for every test connected for
-     */
-    protected final BrokerConnectionFactory factory = new QpidBrokerConnectionFactory( getConnectionInfo() );
 
     protected final ExecutorService exe = Executors.newScheduledThreadPool( 4 );
 
