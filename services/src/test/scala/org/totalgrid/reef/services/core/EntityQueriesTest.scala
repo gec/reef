@@ -33,8 +33,9 @@ import java.util.UUID
 class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
   import EntityQueryManager._
 
-  override def beforeEachInTransaction() {
-    seed
+  override def beforeAll() {
+    super.beforeAll
+    transaction { seed }
   }
 
   def seed {
