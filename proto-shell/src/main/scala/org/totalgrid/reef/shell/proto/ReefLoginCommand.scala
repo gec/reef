@@ -30,7 +30,8 @@ import org.totalgrid.reef.util.Cancelable
 
 import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServiceJavaShimWrapper
 import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to
@@ -89,7 +90,7 @@ class ReefLoginCommand extends ReefLoginCommandBase {
 
   def setupReefSession() = {
 
-    val connectionInfo = QpidBrokerConnectionInfo.loadInfo(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
+    val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
 
     val factory = new QpidBrokerConnectionFactory(connectionInfo)
     val broker = factory.connect

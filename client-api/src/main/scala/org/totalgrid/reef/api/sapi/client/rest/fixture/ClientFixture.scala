@@ -22,16 +22,18 @@ import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.BrokerConnectionFactory
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionFactory, QpidBrokerConnectionInfo }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 
 trait BrokerFixture {
   def factory: BrokerConnectionFactory
   def cleanup(): Unit = {}
 }
 
-class QpidBrokerFixture(config: QpidBrokerConnectionInfo) extends BrokerFixture {
+class QpidBrokerFixture(config: AmqpSettings) extends BrokerFixture {
   private val fac = new QpidBrokerConnectionFactory(config)
   def factory = fac
 }
@@ -45,9 +47,9 @@ class MemoryBrokerFixture extends BrokerFixture {
 
 object ConnectionFixture {
 
-  val qpidDefault = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
+  val qpidDefault = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
 
-  def qpid(config: QpidBrokerConnectionInfo = qpidDefault)(test: Connection => Unit): Unit = {
+  def qpid(config: AmqpSettings = qpidDefault)(test: Connection => Unit): Unit = {
     using(new QpidBrokerFixture(config))(test)
   }
 

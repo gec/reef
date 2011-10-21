@@ -16,12 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client;
+package org.totalgrid.reef.api.japi.settings;
 
 
 import java.util.Dictionary;
 
-import org.totalgrid.reef.api.japi.client.util.PropertyLoading;
+import org.totalgrid.reef.api.japi.settings.util.PropertyLoading;
 
 public class UserSettings
 {

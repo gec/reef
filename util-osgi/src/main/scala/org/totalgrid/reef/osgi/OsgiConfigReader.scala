@@ -37,12 +37,12 @@ class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader
     case None => throw new Exception("Unable to find ConfigurationAdmin service")
   }
 
-  private val props: Dictionary[String, String] = config.getProperties match {
-    case null => new Hashtable[String, String]
-    case x: Dictionary[_, _] => x.asInstanceOf[Dictionary[String, String]]
+  private val props: Dictionary[AnyRef, AnyRef] = Option(config.getProperties) match {
+    case None => new Hashtable[AnyRef, AnyRef]
+    case Some(x: Dictionary[AnyRef, AnyRef]) => x
   }
 
-  def getProp(key: String): Option[String] = Option(props.get(key))
+  def getProp(key: String): Option[String] = Option(props.get(key)).map(_.asInstanceOf[String])
   def getProperties = props
 }
 

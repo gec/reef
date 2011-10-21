@@ -19,13 +19,16 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.config.ConfigReader
-import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
+import org.totalgrid.reef.api.sapi.config.impl.PropertiesConfigReader
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 
 object ServiceOptions {
 
-  def loadInfo(fileName: String): ServiceOptions = get(new FileConfigReader(fileName))
+  def fromFile(file: String): ServiceOptions = {
+    fromConfig(new PropertiesConfigReader(PropertyReader.readFromFile(file)))
+  }
 
-  def get(cr: ConfigReader): ServiceOptions = {
+  def fromConfig(cr: ConfigReader): ServiceOptions = {
     val metrics = cr.getBoolean("org.totalgrid.reef.services.metrics", true)
     val metricsSplitByVerb = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", false)
     val metricsSplitByService = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByService", false)
@@ -36,24 +39,25 @@ object ServiceOptions {
 
     ServiceOptions(metrics, metricsSplitByVerb, metricsSplitByService /*, useAuth*/ , slowQueryThresholdMs, maxMeas, trimPeriod)
   }
-
 }
 
 case class ServiceOptions(
-  /// whether to instrument service requests at all
-  metrics: Boolean,
-  /// track verbs separately(false => 3 pts/service; true => 15 pts/service)
-  metricsSplitByVerb: Boolean,
-  /// track services separately (true => N verbs * M service; or N verbs * 1)  
-  metricsSplitByService: Boolean,
+    /// whether to instrument service requests at all
+    metrics: Boolean,
+    /// track verbs separately(false => 3 pts/service; true => 15 pts/service)
+    metricsSplitByVerb: Boolean,
+    /// track services separately (true => N verbs * M service; or N verbs * 1)  
+    metricsSplitByService: Boolean,
 
-  /// whether we are turning on "auth checking" for all services, only optional during transitory phase
-  // val auth: Boolean,
+    /// whether we are turning on "auth checking" for all services, only optional during transitory phase
+    // val auth: Boolean,
 
-  /// threshold for when a request took too long and should be logged
-  slowQueryThreshold: Long,
-  /// maximum # of measurements to allow in the history table
-  maxMeasurements: Long,
-  /// how often to clean excess measurements from history table
-  trimPeriodMinutes: Long)
+    /// threshold for when a request took too long and should be logged
+    slowQueryThreshold: Long,
+    /// maximum # of measurements to allow in the history table
+    maxMeasurements: Long,
+    /// how often to clean excess measurements from history table
+    trimPeriodMinutes: Long) {
+
+}
 

@@ -22,7 +22,9 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory }
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 
 trait BrokerTestFixture {
 
@@ -42,7 +44,7 @@ trait BrokerTestFixture {
 }
 
 trait QpidBrokerTestFixture extends BrokerTestFixture {
-  lazy val config = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
+  lazy val config = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
   def getFactory = (new QpidBrokerConnectionFactory(config), () => {})
 }
 

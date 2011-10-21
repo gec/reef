@@ -23,7 +23,7 @@ import org.totalgrid.reef.api.japi.client.rpc.impl.builders.ApplicationConfigBui
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import org.totalgrid.reef.api.sapi.client.rpc.ApplicationService
-import org.totalgrid.reef.api.japi.client.NodeSettings
+import org.totalgrid.reef.api.japi.settings.NodeSettings
 
 trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationService {
 

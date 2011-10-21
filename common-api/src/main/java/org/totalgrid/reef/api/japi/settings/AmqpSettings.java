@@ -16,18 +16,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client.impl;
+package org.totalgrid.reef.api.japi.settings;
 
-import java.util.Properties;
+import java.io.IOException;
+import java.util.Dictionary;
 
-import org.totalgrid.reef.api.japi.client.ConnectionSettings;
-import org.totalgrid.reef.api.japi.client.util.PropertyLoading;
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo;
+import org.totalgrid.reef.api.japi.settings.util.PropertyLoading;
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
 
 /**
  * Settings class that defines properties for an AMQP connection
  */
-public class AMQPConnectionSettingImpl implements ConnectionSettings
+public class AmqpSettings
 {
     private final String host;
     private final int port;
@@ -38,10 +38,23 @@ public class AMQPConnectionSettingImpl implements ConnectionSettings
     private final boolean ssl;
     private final String trustStore;
     private final String trustStorePassword;
+    private final String keyStore;
+    private final String keyStorePassword;
 
-    public AMQPConnectionSettingImpl( String host, int port, String user, String password, String virtualHost )
+    /**
+     * non-ssl overload
+     */
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost )
     {
-        this( host, port, user, password, virtualHost, false, null, null );
+        this( host, port, user, password, virtualHost, false, null, null, null, null );
+    }
+
+    /**
+     * ssl overload
+     */
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost, String trustStore, String trustStorePassword )
+    {
+        this( host, port, user, password, virtualHost, true, trustStore, trustStorePassword, null, null );
     }
 
     /**
@@ -54,8 +67,8 @@ public class AMQPConnectionSettingImpl implements ConnectionSettings
      * @param trustStore  Path to trustStore file (trust-store.jks)
      * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
      */
-    public AMQPConnectionSettingImpl( String host, int port, String user, String password, String virtualHost, boolean ssl, String trustStore,
-        String trustStorePassword )
+    private AmqpSettings( String host, int port, String user, String password, String virtualHost, Boolean ssl, String trustStore,
+        String trustStorePassword, String keyStore, String keyStorePassword )
     {
         this.host = host;
         this.port = port;
@@ -65,6 +78,8 @@ public class AMQPConnectionSettingImpl implements ConnectionSettings
         this.ssl = ssl;
         this.trustStore = trustStore;
         this.trustStorePassword = trustStorePassword;
+        this.keyStore = keyStore;
+        this.keyStorePassword = keyStorePassword;
     }
 
     /**
@@ -89,30 +104,23 @@ public class AMQPConnectionSettingImpl implements ConnectionSettings
      * @param props properties object loaded with appropriate org.totalgrid.reef.amqp settings
      * @throws IllegalArgumentException if needed entries are missing
      */
-    public AMQPConnectionSettingImpl( Properties props ) throws IllegalArgumentException
+    public AmqpSettings( Dictionary<Object, Object> props ) throws IllegalArgumentException
     {
         host = PropertyLoading.getString( "org.totalgrid.reef.amqp.host", props );
         port = PropertyLoading.getInt( "org.totalgrid.reef.amqp.port", props );
         user = PropertyLoading.getString( "org.totalgrid.reef.amqp.user", props );
         password = PropertyLoading.getString( "org.totalgrid.reef.amqp.password", props );
         virtualHost = PropertyLoading.getString( "org.totalgrid.reef.amqp.virtualHost", props );
-        ssl = PropertyLoading.getBoolean( "org.totalgrid.reef.amqp.ssl", props );
-        if ( ssl )
-        {
-            trustStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStore", props );
-            trustStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStorePassword", props );
-        }
-        else
-        {
-            trustStore = "";
-            trustStorePassword = "";
-        }
+        ssl = PropertyLoading.getBoolean( "org.totalgrid.reef.amqp.ssl", props, false );
+        trustStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStore", props, "" );
+        trustStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStorePassword", props, "" );
+        keyStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.keyStore", props, "" );
+        keyStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.keyStorePassword", props, "" );
     }
 
-    public QpidBrokerConnectionInfo asInfo()
+    public AmqpSettings( String file ) throws IllegalArgumentException, IOException
     {
-        // TODO: standardize qpid config information into a single java class
-        return new QpidBrokerConnectionInfo( host, port, user, password, virtualHost, ssl, trustStore, trustStorePassword, "", "" );
+        this( PropertyReader.readFromFile( file ) );
     }
 
     @Override
@@ -184,6 +192,22 @@ public class AMQPConnectionSettingImpl implements ConnectionSettings
     public String getTrustStorePassword()
     {
         return trustStorePassword;
+    }
+
+    /**
+     * @return path of key store file
+     */
+    public String getKeyStore()
+    {
+        return keyStore;
+    }
+
+    /**
+     * @return password for key store password
+     */
+    public String getKeyStorePassword()
+    {
+        return keyStorePassword;
     }
 
 }

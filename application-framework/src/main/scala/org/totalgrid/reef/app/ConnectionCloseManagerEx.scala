@@ -22,14 +22,15 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.{ Cancelable => UCancelable }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionFactory, QpidBrokerConnectionInfo }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.executor.Lifecycle
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
 
 /**
  * handles the connection to an amqp broker, passing the valid and created Connection to the
  * applicationCreator function
  */
-class ConnectionCloseManagerEx(amqpSettings: QpidBrokerConnectionInfo)
+class ConnectionCloseManagerEx(amqpSettings: AmqpSettings)
     extends BrokerConnectionListener
     with Lifecycle
     with Logging {

@@ -20,37 +20,36 @@ package org.totalgrid.reef.broker.qpid
 
 import org.totalgrid.reef.broker._
 import org.apache.qpid.transport.Connection
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
 
 object QpidBrokerConnectionFactory {
 
-  def loadssl(config: QpidBrokerConnectionInfo) {
-    if (config.ssl) {
-      if (config.trustStore == null || config.trustStore == "") {
-        throw new IllegalArgumentException("ssl is enabled, trustStore must be not null and not empty: " + config.trustStore)
+  def loadssl(config: AmqpSettings) {
+    if (config.getSsl) {
+      if (config.getTrustStore == null || config.getTrustStore == "") {
+        throw new IllegalArgumentException("ssl is enabled, trustStore must be not null and not empty")
       }
-      if (config.trustStorePassword == null || config.trustStorePassword == "") {
+      if (config.getTrustStorePassword == null || config.getTrustStorePassword == "") {
         throw new IllegalArgumentException("ssl is enabled, trustStorePassword must be not null and not empty")
       }
 
-      System.setProperty("javax.net.ssl.trustStore", config.trustStore)
-      System.setProperty("javax.net.ssl.trustStorePassword", config.trustStorePassword)
+      System.setProperty("javax.net.ssl.trustStore", config.getTrustStore)
+      System.setProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword)
 
-      System.setProperty("javax.net.ssl.keyStore", if (config.keyStore == "") config.trustStore else config.keyStore)
-      System.setProperty("javax.net.ssl.keyStorePassword", if (config.keyStore == "") config.trustStorePassword else config.keyStorePassword)
+      System.setProperty("javax.net.ssl.keyStore", if (config.getKeyStore == "") config.getTrustStore else config.getKeyStore)
+      System.setProperty("javax.net.ssl.keyStorePassword", if (config.getKeyStore == "") config.getTrustStorePassword else config.getKeyStorePassword)
     }
   }
 
 }
 
-class QpidBrokerConnectionFactory(config: QpidBrokerConnectionInfo) extends BrokerConnectionFactory {
-
-  override def toString() = config.toString
+class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnectionFactory {
 
   def connect: BrokerConnection = {
     QpidBrokerConnectionFactory.loadssl(config)
     val conn = new Connection
     val broker = new QpidBrokerConnection(conn)
-    conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, config.ssl)
+    conn.connect(config.getHost, config.getPort, config.getVirtualHost, config.getUser, config.getPassword, config.getSsl)
     broker
   }
 

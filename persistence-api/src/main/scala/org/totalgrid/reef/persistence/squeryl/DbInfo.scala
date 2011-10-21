@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
+import org.totalgrid.reef.api.sapi.config.impl.PropertiesConfigReader
 
 object DbInfo {
 
-  def loadInfo(fileName: String): DbInfo = SqlProperties.get(new FileConfigReader(fileName))
+  def loadInfo(fileName: String): DbInfo = SqlProperties.get(new PropertiesConfigReader(fileName))
 
 }
 

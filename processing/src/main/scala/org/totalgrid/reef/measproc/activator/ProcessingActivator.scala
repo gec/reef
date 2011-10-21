@@ -20,9 +20,7 @@ package org.totalgrid.reef.measproc.activator
 
 import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo
 
-import org.totalgrid.reef.api.japi.client.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
@@ -32,6 +30,7 @@ import org.totalgrid.reef.util.Cancelable
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreFinder }
 import org.totalgrid.reef.executor._
+import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
 object ProcessingActivator {
   def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
@@ -73,7 +72,7 @@ class ProcessingActivator extends BundleActivator {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 

@@ -31,7 +31,7 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.framework.ServerSideProcess
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
-import org.totalgrid.reef.api.japi.client.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 
 @RunWith(classOf[JUnitRunner])
@@ -58,7 +58,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val userSettings = new UserSettings("system", "system")
       val nodeSettings = new NodeSettings("node1", "network", "location")
-      val serviceOptions = ServiceOptions.loadInfo("../org.totalgrid.reef.test.cfg")
+      val serviceOptions = ServiceOptions.fromFile("../org.totalgrid.reef.test.cfg")
 
       val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore

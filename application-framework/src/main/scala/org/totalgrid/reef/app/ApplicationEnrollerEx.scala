@@ -22,7 +22,7 @@ import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor

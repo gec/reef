@@ -25,13 +25,15 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.broker._
 import net.agileautomata.commons.testing._
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 
 @RunWith(classOf[JUnitRunner])
 class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
-  val defaults = QpidBrokerConnectionInfo.loadInfo("../org.totalgrid.reef.test.cfg")
+  val defaults = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"));
   val defaultTimeout = 5000
-  def fixture(config: QpidBrokerConnectionInfo)(test: BrokerConnection => Unit): Unit = {
+  def fixture(config: AmqpSettings)(test: BrokerConnection => Unit): Unit = {
     val factory = new QpidBrokerConnectionFactory(config)
     val conn = factory.connect
     try {
@@ -54,7 +56,7 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
   }
 
   test("Connection Timeout") {
-    val config = new QpidBrokerConnectionInfo("127.0.0.1", 10000, "", "", "")
+    val config = new AmqpSettings("127.0.0.1", 10000, "", "", "")
     intercept[Exception](fixture(config) { conn => })
   }
 

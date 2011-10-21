@@ -26,14 +26,13 @@ import org.osgi.framework.BundleContext
 
 import org.totalgrid.reef.executor.ReactActorExecutor
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo }
-import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.util.{ Cancelable, Timer }
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ApplicationEnrollerEx, AppEnrollerConsumer, UserLogin }
+import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
 object SlaveFepShim {
   def createFepShim(userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext): UserLogin = {
@@ -74,7 +73,7 @@ class SlaveFepShim extends Logging {
   def start(context: BundleContext) {
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 

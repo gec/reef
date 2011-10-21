@@ -31,11 +31,10 @@ import org.totalgrid.reef.app._
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.Cancelable
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo
 import org.totalgrid.reef.frontend._
+import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
 class FepActivator extends BundleActivator with Logging {
 
@@ -47,7 +46,7 @@ class FepActivator extends BundleActivator with Logging {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerOptions = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 

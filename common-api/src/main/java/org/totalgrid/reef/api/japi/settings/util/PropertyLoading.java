@@ -16,13 +16,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client.util;
+package org.totalgrid.reef.api.japi.settings.util;
 
 
 import java.util.Dictionary;
 
 public class PropertyLoading
 {
+    public static String getString( String id, Dictionary props, String onDefault ) throws IllegalArgumentException
+    {
+        String prop = (String)props.get( id );
+        if ( prop == null )
+            return onDefault;
+        else
+            return prop;
+    }
+
+    public static Boolean getBoolean( String id, Dictionary props, Boolean onDefault ) throws IllegalArgumentException
+    {
+        String prop = (String)props.get( id );
+        if ( prop == null )
+            return onDefault;
+        else
+            return Boolean.parseBoolean( prop );
+    }
+
     public static String getString( String id, Dictionary props ) throws IllegalArgumentException
     {
         String prop = (String)props.get( id );

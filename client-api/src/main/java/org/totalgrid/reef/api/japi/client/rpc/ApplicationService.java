@@ -20,8 +20,8 @@ package org.totalgrid.reef.api.japi.client.rpc;
 
 import java.util.List;
 
+import org.totalgrid.reef.api.japi.settings.NodeSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.client.NodeSettings;
 import org.totalgrid.reef.api.proto.Application.ApplicationConfig;
 import org.totalgrid.reef.api.proto.ProcessStatus.StatusSnapshot;
 

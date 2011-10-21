@@ -18,17 +18,17 @@
  */
 package org.totalgrid.reef.loader
 
-import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
-import org.totalgrid.reef.api.japi.client.UserSettings
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionFactory, QpidBrokerConnectionInfo, QpidBrokerConnection }
+import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 
 object StandaloneLoader {
-  def run(connectionInfo: QpidBrokerConnectionInfo, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {
+  def run(connectionInfo: AmqpSettings, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {
     var cancelable = Option.empty[Cancelable]
     try {
       // we only connect to amqp if we are not doing a dry run
@@ -106,8 +106,8 @@ object StandaloneLoader {
     if (filename == None)
       usage
 
-    val qpidConfig = QpidBrokerConnectionInfo.loadInfo(new FileConfigReader(qpidFile))
-    val userConfig = new UserSettings(new FileConfigReader(userFile).props)
+    val qpidConfig = new AmqpSettings(PropertyReader.readFromFile(qpidFile))
+    val userConfig = new UserSettings(PropertyReader.readFromFile(userFile))
 
     run(qpidConfig, userConfig, filename.get, benchmark, dryRun, ignoreWarnings)
   }

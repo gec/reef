@@ -27,18 +27,18 @@ import net.agileautomata.executor4s.Executors;
 import org.junit.After;
 import org.junit.Before;
 
+import org.totalgrid.reef.api.japi.settings.AmqpSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.client.impl.AMQPConnectionSettingImpl;
 
 import org.totalgrid.reef.api.japi.client.rpc.AllScadaService;
 import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServiceJavaShimWrapper;
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection;
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList;
 import org.totalgrid.reef.broker.BrokerConnection;
 import org.totalgrid.reef.broker.BrokerConnectionFactory;
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -50,10 +50,10 @@ public class ReefConnectionTestBase
     /**
      * connector to the bus, restarted for every test connected for
      */
-    protected final BrokerConnectionFactory factory = new QpidBrokerConnectionFactory( getConnectionInfo() );
 
     protected final ExecutorService exe = Executors.newScheduledThreadPool( 4 );
 
+    protected BrokerConnectionFactory factory;
     protected BrokerConnection broker;
     protected Connection connection;
 
@@ -70,6 +70,15 @@ public class ReefConnectionTestBase
     protected ReefConnectionTestBase( boolean autoLogon )
     {
         this.autoLogon = autoLogon;
+        try
+        {
+            AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
+            this.factory = new QpidBrokerConnectionFactory( s );
+        }
+        catch ( Exception ex )
+        {
+            throw new RuntimeException( ex );
+        }
     }
 
     /**
@@ -78,32 +87,6 @@ public class ReefConnectionTestBase
     protected ReefConnectionTestBase()
     {
         this( true );
-    }
-
-    /**
-     * gets the ip of the qpid server, defaults to 127.0.0.1 but can be override with java property
-     * -Dreef_node_ip=192.168.100.10
-     */
-    private QpidBrokerConnectionInfo getConnectionInfo()
-    {
-        Properties props = new Properties();
-
-        try
-        {
-            FileInputStream fis = new FileInputStream( "../org.totalgrid.reef.test.cfg" );
-            props.load( fis );
-            fis.close();
-        }
-        catch ( IOException e )
-        {
-            // we'll then throw an exception when trying to load from emtpy properties file
-            throw new RuntimeException( e );
-        }
-
-        AMQPConnectionSettingImpl settings = new AMQPConnectionSettingImpl( props );
-
-        return settings.asInfo();
-
     }
 
     @Before

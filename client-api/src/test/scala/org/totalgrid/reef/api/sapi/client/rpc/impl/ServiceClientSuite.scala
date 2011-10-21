@@ -26,10 +26,11 @@ import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEvent
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 
-import org.totalgrid.reef.broker.qpid.{ QpidBrokerConnectionInfo, QpidBrokerConnectionFactory }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
-import org.totalgrid.reef.api.sapi.config.impl.FileConfigReader
 import org.totalgrid.reef.api.sapi.client.rpc.utils.InteractionRecorder
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
+import org.totalgrid.reef.api.japi.settings.AmqpSettings
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
@@ -43,7 +44,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
 
   // gets default connection settings or overrides using system properties
-  val config = QpidBrokerConnectionInfo.loadInfo(new FileConfigReader("../org.totalgrid.reef.test.cfg"))
+  val config = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
   val factory = new QpidBrokerConnectionFactory(config)
   val broker = factory.connect
   val exe = Executors.newScheduledThreadPool()

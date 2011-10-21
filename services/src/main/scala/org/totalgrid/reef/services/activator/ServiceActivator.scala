@@ -28,8 +28,6 @@ import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor }
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
-import org.totalgrid.reef.api.japi.client.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionInfo
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.broker.BrokerConnection
@@ -39,6 +37,7 @@ import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.sapi.impl.ReefServicesList
 import net.agileautomata.executor4s.{ Executors, ExecutorService }
+import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
 object ServiceActivator {
   def create(sql: DbInfo, serviceOptions: ServiceOptions, userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext) = {
@@ -98,10 +97,9 @@ class ServiceActivator extends BundleActivator {
 
     org.totalgrid.reef.executor.Executor.setupThreadPools
 
-    val brokerConfig = QpidBrokerConnectionInfo.loadInfo(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
-
+    val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val sql = SqlProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.sql"))
-    val options = ServiceOptions.get(OsgiConfigReader(context, "org.totalgrid.reef.services"))
+    val options = ServiceOptions.fromConfig(OsgiConfigReader(context, "org.totalgrid.reef.services"))
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
