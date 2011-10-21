@@ -90,9 +90,6 @@ class FepActivator extends BundleActivator with Logging {
   }
 
   private def create(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
-
-    val exe = new ReactActorExecutor {}
-
     val services = new FrontEndProviderServicesImpl(conn, client)
 
     val frontEndConnections = new FrontEndConnections(protocols, services)
@@ -103,18 +100,16 @@ class FepActivator extends BundleActivator with Logging {
     // protocol masters in response to events
     val fem = new FrontEndManager(
       services,
-      exe,
+      services,
       connectionContext,
       appConfig,
       protocols.map { _.name }.toList,
       5000)
 
-    exe.start
     fem.start
     new Cancelable {
       def cancel() {
         fem.stop
-        exe.stop
       }
     }
   }

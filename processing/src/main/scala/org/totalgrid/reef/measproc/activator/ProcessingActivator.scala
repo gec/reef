@@ -37,22 +37,18 @@ object ProcessingActivator {
     val appConfigConsumer = new AppEnrollerConsumer {
       // Downside of using classes not functions, we can't partially evalute
       def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
-        val exe = new ReactActorExecutor {}
-
         val services = new MeasurementProcessorServicesImpl(client, conn)
 
         val connector = new MeasStreamConnector(services, measStore, appConfig.getInstanceName)
         val connectionHandler = new ProcessingNodeMap(connector)
 
-        val measProc = new FullProcessor(services, connectionHandler, appConfig, exe)
+        val measProc = new FullProcessor(services, connectionHandler, appConfig, services)
 
-        exe.start
         measProc.start
 
         new Cancelable {
           def cancel() {
             measProc.stop
-            exe.stop
           }
         }
       }

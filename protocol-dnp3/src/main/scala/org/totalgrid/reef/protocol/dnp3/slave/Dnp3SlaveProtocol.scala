@@ -21,8 +21,6 @@ package org.totalgrid.reef.protocol.dnp3.slave
 import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
 import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.api.protocol.api.Protocol._
-import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
 import org.totalgrid.reef.api.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.proto.Commands.CommandRequest
@@ -35,7 +33,7 @@ case class SlaveObjectsContainer(stackObserver: IStackObserver, commandProxy: IC
   def cancel() = measProxy.stop()
 }
 
-class Dnp3SlaveProtocol(services: AllScadaService, exe: Executor) extends Dnp3ProtocolBase[SlaveObjectsContainer] {
+class Dnp3SlaveProtocol(services: AllScadaService) extends Dnp3ProtocolBase[SlaveObjectsContainer] {
 
   final override val name = "dnp3-slave"
 
@@ -53,11 +51,11 @@ class Dnp3SlaveProtocol(services: AllScadaService, exe: Executor) extends Dnp3Pr
     val stackObserver = createStackObserver(endpointPublisher)
     slaveConfig.getSlave.setMpObserver(stackObserver)
 
-    val commandReceiver = new SlaveCommandProxy(services, mapping, exe)
+    val commandReceiver = new SlaveCommandProxy(services, mapping)
 
     val measAcceptor = dnp3.AddSlave(channelName, endpointName, filterLevel, commandReceiver, slaveConfig)
 
-    val measProxy = new SlaveMeasurementProxy(services, mapping, measAcceptor, exe)
+    val measProxy = new SlaveMeasurementProxy(services, mapping, measAcceptor)
     map += endpointName -> SlaveObjectsContainer(stackObserver, commandReceiver, measProxy)
 
     // do nothing, no commands associated with "dnp3-slave" endpoint

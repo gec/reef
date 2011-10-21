@@ -46,7 +46,7 @@ object FrontEndTestHelpers {
     var sub = Option.empty[SubscriptionResult[List[A], A]]
     var canceled = false
 
-    def setSubscription(result: SubscriptionResult[List[A], A], executor: Executor) = {
+    def setSubscription(result: SubscriptionResult[List[A], A]) = {
       sub = Some(result)
       this
     }

@@ -24,7 +24,6 @@ import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
 
 import org.osgi.framework.BundleContext
 
-import org.totalgrid.reef.executor.ReactActorExecutor
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
@@ -38,19 +37,15 @@ object SlaveFepShim {
   def createFepShim(userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext): UserLogin = {
     val appConfigConsumer = new AppEnrollerConsumer {
       def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
-        val exe = new ReactActorExecutor {}
 
-        val slaveProtocol = new Dnp3SlaveProtocol(services, exe) with AddRemoveValidation
+        val slaveProtocol = new Dnp3SlaveProtocol(services) with AddRemoveValidation
         val protocol = Some(slaveProtocol)
         val registration = Some(context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol]))
-
-        exe.start
 
         new Cancelable {
           def cancel() {
             protocol.foreach(_.Shutdown)
             registration.foreach { _.unregister() }
-            exe.stop
           }
         }
       }

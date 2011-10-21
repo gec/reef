@@ -24,7 +24,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.mockito.Mockito
 
-import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.proto.Model.ReefUUID
@@ -35,7 +34,8 @@ import FrontEndTestHelpers._
 import org.totalgrid.reef.api.sapi.client.Promise
 import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
 import org.totalgrid.reef.api.sapi.client.impl.FixedPromise
-import net.agileautomata.executor4s.{ Failure, Success }
+import net.agileautomata.executor4s._
+import net.agileautomata.executor4s.testing.MockExecutor
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndManagerTest extends FunSuite with ShouldMatchers {
@@ -83,7 +83,8 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
       fem.start()
       mp.sub should equal(None)
       (0 to 3).foreach { i =>
-        exe.delayNext(1, 1) should equal(5000)
+        // TODO: MockExecutor needs to have way to inspect number of timers
+        exe.tick(5000.milliseconds)
       }
     }
   }

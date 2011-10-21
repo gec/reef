@@ -18,13 +18,14 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
+import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.util.Timer
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.japi.ReefServiceException
+
+import net.agileautomata.executor4s._
 
 class FrontEndManager(
   client: FrontEndProviderServices,
@@ -35,7 +36,7 @@ class FrontEndManager(
   retryms: Long)
     extends Lifecycle with Logging {
 
-  private var delayedAnnounce = Option.empty[Timer]
+  private var delayedAnnounce = Option.empty[Cancelable]
 
   final override def afterStart() {
     announceAsFep()
@@ -55,11 +56,11 @@ class FrontEndManager(
       val fep = client.registerApplicationAsFrontEnd(appConfig.getUuid, protocolNames).await
       logger.info("Registered application as FEP with uid: " + fep.getUuid.getUuid)
       val result = client.subscribeToEndpointConnectionsForFrontEnd(fep).await
-      connectionContext.setSubscription(result, exe)
+      connectionContext.setSubscription(result)
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Error getting endpoints to talk to: " + rse.toString, rse)
-        delayedAnnounce = Some(exe.delay(retryms) { announceAsFep })
+        delayedAnnounce = Some(exe.delay(retryms.milliseconds) { announceAsFep })
     }
   }
 }

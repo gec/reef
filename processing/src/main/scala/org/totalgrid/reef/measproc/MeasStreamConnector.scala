@@ -24,7 +24,6 @@ import org.totalgrid.reef.persistence.InMemoryObjectCache
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.executor.ReactActorExecutor
 
 class MeasStreamConnector(client: MeasurementProcessorServices, measStore: MeasurementStore, instanceName: String) {
   val metricsPublisher = MetricsSink.getInstance(instanceName)
@@ -40,15 +39,11 @@ class MeasStreamConnector(client: MeasurementProcessorServices, measStore: Measu
   val caches = MeasProcObjectCaches(measCache, overCache, triggerStateCache)
 
   def addStreamProcessor(streamConfig: MeasurementProcessingConnection): Cancelable = {
-    // TODO: wont need explict reactor when client is stranded
-    val reactor = new ReactActorExecutor {}
-    reactor.start
-    val streamHandler = new MeasurementStreamProcessingNode(client, caches, streamConfig, reactor)
+    val streamHandler = new MeasurementStreamProcessingNode(client, caches, streamConfig)
     streamHandler.setHookSource(metricsPublisher.getStore("measproc-" + streamConfig.getLogicalNode.getName))
     new Cancelable {
       def cancel() {
         streamHandler.cancel()
-        reactor.stop
       }
     }
   }

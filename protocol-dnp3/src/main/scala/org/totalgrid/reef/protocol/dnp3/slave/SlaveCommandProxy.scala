@@ -26,11 +26,10 @@ import org.totalgrid.reef.proto.Mapping.{ CommandMap, CommandType => ProtoComman
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 
-class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Executor)
+class SlaveCommandProxy(service: CommandService, mapping: IndexMapping)
     extends ICommandAcceptor with Logging {
 
   private case class Index(isSetpoint: Boolean, index: Long) {
@@ -92,17 +91,15 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Exe
   }
 
   private def handleCommand(index: Index, seq: Int, accept: IResponseAcceptor)(executeCommand: (Command, CommandMap) => ProtoCommandStatus) = {
-    exe.execute {
-      val commandStatus = commandMap.get(index) match {
-        case None =>
-          logger.warn("Got unknown command request: " + index)
-          ProtoCommandStatus.NOT_SUPPORTED
-        case Some(commandMapping) =>
-          proxyCommandRequest(commandMapping, executeCommand)
-      }
-      val response = new CommandResponse(DNPTranslator.translateCommandStatus(commandStatus))
-      accept.AcceptResponse(response, seq)
+    val commandStatus = commandMap.get(index) match {
+      case None =>
+        logger.warn("Got unknown command request: " + index)
+        ProtoCommandStatus.NOT_SUPPORTED
+      case Some(commandMapping) =>
+        proxyCommandRequest(commandMapping, executeCommand)
     }
+    val response = new CommandResponse(DNPTranslator.translateCommandStatus(commandStatus))
+    accept.AcceptResponse(response, seq)
   }
 
 }

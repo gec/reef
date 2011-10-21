@@ -21,22 +21,19 @@ package org.totalgrid.reef.app
 import org.totalgrid.reef.util.{ Cancelable, Observable }
 
 import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {
   // TODO: remove exe when clients are fully stranded
-  def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U], exe: Executor): Cancelable = {
+  def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U]): Cancelable = {
     context.handleResponse(result.getResult)
 
     val sub = result.getSubscription
 
     sub.start(new SubscriptionEventAcceptor[U] {
       def onEvent(event: SubscriptionEvent[U]) {
-        exe.execute {
-          context.handleEvent(event.getEventType, event.getValue)
-        }
+        context.handleEvent(event.getEventType, event.getValue)
       }
     })
 

@@ -19,12 +19,13 @@
 package org.totalgrid.reef.measproc
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.util.Timer
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
+
+import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.api.japi.ReefServiceException
+import net.agileautomata.executor4s._
 
 /**
  *  Non-entry point meas processor setup
@@ -35,7 +36,7 @@ class FullProcessor(
     appConfig: ApplicationConfig,
     exe: Executor) extends Logging with Lifecycle {
 
-  private var delayedAnnounce = Option.empty[Timer]
+  private var delayedAnnounce = Option.empty[Cancelable]
 
   final override def afterStart() {
     subscribeToStreams()
@@ -53,11 +54,11 @@ class FullProcessor(
 
     try {
       val result = client.subscribeToConnectionsForMeasurementProcessor(appConfig).await
-      connectionContext.setSubscription(result, exe)
+      connectionContext.setSubscription(result)
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Error subscribing to logical nodes to process: " + rse.toString, rse)
-        delayedAnnounce = Some(exe.delay(5000) { subscribeToStreams })
+        delayedAnnounce = Some(exe.delay(5000.milliseconds) { subscribeToStreams })
     }
   }
 }

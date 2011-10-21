@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.protocol.dnp3.slave
 
-import org.totalgrid.reef.executor.Executor
 import scala.collection.mutable.ArrayBuffer
-import org.totalgrid.reef.util.Timer
+
+import net.agileautomata.executor4s._
 
 /**
  * provides a connivance class to marshall disparate small events into a joined up list of
@@ -31,7 +31,7 @@ import org.totalgrid.reef.util.Timer
 class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, executor: Executor) {
 
   private val batch = ArrayBuffer.empty[A]
-  private var queuedEvent: Option[Timer] = None
+  private var queuedEvent: Option[Cancelable] = None
 
   def addEntry(entry: A) = this.synchronized {
     batch.append(entry)
@@ -48,7 +48,7 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
       publish
     }
     else if (queuedEvent.isEmpty) {
-      queuedEvent = Some(executor.delay(maxTimeMS) {
+      queuedEvent = Some(executor.delay(maxTimeMS.milliseconds) {
         publish
       })
     }

@@ -30,7 +30,6 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus, 
 import org.totalgrid.reef.api.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.api.japi.BadRequestException
-import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 import net.agileautomata.executor4s.Success
@@ -38,7 +37,6 @@ import net.agileautomata.executor4s.Success
 @RunWith(classOf[JUnitRunner])
 class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
-  val executor = new InstantExecutor
   val commandName = "TestCommand"
 
   test("Only handles configured controls") {
@@ -50,7 +48,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
       makeMapping(commandName, 1, CommandType.PULSE_TRIP),
       makeMapping(commandName, 0, CommandType.SETPOINT),
       makeMapping(commandName, 2, CommandType.SETPOINT))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     // check controls with valid indices
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_SUCCESS)
@@ -77,7 +75,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = getMissingCommandService()
 
     val mapping = makeMappings(makeMapping(commandName, 0, CommandType.PULSE))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_NO_SELECT)
   }
@@ -86,7 +84,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = getNoLockCommandService(commandName)
 
     val mapping = makeMappings(makeMapping(commandName, 0, CommandType.PULSE))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_NO_SELECT)
   }
@@ -95,7 +93,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = getExecutionFailureService(commandName)
 
     val mapping = makeMappings(makeMapping(commandName, 0, CommandType.PULSE))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_HARDWARE_ERROR)
   }

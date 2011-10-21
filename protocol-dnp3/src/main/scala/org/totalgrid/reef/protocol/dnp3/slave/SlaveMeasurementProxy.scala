@@ -25,20 +25,19 @@ import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.api.japi.client.Subscription
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
-class SlaveMeasurementProxy(service: MeasurementService, mapping: IndexMapping, dataObserver: IDataObserver, exe: Executor)
+class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver)
     extends SubscriptionEventAcceptor[Measurement] with Logging {
 
   private val publisher = new DataObserverPublisher(mapping, dataObserver)
-  private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, exe)
+  private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, service)
 
   private var subscription: Option[Subscription[_]] = None
 
-  exe.execute {
+  service.execute {
     val subscriptionResult = service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName }).await
     subscription = Some(subscriptionResult.getSubscription)
     packTimer.addEntries(subscriptionResult.getResult.toList)

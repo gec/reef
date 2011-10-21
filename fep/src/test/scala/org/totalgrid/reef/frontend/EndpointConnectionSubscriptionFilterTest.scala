@@ -27,7 +27,6 @@ import org.mockito.Mockito
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 
 import FrontEndTestHelpers._
-import org.totalgrid.reef.executor.mock.InstantExecutor
 
 @RunWith(classOf[JUnitRunner])
 class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatchers {
@@ -81,11 +80,11 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
 
     val result = new MockSubscriptionResult(config)
 
-    filter.setSubscription(result, new InstantExecutor)
+    filter.setSubscription(result)
     Mockito.verify(map).add(populated)
 
     intercept[IllegalArgumentException] {
-      filter.setSubscription(result, new InstantExecutor)
+      filter.setSubscription(result)
     }
 
     result.mockSub.canceled should equal(false)

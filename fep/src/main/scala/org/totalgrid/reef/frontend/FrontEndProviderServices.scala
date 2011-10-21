@@ -33,8 +33,9 @@ import org.totalgrid.reef.api.japi.client.AddressableDestination
 import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client, SubscriptionResult }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
-trait FrontEndProviderServices extends AllScadaServiceImpl {
+trait FrontEndProviderServices extends AllScadaService {
   def bindCommandHandler(connection: CommEndpointConnection, commandHandler: CommandHandler): Cancelable
 
   def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]]
@@ -43,7 +44,7 @@ trait FrontEndProviderServices extends AllScadaServiceImpl {
 }
 
 class FrontEndProviderServicesImpl(protected val connection: Connection, client: Client)
-    extends ApiBase(client) with FrontEndProviderServices {
+    extends ApiBase(client) with FrontEndProviderServices with AllScadaServiceImpl {
 
   def bindCommandHandler(connProto: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
     val destination = AddressableDestination(connProto.getRouting.getServiceRoutingKey)

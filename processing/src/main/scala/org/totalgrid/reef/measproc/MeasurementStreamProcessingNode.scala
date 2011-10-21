@@ -21,7 +21,6 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.proto.Measurements.Measurement
@@ -35,8 +34,7 @@ import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline
 class MeasurementStreamProcessingNode(
   client: MeasurementProcessorServices,
   caches: MeasProcObjectCaches,
-  connection: MeasurementProcessingConnection,
-  executor: Executor)
+  connection: MeasurementProcessingConnection)
     extends Logging with MetricsHookContainer {
 
   def publishEvent(event: Event.Builder) = try {
@@ -60,10 +58,10 @@ class MeasurementStreamProcessingNode(
   addHookedObject(processingPipeline)
 
   val overrideResult = client.subscribeToOverridesForConnection(connection).await
-  val overrideSub = processingPipeline.overProc.setSubscription(overrideResult, executor)
+  val overrideSub = processingPipeline.overProc.setSubscription(overrideResult)
 
   val triggerResult = client.subscribeToTriggerSetsForConnection(connection).await
-  val triggerSub = processingPipeline.triggerProc.setSubscription(triggerResult, executor)
+  val triggerSub = processingPipeline.triggerProc.setSubscription(triggerResult)
 
   val binding = client.bindMeasurementProcessingNode(processingPipeline, connection)
 

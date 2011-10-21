@@ -19,12 +19,11 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
 
 trait SubscriptionHandler[A] {
 
-  def setSubscription(result: SubscriptionResult[List[A], A], exe: Executor): Cancelable
+  def setSubscription(result: SubscriptionResult[List[A], A]): Cancelable
 
   def cancel()
 }
@@ -33,9 +32,9 @@ trait SubscriptionHandlerBase[A] extends SubscriptionHandler[A] with Cancelable 
 
   var subscription: Option[Cancelable] = None
 
-  def setSubscription(result: SubscriptionResult[List[A], A], exe: Executor) = {
+  def setSubscription(result: SubscriptionResult[List[A], A]) = {
     if (subscription.isDefined) throw new IllegalArgumentException("Subscription already set.")
-    subscription = Some(ServiceContext.attachToServiceContext(result, this, exe))
+    subscription = Some(ServiceContext.attachToServiceContext(result, this))
     this
   }
 
