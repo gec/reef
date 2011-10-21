@@ -33,6 +33,7 @@ import org.totalgrid.reef.services.framework.ServerSideProcess
 import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
+import org.totalgrid.reef.api.japi.SimpleAuth.AuthRequest
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
@@ -46,7 +47,9 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
     def addLifecycleObject(obj: Lifecycle) {}
 
     def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
-      ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass) //call just so an exception will be thrown if it doesn't exist
+      val klass = endpoint.descriptor.getKlass
+      //call just so an exception will be thrown if it doesn't exist
+      if (klass != classOf[AuthRequest]) ReefServicesList.getServiceInfo(klass)
       new NoOpService
     }
   }

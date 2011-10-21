@@ -24,16 +24,18 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.api.japi.{ TypeDescriptor, Envelope }
 import org.totalgrid.reef.api.japi.Envelope.Verb
-import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.api.japi.SimpleAuth.AuthRequest
 import org.totalgrid.reef.api.sapi.client.rest._
 import org.totalgrid.reef.api.sapi.client._
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.japi.client.{ AnyNodeDestination, Routable }
-import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, ServiceList }
+import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, ServiceList, BuiltInDescriptors }
 import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncService }
 
 final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, executor: Executor, timeoutms: Long) extends Connection with Logging {
+
+  lookup.addServiceInfo(BuiltInDescriptors.authRequestServiceInfo)
 
   conn.declareExchange("amq.direct")
   private val correlator = new ResponseCorrelator
@@ -44,9 +46,9 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
 
   def login(userName: String, password: String): Promise[Client] = {
     val strand = Strand(executor)
-    val agent = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(userName).setPassword(password)).build()
-    def convert(response: Response[AuthToken]): Result[Client] = response.one.map(r => createClient(r.getToken, strand))
-    Promise.from(request(Verb.PUT, agent, BasicRequestHeaders.empty, strand).map(convert))
+    val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).build
+    def convert(response: Response[AuthRequest]): Result[Client] = response.one.map(r => createClient(r.getToken, strand))
+    Promise.from(request(Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert))
   }
 
   private def createClient(authToken: String, strand: Strand) = {

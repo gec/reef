@@ -66,7 +66,10 @@ class ServiceProviders(
     hooks
   }
 
-  private val unauthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = new AuthTokenService(modelFac.authTokens) :: Nil
+  // TODO: AuthTokenService can probably be authed service now
+  private val unauthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = List(
+    new SimpleAuthRequestService(modelFac.authTokens),
+    new AuthTokenService(modelFac.authTokens))
 
   private val restAuthorizedServices: List[AsyncService[_]] = List(
     new EntityService,

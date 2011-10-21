@@ -40,12 +40,16 @@ trait ServiceList {
   def getServiceOption[A](klass: Class[A]): Option[ServiceInfo[A, _]]
 
   def getServicesList: List[ServiceInfo[_, _]]
+
+  def addServiceInfo[A](info: ServiceInfo[A, _])
 }
 
-class ServiceListOnMap(servicemap: ServiceList.ServiceMap) extends ServiceList {
+class ServiceListOnMap(var servicemap: ServiceList.ServiceMap) extends ServiceList {
   def getServiceInfo[A](klass: Class[A]): ServiceInfo[A, _] = ServiceList.getServiceInfo(klass, servicemap)
   def getServiceOption[A](klass: Class[A]): Option[ServiceInfo[A, _]] = servicemap.get(klass).asInstanceOf[Option[ServiceInfo[A, _]]]
 
   def getServicesList = servicemap.values.toList
+
+  def addServiceInfo[A](info: ServiceInfo[A, _]) = servicemap += info.descriptor.getKlass -> info
 }
 
