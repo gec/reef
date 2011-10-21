@@ -26,9 +26,7 @@ import presentation.TriggerView
 import RequestFailure._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.loader.helpers.SymbolResponseProgressRenderer
-import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.loader.commons.{ ModelDeleter, LoaderServicesImpl }
 
 @Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
 class LoadConfigCommand extends ReefCommandSupport {
@@ -39,9 +37,6 @@ class LoadConfigCommand extends ReefCommandSupport {
   @GogoOption(name = "-dryRun", description = "Just analyze file, don't actually send data to reef", required = false, multiValued = false)
   var dryRun = false
 
-  @GogoOption(name = "-d", description = "Delete all objects in configuration file from server", required = false, multiValued = false)
-  var delete = false
-
   @GogoOption(name = "-ignoreWarnings", description = "Still attempt upload even if configuration is invalid", required = false, multiValued = false)
   var ignoreWarnings = false
 
@@ -50,9 +45,8 @@ class LoadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
     import org.totalgrid.reef.loader.LoadManager
-    // re-neable loading from karaf
-    // LoadManager.loadFile(reefSession, configFile, benchmark, dryRun, ignoreWarnings, !delete)
-    println("Disabled")
+    // re-enable loading from karaf
+    LoadManager.loadFile(new LoaderServicesImpl(reefClient), configFile, benchmark, dryRun, ignoreWarnings)
   }
 }
 
@@ -60,54 +54,11 @@ class LoadConfigCommand extends ReefCommandSupport {
 class UnloadConfigCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
+    val loaderServices = new LoaderServicesImpl(reefClient)
 
-    // TODO: re-enable result limit
-    //    services.session.modifyHeaders(_.setResultLimit(50000))
-
-    // needed to add explict typing to this list, scala compiler eats up all memory in system and never completes
-    val endpoints: List[GeneratedMessage] = services.getAllEndpoints().toList
-    val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
-    val entities: List[GeneratedMessage] = try {
-      services.getAllEntitiesWithTypes(types).toList
-    } catch {
-      // do nothing, system probably totally empty
-      // TODO: remove once "meta-model" implemented in services
-      case rse: BadRequestException => Nil
-    }
-    val channels: List[GeneratedMessage] = services.getAllCommunicationChannels().toList
-    val cfs: List[GeneratedMessage] = services.getAllConfigFiles().toList
-    // we need to remove the logicalNode since its been deleted by this time and therefore the delete
-    // fails because our "request" doesn't match every term
-    // TODO: delete should just use uuid or uid searching if set
-    val points: List[GeneratedMessage] = services.getAllPoints().toList.map { _.toBuilder.clearLogicalNode.build }
-    val commands: List[GeneratedMessage] = services.getCommands().toList.map { _.toBuilder.clearLogicalNode.build }
-    val messages: List[GeneratedMessage] = services.getAllEventConfigurations(false).toList
-
-    val protos: List[GeneratedMessage] = endpoints ::: entities ::: channels ::: cfs ::: points ::: commands ::: messages
-
-    val renderer = new SymbolResponseProgressRenderer(Console.out)
-    renderer.start(protos.size)
-    protos.foreach { p =>
-      // TODO: re-enable deletion
-      //      val result = reefSession.delete(p).await()
-      //      result.expectMany()
-      //      renderer.update(result.status, p)
-    }
-    renderer.finish
+    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
   }
 
-  //  def endpointResources(endpoints: List[CommEndpointConfig]) = {
-  //
-  //    val ownerships = endpoints.map { e => e.getOwnerships }
-  //    val ports = endpoints.map { e => if (e.hasChannel) Some(e.getChannel) else None }.flatten
-  //    val configFiles = endpoints.map { e => e.getConfigFilesList.toList }.flatten
-  //    val points = ownerships.map { _.getPointsList.toList }.flatten
-  //    val commands = ownerships.map { _.getCommandsList.toList }.flatten
-  //
-  //    endpoints ::: ports ::: configFiles :::
-  //      points.map { pName => PointProto.newBuilder.setName(pName).build } :::
-  //      commands.map { cName => CommandProto.newBuilder.setName(cName).build }
-  //  }
 }
 
 @Command(scope = "trigger", name = "trigger", description = "Lists triggers")

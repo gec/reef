@@ -24,14 +24,16 @@ import org.totalgrid.reef.api.proto.Alarms._
 import org.totalgrid.reef.api.proto.FEP._
 import org.totalgrid.reef.api.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
-import org.totalgrid.reef.api.japi.ReefServiceException
 import com.weiglewilczek.slf4s.Logging
 import collection.mutable.Map
-import org.totalgrid.reef.api.sapi.client.rest.RestOperations
-import org.totalgrid.reef.api.sapi.client.{ Response, Promise }
-import net.agileautomata.executor4s.Future
 
-class CachingModelLoader(client: Option[RestOperations], create: Boolean = true) extends ModelLoader with Logging {
+import org.totalgrid.reef.loader.commons.LoaderServices
+import org.totalgrid.reef.loader.commons.ui.RequestViewer
+
+import java.io.PrintStream
+import org.totalgrid.reef.api.sapi.client.RequestSpy
+
+class CachingModelLoader(client: Option[LoaderServices]) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
   private val triggers = scala.collection.mutable.Map.empty[String, TriggerSet]
   private val modelContainer = new ModelContainer
@@ -96,14 +98,13 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
     autoFlush
   }
 
-  def getOrThrow(e: TriggerSet): List[TriggerSet] =
-    {
-      client.map {
-        _.get(e).await.expectMany()
-      }.getOrElse(triggers.get(e.getPoint.getName).map {
-        _ :: Nil
-      }.getOrElse(Nil))
-    }
+  def getOrThrow(e: TriggerSet): List[TriggerSet] = {
+    client.map {
+      _.get(e).await :: Nil
+    }.getOrElse(triggers.get(e.getPoint.getName).map {
+      _ :: Nil
+    }.getOrElse(Nil))
+  }
 
   def autoFlush {
     client.foreach(flush(_, None))
@@ -113,45 +114,25 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
     triggers.clone()
   }
 
-  def flush(client: RestOperations, progressMeter: Option[ResponseProgressRenderer]) =
-    {
-      logger.debug("flushing")
-      progressMeter.foreach(_.start(puts.size + triggers.size))
+  def flush(client: LoaderServices, stream: Option[PrintStream]) = {
 
-      def handle[A <: AnyRef](promise: Future[Response[A]], request: AnyRef) {
-        val response = promise.await
+    val addedObjects = size
 
-        // check the response for any non-successful requests
-        try {
-          response.expectMany()
-        } catch {
-          case rse: ReefServiceException =>
-            // attach a helpful error message with exact data that caused failure
-            val errorMessage = "Error processing object of type: " + request.getClass.getSimpleName + ", with data: " + request
-            throw new ReefServiceException(errorMessage, rse.getStatus, rse)
-        }
+    val viewer = stream.map { new RequestViewer(_, addedObjects) }
+    RequestSpy.withRequestSpy(client, viewer) {
 
-        progressMeter.foreach(_.update(response.status, request))
-      }
-
-      val uploadOrder = (puts.reverse ::: triggers.map {
-        _._2
-      }.toList)
-
-      if (create) {
-        uploadOrder.foreach { x => handle(client.put(x), x) }
-      } else {
-        uploadOrder.reverse.foreach { x => handle(client.delete(x), x) }
-      }
-
-      reset()
-      progressMeter.foreach(_.finish)
+      val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
+      uploadOrder.foreach(client.put(_).await)
     }
 
-  def getModelContainer: ModelContainer =
-    {
-      modelContainer
-    }
+    viewer.foreach { _.finish }
+
+    reset()
+  }
+
+  def getModelContainer: ModelContainer = {
+    modelContainer
+  }
 
   def reset() {
     puts = List.empty[AnyRef]
@@ -160,5 +141,6 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
   }
 
   def size = puts.size + triggers.keys.size
+  def allProtos = (triggers.values.toList ::: puts).reverse
 }
 

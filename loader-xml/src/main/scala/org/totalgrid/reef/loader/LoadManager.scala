@@ -25,50 +25,54 @@ import org.totalgrid.reef.loader.configuration._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.XMLHelper
 import java.io.File
-import org.totalgrid.reef.loader.helpers.{ CachingModelLoader, SymbolResponseProgressRenderer }
+import org.totalgrid.reef.loader.commons.LoaderServices
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 import org.totalgrid.reef.loader.common.ConfigFile
-import org.totalgrid.reef.api.sapi.client.rest.RestOperations
 
 object LoadManager extends Logging {
 
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false,
-    createConfiguration: Boolean = true) =
-    {
-      val file = new File(filename)
-      logger.info("processing model file: " + file)
+  def loadFile(client: => LoaderServices, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
 
-      try {
-        validateXml(filename)
+    val (loader, valid) = prepareModelCache(filename, benchmark)
 
-        val xml = XMLHelper.read(file, classOf[Configuration])
-
-        val loader = new CachingModelLoader(None, createConfiguration)
-        val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
-
-        logger.info("Finished analyzing configuration '" + filename + "'")
-
-        if (!valid && !ignoreWarnings) {
-          println("Configuration invalid, fix errors or add ignoreWarnings argument")
-          false
-        } else if (!dryRun) {
-          val progress = new SymbolResponseProgressRenderer(Console.out)
-          loader.flush(client, Some(progress))
-          println("Configuration loaded.")
-          true
-        } else {
-          println("DRYRUN: Skipping upload of " + loader.size + " objects.")
-          true
-        }
-
-      } catch {
-        case ex =>
-          println("Error loading configuration file '" + filename + "' " + ex.getMessage)
-          throw ex
-      }
+    if (!valid && !ignoreWarnings) {
+      println("Configuration invalid, fix errors or add ignoreWarnings argument")
+      false
+    } else if (!dryRun) {
+      loader.flush(client, Some(Console.out))
+      println("Configuration loaded.")
+      true
+    } else {
+      println("DRYRUN: Skipping upload of " + loader.size + " objects.")
+      true
     }
+
+  }
+
+  def prepareModelCache(filename: String, benchmark: Boolean) = {
+    val file = new File(filename)
+    logger.info("processing model file: " + file)
+
+    try {
+      validateXml(filename)
+
+      val xml = XMLHelper.read(file, classOf[Configuration])
+
+      val loader = new CachingModelLoader(None)
+      val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
+
+      logger.info("Finished analyzing configuration '" + filename + "'")
+
+      (loader, valid)
+    } catch {
+      case ex =>
+        println("Error loading configuration file '" + filename + "' " + ex.getMessage)
+        throw ex
+    }
+  }
 
   def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, configurationFileTuple: Option[(File, String)] = None,
     path: File = new File(".")): Boolean =

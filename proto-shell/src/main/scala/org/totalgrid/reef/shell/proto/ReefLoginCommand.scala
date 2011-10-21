@@ -63,17 +63,18 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
       val (connection, context, cancel) = setupReefSession()
 
       try {
-        setReefSession(null, null, cancel)
+        // TODO: rework setReefSession calls
+        setReefSession(null, null, null, cancel)
         val session = connection.login(userName, password).await /// TODO - should load user out of config file
-        val client = new AllScadaServiceJavaShimWrapper(session)
-        setReefSession(client, context, cancel)
+        val services = new AllScadaServiceJavaShimWrapper(session)
+        setReefSession(session, services, context, cancel)
 
         // TODO: implement session.getHeaders.getAuthToken
 
         login(userName, "")
       } catch {
         case x: Exception =>
-          setReefSession(null, null, null)
+          setReefSession(null, null, null, null)
           println("Couldn't login to Reef: " + x.getMessage)
           logger.error(x.getStackTraceString)
       }

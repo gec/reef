@@ -22,6 +22,7 @@ import org.apache.karaf.shell.console.OsgiCommandSupport
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.japi.client.rpc.AllScadaService
+import org.totalgrid.reef.api.sapi.client.rest.Client
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -39,8 +40,16 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     }
   }
 
-  def setReefSession(session: AllScadaService, context: String, cancelable: Cancelable) = {
+  protected def reefClient: Client = {
+    this.session.get("client") match {
+      case null => throw new Exception("No client configured!")
+      case x => x.asInstanceOf[Client]
+    }
+  }
+
+  def setReefSession(client: Client, session: AllScadaService, context: String, cancelable: Cancelable) = {
     this.session.put("context", context)
+    this.session.put("client", client)
     this.session.put("reefSession", session)
     this.session.get("cancelable") match {
       case null => // nothing to close
@@ -72,7 +81,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
   protected def logout() = {
     this.unset("user")
     this.unset("authToken")
-    setReefSession(null, null, null)
+    setReefSession(null, null, null, null)
   }
 
   protected def get(name: String): Option[String] = {

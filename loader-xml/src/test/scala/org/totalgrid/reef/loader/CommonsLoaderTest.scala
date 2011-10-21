@@ -29,8 +29,6 @@ import org.scalatest.junit.JUnitRunner
 import java.io.File
 
 import org.totalgrid.reef.loader.helpers.{ MockSyncOperations, CachingModelLoader }
-import org.totalgrid.reef.api.sapi.client.SuccessResponse
-import org.totalgrid.reef.api.japi.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class CommonsLoaderTest extends FunSuite with ShouldMatchers {
@@ -52,8 +50,7 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
   }
 
   def getLoader = {
-    val mockClient = new MockSyncOperations((AnyRef) => SuccessResponse(Envelope.Status.OK, List[AnyRef]()))
-    val modelLoader = new CachingModelLoader(Some(mockClient))
+    val modelLoader = new CachingModelLoader(None)
     val exCollector = new LoadingExceptionCollector
     val path = new File(".")
     new CommonLoader(modelLoader, exCollector, path)

@@ -34,6 +34,7 @@
 		<module>application-framework</module>
 		<module>integration</module>
 		<module>proto-shell</module>
+		<module>loader-common</module>
 		<module>loader-xml</module>
 		<module>processing</module>
 		<module>fep</module>

@@ -16,13 +16,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.loader.helpers
+package org.totalgrid.reef.loader.commons.ui
 
-import org.totalgrid.reef.api.japi.Envelope
+import java.io.PrintStream
+import org.totalgrid.reef.api.proto.Model.Entity
+import org.totalgrid.reef.loader.commons.TraversalProgressNotifier
 
-trait ResponseProgressRenderer {
-  def start(size: Int)
-  def update(status: Envelope.Status, request: AnyRef)
-  def finish
+class SimpleTraversalProgressNotifier(stream: PrintStream) extends TraversalProgressNotifier {
+  val startTime = System.currentTimeMillis()
+  def display(entity: Entity, depth: Int) {
+
+    val elapsed = System.currentTimeMillis - startTime
+
+    stream.println("%5d".format(elapsed) + " | " + (" " * (7 - depth)) + ("-" * (depth + 1)) + " " + entity.getName)
+    stream.flush
+  }
 }
 

@@ -16,12 +16,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.loader.helpers
+package org.totalgrid.reef.loader.commons.ui
 
 import java.io.PrintStream
-import org.totalgrid.reef.api.japi.Envelope.Status
+import org.totalgrid.reef.api.japi.Envelope.{ Status, Verb }
+import org.totalgrid.reef.api.sapi.client.{ Response, RequestSpy, Promise }
+import net.agileautomata.executor4s.Future
 
-class SymbolResponseProgressRenderer(stream: PrintStream, width: Int = 50) extends ResponseProgressRenderer {
+class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestSpy {
+
+  def onRequestReply[A](verb: Verb, request: A, future: Future[Response[A]]) = {
+    future.listen { response =>
+      update(response.status, request.asInstanceOf[AnyRef])
+    }
+  }
+
+  def onRequestReply[A](verb: Verb, request: A, promise: Promise[Response[A]]) = {
+
+  }
+
+  start
 
   class Counter {
     var sum = 1
@@ -29,22 +43,21 @@ class SymbolResponseProgressRenderer(stream: PrintStream, width: Int = 50) exten
   }
 
   var counts = Map.empty[Status, Counter]
+  var classCounts = Map.empty[Class[_], Counter]
   var handled: Int = 0
-  var total: Int = 0
 
-  def start(size: Int) = {
-    total = size
+  def start = {
     handled = 0
 
-    stream.println("Uploading " + total + " objects to server")
+    stream.println("Processing " + total + " objects")
 
     stream.print("%6d of %6d ".format(handled, total))
     stream.print("|")
     stream.flush()
   }
 
-  def update(status: Status, request: AnyRef) = {
-    val char = status match {
+  private def getStatusChar(status: Status): String = {
+    status match {
       case Status.OK => "o"
       case Status.CREATED => "+"
       case Status.UPDATED => "*"
@@ -52,7 +65,11 @@ class SymbolResponseProgressRenderer(stream: PrintStream, width: Int = 50) exten
       case Status.DELETED => "-"
       case _ => "!"
     }
-    stream.print(char)
+  }
+
+  private def update(status: Status, request: AnyRef) = {
+
+    stream.print(getStatusChar(status))
 
     handled += 1
     if (handled % width == 0) {
@@ -66,13 +83,21 @@ class SymbolResponseProgressRenderer(stream: PrintStream, width: Int = 50) exten
       case Some(current) => current.increment
       case None => counts += status -> new Counter
     }
+    classCounts.get(request.getClass) match {
+      case Some(current) => current.increment
+      case None => classCounts += request.getClass -> new Counter
+    }
   }
 
   def finish = {
     stream.println("|")
     stream.println("Statistics: ")
-    counts.foreach { case (status, count) => stream.println(status.toString + " : " + count.sum) }
+    counts.foreach {
+      case (status, count) =>
+        stream.println("\t" + status.toString + "(" + getStatusChar(status) + ")" + " : " + count.sum)
+    }
+    stream.println("Types: ")
+    classCounts.foreach { case (classN, count) => stream.println("\t" + classN.getSimpleName + " : " + count.sum) }
     stream.println
   }
 }
-

@@ -22,20 +22,16 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.api.sapi.client.SuccessResponse
-import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.loader.helpers.MockSyncOperations
 
 @RunWith(classOf[JUnitRunner])
 class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
 
   val samplesPath = "../" + "assemblies/assembly-common/filtered-resources/samples/"
-  def createClient = new MockSyncOperations((AnyRef) => SuccessResponse(Envelope.Status.OK, List[AnyRef]()))
 
   private def loadFile(fileName: String, numExpected: Int) = {
-    val client = createClient
-    LoadManager.loadFile(client, fileName, false, false, false, true) should equal(true)
-    client.getPutQueue.size should equal(numExpected)
+    val (loader, valid) = LoadManager.prepareModelCache(fileName, false)
+    valid should equal(true)
+    loader.size should equal(numExpected)
   }
 
   test("samples/integration") {

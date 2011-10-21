@@ -33,7 +33,7 @@ import org.totalgrid.reef.api.japi.Envelope
 @RunWith(classOf[JUnitRunner])
 class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers {
 
-  case class Fixture(client: MockSyncOperations, loader: ModelLoader, config: sx.Configuration)
+  case class Fixture(modelLoader: CachingModelLoader, config: sx.Configuration)
   type FixtureParam = Fixture
 
   /**
@@ -41,11 +41,10 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
    */
   def withFixture(test: OneArgTest) = {
 
-    val client = new MockSyncOperations((GeneratedMessage) => Response(Envelope.Status.OK, List[AnyRef]()))
-    val modelLoader = new CachingModelLoader(Some(client))
+    val modelLoader = new CachingModelLoader(None)
     val config = new sx.Configuration("1.0")
 
-    test(Fixture(client, modelLoader, config))
+    test(Fixture(modelLoader, config))
   }
 
   def testMessageModelMessage(fixture: Fixture) {
@@ -56,23 +55,25 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
     config.setMessageModel(mModel)
 
     mModel.add(new sx.Message("Scada.UserLogin", "EVENT", 1, "User login {status} {reason}"))
-    LoadManager.loadConfiguration(loader, config, true) // T: benchmark
+    LoadManager.loadConfiguration(modelLoader, config, true) // T: benchmark
     var protos = List[AnyRef](toEvent("Scada.UserLogin", 1, "User login {status} {reason}"))
-    client.getPutQueue should equal(protos)
+    modelLoader.allProtos should equal(protos)
 
     mModel.reset
-    client.reset
+    modelLoader.reset
+
     mModel.add(new sx.Message("Scada.OutOfNominal", "LOG", 8, "User login {status} {reason}"))
-    LoadManager.loadConfiguration(loader, config, true) // T: benchmark
+    LoadManager.loadConfiguration(modelLoader, config, true) // T: benchmark
     protos = List[AnyRef](toLog("Scada.OutOfNominal", 8, "User login {status} {reason}"))
-    client.getPutQueue should equal(protos)
+    modelLoader.allProtos should equal(protos)
 
     mModel.reset
-    client.reset
+    modelLoader.reset
+
     mModel.add(new sx.Message("Scada.OutOfNominal", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
-    LoadManager.loadConfiguration(loader, config, true) // T: benchmark
+    LoadManager.loadConfiguration(modelLoader, config, true) // T: benchmark
     protos = List[AnyRef](toAlarm("Scada.OutOfNominal", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE))
-    client.getPutQueue should equal(protos)
+    modelLoader.allProtos should equal(protos)
 
   }
 
@@ -91,8 +92,8 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
     messageSet.add(new sx.Message("two", "ALARM", 0, "User login {status} {reason}"))
     messageSet.add(new sx.Message("three", "", 2, "User login {status} {reason}"))
     messageSet.add(new sx.Message("four", "", 0, "Something else"))
-    LoadManager.loadConfiguration(loader, config, true) // T: benchmark
-    val puts1 = client.getPutQueue.clone
+    LoadManager.loadConfiguration(modelLoader, config, true) // T: benchmark
+    val puts1 = modelLoader.allProtos
     val ec0 = puts1.head.asInstanceOf[EventConfig]
     ec0.getEventType should equal("Scada.one")
     ec0.getDesignation should equal(EventConfig.Designation.EVENT)
@@ -106,14 +107,16 @@ class MessageLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldM
     // Get a proto stream using NO MessageSet defaults
     //
     mModel.reset
+    modelLoader.reset
+
     messageSet = new sx.MessageSet("Scada")
-    messageSet.add(messageSet)
+    mModel.add(messageSet)
     messageSet.add(new sx.Message("one", "EVENT", 1, "User login {status} {reason}"))
     messageSet.add(new sx.Message("two", "ALARM", 1, "User login {status} {reason}", Alarm.State.UNACK_AUDIBLE.toString))
     messageSet.add(new sx.Message("three", "EVENT", 2, "User login {status} {reason}"))
     messageSet.add(new sx.Message("four", "EVENT", 1, "Something else"))
-    LoadManager.loadConfiguration(loader, config, true) // T: benchmark
-    val puts2 = client.getPutQueue
+    LoadManager.loadConfiguration(modelLoader, config, true) // T: benchmark
+    val puts2 = modelLoader.allProtos
 
     // Both streams should match
     puts1 should equal(puts2)

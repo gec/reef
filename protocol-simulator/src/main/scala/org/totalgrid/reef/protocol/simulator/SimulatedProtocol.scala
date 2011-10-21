@@ -55,7 +55,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
         throw new IllegalStateException("Endpoint has already been added: " + endpoint)
       case None =>
         // TODO: fix proto mimetype once loader is back up
-        val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping").getFile
+        val file = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.api.proto.SimMapping.SimulatorMapping").getFile
         val mapping = SimMapping.SimulatorMapping.parseFrom(file)
         val emptyRecord = new PluginRecord(endpoint, mapping, batchPublisher, None)
         endpoints += endpoint -> emptyRecord
