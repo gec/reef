@@ -68,7 +68,7 @@
 //    import org.totalgrid.reef.executor.ReactActorExecutor
 //    import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
 //    import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
-//    import org.totalgrid.reef.api.proto.ReefServicesList
+//    import org.totalgrid.reef.proto.ReefServicesList
 //
 //    val amqp = new AMQPProtoFactory with ReactActorExecutor {
 //      val broker = new QpidBrokerConnection(connectionInfo)

@@ -19,8 +19,8 @@
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Commands.CommandAccess
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Command }
+import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.None
 
 object CommandAccessRequestBuilders {

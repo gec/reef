@@ -24,7 +24,7 @@ import org.scalatest.fixture.FixtureSuite
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.api.proto.Alarms._
+import org.totalgrid.reef.proto.Alarms._
 
 import org.totalgrid.reef.loader.helpers.CachingModelLoader
 

@@ -22,8 +22,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Model.{ Point, Entity, Relationship }
-import org.totalgrid.reef.api.proto.Measurements.{ Measurement, MeasurementBatch, MeasurementSnapshot }
+import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
+import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch, MeasurementSnapshot }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest

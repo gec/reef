@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Alarms.Alarm
-import org.totalgrid.reef.api.proto.Alarms.EventConfig
+import org.totalgrid.reef.proto.Alarms.Alarm
+import org.totalgrid.reef.proto.Alarms.EventConfig
 
 object EventConfigRequestBuilders {
   private def makePartialEventConfig(eventTypeName: String, resource: String, severity: Int) = {

@@ -20,9 +20,9 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  */
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
-import org.totalgrid.reef.api.proto.Auth._
-import org.totalgrid.reef.api.proto.Model.ReefUUID
+import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.api.sapi.client.rpc.AgentService
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations

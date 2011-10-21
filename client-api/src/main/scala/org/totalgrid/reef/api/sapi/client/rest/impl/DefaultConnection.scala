@@ -24,7 +24,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.api.japi.{ TypeDescriptor, Envelope }
 import org.totalgrid.reef.api.japi.Envelope.Verb
-import org.totalgrid.reef.api.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 import org.totalgrid.reef.api.sapi.client.rest._
 import org.totalgrid.reef.api.sapi.client._
 

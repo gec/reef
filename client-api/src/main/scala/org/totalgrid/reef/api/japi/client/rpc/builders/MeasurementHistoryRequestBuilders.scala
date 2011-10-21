@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Model.Point
-import org.totalgrid.reef.api.proto.Measurements.MeasurementHistory
+import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Measurements.MeasurementHistory
 
 object MeasurementHistoryRequestBuilders {
   def getByPoint(point: Point, limit: Int) =

@@ -20,7 +20,7 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.Command
 
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 import presentation.ApplicationView
 
 @Command(scope = "application", name = "list", description = "Prints application information")

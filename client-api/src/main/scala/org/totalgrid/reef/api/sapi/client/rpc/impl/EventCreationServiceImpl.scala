@@ -18,13 +18,13 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.proto.Events.Event
-import org.totalgrid.reef.api.proto.Model.{ Entity, ReefUUID }
+import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 //import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
 import org.totalgrid.reef.api.sapi.client.rpc.EventCreationService
 import org.totalgrid.reef.api.sapi.client.rest.RestOperations

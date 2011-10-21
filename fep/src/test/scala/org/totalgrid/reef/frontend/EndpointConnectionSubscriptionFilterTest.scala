@@ -24,7 +24,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.app.ClearableMap
 import org.mockito.Mockito
-import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 
 import FrontEndTestHelpers._
 import org.totalgrid.reef.executor.mock.InstantExecutor

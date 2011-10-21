@@ -21,11 +21,11 @@ package org.totalgrid.reef.api.japi.client.rpc;
 import java.util.List;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.proto.Commands.CommandAccess;
-import org.totalgrid.reef.api.proto.Commands.CommandStatus;
-import org.totalgrid.reef.api.proto.Commands.UserCommandRequest;
-import org.totalgrid.reef.api.proto.Model.Command;
-import org.totalgrid.reef.api.proto.Model.ReefUUID;
+import org.totalgrid.reef.proto.Commands.CommandAccess;
+import org.totalgrid.reef.proto.Commands.CommandStatus;
+import org.totalgrid.reef.proto.Commands.UserCommandRequest;
+import org.totalgrid.reef.proto.Model.Command;
+import org.totalgrid.reef.proto.Model.ReefUUID;
 
 /**
  *

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Alarms._
+import org.totalgrid.reef.proto.Alarms._
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services.ServiceDependencies
 
-import org.totalgrid.reef.api.proto.Alarms.EventConfig.Designation
+import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
 import org.totalgrid.reef.api.japi.BadRequestException
 
 import org.totalgrid.reef.services.core.SyncServiceShims._

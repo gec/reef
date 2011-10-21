@@ -22,10 +22,10 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.proto.Model.ConfigFile
+import org.totalgrid.reef.proto.Model.ConfigFile
 import collection.mutable.ArrayBuffer
 import org.scalatest.BeforeAndAfter
-import org.totalgrid.reef.api.proto.Model
+import org.totalgrid.reef.proto.Model
 import java.util.{ Iterator, List }
 import collection.Seq
 import com.weiglewilczek.slf4s.Logging

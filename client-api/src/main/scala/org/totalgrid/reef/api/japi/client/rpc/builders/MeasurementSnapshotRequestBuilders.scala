@@ -19,8 +19,8 @@
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Model.Point
-import org.totalgrid.reef.api.proto.Measurements.MeasurementSnapshot
+import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 
 object MeasurementSnapshotRequestBuilders {
   def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build

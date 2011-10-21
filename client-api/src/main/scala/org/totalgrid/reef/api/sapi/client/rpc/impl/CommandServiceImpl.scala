@@ -18,8 +18,8 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.proto.Commands.CommandAccess
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Command }
+import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
 

@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.api.proto.Model.Command
+import org.totalgrid.reef.proto.Model.Command
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
+import org.totalgrid.reef.client.sapi.OptionalProtos._
 import org.totalgrid.reef.util.Table
 
 object CommandView {

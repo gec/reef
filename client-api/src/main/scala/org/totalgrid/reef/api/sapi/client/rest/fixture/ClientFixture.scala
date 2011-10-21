@@ -19,7 +19,7 @@ package org.totalgrid.reef.api.sapi.client.rest.fixture
  * the License.
  */
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.BrokerConnectionFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory

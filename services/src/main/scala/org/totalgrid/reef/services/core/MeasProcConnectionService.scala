@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Processing.{ MeasurementProcessingConnection => ConnProto, MeasurementProcessingRouting }
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto, MeasurementProcessingRouting }
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
@@ -27,8 +27,8 @@ import org.totalgrid.reef.api.japi.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicit proto properties

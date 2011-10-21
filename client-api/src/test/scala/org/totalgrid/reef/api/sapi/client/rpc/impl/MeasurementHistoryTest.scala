@@ -23,7 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.test.BlockingQueue
-import org.totalgrid.reef.api.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.PointRequestBuilders
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.japi.client.SubscriptionEvent

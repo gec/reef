@@ -22,8 +22,8 @@ import java.util.List;
 
 import org.totalgrid.reef.api.japi.settings.NodeSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig;
-import org.totalgrid.reef.api.proto.ProcessStatus.StatusSnapshot;
+import org.totalgrid.reef.proto.Application.ApplicationConfig;
+import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot;
 
 public interface ApplicationService
 {

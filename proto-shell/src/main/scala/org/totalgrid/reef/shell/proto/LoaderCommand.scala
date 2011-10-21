@@ -19,8 +19,8 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
-import org.totalgrid.reef.api.proto.Processing.TriggerSet
-import org.totalgrid.reef.api.proto.Model.Point
+import org.totalgrid.reef.proto.Processing.TriggerSet
+import org.totalgrid.reef.proto.Model.Point
 
 import presentation.TriggerView
 import RequestFailure._

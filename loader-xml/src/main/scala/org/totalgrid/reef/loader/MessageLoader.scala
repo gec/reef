@@ -21,7 +21,7 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.api.proto.Alarms._
+import org.totalgrid.reef.proto.Alarms._
 
 /**
  * Load the message configuration for alarms, events, and logs.

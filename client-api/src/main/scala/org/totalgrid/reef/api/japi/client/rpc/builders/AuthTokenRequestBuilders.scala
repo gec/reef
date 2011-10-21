@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
 
 object AuthTokenRequestBuilders {
   def requestAuthToken(user: String, password: String) = {

@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Events.EventSelect
-import org.totalgrid.reef.api.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
-import org.totalgrid.reef.api.proto.Model.Entity
+import org.totalgrid.reef.proto.Events.EventSelect
+import org.totalgrid.reef.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
+import org.totalgrid.reef.proto.Model.Entity
 
 // TODO: move builders to under sapi.impl
 

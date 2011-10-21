@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 
-import org.totalgrid.reef.api.proto.Measurements.MeasurementSnapshot
+import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
 
 import scala.collection.JavaConversions._
 

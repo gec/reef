@@ -20,11 +20,11 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.api.proto.Events.Event
+import org.totalgrid.reef.proto.Events.Event
 import org.totalgrid.reef.api.japi.ReefServiceException
-import org.totalgrid.reef.api.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline
 
 /**

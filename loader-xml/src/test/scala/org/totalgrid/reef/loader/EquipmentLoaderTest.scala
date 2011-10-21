@@ -31,13 +31,13 @@ import org.scalatest.mock.MockitoSugar
 import collection.mutable.{ Seq, Queue, HashMap }
 import com.weiglewilczek.slf4s.Logging
 import org.junit.Assert
-import org.totalgrid.reef.api.proto.Model.{ Entity, ConfigFile }
+import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
 import sx.communications.CommunicationsModel
 import sx.{ InfoXmlBean, ConfigFileXmlBean }
 import scala.None
 
 import org.totalgrid.reef.api.sapi.client.SuccessResponse
-import org.totalgrid.reef.api.proto.Model
+import org.totalgrid.reef.proto.Model
 
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with MockitoSugar with Logging {

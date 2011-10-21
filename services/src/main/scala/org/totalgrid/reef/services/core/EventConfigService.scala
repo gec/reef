@@ -18,15 +18,15 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Alarms._
+import org.totalgrid.reef.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventConfigStore }
 
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.api.sapi.impl.Descriptors
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.client.sapi.OptionalProtos._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
@@ -41,7 +41,7 @@ object EventConfigService {
     import org.squeryl.Table
     import org.totalgrid.reef.models.{ ApplicationSchema, EventConfigStore }
     import org.totalgrid.reef.event.EventType._
-    import org.totalgrid.reef.api.proto.Alarms._
+    import org.totalgrid.reef.proto.Alarms._
 
     inTransaction {
       if (ApplicationSchema.eventConfigs.Count.head == 0) {

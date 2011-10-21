@@ -19,10 +19,10 @@
 
 package org.totalgrid.reef.api.protocol.api
 
-import org.totalgrid.reef.api.proto.{ FEP, Commands, Measurements, Model }
+import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
 import FEP.CommChannel
-import org.totalgrid.reef.api.proto.Model.ConfigFile
+import org.totalgrid.reef.proto.Model.ConfigFile
 import com.weiglewilczek.slf4s.Logging
 
 trait Publisher[A] {

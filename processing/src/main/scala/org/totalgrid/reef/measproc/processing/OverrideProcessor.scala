@@ -23,8 +23,8 @@ import org.totalgrid.reef.persistence.ObjectCache
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.metrics.{ MetricsHooks }
-import org.totalgrid.reef.api.proto.Processing.MeasOverride
-import org.totalgrid.reef.api.proto.Measurements.{ DetailQual, Quality, Measurement }
+import org.totalgrid.reef.proto.Processing.MeasOverride
+import org.totalgrid.reef.proto.Measurements.{ DetailQual, Quality, Measurement }
 
 object OverrideProcessor {
   def transformSubstituted(meas: Measurement): Measurement = {

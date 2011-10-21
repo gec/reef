@@ -30,8 +30,8 @@ import org.scalatest.{ Assertions, BeforeAndAfterAll }
 import collection.mutable.{ HashMap }
 
 import collection.Seq
-import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommChannel }
-import org.totalgrid.reef.api.proto.Model.ConfigFile
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
+import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 @RunWith(classOf[JUnitRunner])

@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.api.proto.Model.{ Point, ReefUUID, Entity }
-import org.totalgrid.reef.api.proto.Measurements.{ Quality, DetailQual, Measurement, MeasurementBatch }
-import org.totalgrid.reef.api.proto.Processing.{ TriggerSet, MeasOverride }
+import org.totalgrid.reef.proto.Model.{ Point, ReefUUID, Entity }
+import org.totalgrid.reef.proto.Measurements.{ Quality, DetailQual, Measurement, MeasurementBatch }
+import org.totalgrid.reef.proto.Processing.{ TriggerSet, MeasOverride }
 
 object ProtoHelper {
 
@@ -136,7 +136,7 @@ object ProtoHelper {
       .build
   }
   def triggerRlcLow(measName: String) = {
-    import org.totalgrid.reef.api.proto.Processing._
+    import org.totalgrid.reef.proto.Processing._
     Trigger.newBuilder
       .setTriggerName("rlclow")
       .setStopProcessingWhen(ActivationType.HIGH)
@@ -165,7 +165,7 @@ object ProtoHelper {
               .build
   }
   def triggerTransformation(measName: String) = {
-    import org.totalgrid.reef.api.proto.Processing._
+    import org.totalgrid.reef.proto.Processing._
     Trigger.newBuilder
       .setTriggerName("trans")
       .setUnit("raw")

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Command }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object CommandRequestBuilders {
   def getAll() = Command.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build

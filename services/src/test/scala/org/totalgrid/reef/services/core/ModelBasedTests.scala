@@ -23,8 +23,8 @@ import org.junit.runner.RunWith
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto, Relationship }
-import org.totalgrid.reef.api.proto.Model.{ Point => PointProto }
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
+import org.totalgrid.reef.proto.Model.{ Point => PointProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services._
 

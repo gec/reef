@@ -21,13 +21,13 @@ package org.totalgrid.reef.app
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.api.japi.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import net.agileautomata.executor4s.ExecutorService
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 
 trait ConnectionConsumer {

@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.proto.Events.Event
-import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
 
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }

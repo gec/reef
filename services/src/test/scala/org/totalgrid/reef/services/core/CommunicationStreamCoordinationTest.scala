@@ -23,8 +23,8 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.services.ConnectionFixture
 
-import org.totalgrid.reef.api.proto.FEP._
-import org.totalgrid.reef.api.proto.Processing._
+import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.api.japi.Envelope.Event
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import org.totalgrid.reef.api.proto.Measurements
+import org.totalgrid.reef.proto.Measurements
 
 object MeasSink {
   type Meas = Measurements.Measurement

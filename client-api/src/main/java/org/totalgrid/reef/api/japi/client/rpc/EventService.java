@@ -21,8 +21,8 @@ package org.totalgrid.reef.api.japi.client.rpc;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.client.SubscriptionCreator;
 import org.totalgrid.reef.api.japi.client.SubscriptionResult;
-import org.totalgrid.reef.api.proto.Events.Event;
-import org.totalgrid.reef.api.proto.Events.EventSelect;
+import org.totalgrid.reef.proto.Events.Event;
+import org.totalgrid.reef.proto.Events.EventSelect;
 
 import java.util.List;
 

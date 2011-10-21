@@ -20,9 +20,9 @@
  * Proto definition file for ProcessStatus.
  * 
  * <pre>
- * package org.totalgrid.reef.api.proto.ProcessStatus;
+ * package org.totalgrid.reef.proto.ProcessStatus;
  * 
- * option java_package = "org.totalgrid.reef.api.proto";
+ * option java_package = "org.totalgrid.reef.proto";
  * import "Model.proto";
  * 
  * message StatusSnapshot {

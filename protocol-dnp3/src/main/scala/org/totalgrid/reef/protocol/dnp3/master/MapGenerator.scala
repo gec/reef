@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.master
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.proto.Mapping
+import org.totalgrid.reef.proto.Mapping
 
 object MapGenerator {
 

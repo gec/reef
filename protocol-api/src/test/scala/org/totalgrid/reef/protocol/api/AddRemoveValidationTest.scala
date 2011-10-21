@@ -24,7 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.api.proto.FEP
+import org.totalgrid.reef.proto.FEP
 
 @RunWith(classOf[JUnitRunner])
 class AddRemoveValidationTest extends FunSuite with ShouldMatchers {

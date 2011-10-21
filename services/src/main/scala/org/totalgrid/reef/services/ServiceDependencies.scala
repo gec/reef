@@ -29,7 +29,7 @@ import org.totalgrid.reef.api.japi.Envelope.Event
 import org.totalgrid.reef.api.sapi.service.AsyncService
 import net.agileautomata.executor4s.{ Executor => Executor4S }
 import org.totalgrid.reef.api.japi.client.Routable
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServicesList
 
 // TODO: move MockConnection down to test classes that use it
 class MockConnection extends Connection {

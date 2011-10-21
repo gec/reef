@@ -28,7 +28,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.app._
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.Cancelable
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService

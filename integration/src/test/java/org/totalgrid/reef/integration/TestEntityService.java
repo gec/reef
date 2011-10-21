@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.client.rpc.EntityService;
 import org.totalgrid.reef.api.japi.client.rpc.PointService;
-import org.totalgrid.reef.api.proto.Model.*;
+import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;
 import java.util.Map;

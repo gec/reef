@@ -28,11 +28,11 @@ import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.api.japi.client.Subscription;
 import org.totalgrid.reef.api.japi.client.SubscriptionResult;
-import org.totalgrid.reef.api.proto.Alarms;
-import org.totalgrid.reef.api.proto.Alarms.Alarm;
-import org.totalgrid.reef.api.proto.Events;
-import org.totalgrid.reef.api.proto.Model;
-import org.totalgrid.reef.api.proto.Utils;
+import org.totalgrid.reef.proto.Alarms;
+import org.totalgrid.reef.proto.Alarms.Alarm;
+import org.totalgrid.reef.proto.Events;
+import org.totalgrid.reef.proto.Model;
+import org.totalgrid.reef.proto.Utils;
 
 import java.util.Arrays;
 import java.util.LinkedList;

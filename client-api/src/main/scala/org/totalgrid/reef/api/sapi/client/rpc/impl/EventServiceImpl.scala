@@ -19,12 +19,12 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * the License.
  */
 
-import org.totalgrid.reef.api.proto.Events.EventSelect
+import org.totalgrid.reef.proto.Events.EventSelect
 
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.sapi.client.rpc.EventService
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.{ EventRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 

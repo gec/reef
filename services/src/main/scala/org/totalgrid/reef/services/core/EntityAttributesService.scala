@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
-import org.totalgrid.reef.api.proto.Utils.Attribute
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
+import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.client.sapi.Descriptors
 
 import org.totalgrid.reef.api.sapi.client.Response
 import org.totalgrid.reef.api.japi.BadRequestException
@@ -101,7 +101,7 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
 
 object EntityAttributesService {
   import org.squeryl.PrimitiveTypeMode._
-  import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+  import org.totalgrid.reef.client.sapi.OptionalProtos._
   import com.google.protobuf.ByteString
 
   def deleteAllFromEntity(entityId: UUID) = {

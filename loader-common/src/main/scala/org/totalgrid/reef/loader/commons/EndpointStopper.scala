@@ -21,8 +21,8 @@ package org.totalgrid.reef.loader.commons
 import scala.collection.JavaConversions._
 
 import java.io.PrintStream
-import org.totalgrid.reef.api.proto.Model.ReefUUID
-import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, CommEndpointConfig }
+import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommEndpointConfig }
 
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEventAcceptor, SubscriptionEvent }
 import java.util.concurrent.{ TimeUnit, LinkedBlockingDeque }

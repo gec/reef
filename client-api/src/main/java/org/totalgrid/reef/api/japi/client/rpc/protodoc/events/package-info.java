@@ -20,12 +20,12 @@
  * Proto definition file for Events.
  * 
  * <pre>
- * package org.totalgrid.reef.api.proto.Events;
+ * package org.totalgrid.reef.proto.Events;
  * 
  * import "Model.proto";
  * import "Utils.proto";
  * 
- * option java_package = "org.totalgrid.reef.api.proto";
+ * option java_package = "org.totalgrid.reef.proto";
  * option java_outer_classname = "Events";
  * 
  * 
@@ -94,8 +94,8 @@
  *   optional uint32   severity      =  6;   // 1 is most severe. Number of severity levels is configurable (default is 1-8).
  *   optional string   subsystem     =  7;   // Subsystem that authored this event (frontend, measproc, etc.)
  *   optional string   user_id       =  8;   // User's login ID. TODO: this should be Agent
- *   optional org.totalgrid.reef.api.proto.Model.Entity entity =  9;   // Device or point (ex: southeast.substationAlpha.bay42.breaker23)
- *   optional org.totalgrid.reef.api.proto.Utils.AttributeList args = 10;   // Extra arguments for a specific event. Used by the localization resource string.
+ *   optional org.totalgrid.reef.proto.Model.Entity entity =  9;   // Device or point (ex: southeast.substationAlpha.bay42.breaker23)
+ *   optional org.totalgrid.reef.proto.Utils.AttributeList args = 10;   // Extra arguments for a specific event. Used by the localization resource string.
  *   optional string   rendered      = 11;   // This event rendered as a localized string.
  * }
  * 
@@ -114,7 +114,7 @@
  *   optional uint32   severity_or_higher =  5 ;  // If present, overrides severity list above. Ex: '3' selects 1, 2 & 3.
  *   repeated string   subsystem          =  6 ;  // List of subsystems  
  *   repeated string   user_id            =  7 ;  // List of userIds
- *   repeated org.totalgrid.reef.api.proto.Model.Entity entity =  8;   // List of devices or points (ex: southeast.substationAlpha.bay42.breaker23)
+ *   repeated org.totalgrid.reef.proto.Model.Entity entity =  8;   // List of devices or points (ex: southeast.substationAlpha.bay42.breaker23)
  *   optional uint32   limit              =  9 ;  // Max number of rows for select result
  *   optional bool     ascending          = 10 ;  // Time sort order. If not present, order is descending.
  *   //optional string   uid_after          = 11 ;  // Get events after this UID (not including this uid). Used for getting new events since last select.

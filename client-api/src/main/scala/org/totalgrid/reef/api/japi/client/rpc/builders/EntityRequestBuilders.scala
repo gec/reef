@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Model.{ Entity, Relationship, ReefUUID }
+import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
 
 object EntityRequestBuilders {
 

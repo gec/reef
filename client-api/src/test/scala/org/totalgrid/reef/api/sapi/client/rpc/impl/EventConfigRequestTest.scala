@@ -21,10 +21,10 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.proto.Utils.Attribute
+import org.totalgrid.reef.proto.Utils.Attribute
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Alarms.EventConfig
+import org.totalgrid.reef.proto.Alarms.EventConfig
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigRequestTest

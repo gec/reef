@@ -90,7 +90,7 @@ end
 def processLines(opt_file, deserializers, lines)
   inEnum = false
   built_ins = ['string','bytes','uint32','bool', 'double', 'sint64', 'uint64','int32', 'int64','Severity', 'Type', 'CommandStatus']
-  ns = "org.totalgrid.reef.api.proto"
+  ns = "org.totalgrid.reef.proto"
   cn = false
   lines.each do |line|
     if starts_with?(line, "//")
@@ -168,15 +168,15 @@ def generatePackageInfo(fname, file_text)
   f.close
 end
 
-f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/api/sapi/impl/OptionalProtos.scala"), 'wb')
+f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
 
 types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth]
 
-scala_imports = types.collect{|t| "import org.totalgrid.reef.api.proto.#{t}._"}.join("\n")
+scala_imports = types.collect{|t| "import org.totalgrid.reef.proto.#{t}._"}.join("\n")
 java_imports = scala_imports.gsub("_","*")
 
 f.puts <<EOF
-package org.totalgrid.reef.api.sapi.impl
+package org.totalgrid.reef.client.sapi
 
 #{scala_imports}
 
@@ -187,10 +187,10 @@ object OptionalProtos {
 
 EOF
 
-deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/api/sapi/impl/Descriptors.scala"), 'wb')
+deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/Descriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
-package org.totalgrid.reef.api.sapi.impl
+package org.totalgrid.reef.client.sapi
 
 import org.totalgrid.reef.api.japi.TypeDescriptor
 

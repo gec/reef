@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.api.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
+import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
 
 import org.totalgrid.reef.api.protocol.api.CommandHandler
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }

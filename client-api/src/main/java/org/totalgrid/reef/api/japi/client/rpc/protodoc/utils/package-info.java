@@ -20,10 +20,10 @@
  * Proto definition file for Utils.
  * 
  * <pre>
- * package org.totalgrid.reef.api.proto.Utils;
+ * package org.totalgrid.reef.proto.Utils;
  * 
  * 
- * option java_package = "org.totalgrid.reef.api.proto";
+ * option java_package = "org.totalgrid.reef.proto";
  * option java_outer_classname = "Utils";
  * 
  * 

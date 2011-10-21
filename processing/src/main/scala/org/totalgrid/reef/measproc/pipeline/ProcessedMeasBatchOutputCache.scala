@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.measproc.pipeline
 
-import org.totalgrid.reef.api.proto.Measurements.Measurement
-import org.totalgrid.reef.api.proto.Events
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Events
 import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.persistence.KeyValue
 

@@ -28,9 +28,9 @@ import org.totalgrid.reef.api.japi.client.rpc.MeasurementOverrideService;
 import org.totalgrid.reef.api.japi.client.rpc.MeasurementService;
 
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.MeasurementRequestBuilders;
-import org.totalgrid.reef.api.proto.Measurements.*;
-import org.totalgrid.reef.api.proto.Model.*;
-import org.totalgrid.reef.api.proto.Processing.MeasOverride;
+import org.totalgrid.reef.proto.Measurements.*;
+import org.totalgrid.reef.proto.Model.*;
+import org.totalgrid.reef.proto.Processing.MeasOverride;
 
 import java.util.Comparator;
 import java.util.LinkedList;

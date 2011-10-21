@@ -22,7 +22,7 @@ import scala.collection.mutable
 
 import org.totalgrid.reef.util.SafeExecution
 
-import org.totalgrid.reef.api.proto.{ Mapping, Commands }
+import org.totalgrid.reef.proto.{ Mapping, Commands }
 
 import org.totalgrid.reef.api.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.protocol.dnp3._

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.api.protocol.simulator
 
 import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.api.proto.{ Measurements, SimMapping, Commands }
+import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
 import org.totalgrid.reef.executor.Executor
 
 trait SimulatorPluginFactory {

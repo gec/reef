@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Events.Event
-import org.totalgrid.reef.api.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
 object EventRequestBuilders {
   def makeNewEventForEntityByName(eventType: String, entityName: String) = {

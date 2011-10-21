@@ -20,19 +20,19 @@
  * Proto definition file for Processing.
  * 
  * <pre>
- * package org.totalgrid.reef.api.proto.Processing;
+ * package org.totalgrid.reef.proto.Processing;
  * 
  * import "Model.proto";
  * import "Measurements.proto";
  * import "ApplicationManagement.proto";
- * option java_package = "org.totalgrid.reef.api.proto";
+ * option java_package = "org.totalgrid.reef.proto";
  * 
  * // To place a point in the OperatorBlocked state (aka. Not In Service),
  * // send a MeasOverride without a Measurement.
  * //
  * message MeasOverride {
- *   required org.totalgrid.reef.api.proto.Model.Point point = 1;
- *   optional org.totalgrid.reef.api.proto.Measurements.Measurement meas = 2;
+ *   required org.totalgrid.reef.proto.Model.Point point = 1;
+ *   optional org.totalgrid.reef.proto.Measurements.Measurement meas = 2;
  * }
  * 
  * enum ActivationType {
@@ -49,7 +49,7 @@
  *   optional bool disabled = 3;
  *   
  *   optional LinearTransform                          linear_transform = 10;
- *   optional org.totalgrid.reef.api.proto.Measurements.Quality      quality_annotation = 11;
+ *   optional org.totalgrid.reef.proto.Measurements.Quality      quality_annotation = 11;
  *   optional bool                                     strip_value = 12;
  *   optional bool                                     set_bool = 13;
  *   optional string                                   set_unit = 14;  // "to" unit
@@ -90,9 +90,9 @@
  *   // Types of triggers:
  *   //
  *   optional AnalogLimit                                    analog_limit = 10;
- *   optional org.totalgrid.reef.api.proto.Measurements.Quality            quality = 12;
+ *   optional org.totalgrid.reef.proto.Measurements.Quality            quality = 12;
  *   optional string                                         unit = 13;       // "from" unit
- *   optional org.totalgrid.reef.api.proto.Measurements.Measurement.Type   value_type = 14;
+ *   optional org.totalgrid.reef.proto.Measurements.Measurement.Type   value_type = 14;
  *   optional bool                                           bool_value = 15;
  *   optional string                                         string_value = 16;
  *   optional sint64                                         int_value    = 17;
@@ -103,8 +103,8 @@
  * // previous TriggerSet for said point.
  * //
  * message TriggerSet {
- *   optional org.totalgrid.reef.api.proto.Model.ReefUUID       uuid = 3;
- *   optional org.totalgrid.reef.api.proto.Model.Point point = 1;
+ *   optional org.totalgrid.reef.proto.Model.ReefUUID       uuid = 3;
+ *   optional org.totalgrid.reef.proto.Model.Point point = 1;
  *   repeated Trigger triggers = 2;
  * }
  * 
@@ -137,8 +137,8 @@
  * 
  * message MeasurementProcessingConnection{
  *     optional string                       uid                   = 1;
- *     optional org.totalgrid.reef.api.proto.Application.ApplicationConfig meas_proc = 2;
- *     optional org.totalgrid.reef.api.proto.Model.Entity logicalNode         = 3;
+ *     optional org.totalgrid.reef.proto.Application.ApplicationConfig meas_proc = 2;
+ *     optional org.totalgrid.reef.proto.Model.Entity logicalNode         = 3;
  *     optional MeasurementProcessingRouting routing               = 5;
  *     optional uint64                       assignedTime          = 6;
  *     optional uint64                       readyTime             = 7;

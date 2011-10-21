@@ -22,8 +22,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.api.proto.ProcessStatus._
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.ProcessStatus._
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.ServiceDependencies
 import com.google.protobuf.GeneratedMessage

@@ -26,7 +26,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore }
 
-import org.totalgrid.reef.api.proto.Measurements
+import org.totalgrid.reef.proto.Measurements
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 
 trait CommunicationEndpointOfflineBehaviors extends Logging {

@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.api.proto.Measurements.Quality.Source
+import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.proto.Measurements.Quality.Source
 
 object MeasurementRequestBuilders {
   def makeIntMeasurement(name: String, value: Int, time: Long) = {

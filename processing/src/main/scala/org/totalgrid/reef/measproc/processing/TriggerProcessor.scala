@@ -26,8 +26,8 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 
 import org.totalgrid.reef.metrics.MetricsHooks
-import org.totalgrid.reef.api.proto.Measurements.Measurement
-import org.totalgrid.reef.api.proto.Processing.TriggerSet
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Processing.TriggerSet
 
 class TriggerProcessor(protected val next: Measurement => Unit,
   protected val factory: TriggerFactory,

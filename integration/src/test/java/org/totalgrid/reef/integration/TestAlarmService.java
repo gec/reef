@@ -27,8 +27,8 @@ import org.totalgrid.reef.api.japi.client.rpc.EntityService;
 import org.totalgrid.reef.api.japi.client.rpc.EventConfigService;
 import org.totalgrid.reef.api.japi.client.rpc.EventCreationService;
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.EntityRequestBuilders;
-import org.totalgrid.reef.api.proto.Alarms.*;
-import org.totalgrid.reef.api.proto.Model.Entity;
+import org.totalgrid.reef.proto.Alarms.*;
+import org.totalgrid.reef.proto.Model.Entity;
 
 import java.util.LinkedList;
 import java.util.List;

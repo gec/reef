@@ -36,11 +36,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Measurements._
-import org.totalgrid.reef.api.proto.FEP._
-import org.totalgrid.reef.api.proto.Processing._
-import org.totalgrid.reef.api.proto.Model._
-import org.totalgrid.reef.api.proto.Application._
+import org.totalgrid.reef.proto.Measurements._
+import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.proto.Model._
+import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
@@ -56,12 +56,12 @@ import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.service.SyncServiceBase
-import org.totalgrid.reef.api.proto.Events
+import org.totalgrid.reef.proto.Events
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.api.sapi.client.{ Event, BasicRequestHeaders }
-import org.totalgrid.reef.api.proto.Commands.UserCommandRequest
+import org.totalgrid.reef.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.api.japi.client.AddressableDestination
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {

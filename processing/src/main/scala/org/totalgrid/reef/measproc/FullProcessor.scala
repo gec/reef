@@ -21,8 +21,8 @@ package org.totalgrid.reef.measproc
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.Timer
 import org.totalgrid.reef.executor.{ Executor, Lifecycle }
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.api.japi.ReefServiceException
 

@@ -19,17 +19,17 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models.{ CommandAccessModel => AccessModel }
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 
 import ServiceBehaviors._
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 
 class CommandAccessService(protected val model: CommandAccessServiceModel)
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]

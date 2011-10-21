@@ -22,9 +22,9 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.api.proto.ProcessStatus._
+import org.totalgrid.reef.proto.ProcessStatus._
 
-import org.totalgrid.reef.api.proto.Application.{ ApplicationConfig, HeartbeatConfig }
+import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.api.sapi.client.Event
@@ -32,7 +32,7 @@ import org.totalgrid.reef.api.sapi.client.Event
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.services.framework.ServiceMiddleware
 import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 
 import org.totalgrid.reef.services.{ ConnectionFixture, ServiceDependencies, ServiceBootstrap }
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

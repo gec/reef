@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.api.proto.{ Measurements, Commands, Mapping }
+import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
 
 import org.totalgrid.reef.protocol.dnp3._
 

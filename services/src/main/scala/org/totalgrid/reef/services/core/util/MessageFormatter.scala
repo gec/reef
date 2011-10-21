@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core.util
 
-import org.totalgrid.reef.api.proto.Utils
+import org.totalgrid.reef.proto.Utils
 
 /**
  *

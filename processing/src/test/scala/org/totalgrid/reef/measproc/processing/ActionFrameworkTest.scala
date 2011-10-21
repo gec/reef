@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.mutable
-import org.totalgrid.reef.api.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.measproc.ProtoHelper
 
 @RunWith(classOf[JUnitRunner])

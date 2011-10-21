@@ -35,7 +35,7 @@ import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbConnector }
 import org.totalgrid.reef.persistence.squeryl.DbInfo
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServicesList
 import net.agileautomata.executor4s.{ Executors, ExecutorService }
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 

@@ -19,8 +19,8 @@
 package org.totalgrid.reef.api.japi.client.rpc;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.proto.Auth;
-import org.totalgrid.reef.api.proto.Auth.AuthToken;
+import org.totalgrid.reef.proto.Auth;
+import org.totalgrid.reef.proto.Auth.AuthToken;
 
 /**
  * A service for retrieving and deleting authorization tokens needed to access all other Reef services.

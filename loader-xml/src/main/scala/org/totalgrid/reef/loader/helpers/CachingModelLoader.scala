@@ -19,10 +19,10 @@
 
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.api.proto.Model._
-import org.totalgrid.reef.api.proto.Alarms._
-import org.totalgrid.reef.api.proto.FEP._
-import org.totalgrid.reef.api.proto.Processing._
+import org.totalgrid.reef.proto.Model._
+import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
 import com.weiglewilczek.slf4s.Logging
 import collection.mutable.Map

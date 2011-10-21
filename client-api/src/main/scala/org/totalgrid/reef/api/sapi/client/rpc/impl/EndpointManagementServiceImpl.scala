@@ -19,16 +19,16 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * the License.
  */
 
-import org.totalgrid.reef.api.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Model.ReefUUID
 
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.client.sapi.OptionalProtos._
 
-import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.api.sapi.client.rpc.EndpointManagementService
 import org.totalgrid.reef.api.sapi.client.Promise
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait EndpointManagementServiceImpl extends HasAnnotatedOperations with EndpointManagementService {

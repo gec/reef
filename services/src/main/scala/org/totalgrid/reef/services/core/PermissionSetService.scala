@@ -21,14 +21,14 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.client.sapi.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.api.japi.BadRequestException
-import org.totalgrid.reef.api.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
+import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)

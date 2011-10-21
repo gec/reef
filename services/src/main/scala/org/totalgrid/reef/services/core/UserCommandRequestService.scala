@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
-import org.totalgrid.reef.api.proto.Commands.{ CommandStatus, UserCommandRequest }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.api.sapi.client.rest.Client

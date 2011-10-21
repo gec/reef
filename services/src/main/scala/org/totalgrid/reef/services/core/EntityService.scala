@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.api.sapi.impl.Descriptors
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.client.sapi.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -90,7 +90,7 @@ class EntityService extends SyncServiceBase[EntityProto] {
   }
 }
 
-import org.totalgrid.reef.api.proto.Model.{ EntityEdge => EntityEdgeProto }
+import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
 class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {

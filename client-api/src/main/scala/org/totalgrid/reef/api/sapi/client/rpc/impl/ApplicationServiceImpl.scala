@@ -18,7 +18,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.ApplicationConfigBuilders
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 

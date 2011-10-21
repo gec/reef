@@ -23,8 +23,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Commands.{ CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.api.proto.Commands
+import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.proto.Commands
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest

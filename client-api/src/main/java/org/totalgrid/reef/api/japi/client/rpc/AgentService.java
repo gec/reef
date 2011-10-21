@@ -19,9 +19,9 @@
 package org.totalgrid.reef.api.japi.client.rpc;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.proto.Auth.Agent;
-import org.totalgrid.reef.api.proto.Auth.Permission;
-import org.totalgrid.reef.api.proto.Auth.PermissionSet;
+import org.totalgrid.reef.proto.Auth.Agent;
+import org.totalgrid.reef.proto.Auth.Permission;
+import org.totalgrid.reef.proto.Auth.PermissionSet;
 
 import java.util.List;
 

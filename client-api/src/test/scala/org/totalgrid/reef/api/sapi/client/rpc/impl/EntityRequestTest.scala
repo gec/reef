@@ -22,7 +22,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Entity }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity }
 import java.util.UUID
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.EntityRequestBuilders
 

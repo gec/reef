@@ -18,11 +18,11 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.proto.Model.Point
+import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
-import org.totalgrid.reef.api.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
+import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 import org.totalgrid.reef.api.sapi.client.rpc.MeasurementService
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.api.japi.ExpectationException
 import org.totalgrid.reef.api.sapi.client.rest.RestOperations

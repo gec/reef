@@ -21,7 +21,7 @@ package org.totalgrid.reef.measurementstore.encoders
 import java.util.zip.{ Inflater, Deflater }
 import java.io.ByteArrayOutputStream
 
-import org.totalgrid.reef.api.proto.Measurements
+import org.totalgrid.reef.proto.Measurements
 
 object JavaZipping {
 

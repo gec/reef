@@ -35,7 +35,7 @@ import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServiceJavaShimWrappe
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection;
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList;
+import org.totalgrid.reef.client.sapi.ReefServicesList;
 import org.totalgrid.reef.broker.BrokerConnection;
 import org.totalgrid.reef.broker.BrokerConnectionFactory;
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;

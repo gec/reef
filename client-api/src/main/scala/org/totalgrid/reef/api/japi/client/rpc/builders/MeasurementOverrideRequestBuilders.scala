@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Measurements.Measurement
-import org.totalgrid.reef.api.proto.Model.Point
-import org.totalgrid.reef.api.proto.Processing.MeasOverride
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Processing.MeasOverride
 
 object MeasurementOverrideRequestBuilders {
   def makeOverride(point: Point, measurement: Measurement) = {

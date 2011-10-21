@@ -20,12 +20,12 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.api.proto.Auth._
+import org.totalgrid.reef.proto.Auth._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.api.japi.BadRequestException
-import org.totalgrid.reef.api.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 

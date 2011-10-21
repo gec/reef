@@ -22,7 +22,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.proto.{ Model, SimMapping, Measurements, Commands }
+import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.api.protocol.api.{ NullEndpointPublisher, Publisher }
 import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.executor.Executor
@@ -55,7 +55,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
 
   def getConfigFiles(index: SimMapping.SimulatorMapping = simpleMapping) = {
     Model.ConfigFile.newBuilder().setName("mapping")
-      .setMimeType("application/vnd.google.protobuf; proto=reef.api.proto.SimMapping.SimulatorMapping")
+      .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(index.toByteString).build :: Nil
   }
 

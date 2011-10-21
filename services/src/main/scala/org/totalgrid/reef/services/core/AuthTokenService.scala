@@ -19,16 +19,16 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.proto.Auth._
-import org.totalgrid.reef.api.proto.Events._
+import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.proto.Events._
 import org.totalgrid.reef.api.japi.Envelope.Status
 import org.totalgrid.reef.api.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.client.sapi.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }

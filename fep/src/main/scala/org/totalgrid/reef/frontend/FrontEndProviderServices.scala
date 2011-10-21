@@ -18,19 +18,19 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.api.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.protocol.api.CommandHandler
 import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.api.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Model.ReefUUID
 
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.api.sapi.client.Promise
 import org.totalgrid.reef.api.japi.client.AddressableDestination
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client, SubscriptionResult }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
 

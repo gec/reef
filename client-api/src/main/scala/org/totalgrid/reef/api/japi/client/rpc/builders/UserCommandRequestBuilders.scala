@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Command }
+import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 
 object UserCommandRequestBuilders {
 

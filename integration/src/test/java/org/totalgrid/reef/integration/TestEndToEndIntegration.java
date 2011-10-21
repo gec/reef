@@ -30,8 +30,8 @@ import org.totalgrid.reef.api.japi.client.Subscription;
 import org.totalgrid.reef.api.japi.client.SubscriptionEvent;
 import org.totalgrid.reef.api.japi.client.SubscriptionResult;
 import org.totalgrid.reef.api.japi.client.rpc.PointService;
-import org.totalgrid.reef.api.proto.Measurements;
-import org.totalgrid.reef.api.proto.Model;
+import org.totalgrid.reef.proto.Measurements;
+import org.totalgrid.reef.proto.Model;
 
 import java.util.List;
 

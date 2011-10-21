@@ -20,8 +20,8 @@ package org.totalgrid.reef.protocol.dnp3.master
 
 import org.totalgrid.reef.util.SafeExecution
 
-import org.totalgrid.reef.api.proto.Mapping
-import org.totalgrid.reef.api.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
+import org.totalgrid.reef.proto.Mapping
+import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, MeasurementBatch => MeasBatch }
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 

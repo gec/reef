@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Utils.Attribute
+import org.totalgrid.reef.proto.Utils.Attribute
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Entity, EntityAttributes }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
 
 object EntityAttributesBuilders {
 

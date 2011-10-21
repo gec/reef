@@ -30,7 +30,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.framework.ServerSideProcess
-import org.totalgrid.reef.api.sapi.impl.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 

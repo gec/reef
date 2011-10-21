@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.api.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.proto.Model.Point
-import org.totalgrid.reef.api.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
+import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
 
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.api.sapi.client.Promise
 import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, Client, Connection }
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.api.japi.client.AddressableDestination

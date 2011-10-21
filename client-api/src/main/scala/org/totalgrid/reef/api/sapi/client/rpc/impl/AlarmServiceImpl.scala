@@ -19,16 +19,16 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * the License.
  */
 
-import org.totalgrid.reef.api.proto.Alarms.Alarm
+import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.api.japi.client.rpc.impl.builders.{ AlarmListRequestBuilders, AlarmRequestBuilders }
 
-import org.totalgrid.reef.api.sapi.impl.OptionalProtos._
+import org.totalgrid.reef.client.sapi.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.proto.Model.Entity
+import org.totalgrid.reef.proto.Model.Entity
 
 import org.totalgrid.reef.api.sapi.client.rpc.AlarmService
-import org.totalgrid.reef.api.sapi.impl.Descriptors
+import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {

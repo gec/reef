@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.api.proto.{ Mapping, Commands }
+import org.totalgrid.reef.proto.{ Mapping, Commands }
 import scala.collection.mutable
 
 import org.scalatest.Suite

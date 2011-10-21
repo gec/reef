@@ -23,11 +23,11 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.api.proto.{ Commands, SimMapping, Measurements }
+import org.totalgrid.reef.proto.{ Commands, SimMapping, Measurements }
 import org.totalgrid.reef.simulator.example.ExampleSimulatorFactory
 import org.totalgrid.reef.executor.mock.MockExecutor
 import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.api.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 @RunWith(classOf[JUnitRunner])
 class ExampleSimulatorTest extends FunSuite with ShouldMatchers {

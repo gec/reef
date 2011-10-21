@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.protocol.api.mock
 
 import org.totalgrid.reef.api.protocol.api.Protocol._
 import org.totalgrid.reef.api.protocol.api._
-import org.totalgrid.reef.api.proto.{ FEP, Model }
+import org.totalgrid.reef.proto.{ FEP, Model }
 
 class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {
 

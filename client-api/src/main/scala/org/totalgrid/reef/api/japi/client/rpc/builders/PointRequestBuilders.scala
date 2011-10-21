@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.japi.client.rpc.impl.builders
 
-import org.totalgrid.reef.api.proto.Model.{ ReefUUID, Entity, Point }
+import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, Point }
 
 object PointRequestBuilders {
   def getAll = Point.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build

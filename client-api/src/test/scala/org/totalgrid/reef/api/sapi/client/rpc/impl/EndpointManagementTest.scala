@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.EmptySyncVar
 
-import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 
 @RunWith(classOf[JUnitRunner])
 class EndpointManagementTest

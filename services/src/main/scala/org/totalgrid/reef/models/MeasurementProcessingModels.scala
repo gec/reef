@@ -19,7 +19,7 @@
 package org.totalgrid.reef.models
 
 import org.totalgrid.reef.util.LazyVar
-import org.totalgrid.reef.api.proto.Processing.MeasOverride
+import org.totalgrid.reef.proto.Processing.MeasOverride
 
 case class TriggerSet(
     val pointId: Long,

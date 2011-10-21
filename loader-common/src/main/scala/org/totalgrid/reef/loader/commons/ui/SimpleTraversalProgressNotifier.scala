@@ -19,7 +19,7 @@
 package org.totalgrid.reef.loader.commons.ui
 
 import java.io.PrintStream
-import org.totalgrid.reef.api.proto.Model.Entity
+import org.totalgrid.reef.proto.Model.Entity
 import org.totalgrid.reef.loader.commons.TraversalProgressNotifier
 
 class SimpleTraversalProgressNotifier(stream: PrintStream) extends TraversalProgressNotifier {

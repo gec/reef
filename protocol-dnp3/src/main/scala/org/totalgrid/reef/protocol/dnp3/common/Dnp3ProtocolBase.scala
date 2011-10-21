@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.common
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.proto.{ FEP, Mapping, Model }
+import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 
 import org.totalgrid.reef.api.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._
@@ -90,7 +90,7 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
   }
 
   protected def getMappingProto(files: List[Model.ConfigFile]) = {
-    val configFile = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.api.proto.Mapping.IndexMapping")
+    val configFile = Protocol.find(files, "application/vnd.google.protobuf; proto=reef.proto.Mapping.IndexMapping")
     Mapping.IndexMapping.parseFrom(configFile.getFile)
   }
 

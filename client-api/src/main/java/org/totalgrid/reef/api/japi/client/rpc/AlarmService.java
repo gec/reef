@@ -21,8 +21,8 @@ package org.totalgrid.reef.api.japi.client.rpc;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.client.SubscriptionCreator;
 import org.totalgrid.reef.api.japi.client.SubscriptionResult;
-import org.totalgrid.reef.api.proto.Alarms.Alarm;
-import org.totalgrid.reef.api.proto.Model.Entity;
+import org.totalgrid.reef.proto.Alarms.Alarm;
+import org.totalgrid.reef.proto.Model.Entity;
 
 import java.util.List;
 

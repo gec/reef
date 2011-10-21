@@ -1,4 +1,4 @@
-package org.totalgrid.reef.api.sapi.impl
+package org.totalgrid.reef.client.sapi
 
 import org.totalgrid.reef.api.japi.TypeDescriptor
 import org.totalgrid.reef.api.sapi.types.{ ServiceListOnMap, ServiceInfo, ServiceList }

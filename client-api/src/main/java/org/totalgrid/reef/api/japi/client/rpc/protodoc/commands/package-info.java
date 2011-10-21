@@ -20,9 +20,9 @@
  * Proto definition file for Commands.
  * 
  * <pre>
- * package org.totalgrid.reef.api.proto.Commands;
+ * package org.totalgrid.reef.proto.Commands;
  * 
- * option java_package = "org.totalgrid.reef.api.proto";
+ * option java_package = "org.totalgrid.reef.proto";
  * option java_outer_classname = "Commands";
  * 
  * import "Model.proto";

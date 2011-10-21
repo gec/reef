@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measproc.processing
 
-import org.totalgrid.reef.api.proto.Measurements._
+import org.totalgrid.reef.proto.Measurements._
 import org.totalgrid.reef.persistence.ObjectCache
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.types.Optional._

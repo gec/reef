@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
 import org.totalgrid.reef.api.sapi.client.RequestSpy
-import org.totalgrid.reef.api.proto.Model.Entity
+import org.totalgrid.reef.proto.Model.Entity
 import org.totalgrid.reef.api.japi.{ ReefServiceException, BadRequestException }
 
 object ModelDeleter {

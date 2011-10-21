@@ -19,7 +19,7 @@ package org.totalgrid.reef.api.sapi.client.rpc.impl
  * the License.
  */
 
-import org.totalgrid.reef.api.proto.Alarms.{ Alarm, EventConfig }
+import org.totalgrid.reef.proto.Alarms.{ Alarm, EventConfig }
 
 import org.totalgrid.reef.api.sapi.client.rpc.EventConfigService
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations

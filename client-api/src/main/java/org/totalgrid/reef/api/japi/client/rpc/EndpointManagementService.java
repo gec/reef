@@ -20,10 +20,10 @@ package org.totalgrid.reef.api.japi.client.rpc;
 
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.client.SubscriptionResult;
-import org.totalgrid.reef.api.proto.FEP.CommEndpointConfig;
-import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection;
-import org.totalgrid.reef.api.proto.FEP.CommEndpointConnection.State;
-import org.totalgrid.reef.api.proto.Model.ReefUUID;
+import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection;
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State;
+import org.totalgrid.reef.proto.Model.ReefUUID;
 
 import java.util.List;
 
