@@ -1,7 +1,6 @@
 package org.totalgrid.reef.client.sapi.rpc
 
-import org.totalgrid.reef.api.japi.client.SubscriptionCreator
-import org.totalgrid.reef.api.sapi.client.{ RequestSpyManager, HasHeaders }
+import org.totalgrid.reef.api.sapi.client.rpc.framework.ClientOperations
 
 /**
  * Copyright 2011 Green Energy Corp.
@@ -22,7 +21,7 @@ import org.totalgrid.reef.api.sapi.client.{ RequestSpyManager, HasHeaders }
  * the License.
  */
 trait AllScadaService
-  extends SubscriptionCreator with RequestSpyManager with HasHeaders
+  extends ClientOperations
   with AuthTokenService
   with EntityService
   with ConfigFileService

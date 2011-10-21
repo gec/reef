@@ -22,12 +22,19 @@ import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
 import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }
 import org.totalgrid.reef.api.sapi.client.{ RequestSpy, RequestSpyManager, BasicRequestHeaders, HasHeaders }
+import net.agileautomata.executor4s.{ TimeInterval, Executor }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
 }
 
-abstract class ApiBase(client: Client) extends HasAnnotatedOperations with SubscriptionCreator with RequestSpyManager with HasHeaders {
+/**
+ * client operations are all of the common client operations that we want to be able to include in all
+ * ApiBase consumers.
+ */
+trait ClientOperations extends SubscriptionCreator with RequestSpyManager with HasHeaders with Executor
+
+abstract class ApiBase(client: Client) extends HasAnnotatedOperations with ClientOperations {
 
   override val ops = new DefaultAnnotatedOperations(client)
 
@@ -39,6 +46,10 @@ abstract class ApiBase(client: Client) extends HasAnnotatedOperations with Subsc
   override def getHeaders = client.getHeaders
   override def setHeaders(headers: BasicRequestHeaders) = client.setHeaders(headers)
   override def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = client.modifyHeaders(modify)
+
+  def attempt[A](fun: => A) = client.attempt(fun)
+  def execute(fun: => Unit) = client.execute(fun)
+  def delay(interval: TimeInterval)(fun: => Unit) = client.delay(interval)(fun)
 
 }
 
