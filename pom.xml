@@ -271,6 +271,9 @@
 
 		<profile>
 			<id>overwrite_defaults</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
