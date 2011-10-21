@@ -32,7 +32,7 @@ import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.test.MockitoStubbedOnly
-import org.totalgrid.reef.api.sapi.client.rpc.CommandService
+import org.totalgrid.reef.client.sapi.rpc.CommandService
 import net.agileautomata.executor4s.Success
 
 @RunWith(classOf[JUnitRunner])

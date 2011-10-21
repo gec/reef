@@ -28,7 +28,7 @@ import org.totalgrid.reef.client.sapi.ReefServicesList
 
 import org.totalgrid.reef.util.Cancelable
 
-import org.totalgrid.reef.api.japi.client.rpc.impl.AllScadaServiceJavaShimWrapper
+import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShimWrapper
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.api.japi.settings.AmqpSettings

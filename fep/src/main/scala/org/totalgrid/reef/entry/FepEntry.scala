@@ -31,7 +31,7 @@ import org.totalgrid.reef.app._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.Cancelable
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.frontend._
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }

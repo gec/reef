@@ -24,8 +24,8 @@ import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.api.sapi.client.Promise
-import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 
 trait LoaderServices extends AllScadaService {
   def addEquipment(entity: Entity): Promise[Entity]

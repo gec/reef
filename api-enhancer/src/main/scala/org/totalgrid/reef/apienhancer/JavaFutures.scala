@@ -29,7 +29,7 @@ import java.io.{ PrintStream, File }
 class JavaFutures extends ApiTransformer with GeneratorFunctions {
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
 
-    getFileStream(packageStr, rootDir, sourceFile, ".japi.client.rpc.futures", false, c.name + "Futures") { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".client.rpc.futures", false, c.name + "Futures") { (stream, javaPackage) =>
       javaFuture(c, stream, javaPackage)
     }
   }

@@ -17,11 +17,11 @@
 
 	<modules>
 		<module>scala-base</module>
-		<module>test-util</module>
-		<module>proto</module>
 		<module>api-enhancer</module>
+		<module>test-util</module>
         <module>common-api</module>
         <module>client-api</module>
+		<module>client</module>
 		<module>util</module>
 		<module>util-osgi</module>
 		<module>metrics</module>
@@ -32,7 +32,6 @@
 		<module>measurementstore-squeryl</module>
         <module>memory-broker</module>
 		<module>application-framework</module>
-		<module>integration</module>
 		<module>proto-shell</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>

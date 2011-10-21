@@ -25,7 +25,7 @@ import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.api.sapi.client.rpc.ApplicationService
+import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import org.totalgrid.reef.api.japi.ReefServiceException
 import net.agileautomata.executor4s._
 

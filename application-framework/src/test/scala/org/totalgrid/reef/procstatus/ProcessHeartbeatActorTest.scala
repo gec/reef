@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 
 import org.mockito.{ ArgumentCaptor, Mockito }
-import org.totalgrid.reef.api.sapi.client.rpc.ApplicationService
+import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s.Success
 import org.totalgrid.reef.api.sapi.client.impl.FixedPromise

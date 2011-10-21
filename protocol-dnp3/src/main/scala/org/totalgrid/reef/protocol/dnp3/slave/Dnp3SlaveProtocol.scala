@@ -21,13 +21,13 @@ package org.totalgrid.reef.protocol.dnp3.slave
 import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
 import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.api.protocol.api.Protocol._
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
 import org.totalgrid.reef.api.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.proto.Commands.CommandRequest
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 case class SlaveObjectsContainer(stackObserver: IStackObserver, commandProxy: ICommandAcceptor, measProxy: SlaveMeasurementProxy)
     extends Cancelable {

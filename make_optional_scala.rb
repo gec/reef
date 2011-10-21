@@ -158,7 +158,7 @@ def generatePackageInfo(fname, file_text)
   overview += "<pre>"
   overview += file_text.gsub("*/", "*-/")
   overview += "</pre>\n*/\n"
-  overview += "package org.totalgrid.reef.api.japi.client.rpc.protodoc.#{proto_name.downcase};"
+  overview += "package org.totalgrid.reef.client.rpc.protodoc.#{proto_name.downcase};"
 
   dir_name = "./client-api/src/main/java/org/totalgrid/reef/api/japi/client/rpc/protodoc/#{proto_name.downcase}"
   FileUtils.mkdir_p(dir_name)

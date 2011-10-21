@@ -22,7 +22,7 @@ import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
-import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
 import org.totalgrid.reef.app._

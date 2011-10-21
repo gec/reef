@@ -21,7 +21,7 @@ package org.totalgrid.reef.shell.proto
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.japi.client.rpc.AllScadaService
+import org.totalgrid.reef.client.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.Client
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {

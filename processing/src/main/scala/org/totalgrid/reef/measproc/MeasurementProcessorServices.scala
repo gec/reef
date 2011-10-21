@@ -29,7 +29,7 @@ import org.totalgrid.reef.api.sapi.client.Promise
 import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, Client, Connection }
 import org.totalgrid.reef.client.sapi.Descriptors
 import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.api.japi.client.AddressableDestination
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {

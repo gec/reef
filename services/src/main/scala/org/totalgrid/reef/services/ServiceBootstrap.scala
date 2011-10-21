@@ -27,7 +27,7 @@ import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
 import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
 import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.api.japi.client.rpc.impl.builders.ApplicationConfigBuilders
+import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
 import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigService, AuthTokenService, FrontEndProcessorService }
 
 object ServiceBootstrap {

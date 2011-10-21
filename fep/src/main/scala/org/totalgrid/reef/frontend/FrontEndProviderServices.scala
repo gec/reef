@@ -21,7 +21,7 @@ package org.totalgrid.reef.frontend
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.protocol.api.CommandHandler
-import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.proto.Application.ApplicationConfig

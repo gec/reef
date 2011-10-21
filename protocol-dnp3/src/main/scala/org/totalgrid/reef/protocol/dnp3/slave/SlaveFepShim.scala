@@ -27,7 +27,7 @@ import org.osgi.framework.BundleContext
 import org.totalgrid.reef.executor.ReactActorExecutor
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
-import org.totalgrid.reef.api.sapi.client.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.util.{ Cancelable, Timer }

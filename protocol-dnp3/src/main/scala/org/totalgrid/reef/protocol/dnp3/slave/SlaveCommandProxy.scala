@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
 import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.api.japi.ReefServiceException
-import org.totalgrid.reef.api.sapi.client.rpc.CommandService
+import org.totalgrid.reef.client.sapi.rpc.CommandService
 
 class SlaveCommandProxy(service: CommandService, mapping: IndexMapping, exe: Executor)
     extends ICommandAcceptor with Logging {

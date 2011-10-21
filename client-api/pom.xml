@@ -22,25 +22,7 @@
 
     <build>
         <plugins>
-            <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.1</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>${project.build.directory}/generated-sources</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -87,142 +69,8 @@
         </plugins>
     </build>
 
-
-	<profiles>
-		<profile>
-			<id>no_integration_testing</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<excludes>
-								<exclude>**/*.java</exclude>
-							</excludes>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-
-		</profile>
-
-		<profile>
-			<id>test</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-site-plugin</artifactId>
-						<version>2.2</version>
-						<configuration>
-							<siteDirectory>target/site-dir</siteDirectory>
-							<!-- Future updates with collapsible sections.
-<templateDirectory>src/site</templateDirectory>
-<template>site.vm</template>
--->
-						</configuration>
-					</plugin>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>xml-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>transform</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<transformationSets>
-								<transformationSet>
-									<dir>target/docxml</dir>
-									<stylesheet>serviceToXDoc.xsl</stylesheet>
-									<outputDir>target/site-dir/xdoc</outputDir>
-								</transformationSet>
-							</transformationSets>
-						</configuration>
-					</plugin>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>prepare-package</phase>
-								<configuration>
-									<tasks>
-										<copy todir="target/site-dir">
-											<fileset dir="src/site" includes="**"/>
-										</copy>
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>update-apis</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<executions>
-							<execution>
-								<inherited>false</inherited>
-								<id>magic</id>
-								<phase>
-									generate-sources
-								</phase>
-								<goals>
-									<goal>javadoc</goal>
-								</goals>
-								<configuration>
-									<doclet>org.totalgrid.reef.apienhancer.ApiEnhancer</doclet>
-									<docletArtifact>
-										<groupId>org.totalgrid.reef</groupId>
-										<artifactId>reef-api-enhancer</artifactId>
-										<version>0.4.0-SNAPSHOT</version>
-									</docletArtifact>
-									<reportOutputDirectory>.</reportOutputDirectory>
-									<destDir>target/generated-sources</destDir>
-									<useStandardDocletOptions>false</useStandardDocletOptions>
-								</configuration>
-							</execution>
-						</executions>
-						<inherited>false</inherited>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.8</version>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
     <dependencies>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
-        </dependency>
+
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-broker</artifactId>
@@ -237,6 +85,7 @@
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-memory-broker</artifactId>
             <version>0.4.0-SNAPSHOT</version>
+			<scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>

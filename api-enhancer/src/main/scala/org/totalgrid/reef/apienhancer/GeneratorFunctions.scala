@@ -24,7 +24,7 @@ import java.io.{ FileOutputStream, PrintStream, File }
 trait GeneratorFunctions {
 
   def getFileStream(packageStr: String, rootDir: File, sourceFile: File, newPackage: String, scalaFile: Boolean, className: String)(func: (PrintStream, String) => Unit) {
-    val javaPackage = packageStr.replaceAllLiterally(".japi.client.rpc", newPackage)
+    val javaPackage = packageStr.replaceAllLiterally(".client.rpc", newPackage)
 
     val (fileEnding, folder) = if (scalaFile) (".scala", "scala/") else (".java", "java/")
 

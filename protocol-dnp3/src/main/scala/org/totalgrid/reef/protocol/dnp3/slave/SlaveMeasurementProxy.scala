@@ -26,7 +26,7 @@ import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.api.sapi.client.rpc.MeasurementService
+import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.api.japi.client.Subscription
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 

@@ -48,7 +48,7 @@
 //import org.totalgrid.reef.api.sapi.client.ClientSession
 //import org.totalgrid.reef.api.japi.client.UserSettings
 //import org.totalgrid.reef.broker.api.{ BrokerConnectionInfo, BrokerProperties }
-//import org.totalgrid.reef.api.sapi.client.rpc.impl.AllScadaServiceImpl
+//import org.totalgrid.reef.client.sapi.rpc.impl.impl.AllScadaServiceImpl
 //import org.totalgrid.reef.api.sapi.client.rpc.framework.SingleSessionClientSource
 //
 //object ProtoShellApplication {

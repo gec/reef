@@ -11,7 +11,7 @@
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-memory-broker/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-common-api/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client-api/0.4.0-SNAPSHOT</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-proto/0.4.0-SNAPSHOT</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client/0.4.0-SNAPSHOT</bundle>
 	</feature>
 
 	<feature name="reef-remote-shell" version="0.4.0-SNAPSHOT">

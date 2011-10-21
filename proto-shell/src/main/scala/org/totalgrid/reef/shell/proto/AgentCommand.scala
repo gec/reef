@@ -24,7 +24,7 @@ import org.totalgrid.reef.shell.proto.presentation.AgentView
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Auth.Permission
-import org.totalgrid.reef.api.japi.client.rpc.AgentService
+import org.totalgrid.reef.client.rpc.AgentService
 
 abstract class AgentCommandBase extends ReefCommandSupport {
   lazy val authService: AgentService = reefSession
