@@ -29,14 +29,12 @@ import org.totalgrid.reef.util.{ Lifecycle, Cancelable => UCancelable }
  * handles the connection to an amqp broker, passing the valid and created Connection to the
  * applicationCreator function
  */
-class ConnectionCloseManagerEx(amqpSettings: AmqpSettings)
+class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
     extends BrokerConnectionListener
     with Lifecycle
     with Logging {
 
   private val remoteFactory = new QpidBrokerConnectionFactory(amqpSettings)
-
-  private val exe = Executors.newScheduledThreadPool()
 
   private var connection = Option.empty[BrokerConnection]
   private var consumers = Map.empty[ConnectionConsumer, Option[UCancelable]]
@@ -111,7 +109,6 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings)
   override def beforeStop() = this.synchronized {
     consumers.keys.foreach { doBrokerConnectionLost(_) }
     connection.foreach(_.disconnect)
-    exe.terminate()
   }
 
   private def tryConnection(timeout: Long) {

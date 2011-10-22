@@ -33,6 +33,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.frontend._
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import net.agileautomata.executor4s.Executor
 
 class FepActivator extends BundleActivator with Logging {
 
@@ -46,7 +47,12 @@ class FepActivator extends BundleActivator with Logging {
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    manager = Some(new ConnectionCloseManagerEx(brokerOptions))
+    val exe = context findService withInterface[Executor] andApply (x => x) match {
+      case Some(x) => x
+      case None => throw new Exception("Unable to find required executor pool")
+    }
+
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
     context watchServices withInterface[Protocol] andHandle {
       case AddingService(p, _) => addProtocol(p, userSettings, nodeSettings)

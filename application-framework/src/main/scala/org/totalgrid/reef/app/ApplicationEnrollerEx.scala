@@ -26,12 +26,12 @@ import org.totalgrid.reef.api.japi.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import net.agileautomata.executor4s.ExecutorService
 import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import net.agileautomata.executor4s.Executor
 
 trait ConnectionConsumer {
-  def newConnection(brokerConnection: BrokerConnection, exe: ExecutorService): Cancelable
+  def newConnection(brokerConnection: BrokerConnection, exe: Executor): Cancelable
 }
 
 trait ClientConsumer {
@@ -45,7 +45,7 @@ trait AppEnrollerConsumer {
 }
 
 class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
-  def newConnection(brokerConnection: BrokerConnection, exe: ExecutorService) = {
+  def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
     // TODO: move defaultTimeout to userSettings file/object
     val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 20000)
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await

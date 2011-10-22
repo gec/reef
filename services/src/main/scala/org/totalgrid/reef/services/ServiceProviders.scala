@@ -41,7 +41,7 @@ class ServiceProviders(
     cm: MeasurementStore,
     serviceConfiguration: ServiceOptions,
     authzService: AuthService,
-    coordinatorExecutor: Executor,
+    coordinatorExecutor: Executor, //TODO - if the component requires Strand, use the Strand type
     metricsPublisher: IMetricsSink) {
 
   private val eventPublisher = new LocalSystemEventSink

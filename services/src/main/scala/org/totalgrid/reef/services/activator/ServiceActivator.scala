@@ -41,9 +41,7 @@ import org.totalgrid.reef.util.{ LifecycleManager, Cancelable }
 object ServiceActivator {
   def create(sql: DbInfo, serviceOptions: ServiceOptions, userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext) = {
     new ConnectionConsumer {
-      def newConnection(brokerConnection: BrokerConnection, exe: ExecutorService) = {
-
-        val exe = Executors.newScheduledThreadPool()
+      def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
 
         val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 5000)
 
@@ -76,7 +74,6 @@ object ServiceActivator {
           def cancel() = {
             serviceRegistrations.foreach { _.unregister() }
             mgr.stop()
-            exe.terminate()
           }
         }
       }
@@ -96,7 +93,11 @@ class ServiceActivator extends BundleActivator {
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    manager = Some(new ConnectionCloseManagerEx(brokerConfig))
+    val exe = context findService withInterface[Executor] andApply (x => x) match {
+      case Some(x) => x
+      case None => throw new Exception("Unable to find required executor pool")
+    }
+    manager = Some(new ConnectionCloseManagerEx(brokerConfig, exe))
 
     manager.get.addConsumer(ServiceActivator.create(sql, options, userSettings, nodeSettings, context))
 

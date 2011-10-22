@@ -23,15 +23,19 @@ import org.totalgrid.reef.api.protocol.api.{ ChannelAlwaysOnline, EndpointAlways
 
 import com.weiglewilczek.scalamodules._
 import com.weiglewilczek.slf4s.Logging
+import net.agileautomata.executor4s.Executor
 
-import net.agileautomata.executor4s.Executors
+final class Activator extends BundleActivator with Logging {
 
-class Activator extends BundleActivator with Logging {
+  def start(context: BundleContext) {
 
-  val exe = Executors.newScheduledSingleThread()
-  val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
+    val exe = context findService withInterface[Executor] andApply (x => x) match {
+      case Some(x) => x
+      case None => throw new Exception("Unable to find required executor pool")
+    }
 
-  final override def start(context: BundleContext) {
+    val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
+
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
     context.createService(protocol, "protocol" -> protocol.name, interface[SimulatorManagement])
 
@@ -45,6 +49,6 @@ class Activator extends BundleActivator with Logging {
     }
   }
 
-  final override def stop(context: BundleContext) = exe.terminate()
+  def stop(context: BundleContext) {}
 
 }

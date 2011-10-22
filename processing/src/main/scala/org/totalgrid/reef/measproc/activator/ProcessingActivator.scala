@@ -30,6 +30,8 @@ import org.totalgrid.reef.util.Cancelable
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreFinder }
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import com.weiglewilczek.scalamodules._
+import net.agileautomata.executor4s.Executor
 
 object ProcessingActivator {
   def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
@@ -72,7 +74,12 @@ class ProcessingActivator extends BundleActivator {
 
     val measStore = MeasurementStoreFinder.getInstance(context)
 
-    manager = Some(new ConnectionCloseManagerEx(brokerOptions))
+    val exe = context findService withInterface[Executor] andApply (x => x) match {
+      case Some(x) => x
+      case None => throw new Exception("Unable to find required executor pool")
+    }
+
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
     manager.get.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measStore))
 

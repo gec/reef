@@ -32,6 +32,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ApplicationEnrollerEx, AppEnrollerConsumer, UserLogin }
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import net.agileautomata.executor4s.Executor
 
 object SlaveFepShim {
   def createFepShim(userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext): UserLogin = {
@@ -71,7 +72,12 @@ class SlaveFepShim extends Logging {
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    manager = Some(new ConnectionCloseManagerEx(brokerOptions))
+    val exe = context findService withInterface[Executor] andApply (x => x) match {
+      case Some(x) => x
+      case None => throw new Exception("Unable to find required executor pool")
+    }
+
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
     manager.get.addConsumer(SlaveFepShim.createFepShim(userSettings, nodeSettings, context))
 
