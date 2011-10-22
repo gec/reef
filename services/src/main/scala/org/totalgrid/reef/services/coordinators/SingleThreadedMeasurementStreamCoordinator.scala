@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.coordinators
 
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services.framework._
+import net.agileautomata.executor4s.Executor
 
 /**
  * shunts all updates to the measurement coordinator to a single executor so we only ever have one transaction
@@ -31,7 +31,7 @@ class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementS
 
   private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
     context.operationBuffer.queuePostTransaction {
-      executor.request {
+      executor.attempt {
         contextSource.transaction { c2 =>
           f(real, c2)
         }

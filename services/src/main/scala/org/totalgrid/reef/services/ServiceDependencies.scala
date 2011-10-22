@@ -20,16 +20,15 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, SubscriptionHandler }
 import org.totalgrid.reef.api.japi.Envelope.Event
 import org.totalgrid.reef.api.sapi.service.AsyncService
-import net.agileautomata.executor4s.{ Executor => Executor4S }
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.client.sapi.ReefServicesList
+import net.agileautomata.executor4s.testing.MockExecutor
 
 // TODO: move MockConnection down to test classes that use it
 class MockConnection extends Connection {
@@ -37,7 +36,7 @@ class MockConnection extends Connection {
 
   def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
 
-  def bindService[A](service: AsyncService[A], dispatcher: Executor4S, destination: Routable, competing: Boolean) = null
+  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = null
 
   def login(authToken: String) = null
 
@@ -51,7 +50,7 @@ case class ServiceDependencies(
     pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
     cm: MeasurementStore = new InMemoryMeasurementStore,
     eventSink: SystemEventSink = new SilentEventSink,
-    coordinatorExecutor: Executor = new InstantExecutor,
+    coordinatorExecutor: Executor = new MockExecutor,
     authToken: String = "") {
 
   // TODO: is this the best place to define event exchanges?

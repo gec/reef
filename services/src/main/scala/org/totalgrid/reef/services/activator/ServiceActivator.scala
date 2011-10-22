@@ -36,7 +36,7 @@ import org.totalgrid.reef.persistence.squeryl.DbInfo
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
 import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.sapi.ReefServicesList
-import net.agileautomata.executor4s.{ Executors, ExecutorService }
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
 object ServiceActivator {
@@ -50,6 +50,7 @@ object ServiceActivator {
 
         DbConnector.connect(sql, context)
 
+        // TODO: pipe autToken into ServiceDependencies
         val (appConfig, authToken) = ServiceBootstrap.bootstrapComponents(connection, userSettings, nodeSettings)
 
         val metricsHolder = MetricsSink.getInstance(appConfig.getInstanceName)
@@ -59,10 +60,7 @@ object ServiceActivator {
         mgr.add(measExecutor)
         val measStore = MeasurementStoreFinder.getInstance(sql, measExecutor, context)
 
-        val coordinatorExecutor = new ReactActorExecutor {}
-        mgr.add(coordinatorExecutor)
-
-        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, coordinatorExecutor, metricsHolder)
+        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder)
 
         val metrics = new MetricsServiceWrapper(metricsHolder, serviceOptions)
         val serviceContext = new ServiceContext(connection, metrics, exe)

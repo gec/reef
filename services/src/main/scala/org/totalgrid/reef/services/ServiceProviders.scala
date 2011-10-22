@@ -27,11 +27,11 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
 import org.totalgrid.reef.api.sapi.service.AsyncService
 import org.totalgrid.reef.api.sapi.auth.AuthService
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
+import net.agileautomata.executor4s.Executor
 
 /**
  * list of all of the service providers in the system
