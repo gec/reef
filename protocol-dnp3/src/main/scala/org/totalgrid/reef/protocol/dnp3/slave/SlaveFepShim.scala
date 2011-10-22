@@ -29,7 +29,7 @@ import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
-import org.totalgrid.reef.util.{ Cancelable, Timer }
+import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ApplicationEnrollerEx, AppEnrollerConsumer, UserLogin }
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
@@ -66,7 +66,6 @@ class SlaveFepShim extends Logging {
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
-    org.totalgrid.reef.executor.Executor.setupThreadPools
 
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)

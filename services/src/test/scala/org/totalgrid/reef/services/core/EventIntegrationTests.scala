@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }

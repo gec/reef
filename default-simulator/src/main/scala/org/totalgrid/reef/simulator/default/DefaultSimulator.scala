@@ -19,7 +19,6 @@
 package org.totalgrid.reef.simulator.default
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.executor.Lifecycle
 
 import net.agileautomata.executor4s._
 
@@ -31,8 +30,10 @@ import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.api.protocol.simulator.{ ControllableSimulator, SimulatorPluginFactory, SimulatorPlugin }
+import org.totalgrid.reef.util.Lifecycle
 
-class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory) extends SimulatorPlugin with ControllableSimulator with Lifecycle with Logging {
+class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory)
+    extends SimulatorPlugin with ControllableSimulator with Lifecycle with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 

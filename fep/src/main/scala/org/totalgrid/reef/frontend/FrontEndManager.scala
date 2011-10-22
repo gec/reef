@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
@@ -26,6 +25,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.japi.ReefServiceException
 
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.util.Lifecycle
 
 class FrontEndManager(
   client: FrontEndProviderServices,

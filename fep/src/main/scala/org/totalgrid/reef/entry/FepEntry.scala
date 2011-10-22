@@ -20,8 +20,6 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.executor.ReactActorExecutor
-
 import org.totalgrid.reef.api.protocol.api.Protocol
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
@@ -43,8 +41,6 @@ class FepActivator extends BundleActivator with Logging {
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
-
-    org.totalgrid.reef.executor.Executor.setupThreadPools
 
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)

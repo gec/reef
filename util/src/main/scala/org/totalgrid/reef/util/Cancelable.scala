@@ -16,31 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.executor
 
-/**
- *  Implements Reactor as a concete Actor using react style
- *  message handling (thread pool)
- *
- */
-trait ReactActorExecutor extends ActorExecutor {
+package org.totalgrid.reef.util
 
-  val parentclass = this
-
-  def getExecutorActor: ReactorBase = new ReactorBase {
-
-    def beforeExit = beforeStop()
-
-    final override val executor = parentclass
-
-    def act {
-      loop {
-        react {
-          this.mainPartial
-        }
-      }
-    }
-
-  }
-
+trait Cancelable {
+  /**
+   *  Cancel the pending callback
+   */
+  def cancel()
 }

@@ -44,8 +44,7 @@ import org.totalgrid.reef.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.executor.mock.InstantExecutor
-import _root_.scala.collection.JavaConversions._
+import collection.JavaConversions._
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging

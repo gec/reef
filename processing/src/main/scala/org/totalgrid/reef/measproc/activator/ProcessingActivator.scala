@@ -64,8 +64,6 @@ class ProcessingActivator extends BundleActivator {
 
   def start(context: BundleContext) {
 
-    org.totalgrid.reef.executor.Executor.setupThreadPools
-
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)

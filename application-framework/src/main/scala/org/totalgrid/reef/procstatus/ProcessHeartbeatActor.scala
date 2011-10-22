@@ -20,14 +20,13 @@ package org.totalgrid.reef.procstatus
 
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 
-import org.totalgrid.reef.executor.Lifecycle
-
 import org.totalgrid.reef.proto.Application.HeartbeatConfig
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import org.totalgrid.reef.api.japi.ReefServiceException
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.util.Lifecycle
 
 class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig, exe: Executor)
     extends Lifecycle with Logging {

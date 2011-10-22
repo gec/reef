@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.executor.Lifecycle
 import org.totalgrid.reef.api.sapi.auth.NullAuthService
 import org.totalgrid.reef.api.sapi.service.{ NoOpService, AsyncService }
 
@@ -34,6 +33,7 @@ import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.api.japi.SimpleAuth.AuthRequest
+import org.totalgrid.reef.util.Lifecycle
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
