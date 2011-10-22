@@ -21,7 +21,7 @@ package org.totalgrid.reef.api.protocol.simulator
 import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
 
 import org.totalgrid.reef.api.protocol.api._
-import org.totalgrid.reef.executor.Executor
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
 import org.totalgrid.reef.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
@@ -110,7 +110,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
       case Some(current) => if (current.level >= x.level) best else Some(x)
     }
     def add(endpoint: String, executor: Executor, publisher: BatchPublisher, mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
-      val simulator = factory.createSimulator(endpoint, executor, publisher, mapping)
+      val simulator = factory.createSimulator(endpoint, Strand(executor), publisher, mapping)
       logger.info("Adding simulator for endpoint " + endpoint + " of type " + simulator.getClass.getName)
       endpoints += endpoint -> PluginRecord(endpoint, mapping, publisher, Some(simulator))
     }

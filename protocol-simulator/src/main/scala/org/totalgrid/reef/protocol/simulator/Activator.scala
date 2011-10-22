@@ -25,9 +25,11 @@ import org.totalgrid.reef.api.protocol.api.{ ChannelAlwaysOnline, EndpointAlways
 import com.weiglewilczek.scalamodules._
 import com.weiglewilczek.slf4s.Logging
 
+import net.agileautomata.executor4s.Executors
+
 class Activator extends BundleActivator with Logging {
 
-  val exe = new ReactActorExecutor {}
+  val exe = Executors.newScheduledSingleThread()
   val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
 
   final override def start(context: BundleContext) {
@@ -42,10 +44,8 @@ class Activator extends BundleActivator with Logging {
         logger.info("Removing a SimulatorPlugin: " + plugin.getClass.getName)
         protocol.removePluginFactory(plugin)
     }
-
-    exe.start()
   }
 
-  final override def stop(context: BundleContext) = exe.stop()
+  final override def stop(context: BundleContext) = exe.shutdown()
 
 }

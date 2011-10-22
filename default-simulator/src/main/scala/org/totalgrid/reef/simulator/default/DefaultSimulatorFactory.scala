@@ -19,7 +19,7 @@
 package org.totalgrid.reef.simulator.default
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.executor.Executor
+import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.proto.{ Measurements, SimMapping }
 import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }

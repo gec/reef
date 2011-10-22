@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.{ Commands, SimMapping, Measurements }
 import org.totalgrid.reef.simulator.example.ExampleSimulatorFactory
-import org.totalgrid.reef.executor.mock.MockExecutor
+import net.agileautomata.executor4s.testing.MockExecutor
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
@@ -80,7 +80,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
 
     def validateState() = {
       pub.queue.size should equal(0)
-      exe.executeNext(1, 0)
+      exe.runNextPendingAction()
       pub.queue.size should equal(1)
       pub.queue.dequeue().getMeasCount() should equal(4)
     }
@@ -96,7 +96,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
 
     sim.issue(buildCommand("foobar")) should equal(Commands.CommandStatus.NOT_SUPPORTED)
     pub.queue.isEmpty should equal(true)
-    exe.numActionsPending should equal(0)
+    exe.isIdle should equal(true)
   }
 
 }

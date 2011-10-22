@@ -24,8 +24,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.api.protocol.api.{ NullEndpointPublisher, Publisher }
-import org.totalgrid.reef.executor.mock.MockExecutor
-import org.totalgrid.reef.executor.Executor
+import net.agileautomata.executor4s.testing.MockExecutor
+import net.agileautomata.executor4s.Executor
 import java.lang.Exception
 
 @RunWith(classOf[JUnitRunner])

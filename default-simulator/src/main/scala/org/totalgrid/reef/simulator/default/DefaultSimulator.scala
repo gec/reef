@@ -19,8 +19,9 @@
 package org.totalgrid.reef.simulator.default
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
-import org.totalgrid.reef.util.Timer
+import org.totalgrid.reef.executor.Lifecycle
+
+import net.agileautomata.executor4s._
 
 import java.util.Random
 import scala.collection.JavaConversions._
@@ -41,7 +42,7 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
   private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
 
   private val rand = new Random
-  private var repeater: Option[Timer] = None
+  private var repeater: Option[Cancelable] = None
 
   override def afterStart() {
     exe.execute { update(measurements, true) }
@@ -50,6 +51,13 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
   override def beforeStop() {
     this.synchronized {
       repeater.foreach { _.cancel }
+    }
+  }
+
+  def repeat() {
+    update(measurements)
+    this.synchronized {
+      repeater = if (delay > 0) Some(exe.delay(delay.milliseconds) { repeat }) else None
     }
   }
 
@@ -62,7 +70,7 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
     logger.info("Updating parameters for simulator: " + name + ", delay = " + delay)
     this.synchronized {
       repeater.foreach(_.cancel)
-      repeater = if (delay == 0) None else Some(exe.repeat(delay)(update(measurements.toList)))
+      if (delay > 0) repeat
     }
   }
 

@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.protocol.simulator
 
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
-import org.totalgrid.reef.executor.Executor
+import net.agileautomata.executor4s.Executor
 
 trait SimulatorPluginFactory {
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int
