@@ -56,9 +56,7 @@ object ServiceActivator {
         val metricsHolder = MetricsSink.getInstance(appConfig.getInstanceName)
 
         val mgr = new LifecycleManager
-        val measExecutor = new ReactActorExecutor {}
-        mgr.add(measExecutor)
-        val measStore = MeasurementStoreFinder.getInstance(sql, measExecutor, context)
+        val measStore = MeasurementStoreFinder.getInstance(context)
 
         val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder)
 

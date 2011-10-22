@@ -90,7 +90,7 @@
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
             <artifactId>executor4s_2.9.0-1</artifactId>
-            <version>0.1.6</version>
+            <version>${executor4s.version}</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>

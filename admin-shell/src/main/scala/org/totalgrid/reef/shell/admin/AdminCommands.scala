@@ -59,11 +59,8 @@ class ResetDatabaseCommand extends ReefCommandSupport {
 
     DbConnector.connect(sql, bundleContext)
 
-    val exe = new ReactActorExecutor {}
+    val mstore = MeasurementStoreFinder.getInstance(bundleContext)
 
-    val mstore = MeasurementStoreFinder.getInstance(sql, exe, bundleContext)
-
-    exe.start()
     try {
       ServiceBootstrap.resetDb()
       ServiceBootstrap.seed(systemPassword)
@@ -76,8 +73,6 @@ class ResetDatabaseCommand extends ReefCommandSupport {
       }
     } catch {
       case ex => println("Reset failed: " + ex.toString)
-    } finally {
-      exe.stop()
     }
   }
 

@@ -43,7 +43,7 @@ class MemoryBrokerFixture extends BrokerFixture {
   private val exe = Executors.newScheduledThreadPool()
   private val fac = new MemoryBrokerConnectionFactory(exe)
   override def factory = fac
-  override def cleanup() = exe.shutdown()
+  override def cleanup() = exe.terminate()
 }
 
 object ConnectionFixture {
@@ -63,7 +63,7 @@ object ConnectionFixture {
       val conn = new DefaultConnection(ExampleServiceList, broker, exe, 5000)
       test(conn)
     } finally {
-      exe.shutdown()
+      exe.terminate()
       fixture.cleanup()
     }
   }

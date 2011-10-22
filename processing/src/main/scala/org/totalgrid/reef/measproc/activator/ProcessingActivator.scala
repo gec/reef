@@ -29,7 +29,6 @@ import org.totalgrid.reef.app._
 import org.totalgrid.reef.util.Cancelable
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreFinder }
-import org.totalgrid.reef.executor._
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 
 object ProcessingActivator {
@@ -62,7 +61,6 @@ object ProcessingActivator {
 class ProcessingActivator extends BundleActivator {
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
-  private var measExecutor = Option.empty[Lifecycle]
 
   def start(context: BundleContext) {
 
@@ -74,10 +72,7 @@ class ProcessingActivator extends BundleActivator {
 
     val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
 
-    val measExec = new ReactActorExecutor {}
-    measExecutor = Some(measExec)
-    measExec.start
-    val measStore = MeasurementStoreFinder.getInstance(dbInfo, measExec, context)
+    val measStore = MeasurementStoreFinder.getInstance(context)
 
     manager = Some(new ConnectionCloseManagerEx(brokerOptions))
 
@@ -88,7 +83,6 @@ class ProcessingActivator extends BundleActivator {
 
   def stop(context: BundleContext) = {
     manager.foreach { _.stop }
-    measExecutor.foreach { _.stop }
   }
 
 }

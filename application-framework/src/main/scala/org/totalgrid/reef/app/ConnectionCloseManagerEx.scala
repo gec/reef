@@ -112,7 +112,7 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings)
   override def beforeStop() = this.synchronized {
     consumers.keys.foreach { doBrokerConnectionLost(_) }
     connection.foreach(_.disconnect)
-    exe.shutdown()
+    exe.terminate()
   }
 
   private def tryConnection(timeout: Long) {

@@ -19,7 +19,6 @@
 package org.totalgrid.reef.api.protocol.simulator
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
-import org.totalgrid.reef.executor.ReactActorExecutor
 import org.totalgrid.reef.api.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import com.weiglewilczek.scalamodules._
@@ -46,6 +45,6 @@ class Activator extends BundleActivator with Logging {
     }
   }
 
-  final override def stop(context: BundleContext) = exe.shutdown()
+  final override def stop(context: BundleContext) = exe.terminate()
 
 }

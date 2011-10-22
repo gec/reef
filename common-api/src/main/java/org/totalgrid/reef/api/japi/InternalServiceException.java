@@ -30,4 +30,9 @@ public class InternalServiceException extends ReplyException
     {
         super( msg, Envelope.Status.INTERNAL_ERROR );
     }
+
+    public InternalServiceException( String msg, Throwable cause )
+    {
+        super( msg, Envelope.Status.INTERNAL_ERROR, cause );
+    }
 }

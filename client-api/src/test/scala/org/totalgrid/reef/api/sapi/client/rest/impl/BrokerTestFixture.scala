@@ -52,7 +52,7 @@ trait MemoryBrokerTestFixture extends BrokerTestFixture {
 
   def getFactory = {
     val exe = Executors.newScheduledSingleThread()
-    (new MemoryBrokerConnectionFactory(exe), () => exe.shutdown())
+    (new MemoryBrokerConnectionFactory(exe), () => exe.terminate())
   }
 
 }

@@ -20,30 +20,22 @@
 package org.totalgrid.reef.measurementstore
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.executor.Executor
-import org.osgi.framework.{ ServiceReference, BundleContext }
+import org.osgi.framework.BundleContext
+import com.weiglewilczek.scalamodules._
 
 object MeasurementStoreFinder extends Logging {
 
-  import org.totalgrid.reef.persistence.squeryl._
   /**
-   * Get a measurement store implementation depending on the system configuration
-   * @param lifecyleSink if the store generates any Lifecycle objects throw them here TODO: fix with with DI?
-   * @return measurement store
+   * Get a measurement store implementation from the service registry
+   *
+   * @return measurement store option
    */
-  def getInstance(config: AnyRef, executor: Executor, context: BundleContext): MeasurementStore = {
-    config match {
-      case di: DbInfo =>
-        val services: List[ServiceReference] = Option(context.getServiceReferences(classOf[MeasurementStoreFactory].getName, "(org.totalgrid.reef.mstore=sql)")).map(_.toList).getOrElse(Nil)
-        services.headOption match {
-          case Some(srvRef) =>
-            val factory = context.getService(srvRef).asInstanceOf[MeasurementStoreFactory]
-            val connFun = () => DbConnector.connect(di, context)
-            val dbOps = new DbOperations(connFun, executor)(x => logger.info("connected to db: " + x))
-            factory.buildStore(dbOps)
-          case None => throw new Exception("SQL Measurement Store not found")
-        }
-      case _ => throw new Exception("Unknown measurementStore Implementation: " + config)
+
+  def getInstance(context: BundleContext): MeasurementStore = {
+    context findService withInterface[MeasurementStore] andApply { (service, properties) => service } match {
+      case Some(x) => x
+      case None => throw new IllegalArgumentException("No measurement store found in registry")
     }
   }
+
 }

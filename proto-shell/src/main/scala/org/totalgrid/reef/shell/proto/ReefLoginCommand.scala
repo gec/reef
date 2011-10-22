@@ -100,7 +100,7 @@ class ReefLoginCommand extends ReefLoginCommandBase {
     val cancel = new Cancelable {
       def cancel() = {
         broker.disconnect()
-        exe.shutdown()
+        exe.terminate()
       }
     }
 

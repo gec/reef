@@ -39,7 +39,7 @@ class SqlMeasTest extends MeasurementStoreTest {
     val connection = DbConnector.connect(conn_info)
     PostgresqlReset.reset()
     transaction { SqlMeasurementStoreSchema.reset() }
-    new SqlMeasurementStore(new LockStepConnection(true))
+    SqlMeasurementStore
   }
   lazy val cm = connect()
 }
@@ -54,7 +54,7 @@ class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTest
     val connection = DbConnector.connect(conn_info)
     import org.squeryl.PrimitiveTypeMode._
     PostgresqlReset.reset()
-    val store = new SqlMeasurementStore(new LockStepConnection(true))
+    val store = SqlMeasurementStore
     store.reset
     store
   }

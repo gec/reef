@@ -23,6 +23,10 @@ package org.totalgrid.reef.api.japi;
  */
 public class ReplyException extends ReefServiceException
 {
+    public ReplyException( String msg, Envelope.Status status, Throwable cause )
+    {
+        super( msg, status, cause );
+    }
 
     public ReplyException( String msg, Envelope.Status status )
     {

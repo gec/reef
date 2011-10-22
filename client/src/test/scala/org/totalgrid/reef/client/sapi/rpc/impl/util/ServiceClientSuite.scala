@@ -59,7 +59,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   override def afterAll() {
     broker.disconnect()
-    exe.shutdown()
+    exe.terminate()
     recorder.save(file, title, desc)
   }
 
