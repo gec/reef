@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.sapi.rpc.impl.builders.PointRequestBuilders
 import org.totalgrid.reef.api.japi.BadRequestException
 import org.totalgrid.reef.api.japi.client.SubscriptionEvent
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
+import net.agileautomata.commons.testing.SynchronizedList
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryTest
@@ -58,29 +59,29 @@ class MeasurementHistoryTest
     val last3 = client.getMeasurementHistory(point, 3).await
     last3.map { _.getDoubleVal } should equal(List(startValue + 8, startValue + 9, startValue + 10))
 
-    val queue = BlockingQueue.empty[Double]
+    val list = new SynchronizedList[Double]
 
     recorder.addExplanation("Get measurements since time", "Should be only two measurements since we limited since to the last 2 fake entries we made.")
     val last2 = client.subscribeToMeasurementHistory(point, now + 9, 100).await
     last2.getResult.map { _.getDoubleVal } should equal(List(startValue + 9, startValue + 10))
 
-    last2.getSubscription.start(new SubscriptionEventAcceptorShim[Measurement]({ ea: SubscriptionEvent[Measurement] => queue.push(ea.getValue.getDoubleVal) }))
+    last2.getSubscription.start(new SubscriptionEventAcceptorShim[Measurement]({ ea: SubscriptionEvent[Measurement] => list.append(ea.getValue.getDoubleVal) }))
 
     recorder.addExplanation("Get measurements in range", "We can ask for a specific time range of measurements, this implies not getting live data.")
     val middle = client.getMeasurementHistory(point, now + 3, now + 5, true, 100).await
     middle.map { _.getDoubleVal } should equal(List(startValue + 3, startValue + 4, startValue + 5))
 
-    queue.size should equal(0)
+    list.get.isEmpty should equal(true)
 
-    val newMeasurements = for (i <- 11 to 15) yield original.toBuilder.setDoubleVal(startValue + i).setTime(now + i).build
+    val range = 11 to 15
+
+    val newMeasurements = for (i <- range) yield original.toBuilder.setDoubleVal(startValue + i).setTime(now + i).build
     client.publishMeasurements(newMeasurements.toList).await
 
-    queue.pop(1000) should equal(startValue + 11)
-    queue.pop(1000) should equal(startValue + 12)
-    queue.pop(1000) should equal(startValue + 13)
-    queue.pop(1000) should equal(startValue + 14)
-    queue.pop(1000) should equal(startValue + 15)
-    queue.size should equal(0)
+    val expected = newMeasurements.map(_.getDoubleVal).toList
+
+    list shouldBecome expected within 5000
+    list shouldRemain expected during 500
   }
 
   test("Bad Requests") {
