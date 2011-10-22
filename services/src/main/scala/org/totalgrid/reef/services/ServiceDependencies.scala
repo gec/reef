@@ -28,7 +28,7 @@ import org.totalgrid.reef.api.sapi.service.AsyncService
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.client.sapi.ReefServicesList
-import net.agileautomata.executor4s.testing.MockExecutor
+import testing.InstantExecutor
 
 // TODO: move MockConnection down to test classes that use it
 class MockConnection extends Connection {
@@ -50,7 +50,7 @@ case class ServiceDependencies(
     pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
     cm: MeasurementStore = new InMemoryMeasurementStore,
     eventSink: SystemEventSink = new SilentEventSink,
-    coordinatorExecutor: Executor = new MockExecutor,
+    coordinatorExecutor: Executor = new InstantExecutor,
     authToken: String = "") {
 
   // TODO: is this the best place to define event exchanges?

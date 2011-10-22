@@ -79,7 +79,7 @@ object ServiceActivator {
           def cancel() = {
             serviceRegistrations.foreach { _.unregister() }
             mgr.stop()
-            exe.shutdown()
+            exe.terminate()
           }
         }
       }

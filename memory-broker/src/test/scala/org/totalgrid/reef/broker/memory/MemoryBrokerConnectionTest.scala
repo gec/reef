@@ -50,7 +50,7 @@ class MemoryBrokerConnectionTest extends FunSuite with ShouldMatchers {
     try {
       test(factory.connect)
     } finally {
-      exe.shutdown()
+      exe.terminate()
     }
   }
 
