@@ -83,6 +83,7 @@ object ServiceActivator {
 
 class ServiceActivator extends BundleActivator {
 
+  private val exe = Executors.newScheduledThreadPool
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
@@ -93,10 +94,10 @@ class ServiceActivator extends BundleActivator {
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    val exe = context findService withInterface[Executor] andApply (x => x) match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find required executor pool")
-    }
+    //    val exe = context findService withInterface[Executor] andApply (x => x) match {
+    //      case Some(x) => x
+    //      case None => throw new Exception("Unable to find required executor pool")
+    //    }
     manager = Some(new ConnectionCloseManagerEx(brokerConfig, exe))
 
     manager.get.addConsumer(ServiceActivator.create(sql, options, userSettings, nodeSettings, context))
@@ -106,6 +107,7 @@ class ServiceActivator extends BundleActivator {
 
   def stop(context: BundleContext) {
     manager.foreach(_.stop())
+    exe.terminate()
   }
 
 }
