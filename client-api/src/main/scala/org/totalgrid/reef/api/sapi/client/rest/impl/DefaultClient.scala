@@ -21,8 +21,10 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
 import org.totalgrid.reef.api.japi.TypeDescriptor
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.japi.Envelope.Verb
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Subscription }
+import org.totalgrid.reef.api.japi.Envelope.{ Event, Verb }
+import org.totalgrid.reef.api.sapi.service.AsyncService
+import org.totalgrid.reef.api.japi.client.Routable
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
 
@@ -38,4 +40,12 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
   final override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
   final override def delay(interval: TimeInterval)(fun: => Unit): Cancelable = strand.delay(interval)(fun)
 
+  final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
+  final override def publishEvent[A](typ: Event, value: A, key: String) = conn.publishEvent(typ, value, key)
+
+  final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = conn.bindService(service, dispatcher, destination, competing)
+  final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)
+
+  final override def login(authToken: String) = conn.login(authToken)
+  final override def login(userName: String, password: String) = conn.login(userName, password)
 }

@@ -35,13 +35,11 @@ trait ConnectionConsumer {
 }
 
 trait ClientConsumer {
-  // TODO: should be main client type not AllScadaServiceImpl
-  // TODO: remove factory when the client can bind serviceCalls
-  def newClient(conn: Connection, client: Client): Cancelable
+  def newClient(client: Client): Cancelable
 }
 
 trait AppEnrollerConsumer {
-  def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig): Cancelable
+  def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig): Cancelable
 }
 
 class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
@@ -50,12 +48,12 @@ class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends Co
     val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 20000)
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
 
-    consumer.newClient(connection, client)
+    consumer.newClient(client)
   }
 }
 
 class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, capabilities: List[String], applicationCreator: AppEnrollerConsumer) extends ClientConsumer {
-  def newClient(connection: Connection, client: Client) = {
+  def newClient(client: Client) = {
 
     val services = new AllScadaServiceWrapper(client)
 
@@ -65,7 +63,7 @@ class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, ca
 
     heartBeater.start()
 
-    val userApp = applicationCreator.applicationRegistered(connection, client, services, appConfig)
+    val userApp = applicationCreator.applicationRegistered(client, services, appConfig)
 
     new Cancelable {
       override def cancel() {

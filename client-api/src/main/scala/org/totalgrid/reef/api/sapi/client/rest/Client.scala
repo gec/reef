@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.api.sapi.client.rest
 
-import net.agileautomata.executor4s.{ Future, Executor }
+import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.api.sapi.client.{ RequestSpyManager, DefaultHeaders }
 
 trait Client
@@ -26,3 +26,4 @@ trait Client
   with RestOperations
   with RequestSpyManager
   with DefaultHeaders
+  with Connection

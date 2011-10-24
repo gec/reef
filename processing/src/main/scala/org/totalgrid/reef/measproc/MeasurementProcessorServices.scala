@@ -46,7 +46,7 @@ trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long): Promise[MeasurementProcessingConnection]
 }
 
-class MeasurementProcessorServicesImpl(client: Client, connection: Connection)
+class MeasurementProcessorServicesImpl(client: Client)
     extends ApiBase(client) with MeasurementProcessorServices {
 
   override def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
@@ -73,7 +73,7 @@ class MeasurementProcessorServicesImpl(client: Client, connection: Connection)
     val destination = AddressableDestination(conn.getRouting.getServiceRoutingKey)
     val service = new AddressableMeasurementBatchService(handler)
 
-    val closeable = connection.bindService(service, client, destination, false)
+    val closeable = client.bindService(service, client, destination, false)
 
     new Cancelable {
       def cancel() = closeable.cancel()
@@ -81,7 +81,7 @@ class MeasurementProcessorServicesImpl(client: Client, connection: Connection)
   }
 
   override def publishIndividualMeasurementAsEvent(meas: Measurement) {
-    connection.publishEvent(Envelope.Event.MODIFIED, meas, meas.getName)
+    client.publishEvent(Envelope.Event.MODIFIED, meas, meas.getName)
   }
 
   override def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long) = {
