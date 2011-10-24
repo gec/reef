@@ -72,10 +72,17 @@ final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperatio
         future.listen(onResult)
         future.map(_.map(a => SubscriptionResult(a, sub)))
       case Failure(ex) =>
-        client.definedFuture[Result[SubscriptionResult[A, B]]](
+        definedFuture[Result[SubscriptionResult[A, B]]](
           Failure("Subscribe failed - " + renderErrorMsg(err) + " - " + ex.getMessage))
     }
 
     Promise.from(future)
+  }
+
+  // TODO: use definedFuture from Executor
+  private def definedFuture[A](a: A): Future[A] = {
+    val f = client.future[A]
+    f.set(a)
+    f
   }
 }

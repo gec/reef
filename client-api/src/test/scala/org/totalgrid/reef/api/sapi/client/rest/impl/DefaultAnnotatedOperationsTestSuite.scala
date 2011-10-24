@@ -74,7 +74,7 @@ class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
     val ops = new DefaultAnnotatedOperations(client)
 
     Mockito.doReturn(Failure("foobar")).when(client).subscribe(SomeIntegerTypeDescriptor)
-    Mockito.doReturn(MockFuture.defined[Result[SubscriptionResult[_, _]]](Failure("bad"))).when(client).definedFuture(Matchers.any(classOf[Failure]))
+    Mockito.doReturn(MockFuture.undefined).when(client).future
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
       client.get(4).map(r => r.one)
