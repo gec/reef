@@ -68,7 +68,8 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
     }
 
     def send(info: ServiceInfo[A, _]) = {
-      val uuid = correlator.register(executor, timeoutms.milliseconds, onResponse(info.descriptor))
+      val timeout = headers.getTimeout.getOrElse(timeoutms)
+      val uuid = correlator.register(executor, timeout.milliseconds, onResponse(info.descriptor))
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, info.descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))

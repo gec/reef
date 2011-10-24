@@ -56,7 +56,10 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   override def clearResultLimit() = clearHeader(BasicRequestHeaders.resultLimit)
 
-  override def setTimeout(timeoutMillis: Long) = setHeader(BasicRequestHeaders.timeoutMs, timeoutMillis.toString)
+  override def setTimeout(timeoutMillis: Long) = {
+    if (timeoutMillis <= 0) throw new IllegalArgumentException("Timeout must be greator than 0 not " + timeoutMillis)
+    setHeader(BasicRequestHeaders.timeoutMs, timeoutMillis.toString)
+  }
 
   override def clearTimeout() = clearHeader(BasicRequestHeaders.timeoutMs)
 
@@ -67,6 +70,8 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
   /* --- Specific getters/setters not part of RequestHeaders --- */
 
   def getDestination = getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key))
+
+  def getTimeout = getString(BasicRequestHeaders.timeoutMs).map { _.toLong }
 
   /* --- Helpers --- */
 
