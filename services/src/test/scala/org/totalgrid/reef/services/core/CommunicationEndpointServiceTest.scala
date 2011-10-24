@@ -44,7 +44,7 @@ import org.totalgrid.reef.services.core.SyncServiceShims._
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   val rtDb = new InMemoryMeasurementStore()
-  val modelFac = new ModelFactories(ServiceDependencies(cm = rtDb))
+  val modelFac = new ModelFactories(new ServiceDependenciesDefaults(cm = rtDb))
 
   val endpointService = new CommunicationEndpointService(modelFac.endpoints)
   val connectionService = new CommunicationEndpointConnectionService(modelFac.fepConn)

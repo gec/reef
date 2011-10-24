@@ -46,7 +46,6 @@ object ServiceActivator {
 
         DbConnector.connect(sql, context)
 
-        // TODO: pipe autToken into ServiceDependencies
         val (appConfig, authToken) = ServiceBootstrap.bootstrapComponents(connection, userSettings, nodeSettings)
 
         val metricsHolder = MetricsSink.getInstance(appConfig.getInstanceName)
@@ -54,7 +53,7 @@ object ServiceActivator {
         val mgr = new LifecycleManager
         val measStore = MeasurementStoreFinder.getInstance(context)
 
-        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder)
+        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder, authToken)
 
         val metrics = new MetricsServiceWrapper(metricsHolder, serviceOptions)
         val serviceContext = new ServiceContext(connection, metrics, exe)

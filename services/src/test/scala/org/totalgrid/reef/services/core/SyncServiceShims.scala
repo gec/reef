@@ -21,8 +21,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.api.sapi.client.Response
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ DependenciesRequestContext, ServiceDependencies }
 import org.totalgrid.reef.api.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
@@ -62,7 +62,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders: BasicRequestHeaders) extends RequestContextSource {
 
   // just define all of the event exchanges at the beginning of the test
-  dependencies.defineEventExchanges
+  ServiceBootstrap.defineEventExchanges(dependencies.connection)
 
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
@@ -76,7 +76,7 @@ object SyncServiceShims {
   implicit def getRequestEnv: BasicRequestHeaders = BasicRequestHeaders.empty.setUserName("user")
 
   implicit def getRequestContextSource(implicit headers: BasicRequestHeaders) = {
-    new MockRequestContextSource(new ServiceDependencies, headers)
+    new MockRequestContextSource(new ServiceDependenciesDefaults, headers)
   }
 
   implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit contextSource: RequestContextSource) = new SyncService[A](service, contextSource)

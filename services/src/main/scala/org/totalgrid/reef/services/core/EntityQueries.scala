@@ -31,7 +31,7 @@ import org.totalgrid.reef.api.japi.BadRequestException
 import SquerylModel._
 import java.util.UUID
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
-import org.totalgrid.reef.services.HeadersRequestContext
+import org.totalgrid.reef.services.NullRequestContext
 import com.weiglewilczek.slf4s.Logging
 
 // implict asParam
@@ -646,7 +646,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
       entityIdsFromType(childType)
     } else {
       // TODO: get entitiy queries to use and respect requestContext - backlog-70
-      EntitySearches.findRecord(new HeadersRequestContext, rootNode).map { rootEnt =>
+      EntitySearches.findRecord(NullRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }

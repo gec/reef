@@ -37,7 +37,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.{ ServiceDependencies, RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
+import org.totalgrid.reef.services.{ RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -47,7 +47,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
   }
 
   class Fixture {
-    val modelFac = new ModelFactories(new ServiceDependencies)
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
     val authService = new AuthTokenService(modelFac.authTokens)
 
     val agentService = new AgentService(modelFac.agents)

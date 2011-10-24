@@ -67,7 +67,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
       val metrics = MetricsSink.getInstance("test")
 
-      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, new MockExecutor, metrics)
+      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, new MockExecutor, metrics, "")
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

@@ -133,10 +133,10 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     val eventSink = new CountingEventSink
     val headers = BasicRequestHeaders.empty.setUserName("user")
 
-    val deps = new ServiceDependencies(amqp, amqp, rtDb, eventSink)
+    val deps = new ServiceDependenciesDefaults(amqp, amqp, rtDb, eventSink)
     val contextSource = new MockRequestContextSource(deps, headers)
 
-    val modelFac = new ModelFactories(deps, contextSource)
+    val modelFac = new ModelFactories(deps)
 
     val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 

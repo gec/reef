@@ -36,7 +36,7 @@ class PointServiceTest extends DatabaseUsingTestBase {
   class Fixture {
     val fakeDatabase = new InMemoryMeasurementStore
 
-    val modelFactories = new ModelFactories(new ServiceDependencies(cm = fakeDatabase))
+    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(cm = fakeDatabase))
     val pointService = new PointService(modelFactories.points)
     val triggerService = new TriggerSetService(modelFactories.triggerSets)
     val overrideService = new OverrideConfigService(modelFactories.overrides)

@@ -27,7 +27,6 @@ import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => Event
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
@@ -40,11 +39,11 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: Connection) {
-    val deps = ServiceDependencies(amqp, amqp)
+    val deps = new ServiceDependenciesDefaults(amqp, amqp)
     val env = BasicRequestHeaders.empty.setUserName("user")
     val contextSource = new MockRequestContextSource(deps, env)
 
-    val factories = new ModelFactories(deps, contextSource)
+    val factories = new ModelFactories(deps)
 
     val alarms = new SyncService(new AlarmService(factories.alarms), contextSource)
     val events = new SyncService(new EventService(factories.events), contextSource)

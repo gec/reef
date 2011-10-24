@@ -36,7 +36,6 @@ import org.totalgrid.reef.services.core.util._
 import java.util.{ Date, Calendar }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.{ HeadersRequestContext, ServiceDependencies }
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -120,10 +119,10 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
         val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
-        val factories = new ModelFactories(new ServiceDependencies)
+        val factories = new ModelFactories(new ServiceDependenciesDefaults())
 
         val eventService = factories.events
-        val context = new HeadersRequestContext
+        val context = new HeadersRequestContext()
 
         eventService.createFromProto(context, makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))
         eventService.createFromProto(context, makeEvent(Scada.ControlExe, DAYS_AGO_2 + 1000, USER1, Some(entity1.id.toString)))

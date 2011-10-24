@@ -29,6 +29,10 @@ import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
 import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigService, AuthTokenService, FrontEndProcessorService }
+import org.totalgrid.reef.client.sapi.ReefServicesList
+import org.totalgrid.reef.event.SilentEventSink
+import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
+import net.agileautomata.executor4s.testing.InstantExecutor
 
 object ServiceBootstrap {
 
@@ -41,19 +45,29 @@ object ServiceBootstrap {
   }
 
   /**
+   * when we are starting up the system we need to define all of the event exechanges, we do that
+   * during bootstrap so we correctly publish the "someone logged on" events
+   */
+  def defineEventExchanges(connection : Connection) {
+    ReefServicesList.getServicesList.foreach { serviceInfo =>
+      connection.declareEventExchange(serviceInfo.descriptor.getKlass)
+    }
+  }
+
+  /**
    * since _we_are_ a service provider we can create whatever services we would normally
    * use to enroll ourselves as an application to get the CoreApplicationComponents without
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = ServiceDependencies(connection, connection)
+    val dependencies = new RequestContextDependencies(connection, connection, "", new SilentEventSink)
 
     // define the events exchanges before "logging in" which will generate some events
-    dependencies.defineEventExchanges()
+    defineEventExchanges(connection)
     val headers = BasicRequestHeaders.empty.setUserName(systemUser.getUserName)
 
     val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(dependencies), headers)
-    val modelFac = new ModelFactories(dependencies, contextSource)
+    val modelFac = new ModelFactories(new InMemoryMeasurementStore, new InstantExecutor, contextSource)
     val applicationConfigService = new ApplicationConfigService(modelFac.appConfig)
     val authService = new AuthTokenService(modelFac.authTokens)
 

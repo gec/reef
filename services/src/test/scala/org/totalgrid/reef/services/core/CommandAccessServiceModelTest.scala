@@ -43,11 +43,9 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.api.japi.{ BadRequestException, UnauthorizedException }
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.services.{ HeadersRequestContext, ServiceDependencies }
 
 class CommandTestRig {
-  val modelFactories = new ModelFactories(new ServiceDependencies)
+  val modelFactories = new ModelFactories(new ServiceDependenciesDefaults())
 
   val commands = modelFactories.cmds
   val accesses = modelFactories.accesses
