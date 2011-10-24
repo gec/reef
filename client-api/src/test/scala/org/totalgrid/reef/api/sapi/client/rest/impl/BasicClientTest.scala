@@ -27,8 +27,7 @@ import org.junit.runner.RunWith
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
-import org.totalgrid.reef.api.sapi.types.ServiceList
-import org.totalgrid.reef.api.sapi.example.{ SomeInteger, SomeIntegerTypeDescriptor }
+import org.totalgrid.reef.api.sapi.example.{ ExampleServiceList, SomeInteger, SomeIntegerTypeDescriptor }
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.Event
 
@@ -42,11 +41,11 @@ class MemoryServiceClientTest extends BasicClientTest with MemoryBrokerTestFixtu
 trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
 
   def fixture(fun: (Client, Connection) => Unit): Unit = broker { b =>
-    val list = ServiceList(SomeIntegerTypeDescriptor)
     val executor = Executors.newScheduledSingleThread()
     try {
-      b.declareExchange(list.getServiceInfo(classOf[SomeInteger]).subExchange) //normally a service would do this in bindService
-      val conn = new DefaultConnection(list, b, executor, 5000)
+      b.declareExchange(ExampleServiceList.info.subExchange) //normally a service would do this in bindService
+      val conn = new DefaultConnection(b, executor, 5000)
+      conn.addServiceInfo(ExampleServiceList.info)
       fun(conn.login("foo"), conn)
     } finally {
       executor.terminate()

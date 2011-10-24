@@ -23,11 +23,9 @@ import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.api.japi.settings.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.client.sapi.ReefServicesList
-import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.sapi.ReefConnection
+import org.totalgrid.reef.api.sapi.client.rest.Client
 import net.agileautomata.executor4s.Executor
 
 trait ConnectionConsumer {
@@ -45,7 +43,7 @@ trait AppEnrollerConsumer {
 class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
   def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
     // TODO: move defaultTimeout to userSettings file/object
-    val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 20000)
+    val connection = ReefConnection(brokerConnection, exe)
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
 
     consumer.newClient(client)
@@ -55,7 +53,7 @@ class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends Co
 class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, capabilities: List[String], applicationCreator: AppEnrollerConsumer) extends ClientConsumer {
   def newClient(client: Client) = {
 
-    val services = new AllScadaServiceWrapper(client)
+    val services = client.getRpcInterface(classOf[AllScadaService])
 
     val appConfig = services.registerApplication(nodeSettings, instanceName, capabilities).await
 

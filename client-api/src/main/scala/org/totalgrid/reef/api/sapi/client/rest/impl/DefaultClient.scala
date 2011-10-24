@@ -20,11 +20,12 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  */
 import org.totalgrid.reef.api.japi.TypeDescriptor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, Client }
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Subscription }
 import org.totalgrid.reef.api.japi.Envelope.{ Event, Verb }
 import org.totalgrid.reef.api.sapi.service.AsyncService
 import org.totalgrid.reef.api.japi.client.Routable
+import org.totalgrid.reef.api.sapi.types.ServiceInfo
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
 
@@ -46,6 +47,12 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
   final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = conn.bindService(service, dispatcher, destination, competing)
   final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)
 
+  // TODO: clone parent client settings?
   final override def login(authToken: String) = conn.login(authToken)
   final override def login(userName: String, password: String) = conn.login(userName, password)
+
+  final override def addRpcProvider(info: RpcProviderInfo) = conn.addRpcProvider(info)
+  final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this)
+
+  final override def addServiceInfo[A](info: ServiceInfo[A, _]) = conn.addServiceInfo(info)
 }

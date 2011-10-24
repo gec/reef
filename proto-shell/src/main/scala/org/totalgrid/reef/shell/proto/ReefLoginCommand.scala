@@ -23,12 +23,11 @@ import java.io.{ BufferedReader, InputStreamReader }
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.sapi.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefConnection
 
 import org.totalgrid.reef.util.Cancelable
 
-import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShimWrapper
+import org.totalgrid.reef.client.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.api.japi.settings.AmqpSettings
@@ -67,7 +66,7 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
         // TODO: rework setReefSession calls
         setReefSession(null, null, null, cancel)
         val session = connection.login(userName, password).await /// TODO - should load user out of config file
-        val services = new AllScadaServiceJavaShimWrapper(session)
+        val services = session.getRpcInterface(classOf[AllScadaService])
         setReefSession(session, services, context, cancel)
 
         // TODO: implement session.getHeaders.getAuthToken
@@ -95,7 +94,7 @@ class ReefLoginCommand extends ReefLoginCommandBase {
     val factory = new QpidBrokerConnectionFactory(connectionInfo)
     val broker = factory.connect
     val exe = Executors.newScheduledThreadPool()
-    val conn = new DefaultConnection(ReefServicesList, broker, exe, 20000)
+    val conn = ReefConnection(broker, exe)
 
     val cancel = new Cancelable {
       def cancel() = {

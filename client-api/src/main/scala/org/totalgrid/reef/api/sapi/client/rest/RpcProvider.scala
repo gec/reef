@@ -18,13 +18,16 @@
  */
 package org.totalgrid.reef.api.sapi.client.rest
 
-import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.api.sapi.client.{ RequestSpyManager, DefaultHeaders }
+trait RpcProvider {
+  def getRpcInterface[A](klass: Class[A]): A
+}
 
-trait Client
-  extends Executor
-  with RestOperations
-  with RequestSpyManager
-  with DefaultHeaders
-  with Connection
-  with RpcProvider
+trait RpcProviderFactory {
+  def createRpcProvider(client: Client): AnyRef
+}
+
+case class RpcProviderInfo(creator: RpcProviderFactory, interfaces: List[Class[_]]) {
+  def this(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = this(new RpcProviderFactory {
+    override def createRpcProvider(client: Client) = fun(client)
+  }, interfaces)
+}

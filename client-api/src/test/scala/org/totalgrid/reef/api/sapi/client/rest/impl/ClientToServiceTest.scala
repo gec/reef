@@ -27,8 +27,7 @@ import org.junit.runner.RunWith
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.{ Executors, Cancelable }
 import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.sapi.types.ServiceList
-import org.totalgrid.reef.api.sapi.example.{ SomeInteger, SomeIntegerIncrementService, SomeIntegerTypeDescriptor }
+import org.totalgrid.reef.api.sapi.example.{ ExampleServiceList, SomeInteger, SomeIntegerIncrementService, SomeIntegerTypeDescriptor }
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.{ SuccessResponse, Response }
 import org.totalgrid.reef.api.japi.client.AnyNodeDestination
@@ -46,7 +45,8 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     val executor = Executors.newScheduledSingleThread()
     var binding: Option[Cancelable] = None
     try {
-      val conn = new DefaultConnection(ServiceList(SomeIntegerTypeDescriptor), b, executor, 5000)
+      val conn = new DefaultConnection(b, executor, 5000)
+      conn.addServiceInfo(ExampleServiceList.info)
       binding = Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, AnyNodeDestination, true))
       fun(conn.login("foo"))
     } finally {

@@ -31,12 +31,11 @@ import org.totalgrid.reef.api.japi.settings.AmqpSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
+import org.totalgrid.reef.api.sapi.client.rest.Client;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection;
-import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShimWrapper;
-import org.totalgrid.reef.client.sapi.ReefServicesList;
+import org.totalgrid.reef.client.sapi.ReefConnection;
 import org.totalgrid.reef.broker.BrokerConnection;
 import org.totalgrid.reef.broker.BrokerConnectionFactory;
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
@@ -91,16 +90,19 @@ public class ReefConnectionTestBase
     {
         broker = factory.connect();
 
-        connection = new DefaultConnection( ReefServicesList.getInstance(), broker, exe, 20000 );
+        connection = ReefConnection.apply( broker, exe );
+
+        Client client;
 
         if ( autoLogon )
         {
-            helpers = new AllScadaServiceJavaShimWrapper( connection.login( "system", "system" ).await() );
+            client = connection.login( "system", "system" ).await();
         }
         else
         {
-            helpers = new AllScadaServiceJavaShimWrapper( connection.login( "" ) );
+            client = connection.login( "" );
         }
+        helpers = client.getRpcInterface( AllScadaService.class );
     }
 
     @After

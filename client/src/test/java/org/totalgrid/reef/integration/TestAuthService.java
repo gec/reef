@@ -23,7 +23,8 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.japi.Envelope;
 
-import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShimWrapper;
+import org.totalgrid.reef.api.sapi.client.rest.Client;
+import org.totalgrid.reef.client.rpc.AllScadaService;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.UnauthorizedException;
@@ -63,7 +64,8 @@ public class TestAuthService extends ReefConnectionTestBase
         AuthTokenService as = helpers;
         // logon as all permission user
         String token = as.createNewAuthorizationToken( "system", "system" );
-        helpers = new AllScadaServiceJavaShimWrapper( connection.login( token ) );
+        Client client = connection.login( token );
+        helpers = client.getRpcInterface( AllScadaService.class );
 
         PointService ps = helpers;
         // request will now not be rejected

@@ -1,11 +1,10 @@
 package org.totalgrid.reef.client.sapi
 
 import org.totalgrid.reef.api.japi.TypeDescriptor
-import org.totalgrid.reef.api.sapi.types.{ ServiceListOnMap, ServiceInfo, ServiceList }
+import org.totalgrid.reef.api.sapi.types.ServiceInfo
 
-object ReefServiceMap {
-  val servicemap: ServiceList.ServiceMap = Map(
-
+object ReefServicesList {
+  def getServicesList = List(
     getEntry(Descriptors.commChannel),
     getEntry(Descriptors.frontEndProcessor),
     getEntry(Descriptors.commEndpointConfig),
@@ -42,13 +41,9 @@ object ReefServiceMap {
     // TODO: we only need this here to get event publishing to work
     getEntry(Descriptors.measurement))
 
-  private def getEntry[A, B](descriptor: TypeDescriptor[A], subClass: Option[TypeDescriptor[B]] = None): ServiceList.ServiceTuple = subClass match {
-    case Some(subDescriptor) => descriptor.getKlass -> ServiceInfo(descriptor, subDescriptor)
-    case None => descriptor.getKlass -> ServiceInfo(descriptor)
+  private def getEntry[A, B](descriptor: TypeDescriptor[A], subClass: Option[TypeDescriptor[B]] = None) = subClass match {
+    case Some(subDescriptor) => ServiceInfo(descriptor, subDescriptor)
+    case None => ServiceInfo(descriptor)
   }
-}
-
-object ReefServicesList extends ServiceListOnMap(ReefServiceMap.servicemap) {
-  def getInstance(): ServiceList = this
 }
 

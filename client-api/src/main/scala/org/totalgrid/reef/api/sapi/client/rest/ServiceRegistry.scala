@@ -16,37 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi.example
+package org.totalgrid.reef.api.sapi.client.rest
 
-import java.io._
-import org.totalgrid.reef.api.japi.TypeDescriptor
 import org.totalgrid.reef.api.sapi.types.ServiceInfo
 
-case class SomeInteger(num: Int) extends Serializable {
-  def increment = SomeInteger(num + 1)
+trait ServiceRegistry {
+
+  def addRpcProvider(info: RpcProviderInfo)
+
+  def addServiceInfo[A](info: ServiceInfo[A, _])
 }
 
-object SomeIntegerTypeDescriptor extends SerializableTypeDescriptor[SomeInteger] {
-  def id = "SomeInteger"
-  def getKlass = classOf[SomeInteger]
-}
-
-object ExampleServiceList {
-  def info = ServiceInfo(SomeIntegerTypeDescriptor)
-}
-
-trait SerializableTypeDescriptor[A <: Serializable] extends TypeDescriptor[A] {
-
-  final override def serialize(a: A): Array[Byte] = {
-    val bos = new ByteArrayOutputStream()
-    val out = new ObjectOutputStream(bos)
-    out.writeObject(a)
-    bos.toByteArray()
-  }
-
-  final override def deserialize(a: Array[Byte]): A = {
-    val bis = new ByteArrayInputStream(a)
-    val in = new ObjectInputStream(bis)
-    in.readObject().asInstanceOf[A]
-  }
-}

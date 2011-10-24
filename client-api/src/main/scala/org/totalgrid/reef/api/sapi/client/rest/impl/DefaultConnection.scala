@@ -30,12 +30,15 @@ import org.totalgrid.reef.api.sapi.client._
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.api.japi.client.{ AnyNodeDestination, Routable }
-import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, ServiceList, BuiltInDescriptors }
+import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, BuiltInDescriptors }
 import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncService }
 
-final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, executor: Executor, timeoutms: Long) extends Connection with Logging {
+final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
+    extends Connection
+    with Logging
+    with DefaultServiceRegistry {
 
-  lookup.addServiceInfo(BuiltInDescriptors.authRequestServiceInfo)
+  addServiceInfo(BuiltInDescriptors.authRequestServiceInfo)
 
   conn.declareExchange("amq.direct")
   private val correlator = new ResponseCorrelator
@@ -81,7 +84,7 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
       }
     }
 
-    ClassLookup(payload).flatMap(lookup.getServiceOption) match {
+    ClassLookup(payload).flatMap(getServiceOption) match {
       case Some(info) => send(info)
       case None => future.set(FailureResponse(Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
     }
@@ -100,7 +103,7 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
   override def bindService[A](service: AsyncService[A], exe: Executor, destination: Routable, competing: Boolean): Cancelable = {
 
     def subscribe[A](klass: Class[A], competing: Boolean): BrokerSubscription = {
-      val info = lookup.getServiceInfo(klass)
+      val info = getServiceInfo(klass)
       conn.declareExchange(info.subExchange)
       conn.declareExchange(info.descriptor.id)
       val sub = if (competing) conn.listen(service.descriptor.id + "_server")
@@ -138,19 +141,19 @@ final class DefaultConnection(lookup: ServiceList, conn: BrokerConnection, execu
   }
 
   override def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit = {
-    val info = lookup.getServiceInfo(ClassLookup.get(value))
+    val info = getServiceInfo(ClassLookup.get(value))
     val desc = info.subType.asInstanceOf[TypeDescriptor[A]]
     val event = RestHelpers.getEvent(typ, value, desc)
     conn.publish(info.subExchange, key, event.toByteArray)
   }
 
   override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit = {
-    val info = lookup.getServiceInfo(klass)
+    val info = getServiceInfo(klass)
     conn.bindQueue(subQueue, info.subExchange, key)
   }
 
-  def declareEventExchange(klass: Class[_]) = {
-    val info = lookup.getServiceInfo(klass)
+  override def declareEventExchange(klass: Class[_]) = {
+    val info = getServiceInfo(klass)
     conn.declareExchange(info.subExchange)
   }
 

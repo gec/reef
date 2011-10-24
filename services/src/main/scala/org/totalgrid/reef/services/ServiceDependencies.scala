@@ -22,7 +22,8 @@ import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, Measureme
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.sapi.client.rest.{ Connection, SubscriptionHandler }
+import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, Connection, SubscriptionHandler }
+import org.totalgrid.reef.api.sapi.types.ServiceInfo
 import org.totalgrid.reef.api.japi.Envelope.Event
 import org.totalgrid.reef.api.sapi.service.AsyncService
 import net.agileautomata.executor4s._
@@ -43,6 +44,10 @@ class MockConnection extends Connection {
   def login(userName: String, password: String) = null
 
   def publishEvent[A](typ: Event, value: A, key: String) {}
+
+  def addRpcProvider(info: RpcProviderInfo) = null
+
+  def addServiceInfo[A](info: ServiceInfo[A, _]) = null
 }
 
 case class ServiceDependencies(

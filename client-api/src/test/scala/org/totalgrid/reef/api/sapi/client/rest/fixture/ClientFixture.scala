@@ -60,7 +60,8 @@ object ConnectionFixture {
     val exe = Executors.newScheduledThreadPool()
     try {
       val broker = fixture.factory.connect
-      val conn = new DefaultConnection(ExampleServiceList, broker, exe, 5000)
+      val conn = new DefaultConnection(broker, exe, 5000)
+      conn.addServiceInfo(ExampleServiceList.info)
       test(conn)
     } finally {
       exe.terminate()

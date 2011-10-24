@@ -18,14 +18,14 @@ package org.totalgrid.reef.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.api.sapi.client.rest.Client
 import org.totalgrid.reef.api.japi.client.SubscriptionCreationListener
-import org.totalgrid.reef.client.rpc.{ AllScadaService => JavaAllScadaService }
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.rpc._
+import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
+import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, Client }
 
 trait AllScadaServiceJavaShim
-    extends JavaAllScadaService
+    extends AllScadaService
     with AuthTokenServiceJavaShim
     with EntityServiceJavaShim
     with ConfigFileServiceJavaShim
@@ -42,7 +42,7 @@ trait AllScadaServiceJavaShim
     with ApplicationServiceJavaShim
     with CommunicationChannelServiceJavaShim {
 
-  def service: AllScadaService
+  def service: ScalaAllScadaService
 }
 
 final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServiceJavaShim {
@@ -52,4 +52,26 @@ final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServi
   override def service = srv
 
   override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.addSubscriptionCreationListener(listener)
+}
+
+object AllScadaServiceJavaShim {
+  val serviceInfo = new RpcProviderInfo({ c: Client => new AllScadaServiceJavaShimWrapper(c) },
+    List(
+      classOf[AllScadaService],
+      classOf[AuthTokenService],
+      classOf[EntityService],
+      classOf[ConfigFileService],
+      classOf[MeasurementService],
+      classOf[MeasurementOverrideService],
+      classOf[EventService],
+      classOf[EventCreationService],
+      classOf[EventConfigService],
+      classOf[CommandService],
+      classOf[PointService],
+      classOf[AlarmService],
+      classOf[AgentService],
+      classOf[EndpointManagementService],
+      classOf[ApplicationService],
+      classOf[CommunicationChannelService]))
+
 }
