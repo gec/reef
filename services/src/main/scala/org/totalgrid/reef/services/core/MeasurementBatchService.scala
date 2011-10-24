@@ -59,7 +59,7 @@ class MeasurementBatchService
           Request(Envelope.Verb.PUT, req, headers) :: Nil
         case _ => getRequests(req, commEndpoints)
       }
-      val futures = requests.map(req => context.client.request(req.verb, req.payload, req.env))
+      val futures = requests.map(req => context.client.request(req.verb, req.payload, Some(req.env)))
       Futures.gather(context.client, futures)
     }
 

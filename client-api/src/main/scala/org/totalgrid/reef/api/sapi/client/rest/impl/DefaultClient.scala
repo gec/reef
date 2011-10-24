@@ -26,8 +26,10 @@ import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Subscription }
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
 
-  override def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders) =
-    conn.request(verb, payload, getHeaders.merge(headers), strand)
+  override def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
+    val usedHeaders = headers.map { getHeaders.merge(_) }.getOrElse(getHeaders)
+    conn.request(verb, payload, usedHeaders, strand)
+  }
 
   final override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
     conn.subscribe(strand, descriptor)

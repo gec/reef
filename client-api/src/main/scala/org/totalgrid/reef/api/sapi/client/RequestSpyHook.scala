@@ -38,7 +38,7 @@ trait RequestSpyHook extends RestOperations with RequestSpyManager {
   abstract override def request[A](
     verb: Envelope.Verb,
     request: A,
-    headers: BasicRequestHeaders): Future[Response[A]] = {
+    headers: Option[BasicRequestHeaders]): Future[Response[A]] = {
 
     val future = super.request(verb, request, headers)
 

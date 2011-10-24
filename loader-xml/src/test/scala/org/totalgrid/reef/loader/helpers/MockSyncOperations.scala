@@ -73,7 +73,7 @@ final class MockSyncOperations(
   /**
    * Override request to define all of the verb helpers
    */
-  override def request[A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders): Future[Response[A]] = verb match {
+  override def request[A](verb: Envelope.Verb, payload: A, env: Option[BasicRequestHeaders]): Future[Response[A]] = verb match {
     case Envelope.Verb.GET => new MockFuture(Some(doGet(payload.asInstanceOf[AnyRef]).asInstanceOf[Response[A]]))
     case Envelope.Verb.DELETE =>
       delQueue.enqueue(payload.asInstanceOf[AnyRef])
