@@ -51,7 +51,7 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
       }
       conn.addListener(listener)
       conn.disconnect()
-      list shouldEqual (true) within (defaultTimeout)
+      list shouldBecome List(true) within (defaultTimeout)
     }
   }
 
@@ -75,7 +75,28 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
       broker.publish("test", "hi", "hello".getBytes, None)
       broker.publish("test", "hi", "friend".getBytes, None)
 
-      list shouldEqual (6, 5) within (defaultTimeout)
+      list shouldBecome List(5, 6) within (defaultTimeout)
+    }
+  }
+
+  test("Messages arrive in order") {
+    fixture(defaults) { broker =>
+
+      val list = new SynchronizedList[Int]
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = list.append(new String(msg.bytes).toInt)
+      }
+      val sub = broker.listen().start(consumer)
+
+      // bind the queue to the test exchange and send it a message
+      broker.declareExchange("test2")
+      broker.bindQueue(sub.getQueue, "test2", "hi", false)
+
+      val range = 0 to 1000
+
+      range.foreach { i => broker.publish("test2", "hi", i.toString.getBytes, None) }
+
+      list shouldBecome range.toList within (defaultTimeout)
     }
   }
 

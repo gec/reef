@@ -72,4 +72,20 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     }
   }
 
+  test("Events come in right order") { //subscriptions not currently working with embedded broker
+    fixture { c =>
+      val events = new SynchronizedList[Int]
+      val sub = c.subscribe(SomeIntegerTypeDescriptor).get
+      c.bindQueueByClass(sub.id(), "#", classOf[SomeInteger])
+      sub.start(e => events.append(e.value.num))
+
+      val range = 0 to 1500
+
+      range.foreach { i => c.publishEvent(Envelope.Event.MODIFIED, SomeInteger(i), "key") }
+
+      events shouldBecome range.toList within 5000
+      sub.cancel()
+    }
+  }
+
 }

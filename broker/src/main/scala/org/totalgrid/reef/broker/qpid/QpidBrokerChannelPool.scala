@@ -37,7 +37,7 @@ trait QpidBrokerChannelPool extends BrokerConnection {
   }
 
   private def borrow(): QpidWorkerChannel = channels.synchronized {
-    if (channels.size > 0) channels.dequeue()
+    if (channels.size > 10) channels.dequeue()
     else newChannel()
   }
 
