@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.rest.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.api.sapi.rest.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.rest.impl
+
 import net.agileautomata.executor4s.{ Failure, Success, Result, Future }
 
 import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }

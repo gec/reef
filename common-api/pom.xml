@@ -13,6 +13,14 @@
     <artifactId>reef-common-api</artifactId>
 	<packaging>bundle</packaging>
 
+	<licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
     <build>
         <plugins>
             <plugin>
@@ -47,6 +55,13 @@
 						</Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
+                </configuration>
+            </plugin>
+			<plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
         </plugins>

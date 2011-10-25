@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client.rest.fixture
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.api.sapi.client.rest.fixture
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client.rest.fixture
+
 import net.agileautomata.executor4s.Executors
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection

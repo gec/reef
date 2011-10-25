@@ -1,5 +1,3 @@
-package org.totalgrid.reef.util
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.util
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.util
 
 import com.weiglewilczek.slf4s.Logging
 

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.event
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.event
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.event
+
 import org.totalgrid.reef.proto.Utils
 import com.google.protobuf.ByteString
 import scala.collection.mutable.HashMap

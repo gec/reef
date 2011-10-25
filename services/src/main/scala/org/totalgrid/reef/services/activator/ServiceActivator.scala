@@ -1,5 +1,3 @@
-package org.totalgrid.reef.services.activator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.services.activator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.services.activator
+
 import org.osgi.framework._
 
 import org.totalgrid.reef.api.sapi.service.AsyncService

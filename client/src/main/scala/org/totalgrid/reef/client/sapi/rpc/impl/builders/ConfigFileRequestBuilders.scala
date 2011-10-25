@@ -16,6 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import com.google.protobuf.ByteString

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.rpc.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.client.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.rpc.impl
+
 import org.totalgrid.reef.api.japi.client.SubscriptionCreationListener
 import org.totalgrid.reef.client.rpc._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }

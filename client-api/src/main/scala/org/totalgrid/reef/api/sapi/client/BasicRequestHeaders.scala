@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.api.sapi.client
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client
+
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.japi.client.{ Routable, RequestHeaders, AnyNodeDestination, AddressableDestination }
 import org.totalgrid.reef.util.JavaInterop.notNull

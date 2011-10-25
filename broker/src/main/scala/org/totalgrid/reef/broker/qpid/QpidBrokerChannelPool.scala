@@ -1,7 +1,3 @@
-package org.totalgrid.reef.broker.qpid
-
-import org.totalgrid.reef.broker._
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,6 +16,10 @@ import org.totalgrid.reef.broker._
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.broker.qpid
+
+import org.totalgrid.reef.broker._
+
 trait QpidBrokerChannelPool extends BrokerConnection {
 
   protected def newChannel(): QpidWorkerChannel
