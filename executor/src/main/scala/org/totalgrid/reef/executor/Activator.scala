@@ -43,7 +43,7 @@ import net.agileautomata.executor4s.{ Executors, Executor }
 final class Activator extends BundleActivator {
 
   // the thread pool will grow, but always retain the number of threads == number of cores
-  val executor = Executors.newScheduledThreadPool(Runtime.getRuntime.availableProcessors)
+  val executor = Executors.newScheduledThreadPool(10)
 
   def start(context: BundleContext) = context.createService(executor, interface1 = interface[Executor])
 
