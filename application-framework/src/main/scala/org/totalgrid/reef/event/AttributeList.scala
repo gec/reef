@@ -87,7 +87,7 @@ case class AttributeBoolean(val value: Boolean, override val vdescriptor: Option
 }
 case class AttributeByteArray(val value: Array[Byte], override val vdescriptor: Option[String] = None) extends Attribute(ValueType.BYTES, vdescriptor) {
   override def getByteArray = value
-  override def getString = value.toString // TODO: should we throw an exception on getString?
+  override def getString = value.toString
 }
 
 /**

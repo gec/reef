@@ -24,12 +24,15 @@ import org.junit.Before;
 import org.totalgrid.reef.api.japi.settings.AmqpSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 
+import org.totalgrid.reef.api.japi.settings.UserSettings;
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
 import org.totalgrid.reef.api.sapi.client.rest.Client;
 import org.totalgrid.reef.client.ReefFactory;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
+
+import java.io.IOException;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -73,7 +76,7 @@ public class ReefConnectionTestBase
     }
 
     @Before
-    public void startBridge() throws InterruptedException, ReefServiceException
+    public void startBridge() throws InterruptedException, ReefServiceException, IOException
     {
         Connection connection = factory.connect();
 
@@ -81,7 +84,8 @@ public class ReefConnectionTestBase
 
         if ( autoLogon )
         {
-            client = connection.login( "system", "system" ).await();
+            UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
+            client = connection.login( userSettings.getUserName(), userSettings.getUserPassword() ).await();
         }
         else
         {

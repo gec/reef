@@ -106,7 +106,7 @@ object Documenter {
     </message>
   }
 
-  def save(fileName: String, nodes: List[Node], title: String, desc: Node = <div/>, path: String = "../api-request/target/docxml") = {
+  def save(fileName: String, nodes: List[Node], title: String, desc: Node = <div/>, path: String = "../client/target/docxml") = {
     val content =
       <servicedoc>
         <title>{ title }</title>

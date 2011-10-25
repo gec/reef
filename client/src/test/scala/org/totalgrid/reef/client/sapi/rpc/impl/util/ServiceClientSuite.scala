@@ -24,35 +24,47 @@ import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEvent
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader
-import org.totalgrid.reef.api.japi.settings.AmqpSettings
 import org.totalgrid.reef.client.ReefFactory
+import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.japi.settings.{ UserSettings, AmqpSettings }
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
 }
 
-// TODO: remove all explanation, recorder stuff
 abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   def this(file: String, title: String, desc: String) = {
     this(file, title, <div>{ desc }</div>)
   }
 
-  // gets default connection settings or overrides using system properties
-  val config = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
-  val factory = new ReefFactory(config)
-  val conn = factory.connect()
-  val session = conn.login("system", "system").await /// TODO - should load user out of config file
-  val client = session.getRpcInterface(classOf[AllScadaService])
+  // we use options so we can avoid starting the factories until the test is actually run
+  private var factoryOption = Option.empty[ReefFactory]
+  private var sessionOption = Option.empty[Client]
+  private var clientOption = Option.empty[AllScadaService]
+
   val recorder = new InteractionRecorder {}
 
+  def session = sessionOption.get
+  def client = clientOption.get
+
   override def beforeAll() {
-    //client.addRequestSpy(client)
+    // gets default connection settings or overrides using system properties
+
+    val props = PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg")
+
+    val config = new AmqpSettings(props)
+    val userConfig = new UserSettings(props)
+    factoryOption = Some(new ReefFactory(config))
+    val conn = factoryOption.get.connect()
+    sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
+    clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))
+    client.addRequestSpy(recorder)
   }
 
   override def afterAll() {
-    factory.terminate()
     recorder.save(file, title, desc)
+    factoryOption.foreach(_.terminate())
   }
 
 }
