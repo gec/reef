@@ -129,9 +129,9 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
-     * TODO protocol checking on publishMeasurements
+     * TODO: protocol checking on publishMeasurements
      */
-    List<Measurement> publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
+    boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 
     /**
      * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -144,5 +144,5 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
      */
-    MeasurementBatch publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
+    boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 }
