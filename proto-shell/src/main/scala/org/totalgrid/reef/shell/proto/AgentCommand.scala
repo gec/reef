@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Auth.Permission
 import org.totalgrid.reef.client.rpc.AgentService
 
 abstract class AgentCommandBase extends ReefCommandSupport {
-  lazy val authService: AgentService = reefSession
+  lazy val authService: AgentService = services
 
   def getRepeatedPassword(): String = {
     val stdin = new BufferedReader(new InputStreamReader(System.in))

@@ -31,13 +31,13 @@ import org.totalgrid.reef.client.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.api.japi.ReefServiceException
 
 /**
  * base implementation for login commands, handles getting user name and password, implementors just need to
  * define setupReefSession and call the underlying setReefSession(session, "context")
  */
 abstract class ReefLoginCommandBase extends ReefCommandSupport {
-  override val requiresLogin = false
 
   @Argument(index = 0, name = "userName", description = "user name", required = true, multiValued = false)
   private var userName: String = null
@@ -63,18 +63,12 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
       val (connection, context, cancel) = setupReefSession()
 
       try {
-        // TODO: rework setReefSession calls
-        setReefSession(null, null, null, cancel)
         val session = connection.login(userName, password).await /// TODO - should load user out of config file
         val services = session.getRpcInterface(classOf[AllScadaService])
-        setReefSession(session, services, context, cancel)
-
-        // TODO: implement session.getHeaders.getAuthToken
-
-        login(userName, "")
+        login(session, services, context, cancel, userName, session.getHeaders.getAuthToken)
       } catch {
         case x: Exception =>
-          setReefSession(null, null, null, null)
+          cancel.cancel()
           println("Couldn't login to Reef: " + x.getMessage)
           logger.error(x.getStackTraceString)
       }
@@ -86,6 +80,8 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
 
 @Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefLoginCommandBase {
+
+  override val requiresLogin = false
 
   def setupReefSession() = {
 
@@ -110,9 +106,16 @@ class ReefLoginCommand extends ReefLoginCommandBase {
 @Command(scope = "reef", name = "logout", description = "Logs out the current user")
 class ReefLogoutCommand extends ReefCommandSupport {
   def doCommand() = {
-    this.get("authToken") match {
-      case Some(token) => services.deleteAuthorizationToken(token)
-      case None =>
+    try {
+      this.get("authToken") match {
+        case Some(token) => services.deleteAuthorizationToken(token)
+        case None =>
+      }
+    } catch {
+      case ex: ReefServiceException =>
+        val errorMsg = "Error logging out: " + ex.getMessage
+        println(errorMsg)
+        logger.warn(errorMsg, ex)
     }
     this.logout()
   }

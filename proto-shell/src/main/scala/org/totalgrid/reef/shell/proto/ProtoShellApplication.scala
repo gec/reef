@@ -16,85 +16,66 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-// TODO: reenable ProtoShellApplication
-//package org.totalgrid.reef.shell.proto
-//
-//import org.apache.karaf.shell.console.Main
-//import org.apache.karaf.shell.console.jline.Console
-//import org.apache.felix.gogo.runtime.CommandProcessorImpl
-//
-//import jline.Terminal
-//import java.io.{ PrintStream, InputStream }
-//
-//import org.totalgrid.reef.util.FileConfigReader
-//import org.totalgrid.reef.api.sapi.client.ClientSession
-//import org.totalgrid.reef.api.japi.client.UserSettings
-//import org.totalgrid.reef.broker.api.{ BrokerConnectionInfo, BrokerProperties }
-//import org.totalgrid.reef.client.sapi.rpc.impl.impl.AllScadaServiceImpl
-//import org.totalgrid.reef.api.sapi.client.rpc.framework.SingleSessionClientSource
-//
-//object ProtoShellApplication {
-//  def main(args: Array[String]) = {
-//    //System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
-//
-//    val userSettings = new UserSettings(new FileConfigReader("org.totalgrid.reef.user.cfg").props)
-//    val connectionInfo = BrokerProperties.get(new FileConfigReader("org.totalgrid.reef.amqp.cfg"))
-//
-//    val client = connect(connectionInfo, userSettings)
-//
-//    val app = new ProtoShellApplication(client, userSettings.getUserName, connectionInfo.toString)
-//    app.run(Array[String]())
-//  }
-//
-//  def connect(connectionInfo: BrokerConnectionInfo, userSettings: UserSettings) = {
-//    import org.totalgrid.reef.executor.ReactActorExecutor
-//    import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-//    import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
-//    import org.totalgrid.reef.proto.ReefServicesList
-//
-//    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-//      val broker = new QpidBrokerConnection(connectionInfo)
-//    }
-//
-//    amqp.connect(5000)
-//    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
-//      override def close() {
-//        super.close()
-//        amqp.disconnect(5000)
-//      }
-//    }
-//
-//    val services = new AllScadaServiceImpl with SingleSessionClientSource {
-//      def session = client
-//    }
-//
-//    val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword).await()
-//    client.modifyHeaders(_.setAuthToken(token))
-//
-//    client
-//  }
-//
-//}
-//
-//class ProtoShellApplication(clientSession: ClientSession, userName: String, context: String) extends Main {
-//
-//  setUser(userName)
-//  setApplication(context)
-//
-//  override def getDiscoveryResource = "OSGI-INF/blueprint/commands.index"
-//
-//  protected override def createConsole(commandProcessor: CommandProcessorImpl, in: InputStream, out: PrintStream, err: PrintStream, terminal: Terminal) = {
-//    new Console(commandProcessor, in, out, err, terminal, null) {
-//      protected override def isPrintStackTraces = false
-//      protected override def welcome = {
-//        session.getConsole().println("hi")
-//      }
-//      protected override def setSessionProperties = {
-//        session.put("reefSession", clientSession)
-//        session.put("context", context)
-//        session.put("user", userName)
-//        session.put("authToken", userName)
-//      }
-//    }
-//  }
-//}
+
+package org.totalgrid.reef.shell.proto
+
+import org.apache.karaf.shell.console.Main
+import org.apache.karaf.shell.console.jline.Console
+import org.apache.felix.gogo.runtime.CommandProcessorImpl
+
+import jline.Terminal
+import java.io.{ PrintStream, InputStream }
+import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.client.ReefFactory
+import org.totalgrid.reef.client.rpc.AllScadaService
+import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.api.japi.settings.util.PropertyReader
+import org.totalgrid.reef.util.Cancelable
+
+object ProtoShellApplication {
+  def main(args: Array[String]) = {
+    System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
+
+    val userSettings = new UserSettings(PropertyReader.readFromFile("org.totalgrid.reef.user.cfg"))
+    val connectionInfo = new AmqpSettings(PropertyReader.readFromFile("org.totalgrid.reef.amqp.cfg"))
+
+    val factory = new ReefFactory(connectionInfo)
+
+    val connection = factory.connect()
+
+    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+    val services = client.getRpcInterface(classOf[AllScadaService])
+
+    val cancel = new Cancelable {
+      def cancel() = factory.terminate()
+    }
+
+    val app = new ProtoShellApplication(client, services, cancel, userSettings.getUserName, connectionInfo.toString, client.getHeaders.getAuthToken)
+    app.run(Array[String]())
+  }
+}
+
+class ProtoShellApplication(client: Client, services: AllScadaService, cancelable: Cancelable, userName: String, context: String, authToken: String) extends Main {
+
+  setUser(userName)
+  setApplication(context)
+
+  override def getDiscoveryResource = "OSGI-INF/blueprint/commands.index"
+
+  protected override def createConsole(commandProcessor: CommandProcessorImpl, in: InputStream, out: PrintStream, err: PrintStream, terminal: Terminal) = {
+    new Console(commandProcessor, in, out, err, terminal, null) {
+      protected override def isPrintStackTraces = false
+      protected override def welcome = {
+        session.getConsole().println(">")
+      }
+      protected override def setSessionProperties = {
+        this.session.put("context", context)
+        this.session.put("client", client)
+        this.session.put("reefSession", services)
+        this.session.put("cancelable", cancelable)
+        this.session.put("user", userName)
+        this.session.put("authToken", authToken)
+      }
+    }
+  }
+}

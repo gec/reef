@@ -27,6 +27,7 @@ import RequestFailure._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.commons.{ ModelDeleter, LoaderServicesImpl }
+import org.totalgrid.reef.loader.LoadManager
 
 @Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
 class LoadConfigCommand extends ReefCommandSupport {
@@ -44,9 +45,9 @@ class LoadConfigCommand extends ReefCommandSupport {
   var configFile: String = null
 
   override def doCommand(): Unit = {
-    import org.totalgrid.reef.loader.LoadManager
-    // re-enable loading from karaf
-    LoadManager.loadFile(new LoaderServicesImpl(reefClient), configFile, benchmark, dryRun, ignoreWarnings)
+    val loaderServices = new LoaderServicesImpl(reefClient)
+
+    LoadManager.loadFile(loaderServices, configFile, benchmark, dryRun, ignoreWarnings)
   }
 }
 

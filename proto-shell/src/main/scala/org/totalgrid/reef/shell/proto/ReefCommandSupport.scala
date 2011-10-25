@@ -33,7 +33,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
    *
    * would like this to be called session but OsgiCommandSupport already defines session
    */
-  protected def reefSession: AllScadaService = {
+  protected def services: AllScadaService = {
     this.session.get("reefSession") match {
       case null => throw new Exception("No session configured!")
       case x => x.asInstanceOf[AllScadaService]
@@ -47,22 +47,6 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     }
   }
 
-  def setReefSession(client: Client, session: AllScadaService, context: String, cancelable: Cancelable) = {
-    this.session.put("context", context)
-    this.session.put("client", client)
-    this.session.put("reefSession", session)
-    this.session.get("cancelable") match {
-      case null => // nothing to close
-      case x => if (x != cancelable) x.asInstanceOf[Cancelable].cancel
-    }
-    this.session.put("cancelable", cancelable)
-    session
-  }
-  /**
-   * "all services" wrapper around the reefSession
-   */
-  protected def services = reefSession
-
   protected def getLoginString = isLoggedIn match {
     case true => "Logged in as User: " + this.get("user").get + " on Reef Node: " + this.get("context").get
     case false => "Not logged in to a Reef Node."
@@ -73,15 +57,21 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     case x => true
   }
 
-  protected def login(user: String, auth: String) = {
-    this.set("user", user)
-    this.set("authToken", auth)
+  def login(client: Client, session: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
+    this.session.put("context", context)
+    this.session.put("client", client)
+    this.session.put("reefSession", session)
+    this.session.get("cancelable") match {
+      case null => // nothing to close
+      case x => x.asInstanceOf[Cancelable].cancel
+    }
+    this.session.put("cancelable", cancelable)
+    this.session.put("user", userName)
+    this.session.put("authToken", authToken)
   }
 
-  protected def logout() = {
-    this.unset("user")
-    this.unset("authToken")
-    setReefSession(null, null, null, null)
+  protected def logout() {
+    login(null, null, null, null, null, null)
   }
 
   protected def get(name: String): Option[String] = {
@@ -90,9 +80,6 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
       case x => Some(x.asInstanceOf[String])
     }
   }
-
-  protected def unset(name: String): Unit = set(name, null)
-  protected def set(name: String, value: String): Unit = this.session.put(name, value)
 
   override protected def doExecute(): Object = {
     println("")

@@ -69,6 +69,8 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   /* --- Specific getters/setters not part of RequestHeaders --- */
 
+  def getAuthToken = getString(BasicRequestHeaders.authToken).getOrElse("")
+
   def getDestination = getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key))
 
   def getTimeout = getString(BasicRequestHeaders.timeoutMs).map { _.toLong }

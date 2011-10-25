@@ -32,6 +32,13 @@ public interface RequestHeaders
     RequestHeaders setAuthToken( String token );
 
     /**
+     * AuthToken associated with this client, can be used to create other clients that have
+     * the same authorization. Must be protected as well as the username/password combo.
+     * @return auth token string
+     */
+    String getAuthToken();
+
+    /**
      * Clears the auth token
      * @return A new RequestHeaders with the auth token cleared
      */
