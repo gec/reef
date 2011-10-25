@@ -48,7 +48,7 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
       publish
     }
     else if (queuedEvent.isEmpty) {
-      queuedEvent = Some(executor.delay(maxTimeMS.milliseconds) {
+      queuedEvent = Some(executor.schedule(maxTimeMS.milliseconds) {
         publish
       })
     }

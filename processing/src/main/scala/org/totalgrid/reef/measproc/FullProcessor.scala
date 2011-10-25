@@ -58,7 +58,7 @@ class FullProcessor(
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Error subscribing to logical nodes to process: " + rse.toString, rse)
-        delayedAnnounce = Some(exe.delay(5000.milliseconds) { subscribeToStreams })
+        delayedAnnounce = Some(exe.schedule(5000.milliseconds) { subscribeToStreams })
     }
   }
 }

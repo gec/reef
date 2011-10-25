@@ -60,7 +60,7 @@ class FrontEndManager(
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Error getting endpoints to talk to: " + rse.toString, rse)
-        delayedAnnounce = Some(exe.delay(retryms.milliseconds) { announceAsFep })
+        delayedAnnounce = Some(exe.schedule(retryms.milliseconds) { announceAsFep })
     }
   }
 }

@@ -58,7 +58,7 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
   def repeat() {
     update(measurements)
     this.synchronized {
-      repeater = if (delay > 0) Some(exe.delay(delay.milliseconds) { repeat }) else None
+      repeater = if (delay > 0) Some(exe.schedule(delay.milliseconds) { repeat }) else None
     }
   }
 

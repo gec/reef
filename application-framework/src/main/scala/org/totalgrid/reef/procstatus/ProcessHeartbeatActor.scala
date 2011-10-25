@@ -48,7 +48,7 @@ class ProcessHeartbeatActor(services: ApplicationService, configuration: Heartbe
   def doHeartbeat(time: TimeInterval) {
     heartbeat
 
-    repeater = Some(exe.delay(time)(doHeartbeat(time)))
+    repeater = Some(exe.schedule(time)(doHeartbeat(time)))
   }
 
   override def beforeStop() = {

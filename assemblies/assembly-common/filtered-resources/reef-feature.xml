@@ -3,7 +3,7 @@
 	<feature name="reef-api" version="0.4.0-SNAPSHOT">
 		<bundle start-level='50'>mvn:com.weiglewilczek.scalamodules/scalamodules-core_2.9.0-1/2.0.3</bundle>
 		<bundle start-level='50'>mvn:com.weiglewilczek.slf4s/slf4s_2.9.0-1/1.0.6</bundle>
-        <bundle start-level='50'>mvn:net.agile-automata.executor4s/executor4s_2.9.0-1/0.1.7</bundle>
+        <bundle start-level='50'>mvn:net.agile-automata.executor4s/executor4s_2.9.0-1/0.1.9-RC1</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util-osgi/0.4.0-SNAPSHOT</bundle>

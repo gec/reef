@@ -49,7 +49,7 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
 
   def register(executor: Executor, interval: TimeInterval, callback: ResponseCallback): String = map.synchronized {
     val uuid = nextUuid
-    val timer = executor.delay(interval)(onTimeout(uuid))
+    val timer = executor.schedule(interval)(onTimeout(uuid))
     map.put(uuid, Record(timer, callback, executor))
     uuid
   }

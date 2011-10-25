@@ -22,7 +22,7 @@ import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
 import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }
 import org.totalgrid.reef.api.sapi.client.{ RequestSpy, RequestSpyManager, BasicRequestHeaders, HasHeaders }
-import net.agileautomata.executor4s.{ TimeInterval, Executor }
+import net.agileautomata.executor4s.{ Timer, TimeInterval, Executor }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
@@ -49,7 +49,8 @@ abstract class ApiBase(client: Client) extends HasAnnotatedOperations with Clien
 
   def attempt[A](fun: => A) = client.attempt(fun)
   def execute(fun: => Unit) = client.execute(fun)
-  def delay(interval: TimeInterval)(fun: => Unit) = client.delay(interval)(fun)
-
+  def schedule(interval: TimeInterval)(fun: => Unit) = client.schedule(interval)(fun)
+  def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit) =
+    client.scheduleWithFixedOffset(initial, offset)(fun)
 }
 

@@ -39,7 +39,9 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
 
   final override def execute(fun: => Unit): Unit = strand.execute(fun)
   final override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
-  final override def delay(interval: TimeInterval)(fun: => Unit): Cancelable = strand.delay(interval)(fun)
+  final override def schedule(interval: TimeInterval)(fun: => Unit): Timer = strand.schedule(interval)(fun)
+  final override def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit): Timer =
+    strand.scheduleWithFixedOffset(initial, offset)(fun)
 
   final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
   final override def publishEvent[A](typ: Event, value: A, key: String) = conn.publishEvent(typ, value, key)

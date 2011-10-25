@@ -25,15 +25,15 @@ import org.totalgrid.reef.services.framework.ServerSideProcess
 import net.agileautomata.executor4s._
 
 class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long) extends ServerSideProcess with Logging {
-  def startProcess(reactor: Executor) {
-    if (ms.supportsTrim) reactor.delay(period.milliseconds) { doTrimOperation(reactor) }
+  def startProcess(exe: Executor) {
+    if (ms.supportsTrim) exe.schedule(period.milliseconds)(doTrimOperation(exe))
   }
 
-  private def doTrimOperation(reactor: Executor) {
+  private def doTrimOperation(exe: Executor) {
     val num = ms.trim(totalMeasurements)
     if (num > 0) {
       logger.debug("trimmed: " + num + " measurements")
     }
-    reactor.delay(period.milliseconds) { doTrimOperation(reactor) }
+    exe.schedule(period.milliseconds) { doTrimOperation(exe) }
   }
 }

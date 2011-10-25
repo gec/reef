@@ -90,7 +90,7 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
         consumers += generator -> application
 
         if (application.isEmpty) {
-          delays += generator -> exe.delay(5000.milliseconds) { connection.foreach(doBrokerConnectionStarted(generator, _)) }
+          delays += generator -> exe.schedule(5000.milliseconds) { connection.foreach(doBrokerConnectionStarted(generator, _)) }
         }
     }
   }
@@ -115,7 +115,7 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
     tryC("Couldn't connect to " + amqpSettings + ": ") {
       onConnectionOpened(remoteFactory.connect)
     }
-    if (connection.isEmpty) exe.delay(timeout.milliseconds) { tryConnection(timeout * 2) }
+    if (connection.isEmpty) exe.schedule(timeout.milliseconds) { tryConnection(timeout * 2) }
   }
 
   private def tryC[A](message: => String)(func: => A): Option[A] = {

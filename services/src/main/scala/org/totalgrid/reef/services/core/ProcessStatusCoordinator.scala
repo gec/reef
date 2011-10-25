@@ -27,26 +27,26 @@ import net.agileautomata.executor4s._
 
 class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: RequestContextSource) extends ServerSideProcess with Logging {
 
-  def startTimeoutChecks(react: Executor) {
+  def startTimeoutChecks(exe: Executor) {
     // we need to delay the timeout check a bit to make sure any already queued heartbeat messages are waiting
     // to be processed. If we checked the timeouts before processing all waiting messages we would always disable 
     // all applications if this coordinator had been turned off for longer than periodMs even if the other apps
     // had been sending heartbeats the whole.
     // TODO: implement a "sentinal" callback for when all pending messages processed on a queue
-    react.delay(10000.milliseconds) { doCheckTimeouts(react) }
+    exe.schedule(10000.milliseconds) { doCheckTimeouts(exe) }
   }
 
-  private def doCheckTimeouts(react: Executor) {
+  private def doCheckTimeouts(exe: Executor) {
     try {
       checkTimeouts(System.currentTimeMillis)
     } catch {
       case e: Exception => logger.error("Error checking timeout", e)
     }
-    react.delay(10000.milliseconds) { doCheckTimeouts(react) }
+    exe.schedule(10000.milliseconds) { doCheckTimeouts(exe) }
   }
 
-  def startProcess(reactor: Executor) {
-    startTimeoutChecks(reactor)
+  def startProcess(exe: Executor) {
+    startTimeoutChecks(exe)
   }
 
   def checkTimeouts(now: Long) {
