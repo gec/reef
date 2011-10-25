@@ -42,13 +42,12 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
   }
 
   private def javaShimClass(c: ClassDoc, stream: PrintStream, packageName: String) {
-    stream.println("package " + packageName + ";")
+    stream.println("package " + packageName)
 
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName()))
     stream.println("import scala.collection.JavaConversions._")
     stream.println("import org.totalgrid.reef.api.sapi.client.rpc.framework.Converters._")
     stream.println("import org.totalgrid.reef.client.rpc." + japiPackage + "{" + c.name + targetEx + "=> JInterface }")
-    stream.println("import org.totalgrid.reef.client.sapi.rpc." + c.name)
     stream.println("import org.totalgrid.reef.client.sapi.rpc.AllScadaService")
 
     if (isFuture) stream.println("import org.totalgrid.reef.api.japi.client.Promise")
@@ -64,24 +63,28 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
         p.name + ": " + javaAsScalaTypeString(p.`type`)
       }.mkString(", ")
       msg += ")"
-      if (m.returnType.toString != "void") {
-        if (isFuture) {
-          msg += ": Promise[" + javaAsScalaTypeString(m.returnType) + "]"
-        } else {
-          msg += ": " + javaAsScalaTypeString(m.returnType)
-        }
+
+      if (isFuture) {
+        msg += ": Promise[" + javaAsScalaTypeString(m.returnType) + "]"
+      } else {
+        msg += ": " + javaAsScalaTypeString(m.returnType)
       }
 
       msg += " = "
-      if (m.returnType.simpleTypeName() == "SubscriptionResult") msg += "convert("
-      msg += "service." + m.name + "("
-      msg += m.parameters().toList.map { p =>
+
+      var implCall = "service." + m.name + "("
+      implCall += m.parameters().toList.map { p =>
         if (p.`type`().simpleTypeName == "List") p.name + ".toList"
         else p.name
       }.mkString(", ")
-      msg += ")"
-      if (!isFuture) msg += ".await"
-      if (m.returnType.simpleTypeName() == "SubscriptionResult") msg += ")"
+      implCall += ")"
+      if (!isFuture) implCall += ".await"
+
+      if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") implCall = "convert(" + implCall + ")"
+      else if (m.returnType.simpleTypeName() == "SubscriptionResult") implCall = "convert(" + implCall + ")"
+
+      msg += implCall
+
       stream.println(msg)
     }
 

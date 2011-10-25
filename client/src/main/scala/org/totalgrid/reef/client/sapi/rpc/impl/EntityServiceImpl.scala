@@ -144,7 +144,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
   override def clearEntityAttributes(uid: ReefUUID) = {
     ops.operation("Couldn't clear all attributes for entity: " + uid.uuid) {
-      _.delete(EntityAttributesBuilders.getForEntityUid(uid)).map(_.one)
+      _.delete(EntityAttributesBuilders.getForEntityUid(uid)).map(_.oneOrNone)
     }
   }
 

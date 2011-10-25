@@ -48,12 +48,9 @@ trait MeasurementOverrideServiceImpl extends HasAnnotatedOperations with Measure
     }
   }
 
-  // TODO: convert interface to return option
   override def clearMeasurementOverridesOnPoint(point: Point) = {
     ops.operation("Couldn't clear measurementOverrides on point uuid: " + point.uuid + " name: " + point.name) {
-      _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).map {
-        _.oneOrNone.map(_.orNull)
-      }
+      _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).map { _.oneOrNone }
     }
   }
 

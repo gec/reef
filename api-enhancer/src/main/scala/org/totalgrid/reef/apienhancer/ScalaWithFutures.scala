@@ -34,10 +34,10 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
   }
 
   private def scalaClass(c: ClassDoc, stream: PrintStream, packageName: String) {
-    stream.println("package " + packageName + ";")
+    stream.println("package " + packageName)
 
     // we remove the java list import, so the name List will point to scala.collection.List
-    val importMap = Map("java.util.List" -> "")
+    val importMap = Map("java.util.List" -> "", "org.totalgrid.reef.api.japi.ReefServiceException" -> "")
 
     c.importedClasses().toList.foreach(p => importMap.get(p.qualifiedTypeName()) match {
       case None => stream.println("import " + p.qualifiedTypeName())
@@ -49,15 +49,18 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
 
     c.methods.toList.foreach { m =>
 
-      var msg = "\t@throws(classOf[ReefServiceException])\n"
-
-      msg += "\t" + "def " + m.name + "("
+      var msg = "\t" + "def " + m.name + "("
       msg += m.parameters().toList.map { p =>
         p.name + ": " + scalaTypeString(p.`type`)
       }.mkString(", ")
       msg += ")"
-      if (m.returnType.toString != "void")
-        msg += ": Promise[" + scalaTypeString(m.returnType) + "]"
+
+      val basicReturnType = scalaTypeString(m.returnType)
+
+      val returnType = if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") "Option[" + basicReturnType + "]"
+      else basicReturnType
+
+      msg += ": Promise[" + returnType + "]"
 
       stream.println(commentString(m.getRawCommentText()))
       stream.println(msg)

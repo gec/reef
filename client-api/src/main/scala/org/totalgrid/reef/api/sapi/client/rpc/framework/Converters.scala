@@ -29,4 +29,8 @@ object Converters {
       def getResult = result.getResult
     }
   }
+
+  def convert[A](result: Option[A]): A = {
+    result.getOrElse(null.asInstanceOf[A])
+  }
 }

@@ -122,7 +122,7 @@ class EntityAttributesRequestTest
     }
 
     val attr = client.clearEntityAttributes(uid).await
-    attr.getAttributesCount should equal(1)
+    attr.map { _.getAttributesCount } should equal(Some(1))
 
   }
 
