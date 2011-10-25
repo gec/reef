@@ -92,20 +92,14 @@ object ModelDeleter {
       // since we never look at entities when we are deleting we dont need to look them up
       val fakeEntity = Entity.newBuilder.build
 
-      local.getAllEndpoints().await.toList.foreach { collector.addEndpoint(_, fakeEntity) }
+      local.getAllEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
       val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
-      try {
-        local.getAllEntitiesWithTypes(types).await.toList.foreach { collector.addEquipment(_) }
-      } catch {
-        case rse: BadRequestException =>
-        // do nothing, system probably totally empty
-        // TODO: remove once "meta-model" implemented in services
-      }
+      local.getAllEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
 
-      local.getAllCommunicationChannels().await.toList.foreach { collector.addChannel(_, fakeEntity) }
-      local.getAllConfigFiles().await.toList.foreach { collector.addConfigFile(_, fakeEntity) }
-      local.getAllPoints().await.toList.foreach { collector.addPoint(_, fakeEntity) }
-      local.getCommands().await.toList.foreach { collector.addCommand(_, fakeEntity) }
+      local.getAllCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
+      local.getAllConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
+      local.getAllPoints().await.foreach { collector.addPoint(_, fakeEntity) }
+      local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
 
       // TODO: add deleting of eventConfigurations
     }

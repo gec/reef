@@ -61,12 +61,12 @@ trait ModelDeleterCache extends ModelCollector {
   def doDeletes(local: LoaderServices) {
     // we need to delete endpoints first because we can't delete points and commands that
     // are sourced by endpoints
-    endpoints.foreach(local.delete(_))
-    channel.foreach(local.delete(_))
-    commands.foreach(local.delete(_))
-    points.foreach(local.delete(_))
-    equipment.foreach(local.delete(_))
-    configFiles.foreach(local.delete(_))
+    endpoints.foreach(local.delete(_).await)
+    channel.foreach(local.delete(_).await)
+    commands.foreach(local.delete(_).await)
+    points.foreach(local.delete(_).await)
+    equipment.foreach(local.delete(_).await)
+    configFiles.foreach(local.delete(_).await)
   }
 
   def size = endpoints.size + channel.size + commands.size + points.size + equipment.size + configFiles.size
