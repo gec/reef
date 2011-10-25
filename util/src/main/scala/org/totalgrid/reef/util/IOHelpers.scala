@@ -22,10 +22,8 @@ import java.io.{ FileOutputStream, IOException, FileInputStream, File }
 
 /**
  * helpers to ease the reading and writing of files using the java stream constructs
- * TODO: add IOHelpers unit tests
  */
 object IOHelpers {
-  // TODO: replace xml loader image loading with this
   def readBinary(file: File): Array[Byte] = {
 
     checkFileExistence(file)
@@ -50,17 +48,11 @@ object IOHelpers {
   }
 
   def readString(file: File): String = {
-
-    checkFileExistence(file)
-    checkFileReadable(file)
-
-    // TODO: replace Source.fromFile with standard java way of reading in text file
-    scala.io.Source.fromFile(file).mkString
+    new String(readBinary(file))
   }
 
   def writeBinary(file: File, data: Array[Byte]) {
 
-    checkFileExistence(file)
     checkFileWritable(file)
 
     val fis = new FileOutputStream(file)
