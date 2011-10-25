@@ -29,11 +29,10 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import net.agileautomata.executor4s.testing.MockExecutor
 import org.totalgrid.reef.services.framework.ServerSideProcess
-import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
-import org.totalgrid.reef.api.japi.SimpleAuth.AuthRequest
 import org.totalgrid.reef.util.Lifecycle
+import org.totalgrid.reef.api.sapi.client.rest.Connection
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
@@ -41,7 +40,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
     DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
   }
 
-  class ExchangeCheckingServiceContainer extends ServiceContainer {
+  class ExchangeCheckingServiceContainer(amqp: Connection) extends ServiceContainer {
     def addCoordinator(coord: ServerSideProcess) {}
 
     def addLifecycleObject(obj: Lifecycle) {}
@@ -49,7 +48,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
     def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
       val klass = endpoint.descriptor.getKlass
       //call just so an exception will be thrown if it doesn't exist
-      if (klass != classOf[AuthRequest]) ReefServicesList.getServiceInfo(klass)
+      amqp.declareEventExchange(klass)
       new NoOpService
     }
   }
@@ -65,10 +64,10 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
-      val serviceContainer = new ExchangeCheckingServiceContainer
+      val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
       val metrics = MetricsSink.getInstance("test")
 
-      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, new MockExecutor, metrics)
+      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, new MockExecutor, metrics, "")
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

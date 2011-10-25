@@ -16,22 +16,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.persistence.squeryl
+package org.totalgrid.reef.client.sapi
 
-import org.totalgrid.reef.api.sapi.config.ConfigReader
+import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
 
-object SqlProperties {
+import org.totalgrid.reef.broker.BrokerConnection
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShim
+import org.totalgrid.reef.api.sapi.client.rest.Connection
 
-  def get(cr: ConfigReader): DbInfo = {
-    val dbtype = cr.getString("org.totalgrid.reef.sql.type", "postgresql")
-    val host = cr.getString("org.totalgrid.reef.sql.host", "127.0.0.1")
-    val port = cr.getInt("org.totalgrid.reef.sql.port", 5432)
-    val db = cr.getString("org.totalgrid.reef.sql.database", "reef_d")
-    val user = cr.getString("org.totalgrid.reef.sql.user", "core")
-    val pass = cr.getString("org.totalgrid.reef.sql.password", "core")
-    val slowQueryMs = cr.getInt("org.totalgrid.reef.sql.slowquery", 100)
-
-    DbInfo(dbtype, host, port, db, user, pass, slowQueryMs)
+object ReefServices {
+  def apply(broker: BrokerConnection, exe: Executor) = {
+    val conn = new DefaultConnection(broker, exe, 5000)
+    prepareConnection(conn)
+    conn
   }
 
+  def prepareConnection(conn: Connection) {
+    ReefServicesList.getServicesList.foreach(conn.addServiceInfo(_))
+    conn.addRpcProvider(AllScadaServiceImpl.serviceInfo)
+    conn.addRpcProvider(AllScadaServiceJavaShim.serviceInfo)
+  }
 }

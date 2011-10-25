@@ -1,5 +1,3 @@
-package org.totalgrid.reef.broker.qpid
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.broker.qpid
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.broker.qpid
+
 import scala.{ Option => ScalaOption }
 
 import org.apache.qpid.transport._

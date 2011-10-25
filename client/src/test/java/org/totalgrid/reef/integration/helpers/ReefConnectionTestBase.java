@@ -4,11 +4,11 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
  * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the GNU Affero General Public License
- * Version 3.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -18,12 +18,6 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import net.agileautomata.executor4s.ExecutorService;
-import net.agileautomata.executor4s.Executors;
 import org.junit.After;
 import org.junit.Before;
 
@@ -31,15 +25,11 @@ import org.totalgrid.reef.api.japi.settings.AmqpSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
+import org.totalgrid.reef.api.sapi.client.rest.Client;
+import org.totalgrid.reef.client.ReefFactory;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection;
-import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShimWrapper;
-import org.totalgrid.reef.client.sapi.ReefServicesList;
-import org.totalgrid.reef.broker.BrokerConnection;
-import org.totalgrid.reef.broker.BrokerConnectionFactory;
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -48,11 +38,7 @@ public class ReefConnectionTestBase
 {
     private final boolean autoLogon;
 
-    protected final ExecutorService exe = Executors.newScheduledThreadPool( 4 );
-
-    protected BrokerConnectionFactory factory;
-    protected BrokerConnection broker;
-    protected Connection connection;
+    protected ReefFactory factory;
 
     protected AllScadaService helpers;
 
@@ -70,7 +56,7 @@ public class ReefConnectionTestBase
         try
         {
             AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            this.factory = new QpidBrokerConnectionFactory( s );
+            this.factory = new ReefFactory( s );
         }
         catch ( Exception ex )
         {
@@ -89,25 +75,24 @@ public class ReefConnectionTestBase
     @Before
     public void startBridge() throws InterruptedException, ReefServiceException
     {
-        broker = factory.connect();
+        Connection connection = factory.connect();
 
-        connection = new DefaultConnection( ReefServicesList.getInstance(), broker, exe, 20000 );
+        Client client;
 
         if ( autoLogon )
         {
-            helpers = new AllScadaServiceJavaShimWrapper( connection.login( "system", "system" ).await() );
+            client = connection.login( "system", "system" ).await();
         }
         else
         {
-            helpers = new AllScadaServiceJavaShimWrapper( connection.login( "" ) );
+            client = connection.login( "" );
         }
+        helpers = client.getRpcInterface( AllScadaService.class );
     }
 
     @After
     public void stopBridge() throws InterruptedException, ReefServiceException
     {
-        if ( broker != null )
-            broker.disconnect();
-        exe.shutdown();
+        factory.terminate();
     }
 }

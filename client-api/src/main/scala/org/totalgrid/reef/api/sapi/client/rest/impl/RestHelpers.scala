@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client.rest.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.api.japi.{ Envelope, TypeDescriptor }

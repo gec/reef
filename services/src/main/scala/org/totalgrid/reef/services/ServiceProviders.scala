@@ -42,14 +42,15 @@ class ServiceProviders(
     serviceConfiguration: ServiceOptions,
     authzService: AuthService,
     coordinatorExecutor: Executor, //TODO - if the component requires Strand, use the Strand type
-    metricsPublisher: IMetricsSink) {
+    metricsPublisher: IMetricsSink,
+    authToken: String) {
 
   private val eventPublisher = new LocalSystemEventSink
-  private val dependencies = ServiceDependencies(connection, connection, cm, eventPublisher, coordinatorExecutor)
+  private val dependencies = new ServiceDependencies(connection, connection, cm, eventPublisher, coordinatorExecutor, authToken)
 
   private val contextSource = new DependenciesSource(dependencies)
 
-  private val modelFac = new ModelFactories(dependencies, contextSource)
+  private val modelFac = new ModelFactories(cm, coordinatorExecutor, contextSource)
 
   // we have to fill in the event model after constructing the event service to break the circular
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services

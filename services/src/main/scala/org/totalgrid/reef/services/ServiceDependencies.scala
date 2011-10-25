@@ -18,59 +18,29 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
-import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
+import org.totalgrid.reef.measurementstore.MeasurementStore
+import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, SubscriptionHandler }
-import org.totalgrid.reef.api.japi.Envelope.Event
-import org.totalgrid.reef.api.sapi.service.AsyncService
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.api.japi.client.Routable
-import org.totalgrid.reef.client.sapi.ReefServicesList
-import testing.InstantExecutor
 
-// TODO: move MockConnection down to test classes that use it
-class MockConnection extends Connection {
-  def declareEventExchange(klass: Class[_]) = null
+class ServiceDependencies(
+  connection: Connection,
+  pubs: SubscriptionHandler,
+  val measurementStore: MeasurementStore,
+  eventSink: SystemEventSink,
+  val coordinatorExecutor: Executor,
+  authToken: String) extends RequestContextDependencies(connection, pubs, authToken, eventSink)
 
-  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
+class RequestContextDependencies(
+  val connection: Connection,
+  val pubs: SubscriptionHandler,
+  val authToken: String,
+  val eventSink: SystemEventSink)
 
-  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = null
-
-  def login(authToken: String) = null
-
-  def login(userName: String, password: String) = null
-
-  def publishEvent[A](typ: Event, value: A, key: String) {}
-}
-
-case class ServiceDependencies(
-    connection: Connection = new MockConnection,
-    pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
-    cm: MeasurementStore = new InMemoryMeasurementStore,
-    eventSink: SystemEventSink = new SilentEventSink,
-    coordinatorExecutor: Executor = new InstantExecutor,
-    authToken: String = "") {
-
-  // TODO: is this the best place to define event exchanges?
-  def defineEventExchanges() {
-    ReefServicesList.getServicesList.foreach { serviceInfo =>
-      connection.declareEventExchange(serviceInfo.descriptor.getKlass)
-    }
-  }
-}
-
-class HeadersRequestContext(
-  extraHeaders: BasicRequestHeaders = BasicRequestHeaders.empty,
-  dependencies: ServiceDependencies = new ServiceDependencies)
-    extends DependenciesRequestContext(dependencies) {
-  modifyHeaders(_.merge(extraHeaders))
-}
-
-class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
-
-  private var headers = BasicRequestHeaders.empty
+trait HeadersContext {
+  protected var headers = BasicRequestHeaders.empty
 
   def getHeaders = headers
 
@@ -79,6 +49,9 @@ class DependenciesRequestContext(dependencies: ServiceDependencies) extends Requ
     headers = newHeaders
     newHeaders
   }
+}
+
+class DependenciesRequestContext(dependencies: RequestContextDependencies) extends RequestContext with HeadersContext {
 
   val operationBuffer = new BasicOperationBuffer
 
@@ -89,10 +62,18 @@ class DependenciesRequestContext(dependencies: ServiceDependencies) extends Requ
   def client = dependencies.connection.login(dependencies.authToken)
 }
 
-class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {
+class DependenciesSource(dependencies: RequestContextDependencies) extends RequestContextSource {
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
     ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
   }
 }
-class SimpleRequestContextSource extends DependenciesSource(new ServiceDependencies)
+
+// TODO: get rid of all uses of NullRequestContext
+object NullRequestContext extends RequestContext with HeadersContext {
+
+  def client = throw new Exception
+  def eventSink = throw new Exception
+  def operationBuffer = throw new Exception
+  def subHandler = throw new Exception
+}

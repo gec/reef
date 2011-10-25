@@ -37,7 +37,7 @@ import net.agileautomata.executor4s.Executor
 object SlaveFepShim {
   def createFepShim(userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext): UserLogin = {
     val appConfigConsumer = new AppEnrollerConsumer {
-      def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+      def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
 
         val slaveProtocol = new Dnp3SlaveProtocol(services) with AddRemoveValidation
         val protocol = Some(slaveProtocol)

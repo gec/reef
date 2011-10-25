@@ -1,7 +1,3 @@
-package org.totalgrid.reef.client.sapi.rpc
-
-import org.totalgrid.reef.api.sapi.client.rpc.framework.ClientOperations
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -20,6 +16,10 @@ import org.totalgrid.reef.api.sapi.client.rpc.framework.ClientOperations
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.sapi.rpc
+
+import org.totalgrid.reef.api.sapi.client.rpc.framework.ClientOperations
+
 trait AllScadaService
   extends ClientOperations
   with AuthTokenService

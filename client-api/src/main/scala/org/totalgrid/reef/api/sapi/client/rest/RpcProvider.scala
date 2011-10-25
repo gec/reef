@@ -16,15 +16,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client.impl
+package org.totalgrid.reef.api.sapi.client.rest
 
-import org.totalgrid.reef.api.sapi.client.{ Subscription => ScalaSubscription }
-import org.totalgrid.reef.api.japi.client.SubscriptionResult
+trait RpcProvider {
+  def getRpcInterface[A](klass: Class[A]): A
+}
 
-class SubscriptionResultWrapper[A, B](result: A, sub: ScalaSubscription[B]) extends SubscriptionResult[A, B] {
+trait RpcProviderFactory {
+  def createRpcProvider(client: Client): AnyRef
+}
 
-  private val wrapper = new SubscriptionWrapper(sub)
-
-  override def getResult = result
-  override def getSubscription = wrapper
+case class RpcProviderInfo(creator: RpcProviderFactory, interfaces: List[Class[_]]) {
+  def this(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = this(new RpcProviderFactory {
+    override def createRpcProvider(client: Client) = fun(client)
+  }, interfaces)
 }

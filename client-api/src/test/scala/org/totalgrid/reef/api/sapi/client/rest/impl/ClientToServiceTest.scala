@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client.rest.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -27,8 +26,7 @@ import org.junit.runner.RunWith
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.{ Executors, Cancelable }
 import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.sapi.types.ServiceList
-import org.totalgrid.reef.api.sapi.example.{ SomeInteger, SomeIntegerIncrementService, SomeIntegerTypeDescriptor }
+import org.totalgrid.reef.api.sapi.example.{ ExampleServiceList, SomeInteger, SomeIntegerIncrementService, SomeIntegerTypeDescriptor }
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.{ SuccessResponse, Response }
 import org.totalgrid.reef.api.japi.client.AnyNodeDestination
@@ -46,7 +44,8 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     val executor = Executors.newScheduledSingleThread()
     var binding: Option[Cancelable] = None
     try {
-      val conn = new DefaultConnection(ServiceList(SomeIntegerTypeDescriptor), b, executor, 5000)
+      val conn = new DefaultConnection(b, executor, 5000)
+      conn.addServiceInfo(ExampleServiceList.info)
       binding = Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, AnyNodeDestination, true))
       fun(conn.login("foo"))
     } finally {
@@ -69,6 +68,22 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
       c.put(SomeInteger(1), sub).await should equal(SuccessResponse(list = List(SomeInteger(2))))
       sub.start(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
+      sub.cancel()
+    }
+  }
+
+  test("Events come in right order") { //subscriptions not currently working with embedded broker
+    fixture { c =>
+      val events = new SynchronizedList[Int]
+      val sub = c.subscribe(SomeIntegerTypeDescriptor).get
+      c.bindQueueByClass(sub.id(), "#", classOf[SomeInteger])
+      sub.start(e => events.append(e.value.num))
+
+      val range = 0 to 1500
+
+      range.foreach { i => c.publishEvent(Envelope.Event.MODIFIED, SomeInteger(i), "key") }
+
+      events shouldBecome range.toList within 5000
       sub.cancel()
     }
   }

@@ -21,10 +21,12 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework.{ RequestContextSource }
 import org.totalgrid.reef.services.coordinators.{ SingleThreadedMeasurementStreamCoordinator, SquerylBackedMeasurementStreamCoordinator }
 import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies }
+import org.totalgrid.reef.measurementstore.MeasurementStore
+import net.agileautomata.executor4s.Executor
 
-class ModelFactories(dependencies: ServiceDependencies, contextSource: RequestContextSource) {
+class ModelFactories(measurementStore: MeasurementStore, coordinatorExecutor: Executor, contextSource: RequestContextSource) {
 
-  def this(deps: ServiceDependencies) = this(deps, new DependenciesSource(deps))
+  def this(deps: ServiceDependencies) = this(deps.measurementStore, deps.coordinatorExecutor, new DependenciesSource(deps))
 
   val accesses = new CommandAccessServiceModel
   val userRequests = new UserCommandRequestServiceModel(accesses)
@@ -35,10 +37,10 @@ class ModelFactories(dependencies: ServiceDependencies, contextSource: RequestCo
     // we have to make our own copies of the other service models to break the cyclic dependencies
     val measProc = new MeasurementProcessingConnectionServiceModel
     val fepModel = new CommunicationEndpointConnectionServiceModel
-    val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, dependencies.cm)
+    val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, measurementStore)
     measProc.setCoordinator(coord)
     fepModel.setCoordinator(coord)
-    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource, dependencies.coordinatorExecutor)
+    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource, coordinatorExecutor)
     syncCoord
   }
 
@@ -53,7 +55,7 @@ class ModelFactories(dependencies: ServiceDependencies, contextSource: RequestCo
 
   val overrides = new OverrideConfigServiceModel
   val triggerSets = new TriggerSetServiceModel
-  val points = new PointServiceModel(triggerSets, overrides, dependencies.cm)
+  val points = new PointServiceModel(triggerSets, overrides, measurementStore)
 
   val configFiles = new ConfigFileServiceModel
   val endpoints = new CommEndCfgServiceModel(cmds, configFiles, points, fepPort, coordinator)

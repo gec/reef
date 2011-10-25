@@ -23,11 +23,9 @@ import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.api.japi.settings.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.client.sapi.ReefServicesList
-import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.api.sapi.client.rest.Client
 import net.agileautomata.executor4s.Executor
 
 trait ConnectionConsumer {
@@ -35,29 +33,27 @@ trait ConnectionConsumer {
 }
 
 trait ClientConsumer {
-  // TODO: should be main client type not AllScadaServiceImpl
-  // TODO: remove factory when the client can bind serviceCalls
-  def newClient(conn: Connection, client: Client): Cancelable
+  def newClient(client: Client): Cancelable
 }
 
 trait AppEnrollerConsumer {
-  def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig): Cancelable
+  def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig): Cancelable
 }
 
 class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
   def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
     // TODO: move defaultTimeout to userSettings file/object
-    val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 20000)
+    val connection = ReefServices(brokerConnection, exe)
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
 
-    consumer.newClient(connection, client)
+    consumer.newClient(client)
   }
 }
 
 class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, capabilities: List[String], applicationCreator: AppEnrollerConsumer) extends ClientConsumer {
-  def newClient(connection: Connection, client: Client) = {
+  def newClient(client: Client) = {
 
-    val services = new AllScadaServiceWrapper(client)
+    val services = client.getRpcInterface(classOf[AllScadaService])
 
     val appConfig = services.registerApplication(nodeSettings, instanceName, capabilities).await
 
@@ -65,7 +61,7 @@ class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, ca
 
     heartBeater.start()
 
-    val userApp = applicationCreator.applicationRegistered(connection, client, services, appConfig)
+    val userApp = applicationCreator.applicationRegistered(client, services, appConfig)
 
     new Cancelable {
       override def cancel() {

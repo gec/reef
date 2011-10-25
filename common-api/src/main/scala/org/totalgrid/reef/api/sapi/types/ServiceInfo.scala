@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.types
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,10 +16,13 @@ package org.totalgrid.reef.api.sapi.types
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.types
+
 import org.totalgrid.reef.api.japi.TypeDescriptor
 
+// TODO: make ServiceInfo a sibling of TypeDescriptor
 object ServiceInfo {
-  def getEventExchange[A](desc: TypeDescriptor[A]) = desc.id + "_events"
+  private def getEventExchange[A](desc: TypeDescriptor[A]) = desc.id + "_events"
 
   def apply[A](descriptor: TypeDescriptor[A]): ServiceInfo[A, A] =
     ServiceInfo[A, A](descriptor, descriptor, getEventExchange(descriptor))

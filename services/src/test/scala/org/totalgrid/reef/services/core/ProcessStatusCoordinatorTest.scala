@@ -60,11 +60,11 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
   class ProcessStatusFixture {
 
     val pubs = new CountingSubscriptionHandler
-    val deps = ServiceDependencies(pubs = pubs)
+    val deps = new ServiceDependenciesDefaults(pubs = pubs)
     val headers = BasicRequestHeaders.empty.setUserName("user1")
     val contextSource = new MockRequestContextSource(deps, headers)
 
-    val modelFac = new ModelFactories(deps, contextSource)
+    val modelFac = new ModelFactories(deps)
 
     val service = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
 

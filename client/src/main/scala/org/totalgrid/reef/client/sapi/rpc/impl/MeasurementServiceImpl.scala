@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.sapi.rpc.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.client.sapi.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.sapi.rpc.impl
+
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
@@ -66,13 +66,13 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
 
   override def publishMeasurements(measurements: List[Measurement]) = {
     ops.operation("Couldn't publish measurements. size: " + measurements.size) {
-      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).map(_.one.map(_.getMeasList.toList))
+      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).map(_.one.map(a => true))
     }
   }
 
   override def publishMeasurements(mBatch: MeasurementBatch, dest: Routable) = {
     ops.operation("Couldn't publish mearurement batch. size: " + mBatch.getMeasCount) {
-      _.put(mBatch, BasicRequestHeaders.empty.setDestination(dest)).map(_.one)
+      _.put(mBatch, BasicRequestHeaders.empty.setDestination(dest)).map(_.one.map(a => true))
     }
   }
 

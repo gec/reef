@@ -4,11 +4,11 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
  * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the GNU Affero General Public License
- * Version 3.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -23,7 +23,8 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.japi.Envelope;
 
-import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShimWrapper;
+import org.totalgrid.reef.api.sapi.client.rest.Client;
+import org.totalgrid.reef.client.rpc.AllScadaService;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 import org.totalgrid.reef.api.japi.UnauthorizedException;
@@ -46,9 +47,8 @@ public class TestAuthService extends ReefConnectionTestBase
     }
 
     @Test
-    public void demonstateAuthTokenNeeded() throws ReefServiceException
+    public void demonstrateAuthTokenNeeded() throws ReefServiceException
     {
-
         try
         {
             // will fail because we don't havent logged in to get auth tokens
@@ -63,7 +63,8 @@ public class TestAuthService extends ReefConnectionTestBase
         AuthTokenService as = helpers;
         // logon as all permission user
         String token = as.createNewAuthorizationToken( "system", "system" );
-        helpers = new AllScadaServiceJavaShimWrapper( connection.login( token ) );
+        Client client = factory.connect().login( token );
+        helpers = client.getRpcInterface( AllScadaService.class );
 
         PointService ps = helpers;
         // request will now not be rejected

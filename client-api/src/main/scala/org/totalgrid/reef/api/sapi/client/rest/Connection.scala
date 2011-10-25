@@ -18,7 +18,12 @@
  */
 package org.totalgrid.reef.api.sapi.client.rest
 
-trait Connection extends Login with Bindable with SubscriptionHandler with ExchangeManagement
+trait Connection
+  extends Login
+  with Bindable
+  with SubscriptionHandler
+  with ExchangeManagement
+  with ServiceRegistry
 
 trait ExchangeManagement {
   def declareEventExchange(klass: Class[_])

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client.rest
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.api.sapi.client.rest
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client.rest
+
 import org.totalgrid.reef.api.sapi.client._
 import org.totalgrid.reef.api.japi.Envelope.Verb
 import org.totalgrid.reef.api.japi.TypeDescriptor
@@ -25,14 +25,17 @@ import net.agileautomata.executor4s.{ Result, Future }
 
 trait RestOperations {
 
-  self: DefaultHeaders =>
+  def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Future[Response[A]]
 
-  def request[A](verb: Verb, payload: A, headers: BasicRequestHeaders = getHeaders): Future[Response[A]]
+  final def get[A](payload: A, headers: BasicRequestHeaders) = request(Verb.GET, payload, Some(headers))
+  final def delete[A](payload: A, headers: BasicRequestHeaders) = request(Verb.DELETE, payload, Some(headers))
+  final def post[A](payload: A, headers: BasicRequestHeaders) = request(Verb.POST, payload, Some(headers))
+  final def put[A](payload: A, headers: BasicRequestHeaders) = request(Verb.PUT, payload, Some(headers))
 
-  final def get[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.GET, payload, headers)
-  final def delete[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.DELETE, payload, headers)
-  final def post[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.POST, payload, headers)
-  final def put[A](payload: A, headers: BasicRequestHeaders = getHeaders) = request(Verb.PUT, payload, headers)
+  final def get[A](payload: A) = request(Verb.GET, payload, None)
+  final def delete[A](payload: A) = request(Verb.DELETE, payload, None)
+  final def post[A](payload: A) = request(Verb.POST, payload, None)
+  final def put[A](payload: A) = request(Verb.PUT, payload, None)
 
   def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]]
 

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client.rest
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.api.sapi.client.rest
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client.rest
 
 import net.agileautomata.executor4s.{ Cancelable, Executor }
 import org.totalgrid.reef.api.japi.client.Routable

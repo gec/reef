@@ -18,27 +18,12 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.sapi.config.ConfigReader
-import org.totalgrid.reef.api.sapi.config.impl.PropertiesConfigReader
-import org.totalgrid.reef.api.japi.settings.util.PropertyReader
+import java.util.Dictionary
+import org.totalgrid.reef.api.japi.settings.util.{ PropertyReader, PropertyLoading }
 
 object ServiceOptions {
 
-  def fromFile(file: String): ServiceOptions = {
-    fromConfig(new PropertiesConfigReader(PropertyReader.readFromFile(file)))
-  }
-
-  def fromConfig(cr: ConfigReader): ServiceOptions = {
-    val metrics = cr.getBoolean("org.totalgrid.reef.services.metrics", true)
-    val metricsSplitByVerb = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", false)
-    val metricsSplitByService = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByService", false)
-    val useAuth = cr.getBoolean("org.totalgrid.reef.services.useAuth", true)
-    val slowQueryThresholdMs = cr.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", 500)
-    val maxMeas = cr.getLong("org.totalgrid.reef.services.maxMeasurements", 2 * 1024 * 1024)
-    val trimPeriod = cr.getInt("org.totalgrid.reef.services.trimPeriodMinutes", 15)
-
-    ServiceOptions(metrics, metricsSplitByVerb, metricsSplitByService /*, useAuth*/ , slowQueryThresholdMs, maxMeas, trimPeriod)
-  }
+  def fromFile(fileName: String) = new ServiceOptions(PropertyReader.readFromFile(fileName))
 }
 
 case class ServiceOptions(
@@ -59,5 +44,12 @@ case class ServiceOptions(
     /// how often to clean excess measurements from history table
     trimPeriodMinutes: Long) {
 
+  def this(props: Dictionary[Object, Object]) = this(
+    PropertyLoading.getBoolean("org.totalgrid.reef.services.metrics", props),
+    PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", props),
+    PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByService", props),
+    PropertyLoading.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", props),
+    PropertyLoading.getLong("org.totalgrid.reef.services.maxMeasurements", props),
+    PropertyLoading.getInt("org.totalgrid.reef.services.trimPeriodMinutes", props))
 }
 

@@ -43,14 +43,14 @@ trait FrontEndProviderServices extends AllScadaService {
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor]
 }
 
-class FrontEndProviderServicesImpl(protected val connection: Connection, client: Client)
+class FrontEndProviderServicesImpl(client: Client)
     extends ApiBase(client) with FrontEndProviderServices with AllScadaServiceImpl {
 
   def bindCommandHandler(connProto: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
     val destination = AddressableDestination(connProto.getRouting.getServiceRoutingKey)
     val service = new SingleEndpointCommandService(commandHandler)
 
-    val closeable = connection.bindService(service, client, destination, false)
+    val closeable = client.bindService(service, client, destination, false)
 
     new Cancelable {
       def cancel() = closeable.cancel()

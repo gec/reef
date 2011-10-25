@@ -57,6 +57,12 @@ public class PropertyLoading
         return Integer.parseInt( prop );
     }
 
+    public static long getLong( String id, Dictionary props ) throws IllegalArgumentException
+    {
+        String prop = getString( id, props );
+        return Long.parseLong( prop );
+    }
+
     public static boolean getBoolean( String id, Dictionary props ) throws IllegalArgumentException
     {
         String prop = getString( id, props );

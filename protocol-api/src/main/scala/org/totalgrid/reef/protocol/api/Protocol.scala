@@ -16,7 +16,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.totalgrid.reef.api.protocol.api
 
 import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }

@@ -18,10 +18,9 @@
  */
 package org.totalgrid.reef.measproc.activator
 
-import org.totalgrid.reef.persistence.squeryl.SqlProperties
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
-import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.api.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
@@ -37,8 +36,8 @@ object ProcessingActivator {
   def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
     val appConfigConsumer = new AppEnrollerConsumer {
       // Downside of using classes not functions, we can't partially evalute
-      def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
-        val services = new MeasurementProcessorServicesImpl(client, conn)
+      def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+        val services = new MeasurementProcessorServicesImpl(client)
 
         val connector = new MeasStreamConnector(services, measStore, appConfig.getInstanceName)
         val connectionHandler = new ProcessingNodeMap(connector)
@@ -69,8 +68,6 @@ class ProcessingActivator extends BundleActivator {
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
-
-    val dbInfo = SqlProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.sql"))
 
     val measStore = MeasurementStoreFinder.getInstance(context)
 

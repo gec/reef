@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.sapi.rpc.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,11 +16,11 @@ package org.totalgrid.reef.client.sapi.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.test.BlockingQueue
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.PointRequestBuilders
 import org.totalgrid.reef.api.japi.BadRequestException
@@ -73,10 +71,12 @@ class MeasurementHistoryTest
 
     list.get.isEmpty should equal(true)
 
-    val range = 11 to 15
+    val range = 11 to 100
 
     val newMeasurements = for (i <- range) yield original.toBuilder.setDoubleVal(startValue + i).setTime(now + i).build
-    client.publishMeasurements(newMeasurements.toList).await
+    val published = client.publishMeasurements(newMeasurements.toList).await
+
+    published should equal(true)
 
     val expected = newMeasurements.map(_.getDoubleVal).toList
 

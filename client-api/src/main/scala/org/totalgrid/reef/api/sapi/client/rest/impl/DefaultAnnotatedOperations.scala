@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.rest.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.api.sapi.rest.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.rest.impl
+
 import net.agileautomata.executor4s.{ Failure, Success, Result, Future }
 
 import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }
@@ -72,10 +72,17 @@ final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperatio
         future.listen(onResult)
         future.map(_.map(a => SubscriptionResult(a, sub)))
       case Failure(ex) =>
-        client.definedFuture[Result[SubscriptionResult[A, B]]](
+        definedFuture[Result[SubscriptionResult[A, B]]](
           Failure("Subscribe failed - " + renderErrorMsg(err) + " - " + ex.getMessage))
     }
 
     Promise.from(future)
+  }
+
+  // TODO: use definedFuture from Executor
+  private def definedFuture[A](a: A): Future[A] = {
+    val f = client.future[A]
+    f.set(a)
+    f
   }
 }

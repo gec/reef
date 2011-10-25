@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.sapi.rpc.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,9 +16,10 @@ package org.totalgrid.reef.client.sapi.rpc.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.rpc._
+import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, Client }
 import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
 
 /**
@@ -46,3 +45,24 @@ trait AllScadaServiceImpl
 
 class AllScadaServiceWrapper(client: Client) extends ApiBase(client) with AllScadaServiceImpl
 
+object AllScadaServiceImpl {
+  val serviceInfo = new RpcProviderInfo({ c: Client => new AllScadaServiceWrapper(c) },
+    List(
+      classOf[AllScadaService],
+      classOf[AuthTokenService],
+      classOf[EntityService],
+      classOf[ConfigFileService],
+      classOf[MeasurementService],
+      classOf[MeasurementOverrideService],
+      classOf[EventService],
+      classOf[EventCreationService],
+      classOf[EventConfigService],
+      classOf[CommandService],
+      classOf[PointService],
+      classOf[AlarmService],
+      classOf[AgentService],
+      classOf[EndpointManagementService],
+      classOf[ApplicationService],
+      classOf[CommunicationChannelService]))
+
+}

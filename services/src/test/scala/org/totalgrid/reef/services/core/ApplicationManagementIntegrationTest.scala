@@ -30,11 +30,10 @@ import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.api.sapi.client.Event
 
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
-import org.totalgrid.reef.services.framework.ServiceMiddleware
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.client.sapi.Descriptors
 
-import org.totalgrid.reef.services.{ ConnectionFixture, ServiceDependencies, ServiceBootstrap }
+import org.totalgrid.reef.services.{ ConnectionFixture, ServiceBootstrap }
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 @RunWith(classOf[JUnitRunner])
@@ -48,7 +47,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
 
     val start = System.currentTimeMillis
 
-    val deps = ServiceDependencies(amqp, amqp)
+    val deps = new ServiceDependenciesDefaults(amqp, amqp)
     val headers = BasicRequestHeaders.empty.setUserName("user1")
 
     val contextSource = new MockRequestContextSource(deps, headers)

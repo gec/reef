@@ -22,8 +22,7 @@ import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.sapi.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 
@@ -36,7 +35,7 @@ object StandaloneLoader {
         val factory = new QpidBrokerConnectionFactory(connectionInfo)
         val broker = factory.connect
         val exe = Executors.newScheduledThreadPool()
-        val conn = new DefaultConnection(ReefServicesList, broker, exe, 20000)
+        val conn = ReefServices(broker, exe)
 
         val session = conn.login(userSettings.getUserName, userSettings.getUserPassword).await
 

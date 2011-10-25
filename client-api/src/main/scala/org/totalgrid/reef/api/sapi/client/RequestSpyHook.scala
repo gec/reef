@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.api.sapi.client
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client
 
 import rest.RestOperations
 import org.totalgrid.reef.api.japi.Envelope
@@ -38,7 +37,7 @@ trait RequestSpyHook extends RestOperations with RequestSpyManager {
   abstract override def request[A](
     verb: Envelope.Verb,
     request: A,
-    headers: BasicRequestHeaders): Future[Response[A]] = {
+    headers: Option[BasicRequestHeaders]): Future[Response[A]] = {
 
     val future = super.request(verb, request, headers)
 

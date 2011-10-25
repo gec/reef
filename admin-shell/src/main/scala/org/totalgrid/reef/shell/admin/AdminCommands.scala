@@ -21,7 +21,7 @@ package org.totalgrid.reef.shell.admin
 import org.totalgrid.reef.shell.proto.ReefCommandSupport
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.services.ServiceBootstrap
 import org.apache.felix.gogo.commands.{ Option => GogoOption, Command }
@@ -51,7 +51,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
         p2
     }
 
-    val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql"))
+    val sql = new DbInfo(OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql").getProperties)
     logout()
 
     val bundleContext = getBundleContext()

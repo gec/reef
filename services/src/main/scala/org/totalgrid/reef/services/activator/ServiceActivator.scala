@@ -1,5 +1,3 @@
-package org.totalgrid.reef.services.activator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.services.activator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.services.activator
+
 import org.osgi.framework._
 
 import org.totalgrid.reef.api.sapi.service.AsyncService
@@ -29,11 +29,9 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbConnector }
-import org.totalgrid.reef.persistence.squeryl.DbInfo
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
-import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.sapi.ReefServicesList
+import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import org.totalgrid.reef.util.{ LifecycleManager, Cancelable }
@@ -43,11 +41,10 @@ object ServiceActivator {
     new ConnectionConsumer {
       def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
 
-        val connection = new DefaultConnection(ReefServicesList, brokerConnection, exe, 5000)
+        val connection = ReefServices(brokerConnection, exe)
 
         DbConnector.connect(sql, context)
 
-        // TODO: pipe autToken into ServiceDependencies
         val (appConfig, authToken) = ServiceBootstrap.bootstrapComponents(connection, userSettings, nodeSettings)
 
         val metricsHolder = MetricsSink.getInstance(appConfig.getInstanceName)
@@ -55,7 +52,7 @@ object ServiceActivator {
         val mgr = new LifecycleManager
         val measStore = MeasurementStoreFinder.getInstance(context)
 
-        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder)
+        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder, authToken)
 
         val metrics = new MetricsServiceWrapper(metricsHolder, serviceOptions)
         val serviceContext = new ServiceContext(connection, metrics, exe)
@@ -89,8 +86,8 @@ class ServiceActivator extends BundleActivator {
   def start(context: BundleContext) {
 
     val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-    val sql = SqlProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.sql"))
-    val options = ServiceOptions.fromConfig(OsgiConfigReader(context, "org.totalgrid.reef.services"))
+    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
+    val options = new ServiceOptions(OsgiConfigReader(context, "org.totalgrid.reef.services").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 

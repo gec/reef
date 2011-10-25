@@ -35,6 +35,6 @@ class AddressableMeasurementBatchService(measProc: MeasBatchProcessor) extends S
   override def post(req: MeasurementBatch, env: BasicRequestHeaders) = put(req, env)
   override def put(req: MeasurementBatch, env: BasicRequestHeaders) = {
     measProc.process(req)
-    Response(Envelope.Status.OK, req :: Nil)
+    Response(Envelope.Status.OK, req.toBuilder.clearMeas.build :: Nil)
   }
 }

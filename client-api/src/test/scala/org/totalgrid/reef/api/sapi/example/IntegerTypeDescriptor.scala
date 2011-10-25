@@ -20,7 +20,7 @@ package org.totalgrid.reef.api.sapi.example
 
 import java.io._
 import org.totalgrid.reef.api.japi.TypeDescriptor
-import org.totalgrid.reef.api.sapi.types.{ ServiceInfo, ServiceListOnMap }
+import org.totalgrid.reef.api.sapi.types.ServiceInfo
 
 case class SomeInteger(num: Int) extends Serializable {
   def increment = SomeInteger(num + 1)
@@ -31,7 +31,9 @@ object SomeIntegerTypeDescriptor extends SerializableTypeDescriptor[SomeInteger]
   def getKlass = classOf[SomeInteger]
 }
 
-object ExampleServiceList extends ServiceListOnMap(List(SomeIntegerTypeDescriptor.getKlass -> ServiceInfo(SomeIntegerTypeDescriptor)).toMap)
+object ExampleServiceList {
+  def info = ServiceInfo(SomeIntegerTypeDescriptor)
+}
 
 trait SerializableTypeDescriptor[A <: Serializable] extends TypeDescriptor[A] {
 

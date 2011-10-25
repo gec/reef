@@ -1,5 +1,3 @@
-package org.totalgrid.reef.broker.qpid
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.broker.qpid
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.broker.qpid
+
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
@@ -51,7 +51,7 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
       }
       conn.addListener(listener)
       conn.disconnect()
-      list shouldEqual (true) within (defaultTimeout)
+      list shouldBecome List(true) within (defaultTimeout)
     }
   }
 
@@ -75,7 +75,28 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
       broker.publish("test", "hi", "hello".getBytes, None)
       broker.publish("test", "hi", "friend".getBytes, None)
 
-      list shouldEqual (6, 5) within (defaultTimeout)
+      list shouldBecome List(5, 6) within (defaultTimeout)
+    }
+  }
+
+  test("Messages arrive in order") {
+    fixture(defaults) { broker =>
+
+      val list = new SynchronizedList[Int]
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = list.append(new String(msg.bytes).toInt)
+      }
+      val sub = broker.listen().start(consumer)
+
+      // bind the queue to the test exchange and send it a message
+      broker.declareExchange("test2")
+      broker.bindQueue(sub.getQueue, "test2", "hi", false)
+
+      val range = 0 to 1000
+
+      range.foreach { i => broker.publish("test2", "hi", i.toString.getBytes, None) }
+
+      list shouldBecome range.toList within (defaultTimeout)
     }
   }
 

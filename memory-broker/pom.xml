@@ -13,6 +13,13 @@
     <artifactId>reef-memory-broker</artifactId>
 	<packaging>bundle</packaging>
 
+	<licenses>
+        <license>
+            <name>AGPLv3</name>
+            <url>http://www.gnu.org/licenses/agpl-3.0.txt</url>
+        </license>
+    </licenses>
+
     <build>
         <plugins>
             <plugin>
@@ -27,6 +34,13 @@
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>
+                </configuration>
+            </plugin>
+			<plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <header>../AGPL_FILE_HEADER</header>
                 </configuration>
             </plugin>
         </plugins>

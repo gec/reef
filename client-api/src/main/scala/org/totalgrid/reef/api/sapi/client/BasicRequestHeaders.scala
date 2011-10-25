@@ -1,5 +1,3 @@
-package org.totalgrid.reef.api.sapi.client
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.api.sapi.client
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.api.sapi.client
+
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.japi.client.{ Routable, RequestHeaders, AnyNodeDestination, AddressableDestination }
 import org.totalgrid.reef.util.JavaInterop.notNull
@@ -56,7 +56,10 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   override def clearResultLimit() = clearHeader(BasicRequestHeaders.resultLimit)
 
-  override def setTimeout(timeoutMillis: Long) = setHeader(BasicRequestHeaders.timeoutMs, timeoutMillis.toString)
+  override def setTimeout(timeoutMillis: Long) = {
+    if (timeoutMillis <= 0) throw new IllegalArgumentException("Timeout must be greator than 0 not " + timeoutMillis)
+    setHeader(BasicRequestHeaders.timeoutMs, timeoutMillis.toString)
+  }
 
   override def clearTimeout() = clearHeader(BasicRequestHeaders.timeoutMs)
 
@@ -67,6 +70,8 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
   /* --- Specific getters/setters not part of RequestHeaders --- */
 
   def getDestination = getString(BasicRequestHeaders.destination).map(key => AddressableDestination(key))
+
+  def getTimeout = getString(BasicRequestHeaders.timeoutMs).map { _.toLong }
 
   /* --- Helpers --- */
 

@@ -70,8 +70,8 @@ class FepActivator extends BundleActivator with Logging {
       case None =>
         val appConfigConsumer = new AppEnrollerConsumer {
           // Downside of using classes not functions, we can't partially evalute
-          def applicationRegistered(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
-            create(conn, client, services, appConfig, List(p))
+          def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+            create(client, services, appConfig, List(p))
           }
         }
         val appEnroller = new ApplicationEnrollerEx(nodeSettings, "FEP-" + p.name, List("FEP"), appConfigConsumer)
@@ -91,8 +91,8 @@ class FepActivator extends BundleActivator with Logging {
     }
   }
 
-  private def create(conn: Connection, client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
-    val services = new FrontEndProviderServicesImpl(conn, client)
+  private def create(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
+    val services = new FrontEndProviderServicesImpl(client)
 
     val frontEndConnections = new FrontEndConnections(protocols, services)
     val populator = new EndpointConnectionPopulatorAction(services)

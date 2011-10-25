@@ -16,15 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client.impl
+package org.totalgrid.reef.api.sapi.client.rest
 
-import org.totalgrid.reef.api.sapi.client.{ Subscription => ScalaSubscription }
-import org.totalgrid.reef.api.japi.client.SubscriptionResult
+import org.totalgrid.reef.api.sapi.types.ServiceInfo
 
-class SubscriptionResultWrapper[A, B](result: A, sub: ScalaSubscription[B]) extends SubscriptionResult[A, B] {
+trait ServiceRegistry {
 
-  private val wrapper = new SubscriptionWrapper(sub)
+  def addRpcProvider(info: RpcProviderInfo)
 
-  override def getResult = result
-  override def getSubscription = wrapper
+  def addServiceInfo[A](info: ServiceInfo[A, _])
 }
+
