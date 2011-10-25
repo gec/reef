@@ -112,7 +112,6 @@ class EventConfigService(protected val model: EventConfigServiceModel)
 
   override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore): EventConfig = {
     preCreate(context, request)
-    // TODO: should we re-render all events with the same event type?
   }
 }
 

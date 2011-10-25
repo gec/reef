@@ -51,7 +51,6 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     }
 
     def waitForNEvents(n: Int): Boolean = {
-      // TODO: remove precondition check when syncvar is fixed
       if (count.current == n) return true
       count.waitUntil(n)
     }

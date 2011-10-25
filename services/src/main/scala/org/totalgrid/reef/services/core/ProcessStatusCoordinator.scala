@@ -32,7 +32,6 @@ class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: 
     // to be processed. If we checked the timeouts before processing all waiting messages we would always disable 
     // all applications if this coordinator had been turned off for longer than periodMs even if the other apps
     // had been sending heartbeats the whole.
-    // TODO: implement a "sentinal" callback for when all pending messages processed on a queue
     exe.schedule(10000.milliseconds) { doCheckTimeouts(exe) }
   }
 

@@ -104,7 +104,6 @@ class CommandAccessServiceModel
     } catch {
       case ex: AcquireConditionNotMetException =>
         // Race condition, return failure
-        // TODO: useful statistic
         throw new UnauthorizedException("Some or all commands selected")
     }
   }

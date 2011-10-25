@@ -57,7 +57,7 @@ class MessageFormatterTest extends FunSuite with ShouldMatchers {
     MessageFormatter.format("H{ a0 } { a1 } tail", alist) should be("H{ a0 } { a1 } tail")
   }
 
-  /* TODO: This isn't available yet.
+  /* TASK: implement message formatter escape values reef-108
   test("Escape sequences") {
     val alist = new AttributeList
     alist += ("a0" -> AttributeString("a0", "val0"))

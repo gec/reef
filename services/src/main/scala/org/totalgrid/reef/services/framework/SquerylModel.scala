@@ -115,7 +115,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
     // Select for update
     val objList = table.where(c => c.id in ids).forUpdate.toList
-    val list = table.where(c => c.id in ids).toList // TODO: figure out scala cloning
+    val list = table.where(c => c.id in ids).toList
 
     // Fail if we have nothing
     if (objList.size < 1) throw new ObjectMissingException

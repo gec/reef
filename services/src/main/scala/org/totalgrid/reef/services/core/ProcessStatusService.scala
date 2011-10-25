@@ -132,7 +132,8 @@ trait ProcessStatusConversion
   def uniqueQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {
     proto.processId.asParam(sql.processId === _) ::
       proto.instanceName.map { inst =>
-        val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build // TODO: Make this better; shouldn't have to make a proto to use interface
+        // TODO: Make this better; shouldn't have to make a proto to use interface
+        val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build
         sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(nameProto, { _.id })
       } :: Nil
   }

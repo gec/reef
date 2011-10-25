@@ -73,7 +73,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
   // linking means the bus notifications generated in the alarm service will be
   // sent at the same time as the notifications from this service.
 
-  // TODO: figure out better way to get these functions in here without renaming
+  // functions are defined here to workaround traits with default values
   override def getEventProtoAndKey(event: EventStore) = makeEventProtoAndKey(event)
   override def getSubscribeKeys(req: Event): List[String] = makeSubscribeKeys(req)
 
@@ -261,7 +261,6 @@ trait EventConversion
     if (entry.args.length > 0) {
       b.setArgs(AttributeListProto.parseFrom(entry.args))
     }
-    //TODO: could set rendered here!
 
     b.build
   }

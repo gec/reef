@@ -115,7 +115,6 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
   }
 
   def clear() {
-    // TODO: remove clear on meas proc objects
     map = scala.collection.immutable.Map[String, Option[Measurement]]()
     updateMetrics
   }

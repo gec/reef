@@ -31,7 +31,7 @@ class MeasStreamConnector(client: MeasurementProcessorServices, measStore: Measu
   // caches used to store measurements and overrides
   val measCache = new MeasurementStoreToMeasurementCacheAdapter(measStore)
 
-  // TODO: make override caches configurable like measurement store
+  // FUTURE: make override caches configurable like measurement store
 
   val overCache = new InMemoryObjectCache[Measurement]
   val triggerStateCache = new InMemoryObjectCache[Boolean]

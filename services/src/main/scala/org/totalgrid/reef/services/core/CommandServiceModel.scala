@@ -119,7 +119,6 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
   }
 
   def convertToProto(sql: Command): CommandProto = {
-    // TODO: fill out connected and selected parts of proto
     val b = CommandProto.newBuilder
       .setUuid(makeUuid(sql.entityId))
       .setName(sql.entityName)

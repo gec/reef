@@ -31,7 +31,6 @@ import org.totalgrid.reef.api.sapi.types.ServiceInfo
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 
-// TODO: move MockConnection down to test classes that use it
 class MockConnection extends Connection {
   def declareEventExchange(klass: Class[_]) = null
 

@@ -23,7 +23,6 @@ import org.totalgrid.reef.api.japi.ReefServiceException;
 /**
  * Interface for executing a function with a <code>Session</code> supplied by the pool.
  */
-// TODO: add shutdown behavior
 public interface SessionExecutionPool
 {
     /**

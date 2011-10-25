@@ -82,10 +82,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
 
     // need to make sure we close the addressable service so no new commands
     // are sent to endpoint while we are removing it
-    endpointComponents.get(endpointName) match {
-      case Some(EndpointComponent(serviceBinding)) => serviceBinding.cancel()
-      case None => // TODO - why not just use foreach if nothing is done here?
-    }
+    endpointComponents.get(endpointName).foreach { _.commandAdapter.cancel() }
 
     protocol.removeEndpoint(endpointName)
     if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)

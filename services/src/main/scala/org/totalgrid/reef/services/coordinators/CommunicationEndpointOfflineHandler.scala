@@ -84,7 +84,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
   }
 
   private def markCommandsOnline(commands: List[Command]) {
-    // TODO: mark all the commands online in one SQL query reef_techdebt-11
+    // TODO: remove commands.connected
     commands.foreach { c =>
       c.connected = true
       ApplicationSchema.commands.update(c)

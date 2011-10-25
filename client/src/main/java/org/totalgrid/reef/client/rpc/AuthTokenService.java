@@ -34,7 +34,6 @@ import org.totalgrid.reef.proto.Auth.AuthToken;
  * client request, the Session interface has overloads to attach headers to each request. It is easiest
  * to attach the auth token to the underlying session using the setAuthToken function.
  * <p/>
- * add TODO setAuthToken function on Session
  */
 public interface AuthTokenService
 {

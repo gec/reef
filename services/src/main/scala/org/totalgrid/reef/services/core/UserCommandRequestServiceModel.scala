@@ -78,7 +78,6 @@ class UserCommandRequestServiceModel(
   def issueRequest(context: RequestContext, cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
     if (accessModel.userHasSelect(cmd, user, atTime)) {
 
-      // TODO: move command SystemEvent publishing into async issuer
       val (code, valueArg) = cmdRequest._type match {
         case Some(ValType.NONE) | None => (EventType.Scada.ControlExe, "value" -> "")
         case Some(ValType.INT) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)

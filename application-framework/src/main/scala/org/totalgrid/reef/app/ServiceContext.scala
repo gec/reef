@@ -25,7 +25,6 @@ import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {
-  // TODO: remove exe when clients are fully stranded
   def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U]): Cancelable = {
     context.handleResponse(result.getResult)
 

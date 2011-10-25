@@ -28,7 +28,6 @@ import com.weiglewilczek.slf4s.{ Logging, Logger }
 class LogAdapter extends ILogBase with SafeExecution with Logging {
 
   // DNPLOG is common logger name for all dnp log messages
-  // TODO: reimplement LoggerFactory, should be all customLogger calls
   val customLogger = Logger("DNPLOG")
 
   final override def SetVar(source: String, variable: String, value: Int) {}
