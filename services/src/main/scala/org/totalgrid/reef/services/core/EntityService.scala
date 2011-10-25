@@ -33,6 +33,25 @@ import org.totalgrid.reef.api.japi.{ BadRequestException }
 import org.totalgrid.reef.api.japi.Envelope.Status
 import org.totalgrid.reef.models.Entity
 
+object EntityService {
+  def seed() {
+    import org.squeryl.PrimitiveTypeMode._
+    import org.totalgrid.reef.models.{ ApplicationSchema, EntityTypeMetaModel }
+
+    inTransaction {
+      if (ApplicationSchema.entityTypeMetaModel.Count.head == 0) {
+        val metaModels = allKnownTypes.map { new EntityTypeMetaModel(_) }
+        ApplicationSchema.entityTypeMetaModel.insert(metaModels)
+      }
+    }
+  }
+
+  val builtInTypes = List("Point", "Command", "Agent", "PermissionSet", "Application", "ConfigurationFile", "CommunicationEndpoint", "Channel")
+  val wellKnownTypes = List("Site", "Region", "Equipment", "EquipmentGroup", "Root")
+
+  val allKnownTypes = builtInTypes ::: wellKnownTypes
+}
+
 class EntityService extends SyncServiceBase[EntityProto] {
 
   override val descriptor = Descriptors.entity

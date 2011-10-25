@@ -533,9 +533,12 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def addEntityTypes(types: List[String]) {
-    val known = from(entityTypeMetaModel)(et => where(et.id in types) select (et.id)).toList
-    val newTypes = types.diff(known)
-    newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
+    if (!customTypes.isEmpty) {
+      val known = from(entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
+      val newTypes = customTypes.diff(known)
+      newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    }
   }
 
   def findEdge(parent: Entity, child: Entity, relation: String): Option[Edge] = {

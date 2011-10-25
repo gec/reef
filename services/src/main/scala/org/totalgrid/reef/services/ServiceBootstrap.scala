@@ -92,6 +92,7 @@ object ServiceBootstrap {
    */
   def seed(systemPassword: String) {
     core.EventConfigService.seed()
+    core.EntityService.seed()
     core.AuthTokenService.seed(systemPassword)
   }
 
