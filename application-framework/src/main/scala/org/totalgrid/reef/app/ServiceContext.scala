@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.{ Cancelable, Observable }
+import org.totalgrid.reef.util.Cancelable
 
 import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
@@ -49,7 +49,7 @@ object ServiceContext {
  * event occurs. Provides event handlers suitable for use
  * with ServiceHandler
  */
-trait ServiceContext[A] extends Observable {
+trait ServiceContext[A] {
 
   // Define these functions
   def add(obj: A)
@@ -60,7 +60,6 @@ trait ServiceContext[A] extends Observable {
 
   def handleResponse(result: List[A]) = {
     subscribed(result)
-    notifyObservers()
   }
 
   def handleEvent(event: Envelope.Event, result: A) = event match {

@@ -62,6 +62,8 @@ class AsyncValue[A] {
 
 }
 
+// TODO: remove all uses of SyncVar
+
 // New implementation of sync var uses standard synchronization and a mutable queue
 class SyncVar[A](initialValue: Option[A] = None) {
 
