@@ -29,8 +29,7 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbConnector }
-import org.totalgrid.reef.persistence.squeryl.DbInfo
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
 import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
@@ -86,8 +85,8 @@ class ServiceActivator extends BundleActivator {
   def start(context: BundleContext) {
 
     val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-    val sql = SqlProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.sql"))
-    val options = ServiceOptions.fromConfig(OsgiConfigReader(context, "org.totalgrid.reef.services"))
+    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
+    val options = new ServiceOptions(OsgiConfigReader(context, "org.totalgrid.reef.services").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 

@@ -26,9 +26,7 @@ import com.weiglewilczek.scalamodules._
 import java.util.{ Dictionary, Hashtable }
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.api.sapi.config.ConfigReader
-
-class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader with Logging {
+class OsgiConfigReader(context: BundleContext, pid: String) extends Logging {
 
   private val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
     service.getConfiguration(pid)
@@ -42,7 +40,6 @@ class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader
     case Some(x: Dictionary[AnyRef, AnyRef]) => x
   }
 
-  def getProp(key: String): Option[String] = Option(props.get(key)).map(_.asInstanceOf[String])
   def getProperties = props
 }
 

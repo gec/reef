@@ -22,15 +22,15 @@ import org.osgi.framework.{ BundleContext, BundleActivator }
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStore
-import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbConnector }
 import org.totalgrid.reef.osgi.OsgiConfigReader
+import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
 class Activator extends BundleActivator {
 
   def start(context: BundleContext) {
 
     // initialize the connection, expecting that the DbConnector is already registered
-    val sql = SqlProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.sql"))
+    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
     DbConnector.connect(sql, context)
 
     context.createService(SqlMeasurementStore, "org.totalgrid.reef.mstore" -> "sql", interface[MeasurementStore])

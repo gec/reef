@@ -21,8 +21,7 @@ package org.totalgrid.reef.persistence.squeryl.postgresql.activator
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.persistence.squeryl.postgresql.Connector
-import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbConnector }
-import org.totalgrid.reef.osgi.OsgiConfigReader
+import org.totalgrid.reef.persistence.squeryl.DbConnector
 
 class Activator extends BundleActivator {
   private var ctx: Option[BundleContext] = None
