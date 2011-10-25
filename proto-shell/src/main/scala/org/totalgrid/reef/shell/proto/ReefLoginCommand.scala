@@ -23,7 +23,7 @@ import java.io.{ BufferedReader, InputStreamReader }
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.client.sapi.ReefConnection
+import org.totalgrid.reef.client.sapi.ReefServices
 
 import org.totalgrid.reef.util.Cancelable
 
@@ -94,7 +94,7 @@ class ReefLoginCommand extends ReefLoginCommandBase {
     val factory = new QpidBrokerConnectionFactory(connectionInfo)
     val broker = factory.connect
     val exe = Executors.newScheduledThreadPool()
-    val conn = ReefConnection(broker, exe)
+    val conn = ReefServices(broker, exe)
 
     val cancel = new Cancelable {
       def cancel() = {

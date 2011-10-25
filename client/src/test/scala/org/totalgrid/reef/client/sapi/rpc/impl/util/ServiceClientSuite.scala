@@ -21,14 +21,12 @@ package org.totalgrid.reef.client.sapi.rpc.impl.util
 
 import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader
 import org.totalgrid.reef.api.japi.settings.AmqpSettings
-import org.totalgrid.reef.client.sapi.ReefConnection
+import org.totalgrid.reef.client.ReefFactory
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
@@ -43,10 +41,8 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   // gets default connection settings or overrides using system properties
   val config = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
-  val factory = new QpidBrokerConnectionFactory(config)
-  val broker = factory.connect
-  val exe = Executors.newScheduledThreadPool()
-  val conn = ReefConnection(broker, exe)
+  val factory = new ReefFactory(config)
+  val conn = factory.connect()
   val session = conn.login("system", "system").await /// TODO - should load user out of config file
   val client = session.getRpcInterface(classOf[AllScadaService])
   val recorder = new InteractionRecorder {}
@@ -56,8 +52,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   }
 
   override def afterAll() {
-    broker.disconnect()
-    exe.terminate()
+    factory.terminate()
     recorder.save(file, title, desc)
   }
 

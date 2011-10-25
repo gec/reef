@@ -20,7 +20,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
-import org.totalgrid.reef.client.sapi.ReefConnection
+import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
 
@@ -31,7 +31,7 @@ object ConnectionFixture {
     try {
       val brokerConnection = broker.connect
 
-      val connection = ReefConnection(brokerConnection, exe)
+      val connection = ReefServices(brokerConnection, exe)
       test(connection)
     } finally {
       exe.terminate()

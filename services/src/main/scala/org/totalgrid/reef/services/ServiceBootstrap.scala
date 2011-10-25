@@ -48,7 +48,7 @@ object ServiceBootstrap {
    * when we are starting up the system we need to define all of the event exechanges, we do that
    * during bootstrap so we correctly publish the "someone logged on" events
    */
-  def defineEventExchanges(connection : Connection) {
+  def defineEventExchanges(connection: Connection) {
     ReefServicesList.getServicesList.foreach { serviceInfo =>
       connection.declareEventExchange(serviceInfo.descriptor.getKlass)
     }

@@ -18,12 +18,6 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import net.agileautomata.executor4s.ExecutorService;
-import net.agileautomata.executor4s.Executors;
 import org.junit.After;
 import org.junit.Before;
 
@@ -32,13 +26,10 @@ import org.totalgrid.reef.api.japi.ReefServiceException;
 
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
 import org.totalgrid.reef.api.sapi.client.rest.Client;
+import org.totalgrid.reef.client.ReefFactory;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection;
-import org.totalgrid.reef.client.sapi.ReefConnection;
-import org.totalgrid.reef.broker.BrokerConnection;
-import org.totalgrid.reef.broker.BrokerConnectionFactory;
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
 
 /**
  * Base class for JUnit based integration tests run against the "live" system
@@ -47,11 +38,7 @@ public class ReefConnectionTestBase
 {
     private final boolean autoLogon;
 
-    protected final ExecutorService exe = Executors.newScheduledThreadPool( 4 );
-
-    protected BrokerConnectionFactory factory;
-    protected BrokerConnection broker;
-    protected Connection connection;
+    protected ReefFactory factory;
 
     protected AllScadaService helpers;
 
@@ -69,7 +56,7 @@ public class ReefConnectionTestBase
         try
         {
             AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            this.factory = new QpidBrokerConnectionFactory( s );
+            this.factory = new ReefFactory( s );
         }
         catch ( Exception ex )
         {
@@ -88,9 +75,7 @@ public class ReefConnectionTestBase
     @Before
     public void startBridge() throws InterruptedException, ReefServiceException
     {
-        broker = factory.connect();
-
-        connection = ReefConnection.apply( broker, exe );
+        Connection connection = factory.connect();
 
         Client client;
 
@@ -108,8 +93,6 @@ public class ReefConnectionTestBase
     @After
     public void stopBridge() throws InterruptedException, ReefServiceException
     {
-        if ( broker != null )
-            broker.disconnect();
-        exe.shutdown();
+        factory.terminate();
     }
 }

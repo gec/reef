@@ -8,7 +8,7 @@ import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShim
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 
-object ReefConnection {
+object ReefServices {
   def apply(broker: BrokerConnection, exe: Executor) = {
     val conn = new DefaultConnection(broker, exe, 5000)
     prepareConnection(conn)

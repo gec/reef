@@ -47,9 +47,8 @@ public class TestAuthService extends ReefConnectionTestBase
     }
 
     @Test
-    public void demonstateAuthTokenNeeded() throws ReefServiceException
+    public void demonstrateAuthTokenNeeded() throws ReefServiceException
     {
-
         try
         {
             // will fail because we don't havent logged in to get auth tokens
@@ -64,7 +63,7 @@ public class TestAuthService extends ReefConnectionTestBase
         AuthTokenService as = helpers;
         // logon as all permission user
         String token = as.createNewAuthorizationToken( "system", "system" );
-        Client client = connection.login( token );
+        Client client = factory.connect().login( token );
         helpers = client.getRpcInterface( AllScadaService.class );
 
         PointService ps = helpers;

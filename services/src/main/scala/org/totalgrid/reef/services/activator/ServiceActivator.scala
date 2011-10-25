@@ -32,7 +32,7 @@ import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.persistence.squeryl.{ SqlProperties, DbConnector }
 import org.totalgrid.reef.persistence.squeryl.DbInfo
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
-import org.totalgrid.reef.client.sapi.ReefConnection
+import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import org.totalgrid.reef.util.{ LifecycleManager, Cancelable }
@@ -42,7 +42,7 @@ object ServiceActivator {
     new ConnectionConsumer {
       def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
 
-        val connection = ReefConnection(brokerConnection, exe)
+        val connection = ReefServices(brokerConnection, exe)
 
         DbConnector.connect(sql, context)
 
