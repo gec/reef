@@ -98,6 +98,15 @@ public interface EntityService
     Entity getEntityByName( String name ) throws ReefServiceException;
 
     /**
+     * Find an entity using its name, returns null if not found
+     *
+     * @param name The configured name of the entity.
+     * @return The entity object or null
+     * @throws org.totalgrid.reef.api.japi.ReefServiceException
+     */
+    Entity findEntityByName( String name ) throws ReefServiceException;
+
+    /**
      * Find all entities with a specified type.
      *
      * @param typeName The entity type to search for.
@@ -191,7 +200,6 @@ public interface EntityService
      * entities. A tree query assumes you have a single parent node that you are basing the request on. Use getEntities
      * if doing a more general query that may return more than one tree (i.e. no root node).
      * <p/>
-     * Entity TODO will become EntitySelector in the future
      *
      * <p>
      *   The edges of one color (ex: all "owns" edges) will form a tree (no cyclic dependencies).
@@ -215,7 +223,6 @@ public interface EntityService
      * This query is very similar to getEntityTree but doesn't assume a
      * "root node" and can therefore be used to make any request including a EntityTree query
      * <p/>
-     * Entity TODO will become EntitySelector in the future
      *
      * @param entityTree Entity describing the tree request
      * @return a list of Entities that matched query possibly with filled in relationships

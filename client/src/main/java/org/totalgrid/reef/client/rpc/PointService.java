@@ -53,6 +53,14 @@ public interface PointService
     Point getPointByName( String name ) throws ReefServiceException;
 
     /**
+     * retrieve a point by name, throws exception if point is unknown
+     *
+     * @param name of the Point we are retrieving
+     * @return the point object with matching name
+     */
+    Point findPointByName( String name ) throws ReefServiceException;
+
+    /**
      * retrieve a point by uuid, throws exception if point is unknown
      *
      * @param uuid of the Point we are retrieving
@@ -75,5 +83,13 @@ public interface PointService
      * @return all points that are related to endpoint
      */
     List<Point> getPointsBelongingToEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
+
+    /**
+     * retrieve all points that are have the relationship "feeback" to the command
+     *
+     * @param commandUuid uuid of endpoint
+     * @return all points that are related to command
+     */
+    List<Point> getPointsThatFeedbackForCommand( ReefUUID commandUuid ) throws ReefServiceException;
 
 }

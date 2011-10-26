@@ -154,7 +154,6 @@ trait EntityTreeQueries { self: EntityQueries =>
 
     val requestTypes = getTypes(proto).distinct.sorted
     if (!requestTypes.isEmpty) {
-      // TODO: check entityTypes from meta model, not whats in current system
       val inSystemTypes = from(entityTypeMetaModel)(et =>
         where(et.id in requestTypes)
           select (et.entType)).distinct.toList.sorted

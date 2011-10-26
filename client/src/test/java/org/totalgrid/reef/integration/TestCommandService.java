@@ -165,27 +165,27 @@ public class TestCommandService extends ReefConnectionTestBase
         Command cmd1 = cmds.get( 0 );
         Command cmd2 = cmds.get( 1 );
 
-        CommandAccess noAccess = cs.getCommandLockOnCommand( cmd1 );
+        CommandAccess noAccess = cs.findCommandLockOnCommand( cmd1 );
         assertNull( noAccess );
 
         cs.createCommandExecutionLock( cmd1 );
         cs.createCommandExecutionLock( cmd2 );
 
-        CommandAccess foundAccesses = cs.getCommandLockOnCommand( cmd1 );
+        CommandAccess foundAccesses = cs.findCommandLockOnCommand( cmd1 );
         assertNotNull( foundAccesses );
         assertEquals( foundAccesses.getCommandsCount(), 1 );
         assertEquals( foundAccesses.getCommands( 0 ), cmd1.getName() );
 
         cs.deleteCommandLock( foundAccesses );
 
-        CommandAccess foundAccesses2 = cs.getCommandLockOnCommand( cmd2 );
+        CommandAccess foundAccesses2 = cs.findCommandLockOnCommand( cmd2 );
         assertNotNull( foundAccesses2 );
         assertEquals( foundAccesses2.getCommandsCount(), 1 );
         assertEquals( foundAccesses2.getCommands( 0 ), cmd2.getName() );
 
         cs.deleteCommandLock( foundAccesses2 );
 
-        CommandAccess noAccess2 = cs.getCommandLockOnCommand( cmd2 );
+        CommandAccess noAccess2 = cs.findCommandLockOnCommand( cmd2 );
         assertNull( noAccess2 );
     }
 

@@ -251,7 +251,7 @@ public interface CommandService
      * @return the command lock or null if no matching lock found
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess getCommandLockOnCommand( Command cmd ) throws ReefServiceException;
+    CommandAccess findCommandLockOnCommand( Command cmd ) throws ReefServiceException;
 
     /**
      * Gets a list of all command locks that are active for any of the commands. This is useful
@@ -299,10 +299,18 @@ public interface CommandService
     List<Command> getCommandsOwnedByEntity( ReefUUID parentUUID ) throws ReefServiceException;
 
     /**
-     * retrieve all commands that are have the relationship "source" to the endpoint
+     * retrieve all commands that have the relationship "source" to the endpoint
      *
      * @param endpointUuid uuid of endpoint
      * @return all commands that are related to endpoint
      */
     List<Command> getCommandsBelongingToEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
+
+    /**
+     * retrieve all commands that have the relationship "feedback" to the point
+     *
+     * @param pointUuid uuid of endpoint
+     * @return all commands that are related to point
+     */
+    List<Command> getCommandsThatFeedbackToPoint( ReefUUID pointUuid ) throws ReefServiceException;
 }

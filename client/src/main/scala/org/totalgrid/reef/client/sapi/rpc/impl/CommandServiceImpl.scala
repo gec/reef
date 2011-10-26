@@ -21,8 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.proto.Commands.CommandAccess
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
-
+import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
@@ -87,12 +86,9 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.get(CommandAccessRequestBuilders.getForUid(uid)).map(_.one)
   }
 
-  // TODO - change this signature to return option
-  override def getCommandLockOnCommand(id: Command) = {
+  override def findCommandLockOnCommand(id: Command) = {
     ops.operation("couldn't find command lock for command: " + id) {
-      _.get(CommandAccessRequestBuilders.getByCommand(id)).map {
-        _.oneOrNone.map(_.orNull)
-      }
+      _.get(CommandAccessRequestBuilders.getByCommand(id)).map { _.oneOrNone }
     }
   }
 
@@ -129,4 +125,17 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
       _.get(CommandRequestBuilders.getSourcedByEndpoint(endpointUuid)).map(_.many)
     }
   }
+
+  override def getCommandsThatFeedbackToPoint(pointUuid: ReefUUID) = {
+    ops.operation("Couldn't find commands that feedback to point: " + pointUuid.getUuid) { client =>
+
+      val entity = EntityRequestBuilders.getPointsFeedbackCommands(pointUuid)
+      val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
+
+      def getCommandWithUuid(uuid: ReefUUID) = client.get(CommandRequestBuilders.getByEntityUid(uuid)).map(_.one)
+
+      MultiRequestHelper.scatterGatherQuery(entityList, getCommandWithUuid _)
+    }
+  }
+
 }

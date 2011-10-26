@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.rpc.PointService
 import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.PointRequestBuilders
+import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait PointServiceImpl extends HasAnnotatedOperations with PointService {
@@ -33,6 +33,10 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
   override def getPointByName(name: String) = ops.operation("Point not found with name: " + name) {
     _.get(PointRequestBuilders.getByName(name)).map(_.one)
+  }
+
+  override def findPointByName(name: String) = ops.operation("Point not found with name: " + name) {
+    _.get(PointRequestBuilders.getByName(name)).map(_.oneOrNone)
   }
 
   override def getPointByUid(uuid: ReefUUID) = ops.operation("Point not found with uuid: " + uuid) {
@@ -50,4 +54,16 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
       _.get(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)).map(_.many)
     }
   }
+
+  override def getPointsThatFeedbackForCommand(commandUuid: ReefUUID) = {
+    ops.operation("Couldn't find points that are feedback to endpoint: " + commandUuid.getUuid) { client =>
+
+      val entity = EntityRequestBuilders.getCommandsFeedbackPoints(commandUuid)
+      val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
+
+      def getPointWithUuid(uuid: ReefUUID) = client.get(PointRequestBuilders.getByUid(uuid)).map(_.one)
+      MultiRequestHelper.scatterGatherQuery(entityList, getPointWithUuid _)
+    }
+  }
 }
+

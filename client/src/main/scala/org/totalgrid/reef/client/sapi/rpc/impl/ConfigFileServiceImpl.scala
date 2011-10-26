@@ -49,6 +49,10 @@ trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileServic
     _.get(ConfigFileRequestBuilders.getByName(name)).map(_.one)
   }
 
+  override def findConfigFileByName(name: String) = ops.operation("Couldn't find config file with name: " + name) {
+    _.get(ConfigFileRequestBuilders.getByName(name)).map(_.oneOrNone)
+  }
+
   override def getConfigFilesUsedByEntity(entityUid: ReefUUID) = {
     ops.operation("Couldn't get config files used by entity: " + entityUid.uuid) {
       _.get(ConfigFileRequestBuilders.getByEntity(entityUid)).map(_.many)

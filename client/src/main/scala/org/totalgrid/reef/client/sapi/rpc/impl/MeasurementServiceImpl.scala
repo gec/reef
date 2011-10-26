@@ -41,6 +41,12 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
   }
   override def getMeasurementByPoint(point: Point) = getMeasurementByName(point.getName)
 
+  override def findMeasurementByName(name: String) = {
+    ops.operation("Couldn't find measurement with name: " + name) {
+      _.get(MeasurementSnapshotRequestBuilders.getByName(name)).map(_.one.map(_.getMeasurementsList.toList.headOption))
+    }
+  }
+
   override def getMeasurementsByNames(names: List[String]) = {
     ops.operation("Couldn't get measurements with names: " + names) { session =>
       getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByNames(names))

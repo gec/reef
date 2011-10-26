@@ -24,7 +24,6 @@ import scala.collection.JavaConversions._
 import java.io.File
 
 import org.totalgrid.reef.util.IOHelpers
-import org.totalgrid.reef.api.japi.BadRequestException
 
 @Command(scope = "configfile", name = "list", description = "Prints all config files")
 class ConfigFileListCommand extends ReefCommandSupport {
@@ -79,12 +78,7 @@ class ConfigFileUploadCommand extends ReefCommandSupport {
   var entity: String = null
 
   def doCommand() = {
-    val currentFile = try {
-      // TODO: add findConfigFileByName
-      Some(services.getConfigFileByName(configFileName))
-    } catch {
-      case ex: BadRequestException => None
-    }
+    val currentFile = Option(services.findConfigFileByName(configFileName))
 
     val dataFile = new File(Option(inputFile).getOrElse(configFileName))
     val data = IOHelpers.readBinary(dataFile)
@@ -95,7 +89,6 @@ class ConfigFileUploadCommand extends ReefCommandSupport {
       case None =>
         if (mimeType == null) throw new Exception("Must specify mimeType when uploading new config file")
 
-        // TODO: add a createConfigFile with list for entities
         Option(entity).map { services.getEntityByName(_).getUuid } match {
           case Some(entUuid) => services.createConfigFile(configFileName, mimeType, data, entUuid)
           case None => services.createConfigFile(configFileName, mimeType, data)

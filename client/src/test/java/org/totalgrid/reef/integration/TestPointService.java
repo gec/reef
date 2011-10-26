@@ -46,29 +46,46 @@ public class TestPointService extends ReefConnectionTestBase
 
     /** Given a command, find the feedback point using the point service's entity query. */
     @Test
-    public void pointFeedback() throws ReefServiceException
+    public void commandFeedback() throws ReefServiceException
     {
         CommandService cs = helpers;
+        PointService ps = helpers;
         // Get a command from the command service
         List<Command> commands = cs.getCommands();
         assertTrue( commands.size() > 0 );
-        Command cmd = commands.get( 0 );
+        for ( Command cmd : commands )
+        {
+            List<Point> list = ps.getPointsThatFeedbackForCommand( cmd.getUuid() );
+            assertNotNull( list );
+            assertEquals( 1, list.size() );
 
-        // TODO: implement getPointFeedbackCommands() function
-        /*
-        // Use the entity of the command to get the feedback point
-        Entity eqRequest =
-            Entity.newBuilder( cmd.getEntity() ).addRelations(
-                    Relationship.newBuilder().setRelationship( "feedback" ).setDescendantOf( false ).addEntities(
-                            Entity.newBuilder().addTypes( "Point" ) ) ).build();
+            for ( Point p : list )
+            {
+                List<Command> roundtripCommands = cs.getCommandsThatFeedbackToPoint( p.getUuid() );
+                assertTrue( roundtripCommands.contains( cmd ) );
+            }
+        }
+    }
 
-        // Build the point service request using the entity descriptor
-        Point p = Point.newBuilder().setEntity( eqRequest ).build();
-        List<Point> list = client.get( p ).await().expectMany();
+    @Test
+    public void pointFeedback() throws ReefServiceException
+    {
+        CommandService cs = helpers;
+        PointService ps = helpers;
+        // Get a command from the command service
+        List<Point> points = ps.getAllPoints();
+        assertTrue( points.size() > 0 );
+        for ( Point p : points )
+        {
+            List<Command> commands = cs.getCommandsThatFeedbackToPoint( p.getUuid() );
+            assertNotNull( commands );
 
-        assertNotNull( list );
-        assertEquals( 1, list.size() );
-         */
+            for ( Command cmd : commands )
+            {
+                List<Point> roundtripPoints = ps.getPointsThatFeedbackForCommand( cmd.getUuid() );
+                assertTrue( roundtripPoints.contains( p ) );
+            }
+        }
     }
 
 }

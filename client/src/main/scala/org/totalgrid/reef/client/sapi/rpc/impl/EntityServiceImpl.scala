@@ -42,6 +42,10 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     _.get(EntityRequestBuilders.getByName(name)).map(_.one)
   }
 
+  override def findEntityByName(name: String) = ops.operation("Couldn't find entity with name: " + name) {
+    _.get(EntityRequestBuilders.getByName(name)).map(_.oneOrNone)
+  }
+
   override def getAllEntitiesWithType(typ: String) = {
     val request = if (typ == "*") EntityRequestBuilders.getAll else EntityRequestBuilders.getByType(typ)
     ops.operation("Couldn't get entities with type: " + typ)(_.get(request).map(_.many))

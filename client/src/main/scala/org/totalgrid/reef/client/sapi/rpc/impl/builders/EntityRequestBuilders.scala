@@ -21,6 +21,8 @@ package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
 
+import scala.collection.JavaConversions._
+
 object EntityRequestBuilders {
 
   def getAll = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
@@ -115,6 +117,18 @@ object EntityRequestBuilders {
     Relationship.newBuilder.setDescendantOf(true).setRelationship("feedback").addEntities(Entity.newBuilder.addTypes("Command"))
   }
 
+  def getPointsFeedbackCommands(uuid: ReefUUID) = {
+    Entity.newBuilder.setUuid(uuid).addRelations(getAllFeedBackCommands()).build
+  }
+
+  def getAllFedBackPoints() = {
+    Relationship.newBuilder.setDescendantOf(false).setRelationship("feedback").addEntities(Entity.newBuilder.addTypes("Point"))
+  }
+
+  def getCommandsFeedbackPoints(uuid: ReefUUID) = {
+    Entity.newBuilder.setUuid(uuid).addRelations(getAllFedBackPoints()).build
+  }
+
   def optionalChildrenSelector(parentName: String, relType: Option[String], subTypes: List[String], anyDepth: Boolean) = {
     val req = Entity.newBuilder.setName(parentName)
 
@@ -127,6 +141,11 @@ object EntityRequestBuilders {
     req.addRelations(rel).build
   }
 
-}
+  def extractChildren(entity: Entity) = {
+    entity.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList
+  }
 
-import scala.collection.JavaConversions._
+  def extractChildrenUuids(entity: Entity) = {
+    entity.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList.map { _.getUuid }
+  }
+}

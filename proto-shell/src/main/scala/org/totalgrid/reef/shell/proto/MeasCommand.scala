@@ -64,18 +64,12 @@ class MeasListCommand extends ReefCommandSupport {
 
   def getListByNameOrParentName(name: String): List[Measurement] = {
 
-    // TODO: Replace this exception catch with future find-some-or-none services.
-    try {
-      // If it's a specific measurement, return it as a list of one.
-      List(services.getMeasurementByName(name))
-    } catch {
-      case _ => {
-        // Maybe it's a parent name and they want all measurements under the parent.
-        val entity = services.getEntityByName(name)
-        val pointEntites = services.getEntityRelatedChildrenOfType(entity.getUuid, "owns", "Point")
+    Option(services.findMeasurementByName(name)).map { List(_) }.getOrElse {
+      // if didn't find point lets assume its an entity
+      val entity = services.getEntityByName(name)
+      val pointEntites = services.getPointsOwnedByEntity(entity)
 
-        services.getMeasurementsByNames(pointEntites.map { _.getName }).toList
-      }
+      services.getMeasurementsByNames(pointEntites.map { _.getName }).toList
     }
   }
 
@@ -86,7 +80,7 @@ class MeasListCommand extends ReefCommandSupport {
       if (!block && !override_ && !good && !invalid && !questionable) {
         MeasView.printTable(measurements)
       } else {
-        var q = Quality.newBuilder();
+        val q = Quality.newBuilder()
         if (block) q.setOperatorBlocked(true)
         if (override_) q.setSource(Quality.Source.SUBSTITUTED)
         if (good) q.setValidity(Quality.Validity.GOOD)

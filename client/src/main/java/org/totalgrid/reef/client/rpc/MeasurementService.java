@@ -53,6 +53,11 @@ public interface MeasurementService extends SubscriptionCreator
     Measurement getMeasurementByName( String pointName ) throws ReefServiceException;
 
     /**
+     * Find the most recent measurement for a point, returning null if the measurement is unknown
+     */
+    Measurement findMeasurementByName( String pointName ) throws ReefServiceException;
+
+    /**
      * Get the most recent measurement for a set of points. If any points are unknown,
      * the call will throw a bad request exception.
      */

@@ -55,6 +55,11 @@ public interface ConfigFileService
     ConfigFile getConfigFileByName( String name ) throws ReefServiceException;
 
     /**
+     * retrieve a config file by its name
+     */
+    ConfigFile findConfigFileByName( String name ) throws ReefServiceException;
+
+    /**
      * search for all config files "used" by an entity
      */
     List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid ) throws ReefServiceException;

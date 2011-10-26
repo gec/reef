@@ -25,7 +25,6 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
 import org.totalgrid.reef.api.sapi.client.RequestSpy
 import org.totalgrid.reef.proto.Model.Entity
-import org.totalgrid.reef.api.japi.{ ReefServiceException, BadRequestException }
 
 object ModelDeleter {
   def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, stream: Option[PrintStream])(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
@@ -38,18 +37,9 @@ object ModelDeleter {
 
     stream.foreach { _.println("Finding items to delete starting at nodes: " + roots.mkString(", ")) }
 
-    // TODO: implement findEntityByName
-    def findEntityByName(name: String) = {
-      try {
-        Some(local.getEntityByName(name).await)
-      } catch {
-        case rse: ReefServiceException => None
-      }
-    }
-
     roots.foreach { name =>
 
-      val rootOption = findEntityByName(name)
+      val rootOption = local.findEntityByName(name).await
       rootOption.foreach { root =>
         traverser.collect(root)
       }
