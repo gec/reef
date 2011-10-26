@@ -20,12 +20,17 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.client.rpc.AllScadaService
-import org.totalgrid.reef.api.sapi.client.rest.Client
 import org.apache.felix.service.command.CommandSession
+import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.osgi.OsgiConfigReader
+import net.agileautomata.executor4s.Executors
+import org.totalgrid.reef.api.japi.settings.{ UserSettings, AmqpSettings }
 
-object ReefCommandSupport {
+object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
     session.put("context", context)
     session.put("client", client)
@@ -37,6 +42,39 @@ object ReefCommandSupport {
     session.put("cancelable", cancelable)
     session.put("user", userName)
     session.put("authToken", authToken)
+  }
+
+  def getAuthenticatedClient(session: CommandSession, connection: Connection, context: String, cancelable: Cancelable, userSettings: UserSettings) {
+    try {
+      val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+      val services = client.getRpcInterface(classOf[AllScadaService])
+
+      println("Logged into " + context + " as user: " + userSettings.getUserName + "\n\n")
+
+      setSessionVariables(session, client, services, context, cancelable, userSettings.getUserName, client.getHeaders.getAuthToken)
+    } catch {
+      case x: Exception =>
+        cancelable.cancel()
+        println("Couldn't login to Reef: " + x.getMessage)
+        logger.error(x.getStackTraceString)
+    }
+  }
+
+  def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings) = {
+
+    val factory = new QpidBrokerConnectionFactory(amqpSettings)
+    val broker = factory.connect
+    val exe = Executors.newScheduledThreadPool()
+    val conn = ReefServices(broker, exe)
+
+    val cancel = new Cancelable {
+      def cancel() = {
+        broker.disconnect()
+        exe.terminate()
+      }
+    }
+
+    getAuthenticatedClient(session, conn, amqpSettings.toString, cancel, userSettings)
   }
 }
 
@@ -97,7 +135,16 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     try {
       if (requiresLogin && !isLoggedIn) {
         println("You must be logged into Reef before you can run this command.")
-        println("See help reef:login")
+        try {
+          val userSettings = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
+          val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
+          println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file: " + userSettings.getUserName)
+          ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings)
+          doCommand()
+        } catch {
+          case _ =>
+            println("Cannot auto-login see \"reef:login --help\"")
+        }
       } else doCommand()
     } catch {
       case ex: Exception =>

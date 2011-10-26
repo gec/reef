@@ -22,24 +22,16 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import java.io.{ BufferedReader, InputStreamReader }
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.client.sapi.ReefServices
 
-import org.totalgrid.reef.util.Cancelable
-
-import org.totalgrid.reef.client.rpc.AllScadaService
-import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.api.japi.settings.AmqpSettings
 import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.api.japi.settings.{ UserSettings, AmqpSettings }
 
-/**
- * base implementation for login commands, handles getting user name and password, implementors just need to
- * define setupReefSession and call the underlying setReefSession(session, "context")
- */
-abstract class ReefLoginCommandBase extends ReefCommandSupport {
+@Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
+class ReefLoginCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "userName", description = "user name", required = true, multiValued = false)
+  override val requiresLogin = false
+
+  @Argument(index = 0, name = "userName", description = "User name, if not specified we try looking for user settings in etc directory.", required = false, multiValued = false)
   private var userName: String = null
 
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
@@ -51,55 +43,26 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
       System.out.println(getLoginString)
       System.out.println("\nUse \"reef:logout\" first to logout")
     } else {
-      if (password == null) {
-        val stdIn = new BufferedReader(new InputStreamReader(System.in))
-
-        System.out.println("Enter Password: ")
-        password = stdIn.readLine.trim
+      val userSettings = if (userName == null) {
+        val user = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
+        System.out.println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file.")
+        user
       } else {
-        System.out.println("WARNING: Password will be visible in karaf command history!")
+        if (password == null) {
+          val stdIn = new BufferedReader(new InputStreamReader(System.in))
+
+          System.out.println("Enter Password: ")
+          password = stdIn.readLine.trim
+        } else {
+          System.out.println("WARNING: Password will be visible in karaf command history!")
+        }
+        new UserSettings(userName, password)
       }
 
-      val (connection, context, cancel) = setupReefSession()
+      val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
 
-      try {
-        val session = connection.login(userName, password).await /// TODO - should load user out of config file
-        val services = session.getRpcInterface(classOf[AllScadaService])
-        login(session, services, context, cancel, userName, session.getHeaders.getAuthToken)
-      } catch {
-        case x: Exception =>
-          cancel.cancel()
-          println("Couldn't login to Reef: " + x.getMessage)
-          logger.error(x.getStackTraceString)
-      }
+      ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings)
     }
-  }
-
-  def setupReefSession(): (Connection, String, Cancelable)
-}
-
-@Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
-class ReefLoginCommand extends ReefLoginCommandBase {
-
-  override val requiresLogin = false
-
-  def setupReefSession() = {
-
-    val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
-
-    val factory = new QpidBrokerConnectionFactory(connectionInfo)
-    val broker = factory.connect
-    val exe = Executors.newScheduledThreadPool()
-    val conn = ReefServices(broker, exe)
-
-    val cancel = new Cancelable {
-      def cancel() = {
-        broker.disconnect()
-        exe.terminate()
-      }
-    }
-
-    (conn, connectionInfo.toString, cancel)
   }
 }
 
@@ -118,6 +81,8 @@ class ReefLogoutCommand extends ReefCommandSupport {
         logger.warn(errorMsg, ex)
     }
     this.logout()
+
+    println("Logged out")
   }
 }
 
