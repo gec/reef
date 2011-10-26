@@ -25,8 +25,14 @@ import org.totalgrid.reef.services.framework.ServerSideProcess
 import net.agileautomata.executor4s._
 
 class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long) extends ServerSideProcess with Logging {
+
+  var repeater = Option.empty[Timer]
+
   def startProcess(exe: Executor) {
-    if (ms.supportsTrim) exe.schedule(period.milliseconds)(doTrimOperation(exe))
+    if (ms.supportsTrim) repeater = Some(exe.scheduleWithFixedOffset(period.milliseconds)(doTrimOperation(exe)))
+  }
+  def stopProcess() {
+    repeater.foreach(_.cancel)
   }
 
   private def doTrimOperation(exe: Executor) {
@@ -34,6 +40,5 @@ class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long
     if (num > 0) {
       logger.debug("trimmed: " + num + " measurements")
     }
-    exe.schedule(period.milliseconds) { doTrimOperation(exe) }
   }
 }

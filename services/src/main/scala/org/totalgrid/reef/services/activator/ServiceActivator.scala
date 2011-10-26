@@ -70,6 +70,7 @@ object ServiceActivator {
         new Cancelable {
           def cancel() = {
             serviceRegistrations.foreach { _.unregister() }
+            providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()
           }
         }

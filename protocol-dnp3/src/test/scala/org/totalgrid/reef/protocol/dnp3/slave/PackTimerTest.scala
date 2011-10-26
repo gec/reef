@@ -40,15 +40,14 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     exe.isIdle should equal(true)
 
     packTimer.addEntry(TestObject(0))
-    // TODO: MockExcutor needs to report timers queued
-    //exe.isIdle should equal(false)
+    exe.numQueuedTimers should equal(1)
 
     packTimer.addEntry(TestObject(1))
-    //exe.isIdle should equal(false)
-    /*exe.tick(100.milliseconds) should equal(true)
-    exe.isIdle should equal(true)
+    exe.numQueuedTimers should equal(1)
+    exe.tick(100.milliseconds) should equal(true)
+    exe.numQueuedTimers should equal(0)
 
-    pubbed.head should equal(List(TestObject(0), TestObject(1)))*/
+    pubbed.head should equal(List(TestObject(0), TestObject(1)))
   }
 
   test("Publishing when full") {
@@ -62,11 +61,11 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
 
     (0 to 8).foreach { i =>
       packTimer.addEntry(TestObject(i))
-      // TODO: upgrade mockexecutor to give counts of queued actions
-      //exe.numActionsPending should equal(1)
+      exe.numQueuedTimers should equal(1)
       exe.isIdle should equal(true)
     }
     packTimer.addEntry(TestObject(9))
+    exe.numQueuedTimers should equal(0)
     exe.isIdle should equal(false)
 
     exe.tick(1.milliseconds)

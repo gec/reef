@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Application.HeartbeatConfig
 import org.mockito.{ ArgumentCaptor, Mockito }
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import net.agileautomata.executor4s.testing.MockExecutor
-import net.agileautomata.executor4s.Success
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.api.sapi.client.impl.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
@@ -56,12 +56,13 @@ class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
 
     actor.start()
 
-    mockExecutor.runNextPendingAction should equal(true)
+    mockExecutor.numQueuedTimers should equal(1)
+    mockExecutor.tick(20.milliseconds)
     argument.getValue.getOnline should equal(true)
 
     actor.stop()
 
-    mockExecutor.isIdle should equal(true)
+    mockExecutor.numQueuedTimers should equal(0)
     argument.getValue.getOnline should equal(false)
   }
 }

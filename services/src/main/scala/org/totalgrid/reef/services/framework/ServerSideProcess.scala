@@ -22,4 +22,5 @@ import net.agileautomata.executor4s.Executor
 
 trait ServerSideProcess {
   def startProcess(exe: Executor)
+  def stopProcess()
 }

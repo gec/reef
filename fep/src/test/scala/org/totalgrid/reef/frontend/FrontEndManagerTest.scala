@@ -83,8 +83,9 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
       fem.start()
       mp.sub should equal(None)
       (0 to 3).foreach { i =>
-        // TODO: MockExecutor needs to have way to inspect number of timers
+        exe.numQueuedTimers should equal(1)
         exe.tick(5000.milliseconds)
+        exe.numQueuedTimers should equal(1)
       }
     }
   }

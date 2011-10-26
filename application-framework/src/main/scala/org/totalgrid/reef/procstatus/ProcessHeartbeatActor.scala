@@ -39,21 +39,14 @@ class ProcessHeartbeatActor(services: ApplicationService, configuration: Heartbe
       .setOnline(online).build
   }
 
-  private var repeater: Option[Cancelable] = None
+  private var repeater: Option[Timer] = None
 
   override def afterStart() = {
-    exe.execute(doHeartbeat(configuration.getPeriodMs.milliseconds))
-  }
-
-  def doHeartbeat(time: TimeInterval) {
-    heartbeat
-
-    repeater = Some(exe.schedule(time)(doHeartbeat(time)))
+    repeater = Some(exe.scheduleWithFixedOffset(configuration.getPeriodMs.milliseconds)(heartbeat()))
   }
 
   override def beforeStop() = {
     repeater.foreach(_.cancel)
-    // beforeStop is called on the executor thread
     publish(makeProto(false))
   }
 

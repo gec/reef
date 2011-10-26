@@ -43,7 +43,7 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
   private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
 
   private val rand = new Random
-  private var repeater: Option[Cancelable] = None
+  private var repeater: Option[Timer] = None
 
   override def afterStart() {
     exe.execute { update(measurements, true) }
@@ -56,9 +56,8 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
   }
 
   def repeat() {
-    update(measurements)
     this.synchronized {
-      repeater = if (delay > 0) Some(exe.schedule(delay.milliseconds) { repeat }) else None
+      update(measurements)
     }
   }
 
@@ -71,7 +70,7 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
     logger.info("Updating parameters for simulator: " + name + ", delay = " + delay)
     this.synchronized {
       repeater.foreach(_.cancel)
-      if (delay > 0) repeat
+      if (delay > 0) repeater = Some(exe.scheduleWithFixedOffset(delay.milliseconds) { repeat }) else None
     }
   }
 
