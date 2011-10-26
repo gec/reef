@@ -22,11 +22,10 @@ import org.totalgrid.reef.services.framework.{ RequestContextSource }
 import org.totalgrid.reef.services.coordinators.{ SingleThreadedMeasurementStreamCoordinator, SquerylBackedMeasurementStreamCoordinator }
 import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies }
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import net.agileautomata.executor4s.Executor
 
-class ModelFactories(measurementStore: MeasurementStore, coordinatorExecutor: Executor, contextSource: RequestContextSource) {
+class ModelFactories(measurementStore: MeasurementStore, contextSource: RequestContextSource) {
 
-  def this(deps: ServiceDependencies) = this(deps.measurementStore, deps.coordinatorExecutor, new DependenciesSource(deps))
+  def this(deps: ServiceDependencies) = this(deps.measurementStore, new DependenciesSource(deps))
 
   val accesses = new CommandAccessServiceModel
   val userRequests = new UserCommandRequestServiceModel(accesses)
@@ -40,7 +39,7 @@ class ModelFactories(measurementStore: MeasurementStore, coordinatorExecutor: Ex
     val coord = new SquerylBackedMeasurementStreamCoordinator(measProc, fepModel, measurementStore)
     measProc.setCoordinator(coord)
     fepModel.setCoordinator(coord)
-    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource, coordinatorExecutor)
+    val syncCoord = new SingleThreadedMeasurementStreamCoordinator(coord, contextSource)
     syncCoord
   }
 

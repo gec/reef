@@ -52,7 +52,7 @@ object ServiceActivator {
         val mgr = new LifecycleManager
         val measStore = MeasurementStoreFinder.getInstance(context)
 
-        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, Strand(exe), metricsHolder, authToken)
+        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)
 
         val metrics = new MetricsServiceWrapper(metricsHolder, serviceOptions)
         val serviceContext = new ServiceContext(connection, metrics, exe)

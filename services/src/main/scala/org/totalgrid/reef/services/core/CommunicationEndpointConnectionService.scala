@@ -81,23 +81,30 @@ class CommunicationEndpointConnectionServiceModel
 
     // changing enabled flag has precedence, then connection state changes
     val currentlyEnabled = existing.enabled
+    val currentState = existing.state
+
+    def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState
+
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
 
-      val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
-      eventFunc(code)
+      exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
+        val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
+        eventFunc(code)
 
-      update(context, existing.copy(enabled = proto.getEnabled), existing)
-    } else if (proto.hasState && proto.getState.getNumber != existing.state) {
+        toBeUpdated.copy(enabled = proto.getEnabled)
+      }
+    } else if (proto.hasState && proto.getState.getNumber != currentState) {
       val newState = proto.getState.getNumber
       val online = newState == ConnProto.State.COMMS_UP.getNumber
-      val updated = if (online) {
-        eventFunc(EventType.Scada.CommEndpointOnline)
-        existing.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
-      } else {
-        eventFunc(EventType.Scada.CommEndpointOffline)
-        existing.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
+      exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
+        if (online) {
+          eventFunc(EventType.Scada.CommEndpointOnline)
+          toBeUpdated.copy(onlineTime = Some(System.currentTimeMillis), state = newState)
+        } else {
+          eventFunc(EventType.Scada.CommEndpointOffline)
+          toBeUpdated.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
+        }
       }
-      update(context, updated, existing)
     } else {
       // state and enabled weren't altered, return NOT_MODIFIED
       (existing, false)

@@ -155,12 +155,16 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param fun                 Update logic to be performed during lock, transforms acquired entry to updated entry
    * @return                    Entry that results from update
    */
-  def exclusiveUpdate(context: RequestContext, existing: SqlType, acquireCondition: SqlType => Boolean)(fun: SqlType => SqlType): SqlType = {
+  def exclusiveUpdate(context: RequestContext, existing: SqlType, acquireCondition: SqlType => Boolean)(fun: SqlType => SqlType): (SqlType, Boolean) = {
     // Wraps/unwraps in list for special case of a single update
     val result = exclusiveUpdate(context, List(existing), acquireCondition) { list =>
-      List(fun(list.head))
+      val result = fun(list.head)
+      // set the id of the updated entry to match original entry
+      result.id = list.head.id
+      List(result)
     }
-    result.head
+    // will have updated or else thrown exception
+    (result.head, true)
   }
 }
 

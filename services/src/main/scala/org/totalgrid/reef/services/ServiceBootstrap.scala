@@ -32,7 +32,6 @@ import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigServi
 import org.totalgrid.reef.client.sapi.ReefServicesList
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
-import net.agileautomata.executor4s.testing.InstantExecutor
 
 object ServiceBootstrap {
 
@@ -67,7 +66,7 @@ object ServiceBootstrap {
     val headers = BasicRequestHeaders.empty.setUserName(systemUser.getUserName)
 
     val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(dependencies), headers)
-    val modelFac = new ModelFactories(new InMemoryMeasurementStore, new InstantExecutor, contextSource)
+    val modelFac = new ModelFactories(new InMemoryMeasurementStore, contextSource)
     val applicationConfigService = new ApplicationConfigService(modelFac.appConfig)
     val authService = new AuthTokenService(modelFac.authTokens)
 

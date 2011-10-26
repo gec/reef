@@ -55,7 +55,7 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
       // this tricky little SOB creates another future based on the result of the last one, either by
       f1.flatMap { r =>
         r match {
-          case Success(conn) => client.post(r.get.toBuilder.setEnabled(enabled).build).map(_.one)
+          case Success(conn) => client.post(conn.toBuilder.setEnabled(enabled).build).map(_.one)
           case Failure(ex) => f1
         }
       }

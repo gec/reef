@@ -27,7 +27,6 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import net.agileautomata.executor4s.testing.MockExecutor
 import org.totalgrid.reef.services.framework.ServerSideProcess
 import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
@@ -67,7 +66,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
       val metrics = MetricsSink.getInstance("test")
 
-      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, new MockExecutor, metrics, "")
+      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, metrics, "")
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

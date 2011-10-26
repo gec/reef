@@ -31,7 +31,6 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.api.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
-import net.agileautomata.executor4s.Executor
 
 /**
  * list of all of the service providers in the system
@@ -41,16 +40,15 @@ class ServiceProviders(
     cm: MeasurementStore,
     serviceConfiguration: ServiceOptions,
     authzService: AuthService,
-    coordinatorExecutor: Executor, //TODO - if the component requires Strand, use the Strand type
     metricsPublisher: IMetricsSink,
     authToken: String) {
 
   private val eventPublisher = new LocalSystemEventSink
-  private val dependencies = new ServiceDependencies(connection, connection, cm, eventPublisher, coordinatorExecutor, authToken)
+  private val dependencies = new ServiceDependencies(connection, connection, cm, eventPublisher, authToken)
 
   private val contextSource = new DependenciesSource(dependencies)
 
-  private val modelFac = new ModelFactories(cm, coordinatorExecutor, contextSource)
+  private val modelFac = new ModelFactories(cm, contextSource)
 
   // we have to fill in the event model after constructing the event service to break the circular
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services

@@ -22,7 +22,6 @@ import org.totalgrid.reef.services.framework.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import net.agileautomata.executor4s.Executor
-import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.api.sapi.service.AsyncService
 import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.api.japi.Envelope.Event
@@ -52,8 +51,7 @@ class ServiceDependenciesDefaults(connection: Connection = new MockConnection,
   pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
   cm: MeasurementStore = new InMemoryMeasurementStore,
   eventSink: SystemEventSink = new SilentEventSink,
-  coordinatorExecutor: Executor = new InstantExecutor,
-  authToken: String = "") extends ServiceDependencies(connection, pubs, cm, eventSink, coordinatorExecutor, authToken)
+  authToken: String = "") extends ServiceDependencies(connection, pubs, cm, eventSink, authToken)
 
 class HeadersRequestContext(
   extraHeaders: BasicRequestHeaders = BasicRequestHeaders.empty,

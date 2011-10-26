@@ -23,10 +23,13 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.util.EmptySyncVar
-
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
+import org.totalgrid.reef.util.SyncVar
+import org.totalgrid.reef.proto.Model.ReefUUID
+
+import CommEndpointConnection.State._
+import org.totalgrid.reef.api.japi.client.SubscriptionResult
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{SubscriptionEventAcceptorShim, ClientSessionSuite}
 
 @RunWith(classOf[JUnitRunner])
 class EndpointManagementTest
@@ -41,47 +44,73 @@ class EndpointManagementTest
   test("Endpoint operations") {
 
     recorder.addExplanation("Get all endpoints", "")
-    val endpoints = client.getAllEndpoints().await
+    val endpoints = client.getAllEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
-    val syncVar = new EmptySyncVar[CommEndpointConnection]
-
     recorder.addExplanation("Get all endpoint connections", "")
     val result = client.subscribeToAllEndpointConnections().await
-    val connections = result.getResult
-    val sub = result.getSubscription
 
-    val connectionEndpointUuids = connections.map { _.getEndpoint.getUuid.getUuid }.sorted
-    val endpointUuids = endpoints.map { _.getUuid.getUuid }.sorted
+    val map = new EndpointConnectionStateMap(result)
 
-    connectionEndpointUuids should equal(endpointUuids)
+    map.checkAllState(true, COMMS_UP)
 
-    // make sure everything starts comms_up and enabled
-    connections.map { _.getState } should equal(connections.map { x => CommEndpointConnection.State.COMMS_UP })
-    connections.map { _.getEnabled } should equal(connections.map { x => true })
+    endpoints.foreach { e =>
+      val endpointUuid = e.getUuid
 
-    // pick one endpoint to test enabling/disabling
-    val endpointUuid = endpoints.head.getUuid
+      client.disableEndpointConnection(endpointUuid).await
 
-    sub.start(new SubscriptionEventAcceptorShim(ea => syncVar.update(ea.getValue())))
+      map.checkState(endpointUuid, false, COMMS_UP)
+      map.checkState(endpointUuid, false, COMMS_DOWN)
 
-    def checkState(enabled: Boolean, state: CommEndpointConnection.State) {
-      syncVar.waitFor(x => x.getEnabled == enabled &&
-        x.getState == state &&
-        x.getEndpoint.getUuid.getUuid == endpointUuid.getUuid)
+      client.enableEndpointConnection(endpointUuid).await
+
+      map.checkState(endpointUuid, true, COMMS_DOWN)
+      map.checkState(endpointUuid, true, COMMS_UP)
     }
-
-    client.disableEndpointConnection(endpointUuid).await
-
-    checkState(false, CommEndpointConnection.State.COMMS_UP)
-    checkState(false, CommEndpointConnection.State.COMMS_DOWN)
-
-    client.enableEndpointConnection(endpoints.head.getUuid).await
-
-    checkState(true, CommEndpointConnection.State.COMMS_DOWN)
-    checkState(true, CommEndpointConnection.State.COMMS_UP)
 
   }
 
+  test("Disable All Endpoints") {
+
+    val endpoints = client.getAllEndpoints().await.toList
+
+    endpoints.isEmpty should equal(false)
+
+    val result = client.subscribeToAllEndpointConnections().await
+
+    val map = new EndpointConnectionStateMap(result)
+
+    // make sure everything starts comms_up and enabled
+    map.checkAllState(true, COMMS_UP)
+
+    endpoints.foreach { e => client.disableEndpointConnection(e.getUuid).await }
+
+    map.checkAllState(false, COMMS_DOWN)
+
+    endpoints.foreach { e => client.enableEndpointConnection(e.getUuid).await }
+
+    map.checkAllState(true, COMMS_UP)
+
+  }
+
+  class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
+
+    private def makeEntry(e: CommEndpointConnection) = {
+      //println(e.getEndpoint.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
+      e.getEndpoint.getUuid -> e
+    }
+
+    val endpointStateMap = result.getResult.map { makeEntry(_) }.toMap
+    val syncVar = new SyncVar(endpointStateMap)
+
+    result.getSubscription.start(new SubscriptionEventAcceptorShim(ea => syncVar.atomic(m => m + makeEntry(ea.getValue))))
+
+    def checkAllState(enabled: Boolean, state: CommEndpointConnection.State) {
+      syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
+    }
+    def checkState(uuid: ReefUUID, enabled: Boolean, state: CommEndpointConnection.State, evalCurrent : Boolean = true) {
+      syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
+    }
+  }
 }

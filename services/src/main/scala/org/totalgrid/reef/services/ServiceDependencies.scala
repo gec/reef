@@ -23,14 +23,12 @@ import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.api.sapi.client.rest.{ Connection, SubscriptionHandler }
-import net.agileautomata.executor4s._
 
 class ServiceDependencies(
   connection: Connection,
   pubs: SubscriptionHandler,
   val measurementStore: MeasurementStore,
   eventSink: SystemEventSink,
-  val coordinatorExecutor: Executor,
   authToken: String) extends RequestContextDependencies(connection, pubs, authToken, eventSink)
 
 class RequestContextDependencies(
