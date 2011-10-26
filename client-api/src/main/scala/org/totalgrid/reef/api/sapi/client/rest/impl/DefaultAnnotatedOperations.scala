@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi.rest.impl
+package org.totalgrid.reef.api.sapi.client.rest.impl
 
 import net.agileautomata.executor4s.{ Failure, Success, Result, Future }
 

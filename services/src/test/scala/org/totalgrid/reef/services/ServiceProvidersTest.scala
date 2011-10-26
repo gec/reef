@@ -19,8 +19,6 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.api.sapi.auth.NullAuthService
-import org.totalgrid.reef.api.sapi.service.{ NoOpService, AsyncService }
-
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 
@@ -32,6 +30,28 @@ import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
 import org.totalgrid.reef.api.sapi.client.rest.Connection
+import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.api.japi.{ TypeDescriptor, Envelope }
+
+/**
+ * A concrete example service that always responds immediately with Success and the correct Id
+ */
+class NoOpService extends AsyncService[Any] {
+
+  import Envelope._
+
+  /// noOpService that returns OK
+  def respond(request: ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) =
+    callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
+
+  override val descriptor = new TypeDescriptor[Any] {
+    def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
+    def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
+    def getKlass: Class[Any] = throw new Exception("unimplemented")
+    def id = "Any"
+  }
+}
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {

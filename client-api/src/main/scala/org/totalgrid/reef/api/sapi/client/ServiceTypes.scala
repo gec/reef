@@ -19,7 +19,6 @@
 package org.totalgrid.reef.api.sapi.client
 
 import org.totalgrid.reef.api.japi._
-import org.totalgrid.reef.api.sapi._
 import org.totalgrid.reef.api.japi.client._
 import net.agileautomata.executor4s.{ Failure, Success }
 

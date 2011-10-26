@@ -21,7 +21,7 @@ package org.totalgrid.reef.services
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback, CallbackTimer }
+import org.totalgrid.reef.api.sapi.service.{ AsyncService, ServiceResponseCallback }
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 import org.totalgrid.reef.api.japi.{ StatusCodes, Envelope }
@@ -42,6 +42,17 @@ trait ServiceMetricHooks {
   protected val map: Map[Envelope.Verb, ServiceVerbHooks]
 
   def apply(verb: Envelope.Verb): Option[ServiceVerbHooks] = map.get(verb)
+}
+
+class CallbackTimer(callback: ServiceResponseCallback, timerFun: (Long, Envelope.ServiceResponse) => Unit) extends ServiceResponseCallback {
+
+  val start = System.currentTimeMillis
+
+  def onResponse(rsp: Envelope.ServiceResponse) {
+    timerFun(System.currentTimeMillis - start, rsp)
+    callback.onResponse(rsp)
+  }
+
 }
 
 /**

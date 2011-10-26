@@ -19,10 +19,10 @@
 package org.totalgrid.reef.api.sapi.client.rpc.framework
 
 import org.totalgrid.reef.api.sapi.client.rest.{ Client, AnnotatedOperations }
-import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
+import org.totalgrid.reef.api.sapi.client.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }
 import org.totalgrid.reef.api.sapi.client.{ RequestSpy, RequestSpyManager, BasicRequestHeaders, HasHeaders }
-import net.agileautomata.executor4s.{ Timer, TimeInterval, Executor }
+import net.agileautomata.executor4s.{ TimeInterval, Executor }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations

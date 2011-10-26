@@ -21,10 +21,6 @@ package org.totalgrid.reef.api.sapi.service
 import org.totalgrid.reef.api.japi.{ Envelope, TypeDescriptor }
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 
-object AsyncService {
-  type ServiceFunction = (Envelope.ServiceRequest, BasicRequestHeaders, ServiceResponseCallback) => Unit
-}
-
 /**
  * Defines how to complete a service call with a ServiceResponse
  */
@@ -32,21 +28,3 @@ trait AsyncService[A] extends ServiceDescriptor[A] {
   def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback): Unit
 }
 
-/**
- * A concrete example service that always responds immediately with Success and the correct Id
- */
-class NoOpService extends AsyncService[Any] {
-
-  import Envelope._
-
-  /// noOpService that returns OK
-  def respond(request: ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) =
-    callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
-
-  override val descriptor = new TypeDescriptor[Any] {
-    def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
-    def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
-    def getKlass: Class[Any] = throw new Exception("unimplemented")
-    def id = "Any"
-  }
-}

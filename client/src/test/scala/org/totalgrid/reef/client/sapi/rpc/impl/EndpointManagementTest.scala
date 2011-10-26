@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 
 import CommEndpointConnection.State._
 import org.totalgrid.reef.api.japi.client.SubscriptionResult
-import org.totalgrid.reef.client.sapi.rpc.impl.util.{SubscriptionEventAcceptorShim, ClientSessionSuite}
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
 
 @RunWith(classOf[JUnitRunner])
 class EndpointManagementTest
@@ -109,7 +109,7 @@ class EndpointManagementTest
     def checkAllState(enabled: Boolean, state: CommEndpointConnection.State) {
       syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
     }
-    def checkState(uuid: ReefUUID, enabled: Boolean, state: CommEndpointConnection.State, evalCurrent : Boolean = true) {
+    def checkState(uuid: ReefUUID, enabled: Boolean, state: CommEndpointConnection.State) {
       syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
     }
   }

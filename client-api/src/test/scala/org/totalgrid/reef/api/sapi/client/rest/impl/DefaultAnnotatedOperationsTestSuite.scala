@@ -31,7 +31,6 @@ import net.agileautomata.executor4s.testing.MockFuture
 import org.totalgrid.reef.api.japi.ReefServiceException
 import org.totalgrid.reef.api.sapi.client._
 
-import org.totalgrid.reef.api.sapi.rest.impl.DefaultAnnotatedOperations
 import org.totalgrid.reef.api.sapi.example.{ SomeIntegerTypeDescriptor, SomeInteger }
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, Client }

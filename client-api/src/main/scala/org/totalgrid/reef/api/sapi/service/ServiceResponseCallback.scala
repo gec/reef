@@ -26,14 +26,3 @@ import org.totalgrid.reef.api.japi.Envelope
 trait ServiceResponseCallback {
   def onResponse(rsp: Envelope.ServiceResponse)
 }
-
-class CallbackTimer(callback: ServiceResponseCallback, timerFun: (Long, Envelope.ServiceResponse) => Unit) extends ServiceResponseCallback {
-
-  val start = System.currentTimeMillis
-
-  def onResponse(rsp: Envelope.ServiceResponse) {
-    timerFun(System.currentTimeMillis - start, rsp)
-    callback.onResponse(rsp)
-  }
-
-}

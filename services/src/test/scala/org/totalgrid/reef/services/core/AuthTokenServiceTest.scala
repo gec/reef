@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.api.japi.Envelope._
-import org.totalgrid.reef.api.sapi.service.NoOpService
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -37,7 +36,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.{ RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
+import org.totalgrid.reef.services.{ NoOpService, RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 

@@ -105,7 +105,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
   private def newEndpointStatePublisher(connectionUid: String, endpointName: String) = new Protocol.EndpointPublisher {
     def publish(state: CommEndpointConnection.State) = {
       client.alterEndpointConnectionState(connectionUid, state).extract match {
-        case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState + " was: " + state)
+        case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
         case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
       }
     }
