@@ -23,7 +23,6 @@ import org.totalgrid.reef.proto.Processing.TriggerSet
 import org.totalgrid.reef.proto.Model.Point
 
 import presentation.TriggerView
-import RequestFailure._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.commons.{ ModelDeleter, LoaderServicesImpl }

@@ -69,12 +69,7 @@ class ProtoShellApplication(client: Client, services: AllScadaService, cancelabl
         session.getConsole().println(">")
       }
       protected override def setSessionProperties = {
-        this.session.put("context", context)
-        this.session.put("client", client)
-        this.session.put("reefSession", services)
-        this.session.put("cancelable", cancelable)
-        this.session.put("user", userName)
-        this.session.put("authToken", authToken)
+        ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
       }
     }
   }

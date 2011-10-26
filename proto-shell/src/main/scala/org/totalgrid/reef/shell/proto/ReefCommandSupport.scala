@@ -23,6 +23,22 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.client.rpc.AllScadaService
 import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.apache.felix.service.command.CommandSession
+
+object ReefCommandSupport {
+  def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
+    session.put("context", context)
+    session.put("client", client)
+    session.put("reefSession", service)
+    session.get("cancelable") match {
+      case null => // nothing to close
+      case x => x.asInstanceOf[Cancelable].cancel
+    }
+    session.put("cancelable", cancelable)
+    session.put("user", userName)
+    session.put("authToken", authToken)
+  }
+}
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
@@ -56,18 +72,13 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     case null => false
     case x => true
   }
+  protected def rethrow = this.session.get("rethrow") match {
+    case null => false
+    case x => true
+  }
 
-  def login(client: Client, session: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
-    this.session.put("context", context)
-    this.session.put("client", client)
-    this.session.put("reefSession", session)
-    this.session.get("cancelable") match {
-      case null => // nothing to close
-      case x => x.asInstanceOf[Cancelable].cancel
-    }
-    this.session.put("cancelable", cancelable)
-    this.session.put("user", userName)
-    this.session.put("authToken", authToken)
+  def login(client: Client, services: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
+    ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
   }
 
   protected def logout() {
@@ -89,10 +100,10 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
         println("See help reef:login")
       } else doCommand()
     } catch {
-      case RequestFailure(why) => println(why)
       case ex: Exception =>
         println("Error running command: " + ex)
         logger.error(ex.getStackTraceString)
+        if (rethrow) throw ex
     }
     println("")
     null
