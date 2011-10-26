@@ -44,7 +44,7 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
 
     packTimer.addEntry(TestObject(1))
     exe.numQueuedTimers should equal(1)
-    exe.tick(100.milliseconds) should equal(true)
+    exe.tick(100.milliseconds)
     exe.numQueuedTimers should equal(0)
 
     pubbed.head should equal(List(TestObject(0), TestObject(1)))
@@ -65,10 +65,10 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
       exe.isIdle should equal(true)
     }
     packTimer.addEntry(TestObject(9))
-    exe.numQueuedTimers should equal(0)
     exe.isIdle should equal(false)
 
-    exe.tick(1.milliseconds)
+    exe.runNextPendingAction()
+    exe.numQueuedTimers should equal(0)
     pubbed.head should equal((0 to 9).map { TestObject(_) }.toList)
     exe.isIdle should equal(true)
 
