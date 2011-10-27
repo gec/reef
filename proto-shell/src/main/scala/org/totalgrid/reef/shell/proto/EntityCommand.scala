@@ -87,7 +87,7 @@ class EntityTreeCommand extends ReefCommandSupport {
   @Argument(index = 1, name = "Relationship", description = "Name of relationship type", required = true, multiValued = false)
   var relationship: String = null
 
-  @Argument(index = 2, name = "Depth", description = "Show children at depth <i>", required = true, multiValued = false)
+  @Argument(index = 2, name = "Depth", description = "Show entities that are up to depth level children from parent.", required = true, multiValued = false)
   var depth: Int = 1
 
   @Argument(index = 3, name = "types", description = "List of types we want in returned list", required = true, multiValued = true)

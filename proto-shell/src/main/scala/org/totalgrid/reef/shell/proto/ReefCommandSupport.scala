@@ -149,7 +149,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     } catch {
       case ex: Exception =>
         println("Error running command: " + ex)
-        logger.error(ex.getStackTraceString)
+        logger.error("Error running command " + this.getClass.getSimpleName + " with error: " + ex.getMessage, ex)
         if (rethrow) throw ex
     }
     println("")
