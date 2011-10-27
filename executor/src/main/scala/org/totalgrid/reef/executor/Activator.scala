@@ -21,11 +21,17 @@ package org.totalgrid.reef.executor
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import com.weiglewilczek.scalamodules._
 import net.agileautomata.executor4s.{ Executors, Executor }
+import java.util.concurrent.{ TimeUnit, ScheduledThreadPoolExecutor }
 
 final class Activator extends BundleActivator {
 
   // the thread pool will grow, but always retain the number of threads == number of cores
-  val executor = Executors.newScheduledThreadPool(10)
+
+  val scheduledExecutor = new ScheduledThreadPoolExecutor(128)
+  scheduledExecutor.setKeepAliveTime(10, TimeUnit.SECONDS)
+  scheduledExecutor.allowCoreThreadTimeOut(true)
+
+  val executor = Executors.newCustomExecutor(scheduledExecutor)
 
   def start(context: BundleContext) = context.createService(executor, interface1 = interface[Executor])
 
