@@ -25,6 +25,8 @@ import org.apache.felix.service.command.CommandSession
  * invocations
  */
 class SessionHeldObject[A](name: String, session: => CommandSession, default: A) {
+  // TODO: move to ReefCommandSupport
+
   def get(): A = {
     session.get(name) match {
       case null => default

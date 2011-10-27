@@ -21,7 +21,6 @@ package org.totalgrid.reef.shell.admin
 import org.apache.felix.gogo.commands.Command
 import org.apache.felix.gogo.commands.Command._
 import org.apache.karaf.shell.console.OsgiCommandSupport._
-import org.totalgrid.reef.shell.proto.ReefLoginCommandBase
 
 //@Command(scope = "reef", name = "local-login", description = "Authorizes a user with the local Reef node, asks for password interactively")
 //class ReefLocalLoginCommand extends ReefLoginCommandBase {
