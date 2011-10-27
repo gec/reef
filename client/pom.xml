@@ -63,7 +63,8 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>${project.build.directory}/generated-sources</source>
+								<source>${project.build.directory}/generated-sources/scala</source>
+								<source>${project.build.directory}/generated-sources/java</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -75,6 +76,7 @@
                 <version>0.1.9-GEC</version>
                 <configuration>
                     <protoSourceRoot>..\schema\proto</protoSourceRoot>
+					<outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
                     <!--<checkStaleness>true</checkStaleness>-->
                 </configuration>
                 <executions>
