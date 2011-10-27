@@ -60,7 +60,7 @@ class UserCommandRequestService(
           }
 
           frontEndAssignment.serviceRoutingKey match {
-            case Some(key) => AddressableDestination(key)
+            case Some(key) => new AddressableDestination(key)
             case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
           }
         case None => throw new BadRequestException("Command has no endpoint set: " + request)

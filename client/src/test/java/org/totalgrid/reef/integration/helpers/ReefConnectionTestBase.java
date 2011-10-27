@@ -21,16 +21,15 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.After;
 import org.junit.Before;
 
+import org.totalgrid.reef.api.japi.client.Client;
+import org.totalgrid.reef.api.japi.client.Connection;
 import org.totalgrid.reef.api.japi.settings.AmqpSettings;
 import org.totalgrid.reef.api.japi.ReefServiceException;
 
 import org.totalgrid.reef.api.japi.settings.UserSettings;
 import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
-import org.totalgrid.reef.api.sapi.client.rest.Client;
-import org.totalgrid.reef.client.ReefFactory;
+import org.totalgrid.reef.client.ReefConnectionFactory;
 import org.totalgrid.reef.client.rpc.AllScadaService;
-
-import org.totalgrid.reef.api.sapi.client.rest.Connection;
 
 import java.io.IOException;
 
@@ -41,7 +40,7 @@ public class ReefConnectionTestBase
 {
     private final boolean autoLogon;
 
-    protected ReefFactory factory;
+    protected ReefConnectionFactory factory;
 
     protected AllScadaService helpers;
 
@@ -59,7 +58,7 @@ public class ReefConnectionTestBase
         try
         {
             AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            this.factory = new ReefFactory( s );
+            this.factory = new ReefConnectionFactory( s );
         }
         catch ( Exception ex )
         {
@@ -85,7 +84,7 @@ public class ReefConnectionTestBase
         if ( autoLogon )
         {
             UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            client = connection.login( userSettings.getUserName(), userSettings.getUserPassword() ).await();
+            client = connection.login( userSettings );
         }
         else
         {

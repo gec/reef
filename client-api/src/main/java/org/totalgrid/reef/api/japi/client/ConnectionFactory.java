@@ -23,7 +23,7 @@ import org.totalgrid.reef.api.japi.ReefServiceException;
 /**
  * Interface that defines how a connection is created
  */
-interface ConnectionFactory
+public interface ConnectionFactory
 {
 
     /**
@@ -32,4 +32,6 @@ interface ConnectionFactory
      * @throws ReefServiceException if connection cannot be established
      */
     Connection connect() throws ReefServiceException;
+
+    void terminate();
 }

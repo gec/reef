@@ -34,6 +34,7 @@ import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncServi
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
+    with BrokerConnectionListener
     with Logging
     with DefaultServiceRegistry {
 
@@ -43,6 +44,15 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   private val correlator = new ResponseCorrelator
   private val subscription = conn.listen().start(correlator)
   conn.bindQueue(subscription.getQueue, "amq.direct", subscription.getQueue)
+  conn.addListener(this)
+
+  // TODO - fail all all request once disconnected
+  def onDisconnect(expected: Boolean): Unit = {
+    conn.removeListener(this)
+    this.notifyListenersOfClose(expected)
+  }
+
+  def disconnect() = conn.disconnect()
 
   def login(authToken: String): Client = createClient(authToken, Strand(executor))
 
@@ -75,7 +85,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, info.descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
-        val destination = headers.getDestination.getOrElse(AnyNodeDestination)
+        val destination = headers.getDestination.getOrElse(new AnyNodeDestination)
         conn.publish(info.descriptor.id, destination.getKey, request.toByteArray, replyTo)
       } catch {
         case ex: Exception =>

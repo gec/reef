@@ -38,7 +38,8 @@ abstract class ApiBase(client: Client) extends HasAnnotatedOperations with Clien
 
   override val ops = new DefaultAnnotatedOperations(client)
 
-  override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = ops.addSubscriptionCreationListener(listener)
+  override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.addSubscriptionCreationListener(listener)
+  override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)
 
   override def addRequestSpy(listener: RequestSpy): Unit = client.addRequestSpy(listener)
   override def removeRequestSpy(listener: RequestSpy): Unit = client.removeRequestSpy(listener)

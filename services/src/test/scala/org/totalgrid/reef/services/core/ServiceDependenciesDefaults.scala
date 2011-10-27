@@ -30,6 +30,7 @@ import org.totalgrid.reef.api.sapi.types.ServiceInfo
 import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 
+// TODO: MockConnection should be Mockito mock
 class MockConnection extends Connection {
   def declareEventExchange(klass: Class[_]) = null
 
@@ -46,6 +47,8 @@ class MockConnection extends Connection {
   def addRpcProvider(info: RpcProviderInfo) = null
 
   def addServiceInfo[A](info: ServiceInfo[A, _]) = null
+
+  def disconnect() {}
 }
 class ServiceDependenciesDefaults(connection: Connection = new MockConnection,
   pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,

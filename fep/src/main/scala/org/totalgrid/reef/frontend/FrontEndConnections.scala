@@ -95,7 +95,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
 
   private def newMeasBatchPublisher(routingKey: String) = new Protocol.BatchPublisher {
     def publish(value: MeasurementBatch) = {
-      client.publishMeasurements(value, AddressableDestination(routingKey)).extract match {
+      client.publishMeasurements(value, new AddressableDestination(routingKey)).extract match {
         case Success(x) => logger.debug("Published a measurement batch of size: " + value.getMeasCount)
         case Failure(ex) => logger.error("Couldn't publish measurements: " + ex.getMessage)
       }

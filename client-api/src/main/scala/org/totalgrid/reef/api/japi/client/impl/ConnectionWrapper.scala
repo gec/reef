@@ -18,17 +18,22 @@
  */
 package org.totalgrid.reef.api.japi.client.impl
 
-import org.totalgrid.reef.api.japi.client.Response
-import org.totalgrid.reef.api.sapi.client.{ Response => ScalaResponse }
+import org.totalgrid.reef.api.japi.client._
+import org.totalgrid.reef.api.japi.settings.UserSettings
+import org.totalgrid.reef.api.japi.ReefServiceException
 
-import scala.collection.JavaConversions._
+import org.totalgrid.reef.api.sapi.client.rest.{ Connection => SConnection }
 
-class ResponseWrapper[A](rsp: ScalaResponse[A]) extends Response[A] {
+class ConnectionWrapper(conn: SConnection) extends Connection {
+  def addConnectionListener(listener: ConnectionCloseListener) = conn.addConnectionListener(listener)
 
-  final override def isSuccess = rsp.success
+  def removeConnectionListener(listener: ConnectionCloseListener) = conn.removeConnectionListener(listener)
 
-  final override def expectOne(): A = rsp.expectOne()
+  @throws(classOf[ReefServiceException])
+  def login(userSettings: UserSettings): Client =
+    new ClientWrapper(conn.login(userSettings.getUserName, userSettings.getUserPassword).await)
 
-  final override def expectMany(): java.util.List[A] = rsp.expectMany()
+  def login(authToken: String): Client = new ClientWrapper(conn.login(authToken))
 
+  def disconnect(): Unit = conn.disconnect()
 }
