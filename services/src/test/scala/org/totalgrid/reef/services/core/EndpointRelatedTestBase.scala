@@ -97,7 +97,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
 
       val measBatchService = new AddressableMeasurementBatchService(measProc)
       val exchange = measBatchService.descriptor.id
-      val destination = AddressableDestination(measProcAssign.getRouting.getServiceRoutingKey)
+      val destination = new AddressableDestination(measProcAssign.getRouting.getServiceRoutingKey)
 
       amqp.bindService(measBatchService, client, destination, false)
 
@@ -272,7 +272,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransactio
     }
 
     def bindCommandHandler(service: SyncServiceBase[UserCommandRequest], key: String) {
-      amqp.bindService(service, client, AddressableDestination(key), false)
+      amqp.bindService(service, client, new AddressableDestination(key), false)
     }
   }
 }

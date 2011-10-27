@@ -24,8 +24,8 @@ import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, Client }
 import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Subscription }
 import org.totalgrid.reef.api.japi.Envelope.{ Event, Verb }
 import org.totalgrid.reef.api.sapi.service.AsyncService
-import org.totalgrid.reef.api.japi.client.Routable
 import org.totalgrid.reef.api.sapi.types.ServiceInfo
+import org.totalgrid.reef.api.japi.client.{ Routable }
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
 
@@ -57,4 +57,6 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
   final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this)
 
   final override def addServiceInfo[A](info: ServiceInfo[A, _]) = conn.addServiceInfo(info)
+
+  final override def disconnect() = conn.disconnect()
 }

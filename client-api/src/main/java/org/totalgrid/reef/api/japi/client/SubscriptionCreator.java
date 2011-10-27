@@ -31,4 +31,6 @@ public interface SubscriptionCreator
      * @param listener Callback that receives updates when a subcription is added
      */
     void addSubscriptionCreationListener( SubscriptionCreationListener listener );
+
+    void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 }

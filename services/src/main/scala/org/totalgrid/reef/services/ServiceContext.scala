@@ -40,7 +40,7 @@ class ServiceContext(connection: Connection, metrics: MetricsServiceWrapper, exe
     val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
 
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    connection.bindService(instrumentedEndpoint, executor, AnyNodeDestination, true)
+    connection.bindService(instrumentedEndpoint, executor, new AnyNodeDestination, true)
     instrumentedEndpoint
   }
 }

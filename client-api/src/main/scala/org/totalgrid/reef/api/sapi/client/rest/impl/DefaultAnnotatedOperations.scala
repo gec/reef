@@ -20,17 +20,12 @@ package org.totalgrid.reef.api.sapi.client.rest.impl
 
 import net.agileautomata.executor4s.{ Failure, Success, Result, Future }
 
-import org.totalgrid.reef.api.japi.client.{ SubscriptionCreationListener, SubscriptionCreator }
 import org.totalgrid.reef.api.japi.{ TypeDescriptor, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.api.sapi.client.{ Subscription, Promise }
 import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, RestOperations, AnnotatedOperations, Client }
 import org.totalgrid.reef.api.japi.client.impl.SubscriptionWrapper
 
-final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperations with SubscriptionCreator {
-
-  private var listeners: List[SubscriptionCreationListener] = Nil
-
-  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = listeners ::= listener
+final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperations {
 
   private def renderErrorMsg(errorMsg: => String): String = {
     try {
@@ -67,7 +62,7 @@ final class DefaultAnnotatedOperations(client: Client) extends AnnotatedOperatio
         val future = opWithFuture(err)(fun(sub, _))
         def onResult(r: Result[A]) = {
           if (r.isFailure) sub.cancel()
-          else listeners.foreach(_.onSubscriptionCreated(new SubscriptionWrapper(sub)))
+          else client.onSubscriptionCreated(new SubscriptionWrapper(sub))
         }
         future.listen(onResult)
         future.map(_.map(a => SubscriptionResult(a, sub)))

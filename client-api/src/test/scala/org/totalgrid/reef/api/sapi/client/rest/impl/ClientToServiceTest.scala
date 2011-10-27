@@ -46,7 +46,7 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     try {
       val conn = new DefaultConnection(b, executor, 5000)
       conn.addServiceInfo(ExampleServiceList.info)
-      binding = Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, AnyNodeDestination, true))
+      binding = Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, new AnyNodeDestination, true))
       fun(conn.login("foo"))
     } finally {
       binding.foreach(_.cancel())

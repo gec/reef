@@ -52,6 +52,7 @@ final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServi
   override def service = srv
 
   override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.addSubscriptionCreationListener(listener)
+  override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.removeSubscriptionCreationListener(listener)
 }
 
 object AllScadaServiceJavaShim {

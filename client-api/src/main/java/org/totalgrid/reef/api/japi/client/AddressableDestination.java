@@ -18,19 +18,19 @@
  */
 package org.totalgrid.reef.api.japi.client;
 
-import org.totalgrid.reef.api.japi.ReefServiceException;
 
-/**
- * Function that does some work with the supplied <code>Session</code>.  The <code>Session</code> should be used only for the duration
- * of the <code>apply()</code> method call.
- */
-public interface SessionFunction<A>
+public class AddressableDestination implements Routable
 {
+    private String address;
 
-    /**
-     * @param session a session to use for the function
-     * @return the result of the function
-     * @throws ReefServiceException
-     */
-    A apply( Session session ) throws ReefServiceException;
+    public AddressableDestination( String address )
+    {
+        this.address = address;
+    }
+
+    public String getKey()
+    {
+        return address;
+    }
+
 }

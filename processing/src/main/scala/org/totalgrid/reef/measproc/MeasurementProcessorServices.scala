@@ -70,7 +70,7 @@ class MeasurementProcessorServicesImpl(client: Client)
   }
 
   override def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection) = {
-    val destination = AddressableDestination(conn.getRouting.getServiceRoutingKey)
+    val destination = new AddressableDestination(conn.getRouting.getServiceRoutingKey)
     val service = new AddressableMeasurementBatchService(handler)
 
     val closeable = client.bindService(service, client, destination, false)

@@ -29,18 +29,18 @@ class BasicRequestHeadersTest extends FunSuite with ShouldMatchers {
   test("Basic Merge") {
     val h1 = BasicRequestHeaders.empty
 
-    val h2 = BasicRequestHeaders.empty.setDestination(AddressableDestination("test"))
+    val h2 = BasicRequestHeaders.empty.setDestination(new AddressableDestination("test"))
 
-    h1.merge(h2).getDestination should equal(Some(AddressableDestination("test")))
-    h2.merge(h1).getDestination should equal(Some(AddressableDestination("test")))
+    h1.merge(h2).getDestination.map(_.getKey) should equal(Some("test"))
+    h2.merge(h1).getDestination.map(_.getKey) should equal(Some("test"))
   }
 
   test("Merge override") {
-    val h1 = BasicRequestHeaders.empty.setDestination(AddressableDestination("test1"))
+    val h1 = BasicRequestHeaders.empty.setDestination(new AddressableDestination("test1"))
 
-    val h2 = BasicRequestHeaders.empty.setDestination(AddressableDestination("test2"))
+    val h2 = BasicRequestHeaders.empty.setDestination(new AddressableDestination("test2"))
 
-    h1.merge(h2).getDestination should equal(Some(AddressableDestination("test2")))
-    h2.merge(h1).getDestination should equal(Some(AddressableDestination("test1")))
+    h1.merge(h2).getDestination.map(_.getKey) should equal(Some("test2"))
+    h2.merge(h1).getDestination.map(_.getKey) should equal(Some("test1"))
   }
 }

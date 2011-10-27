@@ -19,6 +19,9 @@
 package org.totalgrid.reef.api.japi.client;
 
 
+import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.api.japi.settings.UserSettings;
+
 /**
  * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
  * of the connection and provides a factory to create service clients.
@@ -40,11 +43,20 @@ public interface Connection
      */
     void removeConnectionListener( ConnectionCloseListener listener );
 
+    Client login( UserSettings userSettings ) throws ReefServiceException;
+
+    /**
+     *
+     * @param authToken pre-acquired authentication token
+     * @return
+     */
+    Client login( String authToken );
+
 
     /**
      * Terminates the connection. ConnectionCloseListeners will receive "expected" = true
      */
-    boolean disconnect();
+    void disconnect();
 
 
 }

@@ -18,32 +18,26 @@
  */
 package org.totalgrid.reef.api.japi.client;
 
-import org.totalgrid.reef.api.japi.ExpectationException;
+import org.totalgrid.reef.api.japi.ReefServiceException;
 
-/**
- * Interfaces that defines a response to service request
- * @param <A> The return type of the service request
- */
-public interface Response<A>
+public interface Client
 {
 
-    /**
-     * @return True if the service request was successful, false otherwise
-     */
-    boolean isSuccess();
+    RequestHeaders getHeaders();
+
+    void setHeaders( RequestHeaders headers );
+
+
+    void addSubscriptionCreationListener( SubscriptionCreationListener listener );
+
+    void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 
     /**
-     * Interprets the result as a successful request with 0 or more return values
-     * @return A list of return values
-     * @throws ExpectationException if the response is not a success
+     *
+     * @param klass
+     * @param <A>
+     * @return
+     * @throws ReefServiceException
      */
-    java.util.List<A> expectMany() throws ExpectationException;
-
-    /**
-     * Interprets the result as a successful request with exactly 1 return value
-     * @return A single value
-     * @throws ExpectationException if the response or some number of return values other than 1
-     */
-    A expectOne() throws ExpectationException;
-
+    <A> A getRpcInterface( Class<A> klass ) throws ReefServiceException;
 }

@@ -16,12 +16,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.japi.client
+package org.totalgrid.reef.api.sapi.client
 
-case class AddressableDestination(key: String) extends Routable {
-  override def getKey = key
-}
+import org.totalgrid.reef.api.japi.client.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionCreator }
 
-case object AnyNodeDestination extends Routable {
-  override def getKey = "request"
+trait SubscriptionCreatorManager extends SubscriptionCreator {
+
+  private var listeners = Set.empty[SubscriptionCreationListener]
+
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = this.synchronized(listeners += listener)
+  def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = this.synchronized(listeners -= listener)
+
+  // TODO: this should be protected for use by defaultAnnotatedOperations only
+  def onSubscriptionCreated(binding: SubscriptionBinding) = listeners.foreach { _.onSubscriptionCreated(binding) }
 }

@@ -47,7 +47,7 @@ class FrontEndProviderServicesImpl(client: Client)
     extends ApiBase(client) with FrontEndProviderServices with AllScadaServiceImpl {
 
   def bindCommandHandler(connProto: CommEndpointConnection, commandHandler: CommandHandler): Cancelable = {
-    val destination = AddressableDestination(connProto.getRouting.getServiceRoutingKey)
+    val destination = new AddressableDestination(connProto.getRouting.getServiceRoutingKey)
     val service = new SingleEndpointCommandService(commandHandler)
 
     val closeable = client.bindService(service, client, destination, false)

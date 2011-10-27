@@ -18,12 +18,18 @@
  */
 package org.totalgrid.reef.api.sapi.client.rest
 
+import org.totalgrid.reef.api.sapi.client.ConnectionListening
+
 trait Connection
-  extends Login
-  with Bindable
-  with SubscriptionHandler
-  with ExchangeManagement
-  with ServiceRegistry
+    extends Login
+    with Bindable
+    with SubscriptionHandler
+    with ExchangeManagement
+    with ServiceRegistry
+    with ConnectionListening {
+
+  def disconnect(): Unit
+}
 
 trait ExchangeManagement {
   def declareEventExchange(klass: Class[_])

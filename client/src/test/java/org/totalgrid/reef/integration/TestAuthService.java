@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.api.japi.Envelope;
 
-import org.totalgrid.reef.api.sapi.client.rest.Client;
+import org.totalgrid.reef.api.japi.client.Client;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.api.japi.ReefServiceException;
