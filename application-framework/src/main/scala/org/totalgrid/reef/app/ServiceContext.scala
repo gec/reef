@@ -20,9 +20,10 @@ package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Cancelable
 
-import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
-import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.clientapi.proto.Envelope
+
+import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {
   def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U]): Cancelable = {

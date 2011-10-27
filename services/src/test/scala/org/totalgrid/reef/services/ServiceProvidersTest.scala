@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.sapi.auth.NullAuthService
+import org.totalgrid.reef.clientapi.sapi.auth.NullAuthService
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 
@@ -26,13 +26,14 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.framework.ServerSideProcess
-import org.totalgrid.reef.api.japi.settings.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.clientapi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
-import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.sapi.service.{ ServiceResponseCallback, AsyncService }
-import org.totalgrid.reef.api.japi.{ TypeDescriptor, Envelope }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.clientapi.types.TypeDescriptor
 
 /**
  * A concrete example service that always responds immediately with Success and the correct Id

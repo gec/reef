@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Model.{ Point, PointType }
 import org.totalgrid.reef.proto.Processing.{ MeasOverride, TriggerSet }
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.proto.Measurements.Quality.Validity
 
 import org.totalgrid.reef.services.core.SyncServiceShims._

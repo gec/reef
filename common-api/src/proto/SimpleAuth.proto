@@ -1,6 +1,6 @@
-package org.totalgrid.reef.api.japi.SimpleAuth;
+package org.totalgrid.reef.clientapi.proto.SimpleAuth;
 
-option java_package = "org.totalgrid.reef.api.japi";
+option java_package = "org.totalgrid.reef.clientapi.proto";
 option java_outer_classname = "SimpleAuth";
 
 // This is a very simple authentication mechanism to break dependedcy on ReefUUID, Agent, etc.

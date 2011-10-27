@@ -75,7 +75,7 @@
                 <artifactId>maven-protoc-plugin</artifactId>
                 <version>0.1.9-GEC</version>
                 <configuration>
-                    <protoSourceRoot>..\schema\proto</protoSourceRoot>
+                    <protoSourceRoot>src/proto</protoSourceRoot>
 					<outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
                     <!--<checkStaleness>true</checkStaleness>-->
                 </configuration>

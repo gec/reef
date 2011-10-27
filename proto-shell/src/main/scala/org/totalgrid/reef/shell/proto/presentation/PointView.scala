@@ -19,7 +19,7 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.Model.{ Entity, Point }
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Table
 

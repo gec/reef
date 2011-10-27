@@ -24,13 +24,14 @@ import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
 
-import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
-import org.totalgrid.reef.api.sapi.client.Promise
-import org.totalgrid.reef.api.sapi.client.rest.{ SubscriptionResult, Client, Connection }
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.clientapi.sapi.client.Promise
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionResult, Client, Connection }
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.clientapi.proto.Envelope
+
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.api.japi.client.AddressableDestination
+import org.totalgrid.reef.clientapi.AddressableDestination
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]

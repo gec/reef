@@ -20,13 +20,13 @@ package org.totalgrid.reef.client.sapi.rpc.impl.util
 
 import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.api.japi.settings.util.PropertyReader
+import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.client.ReefFactory
-import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.japi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)

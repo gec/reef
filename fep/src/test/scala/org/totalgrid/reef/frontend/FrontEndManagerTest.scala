@@ -28,12 +28,12 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import FrontEndTestHelpers._
-import org.totalgrid.reef.api.sapi.client.Promise
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
-import org.totalgrid.reef.api.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.clientapi.sapi.client.Promise
+import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.MockExecutor
 

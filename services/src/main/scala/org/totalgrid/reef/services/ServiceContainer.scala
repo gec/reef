@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.api.sapi.service.AsyncService
+import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 import org.totalgrid.reef.services.framework.ServerSideProcess
 
 /**

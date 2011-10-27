@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.rpc;
 
-import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.Point;
 import org.totalgrid.reef.proto.Model.ReefUUID;

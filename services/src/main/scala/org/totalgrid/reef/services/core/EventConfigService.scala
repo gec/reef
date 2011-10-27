@@ -25,15 +25,16 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.api.japi.BadRequestException
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 object EventConfigService {
   def seed() {

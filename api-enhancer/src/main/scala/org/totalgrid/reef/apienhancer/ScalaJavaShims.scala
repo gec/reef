@@ -46,11 +46,11 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
 
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName()))
     stream.println("import scala.collection.JavaConversions._")
-    stream.println("import org.totalgrid.reef.api.sapi.client.rpc.framework.Converters._")
+    stream.println("import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.Converters._")
     stream.println("import org.totalgrid.reef.client.rpc." + japiPackage + "{" + c.name + targetEx + "=> JInterface }")
     stream.println("import org.totalgrid.reef.client.sapi.rpc.AllScadaService")
 
-    if (isFuture) stream.println("import org.totalgrid.reef.api.japi.client.Promise")
+    if (isFuture) stream.println("import org.totalgrid.reef.clientapi.Promise")
 
     stream.println("trait " + c.name + exName + " extends JInterface{")
 

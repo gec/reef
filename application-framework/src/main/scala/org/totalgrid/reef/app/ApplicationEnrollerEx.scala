@@ -22,10 +22,10 @@ import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.api.japi.settings.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.clientapi.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.ReefServices
-import org.totalgrid.reef.api.sapi.client.rest.Client
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import net.agileautomata.executor4s.Executor
 
 trait ConnectionConsumer {

@@ -21,12 +21,13 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import com.google.protobuf.ByteString
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ ConfigFileRequestBuilders, EntityRequestBuilders }
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Model.{ ConfigFile, ReefUUID }
 
 import org.totalgrid.reef.client.sapi.rpc.ConfigFileService
-import org.totalgrid.reef.api.japi.ExpectationException
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.exceptions.ExpectationException
+
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 /**
  * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever

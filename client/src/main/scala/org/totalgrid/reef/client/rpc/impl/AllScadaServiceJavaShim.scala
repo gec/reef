@@ -18,11 +18,12 @@
  */
 package org.totalgrid.reef.client.rpc.impl
 
-import org.totalgrid.reef.api.japi.client.SubscriptionCreationListener
+import org.totalgrid.reef.clientapi.SubscriptionCreationListener
+
 import org.totalgrid.reef.client.rpc._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
-import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
 
 trait AllScadaServiceJavaShim
     extends AllScadaService

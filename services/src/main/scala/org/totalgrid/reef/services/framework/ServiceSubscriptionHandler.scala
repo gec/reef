@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.api.japi.Envelope.Event
+import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.clientapi.proto.Envelope.Event
 
 class SilentServiceSubscriptionHandler extends SubscriptionHandler {
 

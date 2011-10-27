@@ -23,7 +23,7 @@ import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId }
 
 /**

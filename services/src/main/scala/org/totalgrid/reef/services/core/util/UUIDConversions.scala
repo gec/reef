@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core.util
 
 import java.util.UUID
 import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.client.sapi.OptionalProtos.OptModelReefUUID
+import org.totalgrid.reef.proto.OptionalProtos.OptModelReefUUID
 
 object UUIDConversions {
 

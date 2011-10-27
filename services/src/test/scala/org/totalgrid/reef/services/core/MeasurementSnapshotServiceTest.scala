@@ -27,7 +27,7 @@ import org.totalgrid.reef.services.core.SyncServiceShims._
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {

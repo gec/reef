@@ -21,11 +21,11 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.MeasOverride
 import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementOverrideRequestBuilders
 
 import org.totalgrid.reef.client.sapi.rpc.MeasurementOverrideService
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait MeasurementOverrideServiceImpl extends HasAnnotatedOperations with MeasurementOverrideService {
 

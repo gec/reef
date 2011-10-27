@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.PointService
 import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 

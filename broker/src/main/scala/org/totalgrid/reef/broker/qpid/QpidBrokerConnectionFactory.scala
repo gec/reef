@@ -20,7 +20,7 @@ package org.totalgrid.reef.broker.qpid
 
 import org.totalgrid.reef.broker._
 import org.apache.qpid.transport.Connection
-import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.clientapi.settings.AmqpSettings
 
 object QpidBrokerConnectionFactory {
 

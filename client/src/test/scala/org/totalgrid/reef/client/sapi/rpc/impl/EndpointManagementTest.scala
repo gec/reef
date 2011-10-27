@@ -28,7 +28,8 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import CommEndpointConnection.State._
-import org.totalgrid.reef.api.japi.client.SubscriptionResult
+import org.totalgrid.reef.clientapi.SubscriptionResult
+
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
 
 @RunWith(classOf[JUnitRunner])

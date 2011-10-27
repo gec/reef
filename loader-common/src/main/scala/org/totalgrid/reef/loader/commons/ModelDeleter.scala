@@ -23,7 +23,7 @@ import java.io.PrintStream
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
-import org.totalgrid.reef.api.sapi.client.RequestSpy
+import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
 import org.totalgrid.reef.proto.Model.Entity
 
 object ModelDeleter {

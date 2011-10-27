@@ -21,14 +21,14 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ AlarmListRequestBuilders, AlarmRequestBuilders }
 
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Model.Entity
 
 import org.totalgrid.reef.client.sapi.rpc.AlarmService
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {
 

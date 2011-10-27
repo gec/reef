@@ -19,7 +19,7 @@
 package org.totalgrid.reef.persistence.squeryl
 
 import java.util.Dictionary
-import org.totalgrid.reef.api.japi.settings.util.{ PropertyReader, PropertyLoading }
+import org.totalgrid.reef.clientapi.settings.util.{ PropertyReader, PropertyLoading }
 
 object DbInfo {
 

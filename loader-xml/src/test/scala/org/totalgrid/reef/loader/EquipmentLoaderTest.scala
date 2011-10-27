@@ -35,7 +35,7 @@ import sx.communications.CommunicationsModel
 import sx.{ InfoXmlBean, ConfigFileXmlBean }
 import scala.None
 
-import org.totalgrid.reef.api.sapi.client.SuccessResponse
+import org.totalgrid.reef.clientapi.sapi.client.SuccessResponse
 import org.totalgrid.reef.proto.Model
 
 @RunWith(classOf[JUnitRunner])

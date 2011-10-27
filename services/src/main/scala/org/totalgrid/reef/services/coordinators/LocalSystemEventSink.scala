@@ -20,7 +20,8 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.event.SystemEventSink
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+
 import org.squeryl.PrimitiveTypeMode
 import org.totalgrid.reef.services.framework.RequestContextSource
 import org.totalgrid.reef.services.core.EventServiceModel

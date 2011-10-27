@@ -24,18 +24,18 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
 
 import CommandAccess._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.clientapi.proto.Envelope
 
-import org.totalgrid.reef.api.sapi.service.SyncServiceBase
+import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.api.sapi.client.rest.Connection
+import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration

@@ -25,10 +25,10 @@ import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.api.japi.Envelope.Event
+import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.clientapi.proto.Envelope.Event
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.api.japi.Envelope
 import org.totalgrid.reef.event.EventType
 import java.util.concurrent.TimeUnit
 

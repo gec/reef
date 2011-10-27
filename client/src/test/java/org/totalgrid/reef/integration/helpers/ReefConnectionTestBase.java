@@ -21,13 +21,13 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.After;
 import org.junit.Before;
 
-import org.totalgrid.reef.api.japi.client.Client;
-import org.totalgrid.reef.api.japi.client.Connection;
-import org.totalgrid.reef.api.japi.settings.AmqpSettings;
-import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.clientapi.Client;
+import org.totalgrid.reef.clientapi.Connection;
+import org.totalgrid.reef.clientapi.settings.AmqpSettings;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 
-import org.totalgrid.reef.api.japi.settings.UserSettings;
-import org.totalgrid.reef.api.japi.settings.util.PropertyReader;
+import org.totalgrid.reef.clientapi.settings.UserSettings;
+import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
 import org.totalgrid.reef.client.ReefConnectionFactory;
 import org.totalgrid.reef.client.rpc.AllScadaService;
 

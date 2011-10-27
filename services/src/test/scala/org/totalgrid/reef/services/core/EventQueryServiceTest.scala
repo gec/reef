@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.api.japi.Envelope
+import org.totalgrid.reef.clientapi.proto.Envelope
 
 import org.squeryl.PrimitiveTypeMode._
 

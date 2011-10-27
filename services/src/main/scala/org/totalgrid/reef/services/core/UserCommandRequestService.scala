@@ -19,17 +19,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.api.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.clientapi.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.japi.client.{ AddressableDestination, Routable }
+import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.clientapi.{ AddressableDestination, Routable }
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)

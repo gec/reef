@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.api.sapi.service._
-import org.totalgrid.reef.api.sapi.client.Response
+import org.totalgrid.reef.clientapi.sapi.service._
+import org.totalgrid.reef.clientapi.sapi.client.Response
 
 /**
  * defines the get verb and provides a default fail operation

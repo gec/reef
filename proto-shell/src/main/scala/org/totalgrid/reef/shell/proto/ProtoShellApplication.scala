@@ -16,7 +16,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.Main
@@ -25,11 +24,11 @@ import org.apache.felix.gogo.runtime.CommandProcessorImpl
 
 import jline.Terminal
 import java.io.{ PrintStream, InputStream }
-import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.ReefFactory
 import org.totalgrid.reef.client.rpc.AllScadaService
-import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.japi.settings.util.PropertyReader
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.util.Cancelable
 
 object ProtoShellApplication {

@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ AuthTokenRequestBuilders => Builder }
 
 import org.totalgrid.reef.client.sapi.rpc.AuthTokenService
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait AuthTokenServiceImpl extends HasAnnotatedOperations with AuthTokenService {
 

@@ -21,7 +21,8 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.AlarmListRequestBuilders
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 

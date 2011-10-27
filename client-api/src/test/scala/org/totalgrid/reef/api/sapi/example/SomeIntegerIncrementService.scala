@@ -16,14 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi.example
+package org.totalgrid.reef.clientapi.sapi.example
 
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.api.sapi.service.SyncServiceBase
+import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
 
-import org.totalgrid.reef.api.sapi.client.{ Response, BasicRequestHeaders }
-import org.totalgrid.reef.api.japi.Envelope
-import org.totalgrid.reef.api.japi.Envelope.Event
+import org.totalgrid.reef.clientapi.sapi.client.{ Response, BasicRequestHeaders }
+
+import org.totalgrid.reef.clientapi.proto.Envelope
 
 class SomeIntegerIncrementService(handler: SubscriptionHandler) extends SyncServiceBase[SomeInteger] {
   val descriptor = SomeIntegerTypeDescriptor
@@ -31,7 +31,7 @@ class SomeIntegerIncrementService(handler: SubscriptionHandler) extends SyncServ
   final override def put(req: SomeInteger, headers: BasicRequestHeaders): Response[ServiceType] = {
     val rsp = req.increment
     headers.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
-    handler.publishEvent(Event.MODIFIED, req.increment, "all")
+    handler.publishEvent(Envelope.Event.MODIFIED, req.increment, "all")
     Response(Envelope.Status.OK, rsp)
   }
 }

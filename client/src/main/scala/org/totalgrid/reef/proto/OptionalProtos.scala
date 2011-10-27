@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi
+package org.totalgrid.reef.proto
 
 import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.proto.Commands._
@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Auth._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 object OptionalProtos {
 

@@ -20,15 +20,16 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 
+import org.totalgrid.reef.clientapi.Subscription;
+import org.totalgrid.reef.clientapi.SubscriptionEvent;
+import org.totalgrid.reef.clientapi.SubscriptionResult;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.clientapi.proto.Envelope;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
 import org.totalgrid.reef.client.rpc.MeasurementService;
 
-import org.totalgrid.reef.api.japi.*;
-import org.totalgrid.reef.api.japi.client.Subscription;
-import org.totalgrid.reef.api.japi.client.SubscriptionEvent;
-import org.totalgrid.reef.api.japi.client.SubscriptionResult;
 import org.totalgrid.reef.client.rpc.PointService;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;

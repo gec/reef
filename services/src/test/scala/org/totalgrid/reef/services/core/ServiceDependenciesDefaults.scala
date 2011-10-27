@@ -22,12 +22,12 @@ import org.totalgrid.reef.services.framework.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.api.sapi.service.AsyncService
-import org.totalgrid.reef.api.japi.client.Routable
-import org.totalgrid.reef.api.japi.Envelope.Event
-import org.totalgrid.reef.api.sapi.client.rest.{ RpcProviderInfo, SubscriptionHandler, Connection }
-import org.totalgrid.reef.api.sapi.types.ServiceInfo
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.clientapi.Routable
+import org.totalgrid.reef.clientapi.proto.Envelope.Event
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, SubscriptionHandler, Connection }
+import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 
 // TODO: MockConnection should be Mockito mock

@@ -23,8 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
-import org.totalgrid.reef.api.japi.Envelope;
-import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.clientapi.proto.Envelope;
 import org.totalgrid.reef.client.rpc.CommandService;
 import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;

@@ -30,9 +30,9 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.Cancelable
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.frontend._
-import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import net.agileautomata.executor4s.Executor
 
 class FepActivator extends BundleActivator with Logging {

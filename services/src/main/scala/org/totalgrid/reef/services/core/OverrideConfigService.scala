@@ -23,17 +23,17 @@ import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 //implicits
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.client.sapi.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 class OverrideConfigService(protected val model: OverrideConfigServiceModel)
     extends SyncModeledServiceBase[MeasOverride, OverrideConfig, OverrideConfigServiceModel]

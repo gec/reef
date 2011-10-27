@@ -19,13 +19,14 @@
 package org.totalgrid.reef.client
 
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.api.japi.ReefServiceException
-import org.totalgrid.reef.api.japi.client.Connection
-import org.totalgrid.reef.api.japi.client.ConnectionFactory
-import org.totalgrid.reef.api.japi.client.impl.ConnectionWrapper
-import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+
+import org.totalgrid.reef.clientapi.{ ConnectionFactory, Connection }
+
+import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.clientapi.javaimpl.ConnectionWrapper
 
 class ReefConnectionFactory(settings: AmqpSettings) extends ConnectionFactory {
   private val factory = new QpidBrokerConnectionFactory(settings)

@@ -22,8 +22,8 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
-import org.totalgrid.reef.api.sapi.client._
+import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.clientapi.sapi.client._
 
 object FrontEndTestHelpers {
 

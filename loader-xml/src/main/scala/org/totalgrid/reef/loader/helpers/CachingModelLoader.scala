@@ -30,7 +30,7 @@ import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.commons.ui.RequestViewer
 
 import java.io.PrintStream
-import org.totalgrid.reef.api.sapi.client.RequestSpy
+import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
 
 class CachingModelLoader(client: Option[LoaderServices]) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]

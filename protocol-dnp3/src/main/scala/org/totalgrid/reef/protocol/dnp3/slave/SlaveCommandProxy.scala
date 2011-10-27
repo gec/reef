@@ -26,7 +26,8 @@ import org.totalgrid.reef.proto.Mapping.{ CommandMap, CommandType => ProtoComman
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
-import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 
 class SlaveCommandProxy(service: CommandService, mapping: IndexMapping)

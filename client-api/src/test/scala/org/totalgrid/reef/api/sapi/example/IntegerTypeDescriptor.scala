@@ -16,11 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.sapi.example
+package org.totalgrid.reef.clientapi.sapi.example
 
 import java.io._
-import org.totalgrid.reef.api.japi.TypeDescriptor
-import org.totalgrid.reef.api.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.types.TypeDescriptor
+
+import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
 
 case class SomeInteger(num: Int) extends Serializable {
   def increment = SomeInteger(num + 1)

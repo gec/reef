@@ -20,15 +20,15 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.proto.Model.ReefUUID
 
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.sapi.rpc.EndpointManagementService
-import org.totalgrid.reef.api.sapi.client.Promise
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.Promise
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait EndpointManagementServiceImpl extends HasAnnotatedOperations with EndpointManagementService {
 

@@ -24,11 +24,11 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
 import org.totalgrid.reef.proto.Utils.Attribute
 
-import org.totalgrid.reef.api.japi.Envelope.Status
+import org.totalgrid.reef.clientapi.proto.Envelope.Status
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._

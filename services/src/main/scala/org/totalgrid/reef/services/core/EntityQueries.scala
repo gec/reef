@@ -25,8 +25,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import SquerylModel._
 import java.util.UUID
@@ -35,7 +35,7 @@ import org.totalgrid.reef.services.NullRequestContext
 import com.weiglewilczek.slf4s.Logging
 
 // implict asParam
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 import scala.collection.JavaConversions._
 
 trait EntityTreeQueries { self: EntityQueries =>

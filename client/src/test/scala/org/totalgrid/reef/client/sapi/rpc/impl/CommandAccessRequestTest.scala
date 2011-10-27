@@ -23,7 +23,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.japi.ReefServiceException
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 @RunWith(classOf[JUnitRunner])

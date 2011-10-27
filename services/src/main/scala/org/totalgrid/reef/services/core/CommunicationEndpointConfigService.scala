@@ -18,16 +18,17 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.sapi.types.Optional._
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
@@ -93,7 +94,7 @@ class CommEndCfgServiceModel(
     }
   }
 
-  import org.totalgrid.reef.client.sapi.OptionalProtos._
+  import org.totalgrid.reef.proto.OptionalProtos._
   def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, entity: Entity) {
 
     val pointEntities = findEntites(request.ownerships.points.getOrElse(Nil), "Point")

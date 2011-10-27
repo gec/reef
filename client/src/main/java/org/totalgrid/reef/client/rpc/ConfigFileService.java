@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.rpc;
 
 import java.util.List;
 
-import org.totalgrid.reef.api.japi.ReefServiceException;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Model.ConfigFile;
 import org.totalgrid.reef.proto.Model.ReefUUID;
 

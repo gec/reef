@@ -37,7 +37,7 @@ class JavaFutures extends ApiTransformer with GeneratorFunctions {
   private def javaFuture(c: ClassDoc, stream: PrintStream, packageName: String) {
     stream.println("package " + packageName + ";")
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName() + ";"))
-    stream.println("import org.totalgrid.reef.api.japi.client.Promise;")
+    stream.println("import org.totalgrid.reef.clientapi.Promise;")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("public interface " + c.name + "Futures" + "{")
 

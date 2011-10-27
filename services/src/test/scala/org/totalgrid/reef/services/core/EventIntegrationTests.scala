@@ -31,9 +31,9 @@ import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => Eve
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.proto.Descriptors
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

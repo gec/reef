@@ -25,13 +25,13 @@ import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
 import org.osgi.framework.BundleContext
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.api.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ApplicationEnrollerEx, AppEnrollerConsumer, UserLogin }
-import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import net.agileautomata.executor4s.Executor
 
 object SlaveFepShim {

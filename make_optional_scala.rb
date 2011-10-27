@@ -160,7 +160,7 @@ def generatePackageInfo(fname, file_text)
   overview += "</pre>\n*/\n"
   overview += "package org.totalgrid.reef.client.rpc.protodoc.#{proto_name.downcase};"
 
-  dir_name = "./client-api/src/main/java/org/totalgrid/reef/api/japi/client/rpc/protodoc/#{proto_name.downcase}"
+  dir_name = "./client/src/main/java/org/totalgrid/reef/client/rpc/protodoc/#{proto_name.downcase}"
   FileUtils.mkdir_p(dir_name)
 
   f = File.open(File.join(File.dirname(__FILE__),"#{dir_name}/package-info.java"), 'wb')
@@ -168,7 +168,7 @@ def generatePackageInfo(fname, file_text)
   f.close
 end
 
-f = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
+f = File.open(File.join(File.dirname(__FILE__),"./client/src/main/scala/org/totalgrid/reef/proto/OptionalProtos.scala"), 'wb')
 
 types = %w[Application Commands FEP Mapping Measurements ProcessStatus Alarms Events Processing Model Auth]
 
@@ -176,23 +176,23 @@ scala_imports = types.collect{|t| "import org.totalgrid.reef.proto.#{t}._"}.join
 java_imports = scala_imports.gsub("_","*")
 
 f.puts <<EOF
-package org.totalgrid.reef.client.sapi
+package org.totalgrid.reef.proto
 
 #{scala_imports}
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 object OptionalProtos {
 
 EOF
 
-deseralizers = File.open(File.join(File.dirname(__FILE__),"./proto/src/main/scala/org/totalgrid/reef/proto/Descriptors.scala"), 'wb')
+deseralizers = File.open(File.join(File.dirname(__FILE__),"./client/src/main/scala/org/totalgrid/reef/proto/Descriptors.scala"), 'wb')
 
 deseralizers.puts <<EOF
-package org.totalgrid.reef.client.sapi
+package org.totalgrid.reef.proto
 
-import org.totalgrid.reef.api.japi.TypeDescriptor
+import org.totalgrid.reef.clientapi.types.TypeDescriptor
 
 #{scala_imports}
 
@@ -202,7 +202,7 @@ EOF
 
 all_names = []
 
-Dir[File.join(File.dirname(__FILE__),"./schema/proto/**/*.proto")].each do |files|
+Dir[File.join(File.dirname(__FILE__),"./client/src/proto/*.proto")].each do |files|
   files.each do |fname|
     all_names << fname
   end

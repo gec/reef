@@ -19,9 +19,9 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.ConnectionFixture
-import org.totalgrid.reef.api.sapi.client.rest.Connection
-import org.totalgrid.reef.api.japi.ReefServiceException
-import org.totalgrid.reef.api.sapi.client.Response
+import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.clientapi.sapi.client.Response
 import org.totalgrid.reef.util.AsyncValue
 
 import org.scalatest.junit.JUnitRunner

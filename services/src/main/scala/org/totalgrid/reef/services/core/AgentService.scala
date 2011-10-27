@@ -21,13 +21,14 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.Auth._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 

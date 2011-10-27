@@ -20,12 +20,12 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.client.sapi.OptionalProtos._
+import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.client.sapi.rpc.AgentService
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   override def getAgent(name: String) = ops.operation("Couldn't get agent with name: " + name) {

@@ -25,8 +25,8 @@ import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.api.japi.client.Subscription
-import org.totalgrid.reef.api.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor, Subscription }
+
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver)

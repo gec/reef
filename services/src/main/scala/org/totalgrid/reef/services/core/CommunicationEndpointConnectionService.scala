@@ -26,17 +26,17 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.proto.Descriptors
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
-import org.totalgrid.reef.api.japi.BadRequestException
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 class CommunicationEndpointConnectionService(protected val model: CommunicationEndpointConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
@@ -49,7 +49,7 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
   override val descriptor = Descriptors.commEndpointConnection
 
   override def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType = {
-    import org.totalgrid.reef.client.sapi.OptionalProtos._
+    import org.totalgrid.reef.proto.OptionalProtos._
 
     val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
     req.state.foreach { builder.setState(_) }

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.rpc;
 
-import org.totalgrid.reef.api.japi.client.SubscriptionCreator;
+import org.totalgrid.reef.clientapi.SubscriptionCreator;
 
 /**
  * "Super" interface that includes all of the individual service interfaces. This could be broken down

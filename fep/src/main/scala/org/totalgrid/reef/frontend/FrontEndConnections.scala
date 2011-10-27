@@ -27,7 +27,8 @@ import org.totalgrid.reef.app.KeyedMap
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.api.protocol.api.Protocol
-import org.totalgrid.reef.api.japi.client.AddressableDestination
+import org.totalgrid.reef.clientapi.AddressableDestination
+
 import net.agileautomata.executor4s.{ Failure, Success }
 
 // Data structure for handling the life cycle of connections

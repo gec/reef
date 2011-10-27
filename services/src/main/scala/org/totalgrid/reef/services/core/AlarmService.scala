@@ -26,15 +26,16 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import org.totalgrid.reef.services.ProtoRoutingKeys
 
 // implicit proto properties
 import SquerylModel._
-import org.totalgrid.reef.api.sapi.types.Optional._
+import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 class AlarmService(protected val model: AlarmServiceModel)
     extends SyncModeledServiceBase[Alarm, AlarmModel, AlarmServiceModel]

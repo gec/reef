@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
 
 import org.totalgrid.reef.client.sapi.rpc.CommunicationChannelService
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait CommunicationChannelServiceImpl extends HasAnnotatedOperations with CommunicationChannelService {
 

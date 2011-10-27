@@ -18,10 +18,7 @@
  */
 package org.totalgrid.reef.integration;
 
-import static org.junit.Assert.*;
 import org.junit.*;
-import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.proto.Model.Entity;
 
 import org.totalgrid.reef.integration.helpers.*;
 

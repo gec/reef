@@ -18,8 +18,10 @@
  */
 package org.totalgrid.reef.client.sapi
 
-import org.totalgrid.reef.api.japi.TypeDescriptor
-import org.totalgrid.reef.api.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.types.TypeDescriptor
+
+import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
+import org.totalgrid.reef.proto.Descriptors
 
 object ReefServicesList {
   def getServicesList = List(

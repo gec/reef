@@ -23,8 +23,8 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.proto.Processing.{ TriggerSet => TriggerProto }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.client.sapi.Descriptors
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._

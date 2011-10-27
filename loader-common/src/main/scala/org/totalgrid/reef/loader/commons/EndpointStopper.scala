@@ -24,7 +24,8 @@ import java.io.PrintStream
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommEndpointConfig }
 
-import org.totalgrid.reef.api.japi.client.{ SubscriptionEventAcceptor, SubscriptionEvent }
+import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
+
 import java.util.concurrent.{ TimeUnit, LinkedBlockingDeque }
 
 object EndpointStopper {

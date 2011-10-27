@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.api.sapi.client.rest.Client
-import org.totalgrid.reef.api.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
 
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.api.sapi.client.Promise
+import org.totalgrid.reef.clientapi.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 

@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.client.rpc;
 
-import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.client.Routable;
-import org.totalgrid.reef.api.japi.client.SubscriptionCreator;
-import org.totalgrid.reef.api.japi.client.SubscriptionResult;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.clientapi.Routable;
+import org.totalgrid.reef.clientapi.SubscriptionCreator;
+import org.totalgrid.reef.clientapi.SubscriptionResult;
 import org.totalgrid.reef.proto.Measurements.Measurement;
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch;
 import org.totalgrid.reef.proto.Model.Point;

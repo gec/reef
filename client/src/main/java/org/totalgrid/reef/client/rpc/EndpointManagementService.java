@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.client.rpc;
 
-import org.totalgrid.reef.api.japi.ReefServiceException;
-import org.totalgrid.reef.api.japi.client.SubscriptionResult;
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.clientapi.SubscriptionResult;
 import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State;

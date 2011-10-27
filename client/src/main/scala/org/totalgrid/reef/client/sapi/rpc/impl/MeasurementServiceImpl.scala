@@ -22,12 +22,14 @@ import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
-import org.totalgrid.reef.client.sapi.Descriptors
-import org.totalgrid.reef.api.japi.client.Routable
-import org.totalgrid.reef.api.japi.ExpectationException
-import org.totalgrid.reef.api.sapi.client.rest.RestOperations
-import org.totalgrid.reef.api.sapi.client.{ Subscription, BasicRequestHeaders }
-import org.totalgrid.reef.api.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.clientapi.Routable
+
+import org.totalgrid.reef.clientapi.exceptions.ExpectationException
+
+import org.totalgrid.reef.clientapi.sapi.client.rest.RestOperations
+import org.totalgrid.reef.clientapi.sapi.client.{ Subscription, BasicRequestHeaders }
+import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s.{ Failure, Success, Future, Result }

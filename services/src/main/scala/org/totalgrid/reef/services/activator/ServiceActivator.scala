@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.activator
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.api.sapi.service.AsyncService
+import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
@@ -33,7 +33,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ConnectionConsumer }
 import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.api.japi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import org.totalgrid.reef.util.{ LifecycleManager, Cancelable }
 
 object ServiceActivator {

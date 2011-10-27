@@ -25,11 +25,11 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.api.sapi.service.AsyncService
-import org.totalgrid.reef.api.sapi.auth.AuthService
+import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.clientapi.sapi.auth.AuthService
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.api.sapi.client.rest.Connection
+import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
 
 /**

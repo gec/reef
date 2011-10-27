@@ -23,12 +23,12 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.rpc.AllScadaService
 import org.apache.felix.service.command.CommandSession
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.api.japi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {

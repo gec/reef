@@ -22,7 +22,7 @@ import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.api.japi.settings.AmqpSettings
+import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import org.totalgrid.reef.util.{ Lifecycle, Cancelable => UCancelable }
 
 /**

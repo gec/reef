@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.api.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.api.sapi.client.Response
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.clientapi.sapi.client.Response
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.api.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.clientapi.sapi.client.impl.SynchronizedPromise
 import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {

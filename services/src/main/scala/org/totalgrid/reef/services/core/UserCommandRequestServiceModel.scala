@@ -22,8 +22,10 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.client.sapi.OptionalProtos._
-import org.totalgrid.reef.api.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
 import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.proto.Commands.CommandRequest.ValType

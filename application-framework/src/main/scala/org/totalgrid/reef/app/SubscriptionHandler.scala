@@ -19,7 +19,7 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
 
 trait SubscriptionHandler[A] {
 
