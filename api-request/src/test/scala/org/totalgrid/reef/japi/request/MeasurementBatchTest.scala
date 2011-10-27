@@ -22,8 +22,9 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Point, Entity, Relationship }
-import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch, MeasurementSnapshot }
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.japi.request.builders.MeasurementRequestBuilders
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest
@@ -70,5 +71,28 @@ class MeasurementBatchTest
 
     val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }.toList
     putAll(reverted)
+  }
+
+  test("Fails with bad name") {
+    val pName = "StaticSubstation.Line02.UnknownPoint"
+
+    val ex = intercept[BadRequestException] {
+      putMeas(MeasurementRequestBuilders.makeIntMeasurement(pName, 22, 1000))
+    }
+    ex.getMessage should include("StaticSubstation.Line02.UnknownPoint")
+  }
+
+  test("Fails with some good, some bad") {
+    val pointNames = List("StaticSubstation.Line02.UnknownPoint", "StaticSubstation.Line02.Current")
+
+    val ex = intercept[BadRequestException] {
+      putAll(pointNames.map { pName => MeasurementRequestBuilders.makeIntMeasurement(pName, 22, 1000) })
+    }
+    ex.getMessage should include("StaticSubstation.Line02.UnknownPoint")
+
+    val ex2 = intercept[BadRequestException] {
+      putAll(pointNames.reverse.map { pName => MeasurementRequestBuilders.makeIntMeasurement(pName, 22, 1000) })
+    }
+    ex2.getMessage should include("StaticSubstation.Line02.UnknownPoint")
   }
 }
