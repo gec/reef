@@ -52,9 +52,10 @@ public class AmqpSettings
     /**
      * ssl overload
      */
-    public AmqpSettings( String host, int port, String user, String password, String virtualHost, String trustStore, String trustStorePassword )
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost, boolean ssl, String trustStore,
+        String trustStorePassword )
     {
-        this( host, port, user, password, virtualHost, true, trustStore, trustStorePassword, null, null );
+        this( host, port, user, password, virtualHost, ssl, trustStore, trustStorePassword, null, null );
     }
 
     /**
@@ -67,7 +68,7 @@ public class AmqpSettings
      * @param trustStore  Path to trustStore file (trust-store.jks)
      * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
      */
-    private AmqpSettings( String host, int port, String user, String password, String virtualHost, Boolean ssl, String trustStore,
+    private AmqpSettings( String host, int port, String user, String password, String virtualHost, boolean ssl, String trustStore,
         String trustStorePassword, String keyStore, String keyStorePassword )
     {
         this.host = host;

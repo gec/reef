@@ -39,5 +39,5 @@ public interface Client
      * @return
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    <A> A getRpcInterface( Class<A> klass ) throws ReefServiceException;
+    <A> A getRpcInterface( Class<A> klass );
 }
