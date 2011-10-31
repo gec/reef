@@ -57,20 +57,19 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     val exe = new MockExecutor
 
     val packTimer = new PackTimer(10, 10, pubFunc, exe)
-    exe.isIdle should equal(true)
+    exe.numQueuedTimers should equal(0)
 
     (0 to 8).foreach { i =>
       packTimer.addEntry(TestObject(i))
       exe.numQueuedTimers should equal(1)
-      exe.isIdle should equal(true)
     }
     packTimer.addEntry(TestObject(9))
-    exe.isIdle should equal(false)
+    exe.numQueuedTimers should equal(1)
 
-    exe.runNextPendingAction()
+    exe.tick(0.milliseconds)
     exe.numQueuedTimers should equal(0)
     pubbed.head should equal((0 to 9).map { TestObject(_) }.toList)
-    exe.isIdle should equal(true)
+    exe.numQueuedTimers should equal(0)
 
   }
 }

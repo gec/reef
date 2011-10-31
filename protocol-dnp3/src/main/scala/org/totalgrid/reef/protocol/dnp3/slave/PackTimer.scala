@@ -44,24 +44,24 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
   }
 
   private def updateTimer {
-    if (batch.size >= maxEntries) executor.execute {
+    if (batch.size >= maxEntries) reschedulePublish(0)
+    else if (queuedEvent.isEmpty) reschedulePublish(maxTimeMS)
+  }
+
+  private def reschedulePublish(delay: Long) {
+    queuedEvent.foreach { _.cancel }
+    queuedEvent = Some(executor.schedule(delay.milliseconds) {
       publish
-    }
-    else if (queuedEvent.isEmpty) {
-      queuedEvent = Some(executor.schedule(maxTimeMS.milliseconds) {
-        publish
-      })
-    }
+    })
   }
 
   private def publish = this.synchronized {
     pubFunc(batch.toList)
     batch.clear
-    queuedEvent.foreach { _.cancel }
-    queuedEvent = None
   }
 
   def cancel() = this.synchronized {
     queuedEvent.foreach { _.cancel }
+    queuedEvent = None
   }
 }
