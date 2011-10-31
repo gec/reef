@@ -29,10 +29,10 @@ final class QpidBrokerSubscription(session: Session, queue: String) extends Brok
 
     override def closed(s: Session) = logger.info("Qpid session closed")
     override def exception(s: Session, e: SessionException) = logger.error("Qpid session exception", e)
-    override def opened(s: Session) = logger.info("Qpid session closed")
+    override def opened(s: Session) = logger.info("Qpid session opened")
     override def resumed(s: Session) = logger.info("Qpid session resumed")
 
-    override def message(s: Session, msg: MessageTransfer): Unit = {
+    override def message(s: Session, msg: MessageTransfer) {
       val replyTo = ScalaOption(msg.getHeader.get(classOf[MessageProperties]).getReplyTo)
       val dest = replyTo.map(r => new BrokerDestination(r.getExchange, r.getRoutingKey))
       consumer.onMessage(BrokerMessage(msg.getBodyBytes, dest))
@@ -42,11 +42,18 @@ final class QpidBrokerSubscription(session: Session, queue: String) extends Brok
 
   def start(consumer: BrokerMessageConsumer): BrokerSubscription = {
     session.setSessionListener(new Listener(consumer))
-    QpidChannelOperations.subscribe(session, queue)
+    if (!session.isClosing) QpidChannelOperations.subscribe(session, queue)
     this
   }
 
   def getQueue = queue
-  def close(): Unit = session.close()
+  def close() {
+    if (!session.isClosing) try{
+      session.close()
+    }catch{
+      case ex : Exception =>
+        logger.error("Error closing session", e)
+    }
+  }
 
 }
