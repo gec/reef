@@ -48,11 +48,11 @@ final class QpidBrokerSubscription(session: Session, queue: String) extends Brok
 
   def getQueue = queue
   def close() {
-    if (!session.isClosing) try{
+    if (!session.isClosing) try {
       session.close()
-    }catch{
-      case ex : Exception =>
-        logger.error("Error closing session", e)
+    } catch {
+      case ex: Exception =>
+        logger.error("Error closing session", ex)
     }
   }
 
