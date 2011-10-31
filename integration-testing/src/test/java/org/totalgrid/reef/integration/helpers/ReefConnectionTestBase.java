@@ -42,6 +42,8 @@ public class ReefConnectionTestBase
 
     protected ReefConnectionFactory factory;
 
+    protected Client client;
+
     protected AllScadaService helpers;
 
     /**
@@ -78,8 +80,6 @@ public class ReefConnectionTestBase
     public void startBridge() throws InterruptedException, ReefServiceException, IOException
     {
         Connection connection = factory.connect();
-
-        Client client;
 
         if ( autoLogon )
         {
