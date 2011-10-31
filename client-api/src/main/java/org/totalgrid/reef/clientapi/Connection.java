@@ -23,8 +23,17 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.clientapi.settings.UserSettings;
 
 /**
- * Thread safe connection handler to connect to the greenbus, handles the starting and stopping
- * of the connection and provides a factory to create service clients.
+ *
+ * A Connection is an established, but not yet authorized, link with a Reef node. It provides 2 ways to login:
+ *
+ * 1) Using a defined username/password
+ * 2) Using a pre-acquired authorization token
+ *
+ * It is recommended that most applications read the UserSettings from a Java properties file and authenticate
+ * using option 1).
+ *
+ * Connection is thread-safe
+ *
  */
 public interface Connection
 {
@@ -43,12 +52,18 @@ public interface Connection
      */
     void removeConnectionListener( ConnectionCloseListener listener );
 
+    /**
+     * Attempt to login to Reef using a UserSettings object.
+     * @param userSettings UserSettings object that defines username/password
+     * @return An authorized client
+     * @throws ReefServiceException If the login fails for any reason
+     */
     Client login( UserSettings userSettings ) throws ReefServiceException;
 
     /**
-     *
+     * Login to reef using a pre-acquired authentication token
      * @param authToken pre-acquired authentication token
-     * @return
+     * @return An authorized client
      */
     Client login( String authToken );
 

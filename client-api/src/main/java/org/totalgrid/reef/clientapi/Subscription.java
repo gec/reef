@@ -20,7 +20,8 @@ package org.totalgrid.reef.clientapi;
 
 
 /**
- * Object used in a service request and defines where messages are to be queued.
+ *  A object that represents an active subscription to a type A. Client code must call
+ *  start() and provide a SubscriptuionEventAcceptor<A> before message delivery will begin.
  */
 public abstract class Subscription<A> implements SubscriptionBinding
 {

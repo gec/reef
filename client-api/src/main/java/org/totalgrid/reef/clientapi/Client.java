@@ -20,24 +20,49 @@ package org.totalgrid.reef.clientapi;
 
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 
+/**
+ * A client represents an authenticated link with a Reef server.
+ *
+ * Clients are NOT thread-safe as they carry specific state such as the default RequestHeaders
+ * and SubscriptionCreationListener instances.
+ */
 public interface Client
 {
 
+    /**
+     * @return current immutable RequestHeaders for the Client
+     */
     RequestHeaders getHeaders();
 
+    /**
+     * Sets the default RequestHeaders for the Client. Typical usage sequence is:
+     *
+     * 1) Read the current headers
+     * 2) Create a new request headers by calling on of the functions on 1)
+     * 3) Set the default headers using the modified version in 2)
+     *
+     * @param headers The new default RequestHeaders for the client to use on all requestss
+     */
     void setHeaders( RequestHeaders headers );
 
-
+   /**
+     * Add a listener that is called every time a subscription is created
+     * @param listener
+     */
     void addSubscriptionCreationListener( SubscriptionCreationListener listener );
 
+    /**
+     * Remove a subscription creation listener
+     * @param listener
+     */
     void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 
-    /**
-     *
-     * @param klass
+   /**
+     * Get an active service interface by class.
+     * @param klass The class of interface to return. Valid interfaces are found in org.totalgrid.reef.client.rpc
      * @param <A>
      * @return
-     * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+     * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException If the interface can not be found
      */
     <A> A getRpcInterface( Class<A> klass ) throws ReefServiceException;
 }

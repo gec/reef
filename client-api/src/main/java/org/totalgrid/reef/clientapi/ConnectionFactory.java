@@ -21,17 +21,24 @@ package org.totalgrid.reef.clientapi;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 
 /**
- * Interface that defines how a connection is created
+ * Interface that defines how a connection is created. A concrete implementation of this
+ * interface is the only implementation class that an application needs.
+ *
+ * Connection factory is thread-safe.
  */
 public interface ConnectionFactory
 {
 
     /**
-     * Attempts to create a new connection
+     * Attempts to establish a new, single-use connection.
      * @return active connection, ready to be used
      * @throws ReefServiceException if connection cannot be established
      */
     Connection connect() throws ReefServiceException;
 
-    void terminate();
+   /**
+     * Permanently shutdown the underlying machinery for the connection factory. No
+     * more calls to connect() are allowed.
+     */
+   void terminate();
 }

@@ -19,6 +19,9 @@
 package org.totalgrid.reef.clientapi;
 
 
+/**
+ * Used to specify a destination for a message.
+ */
 public interface Routable
 {
     String getKey();
