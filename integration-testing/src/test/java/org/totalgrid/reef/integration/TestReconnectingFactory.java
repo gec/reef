@@ -54,9 +54,8 @@ public class TestReconnectingFactory
 
             public void onConnectionOpened( Connection connection )
             {
-                opened.update( Boolean.TRUE );
                 conn.update( connection );
-
+                opened.update( Boolean.TRUE );
             }
         } );
 

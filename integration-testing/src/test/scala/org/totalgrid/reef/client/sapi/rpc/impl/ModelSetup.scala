@@ -28,7 +28,16 @@ import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient, ModelDe
 
 @RunWith(classOf[JUnitRunner])
 class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></div>) {
-  test("Setup system") {
+
+  test("Delete model") {
+    LoaderClient.prepareClient(session)
+
+    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+
+    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+  }
+
+  test("Load sample model") {
 
     LoaderClient.prepareClient(session)
 
@@ -36,7 +45,6 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
 
     val fileName = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 
-    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
     LoadManager.loadFile(loaderServices, fileName, false, false, false)
   }
 }
