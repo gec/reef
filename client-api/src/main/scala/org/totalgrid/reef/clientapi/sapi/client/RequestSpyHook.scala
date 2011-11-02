@@ -18,32 +18,18 @@
  */
 package org.totalgrid.reef.clientapi.sapi.client
 
-import rest.RestOperations
 import org.totalgrid.reef.clientapi.proto.Envelope
 
 import net.agileautomata.executor4s.Future
 
-/**
- * inserts itself into the request chain so we can see every request and its results
- */
-trait RequestSpyHook extends RestOperations with RequestSpyManager {
+trait RequestSpyHook extends RequestSpyManager {
 
-  self: DefaultHeaders =>
+  private var requestSpys = Set.empty[RequestSpy]
 
-  override def addRequestSpy(listener: RequestSpy) = requestSpys ::= listener
-  override def removeRequestSpy(listener: RequestSpy) = requestSpys = requestSpys.filterNot(_ == listener)
+  override def addRequestSpy(listener: RequestSpy) = this.synchronized(requestSpys += listener)
+  override def removeRequestSpy(listener: RequestSpy) = this.synchronized(requestSpys -= listener)
 
-  protected var requestSpys = List.empty[RequestSpy]
-
-  abstract override def request[A](
-    verb: Envelope.Verb,
-    request: A,
-    headers: Option[BasicRequestHeaders]): Future[Response[A]] = {
-
-    val future = super.request(verb, request, headers)
-
+  def notifyRequestSpys[A](verb: Envelope.Verb, request: A, future: Future[Response[A]]) {
     requestSpys.foreach(_.onRequestReply(verb, request, future))
-
-    future
   }
 }

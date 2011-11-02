@@ -31,7 +31,7 @@ import org.totalgrid.reef.clientapi.sapi.client._
 import org.totalgrid.reef.clientapi.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
 import org.totalgrid.reef.clientapi.proto.{ StatusCodes, Envelope }
 
-class BatchServiceRestOperations[A <: RestOperations with ServiceRegistry with Executor](client: A) extends RestOperations {
+class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with ServiceRegistry with Executor](client: A) extends RestOperations {
 
   case class RequestWithFuture[A](request: SelfIdentityingServiceRequest, future: Future[Response[A]] with Settable[Response[A]], descriptor: TypeDescriptor[A])
   private val pendingRequests = Queue.empty[RequestWithFuture[_]]
@@ -50,6 +50,7 @@ class BatchServiceRestOperations[A <: RestOperations with ServiceRegistry with E
     val future = client.future[Response[A]]
 
     pendingRequests.enqueue(RequestWithFuture(cachedRequest, future, info.descriptor))
+    client.notifyRequestSpys(verb, payload, future)
 
     future
   }

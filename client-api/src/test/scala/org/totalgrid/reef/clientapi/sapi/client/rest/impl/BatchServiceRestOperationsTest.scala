@@ -35,12 +35,12 @@ import org.totalgrid.reef.clientapi.proto.Envelope.{ BatchServiceRequest, Verb }
 
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s.{ Failure, TimeInterval, Executor }
-import org.totalgrid.reef.clientapi.sapi.client.{ FailureResponse, Response, SuccessResponse, BasicRequestHeaders }
+import org.totalgrid.reef.clientapi.sapi.client._
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
-  class MockRestOperations(responseFun: BatchServiceRequest => Response[BatchServiceRequest]) extends RestOperations with ServiceRegistry with Executor {
+  class MockRestOperations(responseFun: BatchServiceRequest => Response[BatchServiceRequest]) extends RestOperations with ServiceRegistry with Executor with RequestSpyHook {
     def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
 
       ClassLookup(payload) should equal(Some(classOf[BatchServiceRequest]))

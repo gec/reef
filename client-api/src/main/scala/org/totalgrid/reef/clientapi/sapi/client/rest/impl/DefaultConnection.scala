@@ -66,7 +66,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   private def createClient(authToken: String, strand: Strand) = {
-    val client = new DefaultClient(this, strand) with RequestSpyHook
+    val client = new DefaultClient(this, strand)
     client.modifyHeaders(_.addAuthToken(authToken))
     client
   }
