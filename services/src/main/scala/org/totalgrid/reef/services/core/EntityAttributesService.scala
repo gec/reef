@@ -24,29 +24,26 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.clientapi.sapi.client.Response
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-
-import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.proto.Envelope.Status
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 
 import scala.collection.JavaConversions._
 
-import org.squeryl.PrimitiveTypeMode.inTransaction
 import java.util.UUID
+import org.totalgrid.reef.services.framework._
 
-class EntityAttributesService extends SyncServiceBase[AttrProto] {
+class EntityAttributesService extends ServiceEntryPoint[AttrProto] with AuthorizesEverything {
   import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes
 
-  override def put(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
-    if (!req.hasEntity)
-      throw new BadRequestException("Must specify Entity in request.")
+  override def putAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
 
-    inTransaction {
+      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
+
       val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
@@ -63,19 +60,26 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
         // since changed the entities we need to manually update the lazy var
         entEntry.attributes.value = newAtttributes
 
-        val status = if (existingAttrs.isEmpty) Status.CREATED else Status.UPDATED
+        val status = if (existingAttrs.isEmpty) {
+          authorizeCreate(context, req)
+          Status.CREATED
+        } else {
+          authorizeUpdate(context, req)
+          Status.UPDATED
+        }
         Response(status, protoFromEntity(entEntry) :: Nil)
       } else {
         Response(Status.NOT_MODIFIED, protoFromEntity(entEntry) :: Nil)
       }
-    }
+    })
   }
 
-  override def delete(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
-    if (!req.hasEntity)
-      throw new BadRequestException("Must specify Entity in request.")
+  override def deleteAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeDelete(context, req)
 
-    inTransaction {
+      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
+
       val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
@@ -87,16 +91,17 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
         Status.NOT_MODIFIED
       }
       Response(status, protoFromEntity(entEntry) :: Nil)
-    }
+    })
   }
 
-  override def get(req: AttrProto, env: BasicRequestHeaders): Response[AttrProto] = {
-    if (!req.hasEntity)
-      throw new BadRequestException("Must specify Entity in request.")
+  override def getAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
 
-    inTransaction {
+      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
+
       Response(Status.OK, queryEntities(req.getEntity))
-    }
+    })
   }
 
 }

@@ -25,19 +25,20 @@ import org.totalgrid.reef.clientapi.proto.Envelope.{ ServiceResponse, SelfIdenti
 import org.totalgrid.reef.clientapi.sapi.client._
 import org.totalgrid.reef.clientapi.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.clientapi.exceptions.{ InternalServiceException, BadRequestException }
-import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, ServiceHelpers, AsyncServiceBase }
-import org.totalgrid.reef.services.framework.{ ServiceEntryPoint, RequestContext, RequestContextSource }
+import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
+import org.totalgrid.reef.services.framework._
 
-class BatchServiceRequestService(contextSource: RequestContextSource, services: List[ServiceEntryPoint[_ <: AnyRef]]) extends AsyncServiceBase[BatchServiceRequest] {
+class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
+    extends ServiceEntryPoint[BatchServiceRequest] with AuthorizesCreate {
 
   private val serviceMap: Map[String, ServiceEntryPoint[_ <: AnyRef]] = services.map { x => x.descriptor.id() -> x }.toMap
 
   override val descriptor = BuiltInDescriptors.batchServiceRequest
 
-  override def postAsync(req: BatchServiceRequest, env: BasicRequestHeaders)(callback: Response[BatchServiceRequest] => Unit) {
+  override def postAsync(contextSource: RequestContextSource, req: BatchServiceRequest)(callback: Response[BatchServiceRequest] => Unit) {
     try {
       contextSource.transaction { context =>
-
+        authorizeCreate(context, req)
         val source = new RequestContextSource { def transaction[A](f: (RequestContext) => A) = f(context) }
 
         val requests = req.getRequestsList.toList

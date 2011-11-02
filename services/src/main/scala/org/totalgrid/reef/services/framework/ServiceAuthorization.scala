@@ -85,3 +85,5 @@ trait AuthorizesDelete extends CanAuthorizeDelete with AuthTranslator {
     request
   }
 }
+
+trait AuthorizesEverything extends AuthorizesCreate with AuthorizesDelete with AuthorizesRead with AuthorizesUpdate

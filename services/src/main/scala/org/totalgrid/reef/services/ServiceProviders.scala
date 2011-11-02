@@ -70,12 +70,10 @@ class ServiceProviders(
     new SimpleAuthRequestService(modelFac.authTokens),
     new AuthTokenService(modelFac.authTokens))
 
-  private var restAuthorizedServices: List[AsyncService[_ <: AnyRef]] = List(
-    new EntityService,
+  private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
     new EntityEdgeService,
-    new EntityAttributesService).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
-
-  private val crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
+    new EntityService,
+    new EntityAttributesService,
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),
     new EventQueryService,
@@ -107,14 +105,12 @@ class ServiceProviders(
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms))
 
+  crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
+
+  // TODO: re-enable auth time metrics
   crudAuthorizedServices.foreach(s => s.authService = authzService)
 
-  val rawServices = unauthorizedServices ::: crudAuthorizedServices
-
-  // TODO: add rest services to batch service
-  restAuthorizedServices ::= new BatchServiceRequestService(contextSource, rawServices)
-
-  val services = rawServices.map { s => new ServiceMiddleware(contextSource, s) } ::: restAuthorizedServices
+  val services = (unauthorizedServices ::: crudAuthorizedServices).map { s => new ServiceMiddleware(contextSource, s) }
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus, contextSource),

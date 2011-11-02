@@ -23,16 +23,12 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
-import org.squeryl.PrimitiveTypeMode._
-
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.clientapi.sapi.client.Response
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.proto.Envelope.Status
 import org.totalgrid.reef.models.Entity
+import org.totalgrid.reef.services.framework._
 
 object EntityService {
   def seed() {
@@ -53,50 +49,55 @@ object EntityService {
   val allKnownTypes = builtInTypes ::: wellKnownTypes
 }
 
-class EntityService extends SyncServiceBase[EntityProto] {
+class EntityService extends ServiceEntryPoint[EntityProto] with AuthorizesEverything {
 
   override val descriptor = Descriptors.entity
 
-  override def put(protoRequest: EntityProto, env: BasicRequestHeaders): Response[EntityProto] = {
-
-    inTransaction {
-      if (!protoRequest.hasName || protoRequest.getTypesCount == 0) {
+  override def putAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
+    callback(source.transaction { context =>
+      if (!req.hasName || req.getTypesCount == 0) {
         throw new BadRequestException("Must include name and atleast one entity type to create entity.")
       }
 
-      val types = protoRequest.getTypesList.toList
-      val name = protoRequest.getName
+      authorizeRead(context, req)
+      val types = req.getTypesList.toList
+      val name = req.getName
       val list = EntityQueryManager.nameTypeQuery(Some(name), None)
 
       var (status, ent) = list match {
         case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " types:" + types)
         case List(ent) => (Status.NOT_MODIFIED, list.head)
-        case Nil => (Status.CREATED, EntityQueryManager.addEntity(name, types, protoRequest.uuid))
+        case Nil =>
+          authorizeCreate(context, req)
+          (Status.CREATED, EntityQueryManager.addEntity(name, types, req.uuid))
       }
 
       val additionalTypes = types.diff(ent.types.value)
 
       if (!additionalTypes.isEmpty) {
+        authorizeUpdate(context, req)
         ent = EntityQueryManager.addTypesToEntity(ent, additionalTypes)
         if (status == Status.NOT_MODIFIED) status = Status.UPDATED
       }
       Response(status, EntityQueryManager.entityToProto(ent).build :: Nil)
-    }
+    })
   }
 
-  override def get(req: EntityProto, env: BasicRequestHeaders): Response[EntityProto] = {
-    inTransaction {
+  override def getAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
       val result = EntityQueryManager.fullQuery(req)
       if (result.size == 0) {
         EntityQueryManager.checkAllTypesInSystem(req)
       }
       Response(Status.OK, result)
-    }
+    })
   }
 
-  override def delete(req: EntityProto, env: BasicRequestHeaders): Response[EntityProto] = {
-    // TODO: cannot delete entities with "built in types" repersentations still around
-    inTransaction {
+  override def deleteAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
+      authorizeDelete(context, req)
       val entities = EntityQueryManager.fullQueryAsModels(req);
 
       val (results, status) = entities match {
@@ -106,14 +107,14 @@ class EntityService extends SyncServiceBase[EntityProto] {
           (entities.map { EntityQueryManager.entityToProto(_).build }, Status.DELETED)
       }
       Response(status, results)
-    }
+    })
   }
 }
 
 import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
-class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
+class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with AuthorizesCreate with AuthorizesUpdate with AuthorizesDelete with AuthorizesRead {
 
   override val descriptor = Descriptors.entityEdge
 
@@ -126,26 +127,29 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
     b.build
   }
 
-  override def put(req: EntityEdgeProto, env: BasicRequestHeaders): Response[EntityEdgeProto] = {
+  override def putAsync(source: RequestContextSource, req: EntityEdgeProto)(callback: (Response[EntityEdgeProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
 
-    inTransaction {
       val parentEntity = EntityQueryManager.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent"))
       val childEntity = EntityQueryManager.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child"))
       val existingEdge = EntityQueryManager.findEdge(parentEntity, childEntity, req.getRelationship)
 
       val (edge, status) = existingEdge match {
         case Some(edge) => (edge, Status.NOT_MODIFIED)
-        case None => (EntityQueryManager.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
+        case None =>
+          authorizeCreate(context, req)
+          (EntityQueryManager.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
       }
       val proto = convertToProto(edge)
       Response(status, proto :: Nil)
-    }
+    })
   }
 
-  override def delete(req: EntityEdgeProto, env: BasicRequestHeaders): Response[EntityEdgeProto] = {
-
-    inTransaction {
-
+  override def deleteAsync(source: RequestContextSource, req: EntityEdgeProto)(callback: (Response[EntityEdgeProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
+      authorizeDelete(context, req)
       val existingEdge: Option[EntityEdge] = EntityQueryManager.findEntity(req.getParent).flatMap { parent =>
         EntityQueryManager.findEntity(req.getChild).flatMap { child =>
           EntityQueryManager.findEdge(parent, child, req.getRelationship)
@@ -159,14 +163,16 @@ class EntityEdgeService extends SyncServiceBase[EntityEdgeProto] {
         case None => (req, Status.NOT_MODIFIED)
       }
       Response(status, proto :: Nil)
-    }
+    })
   }
 
-  override def get(req: EntityEdgeProto, env: BasicRequestHeaders): Response[EntityEdgeProto] = {
-    inTransaction {
+  override def getAsync(source: RequestContextSource, req: EntityEdgeProto)(callback: (Response[EntityEdgeProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
       // TODO: add edge searching
+      import org.squeryl.PrimitiveTypeMode._
       val edges = EntityQueryManager.edges.where(t => true === true).toList
       Response(Status.OK, edges.map { convertToProto(_) })
-    }
+    })
   }
 }

@@ -59,7 +59,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
     new CommandService(modelFac.cmds),
     new CommandAccessService(modelFac.accesses))
 
-  val service = new BatchServiceRequestService(contextSource, services)
+  val service = new SyncService(new BatchServiceRequestService(services), contextSource)
 
   test("Put and Get works") {
     val putAndGet = getStatuses(makeBatch(command(), command(GET)), OK)
@@ -78,7 +78,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   }
 
   def getStatuses(batch: BatchServiceRequest, status: Envelope.Status) = {
-    val response = post(batch).expectOne(status)
+    val response = service.post(batch).expectOne(status)
 
     response.getRequestsList.toList.map { _.getResponse.getStatus }
   }
@@ -92,12 +92,6 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
     val ca = CommandAccess.newBuilder.addCommands(name).setAccess(CommandAccess.AccessMode.ALLOWED)
       .setExpireTime(System.currentTimeMillis + 40000)
     makeRequest(verb, ca.build, Descriptors.commandAccess)
-  }
-
-  def post(req: BatchServiceRequest): Response[BatchServiceRequest] = {
-    val response = new SynchronizedPromise[Response[BatchServiceRequest]]()
-    service.postAsync(req, env)(response.set _)
-    response.await
   }
 
   def makeRequest[A](verb: Envelope.Verb, usr: A, descriptor: TypeDescriptor[A]): SelfIdentityingServiceRequest = {
