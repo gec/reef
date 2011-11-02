@@ -61,3 +61,13 @@ message ServiceNotification{
     required Event event   = 1;   // updated, created or deleted
     required bytes payload = 2;   // will only be one payload message per event
 }
+
+message SelfIdentityingServiceRequest{
+    optional string          exchange = 1;
+    optional ServiceRequest  request  = 2;
+    optional ServiceResponse response = 3;
+}
+
+message BatchServiceRequest{
+    repeated SelfIdentityingServiceRequest requests = 1;
+}

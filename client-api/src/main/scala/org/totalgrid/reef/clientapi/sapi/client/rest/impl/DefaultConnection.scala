@@ -40,6 +40,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     with DefaultServiceRegistry {
 
   addServiceInfo(BuiltInDescriptors.authRequestServiceInfo)
+  addServiceInfo(BuiltInDescriptors.batchServiceRequestServiceInfo)
 
   conn.declareExchange("amq.direct")
   private val correlator = new ResponseCorrelator

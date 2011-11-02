@@ -70,7 +70,7 @@ class ServiceProviders(
     new SimpleAuthRequestService(modelFac.authTokens),
     new AuthTokenService(modelFac.authTokens))
 
-  private val restAuthorizedServices: List[AsyncService[_]] = List(
+  private var restAuthorizedServices: List[AsyncService[_ <: AnyRef]] = List(
     new EntityService,
     new EntityEdgeService,
     new EntityAttributesService).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
@@ -110,6 +110,10 @@ class ServiceProviders(
   crudAuthorizedServices.foreach(s => s.authService = authzService)
 
   val rawServices = unauthorizedServices ::: crudAuthorizedServices
+
+  // TODO: add rest services to batch service
+  restAuthorizedServices ::= new BatchServiceRequestService(contextSource, rawServices)
+
   val services = rawServices.map { s => new ServiceMiddleware(contextSource, s) } ::: restAuthorizedServices
 
   val coordinators = List(
