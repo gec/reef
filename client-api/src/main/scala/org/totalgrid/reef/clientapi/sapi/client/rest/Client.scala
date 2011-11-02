@@ -30,3 +30,4 @@ trait Client
   with Connection
   with RpcProvider
   with SubscriptionCreatorManager
+  with ServiceRegistry
