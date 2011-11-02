@@ -32,7 +32,7 @@ import org.totalgrid.reef.loader.commons.ui.RequestViewer
 import java.io.PrintStream
 import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
 
-class CachingModelLoader(client: Option[LoaderServices]) extends ModelLoader with Logging {
+class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
   private val triggers = scala.collection.mutable.Map.empty[String, TriggerSet]
   private val modelContainer = new ModelContainer
@@ -117,11 +117,26 @@ class CachingModelLoader(client: Option[LoaderServices]) extends ModelLoader wit
 
     val addedObjects = size
 
+    if (batchSize > 0) client.startBatchRequests()
+
     val viewer = stream.map { new RequestViewer(_, addedObjects) }
     RequestSpy.withRequestSpy(client, viewer) {
 
       val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
-      uploadOrder.foreach(client.put(_).await)
+      var i = 0
+      uploadOrder.foreach { eq =>
+        i = i + 1
+        if (batchSize > 0) {
+          client.put(eq)
+          if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
+        } else {
+          client.put(eq).await
+        }
+      }
+    }
+    if (batchSize > 0) {
+      client.flushBatchRequests().await.expectOne
+      client.stopBatchRequests()
     }
 
     viewer.foreach { _.finish }
