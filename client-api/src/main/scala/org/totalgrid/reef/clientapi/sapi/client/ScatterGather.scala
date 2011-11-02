@@ -23,14 +23,14 @@ object ScatterGather {
   /**
    * Asynchronous collect function calls back when all of the promises are complete
    */
-  def collect[A](promises: List[Promise[Response[A]]])(callback: List[Response[A]] => Unit) {
+  def collect[A](promises: List[Promise[A]])(callback: List[A] => Unit) {
 
     // the results we're collecting and a counter
-    val map = scala.collection.mutable.Map.empty[Int, Response[A]]
+    val map = scala.collection.mutable.Map.empty[Int, A]
     val size = promises.size
 
     // thread safe function that checks each response
-    def gather(idx: Int)(rsp: Promise[Response[A]]) = map.synchronized {
+    def gather(idx: Int)(rsp: Promise[A]) = map.synchronized {
       map += idx -> rsp.await
       if (map.size == size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
     }
