@@ -34,47 +34,63 @@ import org.totalgrid.reef.clientapi.sapi.client._
 
 import org.totalgrid.reef.clientapi.sapi.example.{ SomeIntegerTypeDescriptor, SomeInteger }
 import org.totalgrid.reef.test.MockitoStubbedOnly
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionResult, Client }
-import org.mockito.{ Matchers, Mockito }
+import org.totalgrid.reef.clientapi.sapi.client.rest.RestOperations
+import org.mockito.Matchers
 
 @RunWith(classOf[JUnitRunner])
 class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
 
   test("Failure promise throws on await") {
-    val client = mock(classOf[Client])
-    val ops = new DefaultAnnotatedOperations(client)
+    val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
+    val subManager = mock(classOf[SubscriptionCreatorManager])
+    val ops = new DefaultAnnotatedOperations(client, subManager)
 
-    when(client.getHeaders) thenReturn BasicRequestHeaders.empty
-    when(client.get(4)) thenReturn (MockFuture.defined[Response[Int]](FailureResponse()))
+    doReturn(MockFuture.defined[Response[Int]](FailureResponse())).when(client).get(4)
 
     val promise = ops.operation("failure")(_.get(4).map(r => r.one))
     intercept[ReefServiceException](promise.await)
     promise.extract.isFailure should equal(true)
   }
 
-  test("Subscription is canceled on failed request") {
-    val client = mock(classOf[Client])
+  test("New Subscriptions are reported to manager") {
+    val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
+    val subManager = mock(classOf[SubscriptionCreatorManager])
+    val ops = new DefaultAnnotatedOperations(client, subManager)
     val subscription = mock(classOf[Subscription[SomeInteger]])
-    val ops = new DefaultAnnotatedOperations(client)
 
-    when(client.getHeaders) thenReturn BasicRequestHeaders.empty
-    when(client.subscribe(SomeIntegerTypeDescriptor)) thenReturn Success(subscription)
-    when(client.get(4)) thenReturn (MockFuture.defined[Response[Int]](FailureResponse()))
+    doReturn(MockFuture.defined[Result[Subscription[SomeInteger]]](Success(subscription))).when(client).subscribe(SomeIntegerTypeDescriptor)
+    doReturn(MockFuture.defined[Response[Int]](SuccessResponse(list = List(8)))).when(client).get(4)
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
       client.get(4).map(r => r.one)
     }
+    verify(subManager).onSubscriptionCreated(Matchers.any(classOf[Subscription[_]]))
+    promise.await.getResult() should equal(8)
+  }
 
+  test("Subscription is canceled on failed request") {
+    val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
+    val subManager = mock(classOf[SubscriptionCreatorManager])
+    val ops = new DefaultAnnotatedOperations(client, subManager)
+    val subscription = mock(classOf[Subscription[SomeInteger]])
+
+    doReturn(MockFuture.defined[Result[Subscription[SomeInteger]]](Success(subscription))).when(client).subscribe(SomeIntegerTypeDescriptor)
+    doReturn(MockFuture.defined[Response[Int]](FailureResponse())).when(client).get(4)
+
+    val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
+      client.get(4).map(r => r.one)
+    }
+    verify(subManager).onSubscriptionCreated(Matchers.any(classOf[Subscription[_]]))
     verify(subscription).cancel()
     promise.extract.isFailure should equal(true)
   }
 
   test("Failed subscription terminates sequence early") {
-    val client = mock(classOf[Client], new MockitoStubbedOnly)
-    val ops = new DefaultAnnotatedOperations(client)
+    val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
+    val subManager = mock(classOf[SubscriptionCreatorManager])
+    val ops = new DefaultAnnotatedOperations(client, subManager)
 
-    Mockito.doReturn(Failure("foobar")).when(client).subscribe(SomeIntegerTypeDescriptor)
-    Mockito.doReturn(MockFuture.undefined).when(client).future
+    doReturn(MockFuture.defined[Result[Subscription[SomeInteger]]](Failure(""))).when(client).subscribe(SomeIntegerTypeDescriptor)
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
       client.get(4).map(r => r.one)

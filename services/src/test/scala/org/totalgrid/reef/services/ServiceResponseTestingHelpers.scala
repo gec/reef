@@ -44,7 +44,7 @@ object ServiceResponseTestingHelpers {
 
   def getSubscriptionQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
-    val sub = amqp.subscribe(descriptor).get
+    val sub = amqp.subscribe(descriptor).await.get
 
     sub.start(func)
 

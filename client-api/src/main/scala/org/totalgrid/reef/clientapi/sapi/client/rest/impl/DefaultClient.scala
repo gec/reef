@@ -36,7 +36,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
     conn.request(verb, payload, usedHeaders, strand)
   }
 
-  final override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
+  final override def subscribe[A](descriptor: TypeDescriptor[A]) =
     conn.subscribe(strand, descriptor)
 
   final override def execute(fun: => Unit): Unit = strand.execute(fun)
@@ -59,6 +59,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
   final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this)
 
   final override def addServiceInfo[A](info: ServiceInfo[A, _]) = conn.addServiceInfo(info)
+  final override def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
 
   final override def disconnect() = conn.disconnect()
 }
