@@ -21,36 +21,12 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
-import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
-import org.totalgrid.reef.clientapi.Routable
-import org.totalgrid.reef.clientapi.proto.Envelope.Event
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, SubscriptionHandler, Connection }
-import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionHandler, Connection }
 import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
+import org.mockito.Mockito
 
-// TODO: MockConnection should be Mockito mock
-class MockConnection extends Connection {
-  def declareEventExchange(klass: Class[_]) = null
-
-  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
-
-  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = null
-
-  def login(authToken: String) = null
-
-  def login(userName: String, password: String) = null
-
-  def publishEvent[A](typ: Event, value: A, key: String) {}
-
-  def addRpcProvider(info: RpcProviderInfo) = null
-
-  def addServiceInfo[A](info: ServiceInfo[A, _]) = null
-
-  def disconnect() {}
-}
-class ServiceDependenciesDefaults(connection: Connection = new MockConnection,
+class ServiceDependenciesDefaults(connection: Connection = Mockito.mock(classOf[Connection]),
   pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
   cm: MeasurementStore = new InMemoryMeasurementStore,
   eventSink: SystemEventSink = new SilentEventSink,
