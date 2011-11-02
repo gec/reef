@@ -18,11 +18,15 @@
  */
 package org.totalgrid.reef.clientapi.sapi.client
 
-trait Subscription[A] {
+import org.totalgrid.reef.clientapi.SubscriptionBinding
+
+// TODO: rationalize scala and java subscriptions
+trait Subscription[A] extends SubscriptionBinding {
   def cancel()
 
   def start(callback: Event[A] => Unit): Subscription[A]
 
+  // TODO: rename this function to getId
   def id(): String
 }
 
