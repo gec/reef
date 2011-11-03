@@ -35,6 +35,8 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
 
   override val descriptor = BuiltInDescriptors.batchServiceRequest
 
+  private class IntentionalRollbackException extends Exception
+
   override def postAsync(contextSource: RequestContextSource, req: BatchServiceRequest)(callback: Response[BatchServiceRequest] => Unit) {
     try {
       contextSource.transaction { context =>
@@ -63,12 +65,12 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
 
           callback(SuccessResponse(status, res :: Nil))
 
-          if (status != Envelope.Status.OK) throw new InternalServiceException("Batch failed")
+          if (status != Envelope.Status.OK) throw new IntentionalRollbackException
         }
       }
     } catch {
-      case ise: InternalServiceException =>
-      // throw rollback
+      case ise: IntentionalRollbackException =>
+      // since we exit the transaction with an exception SQL will revert our transaction
     }
   }
 

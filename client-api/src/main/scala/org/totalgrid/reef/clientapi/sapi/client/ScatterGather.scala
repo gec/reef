@@ -29,15 +29,18 @@ object ScatterGather {
     val map = scala.collection.mutable.Map.empty[Int, A]
     val size = promises.size
 
-    // thread safe function that checks each response
-    def gather(idx: Int)(rsp: Promise[A]) = map.synchronized {
-      map += idx -> rsp.await
-      if (map.size == size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
-    }
+    if (size == 0) callback(Nil)
+    else {
+      // thread safe function that checks each response
+      def gather(idx: Int)(rsp: Promise[A]) = map.synchronized {
+        map += idx -> rsp.await
+        if (map.size == size) callback(promises.indices.map(i => map(i)).toList) //last callback orders and calls the callback
+      }
 
-    // start listening on the promises
-    promises.zipWithIndex.foreach {
-      case (promise, i) => promise.listen(gather(i))
+      // start listening on the promises
+      promises.zipWithIndex.foreach {
+        case (promise, i) => promise.listen(gather(i))
+      }
     }
   }
 
