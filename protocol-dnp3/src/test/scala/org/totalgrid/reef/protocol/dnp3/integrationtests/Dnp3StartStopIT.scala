@@ -59,6 +59,8 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
 
     LoaderClient.prepareClient(client)
 
+    client.setHeaders(loaderServices.getHeaders.setTimeout(50000))
+
     clientOption = Some(client)
   }
 
