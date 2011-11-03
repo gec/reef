@@ -35,6 +35,7 @@ import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import org.totalgrid.reef.util.{ LifecycleManager, Cancelable }
+import org.totalgrid.reef.services.authz.SqlAuthzService
 
 object ServiceActivator {
   def create(sql: DbInfo, serviceOptions: ServiceOptions, userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext) = {

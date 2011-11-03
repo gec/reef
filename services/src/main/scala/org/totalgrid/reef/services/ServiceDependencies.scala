@@ -23,6 +23,7 @@ import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, SubscriptionHandler }
+import org.totalgrid.reef.models.AuthPermission
 
 class ServiceDependencies(
   connection: Connection,
@@ -49,7 +50,14 @@ trait HeadersContext {
   }
 }
 
-class DependenciesRequestContext(dependencies: RequestContextDependencies) extends RequestContext with HeadersContext {
+trait PermissionsContext {
+  protected var permissions = Option.empty[List[AuthPermission]]
+
+  def getPermissions = permissions
+  def setPermissions(p: List[AuthPermission]) = permissions = Some(p)
+}
+
+class DependenciesRequestContext(dependencies: RequestContextDependencies) extends RequestContext with HeadersContext with PermissionsContext {
 
   val operationBuffer = new BasicOperationBuffer
 
@@ -68,7 +76,7 @@ class DependenciesSource(dependencies: RequestContextDependencies) extends Reque
 }
 
 // TODO: get rid of all uses of NullRequestContext
-object NullRequestContext extends RequestContext with HeadersContext {
+class NullRequestContext extends RequestContext with HeadersContext with PermissionsContext {
 
   def client = throw new Exception
   def eventSink = throw new Exception

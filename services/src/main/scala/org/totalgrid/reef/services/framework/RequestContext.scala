@@ -21,6 +21,7 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionHandler, Client }
+import org.totalgrid.reef.models.AuthPermission
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -61,6 +62,16 @@ trait RequestContext {
    */
   def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders
 
+  /**
+   * permissions only need to be loaded once per request, they are stored in the context for future
+   * authorization or filtering work
+   */
+  def getPermissions: Option[List[AuthPermission]]
+
+  /**
+   * store the list of permissions on the context
+   */
+  def setPermissions(permissions: List[AuthPermission])
 }
 
 /**

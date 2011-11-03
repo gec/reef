@@ -25,19 +25,19 @@ import org.totalgrid.reef.clientapi.sapi.client.Response
  * defines the get verb and provides a default fail operation
  */
 trait AsyncContextRestGet extends HasServiceType {
-  def getAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
+  def getAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
 }
 
 trait AsyncContextRestDelete extends HasServiceType {
-  def deleteAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
+  def deleteAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
 }
 
 trait AsyncContextRestPost extends HasServiceType {
-  def postAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPost[ServiceType])
+  def postAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPost[ServiceType])
 }
 
 trait AsyncContextRestPut extends HasServiceType {
-  def putAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
+  def putAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
 }
 
 /**

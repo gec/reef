@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.clientapi.sapi.auth.NullAuthService
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 
@@ -34,6 +33,7 @@ import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import org.totalgrid.reef.services.authz.NullAuthService
 
 /**
  * A concrete example service that always responds immediately with Success and the correct Id

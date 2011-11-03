@@ -25,8 +25,7 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
-import org.totalgrid.reef.clientapi.sapi.auth.AuthService
+import org.totalgrid.reef.services.authz.{ AuthServiceMetricsWrapper, AuthService }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
@@ -56,14 +55,6 @@ class ServiceProviders(
 
   private val wrappedDb = new RTDatabaseMetrics(cm, metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, metricsPublisher.getStore("historian.hist"))
-
-  private val authzMetrics = {
-    val hooks = new RestAuthzMetrics("")
-    if (serviceConfiguration.metrics) {
-      hooks.setHookSource(metricsPublisher.getStore("all"))
-    }
-    hooks
-  }
 
   // TODO: AuthTokenService can probably be authed service now
   private val unauthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = List(
@@ -107,8 +98,8 @@ class ServiceProviders(
 
   crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
 
-  // TODO: re-enable auth time metrics
-  crudAuthorizedServices.foreach(s => s.authService = authzService)
+  val authService = new AuthServiceMetricsWrapper(authzService, metricsPublisher.getStore("auth"))
+  crudAuthorizedServices.foreach(s => s.authService = authService)
 
   val services = (unauthorizedServices ::: crudAuthorizedServices).map { s => new ServiceMiddleware(contextSource, s) }
 
