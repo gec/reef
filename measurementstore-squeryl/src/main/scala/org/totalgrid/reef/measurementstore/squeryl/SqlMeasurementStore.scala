@@ -58,7 +58,7 @@ object SqlMeasurementStore extends MeasurementStore {
     attempt("Error retrieving history")(SqlMeasurementStoreOperations.getInRange(meas_name, begin, end, max, ascending))
 
   private def attempt[A](msg: String)(f: => A): A = {
-    try { transaction(f) }
+    try { inTransaction(f) }
     catch { case ex: Exception => throw new InternalServiceException(msg, ex) }
   }
 
