@@ -117,29 +117,32 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
 
     val addedObjects = size
 
-    if (batchSize > 0) client.startBatchRequests()
-
     val viewer = stream.map { new RequestViewer(_, addedObjects) }
-    RequestSpy.withRequestSpy(client, viewer) {
 
-      val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
-      var i = 0
-      uploadOrder.foreach { eq =>
-        i = i + 1
-        if (batchSize > 0) {
-          client.put(eq)
-          if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
-        } else {
-          client.put(eq).await
+    try{
+      if (batchSize > 0) client.startBatchRequests()
+
+      RequestSpy.withRequestSpy(client, viewer) {
+
+        val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
+        var i = 0
+        uploadOrder.foreach { eq =>
+          i = i + 1
+          if (batchSize > 0) {
+            client.put(eq)
+            if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
+          } else {
+            client.put(eq).await
+          }
         }
       }
+      if (batchSize > 0) {
+        client.flushBatchRequests().await.expectOne
+      }
+    }finally{
+      if (batchSize > 0) client.stopBatchRequests()
+      viewer.foreach { _.finish }
     }
-    if (batchSize > 0) {
-      client.flushBatchRequests().await.expectOne
-      client.stopBatchRequests()
-    }
-
-    viewer.foreach { _.finish }
 
     reset()
   }

@@ -55,13 +55,13 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     factoryOption = Some(new ReefFactory(amqp))
 
     val connection = factoryOption.get.connect()
-    val client = connection.login(user.getUserName, user.getUserPassword).await
+    val c = connection.login(user.getUserName, user.getUserPassword).await
 
-    LoaderClient.prepareClient(client)
+    LoaderClient.prepareClient(c)
 
-    client.setHeaders(loaderServices.getHeaders.setTimeout(50000))
+    c.setHeaders(c.getHeaders.setTimeout(50000))
 
-    clientOption = Some(client)
+    clientOption = Some(c)
   }
 
   override def afterAll() {
