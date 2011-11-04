@@ -31,8 +31,6 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
-
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.clientapi.sapi.types.Optional._

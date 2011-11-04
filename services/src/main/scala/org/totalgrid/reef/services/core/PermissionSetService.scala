@@ -30,7 +30,6 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]

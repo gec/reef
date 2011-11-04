@@ -27,7 +27,6 @@ import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 

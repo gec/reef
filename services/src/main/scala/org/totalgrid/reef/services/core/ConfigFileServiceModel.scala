@@ -30,7 +30,6 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
 import java.util.UUID
 

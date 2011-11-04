@@ -22,7 +22,7 @@ import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
-import org.totalgrid.reef.services.framework.ServerSideProcess
+import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.clientapi.AnyNodeDestination
 

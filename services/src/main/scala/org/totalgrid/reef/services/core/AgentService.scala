@@ -30,7 +30,6 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class AgentService(protected val model: AgentServiceModel)
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]

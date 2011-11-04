@@ -24,7 +24,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.framework.ServerSideProcess
+import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle

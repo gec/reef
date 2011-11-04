@@ -24,7 +24,6 @@ import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
