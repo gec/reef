@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.clientapi.settings.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -30,12 +31,16 @@ public class PropertyReader
 
     /**
      * Read a properties objectg from a file
-     * @param file Absolute or relative file path
+     * @param fileName Absolute or relative file path
      * @return Properties object
      * @throws IOException
      */
-    public static Properties readFromFile( String file ) throws IOException
+    public static Properties readFromFile( String fileName ) throws IOException
     {
+        File file = new File(fileName);
+
+        if(!file.canRead()) throw new IOException("Cannot find or access file: " + file.getAbsolutePath());
+
         FileInputStream fis = new FileInputStream( file );
         Properties props = new Properties();
         try
