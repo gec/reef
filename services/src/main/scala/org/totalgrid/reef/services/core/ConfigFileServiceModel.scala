@@ -105,7 +105,10 @@ class ConfigFileServiceModel
 
   private def updateUsingEntities(context: RequestContext, configFileProto: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
-    val updatedEntities = configFileProto.getEntitiesList.toList.map { e => EntityQueryManager.findEntity(e).get }
+    val updatedEntities = configFileProto.getEntitiesList.toList.map { e =>
+      EntityQueryManager.findEntity(e).getOrElse(
+        throw new BadRequestException("Cant find entity: " + e))
+    }
     val newEntitites = updatedEntities.diff(existingEntities)
 
     // TODO we don't delete edges this way, currently no way to delete configFile edges
