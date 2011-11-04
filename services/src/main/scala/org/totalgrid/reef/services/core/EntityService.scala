@@ -131,8 +131,8 @@ class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with Authoriz
     callback(source.transaction { context =>
       authorizeRead(context, req)
 
-      val parentEntity = EntityQueryManager.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent"))
-      val childEntity = EntityQueryManager.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child"))
+      val parentEntity = EntityQueryManager.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent: " + req.getParent))
+      val childEntity = EntityQueryManager.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child: " + req.getChild))
       val existingEdge = EntityQueryManager.findEdge(parentEntity, childEntity, req.getRelationship)
 
       val (edge, status) = existingEdge match {
