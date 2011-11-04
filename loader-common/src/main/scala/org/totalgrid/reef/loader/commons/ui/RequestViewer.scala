@@ -19,21 +19,18 @@
 package org.totalgrid.reef.loader.commons.ui
 
 import java.io.PrintStream
-import org.totalgrid.reef.clientapi.proto.Envelope
-  .{ Status, Verb }
-import org.totalgrid.reef.clientapi.sapi.client.{ Response, RequestSpy, Promise }
+import org.totalgrid.reef.clientapi.sapi.client.{ Response, RequestSpy }
 import net.agileautomata.executor4s.Future
+import org.totalgrid.reef.clientapi.proto.Envelope.{ BatchServiceRequest, Status, Verb }
 
 class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestSpy {
 
   def onRequestReply[A](verb: Verb, request: A, future: Future[Response[A]]) = {
-    future.listen { response =>
-      update(response.status, request.asInstanceOf[AnyRef])
+    if (request.asInstanceOf[AnyRef].getClass != classOf[BatchServiceRequest]) {
+      future.listen { response =>
+        update(response.status, request.asInstanceOf[AnyRef])
+      }
     }
-  }
-
-  def onRequestReply[A](verb: Verb, request: A, promise: Promise[Response[A]]) = {
-
   }
 
   start
@@ -46,6 +43,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
   var counts = Map.empty[Status, Counter]
   var classCounts = Map.empty[Class[_], Counter]
   var handled: Int = 0
+  val startTime = System.nanoTime()
 
   def start = {
     handled = 0
@@ -92,7 +90,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
 
   def finish = {
     stream.println("|")
-    stream.println("Statistics: ")
+    stream.println("Statistics. Finished in: " + ((System.nanoTime() - startTime) / 1000000) + " milliseconds")
     counts.foreach {
       case (status, count) =>
         stream.println("\t" + status.toString + "(" + getStatusChar(status) + ")" + " : " + count.sum)
