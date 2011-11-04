@@ -25,6 +25,7 @@ import org.scalatest.junit.JUnitRunner
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient, ModelDeleter }
+import org.totalgrid.reef.util.Timing
 
 @RunWith(classOf[JUnitRunner])
 class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></div>) {
@@ -37,7 +38,27 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
     ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
   }
 
-  test("Load sample model") {
+  test("Load mainstreet model") {
+
+    LoaderClient.prepareClient(session)
+
+    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+
+    val fileName = "../assemblies/assembly-common/filtered-resources/samples/mainstreet/config.xml"
+    loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
+
+    LoadManager.loadFile(loaderServices, fileName, true, false, false, 25)
+  }
+
+  test("Delete mainstreet model") {
+    LoaderClient.prepareClient(session)
+
+    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+
+    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+  }
+
+  test("Load integration model") {
 
     LoaderClient.prepareClient(session)
 
@@ -45,6 +66,14 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
 
     val fileName = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 
-    LoadManager.loadFile(loaderServices, fileName, false, false, false)
+    loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
+
+    Timing.time("No batching") {
+      LoadManager.loadFile(loaderServices, fileName, true, false, false, 0)
+    }
+    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+    Timing.time("25 entry batch") {
+      LoadManager.loadFile(loaderServices, fileName, false, false, false, 25)
+    }
   }
 }
