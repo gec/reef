@@ -98,10 +98,14 @@ class ServiceProviders(
 
   crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
 
-  val authService = new AuthServiceMetricsWrapper(authzService, metricsPublisher.getStore("auth"))
+  val authService = new AuthServiceMetricsWrapper(authzService, metricsPublisher.getStore("services.auth"))
   crudAuthorizedServices.foreach(s => s.authService = authService)
 
-  val services = (unauthorizedServices ::: crudAuthorizedServices).map { s => new ServiceMiddleware(contextSource, s) }
+  val allServices = (unauthorizedServices ::: crudAuthorizedServices)
+
+  val metrics = new MetricsServiceWrapper(metricsPublisher, serviceConfiguration)
+  val metricWrapped = allServices.map { s => metrics.instrumentCallback(s) }
+  val services = metricWrapped.map { s => new ServiceMiddleware(contextSource, s) }
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus, contextSource),

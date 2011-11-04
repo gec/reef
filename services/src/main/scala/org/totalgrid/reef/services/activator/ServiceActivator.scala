@@ -55,8 +55,7 @@ object ServiceActivator {
 
         val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)
 
-        val metrics = new MetricsServiceWrapper(metricsHolder, serviceOptions)
-        val serviceContext = new ServiceContext(connection, metrics, exe)
+        val serviceContext = new ServiceContext(connection, exe)
 
         serviceContext.addCoordinator(providers.coordinators)
 

@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
-import org.totalgrid.reef.metrics.{ IMetricsSink, MappedMetricsHolder }
+import org.totalgrid.reef.services.framework.ServiceEntryPoint
+import org.totalgrid.reef.metrics.IMetricsSink
 
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
@@ -31,41 +31,24 @@ class MetricsServiceWrapper(sink: IMetricsSink, serviceConfiguration: ServiceOpt
   /// creates a shared hook to hand to all of the services so they all update the same
   /// statistic #s.
   private def generateHooks(id: String) = {
-    val allServiceHolder = sink.getStore(id)
+    val allServiceHolder = sink.getStore("services." + id)
     ProtoServicableMetrics.generateMetricsHooks(allServiceHolder, serviceConfiguration.metricsSplitByVerb)
   }
 
-  lazy val allHooks = generateHooks("all") /// lazy since we dont allways use the allHooks object
+  lazy val allHooks = generateHooks("services.all") /// lazy since we dont allways use the allHooks object
 
-  /// takes an endpoint and either returns that endpoint unaltered or wraps it metrics
-  /// collecting code
-  private def getInstrumentedRespondFunction(endpoint: AsyncService[_]): AsyncService[_] = {
+  /// binds a proto serving endpoint to the broker and depending on configuration
+  /// will also instrument the call with hooks to track # and length of service requests
+  def instrumentCallback[A <: AnyRef](endpoint: ServiceEntryPoint[A]): ServiceEntryPoint[A] = {
     if (serviceConfiguration.metrics) {
       val hooks = if (serviceConfiguration.metricsSplitByService) {
         generateHooks(endpoint.descriptor.id) // make a new hook object for each service
       } else {
         allHooks // use the same hook object for all of the services
       }
-      new ServiceMetrics(endpoint, hooks, serviceConfiguration.slowQueryThreshold)
+      new ServiceMetrics(endpoint, hooks, serviceConfiguration.slowQueryThreshold, 20)
     } else {
       endpoint
     }
-  }
-
-  /// binds a proto serving endpoint to the broker and depending on configuration
-  /// will also instrument the call with hooks to track # and length of service requests
-  def instrumentCallback(endpoint: AsyncService[_]): AsyncService[_] = {
-
-    getInstrumentedRespondFunction(endpoint)
-
-    /*
-    val authWrappedResponder = if (serviceConfiguration.auth && endpoint.useAuth) {
-      new AuthTokenVerifier(responder, exchange, allAuthMetrics)
-    } else {
-      responder
-    }
-
-    authWrappedResponder
-    */
   }
 }

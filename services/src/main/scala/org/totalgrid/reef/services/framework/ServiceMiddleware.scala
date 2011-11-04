@@ -25,6 +25,9 @@ import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
 import org.totalgrid.reef.clientapi.sapi.client.Response
 
+/**
+ * parses a ServiceRequest and calls an asynchronous service handler
+ */
 class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, service: ServiceEntryPoint[A]) extends AsyncService[A] with Logging with ServiceHelpers[A] {
 
   val descriptor: TypeDescriptor[A] = service.descriptor
@@ -43,13 +46,7 @@ class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, servic
 
     val contextSourceWithHeaders = new RequestContextSourceWithHeaders(contextSource, env)
 
-    request.getVerb match {
-      case Envelope.Verb.GET => service.getAsync(contextSourceWithHeaders, value)(onResponse)
-      case Envelope.Verb.PUT => service.putAsync(contextSourceWithHeaders, value)(onResponse)
-      case Envelope.Verb.DELETE => service.deleteAsync(contextSourceWithHeaders, value)(onResponse)
-      case Envelope.Verb.POST => service.postAsync(contextSourceWithHeaders, value)(onResponse)
-    }
-
+    service.respondAsync(request.getVerb, contextSourceWithHeaders, value)(onResponse)
   }
 
 }

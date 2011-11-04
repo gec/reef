@@ -20,11 +20,11 @@ package org.totalgrid.reef.services
 
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.sapi.service.{ AsyncService, ServiceResponseCallback }
-
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
-import org.totalgrid.reef.clientapi.proto.{ StatusCodes, Envelope }
+import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.services.framework.{ RequestContext, RequestContextSource, ServiceEntryPoint }
+import org.squeryl.Session
 
 /// the metrics collected on any single service request
 class ServiceVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {
@@ -34,6 +34,8 @@ class ServiceVerbHooks(source: MetricsHookSource, baseName: String) extends Stat
   val errorHook = counterHook(baseName + "Errors")
   /// time of service requests
   val timerHook = averageHook(baseName + "Time")
+  /// number of database actions
+  val actionsHook = averageHook(baseName + "Actions")
 }
 
 /// trait to encapsulate the hooks used, sorted by verb
@@ -44,42 +46,87 @@ trait ServiceMetricHooks {
   def apply(verb: Envelope.Verb): Option[ServiceVerbHooks] = map.get(verb)
 }
 
-class CallbackTimer(callback: ServiceResponseCallback, timerFun: (Long, Envelope.ServiceResponse) => Unit) extends ServiceResponseCallback {
+class CallbackTimer[A](callback: Response[A] => Unit, timerFun: (Long, Response[A]) => Unit) {
 
   val start = System.currentTimeMillis
 
-  def onResponse(rsp: Envelope.ServiceResponse) {
+  def onResponse(rsp: Response[A]) {
     timerFun(System.currentTimeMillis - start, rsp)
-    callback.onResponse(rsp)
+    callback(rsp)
   }
 
+}
+
+class SessionStats {
+  var selects = 0
+  var updates = 0
+  var inserts = 0
+  var deletes = 0
+
+  /**
+   * total number of actions in the session.
+   */
+  def actions = selects + updates + inserts + deletes
+
+  override def toString = {
+    "Total: " + actions + " S: " + selects + " U: " + updates + " I: " + inserts + " D: " + deletes
+  }
+
+  def addQuery(s: String) {
+
+    // TODO: replace if/else startsWith with match
+    if (s.startsWith("Select")) {
+      selects += 1
+    } else if (s.startsWith("insert")) {
+      inserts += 1
+    } else if (s.startsWith("update")) {
+      updates += 1
+    } else if (s.startsWith("delete")) {
+      deletes += 1
+    }
+  }
 }
 
 /**
  * instruments a service proto request entry point so metrics can be collected (by verb if configured)
  */
-class ServiceMetrics[A](service: AsyncService[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long)
-    extends AsyncService[A]
+class ServiceMetrics[A <: AnyRef](service: ServiceEntryPoint[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long, chattyTransactionThreshold : Int)
+    extends ServiceEntryPoint[A]
     with Logging {
 
   override val descriptor = service.descriptor
 
-  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
+  override def respondAsync(verb: Envelope.Verb, source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
 
-    def recordMetrics(metrics: ServiceVerbHooks)(time: Long, rsp: Envelope.ServiceResponse) {
+    val stats = new SessionStats
+
+    def recordMetrics(metrics: ServiceVerbHooks)(time: Long, rsp: Response[A]) {
       metrics.countHook(1)
       metrics.timerHook(time.toInt)
       if (time > slowQueryThreshold)
-        logger.info("Slow Request: " + time + "ms to handle request: " + req + " response " + rsp)
-      if (!StatusCodes.isSuccess(rsp.getStatus)) metrics.errorHook(1)
+        logger.info("Slow Request: " + time + "ms to handle request: " + req)
+      if (!rsp.success) metrics.errorHook(1)
+      metrics.actionsHook(stats.actions)
+      if (stats.actions > chattyTransactionThreshold)
+        logger.info("Chatty transaction: " + stats.actions + " database queries to handle request: " + req)
     }
 
-    val proxyCallback = hooks(req.getVerb) match {
-      case Some(metrics) => new CallbackTimer(callback, recordMetrics(metrics))
+    val proxyCallback = hooks(verb) match {
+      case Some(metrics) => new CallbackTimer(callback, recordMetrics(metrics)).onResponse _
       case None => callback // no hooks, just pass through the request
     }
 
-    service.respond(req, env, proxyCallback)
+    val s = new RequestContextSource {
+      def transaction[A](f: (RequestContext) => A) = {
+        source.transaction { trans =>
+          Session.currentSession.setLogger(stats.addQuery _)
+          f(trans)
+
+        }
+      }
+    }
+
+    service.respondAsync(verb, s, req)(proxyCallback)
   }
 
 }
