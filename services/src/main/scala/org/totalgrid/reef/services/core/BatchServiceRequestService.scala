@@ -18,14 +18,17 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.clientapi.sapi.types.BuiltInDescriptors
 import scala.collection.JavaConversions._
+
+import org.totalgrid.reef.clientapi.sapi.types.BuiltInDescriptors
 import org.totalgrid.reef.clientapi.sapi.client.impl.SynchronizedPromise
-import org.totalgrid.reef.clientapi.proto.Envelope.{ ServiceResponse, SelfIdentityingServiceRequest, ServiceRequest, BatchServiceRequest }
 import org.totalgrid.reef.clientapi.sapi.client._
-import org.totalgrid.reef.clientapi.proto.{ StatusCodes, Envelope }
-import org.totalgrid.reef.clientapi.exceptions.{ InternalServiceException, BadRequestException }
 import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+
+import org.totalgrid.reef.clientapi.proto.Envelope.{ ServiceResponse, SelfIdentityingServiceRequest, ServiceRequest, BatchServiceRequest }
+import org.totalgrid.reef.clientapi.proto.{ StatusCodes, Envelope }
+
 import org.totalgrid.reef.services.framework._
 
 class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
@@ -35,50 +38,42 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
 
   override val descriptor = BuiltInDescriptors.batchServiceRequest
 
-  private class IntentionalRollbackException extends Exception
-
   override def postAsync(contextSource: RequestContextSource, req: BatchServiceRequest)(callback: Response[BatchServiceRequest] => Unit) {
-    try {
-      contextSource.transaction { context =>
-        authorizeCreate(context, req)
-        val source = new RequestContextSource { def transaction[A](f: (RequestContext) => A) = f(context) }
+    val responses = contextSource.transaction { context =>
+      authorizeCreate(context, req)
+      val source = new RequestContextSource { def transaction[A](f: (RequestContext) => A) = f(context) }
 
-        val requests = req.getRequestsList.toList
-        val promises = requests.map { request =>
-          serviceMap.get(request.getExchange) match {
-            case Some(service) =>
-              val klass = service.descriptor.getKlass
-              handleRequest(source, service, request.getRequest, klass)
-            case None => throw new BadRequestException("No known service for exchange: " + request.getExchange)
-          }
-        }
-        ScatterGather.collect(promises) { responses: List[ServiceResponse] =>
-          val b = BatchServiceRequest.newBuilder
-
-          responses.foreach { r => b.addRequests(SelfIdentityingServiceRequest.newBuilder.setResponse(r)) }
-
-          val (status, message) = responses.find(r => !StatusCodes.isSuccess(r.getStatus)) match {
-            case Some(failure) => (failure.getStatus, failure.getErrorMessage)
-            case None => (Envelope.Status.OK, "")
-          }
-          val res = b.build
-
-          callback(Response(status, res :: Nil, message))
-
-          if (status != Envelope.Status.OK) throw new IntentionalRollbackException
+      val requests = req.getRequestsList.toList
+      requests.map { request =>
+        serviceMap.get(request.getExchange) match {
+          case Some(service) =>
+            val klass = service.descriptor.getKlass
+            val rsp = handleRequest(source, service, request.getRequest, klass)
+            if (!StatusCodes.isSuccess(rsp.getStatus)) throw StatusCodes.toException(rsp.getStatus, rsp.getErrorMessage)
+            rsp
+          case None => throw new BadRequestException("No known service for exchange: " + request.getExchange)
         }
       }
-    } catch {
-      case ise: IntentionalRollbackException =>
-      // since we exit the transaction with an exception SQL will revert our transaction
     }
+
+    callback(buildResponse(responses))
+  }
+
+  private def buildResponse(responses: List[Envelope.ServiceResponse]) = {
+    val b = BatchServiceRequest.newBuilder
+
+    responses.foreach { r =>
+      b.addRequests(SelfIdentityingServiceRequest.newBuilder.setResponse(r))
+    }
+
+    Response(Envelope.Status.OK, b.build)
   }
 
   private def handleRequest[A <: AnyRef](
     contextSource: RequestContextSource,
     rawService: ServiceEntryPoint[_ <: AnyRef],
     request: ServiceRequest,
-    klass: Class[A]): Promise[ServiceResponse] = {
+    klass: Class[A]): ServiceResponse = {
 
     val service = rawService.asInstanceOf[ServiceEntryPoint[A]]
 
@@ -94,15 +89,10 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
     }
 
     ServiceHelpers.catchErrors(request, callback) {
-      request.getVerb match {
-        case Envelope.Verb.GET => service.getAsync(contextSource, value)(onResponse)
-        case Envelope.Verb.PUT => service.putAsync(contextSource, value)(onResponse)
-        case Envelope.Verb.DELETE => service.deleteAsync(contextSource, value)(onResponse)
-        case Envelope.Verb.POST => service.postAsync(contextSource, value)(onResponse)
-      }
+      service.respondAsync(request.getVerb, contextSource, value)(onResponse)
     }
 
-    promise
+    promise.await
   }
 
 }
