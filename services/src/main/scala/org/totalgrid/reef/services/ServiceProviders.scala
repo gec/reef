@@ -30,6 +30,7 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
+import org.totalgrid.reef.services.metrics.MetricsServiceWrapper
 
 /**
  * list of all of the service providers in the system

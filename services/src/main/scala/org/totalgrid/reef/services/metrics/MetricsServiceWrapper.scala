@@ -16,10 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.services
+package org.totalgrid.reef.services.metrics
 
 import org.totalgrid.reef.services.framework.ServiceEntryPoint
 import org.totalgrid.reef.metrics.IMetricsSink
+import org.totalgrid.reef.services.ServiceOptions
 
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
@@ -35,7 +36,7 @@ class MetricsServiceWrapper(sink: IMetricsSink, serviceConfiguration: ServiceOpt
     ProtoServicableMetrics.generateMetricsHooks(allServiceHolder, serviceConfiguration.metricsSplitByVerb)
   }
 
-  lazy val allHooks = generateHooks("services.all") /// lazy since we dont allways use the allHooks object
+  lazy val allHooks = generateHooks("all") /// lazy since we dont allways use the allHooks object
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
@@ -46,7 +47,7 @@ class MetricsServiceWrapper(sink: IMetricsSink, serviceConfiguration: ServiceOpt
       } else {
         allHooks // use the same hook object for all of the services
       }
-      new ServiceMetrics(endpoint, hooks, serviceConfiguration.slowQueryThreshold, 20)
+      new ServiceMetricsInstrumenter(endpoint, hooks, serviceConfiguration.slowQueryThreshold, 20)
     } else {
       endpoint
     }

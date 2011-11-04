@@ -119,7 +119,7 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
 
     val viewer = stream.map { new RequestViewer(_, addedObjects) }
 
-    try{
+    try {
       if (batchSize > 0) client.startBatchRequests()
 
       RequestSpy.withRequestSpy(client, viewer) {
@@ -139,7 +139,7 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
       if (batchSize > 0) {
         client.flushBatchRequests().await.expectOne
       }
-    }finally{
+    } finally {
       if (batchSize > 0) client.stopBatchRequests()
       viewer.foreach { _.finish }
     }
