@@ -37,9 +37,11 @@ public class PropertyReader
      */
     public static Properties readFromFile( String fileName ) throws IOException
     {
-        File file = new File(fileName);
+        File file = new File( fileName );
 
-        if(!file.canRead()) throw new IOException("Cannot find or access file: " + file.getAbsolutePath());
+        if ( !file.canRead() ){
+            throw new IOException( "Cannot find or access file: " + file.getAbsolutePath() );
+        }
 
         FileInputStream fis = new FileInputStream( file );
         Properties props = new Properties();
