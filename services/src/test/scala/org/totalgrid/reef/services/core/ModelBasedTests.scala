@@ -31,6 +31,7 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.proto.Model
 
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {
@@ -45,7 +46,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
 
   def seedPoints {
     EntityQueryManager.findEntitiesByType(List("Point")).foreach { ent =>
-      ApplicationSchema.points.insert(Point.newInstance(ent.name, false, None, 1, "raw", None))
+      ApplicationSchema.points.insert(Point.newInstance(ent.name, false, None, Model.PointType.ANALOG, "raw", None))
     }
   }
 

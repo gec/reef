@@ -526,9 +526,14 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def addTypesToEntity(ent: Entity, types: List[String]) = {
-    addEntityTypes(types)
-    entityTypes.insert(types.map { new EntityToTypeJoins(ent.id, _) })
-    entities.lookup(ent.id).get
+    if (types.isEmpty) {
+      ent
+    } else {
+      val distinctTypes = types.distinct.reverse
+      addEntityTypes(distinctTypes)
+      entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      entities.lookup(ent.id).get
+    }
   }
 
   def addEntityTypes(types: List[String]) {
@@ -586,23 +591,20 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     derivedEdge
   }
 
-  def findOrCreateEntity(name: String, entityType: String, uuid: Option[UUID]): Entity = {
+  def findOrCreateEntity(name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
     val list = nameTypeQuery(Some(name), None)
-    if (list.size > 1) throw new Exception("more than one entity matched: " + name + " type:" + entityType)
+    if (list.size > 1) throw new Exception("more than one entity matched: " + name)
     if (list.size == 1) {
-      val entity = if (list.head.types.value.find(_ == entityType).isEmpty) {
-        addTypeToEntity(list.head, entityType)
-      } else {
-        list.head
-      }
+      val entity = list.head
       uuid.foreach { u =>
         if (entity.id != u)
           throw new Exception("Entity with name: " + name + " already has uuid different than we requested.")
       }
-      entity
+      val newTypes = entityTypes.diff(entity.types.value)
+      addTypesToEntity(entity, newTypes)
     } else {
-      logger.debug("creating entity: name: " + name + ", type: " + entityType)
-      addEntity(name, entityType :: Nil, uuid)
+      logger.debug("creating entity: name: " + name + ", types: " + entityTypes)
+      addEntity(name, entityTypes, uuid)
     }
   }
 

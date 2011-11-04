@@ -62,7 +62,7 @@ object Agent {
 
   def createAgentWithPassword(name: String, password: String): Agent = {
     val (digest, saltText) = makeDigestAndSalt(password)
-    val entity = EntityQueryManager.findOrCreateEntity(name, "Agent", None)
+    val entity = EntityQueryManager.findOrCreateEntity(name, "Agent" :: Nil, None)
     val agent = new Agent(entity.id, enc64(digest), enc64(saltText))
     agent.entity.value = entity
     agent
@@ -101,7 +101,7 @@ case class AuthPermission(
 
 object PermissionSet {
   def newInstance(name: String, defaultExpirationTime: Long) = {
-    val entity = EntityQueryManager.findOrCreateEntity(name, "PermissionSet", None)
+    val entity = EntityQueryManager.findOrCreateEntity(name, "PermissionSet" :: Nil, None)
     val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
     permissionSet.entity.value = entity
     permissionSet

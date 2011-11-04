@@ -50,8 +50,7 @@ class CommEndCfgServiceModel(
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     import org.totalgrid.reef.services.core.util.UUIDConversions._
-    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
-    EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
+    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)
     coordinator.onEndpointCreated(context, sql)

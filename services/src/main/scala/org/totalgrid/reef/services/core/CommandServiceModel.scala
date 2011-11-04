@@ -110,7 +110,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def createModelEntry(proto: CommandProto): Command = {
-    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType.getNumber, proto.uuid)
+    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
   }
 
   def isModified(entry: Command, existing: Command) = {

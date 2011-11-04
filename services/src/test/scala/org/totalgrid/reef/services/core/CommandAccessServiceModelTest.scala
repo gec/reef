@@ -25,6 +25,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, UnauthorizedException }
+import org.totalgrid.reef.proto.Model
 
 class CommandTestRig {
   val modelFactories = new ModelFactories(new ServiceDependenciesDefaults())
@@ -41,7 +42,7 @@ class CommandTestRig {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String): Command = {
-    seed(Command.newInstance(name, name, 1, None))
+    seed(Command.newInstance(name, name, Model.CommandType.CONTROL, None))
   }
 }
 

@@ -78,9 +78,8 @@ class ConfigFileServiceModel
       uuid.get.toString
     }
 
-    logger.debug("creating config file from proto: " + configFileProto)
     // make the entity entry for the config file
-    val entity: Entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile", uuid)
+    val entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile" :: Nil, uuid)
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges

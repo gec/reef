@@ -39,7 +39,8 @@ public class PropertyReader
     {
         File file = new File( fileName );
 
-        if ( !file.canRead() ){
+        if ( !file.canRead() )
+        {
             throw new IOException( "Cannot find or access file: " + file.getAbsolutePath() );
         }
 

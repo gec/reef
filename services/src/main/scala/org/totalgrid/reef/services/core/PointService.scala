@@ -160,7 +160,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
   }
 
   def createModelEntry(proto: PointProto): Point = {
-    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit, proto.uuid)
+    Point.newInstance(proto.name.get, false, None, proto.getType, proto.getUnit, proto.uuid)
   }
 
 }

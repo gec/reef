@@ -178,12 +178,11 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val name = getChildName(childPrefix, xmlCommand.getName)
     val displayName = Option(xmlCommand.getDisplayName) getOrElse xmlCommand.getName
 
-    val baseType = if (commandType == CommandTypeProto.CONTROL) "Control" else "Setpoint"
-    val types = baseType :: getTypeList(xmlCommand.getType)
+    val types = "Command" :: getTypeList(xmlCommand.getType)
 
     logger.trace("processControl: " + name)
     loadCache.addControl(name)
-    val commandEntity = toEntityType(name, "Command" :: types)
+    val commandEntity = toEntityType(name, types)
     val commandProto = toCommand(name, displayName, commandEntity, commandType)
     commandEntities += (name -> commandEntity)
     commands += (name -> commandProto)
@@ -213,15 +212,15 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   def processPointType(pointType: PointType, equipmentEntity: Entity, childPrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
-    val (baseType, pointProtoType) = pointType match {
-      case c: equipment.Analog => ("Analog", PointTypeProto.ANALOG)
-      case c: equipment.Status => ("Status", PointTypeProto.STATUS)
-      case c: equipment.Counter => ("Counter", PointTypeProto.COUNTER)
+    val pointProtoType = pointType match {
+      case c: equipment.Analog => PointTypeProto.ANALOG
+      case c: equipment.Status => PointTypeProto.STATUS
+      case c: equipment.Counter => PointTypeProto.COUNTER
       case _ => throw new LoadingException("Bad point type")
     }
 
     val name = getChildName(childPrefix, pointType.getName)
-    val types = "Point" :: baseType :: getTypeList(pointType.getType)
+    val types = "Point" :: getTypeList(pointType.getType)
 
     val unit = getAttribute[String](name, pointType, _.isSetUnit, _.getUnit, "unit")
     equipmentPointUnits += (name -> unit)
