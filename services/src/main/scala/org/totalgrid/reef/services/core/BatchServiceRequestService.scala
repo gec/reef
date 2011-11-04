@@ -57,13 +57,13 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
 
           responses.foreach { r => b.addRequests(SelfIdentityingServiceRequest.newBuilder.setResponse(r)) }
 
-          val status = responses.find(r => !StatusCodes.isSuccess(r.getStatus)) match {
-            case Some(failure) => failure.getStatus
-            case None => Envelope.Status.OK
+          val (status, message) = responses.find(r => !StatusCodes.isSuccess(r.getStatus)) match {
+            case Some(failure) => (failure.getStatus, failure.getErrorMessage)
+            case None => (Envelope.Status.OK, "")
           }
           val res = b.build
 
-          callback(SuccessResponse(status, res :: Nil))
+          callback(Response(status, res :: Nil, message))
 
           if (status != Envelope.Status.OK) throw new IntentionalRollbackException
         }

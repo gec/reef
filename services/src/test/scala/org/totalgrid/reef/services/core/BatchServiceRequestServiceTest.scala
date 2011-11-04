@@ -28,17 +28,16 @@ import org.totalgrid.reef.proto.Descriptors
 import java.util.UUID
 import org.totalgrid.reef.clientapi.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
-import org.totalgrid.reef.clientapi.sapi.client.{ Response, BasicRequestHeaders }
-import org.totalgrid.reef.clientapi.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 import org.totalgrid.reef.services.ServiceBootstrap
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.proto.Commands.CommandAccess.AccessMode
 import org.totalgrid.reef.proto.Commands.CommandAccess
 
 import scala.collection.JavaConversions._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FunSuite }
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
@@ -70,11 +69,13 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   }
 
   test("Failure rolls back the whole transaction") {
-    val putAndFail = getStatuses(makeBatch(command(), commandAccess(PUT, "fakeCommand")), BAD_REQUEST)
-    putAndFail should equal(List(CREATED, BAD_REQUEST))
+    intercept[BadRequestException] {
+      service.post(makeBatch(command(), commandAccess(PUT, "fakeCommand"))).expectOne
+    }
 
-    val getNextTransaction = getStatuses(makeBatch(commandAccess(PUT)), BAD_REQUEST)
-    getNextTransaction should equal(List(BAD_REQUEST))
+    intercept[BadRequestException] {
+      service.post(makeBatch(commandAccess(PUT))).expectOne
+    }
   }
 
   def getStatuses(batch: BatchServiceRequest, status: Envelope.Status) = {
