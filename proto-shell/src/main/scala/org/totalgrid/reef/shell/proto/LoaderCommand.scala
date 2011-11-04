@@ -40,13 +40,16 @@ class LoadConfigCommand extends ReefCommandSupport {
   @GogoOption(name = "-ignoreWarnings", description = "Still attempt upload even if configuration is invalid", required = false, multiValued = false)
   var ignoreWarnings = false
 
+  @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching", required = false, multiValued = false)
+  var batchSize = 25
+
   @Argument(index = 0, name = "configFile", description = "Configuration file name with path", required = true, multiValued = false)
   var configFile: String = null
 
   override def doCommand(): Unit = {
     val loaderServices = new LoaderServicesImpl(reefClient)
 
-    LoadManager.loadFile(loaderServices, configFile, benchmark, dryRun, ignoreWarnings)
+    LoadManager.loadFile(loaderServices, configFile, benchmark, dryRun, ignoreWarnings, batchSize)
   }
 }
 
