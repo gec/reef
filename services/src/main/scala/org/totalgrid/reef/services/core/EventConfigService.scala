@@ -36,46 +36,51 @@ import SquerylModel._ // implict asParam
 import org.totalgrid.reef.clientapi.sapi.types.Optional._
 
 object EventConfigService {
+
+  def builtInEventConfigurations() = {
+
+    import org.totalgrid.reef.event.EventType._
+    import org.totalgrid.reef.models.EventConfigStore
+
+    val ALARM = EventConfig.Designation.ALARM.getNumber
+    val EVENT = EventConfig.Designation.EVENT.getNumber
+    val UNACK_SILENT = Alarm.State.UNACK_SILENT.getNumber
+
+    def makeBuiltIn(name: String, designation: Int, serverity: Int, resource: String) = {
+      name -> EventConfigStore(name, serverity, designation, UNACK_SILENT, resource, true)
+    }
+    List(makeBuiltIn(System.UserLogin, EVENT, 5, "User logged in"),
+      makeBuiltIn(System.UserLoginFailure, ALARM, 1, "User login failed {reason}"),
+      makeBuiltIn(System.UserLogout, EVENT, 5, "User logged out"),
+      makeBuiltIn(System.SubsystemStarting, EVENT, 5, "Subsystem is starting"),
+      makeBuiltIn(System.SubsystemStarted, EVENT, 5, "Subsystem has started"),
+      makeBuiltIn(System.SubsystemStopping, EVENT, 5, "Subsystem is stopping"),
+      makeBuiltIn(System.SubsystemStopped, EVENT, 5, "Subsystem has stopped"),
+
+      makeBuiltIn(Scada.ControlExe, EVENT, 3, "Executed control {command}"),
+      makeBuiltIn(Scada.UpdatedSetpoint, EVENT, 3, "Updated setpoint {command} to {value}"),
+      makeBuiltIn(Scada.OutOfNominal, ALARM, 2, "Measurement not in nominal range: {value}"),
+      makeBuiltIn(Scada.OutOfReasonable, ALARM, 2, "Measurement not reasonable: {value}"),
+      makeBuiltIn(Scada.SetOverride, EVENT, 3, "Point overridden"),
+      makeBuiltIn(Scada.SetNotInService, EVENT, 3, "Point removed from service"),
+      makeBuiltIn(Scada.RemoveOverride, EVENT, 3, "Removed override on point"),
+      makeBuiltIn(Scada.RemoveNotInService, EVENT, 3, "Returned point to service"),
+      // comm endpoint events
+      makeBuiltIn(Scada.CommEndpointOffline, EVENT, 2, "Endpoint {name} offline"),
+      makeBuiltIn(Scada.CommEndpointOnline, EVENT, 2, "Endpoint {name} online"),
+      makeBuiltIn(Scada.CommEndpointDisabled, EVENT, 3, "Endpoint {name} disabled"),
+      makeBuiltIn(Scada.CommEndpointEnabled, EVENT, 3, "Endpoint {name} enabled")).toMap
+  }
+
   def seed() {
     import org.squeryl.PrimitiveTypeMode._
-    import org.squeryl.Table
-    import org.totalgrid.reef.models.{ ApplicationSchema, EventConfigStore }
-    import org.totalgrid.reef.event.EventType._
-    import org.totalgrid.reef.proto.Alarms._
+    import org.totalgrid.reef.models.ApplicationSchema
 
     inTransaction {
       if (ApplicationSchema.eventConfigs.Count.head == 0) {
-        val ALARM = EventConfig.Designation.ALARM.getNumber
-        val UNACK_SILENT = Alarm.State.UNACK_SILENT.getNumber
-
-        def makeBuiltIn(name: String, resource: String) = {
-          EventConfigStore(name, 8, ALARM, UNACK_SILENT, resource, true)
-        }
-
         // TODO: make a default event config for handling unknown events
 
-        val ecs = List[EventConfigStore](
-          makeBuiltIn(System.UserLogin, "User logged in"),
-          makeBuiltIn(System.UserLoginFailure, "User login failed {reason}"),
-          makeBuiltIn(System.UserLogout, "User logged out"),
-          makeBuiltIn(System.SubsystemStarting, "Subsystem is starting"),
-          makeBuiltIn(System.SubsystemStarted, "Subsystem has started"),
-          makeBuiltIn(System.SubsystemStopping, "Subsystem is stopping"),
-          makeBuiltIn(System.SubsystemStopped, "Subsystem has stopped"),
-
-          makeBuiltIn(Scada.ControlExe, "Executed control {command}"),
-          makeBuiltIn(Scada.UpdatedSetpoint, "Updated setpoint {command} to {value}"),
-          makeBuiltIn(Scada.OutOfNominal, "Measurement not in nominal range: {value}"),
-          makeBuiltIn(Scada.OutOfReasonable, "Measurement not reasonable: {value}"),
-          makeBuiltIn(Scada.SetOverride, "Point overridden"),
-          makeBuiltIn(Scada.SetNotInService, "Point removed from service"),
-          makeBuiltIn(Scada.RemoveOverride, "Removed override on point"),
-          makeBuiltIn(Scada.RemoveNotInService, "Returned point to service"),
-          // comm endpoint events
-          makeBuiltIn(Scada.CommEndpointOffline, "Endpoint {name} offline"),
-          makeBuiltIn(Scada.CommEndpointOnline, "Endpoint {name} online"),
-          makeBuiltIn(Scada.CommEndpointDisabled, "Endpoint {name} disabled"),
-          makeBuiltIn(Scada.CommEndpointEnabled, "Endpoint {name} enabled"))
+        val ecs = builtInEventConfigurations().values
 
         ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
       }
@@ -89,12 +94,21 @@ class EventConfigService(protected val model: EventConfigServiceModel)
 
   override val descriptor = Descriptors.eventConfig
 
-  override def preCreate(context: RequestContext, proto: EventConfig): EventConfig = {
+  override def preCreate(context: RequestContext, request: EventConfig): EventConfig = {
+    if (request.hasBuiltIn && request.getBuiltIn) {
+      throw new BadRequestException("Cannot create an event configuration with \"builtIn\" flag set.")
+    }
+    populateProto(context, request)
+  }
+
+  override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore): EventConfig = {
+    populateProto(context, request)
+    // TODO: should we re-render all events with the same event type?
+  }
+
+  private def populateProto(context: RequestContext, proto: EventConfig): EventConfig = {
     if (!proto.hasDesignation || !proto.hasEventType || !proto.hasSeverity || !proto.hasResource) {
       throw new BadRequestException("Must fill in designation, eventType, severity and resource fields.")
-    }
-    if (proto.hasBuiltIn && proto.getBuiltIn) {
-      throw new BadRequestException("Cannot create an event configuration with \"builtIn\" flag set.")
     }
     if (proto.getDesignation == EventConfig.Designation.ALARM) {
       if (!proto.hasAlarmState) throw new BadRequestException("Must set initial alarm state if designation is alarm")
@@ -108,10 +122,6 @@ class EventConfigService(protected val model: EventConfigServiceModel)
       if (proto.hasAlarmState) proto.toBuilder.clearAlarmState().build
       else proto
     }
-  }
-
-  override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore): EventConfig = {
-    preCreate(context, request)
   }
 }
 
@@ -135,9 +145,14 @@ class EventConfigServiceModel
     createModelEntry(proto, existing.builtIn)
   }
 
-  override def preDelete(context: RequestContext, entry: EventConfigStore) {
-    if (entry.builtIn)
-      throw new BadRequestException("Cannot delete \"builtIn\" event configurations, only update destination and message: " + entry.eventType)
+  override def delete(context: RequestContext, entry: EventConfigStore) = {
+    if (entry.builtIn) {
+      val originalConfiguration = EventConfigService.builtInEventConfigurations.get(entry.eventType)
+      super.delete(context, entry)
+      create(context, originalConfiguration.get)
+    } else {
+      super.delete(context, entry)
+    }
   }
 }
 

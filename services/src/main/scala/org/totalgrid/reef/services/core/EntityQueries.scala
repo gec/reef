@@ -327,7 +327,7 @@ trait EntityTreeQueries { self: EntityQueries =>
       val entsOnlyQuery = from(entEdges)(entEdge => select(entEdge._1))
 
       val ids = upperNodes.map(_.id)
-      assert(ids == ids.distinct)
+      if (ids != ids.distinct) throw new Exception("Tree is not unique, same node has multiple links to itself, check model.")
 
       val upperMap = upperNodes.map(n => (n.id, n)).toMap
 
