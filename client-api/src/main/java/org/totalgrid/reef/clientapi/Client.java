@@ -64,5 +64,5 @@ public interface Client
      * @return
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException If the interface can not be found
      */
-    <A> A getRpcInterface( Class<A> klass ) throws ReefServiceException;
+    <A> A getRpcInterface( Class<A> klass );
 }

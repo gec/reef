@@ -20,6 +20,7 @@ package org.totalgrid.reef.clientapi.sapi.types
 
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
 import org.totalgrid.reef.clientapi.proto.SimpleAuth
+import org.totalgrid.reef.clientapi.proto.Envelope.BatchServiceRequest
 
 object BuiltInDescriptors {
   def authRequest() = new TypeDescriptor[SimpleAuth.AuthRequest] {
@@ -29,4 +30,12 @@ object BuiltInDescriptors {
     def id = "auth_request"
   }
   def authRequestServiceInfo = ServiceInfo(authRequest)
+
+  def batchServiceRequest() = new TypeDescriptor[BatchServiceRequest] {
+    def serialize(typ: BatchServiceRequest): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = BatchServiceRequest.parseFrom(bytes)
+    def getKlass = classOf[BatchServiceRequest]
+    def id = "batch_service"
+  }
+  def batchServiceRequestServiceInfo = ServiceInfo(batchServiceRequest)
 }

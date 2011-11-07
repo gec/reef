@@ -27,11 +27,9 @@ import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, UnauthorizedException }
 
 import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import java.util.Date
 
 class CommandAccessServiceModel

@@ -31,7 +31,6 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // Implicits
 import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties

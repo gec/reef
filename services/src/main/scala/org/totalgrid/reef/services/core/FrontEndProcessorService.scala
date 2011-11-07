@@ -26,7 +26,6 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services
 import java.util.UUID
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._

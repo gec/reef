@@ -77,7 +77,7 @@ object EndpointStopper {
         }
 
         // wait until all endpoints are COMMS_DOWN
-        waitForEmptyList(stillRunning, 5000)
+        waitForEmptyList(stillRunning, 20000)
 
         stream.foreach { _.println("Endpoints stopped.") }
       }

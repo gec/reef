@@ -29,7 +29,6 @@ import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
-import org.totalgrid.reef.services.ProtoRoutingKeys
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }

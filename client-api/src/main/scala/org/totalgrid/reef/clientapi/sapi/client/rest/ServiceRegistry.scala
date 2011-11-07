@@ -25,5 +25,7 @@ trait ServiceRegistry {
   def addRpcProvider(info: RpcProviderInfo)
 
   def addServiceInfo[A](info: ServiceInfo[A, _])
+
+  def getServiceInfo[A](klass: Class[A]): ServiceInfo[A, _]
 }
 

@@ -55,7 +55,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
   test("Subscription sequence works if event occurs before start()") {
     fixture { (client, conn) =>
       val si = SomeInteger(42)
-      val sub = client.subscribe(SomeIntegerTypeDescriptor).get // gets us an unbound queue, doesn't listen yet
+      val sub = client.subscribe(SomeIntegerTypeDescriptor).await.get // gets us an unbound queue, doesn't listen yet
       conn.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       conn.publishEvent(Envelope.Event.ADDED, si, "foobar")
       val events = new SynchronizedList[Event[SomeInteger]]
@@ -67,7 +67,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
   test("Subscription sequence works if event occurs after start()") {
     fixture { (client, conn) =>
       val si = SomeInteger(42)
-      val sub = client.subscribe(SomeIntegerTypeDescriptor).get // gets us an unbound queue, doesn't listen yet
+      val sub = client.subscribe(SomeIntegerTypeDescriptor).await.get // gets us an unbound queue, doesn't listen yet
       conn.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.start(events.append(_))

@@ -57,6 +57,7 @@ object FrontEndTestHelpers {
   }
 
   class MockSubscription[A](val id: String = "queue") extends Subscription[A] {
+    def getId = id
     var canceled = false
     var acceptor = Option.empty[Event[A] => Unit]
     def start(acc: Event[A] => Unit) = {

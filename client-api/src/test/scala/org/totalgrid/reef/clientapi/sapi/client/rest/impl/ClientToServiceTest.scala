@@ -65,7 +65,7 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
   test("Subscription calls work") { //subscriptions not currently working with embedded broker
     fixture { c =>
       val events = new SynchronizedList[SomeInteger]
-      val sub = c.subscribe(SomeIntegerTypeDescriptor).get
+      val sub = c.subscribe(SomeIntegerTypeDescriptor).await.get
       c.put(SomeInteger(1), sub).await should equal(SuccessResponse(list = List(SomeInteger(2))))
       sub.start(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
@@ -76,7 +76,7 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
   test("Events come in right order") { //subscriptions not currently working with embedded broker
     fixture { c =>
       val events = new SynchronizedList[Int]
-      val sub = c.subscribe(SomeIntegerTypeDescriptor).get
+      val sub = c.subscribe(SomeIntegerTypeDescriptor).await.get
       c.bindQueueByClass(sub.id(), "#", classOf[SomeInteger])
       sub.start(e => events.append(e.value.num))
 

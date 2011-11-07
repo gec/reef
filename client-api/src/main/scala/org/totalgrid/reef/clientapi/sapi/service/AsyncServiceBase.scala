@@ -19,7 +19,6 @@
 package org.totalgrid.reef.clientapi.sapi.service
 
 import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
 
@@ -42,16 +41,8 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
   /* Implement AsyncService */
 
   def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
-    try {
+    ServiceHelpers.catchErrors(req, callback) {
       handleRequest(req, env, callback)
-    } catch {
-      case px: ReefServiceException =>
-        logger.error(px.getMessage, px)
-        callback.onResponse(getFailure(req.getId, px.getStatus, px.getMessage))
-      case x: Exception =>
-        logger.error(x.getMessage, x)
-        val msg = x.getMessage + "\n" + x.getStackTraceString
-        callback.onResponse(getFailure(req.getId, Envelope.Status.INTERNAL_ERROR, msg))
     }
   }
 

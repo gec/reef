@@ -648,7 +648,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
       entityIdsFromType(childType)
     } else {
       // TODO: get entitiy queries to use and respect requestContext - backlog-70
-      EntitySearches.findRecord(NullRequestContext, rootNode).map { rootEnt =>
+      EntitySearches.findRecord(new NullRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }

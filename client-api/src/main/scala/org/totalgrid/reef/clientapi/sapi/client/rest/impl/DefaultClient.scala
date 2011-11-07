@@ -22,21 +22,23 @@ import org.totalgrid.reef.clientapi.types.TypeDescriptor
 
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
-import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Subscription }
+import org.totalgrid.reef.clientapi.sapi.client.{ RequestSpyHook, BasicRequestHeaders }
 import org.totalgrid.reef.clientapi.proto.Envelope.{ Event, Verb }
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
 
 import org.totalgrid.reef.clientapi.Routable
 
-class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
+class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook {
 
   override def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
     val usedHeaders = headers.map { getHeaders.merge(_) }.getOrElse(getHeaders)
-    conn.request(verb, payload, usedHeaders, strand)
+    val future = conn.request(verb, payload, usedHeaders, strand)
+    notifyRequestSpys(verb, payload, future)
+    future
   }
 
-  final override def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]] =
+  final override def subscribe[A](descriptor: TypeDescriptor[A]) =
     conn.subscribe(strand, descriptor)
 
   final override def execute(fun: => Unit): Unit = strand.execute(fun)
@@ -59,6 +61,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client {
   final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this)
 
   final override def addServiceInfo[A](info: ServiceInfo[A, _]) = conn.addServiceInfo(info)
+  final override def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
 
   final override def disconnect() = conn.disconnect()
 }

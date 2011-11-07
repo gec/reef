@@ -29,7 +29,7 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   val samplesPath = "../" + "assemblies/assembly-common/filtered-resources/samples/"
 
   private def loadFile(fileName: String, numExpected: Int) = {
-    val (loader, valid) = LoadManager.prepareModelCache(fileName, false)
+    val (loader, valid) = LoadManager.prepareModelCache(fileName, false, 25)
     valid should equal(true)
     loader.size should equal(numExpected)
   }

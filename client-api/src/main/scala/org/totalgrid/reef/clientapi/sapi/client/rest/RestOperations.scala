@@ -19,8 +19,7 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest
 
 import org.totalgrid.reef.clientapi.sapi.client._
-import org.totalgrid.reef.clientapi.proto.Envelope
-  .Verb
+import org.totalgrid.reef.clientapi.proto.Envelope.Verb
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
 
 import net.agileautomata.executor4s.{ Result, Future }
@@ -39,6 +38,10 @@ trait RestOperations {
   final def post[A](payload: A) = request(Verb.POST, payload, None)
   final def put[A](payload: A) = request(Verb.PUT, payload, None)
 
-  def subscribe[A](descriptor: TypeDescriptor[A]): Result[Subscription[A]]
-
+  /**
+   * subscribe returns a Future to the result that is always going to be set when it is returned, it is
+   * returned as a future so a client who wants to listen to the SubscriptionResult will get the event
+   * on the same dispatcher as the result would come on
+   */
+  def subscribe[A](descriptor: TypeDescriptor[A]): Future[Result[Subscription[A]]]
 }

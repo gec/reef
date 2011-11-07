@@ -19,14 +19,14 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest
 
 import net.agileautomata.executor4s.Executor
-
-import org.totalgrid.reef.clientapi.sapi.client.{ SubscriptionCreatorManager, RequestSpyManager, DefaultHeaders }
+import org.totalgrid.reef.clientapi.sapi.client.{ RequestSpyHook, SubscriptionCreatorManager, RequestSpyManager, DefaultHeaders }
 
 trait Client
   extends Executor
   with RestOperations
-  with RequestSpyManager
+  with RequestSpyHook
   with DefaultHeaders
   with Connection
   with RpcProvider
   with SubscriptionCreatorManager
+  with ServiceRegistry

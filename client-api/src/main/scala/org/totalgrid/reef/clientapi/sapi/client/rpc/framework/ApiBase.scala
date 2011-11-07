@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.clientapi.sapi.client.rpc.framework
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client, AnnotatedOperations }
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultAnnotatedOperations
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ BatchOperations, Client, AnnotatedOperations }
+import org.totalgrid.reef.clientapi.sapi.client.rest.impl.{ BatchServiceRestOperations, DefaultAnnotatedOperations }
 import org.totalgrid.reef.clientapi.{ SubscriptionCreator, SubscriptionCreationListener }
-
-import org.totalgrid.reef.clientapi.sapi.client.{ RequestSpy, RequestSpyManager, BasicRequestHeaders, HasHeaders }
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.clientapi.sapi.client._
 import net.agileautomata.executor4s.{ TimeInterval, Executor }
 
 trait HasAnnotatedOperations {
@@ -33,11 +33,28 @@ trait HasAnnotatedOperations {
  * client operations are all of the common client operations that we want to be able to include in all
  * ApiBase consumers.
  */
-trait ClientOperations extends SubscriptionCreator with RequestSpyManager with HasHeaders with Executor
+trait ClientOperations extends SubscriptionCreator with RequestSpyManager with HasHeaders with Executor with BatchOperations
 
 abstract class ApiBase(client: Client) extends HasAnnotatedOperations with ClientOperations {
 
-  override val ops = new DefaultAnnotatedOperations(client)
+  private var currentOpsMode = new DefaultAnnotatedOperations(client, client)
+  private var flushableOps = Option.empty[BatchServiceRestOperations[_]]
+  override def ops = currentOpsMode
+
+  def startBatchRequests() {
+    flushableOps = Some(new BatchServiceRestOperations(client))
+    currentOpsMode = new DefaultAnnotatedOperations(flushableOps.get, client)
+  }
+  def stopBatchRequests() {
+    flushableOps = None
+    currentOpsMode = new DefaultAnnotatedOperations(client, client)
+  }
+  def flushBatchRequests() = {
+    flushableOps match {
+      case None => throw new BadRequestException("No batch requests configured")
+      case Some(op) => op.flush()
+    }
+  }
 
   override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.addSubscriptionCreationListener(listener)
   override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)

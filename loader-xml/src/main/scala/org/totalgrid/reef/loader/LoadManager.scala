@@ -34,9 +34,9 @@ object LoadManager extends Logging {
   /**
    * TODO: Catch file not found exceptions and call usage.
    */
-  def loadFile(client: => LoaderServices, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false) = {
+  def loadFile(client: => LoaderServices, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false, batchSize: Int = 25) = {
 
-    val (loader, valid) = prepareModelCache(filename, benchmark)
+    val (loader, valid) = prepareModelCache(filename, benchmark, batchSize)
 
     if (!valid && !ignoreWarnings) {
       println("Configuration invalid, fix errors or add ignoreWarnings argument")
@@ -52,7 +52,7 @@ object LoadManager extends Logging {
 
   }
 
-  def prepareModelCache(filename: String, benchmark: Boolean) = {
+  def prepareModelCache(filename: String, benchmark: Boolean, batchSize: Int) = {
     val file = new File(filename)
     logger.info("processing model file: " + file)
 
@@ -61,7 +61,7 @@ object LoadManager extends Logging {
 
       val xml = XMLHelper.read(file, classOf[Configuration])
 
-      val loader = new CachingModelLoader(None)
+      val loader = new CachingModelLoader(None, batchSize)
       val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
 
       logger.info("Finished analyzing configuration '" + filename + "'")

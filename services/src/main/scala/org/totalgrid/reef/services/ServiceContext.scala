@@ -22,26 +22,23 @@ import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
-import org.totalgrid.reef.services.framework.ServerSideProcess
+import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.clientapi.AnyNodeDestination
 
 /**
  * sets up the "production" ServiceContainer for the service providers
  */
-class ServiceContext(connection: Connection, metrics: MetricsServiceWrapper, executor: Executor) extends ServiceContainer with Logging {
+class ServiceContext(connection: Connection, executor: Executor) extends ServiceContainer with Logging {
 
   def addCoordinator(coord: ServerSideProcess) {
     coord.startProcess(executor)
   }
 
   def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
-
-    val instrumentedEndpoint = metrics.instrumentCallback(endpoint)
-
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    connection.bindService(instrumentedEndpoint, executor, new AnyNodeDestination, true)
-    instrumentedEndpoint
+    connection.bindService(endpoint, executor, new AnyNodeDestination, true)
+    endpoint
   }
 }
 

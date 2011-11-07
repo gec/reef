@@ -28,7 +28,6 @@ import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 class TriggerSetService(protected val model: TriggerSetServiceModel)
     extends SyncModeledServiceBase[TriggerProto, TriggerSet, TriggerSetServiceModel]

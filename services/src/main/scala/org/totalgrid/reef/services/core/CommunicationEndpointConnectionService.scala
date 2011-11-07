@@ -30,7 +30,6 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 

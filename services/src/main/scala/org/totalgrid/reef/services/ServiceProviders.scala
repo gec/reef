@@ -25,12 +25,12 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
-import org.totalgrid.reef.clientapi.sapi.auth.AuthService
+import org.totalgrid.reef.services.authz.{ AuthServiceMetricsWrapper, AuthService }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
+import org.totalgrid.reef.services.metrics.MetricsServiceWrapper
 
 /**
  * list of all of the service providers in the system
@@ -57,25 +57,15 @@ class ServiceProviders(
   private val wrappedDb = new RTDatabaseMetrics(cm, metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, metricsPublisher.getStore("historian.hist"))
 
-  private val authzMetrics = {
-    val hooks = new RestAuthzMetrics("")
-    if (serviceConfiguration.metrics) {
-      hooks.setHookSource(metricsPublisher.getStore("all"))
-    }
-    hooks
-  }
-
   // TODO: AuthTokenService can probably be authed service now
   private val unauthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = List(
     new SimpleAuthRequestService(modelFac.authTokens),
     new AuthTokenService(modelFac.authTokens))
 
-  private val restAuthorizedServices: List[AsyncService[_]] = List(
-    new EntityService,
+  private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
     new EntityEdgeService,
-    new EntityAttributesService).map(s => new RestAuthzWrapper(s, authzMetrics, authzService))
-
-  private val crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
+    new EntityService,
+    new EntityAttributesService,
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),
     new EventQueryService,
@@ -107,10 +97,16 @@ class ServiceProviders(
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms))
 
-  crudAuthorizedServices.foreach(s => s.authService = authzService)
+  crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
 
-  val rawServices = unauthorizedServices ::: crudAuthorizedServices
-  val services = rawServices.map { s => new ServiceMiddleware(contextSource, s) } ::: restAuthorizedServices
+  val authService = new AuthServiceMetricsWrapper(authzService, metricsPublisher.getStore("services.auth"))
+  crudAuthorizedServices.foreach(s => s.authService = authService)
+
+  val allServices = (unauthorizedServices ::: crudAuthorizedServices)
+
+  val metrics = new MetricsServiceWrapper(metricsPublisher, serviceConfiguration)
+  val metricWrapped = allServices.map { s => metrics.instrumentCallback(s) }
+  val services = metricWrapped.map { s => new ServiceMiddleware(contextSource, s) }
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus, contextSource),

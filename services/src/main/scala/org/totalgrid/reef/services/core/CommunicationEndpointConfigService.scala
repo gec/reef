@@ -30,7 +30,6 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.ProtoRoutingKeys
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]

@@ -18,11 +18,14 @@
  */
 package org.totalgrid.reef.broker
 
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+
 trait BrokerConnectionFactory {
 
   /**
    * creates a new broker connection or excepts
    */
+  @throws(classOf[ReefServiceException])
   def connect: BrokerConnection
 
 }

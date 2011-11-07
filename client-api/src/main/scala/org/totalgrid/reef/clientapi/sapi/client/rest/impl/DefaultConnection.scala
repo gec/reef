@@ -40,6 +40,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     with DefaultServiceRegistry {
 
   addServiceInfo(BuiltInDescriptors.authRequestServiceInfo)
+  addServiceInfo(BuiltInDescriptors.batchServiceRequestServiceInfo)
 
   conn.declareExchange("amq.direct")
   private val correlator = new ResponseCorrelator
@@ -65,7 +66,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   private def createClient(authToken: String, strand: Strand) = {
-    val client = new DefaultClient(this, strand) with RequestSpyHook
+    val client = new DefaultClient(this, strand)
     client.modifyHeaders(_.addAuthToken(authToken))
     client
   }
@@ -102,12 +103,14 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     future
   }
 
-  def subscribe[A](exe: Executor, descriptor: TypeDescriptor[A]): Result[Subscription[A]] = {
-    try {
+  def subscribe[A](exe: Executor, descriptor: TypeDescriptor[A]) = {
+    val f = exe.future[Result[Subscription[A]]]
+    f.set(try {
       Success(new DefaultSubscription[A](conn.listen(), exe, descriptor.deserialize))
     } catch {
       case ex: Exception => Failure(ex)
-    }
+    })
+    f
   }
 
   override def bindService[A](service: AsyncService[A], exe: Executor, destination: Routable, competing: Boolean): Cancelable = {

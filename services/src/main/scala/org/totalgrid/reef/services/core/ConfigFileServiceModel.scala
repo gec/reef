@@ -30,7 +30,6 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
 import java.util.UUID
 
@@ -106,7 +105,10 @@ class ConfigFileServiceModel
 
   private def updateUsingEntities(context: RequestContext, configFileProto: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
-    val updatedEntities = configFileProto.getEntitiesList.toList.map { e => EntityQueryManager.findEntity(e).get }
+    val updatedEntities = configFileProto.getEntitiesList.toList.map { e =>
+      EntityQueryManager.findEntity(e).getOrElse(
+        throw new BadRequestException("Cant find entity: " + e))
+    }
     val newEntitites = updatedEntities.diff(existingEntities)
 
     // TODO we don't delete edges this way, currently no way to delete configFile edges

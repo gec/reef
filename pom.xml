@@ -22,6 +22,7 @@
         <module>common-api</module>
         <module>client-api</module>
 		<module>client</module>
+		<module>integration-testing</module>
         <module>executor</module>
 		<module>util</module>
 		<module>util-osgi</module>

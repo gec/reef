@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
 
 import org.totalgrid.reef.proto.Model._
@@ -26,6 +25,7 @@ import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.clientapi.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
 
 trait LoaderServices extends AllScadaService {
   def addEquipment(entity: Entity): Promise[Entity]
@@ -40,6 +40,17 @@ trait LoaderServices extends AllScadaService {
   def delete[A <: AnyRef](obj: A): Promise[A]
 
   def getFeedbackCommands(uuid: ReefUUID): Promise[List[Entity]]
+}
+
+object LoaderClient {
+
+  private val serviceInfo = new RpcProviderInfo({ c: Client => new LoaderServicesImpl(c) },
+    List(
+      classOf[LoaderServices]))
+
+  def prepareClient(client: Client) {
+    client.addRpcProvider(serviceInfo)
+  }
 }
 
 class LoaderServicesImpl(client: Client) extends ApiBase(client) with LoaderServices with AllScadaServiceImpl {

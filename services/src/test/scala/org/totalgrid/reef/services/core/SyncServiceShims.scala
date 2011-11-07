@@ -24,6 +24,10 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.clientapi.sapi.client.impl.SynchronizedPromise
 import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
 
+object SyncService {
+  def apply[A <: AnyRef](service: ServiceEntryPoint[A]) = new SyncService(service, SyncServiceShims.getRequestContextSource(SyncServiceShims.getRequestEnv))
+}
+
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
   def get(req: A): Response[A] = get(req, BasicRequestHeaders.empty)

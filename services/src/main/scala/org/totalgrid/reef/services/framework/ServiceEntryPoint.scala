@@ -20,30 +20,39 @@ package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.clientapi.sapi.service._
 import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.clientapi.proto.Envelope
 
 /**
  * defines the get verb and provides a default fail operation
  */
 trait AsyncContextRestGet extends HasServiceType {
-  def getAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
+  def getAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
 }
 
 trait AsyncContextRestDelete extends HasServiceType {
-  def deleteAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
+  def deleteAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
 }
 
 trait AsyncContextRestPost extends HasServiceType {
-  def postAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPost[ServiceType])
+  def postAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPost[ServiceType])
 }
 
 trait AsyncContextRestPut extends HasServiceType {
-  def putAsync(context: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
+  def putAsync(source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
 }
 
 /**
  * rollup trait that has default implementations for all 4 verbs
  */
-trait AsyncContextRestService extends AsyncContextRestGet with AsyncContextRestDelete with AsyncContextRestPost with AsyncContextRestPut
+trait AsyncContextRestService extends AsyncContextRestGet with AsyncContextRestDelete with AsyncContextRestPost with AsyncContextRestPut {
+
+  def respondAsync(verb: Envelope.Verb, source: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = verb match {
+    case Envelope.Verb.GET => getAsync(source, req)(callback)
+    case Envelope.Verb.PUT => putAsync(source, req)(callback)
+    case Envelope.Verb.DELETE => deleteAsync(source, req)(callback)
+    case Envelope.Verb.POST => postAsync(source, req)(callback)
+  }
+}
 
 /**
  * all services that we will use with ServiceMiddleware will implement this trait

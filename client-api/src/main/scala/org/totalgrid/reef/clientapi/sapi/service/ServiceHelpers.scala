@@ -19,19 +19,45 @@
 package org.totalgrid.reef.clientapi.sapi.service
 
 import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.sapi.client.{ FailureResponse, Response }
 import com.google.protobuf.ByteString
+import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import com.weiglewilczek.slf4s.Logging
+
+object ServiceHelpers extends Logging {
+  def getResponse[A](id: String, rsp: Response[A], descriptor: TypeDescriptor[A]): Envelope.ServiceResponse = {
+    val ret = Envelope.ServiceResponse.newBuilder.setId(id)
+    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
+    rsp.list.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
+    ret.build
+  }
+
+  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = {
+    Envelope.ServiceResponse.newBuilder.setId(id).setStatus(status).setErrorMessage(errorMsg).build
+  }
+
+  def catchErrors(req: Envelope.ServiceRequest, callback: ServiceResponseCallback)(fun: => Unit) = {
+    try {
+      fun
+    } catch {
+      case px: ReefServiceException =>
+        logger.error(px.getMessage, px)
+        callback.onResponse(getFailure(req.getId, px.getStatus, px.getMessage))
+      case x: Exception =>
+        logger.error(x.getMessage, x)
+        val msg = x.getMessage + "\n" + x.getStackTraceString
+        callback.onResponse(getFailure(req.getId, Envelope.Status.INTERNAL_ERROR, msg))
+    }
+  }
+}
 
 trait ServiceHelpers[A] {
   self: ServiceDescriptor[A] =>
 
-  def getResponse(id: String, rsp: Response[A]): Envelope.ServiceResponse = {
-    val ret = Envelope.ServiceResponse.newBuilder.setId(id)
-    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
-    rsp.list.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
-    ret.build()
-  }
+  import ServiceHelpers._
 
-  def getFailure(id: String, status: Envelope.Status, errorMsg: String) = getResponse(id, FailureResponse(status, errorMsg))
+  def getResponse(id: String, rsp: Response[A]): Envelope.ServiceResponse =
+    ServiceHelpers.getResponse(id, rsp, descriptor)
 
 }
