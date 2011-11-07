@@ -45,7 +45,7 @@ public interface Client
      */
     void setHeaders( RequestHeaders headers );
 
-   /**
+    /**
      * Add a listener that is called every time a subscription is created
      * @param listener
      */
@@ -57,7 +57,7 @@ public interface Client
      */
     void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 
-   /**
+    /**
      * Get an active service interface by class.
      * @param klass The class of interface to return. Valid interfaces are found in org.totalgrid.reef.client.rpc
      * @param <A>
