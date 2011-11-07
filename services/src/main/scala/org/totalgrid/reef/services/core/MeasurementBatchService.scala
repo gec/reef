@@ -53,18 +53,24 @@ class MeasurementBatchService
         throw new BadRequestException("Trying to publish on unknown points: " + missingPoints.mkString(","))
       }
 
-      if (!points.forall(_.endpoint.value.isDefined))
-        throw new BadRequestException("Not all points have endpoints set.")
+      val pointsWithoutEndpoints = points.filter(_.endpoint.value.isEmpty)
+
+      if (!pointsWithoutEndpoints.isEmpty) {
+        throw new BadRequestException("No endpoint set for points: " + pointsWithoutEndpoints.map { _.entityName })
+      }
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
+
+      val headers = BasicRequestHeaders.empty
+      val commonHeaders = context.getHeaders.getTimeout.map { headers.setTimeout(_) }.getOrElse(headers)
 
       val requests = commEndpoints.size match {
         //fails with exception if any batch can't be routed
         case 0 => throw new BadRequestException("No Logical Nodes on points: ")
         case 1 =>
-          val headers = BasicRequestHeaders.empty.setDestination(convertEndpointToDestination(commEndpoints.head._1))
-          Request(Envelope.Verb.PUT, req, headers) :: Nil
-        case _ => getRequests(req, commEndpoints)
+          val addressedHeaders = commonHeaders.setDestination(convertEndpointToDestination(commEndpoints.head._1))
+          Request(Envelope.Verb.PUT, req, addressedHeaders) :: Nil
+        case _ => getRequests(req, commonHeaders, commEndpoints)
       }
       val futures = requests.map(req => context.client.request(req.verb, req.payload, Some(req.env)))
       Futures.gather(context.client, futures)
@@ -85,7 +91,7 @@ class MeasurementBatchService
     case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }
 
-  private def getRequests(req: MeasurementBatch, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
+  private def getRequests(req: MeasurementBatch, commonHeaders: BasicRequestHeaders, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
     val measList = req.getMeasList().toList
 
     // TODO: more efficient creation of measurement batches
@@ -97,7 +103,7 @@ class MeasurementBatchService
         points.foreach { p =>
           batch.addMeas(measList.find(_.getName == p.entityName).get)
         }
-        val headers = BasicRequestHeaders.empty.setDestination(convertEndpointToDestination(ce))
+        val headers = commonHeaders.setDestination(convertEndpointToDestination(ce))
         Request(Envelope.Verb.PUT, batch.build, headers) :: sum
     }
 
