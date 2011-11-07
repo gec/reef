@@ -104,8 +104,9 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
       case None => Some(x)
       case Some(current) => if (current.level >= x.level) best else Some(x)
     }
+
     def add(endpoint: String, executor: Executor, publisher: BatchPublisher, mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
-      val simulator = factory.createSimulator(endpoint, Strand(executor), publisher, mapping)
+      val simulator = factory.create(endpoint, Strand(executor), publisher, mapping)
       logger.info("Adding simulator for endpoint " + endpoint + " of type " + simulator.getClass.getName)
       endpoints += endpoint -> PluginRecord(endpoint, mapping, publisher, Some(simulator))
     }

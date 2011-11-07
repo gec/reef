@@ -24,13 +24,12 @@ import net.agileautomata.executor4s.Executor
 
 trait SimulatorPluginFactory {
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int
-  def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin
-  def destroySimulator(plugin: SimulatorPlugin): Unit
+  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin
   def name: String
 }
 
 trait SimulatorPlugin {
-  def shutdown() = factory.destroySimulator(this)
+  def shutdown(): Unit
   def factory: SimulatorPluginFactory
   def simLevel: Int
   def issue(cr: Commands.CommandRequest): Commands.CommandStatus

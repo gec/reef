@@ -30,14 +30,8 @@ object DefaultSimulatorFactory extends SimulatorPluginFactory with Logging {
 
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = 0
 
-  def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
-    val sim = new DefaultSimulator(endpointName, publisher, config, executor, this)
-    sim.start()
-    sim
+  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+    new DefaultSimulator(endpointName, publisher, config, executor, this)
   }
 
-  def destroySimulator(plugin: SimulatorPlugin): Unit = plugin match {
-    case sim: DefaultSimulator => sim.stop()
-    case _ => logger.error("Cannot destroy unknown simulator type: " + plugin)
-  }
 }

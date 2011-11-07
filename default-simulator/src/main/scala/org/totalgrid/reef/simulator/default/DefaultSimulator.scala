@@ -30,36 +30,30 @@ import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement => Meas }
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.api.protocol.simulator.{ ControllableSimulator, SimulatorPluginFactory, SimulatorPlugin }
-import org.totalgrid.reef.util.Lifecycle
 
 class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory)
-    extends SimulatorPlugin with ControllableSimulator with Lifecycle with Logging {
+    extends SimulatorPlugin with ControllableSimulator with Logging {
 
   case class MeasRecord(name: String, unit: String, currentValue: CurrentValue[_])
 
-  private var delay: Long = config.getDelay
+  val strand = Strand(exe)
 
   private val measurements = config.getMeasurementsList.map { x => MeasRecord(x.getName, x.getUnit, getValueHolder(x)) }.toList
   private val cmdMap = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
-
   private val rand = new Random
-  private var repeater: Option[Timer] = None
+  private var delay: Long = config.getDelay
 
-  override def afterStart() {
-    exe.execute { update(measurements, true) }
-    setUpdateParams(delay)
-  }
-  override def beforeStop() {
-    this.synchronized {
-      repeater.foreach { _.cancel }
-    }
+  private var timer: Option[Timer] = None
+
+  strand.execute(start)
+
+  private def start() = {
+    //Todo - place startup code here
   }
 
-  def repeat() {
-    this.synchronized {
-      update(measurements)
-    }
-  }
+  def shutdown() = strand.terminate(timer.foreach(_.cancel()))
+
+  private def repeat() = update(measurements)
 
   def getRepeatDelay = delay
 
@@ -69,8 +63,8 @@ class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], con
     delay = newDelay
     logger.info("Updating parameters for simulator: " + name + ", delay = " + delay)
     this.synchronized {
-      repeater.foreach(_.cancel)
-      if (delay > 0) repeater = Some(exe.scheduleWithFixedOffset(delay.milliseconds) { repeat }) else None
+      timer.foreach(_.cancel)
+      if (delay > 0) timer = Some(exe.scheduleWithFixedOffset(delay.milliseconds) { repeat }) else None
     }
   }
 

@@ -86,17 +86,13 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
     var map = Map.empty[String, MockSimPlugin]
 
     def name: String = "MockSimulatorFactory"
+
     def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = simLevel
-    def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+
+    def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
       val mock = new MockSimPlugin(this)
       map += endpointName -> mock
       mock
-    }
-
-    def destroySimulator(plugin: SimulatorPlugin): Unit = map.find(x => x._2.equals(plugin)) match {
-      case Some((name, plugin)) =>
-        map -= name
-      case None => throw new Exception("Plugin not found")
     }
 
     class MockSimPlugin(parent: MockSimulatorFactory) extends SimulatorPlugin {
@@ -105,6 +101,11 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
       def factory: SimulatorPluginFactory = parent
       def simLevel: Int = simLevel
       def issue(cr: Commands.CommandRequest): Commands.CommandStatus = response
+      def shutdown() = map.find(x => x._2.equals(this)) match {
+        case Some((name, plugin)) =>
+          map -= name
+        case None => throw new Exception("Plugin not found")
+      }
     }
   }
 
