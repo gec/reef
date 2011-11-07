@@ -20,19 +20,32 @@ package org.totalgrid.reef.client.sapi.rpc.impl.util
 
 import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
-
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.client.ReefFactory
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
+import org.scalatest.matchers.ShouldMatchers
+import org.totalgrid.reef.clientapi.{SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor}
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
 }
 
-abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+class SubscriptionCanceler extends SubscriptionCreationListener{
+
+  var subs = List.empty[SubscriptionBinding]
+
+  def onSubscriptionCreated(binding: SubscriptionBinding) = this.synchronized{
+    subs ::= binding
+  }
+
+  def cancel() = this.synchronized{
+    subs.foreach{_.cancel()}
+  }
+}
+
+abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
 
   def this(file: String, title: String, desc: String) = {
     this(file, title, <div>{ desc }</div>)
@@ -44,6 +57,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
   private var clientOption = Option.empty[AllScadaService]
 
   val recorder = new InteractionRecorder {}
+  val canceler = new SubscriptionCanceler
 
   def session = sessionOption.get
   def client = clientOption.get
@@ -60,10 +74,12 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
     sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))
     client.addRequestSpy(recorder)
+    client.addSubscriptionCreationListener(canceler)
   }
 
   override def afterAll() {
     recorder.save(file, title, desc)
+    canceler.cancel()
     factoryOption.foreach(_.terminate())
   }
 
