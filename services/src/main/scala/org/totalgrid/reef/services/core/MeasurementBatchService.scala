@@ -45,8 +45,13 @@ class MeasurementBatchService
       authorizeCreate(context, req)
 
       // TODO: load all endpoints efficiently
-      val names = req.getMeasList().toList.map(_.getName)
+      val names = req.getMeasList().toList.map(_.getName).distinct
       val points = Point.findByNames(names).toList
+
+      if (names.size != points.size) {
+        val missingPoints = names.diff(points.map { _.entityName })
+        throw new BadRequestException("Trying to publish on unknown points: " + missingPoints.mkString(","))
+      }
 
       if (!points.forall(_.endpoint.value.isDefined))
         throw new BadRequestException("Not all points have endpoints set.")
