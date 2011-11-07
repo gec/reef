@@ -42,7 +42,7 @@ final class DefaultSubscription[A](subscription: BrokerSubscription, executor: E
           val value = deserialize(event.getPayload.toByteArray)
           executor.execute(callback(Event(event.getEvent, value)))
         } catch {
-          case ex: Exception => logger.error("Unable to deserialize incoming event: " + msg)
+          case ex: Exception => logger.error("Unable to deserialize incoming event: " + ex.getMessage, ex)
         }
       }
     }
