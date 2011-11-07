@@ -36,9 +36,9 @@ public interface ConnectionFactory
      */
     Connection connect() throws ReefServiceException;
 
-   /**
+    /**
      * Permanently shutdown the underlying machinery for the connection factory. No
      * more calls to connect() are allowed.
      */
-   void terminate();
+    void terminate();
 }
