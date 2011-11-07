@@ -29,6 +29,8 @@ import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBo
 import org.totalgrid.reef.util.{ Cancelable, LifecycleManager }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * gets other modules used by the services so can implemented via OSGI or directly
@@ -57,6 +59,8 @@ object ServiceFactory {
         val mgr = new LifecycleManager
         val measStore = modules.getMeasStore()
 
+        val client = connection.login(authToken).getRpcInterface(classOf[AllScadaService])
+        val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
         val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)
 
         val serviceContext = new ServiceContext(connection, exe)
@@ -68,11 +72,13 @@ object ServiceFactory {
         modules.publishServices(services)
 
         mgr.start()
+        heartbeater.start()
 
         new Cancelable {
           def cancel() = {
             providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()
+            heartbeater.stop()
           }
         }
       }
