@@ -29,18 +29,10 @@ trait SimulatorPluginFactory {
 }
 
 trait SimulatorPlugin {
+  def name: String
   def shutdown(): Unit
   def factory: SimulatorPluginFactory
   def simLevel: Int
   def issue(cr: Commands.CommandRequest): Commands.CommandStatus
 }
 
-trait ControllableSimulator {
-  def getRepeatDelay: Long
-
-  def setUpdateParams(newDelay: Long)
-}
-
-trait SimulatorManagement {
-  def getSimulators: Map[String, Option[SimulatorPlugin]]
-}

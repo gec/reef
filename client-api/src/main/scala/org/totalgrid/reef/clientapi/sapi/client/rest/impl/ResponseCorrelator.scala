@@ -45,19 +45,19 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
   private def nextUuid = UUID.randomUUID().toString
 
   /// mutable state
-  private case class Record(timer: Cancelable, callback: ResponseCallback, executor: Executor)
+  private case class Record(timer: Cancelable, callback: ResponseCallback)
   private val map = mutable.Map.empty[String, Record]
 
   def register(executor: Executor, interval: TimeInterval, callback: ResponseCallback): String = map.synchronized {
     val uuid = nextUuid
     val timer = executor.schedule(interval)(onTimeout(uuid))
-    map.put(uuid, Record(timer, callback, executor))
+    map.put(uuid, Record(timer, callback))
     uuid
   }
 
   def fail(uuid: String, response: FailureResponse) = map.synchronized {
     map.remove(uuid) match {
-      case Some(Record(timer, callback, executor)) =>
+      case Some(Record(timer, callback)) =>
         timer.cancel()
         callback(Left(response))
       case None =>
@@ -67,17 +67,18 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
 
   // terminates all existing registered callbacks with an exception
   def close() = map.synchronized {
+    if (map.size > 0) logger.warn("Closing response corrolater with some outstanding requests: " + map.size)
     map.values.foreach {
-      case Record(timer, callback, executor) =>
+      case Record(timer, callback) =>
         timer.cancel()
-        executor.execute(callback(Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close"))))
+        callback(Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")))
     }
     map.clear()
   }
 
   private def onTimeout(uuid: String) = map.synchronized {
     map.get(uuid) match {
-      case Some(Record(timer, callback, executor)) =>
+      case Some(Record(timer, callback)) =>
         map.remove(uuid)
         callback(Left(ResponseTimeout))
       case None =>
@@ -95,7 +96,7 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
 
   private def onResponse(rsp: ServiceResponse) = map.synchronized {
     map.get(rsp.getId) match {
-      case Some(Record(timer, callback, _)) =>
+      case Some(Record(timer, callback)) =>
         timer.cancel()
         map.remove(rsp.getId)
         callback(Right(rsp))

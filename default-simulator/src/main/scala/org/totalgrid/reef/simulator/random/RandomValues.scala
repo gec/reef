@@ -38,9 +38,11 @@ object RandomValues {
     }
   }
 
-  trait RandomValue {
+  abstract class RandomValue {
 
     def changeProbability: Double
+
+    def newChangeProbablity(p: Double): RandomValue
 
     def next(): Option[RandomValue] = {
       if (rand.nextDouble > changeProbability) None
@@ -55,14 +57,17 @@ object RandomValues {
   case class DoubleValue(value: Double, min: Double, max: Double, maxChange: Double, changeProbability: Double) extends RandomValue {
     def generate() = this.copy(value = value + maxChange * 2 * ((rand.nextDouble - 0.5)).max(min).min(max))
     def apply(meas: Measurements.Measurement.Builder) = meas.setDoubleVal(value).setType(Type.DOUBLE)
+    def newChangeProbablity(p: Double) = this.copy(changeProbability = p)
   }
   case class IntValue(value: Int, min: Int, max: Int, maxChange: Int, changeProbability: Double) extends RandomValue {
     def generate() = this.copy(value = (value + rand.nextInt(2 * maxChange + 1) - maxChange).max(min).min(max))
     def apply(meas: Measurements.Measurement.Builder) = meas.setIntVal(value).setType(Type.INT)
+    def newChangeProbablity(p: Double) = this.copy(changeProbability = p)
   }
   case class BooleanValue(value: Boolean, changeProbability: Double) extends RandomValue {
     def generate() = this.copy(value = !value, changeProbability)
     def apply(meas: Measurements.Measurement.Builder) = meas.setBoolVal(value) setType (Type.BOOL)
+    def newChangeProbablity(p: Double) = this.copy(changeProbability = p)
   }
 
 }

@@ -30,7 +30,7 @@ import com.weiglewilczek.slf4s.Logging
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with SimulatorManagement with Logging {
+class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
 
   import Protocol._
 
@@ -143,10 +143,6 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Simu
         }
       }
     }
-  }
-
-  override def getSimulators() = {
-    endpoints.map { case (n, r) => n -> r.current }.toMap
   }
 
 }

@@ -70,6 +70,8 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
   def factory: SimulatorPluginFactory = ExampleSimulatorFactory
   def simLevel: Int = 1
 
+  def name = "ExampleBreakerSimulator"
+
   executor.execute(publisher.publish(createBreakerBatch(false)))
 
   def shutdown() = {}

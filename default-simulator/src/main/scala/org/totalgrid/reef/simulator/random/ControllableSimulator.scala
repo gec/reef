@@ -18,24 +18,11 @@
  */
 package org.totalgrid.reef.simulator.random
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.api.protocol.simulator.SimulatorPluginFactory
-import net.agileautomata.executor4s.Cancelable
+import org.totalgrid.reef.api.protocol.simulator.SimulatorPlugin
 
-class Activator extends BundleActivator {
-
-  final override def start(context: BundleContext) = {
-
-    def register(context: BundleContext)(sim: DefaultSimulator): Cancelable = {
-      val reg = context.createService(sim, interface1 = interface[ControllableSimulator])
-      new Cancelable { def cancel() = reg.unregister() }
-    }
-
-    val factory = new DefaultSimulatorFactory(register(context))
-    context.createService(factory, interface1 = interface[SimulatorPluginFactory])
-  }
-
-  final override def stop(context: BundleContext) = {}
-
+trait ControllableSimulator extends SimulatorPlugin {
+  def getRepeatDelay: Long
+  def setUpdateDelay(newDelay: Long)
+  def setChangeProbability(prob: Double)
 }
+

@@ -53,7 +53,9 @@ class DefaultSimulatorTestSuite extends FunSuite with ShouldMatchers {
   def fixture(test: (DefaultSimulator, MockExecutor, CachingPublisher) => Unit) = {
     val exe = new MockExecutor
     val pub = new CachingPublisher
-    val sim = DefaultSimulatorFactory.create("test", exe, pub, getConfig)
+    def register(sim: DefaultSimulator) = new Cancelable { def cancel() {} }
+    val factory = new DefaultSimulatorFactory(register)
+    val sim = factory.create("test", exe, pub, getConfig)
     test(sim, exe, pub)
   }
 

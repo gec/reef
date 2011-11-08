@@ -30,9 +30,9 @@ import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.simulator.random.RandomValues.RandomValue
 import org.totalgrid.reef.proto.Commands.CommandStatus
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
-import org.totalgrid.reef.api.protocol.simulator.{ ControllableSimulator, SimulatorPluginFactory, SimulatorPlugin }
+import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPluginFactory, SimulatorPlugin }
 
-final class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: SimulatorPluginFactory)
+final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: DefaultSimulatorFactory)
     extends SimulatorPlugin with ControllableSimulator with Logging {
 
   val strand = Strand(exe)
@@ -45,7 +45,12 @@ final class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch
     }
   }
 
-  def shutdown() = strand.terminate(mutate(_.cancelTimer()))
+  def shutdown() = {
+    strand.terminate {
+      parent.remove(this)
+      mutate(_.cancelTimer())
+    }
+  }
 
   private case class MeasRecord(name: String, unit: String, value: RandomValue) {
     def measurement: Measurements.Measurement = {
@@ -110,6 +115,8 @@ final class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch
 
   /* Implement Simulator plugin */
 
+  override def name: String = simName
+
   override def factory = parent
   override def simLevel: Int = 0
 
@@ -124,7 +131,14 @@ final class DefaultSimulator(name: String, publisher: Publisher[MeasurementBatch
 
   override def getRepeatDelay = state.delayMs
 
-  override def setUpdateParams(newDelay: Long) = mutate { state =>
+  override def setChangeProbability(prob: Double) = mutate { state =>
+    val meas = state.measurements.values.foldLeft(Map.empty[String, MeasRecord]) { (sum, rec) =>
+      sum + (rec.name -> rec.copy(value = rec.value.newChangeProbablity(prob)))
+    }
+    state.copy(measurements = meas)
+  }
+
+  override def setUpdateDelay(newDelay: Long) = mutate { state =>
     logger.info("Updating parameters for simulator: " + name + ", delay = " + newDelay)
     state.updateDelay(newDelay)
   }

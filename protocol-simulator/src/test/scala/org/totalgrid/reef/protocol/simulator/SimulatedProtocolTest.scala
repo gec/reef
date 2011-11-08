@@ -98,6 +98,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
     class MockSimPlugin(parent: MockSimulatorFactory) extends SimulatorPlugin {
       var response = Commands.CommandStatus.SUCCESS
 
+      def name = "mock"
       def factory: SimulatorPluginFactory = parent
       def simLevel: Int = simLevel
       def issue(cr: Commands.CommandRequest): Commands.CommandStatus = response

@@ -51,6 +51,8 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   // TODO - fail all all request once disconnected
   def onDisconnect(expected: Boolean): Unit = {
     conn.removeListener(this)
+    subscription.close()
+    correlator.close()
     this.notifyListenersOfClose(expected)
   }
 

@@ -37,7 +37,6 @@ final class Activator extends BundleActivator with Logging {
     val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
 
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
-    context.createService(protocol, "protocol" -> protocol.name, interface[SimulatorManagement])
 
     context watchServices withInterface[SimulatorPluginFactory] andHandle {
       case AddingService(plugin, properties) =>
