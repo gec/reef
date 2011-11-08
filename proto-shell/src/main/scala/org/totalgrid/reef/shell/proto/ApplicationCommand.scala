@@ -20,15 +20,13 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.Command
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import scala.collection.JavaConversions._
 import presentation.ApplicationView
 
 @Command(scope = "application", name = "list", description = "Prints application information")
 class ApplicationListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    // TODO: re-enable application and trigger view commands
-    //    val results = reefSession.get(ApplicationConfig.newBuilder.setInstanceName("*").build).await().expectMany()
-    //    ApplicationView.printTable(results)
+    ApplicationView.printTable(services.getApplications.toList)
   }
 }

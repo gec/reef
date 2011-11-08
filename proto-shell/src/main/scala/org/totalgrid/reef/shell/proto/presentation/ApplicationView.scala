@@ -28,14 +28,14 @@ object ApplicationView {
     Table.printTable(header, apps.map(row(_)))
   }
 
-  // TODO: expose application online status and lastUPdate time in protos
   def header = {
-    "ID" :: "Name" :: "Location" :: "Network" :: "Capabilites" :: Nil
+    "Name" :: "Online" :: "TimesOutAt" :: "Location" :: "Network" :: "Capabilites" :: Nil
   }
 
   def row(a: ApplicationConfig) = {
-    a.getUuid.getUuid ::
-      a.getInstanceName ::
+    a.getInstanceName ::
+      a.getOnline.toString ::
+      new java.util.Date(a.getTimesOutAt).toString ::
       a.getLocation ::
       a.getNetwork ::
       a.getCapabilitesList.toList.mkString(", ") ::

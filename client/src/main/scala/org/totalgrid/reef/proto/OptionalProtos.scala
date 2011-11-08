@@ -77,6 +77,8 @@ object OptionalProtos {
     val location = optionally(_.hasLocation, _.getLocation)
     val capabilites = optionally(_.getCapabilitesList.toList)
     val heartbeatCfg = new OptApplicationHeartbeatConfig(optionally(_.hasHeartbeatCfg, _.getHeartbeatCfg))
+    val online = optionally(_.hasOnline, _.getOnline)
+    val timesOutAt = optionally(_.hasTimesOutAt, _.getTimesOutAt)
   }
   implicit def proto2OptAuthAgent(a: org.totalgrid.reef.proto.Auth.Agent): OptAuthAgent = new OptAuthAgent(Some(a))
   class OptAuthAgent(real: Option[org.totalgrid.reef.proto.Auth.Agent]) extends OptionalStruct(real) {

@@ -82,6 +82,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
 
   override def postDelete(context: RequestContext, sql: ApplicationInstance) {
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
+    ApplicationSchema.heartbeats.deleteWhere(c => c.applicationId === sql.id)
   }
 }
 
@@ -119,11 +120,11 @@ trait ApplicationConfigConversion
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {
 
-    val hbeat = entry.heartbeat
+    val hbeat = entry.heartbeat.value
 
     val h = HeartbeatConfig.newBuilder
-      .setPeriodMs(hbeat.value.periodMS)
-      .setProcessId(hbeat.value.processId)
+      .setPeriodMs(hbeat.periodMS)
+      .setProcessId(hbeat.processId)
       .setInstanceName(entry.instanceName)
 
     val b = ApplicationConfig.newBuilder
@@ -133,6 +134,8 @@ trait ApplicationConfigConversion
       .setNetwork(entry.network)
       .setLocation(entry.location)
       .setHeartbeatCfg(h)
+      .setOnline(hbeat.isOnline)
+      .setTimesOutAt(hbeat.timeoutAt)
 
     entry.capabilities.value.foreach(x => b.addCapabilites(x.capability))
     b.build

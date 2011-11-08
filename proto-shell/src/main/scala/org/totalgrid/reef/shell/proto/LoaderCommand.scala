@@ -71,6 +71,7 @@ class TriggerCommand extends ReefCommandSupport {
   var pointName: String = null
 
   def doCommand() = {
+    // TODO: re-enable trigger view commands
     //    Option(pointName) match {
     //      case Some(entId) =>
     //        val point = services.getPointByName(pointName)

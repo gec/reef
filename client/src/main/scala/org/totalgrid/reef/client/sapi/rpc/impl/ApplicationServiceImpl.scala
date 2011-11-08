@@ -24,6 +24,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import org.totalgrid.reef.clientapi.settings.NodeSettings
+import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationService {
 
@@ -32,7 +33,15 @@ trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationServ
       _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).map(_.one)
     }
   }
+  override def unregisterApplication(appConfig: ApplicationConfig) = {
+    ops.operation("Failed registering application") {
+      _.delete(appConfig).map(_.one)
+    }
+  }
   override def sendHeartbeat(statusSnapshot: StatusSnapshot) =
     ops.operation("Heartbeat failed")(_.put(statusSnapshot).map(_.one))
 
+  override def getApplications() = ops.operation("Heartbeat failed") {
+    _.get(ApplicationConfig.newBuilder.setInstanceName("*").build).map(_.many)
+  }
 }

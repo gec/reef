@@ -42,10 +42,26 @@ public interface ApplicationService
     ApplicationConfig registerApplication( NodeSettings nodeSettings, String instanceName, List<String> capabilities ) throws ReefServiceException;
 
     /**
+     * Unregisters the application from the system, this shouldn't be called if we expect this application be
+     * restarted again in the near future.
+     *
+     * @param appConfig registration object from registerApplication
+     * @return The configuration we just deleted
+     * @throws ReefServiceException
+     */
+    ApplicationConfig unregisterApplication( ApplicationConfig appConfig ) throws ReefServiceException;
+
+    /**
      * Performs a heartbeat service call with the services.
      * @param statusSnapshot
      * @return
      * @throws ReefServiceException
      */
     StatusSnapshot sendHeartbeat( StatusSnapshot statusSnapshot ) throws ReefServiceException;
+
+    /**
+     * Gets list of all currently registered applications
+     * @throws ReefServiceException
+     */
+    List<ApplicationConfig> getApplications() throws ReefServiceException;
 }
