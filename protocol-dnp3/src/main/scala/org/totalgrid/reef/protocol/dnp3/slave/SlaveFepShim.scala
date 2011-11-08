@@ -68,6 +68,8 @@ class SlaveFepShim extends Logging {
 
   def start(context: BundleContext) {
 
+    logger.info("Starting SlaveFepShim bundle...")
+
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
@@ -86,5 +88,7 @@ class SlaveFepShim extends Logging {
 
   def stop(context: BundleContext) = {
     manager.foreach { _.stop }
+
+    logger.info("Stopped SlaveFepShim bundle...")
   }
 }

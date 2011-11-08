@@ -49,7 +49,7 @@ public class NodeSettings
 
     public NodeSettings( String file ) throws IllegalArgumentException, IOException
     {
-        this( PropertyReader.readFromFile(file) );
+        this( PropertyReader.readFromFile( file ) );
     }
 
     public String getDefaultNodeName()

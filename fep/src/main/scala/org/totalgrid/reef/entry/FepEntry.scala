@@ -43,6 +43,8 @@ class FepActivator extends BundleActivator with Logging {
 
   def start(context: BundleContext) {
 
+    logger.info("Starting FEP bundle..")
+
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
@@ -62,7 +64,11 @@ class FepActivator extends BundleActivator with Logging {
     manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) = manager.foreach { _.stop }
+  def stop(context: BundleContext) = {
+    manager.foreach { _.stop }
+
+    logger.info("Stopped FEP bundle..")
+  }
 
   private def addProtocol(p: Protocol, userSettings: UserSettings, nodeSettings: NodeSettings) = map.synchronized {
     map.get(p) match {

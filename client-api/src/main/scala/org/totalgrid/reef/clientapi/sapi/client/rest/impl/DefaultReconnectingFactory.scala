@@ -51,6 +51,7 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
 
   private def tryConnection(nextDelay: Long) {
     try {
+      logger.info("Connecting to broker")
       broker = Some(factory.connect)
       logger.info("Connected to broker")
       broker.get.addListener(this)
@@ -64,7 +65,7 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
   }
 
   def onDisconnect(expected: Boolean) {
-    logger.info("Disconnected expected: " + expected)
+    logger.info("Disconnected from broker, expected: " + expected)
     broker.foreach(_.removeListener(this))
     broker = None
     this.synchronized { watchers.foreach { _.onConnectionClosed(expected) } }

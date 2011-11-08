@@ -31,6 +31,7 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreF
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import com.weiglewilczek.scalamodules._
 import net.agileautomata.executor4s.Executor
+import com.weiglewilczek.slf4s.Logging
 
 object ProcessingActivator {
   def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
@@ -59,11 +60,13 @@ object ProcessingActivator {
   }
 }
 
-class ProcessingActivator extends BundleActivator {
+class ProcessingActivator extends BundleActivator with Logging {
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
+
+    logger.info("Starting Processing bundle..")
 
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
@@ -84,7 +87,10 @@ class ProcessingActivator extends BundleActivator {
   }
 
   def stop(context: BundleContext) = {
+
     manager.foreach { _.stop }
+
+    logger.info("Stopped Processing bundle..")
   }
 
 }

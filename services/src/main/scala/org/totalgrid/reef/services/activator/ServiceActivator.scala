@@ -31,12 +31,15 @@ import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
+import com.weiglewilczek.slf4s.Logging
 
-class ServiceActivator extends BundleActivator {
+class ServiceActivator extends BundleActivator with Logging {
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
   def start(context: BundleContext) {
+
+    logger.info("Starting Service bundle..")
 
     val exe = context findService withInterface[Executor] andApply (x => x) match {
       case Some(x) => x
@@ -69,6 +72,8 @@ class ServiceActivator extends BundleActivator {
 
   def stop(context: BundleContext) {
     manager.foreach(_.stop())
+
+    logger.info("Stopped Service bundle..")
   }
 
 }
