@@ -16,18 +16,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.simulator.default
+package org.totalgrid.reef.simulator.random
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.api.protocol.simulator.SimulatorPluginFactory
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.api.protocol.api.Publisher
+import org.totalgrid.reef.proto.{ Measurements, SimMapping }
+import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
+import net.agileautomata.executor4s.{ Strand, Executor }
 
-class Activator extends BundleActivator {
+object DefaultSimulatorFactory extends SimulatorPluginFactory with Logging {
 
-  final override def start(context: BundleContext) = {
-    context.createService(DefaultSimulatorFactory, interface1 = interface[SimulatorPluginFactory])
+  def name = "benchmark"
+
+  def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = 0
+
+  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): DefaultSimulator = {
+    new DefaultSimulator(endpointName, publisher, config, executor, this)
   }
-
-  final override def stop(context: BundleContext) = {}
 
 }
