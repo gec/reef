@@ -149,5 +149,18 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
      */
+    boolean publishMeasurements( List<Measurement> measurements, Routable destination ) throws ReefServiceException;
+
+    /**
+     * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
+     * should not use this function. If any point is not publishable, the whole group will fail.
+     *
+     * <p>Preconditions for  success:</p>
+     * <ul>
+     *   <li>Every point listed in the measurements exists</li>
+     *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
+     *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
+     * </ul>
+     */
     boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 }

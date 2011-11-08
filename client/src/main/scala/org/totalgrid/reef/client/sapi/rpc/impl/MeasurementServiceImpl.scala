@@ -73,13 +73,19 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
   }
 
   override def publishMeasurements(measurements: List[Measurement]) = {
-    ops.operation("Couldn't publish measurements. size: " + measurements.size) {
+    ops.operation("Couldn't publish measurements: " + measurements.map { _.getName }.distinct) {
       _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).map(_.one.map(a => true))
     }
   }
 
+  override def publishMeasurements(measurements: List[Measurement], dest: Routable) = {
+    ops.operation("Couldn't publish measurements: " + measurements.map { _.getName }.distinct + " dest: " + dest.getKey) {
+      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements), BasicRequestHeaders.empty.setDestination(dest)).map(_.one.map(a => true))
+    }
+  }
+
   override def publishMeasurements(mBatch: MeasurementBatch, dest: Routable) = {
-    ops.operation("Couldn't publish mearurement batch. size: " + mBatch.getMeasCount) {
+    ops.operation("Couldn't publish measurement batch. size: " + mBatch.getMeasCount + " dest: " + dest.getKey) {
       _.put(mBatch, BasicRequestHeaders.empty.setDestination(dest)).map(_.one.map(a => true))
     }
   }

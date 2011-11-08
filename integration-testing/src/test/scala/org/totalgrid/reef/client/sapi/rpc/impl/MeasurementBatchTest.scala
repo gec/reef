@@ -28,6 +28,9 @@ import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilde
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
+import org.totalgrid.reef.util.{ SyncVar, Timing }
+import org.totalgrid.reef.clientapi._
+
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest
     extends ClientSessionSuite("MeasurementBatch.xml", "MeasurementBatch",
@@ -60,19 +63,63 @@ class MeasurementBatchTest
     val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
     val originals = client.getMeasurementsByNames(names).await
 
-    val updated = originals.map { m =>
-      if (m.getType == Measurement.Type.DOUBLE)
-        m.toBuilder.setDoubleVal(m.getDoubleVal * 2).setTime(System.currentTimeMillis).build
-      else if (m.getType == Measurement.Type.BOOL)
-        m.toBuilder.setBoolVal(!m.getBoolVal).setTime(System.currentTimeMillis).build
-      else m.toBuilder.setTime(System.currentTimeMillis).build
-    }.toList
+    val updated = updateMeasurements(originals.toList, System.currentTimeMillis())
 
     recorder.addExplanation("Put multiple measurements", "Put multiple new measurements in a single MeasurementBatch.")
     putAll(updated)
 
     val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }.toList
     putAll(reverted)
+  }
+
+  test("Batch publishing speed") {
+    val names = List("StaticSubstation.Line02.Current")
+
+    val points = names.map { client.getPointByName(_).await }
+
+    val connection = client.getEndpointConnection(points.head.getLogicalNode.getUuid).await
+
+    val sub = client.subscribeToMeasurementsByNames(names).await
+    var originals = sub.getResult
+
+    val now = System.currentTimeMillis() + 1
+
+    val handler = new MeasurementRoundtripTester(sub)
+
+    println("isDirect,size,pubTime,firstMessage,roundtrip,hist")
+    (1 to 24).foreach { i =>
+      val size = originals.size
+
+      val dest = if (i % 2 == 0) new AddressableDestination(connection.getRouting.getServiceRoutingKey) else new AnyNodeDestination()
+
+      originals = updateMeasurements(originals, now)
+      handler.start(originals)
+      val pubTime = Timing.benchmark {
+        client.publishMeasurements(originals, dest).await
+      }
+      val roundtripTime = handler.await
+
+      val getHistoryTime = Timing.benchmark {
+        val history = client.getMeasurementHistory(points.head, size).await
+        history.map { _.getDoubleVal } should equal(originals.map { _.getDoubleVal })
+      }
+
+      println((i % 2 == 0) + "," + size + "," + pubTime + "," + handler.firstMessage.get + "," + roundtripTime + "," + getHistoryTime)
+
+      if (i % 2 == 0) originals :::= originals
+    }
+  }
+
+  def updateMeasurements(originals: List[Measurement], nowMillis: Long) = {
+    originals.map { m =>
+      if (m.getType == Measurement.Type.DOUBLE)
+        m.toBuilder.setDoubleVal(m.getDoubleVal + 1.0).setTime(nowMillis).build
+      else if (m.getType == Measurement.Type.BOOL)
+        m.toBuilder.setBoolVal(!m.getBoolVal).setTime(nowMillis).build
+      else if (m.getType == Measurement.Type.INT)
+        m.toBuilder.setIntVal(m.getIntVal + 1).setTime(nowMillis).build
+      else m.toBuilder.setTime(nowMillis).build
+    }
   }
 
   test("Fails with bad name") {
@@ -96,5 +143,42 @@ class MeasurementBatchTest
       putAll(pointNames.reverse.map { pName => MeasurementRequestBuilders.makeIntMeasurement(pName, 22, 1000) })
     }
     ex2.getMessage should include("StaticSubstation.Line02.UnknownPoint")
+  }
+
+  class MeasurementRoundtripTester(result: SubscriptionResult[List[Measurement], Measurement]) extends SubscriptionEventAcceptor[Measurement] {
+    result.getSubscription.start(this)
+
+    val expected = new SyncVar(List.empty[Measurement])
+    var unexpected = List.empty[Measurement]
+
+    var startTime: Long = 0
+    var firstMessage = Option.empty[Long]
+
+    def start(meases: List[Measurement]) {
+      startTime = System.nanoTime()
+      firstMessage = None
+      expected.update(meases)
+      // make sure the syncvar is not sitting on an empty state
+      expected.waitFor(_.size == meases.size)
+      unexpected = Nil
+    }
+
+    def await() = {
+      expected.waitFor(_.size == 0, throwOnFailure = false)
+      unexpected.reverse should equal(Nil)
+      expected.current should equal(Nil)
+      (System.nanoTime() - startTime) / 1000000
+    }
+
+    def onEvent(event: SubscriptionEvent[Measurement]) {
+      if (firstMessage.isEmpty) firstMessage = Some((System.nanoTime() - startTime) / 1000000)
+      val meas = event.getValue
+      val head = expected.current.head
+      if (head.getName == meas.getName && head.getTime == meas.getTime) {
+        expected.atomic(_.tail)
+      } else {
+        unexpected ::= meas
+      }
+    }
   }
 }
