@@ -19,9 +19,11 @@
 package org.totalgrid.reef.clientapi.settings;
 
 
+import java.io.IOException;
 import java.util.Dictionary;
 
 import org.totalgrid.reef.clientapi.settings.util.PropertyLoading;
+import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
 
 public class UserSettings
 {
@@ -38,6 +40,11 @@ public class UserSettings
     {
         userName = PropertyLoading.getString( "org.totalgrid.reef.user.username", properties );
         userPassword = PropertyLoading.getString( "org.totalgrid.reef.user.password", properties );
+    }
+
+    public UserSettings( String file ) throws IllegalArgumentException, IOException
+    {
+        this( PropertyReader.readFromFile( file ) );
     }
 
     public String getUserName()

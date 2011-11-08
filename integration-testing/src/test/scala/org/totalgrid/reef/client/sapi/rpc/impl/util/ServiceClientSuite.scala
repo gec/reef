@@ -26,22 +26,22 @@ import org.totalgrid.reef.client.ReefFactory
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.clientapi.{SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor}
+import org.totalgrid.reef.clientapi.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor }
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
 }
 
-class SubscriptionCanceler extends SubscriptionCreationListener{
+class SubscriptionCanceler extends SubscriptionCreationListener {
 
   var subs = List.empty[SubscriptionBinding]
 
-  def onSubscriptionCreated(binding: SubscriptionBinding) = this.synchronized{
+  def onSubscriptionCreated(binding: SubscriptionBinding) = this.synchronized {
     subs ::= binding
   }
 
-  def cancel() = this.synchronized{
-    subs.foreach{_.cancel()}
+  def cancel() = this.synchronized {
+    subs.foreach { _.cancel() }
   }
 }
 

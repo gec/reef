@@ -19,7 +19,9 @@
 package org.totalgrid.reef.clientapi.settings;
 
 import org.totalgrid.reef.clientapi.settings.util.PropertyLoading;
+import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
 
+import java.io.IOException;
 import java.util.Dictionary;
 
 
@@ -43,6 +45,11 @@ public class NodeSettings
         defaultNodeName = PropertyLoading.getString( "org.totalgrid.reef.node.name", properties );
         location = PropertyLoading.getString( "org.totalgrid.reef.node.location", properties );
         network = PropertyLoading.getString( "org.totalgrid.reef.node.network", properties );
+    }
+
+    public NodeSettings( String file ) throws IllegalArgumentException, IOException
+    {
+        this( PropertyReader.readFromFile(file) );
     }
 
     public String getDefaultNodeName()
