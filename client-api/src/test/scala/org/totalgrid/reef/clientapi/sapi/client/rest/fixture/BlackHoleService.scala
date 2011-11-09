@@ -16,17 +16,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.clientapi.sapi.service
+package org.totalgrid.reef.clientapi.sapi.client.rest.fixture
 
-import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import org.totalgrid.reef.clientapi.sapi.service.AsyncServiceBase
+import org.totalgrid.reef.clientapi.sapi.client.{ Response, BasicRequestHeaders }
 
-trait SyncServiceBase[A <: AnyRef] extends AsyncServiceBase[A] with SyncRestService {
-
-  /* redirect the async calls to the synchronous ones */
-
-  final override def getAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(get(req, env))
-  final override def putAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(put(req, env))
-  final override def deleteAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(delete(req, env))
-  final override def postAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(post(req, env))
-
+class BlackHoleService[A <: AnyRef](val descriptor: TypeDescriptor[A]) extends AsyncServiceBase[A] {
+  override def getAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def putAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def deleteAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def postAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
 }

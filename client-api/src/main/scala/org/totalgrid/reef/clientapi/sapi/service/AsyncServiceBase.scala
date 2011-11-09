@@ -28,16 +28,6 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
     with ServiceTypeIs[A]
     with Logging {
 
-  /* overloaded helpers */
-
-  def getAsync(req: A)(callback: Response[A] => Unit): Unit = getAsync(req, BasicRequestHeaders.empty)(callback)
-
-  def putAsync(req: A)(callback: Response[A] => Unit): Unit = putAsync(req, BasicRequestHeaders.empty)(callback)
-
-  def deleteAsync(req: A)(callback: Response[A] => Unit): Unit = deleteAsync(req, BasicRequestHeaders.empty)(callback)
-
-  def postAsync(req: A)(callback: Response[A] => Unit): Unit = postAsync(req, BasicRequestHeaders.empty)(callback)
-
   /* Implement AsyncService */
 
   def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {

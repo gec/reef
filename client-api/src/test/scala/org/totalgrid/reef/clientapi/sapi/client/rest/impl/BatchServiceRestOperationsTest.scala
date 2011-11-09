@@ -27,7 +27,7 @@ import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.clientapi.proto.Envelope
 import org.mockito.Mockito
 import net.agileautomata.executor4s.testing.MockFuture
-import org.totalgrid.reef.clientapi.sapi.example.{ ExampleServiceList, SomeIntegerTypeDescriptor, SomeInteger }
+import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
 import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, ServiceRegistry, Client, RestOperations }

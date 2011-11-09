@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, Client }
-import org.totalgrid.reef.clientapi.sapi.example.{ ExampleServiceList, SomeInteger, SomeIntegerTypeDescriptor }
+import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 import org.totalgrid.reef.clientapi.proto.Envelope
 
 import org.totalgrid.reef.clientapi.sapi.client.Event

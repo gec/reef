@@ -32,7 +32,7 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
 
 import org.totalgrid.reef.clientapi.sapi.client._
 
-import org.totalgrid.reef.clientapi.sapi.example.{ SomeIntegerTypeDescriptor, SomeInteger }
+import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.clientapi.sapi.client.rest.RestOperations
 import org.mockito.Matchers

@@ -25,7 +25,7 @@ import org.totalgrid.reef.broker.BrokerConnectionFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.clientapi.sapi.example.ExampleServiceList
+import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 
