@@ -21,11 +21,13 @@ package org.totalgrid.reef.japi.request;
 import java.util.List;
 
 import org.totalgrid.reef.japi.ReefServiceException;
+import org.totalgrid.reef.japi.request.command.CommandRequestHandler;
 import org.totalgrid.reef.proto.Commands.CommandAccess;
 import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.proto.Model.Command;
 import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.util.Cancelable;
 
 /**
  *
@@ -306,4 +308,17 @@ public interface CommandService
      * @return all commands that are related to endpoint
      */
     List<Command> getCommandsBelongingToEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
+
+    /**
+     * Binds a commandHandler to the broker that will be responsible for all commands on a single endpoint. The
+     * same command handler can be used for endpoints if desired. All commands recieved on this channel are
+     * already authrorized by the services and should executed as soon as possible.
+     *
+     * @param endpointUuid uuid of the endpoint to handle all commands
+     * @param handler an application controled object that
+     * @return a cancelable that should be canceled when the application is done being a command handler for
+     *         the endpoint
+     * @throws org.totalgrid.reef.japi.ReefServiceException
+     */
+    Cancelable bindCommandHandler( ReefUUID endpointUuid, CommandRequestHandler handler ) throws ReefServiceException;
 }

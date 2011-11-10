@@ -23,6 +23,7 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.japi.request.builders.{ CommandRequestBuilders, UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.totalgrid.reef.japi.request.{ CommandService }
+import org.totalgrid.reef.japi.request.command.CommandRequestHandler
 
 trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
 
@@ -126,6 +127,28 @@ trait CommandServiceImpl extends ReefServiceBaseClass with CommandService {
   override def getCommandsBelongingToEndpoint(endpointUuid: ReefUUID) = {
     ops("Couldn't find commands sourced by endpoint: " + endpointUuid.getUuid) {
       _.get(CommandRequestBuilders.getSourcedByEndpoint(endpointUuid)).await().expectMany
+    }
+  }
+
+  override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
+    ops("Couldn't find endpoint connection for endpoint: " + endpointUuid.getUuid) { session =>
+      import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
+      import org.totalgrid.reef.sapi.AddressableDestination
+      import org.totalgrid.reef.executor.ReactActorExecutor
+      import org.totalgrid.reef.util.Cancelable
+      val connection = session.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).await().expectOne
+      val destination = AddressableDestination(connection.getRouting.getServiceRoutingKey)
+      val service = new EndpointCommandHandlerImpl(handler)
+
+      val executor = new ReactActorExecutor {}
+      executor.start()
+      val closeable = clientSessionFactory.bindServiceHandler(service.descriptor.id, service.respond, executor, destination, true)
+      new Cancelable {
+        def cancel() = {
+          closeable.close()
+          executor.stop()
+        }
+      }
     }
   }
 }
