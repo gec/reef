@@ -67,7 +67,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
                     throw new ExpectationException( "meas proc never came online" );
                 Thread.sleep( 250 );
             }
-            setCommState( endpoint.getUuid(), FEP.CommEndpointConnection.State.COMMS_UP );
+            helpers.alterEndpointConnectionState( endpoint.getUuid(), FEP.CommEndpointConnection.State.COMMS_UP );
 
             doCommandRequest( cmd, endpoint.getUuid() );
         }
@@ -76,7 +76,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
             if ( endpoint != null )
             {
                 helpers.disableEndpointConnection( endpoint.getUuid() );
-                setCommState( endpoint.getUuid(), FEP.CommEndpointConnection.State.COMMS_DOWN );
+                helpers.alterEndpointConnectionState( endpoint.getUuid(), FEP.CommEndpointConnection.State.COMMS_DOWN );
                 client.delete( endpoint ).await().expectOne();
             }
             if ( cmd != null )
@@ -116,13 +116,5 @@ public class TestCommandHandler extends ReefConnectionTestBase
             if ( cancelable != null )
                 cancelable.cancel();
         }
-    }
-
-    private void setCommState( Model.ReefUUID endpointUuid, FEP.CommEndpointConnection.State state ) throws Exception
-    {
-        FEP.CommEndpointConnection conn =
-            helpers.getEndpointConnection( endpointUuid ).toBuilder().clearEnabled().clearEndpoint().clearFrontEnd().clearRouting().setState( state )
-                    .build();
-        client.put( conn ).await().expectOne();
     }
 }

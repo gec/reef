@@ -23,6 +23,7 @@ import org.totalgrid.reef.japi.client.SubscriptionResult;
 import org.totalgrid.reef.proto.FEP.CommChannel;
 import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection;
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State;
 import org.totalgrid.reef.proto.Model.ReefUUID;
 
 import java.util.List;
@@ -101,6 +102,15 @@ public interface EndpointManagementService
      * @return the connection object representing the current connection state
      */
     CommEndpointConnection getEndpointConnection( ReefUUID endpointUuid ) throws ReefServiceException;
+
+    /**
+     * Protocol Adapters will update the endpoint connection state to indicate when the endpoint
+     * changes communication state.
+     * @param endpointUuid  string uid for the endpoint connection
+     * @param state          COMMS_UP, COMMS_DOWN, COMMS_ERROR ...
+     * @return updated state
+     */
+    CommEndpointConnection alterEndpointConnectionState( ReefUUID endpointUuid, State state ) throws ReefServiceException;
 
     /**
      * In reef a communication channel is the representation of the "low-level" connection to an external resource
