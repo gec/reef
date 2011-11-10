@@ -9,6 +9,21 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.3.3
+==============
+
+Minor bug fix and feature release.
+
+### Bug Fixes:
+
+* Consistent error handling and error messages for MeasurementBatchService REEF-178, REEF-179
+* loader-xml doesn't require indexes for protocols not explicitly an indexed protocol
+
+### Client Updates:
+
+* Added alterEndpointConnectionState calls to EndpointManagerService
+* Added bindCommandHandler() implementation to CommandService
+
 Version 0.3.2
 ==============
 
