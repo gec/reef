@@ -38,6 +38,8 @@ object CommunicationsLoader {
   val DNP3 = "dnp3"
   val DNP3Slave = "dnp3-slave"
   val MODBUS = "modbus"
+
+  val INDEXED_PROTOCOLS = DNP3 :: DNP3Slave :: MODBUS :: Nil
 }
 
 /**
@@ -180,7 +182,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
-    val isBenchmark = overriddenProtocolName == BENCHMARK
+    val isBenchmark = INDEXED_PROTOCOLS.find(_ == overriddenProtocolName).isEmpty
     logger.debug("checking indices: isBenchmark: " + isBenchmark + ", overridden protocol name: " + overriddenProtocolName)
     exceptionCollector.collect("Checking Indexes: " + endpointName) {
       validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg, compareControls)
