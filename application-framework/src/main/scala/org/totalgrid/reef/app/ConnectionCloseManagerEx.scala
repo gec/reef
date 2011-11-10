@@ -44,13 +44,15 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
   private var consumers = Map.empty[ConnectionConsumer, Option[UCancelable]]
   private var delays = Map.empty[ConnectionConsumer, Cancelable]
 
-  def addConsumer(generator: ConnectionConsumer) = this.synchronized {
+  def addConsumer(generator: ConnectionConsumer): Unit = this.synchronized {
     if (consumers.get(generator).isDefined) throw new IllegalArgumentException("Consumer already added")
-    val cancelable = connection.map { generator.newConnection(_, exe) }
-
-    consumers += generator -> cancelable
+    consumers += generator -> None
+    connection.foreach { conn =>
+      doBrokerConnectionStarted(generator, conn)
+    }
   }
-  def removeConsumer(generator: ConnectionConsumer) = this.synchronized {
+
+  def removeConsumer(generator: ConnectionConsumer): Unit = this.synchronized {
     if (consumers.get(generator).isEmpty) throw new IllegalArgumentException("Unknown consumer")
     doBrokerConnectionLost(generator)
     consumers -= generator

@@ -25,19 +25,21 @@ import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
 import org.osgi.framework.BundleContext
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.app.{ ConnectionCloseManagerEx, ApplicationEnrollerEx, AppEnrollerConsumer, UserLogin }
-import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.app._
+import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
 import net.agileautomata.executor4s.Executor
 
 object SlaveFepShim {
-  def createFepShim(userSettings: UserSettings, nodeSettings: NodeSettings, context: BundleContext): UserLogin = {
-    val appConfigConsumer = new AppEnrollerConsumer {
-      def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+  def createFepShim(userSettings: UserSettings, context: BundleContext): UserLogin = {
+    val clientConsumer = new ClientConsumer {
+
+      def newClient(client: Client) = {
+
+        val services = client.getRpcInterface(classOf[AllScadaService])
 
         val slaveProtocol = new Dnp3SlaveProtocol(services) with AddRemoveValidation
         val protocol = Some(slaveProtocol)
@@ -51,8 +53,7 @@ object SlaveFepShim {
         }
       }
     }
-    val appEnroller = new ApplicationEnrollerEx(nodeSettings, "Processing-" + nodeSettings.getDefaultNodeName, List("Processing"), appConfigConsumer)
-    val userLogin = new UserLogin(userSettings, appEnroller)
+    val userLogin = new UserLogin(userSettings, clientConsumer)
     userLogin
   }
 }
@@ -72,11 +73,10 @@ class SlaveFepShim extends Logging {
 
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
-    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
     manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
-    manager.get.addConsumer(SlaveFepShim.createFepShim(userSettings, nodeSettings, context))
+    manager.get.addConsumer(SlaveFepShim.createFepShim(userSettings, context))
 
     manager.foreach { _.start }
   }
