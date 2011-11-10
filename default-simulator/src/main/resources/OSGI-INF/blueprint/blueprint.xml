@@ -22,10 +22,10 @@
 
     <command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
         <command name="sim/list">
-            <action class="org.totalgrid.reef.api.protocol.simulator.SimulatorList"/>
+            <action class="org.totalgrid.reef.simulator.random.SimulatorList"/>
         </command>
         <command name="sim/config">
-            <action class="org.totalgrid.reef.api.protocol.simulator.SimulatorConfig"/>
+            <action class="org.totalgrid.reef.simulator.random.SimulatorConfig"/>
         </command>
         
     </command-bundle>

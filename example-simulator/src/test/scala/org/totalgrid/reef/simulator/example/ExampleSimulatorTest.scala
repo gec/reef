@@ -85,7 +85,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
       pub.queue.dequeue().getMeasCount() should equal(4)
     }
 
-    val sim = ExampleSimulatorFactory.createSimulator("test", exe, pub, simpleMapping())
+    val sim = ExampleSimulatorFactory.create("test", exe, pub, simpleMapping())
     validateState()
 
     sim.issue(buildCommand("breaker.Status.Trip")) should equal(Commands.CommandStatus.SUCCESS)

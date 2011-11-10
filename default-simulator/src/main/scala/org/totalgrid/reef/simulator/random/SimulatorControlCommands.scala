@@ -1,3 +1,5 @@
+package org.totalgrid.reef.simulator.random
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
-
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 
@@ -26,36 +26,26 @@ import org.totalgrid.reef.util.Table
 
 trait SimulatorControlCommands { self: OsgiCommandSupport =>
 
-  def getSimulators(): Map[String, Option[SimulatorPlugin]] = {
-    val simulators = getBundleContext findServices withInterface[SimulatorManagement] andApply { (manager: SimulatorManagement, properties: Props) =>
-      manager.getSimulators
-    }
-    simulators.reduce(_ ++ _)
+  def getSimulators(): Seq[ControllableSimulator] = {
+    getBundleContext findServices withInterface[ControllableSimulator] andApply { x: ControllableSimulator => x }
   }
 
-  def displaySimulators(sims: Map[String, Option[SimulatorPlugin]]) = {
+  def displaySimulators(sims: Seq[ControllableSimulator]) = {
     Table.printTable(headers, rows(sims))
   }
 
   def headers = "Endpoint" :: "SimType" :: "SimLevel" :: "UpdateRate" :: Nil
 
-  def rows(simMap: Map[String, Option[SimulatorPlugin]]) = {
-    simMap.map {
-      case (name, sim) =>
-        name ::
-          sim.map { _.factory.name }.getOrElse("None") ::
-          sim.map { _.simLevel.toString }.getOrElse("-") ::
-          sim.map { getRate(_).getOrElse("-") }.getOrElse("-").toString ::
-          Nil
+  def rows(simMap: Seq[ControllableSimulator]) = {
+    simMap.map { sim =>
+      sim.name ::
+        sim.factory.name ::
+        sim.simLevel.toString ::
+        sim.getRepeatDelay.toString ::
+        Nil
     }.toList
   }
 
-  def getRate(sim: SimulatorPlugin) = {
-    sim match {
-      case c: ControllableSimulator => Some(c.getRepeatDelay)
-      case _ => None
-    }
-  }
 }
 
 @Command(scope = "sim", name = "list", description = "List currently simulated endpoints")
@@ -80,31 +70,21 @@ class SimulatorConfig extends OsgiCommandSupport with SimulatorControlCommands {
 
   override protected def doExecute(): Object = {
 
-    val adjustmentFunction: (ControllableSimulator => Unit) = try {
-      timeDelay match {
-        case inc if inc.startsWith("+") => adjustTime(_, inc.substring(1).toLong)
-        case dec if dec.startsWith("-") => adjustTime(_, -dec.substring(1).toLong)
-        case other: String => setTime(_, other.toLong)
+    def adjust(sim: ControllableSimulator) = {
+      try {
+        sim.setUpdateDelay(timeDelay.toLong)
+      } catch {
+        case ex: NumberFormatException => throw new Exception("ERROR: -time " + timeDelay + " is not a number.")
       }
-    } catch {
-      case ex: NumberFormatException => throw new Exception("ERROR: -time " + timeDelay + " is not a number.")
     }
 
-    val sims = getSimulators().filter { case (n, s) => s.isDefined && s.get.isInstanceOf[ControllableSimulator] }
+    val sims = getSimulators()
 
-    sims.foreach { case (n, s) => adjustmentFunction(s.get.asInstanceOf[ControllableSimulator]) }
+    sims.foreach(adjust)
 
     displaySimulators(sims)
 
     null
   }
 
-  private def adjustTime(sim: ControllableSimulator, adjust: Long) {
-    val adjustedDelay = (sim.getRepeatDelay + adjust).max(0)
-    sim.setUpdateParams(adjustedDelay)
-  }
-
-  private def setTime(sim: ControllableSimulator, delay: Long) {
-    sim.setUpdateParams(delay)
-  }
 }

@@ -57,13 +57,12 @@ object ExampleSimulatorFactory extends SimulatorPluginFactory with Logging {
     case None => -1
   }
 
-  def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
     val names = getSimNames(config).get
     logger.info("Binding new ExampleSimulator with config: " + names.toString)
     new ExampleBreakerSimulator(executor, publisher, names)
   }
 
-  def destroySimulator(plugin: SimulatorPlugin): Unit = {}
 }
 
 class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], names: ExampleSimulatorFactory.SimNames) extends SimulatorPlugin with Logging {
@@ -71,7 +70,11 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
   def factory: SimulatorPluginFactory = ExampleSimulatorFactory
   def simLevel: Int = 1
 
+  def name = "ExampleBreakerSimulator"
+
   executor.execute(publisher.publish(createBreakerBatch(false)))
+
+  def shutdown() = {}
 
   def createAnalog(name: String, unit: String, value: Double) = {
     Measurements.Measurement.newBuilder

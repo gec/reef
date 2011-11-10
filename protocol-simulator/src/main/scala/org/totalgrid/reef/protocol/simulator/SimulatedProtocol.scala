@@ -30,7 +30,7 @@ import com.weiglewilczek.slf4s.Logging
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager with SimulatorManagement with Logging {
+class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
 
   import Protocol._
 
@@ -43,7 +43,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
   private var endpoints = Map.empty[String, PluginRecord]
   private var factories = Set.empty[SimulatorPluginFactory]
 
-  override def doAddEndpoint(
+  override def addEndpoint(
     endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
@@ -63,7 +63,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
     }
   }
 
-  override def doRemoveEndpoint(endpoint: String) = mutex.synchronized {
+  override def removeEndpoint(endpoint: String) = mutex.synchronized {
     endpoints.get(endpoint) match {
       case Some(record) =>
         record.current.foreach(_.shutdown()) // shutdown the current plugin
@@ -72,10 +72,6 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
         throw new IllegalStateException("Trying to remove endpoint that doesn't exist: " + endpoint)
     }
   }
-
-  def doAddChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) = null
-
-  def doRemoveChannel(channel: String) = null
 
   class EndpointCommandHandler(endpoint: String) extends CommandHandler {
 
@@ -108,8 +104,9 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
       case None => Some(x)
       case Some(current) => if (current.level >= x.level) best else Some(x)
     }
+
     def add(endpoint: String, executor: Executor, publisher: BatchPublisher, mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
-      val simulator = factory.createSimulator(endpoint, Strand(executor), publisher, mapping)
+      val simulator = factory.create(endpoint, Strand(executor), publisher, mapping)
       logger.info("Adding simulator for endpoint " + endpoint + " of type " + simulator.getClass.getName)
       endpoints += endpoint -> PluginRecord(endpoint, mapping, publisher, Some(simulator))
     }
@@ -146,10 +143,6 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
         }
       }
     }
-  }
-
-  override def getSimulators() = {
-    endpoints.map { case (n, r) => n -> r.current }.toMap
   }
 
 }

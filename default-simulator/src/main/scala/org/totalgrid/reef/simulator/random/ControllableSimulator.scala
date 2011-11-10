@@ -16,23 +16,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.simulator.random
 
-import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
-import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.api.protocol.simulator.SimulatorPlugin
 
-trait SimulatorPluginFactory {
-  def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int
-  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin
-  def name: String
-}
-
-trait SimulatorPlugin {
-  def name: String
-  def shutdown(): Unit
-  def factory: SimulatorPluginFactory
-  def simLevel: Int
-  def issue(cr: Commands.CommandRequest): Commands.CommandStatus
+trait ControllableSimulator extends SimulatorPlugin {
+  def getRepeatDelay: Long
+  def setUpdateDelay(newDelay: Long)
+  def setChangeProbability(prob: Double)
 }
 
