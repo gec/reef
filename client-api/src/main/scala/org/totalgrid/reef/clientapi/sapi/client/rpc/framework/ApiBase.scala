@@ -27,6 +27,7 @@ import net.agileautomata.executor4s.{ TimeInterval, Executor }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
+  protected def client: Client
 }
 
 /**
@@ -35,7 +36,7 @@ trait HasAnnotatedOperations {
  */
 trait ClientOperations extends SubscriptionCreator with RequestSpyManager with HasHeaders with Executor with BatchOperations
 
-abstract class ApiBase(client: Client) extends HasAnnotatedOperations with ClientOperations {
+abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperations with ClientOperations {
 
   private var currentOpsMode = new DefaultAnnotatedOperations(client, client)
   private var flushableOps = Option.empty[BatchServiceRestOperations[_]]
