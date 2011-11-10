@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.3-SNAPSHOT</version>
+        <version>0.3.3</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-metrics</artifactId>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.3-SNAPSHOT</version>
+            <version>0.3.3</version>
         </dependency>
 
     </dependencies>

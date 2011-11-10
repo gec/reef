@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.3-SNAPSHOT</version>
+        <version>0.3.3</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-default-simulator</artifactId>
@@ -47,19 +47,19 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
-            <version>0.3.3-SNAPSHOT</version>
+            <version>0.3.3</version>
             <scope>compile</scope>
         </dependency>
 	    <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-simulator</artifactId>
-            <version>0.3.3-SNAPSHOT</version>
+            <version>0.3.3</version>
             <scope>compile</scope>
         </dependency>		
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.3-SNAPSHOT</version>
+            <version>0.3.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -70,7 +70,7 @@
       	<dependency>
           <groupId>org.totalgrid.reef</groupId>
           <artifactId>reef-proto-shell</artifactId>
-          <version>0.3.3-SNAPSHOT</version>
+          <version>0.3.3</version>
       	</dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
