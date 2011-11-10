@@ -57,6 +57,7 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
   }
 
   def onConnectionOpened(conn: BrokerConnection) = this.synchronized {
+    if (connection.isDefined) logger.error("Connection is already defined")
     connection = Some(conn)
     cancelDelays()
     consumers.keys.foreach { doBrokerConnectionStarted(_, conn) }

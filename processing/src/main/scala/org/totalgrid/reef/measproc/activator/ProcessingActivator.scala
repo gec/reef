@@ -18,20 +18,18 @@
  */
 package org.totalgrid.reef.measproc.activator
 
-import org.totalgrid.reef.osgi.OsgiConfigReader
-
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
 import org.totalgrid.reef.app._
 import org.totalgrid.reef.util.Cancelable
-import org.osgi.framework.{ BundleContext, BundleActivator }
+import org.osgi.framework.BundleContext
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreFinder }
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
-import com.weiglewilczek.scalamodules._
 import net.agileautomata.executor4s.Executor
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
 object ProcessingActivator {
   def createMeasProcessor(userSettings: UserSettings, nodeSettings: NodeSettings, measStore: MeasurementStore): UserLogin = {
@@ -60,11 +58,11 @@ object ProcessingActivator {
   }
 }
 
-class ProcessingActivator extends BundleActivator with Logging {
+class ProcessingActivator extends ExecutorBundleActivator with Logging {
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
-  def start(context: BundleContext) {
+  def start(context: BundleContext, exe: Executor) {
 
     logger.info("Starting Processing bundle..")
 
@@ -74,11 +72,6 @@ class ProcessingActivator extends BundleActivator with Logging {
 
     val measStore = MeasurementStoreFinder.getInstance(context)
 
-    val exe = context findService withInterface[Executor] andApply (x => x) match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find required executor pool")
-    }
-
     manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
     manager.get.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measStore))
@@ -86,7 +79,7 @@ class ProcessingActivator extends BundleActivator with Logging {
     manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) = {
+  def stop(context: BundleContext, exe: Executor) = {
 
     manager.foreach { _.stop }
 

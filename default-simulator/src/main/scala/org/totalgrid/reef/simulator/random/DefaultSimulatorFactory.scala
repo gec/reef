@@ -16,28 +16,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.simulator.default
+package org.totalgrid.reef.simulator.random
 
 import com.weiglewilczek.slf4s.Logging
-import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.proto.{ Measurements, SimMapping }
-import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
+import org.totalgrid.reef.api.protocol.simulator.SimulatorPluginFactory
+import net.agileautomata.executor4s.{ Cancelable, Executor }
 
-object DefaultSimulatorFactory extends SimulatorPluginFactory with Logging {
+class DefaultSimulatorFactory(register: DefaultSimulator => Cancelable) extends SimulatorPluginFactory with Logging {
 
   def name = "benchmark"
 
+  val map = collection.mutable.Map.empty[DefaultSimulator, Cancelable]
+
   def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = 0
 
-  def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): DefaultSimulator = map.synchronized {
     val sim = new DefaultSimulator(endpointName, publisher, config, executor, this)
-    sim.start()
+    val cancelable = register(sim)
+    map += sim -> cancelable
     sim
   }
 
-  def destroySimulator(plugin: SimulatorPlugin): Unit = plugin match {
-    case sim: DefaultSimulator => sim.stop()
-    case _ => logger.error("Cannot destroy unknown simulator type: " + plugin)
+  def remove(sim: DefaultSimulator) = map.synchronized {
+    map.remove(sim).foreach(_.cancel())
   }
+
 }

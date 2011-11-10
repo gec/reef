@@ -16,16 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.simulator.default
+package org.totalgrid.reef.simulator.random
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.api.protocol.simulator.SimulatorPluginFactory
+import net.agileautomata.executor4s.Cancelable
 
 class Activator extends BundleActivator {
 
   final override def start(context: BundleContext) = {
-    context.createService(DefaultSimulatorFactory, interface1 = interface[SimulatorPluginFactory])
+
+    def register(context: BundleContext)(sim: DefaultSimulator): Cancelable = {
+      val reg = context.createService(sim, interface1 = interface[ControllableSimulator])
+      new Cancelable { def cancel() = reg.unregister() }
+    }
+
+    val factory = new DefaultSimulatorFactory(register(context))
+    context.createService(factory, interface1 = interface[SimulatorPluginFactory])
   }
 
   final override def stop(context: BundleContext) = {}

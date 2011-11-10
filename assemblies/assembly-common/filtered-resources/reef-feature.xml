@@ -3,7 +3,7 @@
 	<feature name="reef-api" version="0.4.0-SNAPSHOT">
 		<bundle start-level='50'>mvn:com.weiglewilczek.scalamodules/scalamodules-core_2.9.0-1/2.0.3</bundle>
 		<bundle start-level='50'>mvn:com.weiglewilczek.slf4s/slf4s_2.9.0-1/1.0.6</bundle>
-        <bundle start-level='50'>mvn:net.agile-automata.executor4s/executor4s_2.9.0-1/0.1.9-RC3</bundle>
+        <bundle start-level='50'>mvn:net.agile-automata.executor4s/executor4s_2.9.0-1/0.1.9-RC4</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util-osgi/0.4.0-SNAPSHOT</bundle>
@@ -23,7 +23,7 @@
 	<feature name="reef-core" version="0.4.0-SNAPSHOT">
 		<feature>reef-api</feature>
 		<feature>reef-remote-shell</feature>
-        <bundle start-level="60">mvn:org.totalgrid.reef/reef-executor/0.4.0-SNAPSHOT</bundle>
+        <!--<bundle start-level="60">mvn:org.totalgrid.reef/reef-executor/0.4.0-SNAPSHOT</bundle>-->
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-metrics/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-application-framework/0.4.0-SNAPSHOT</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/0.4.0-SNAPSHOT</bundle>

@@ -66,18 +66,13 @@ class SlaveFepShim extends Logging {
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
-  def start(context: BundleContext) {
+  def start(context: BundleContext, exe: Executor) {
 
     logger.info("Starting SlaveFepShim bundle...")
 
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
-
-    val exe = context findService withInterface[Executor] andApply (x => x) match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find required executor pool")
-    }
 
     manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 

@@ -21,8 +21,6 @@ package org.totalgrid.reef.entry
 import org.osgi.framework._
 
 import org.totalgrid.reef.api.protocol.api.Protocol
-import org.totalgrid.reef.osgi.OsgiConfigReader
-
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.app._
@@ -30,29 +28,25 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.util.Cancelable
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.frontend._
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
-class FepActivator extends BundleActivator with Logging {
+final class FepActivator extends ExecutorBundleActivator with Logging {
 
   private var map = Map.empty[Protocol, ConnectionConsumer]
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
-  def start(context: BundleContext) {
+  def start(context: BundleContext, exe: Executor) {
 
     logger.info("Starting FEP bundle..")
 
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
-
-    val exe = context findService withInterface[Executor] andApply (x => x) match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find required executor pool")
-    }
 
     manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
@@ -64,9 +58,8 @@ class FepActivator extends BundleActivator with Logging {
     manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) = {
+  def stop(context: BundleContext, exe: Executor) = {
     manager.foreach { _.stop }
-
     logger.info("Stopped FEP bundle..")
   }
 

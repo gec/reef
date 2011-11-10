@@ -97,36 +97,27 @@ trait ChannelIgnoringProtocol extends Protocol {
     {}
 }
 
-trait LoggingProtocolEndpointManager extends Protocol with Logging {
-  def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) {
+trait LoggingProtocol extends Protocol with Logging {
+
+  abstract override def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) {
     logger.info("protocol: " + name + ": adding channel: " + channel + ", channelPublisher: " + channelPublisher)
-    doAddChannel(channel, channelPublisher)
+    super.addChannel(channel, channelPublisher)
   }
 
-  def removeChannel(channel: String) {
+  abstract override def removeChannel(channel: String) {
     logger.info("protocol: " + name + ": remove channel: " + channel)
-    doRemoveChannel(channel)
+    super.removeChannel(channel)
   }
 
-  def addEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
-    endpointPublisher: Protocol.EndpointPublisher) =
-    {
-      logger.info("protocol: " + name + ": adding endpoint: " + endpointName + ", channelName: " + channelName);
-      doAddEndpoint(endpointName, channelName, config, batchPublisher, endpointPublisher)
-    }
+  abstract override def addEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
+    endpointPublisher: Protocol.EndpointPublisher) = {
+    logger.info("protocol: " + name + ": adding endpoint: " + endpointName + ", channelName: " + channelName);
+    super.addEndpoint(endpointName, channelName, config, batchPublisher, endpointPublisher)
+  }
 
-  def removeEndpoint(endpoint: String) {
+  abstract override def removeEndpoint(endpoint: String) {
     logger.info("protocol: " + name + ": remove endpoint: " + endpoint)
-    doRemoveEndpoint(endpoint)
+    super.removeEndpoint(endpoint)
   }
-
-  def doAddChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher)
-
-  def doRemoveChannel(channel: String)
-
-  def doAddEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
-    endpointPublisher: Protocol.EndpointPublisher): CommandHandler
-
-  def doRemoveEndpoint(endpoint: String)
 
 }

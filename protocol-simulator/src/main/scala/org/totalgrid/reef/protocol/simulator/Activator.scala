@@ -18,26 +18,21 @@
  */
 package org.totalgrid.reef.api.protocol.simulator
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
+import org.osgi.framework.{ BundleContext }
 import org.totalgrid.reef.api.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import com.weiglewilczek.scalamodules._
 import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.osgi.ExecutorBundleActivator
 
-final class Activator extends BundleActivator with Logging {
+final class Activator extends ExecutorBundleActivator with Logging {
 
-  def start(context: BundleContext) {
-
-    val exe = context findService withInterface[Executor] andApply (x => x) match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find required executor pool")
-    }
+  def start(context: BundleContext, exe: Executor) {
 
     val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
 
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
-    context.createService(protocol, "protocol" -> protocol.name, interface[SimulatorManagement])
 
     context watchServices withInterface[SimulatorPluginFactory] andHandle {
       case AddingService(plugin, properties) =>
@@ -49,6 +44,6 @@ final class Activator extends BundleActivator with Logging {
     }
   }
 
-  def stop(context: BundleContext) {}
+  def stop(context: BundleContext, exe: Executor) {}
 
 }
