@@ -33,6 +33,8 @@ import java.util.List;
  * Every Point is associated with an Entity of type "Point". The point's location in the system
  * model is determined by this entity. Points are also associated with entities designated as
  * "logical nodes", which represent the communications interface/source.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface PointService
 {

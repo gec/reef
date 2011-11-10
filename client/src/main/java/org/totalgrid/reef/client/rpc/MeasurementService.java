@@ -38,6 +38,8 @@ import java.util.List;
  * <p>
  *   Asking for unknown points will result in an exception.
  *   </p>
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface MeasurementService extends SubscriptionCreator
 {

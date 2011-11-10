@@ -36,6 +36,8 @@ import org.totalgrid.reef.proto.Model.ReefUUID;
  * used by 0, 1 or many entities. Config files can be searched for by name, uid or by entities they are
  * related to. Names must be unique system-wide. Searches can all be filtered by mimeType, which can be
  * helpful is name is unknown.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface ConfigFileService
 {

@@ -37,8 +37,7 @@ object ApiEnhancer {
     val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false))
 
     root.classes.toList.filter { c =>
-      c.containingPackage.toString.indexOf(".client.rpc") != -1 &&
-        c.qualifiedName.toString.indexOf("AllScadaService") == -1
+      c.getRawCommentText.indexOf("!api-definition!") != -1
     }.foreach { c =>
 
       val packageStr = c.containingPackage().toString

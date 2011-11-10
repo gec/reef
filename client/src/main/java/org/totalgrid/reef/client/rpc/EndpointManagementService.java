@@ -39,6 +39,8 @@ import java.util.List;
  * devices. We can also disable (and re-enable) the endpoint connection attempts, this is useful for devices that
  * can only talk with one "master" at a time so we can disable reefs protocol adapters temporarily to allow
  * another master to connect.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface EndpointManagementService
 {
