@@ -49,6 +49,7 @@ public class ReefConnectionTestBase
     protected final Connection connection = new AMQPConnection( getConnectionInfo(), 5000 );
     protected Session client;
     protected AllScadaService helpers;
+    protected String authToken;
 
     /**
      * Baseclass for junit integration tests, provides a Connection that is started and stopped with
@@ -101,7 +102,7 @@ public class ReefConnectionTestBase
         connection.connect( 5000 );
         client = connection.newSession();
         SessionExecutionPool pool = connection.newSessionPool();
-        String authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
+        authToken = new AuthTokenServicePooledWrapper( pool ).createNewAuthorizationToken( "system", "system" );
         if ( autoLogon )
         {
             client.getDefaultHeaders().setAuthToken( authToken );

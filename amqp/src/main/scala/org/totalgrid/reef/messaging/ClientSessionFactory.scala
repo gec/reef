@@ -18,8 +18,11 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.sapi.ServiceList
 import org.totalgrid.reef.sapi.client.Subscription
+import org.totalgrid.reef.sapi.service.AsyncService
+import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.broker.CloseableChannel
+import org.totalgrid.reef.sapi.{ AnyNodeDestination, Destination, ServiceList }
 
 /**
  * factory trait that defines what we need to construct ClientSessions and subscriptions
@@ -38,4 +41,5 @@ trait ClientSessionFactory {
    */
   def prepareSubscription[A](deserialize: Array[Byte] => A): Subscription[A]
 
+  def bindServiceHandler(exchange: String, service: AsyncService.ServiceFunction, executor: Executor, destination: Destination = AnyNodeDestination, competing: Boolean = false): CloseableChannel
 }

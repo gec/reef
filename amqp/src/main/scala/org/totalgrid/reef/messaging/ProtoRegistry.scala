@@ -54,7 +54,7 @@ trait Connection extends SessionSource {
 /** Implements the ProtoRegistry trait to provide a concrete AMQP service implementation */
 class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: ServiceList, authToken: Option[String] = None) extends Connection {
 
-  private lazy val pool = new BasicSessionPool(this)
+  private lazy val pool = new BasicSessionPool(this, null)
 
   final override def newSession(): ClientSession = {
     val client = new AmqpClientSession(factory, lookup, timeoutms)
@@ -73,7 +73,7 @@ class AMQPProtoRegistry(factory: AMQPProtoFactory, timeoutms: Long, lookup: Serv
   }
 
   final override def bindService(service: AsyncService[_], destination: Destination = AnyNodeDestination, competing: Boolean = false, reactor: Option[Executor] = None): CloseableChannel = {
-    factory.bindService(service.descriptor.id, service.respond, destination, competing, reactor)
+    factory.bindService(service.descriptor.id, service.respond _, destination, competing, reactor)
   }
 
 }

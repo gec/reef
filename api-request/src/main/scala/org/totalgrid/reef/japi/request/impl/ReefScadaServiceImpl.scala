@@ -21,6 +21,7 @@ package org.totalgrid.reef.japi.request.impl
 import org.totalgrid.reef.japi.request._
 import org.totalgrid.reef.japi.client.{ Session, SessionExecutionPool }
 import org.totalgrid.reef.sapi.client.{ SubscriptionManagement, RestOperations, SessionPool }
+import org.totalgrid.reef.messaging.javaclient.AMQPConnection
 
 /**
  * "Super" interface that includes all of the helpers for the individual services. This could be broken down
@@ -30,6 +31,7 @@ class AllScadaServicePooledWrapper(_sessionPool: SessionExecutionPool, _authToke
     extends AllScadaService with AllScadaServiceImpl with AuthorizedAndPooledClientSource {
   def authToken = _authToken
   def sessionPool = _sessionPool
+  override def clientSessionFactory = _sessionPool.getConnection.asInstanceOf[AMQPConnection].getClientSessionFactory
 }
 
 class AllScadaServiceWrapper(_session: Session) extends AllScadaService with AllScadaServiceImpl with SingleSessionClientSource {
@@ -38,6 +40,7 @@ class AllScadaServiceWrapper(_session: Session) extends AllScadaService with All
 
 class AuthTokenServicePooledWrapper(_sessionPool: SessionExecutionPool) extends AuthTokenService with AuthTokenServiceImpl with PooledClientSource {
   def sessionPool = _sessionPool
+  override def clientSessionFactory = _sessionPool.getConnection.asInstanceOf[AMQPConnection].getClientSessionFactory
 }
 
 class AuthTokenServiceWrapper(_session: Session) extends AuthTokenService with AuthTokenServiceImpl with SingleSessionClientSource {

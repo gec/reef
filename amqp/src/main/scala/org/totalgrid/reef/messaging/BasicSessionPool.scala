@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.messaging
 
-import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool }
+import org.totalgrid.reef.japi.client.{ SessionFunction, SessionExecutionPool, Connection => JConnection }
 import org.totalgrid.reef.messaging.javaclient.SessionWrapper
 import org.totalgrid.reef.util.Logging
 import org.totalgrid.reef.japi.Envelope.Verb
@@ -27,7 +27,7 @@ import client._
 import org.totalgrid.reef.japi.{ InternalClientError, Envelope, ReefServiceException }
 import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 
-class BasicSessionPool(source: SessionSource) extends SessionPool with SessionExecutionPool with Logging {
+class BasicSessionPool(source: SessionSource, connection: JConnection = null) extends SessionPool with SessionExecutionPool with Logging {
 
   class ErroredClientSession(exception: ReefServiceException) extends ClientSession {
 
@@ -107,5 +107,7 @@ class BasicSessionPool(source: SessionSource) extends SessionPool with SessionEx
   final override def execute[A](authToken: String, function: SessionFunction[A]): A = {
     borrow(authToken)(client => function.apply(new SessionWrapper(client)))
   }
+
+  def getConnection = connection
 }
 
