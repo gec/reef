@@ -16,23 +16,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.executor
+package org.totalgrid.reef.osgi
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
-import net.agileautomata.executor4s.{ Executors, Executor }
 import java.util.concurrent.{ Executors => JExecutors }
+import org.osgi.framework.{ BundleContext, BundleActivator }
+import net.agileautomata.executor4s.{ Executor, Executors }
 
-final class Activator extends BundleActivator {
+trait ExecutorBundleActivator extends BundleActivator {
 
-  // the thread pool will grow, but always retain the number of threads == number of cores
+  private val executor = JExecutors.newCachedThreadPool()
+  private val scheduler = JExecutors.newSingleThreadScheduledExecutor()
+  private val exe = Executors.newCustomExecutor(executor, scheduler)
 
-  val scheduler = JExecutors.newSingleThreadScheduledExecutor()
-  val executor = JExecutors.newCachedThreadPool()
+  final override def start(context: BundleContext) = start(context, exe)
 
-  val exe = Executors.newCustomExecutor(executor, scheduler)
+  final override def stop(context: BundleContext) = {
+    try {
+      stop(context, exe)
+    } finally {
+      exe.terminate()
+    }
+  }
 
-  def start(context: BundleContext) = context.createService(exe, interface1 = interface[Executor])
+  protected def start(context: BundleContext, executor: Executor): Unit
+  protected def stop(context: BundleContext, executor: Executor): Unit
 
-  def stop(context: BundleContext) = exe.terminate()
 }

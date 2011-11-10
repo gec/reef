@@ -23,8 +23,6 @@ import net.agileautomata.executor4s._
 import org.osgi.framework._
 import com.weiglewilczek.scalamodules._
 
-import org.totalgrid.reef.osgi.OsgiConfigReader
-
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
@@ -32,19 +30,15 @@ import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeS
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
-class ServiceActivator extends BundleActivator with Logging {
+class ServiceActivator extends ExecutorBundleActivator with Logging {
 
   private var manager = Option.empty[ConnectionCloseManagerEx]
 
-  def start(context: BundleContext) {
+  def start(context: BundleContext, exe: Executor) {
 
     logger.info("Starting Service bundle..")
-
-    val exe = context findService withInterface[Executor] andApply (x => x) match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find required executor pool")
-    }
 
     val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
@@ -70,7 +64,7 @@ class ServiceActivator extends BundleActivator with Logging {
     manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) {
+  def stop(context: BundleContext, exe: Executor) {
     manager.foreach(_.stop())
 
     logger.info("Stopped Service bundle..")
