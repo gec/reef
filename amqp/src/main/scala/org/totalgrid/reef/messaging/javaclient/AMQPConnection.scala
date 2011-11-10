@@ -78,7 +78,8 @@ class AMQPConnection(settings: AMQPConnectionSettings, servicesList: ServiceList
   final override def newSession(): Session =
     new SessionWrapper(new AmqpClientSession(factory, servicesList, timeoutms))
 
-  final override def newSessionPool(): SessionExecutionPool = new BasicSessionPool(factory)
+  final override def newSessionPool(): SessionExecutionPool = new BasicSessionPool(factory, this)
 
+  def getClientSessionFactory = factory
 }
 

@@ -46,4 +46,9 @@ public interface SessionExecutionPool
      * method
      */
     <A> A execute( String authToken, SessionFunction<A> function ) throws ReefServiceException;
+
+    /**
+     * get underlying connection (FOR INTERNAL USE ONLY)
+     */
+    Connection getConnection();
 }

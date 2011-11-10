@@ -138,6 +138,10 @@ trait AMQPProtoFactory extends AMQPConnectionReactor with ClientSessionFactory {
 
   /* ---- Functions related to implementing services ---- */
 
+  def bindServiceHandler(exchange: String, service: AsyncService.ServiceFunction, executor: Executor, destination: Destination, competing: Boolean) = {
+    bindService(exchange, service, destination, competing, Some(executor))
+  }
+
   /**
    * bind a service handler to the bus for a given exchange
    * @param exchange   exchange to bind to

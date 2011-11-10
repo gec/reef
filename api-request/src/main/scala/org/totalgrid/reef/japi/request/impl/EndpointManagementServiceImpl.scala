@@ -26,6 +26,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig, CommEndpointConnection }
+import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State
 
 trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointManagementService {
 
@@ -64,6 +65,13 @@ trait EndpointManagementServiceImpl extends ReefServiceBaseClass with EndpointMa
 
   override def getEndpointConnection(endpointUuid: ReefUUID) = ops("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).await().expectOne
+  }
+
+  override def alterEndpointConnectionState(endpointUuid: ReefUUID, state: State) = {
+    val connection = getEndpointConnection(endpointUuid)
+    ops("Couldn't alter endpoint connection: " + endpointUuid + " to : " + state) {
+      _.post(CommEndpointConnection.newBuilder.setUid(connection.getUid).setState(state).build).await().expectOne()
+    }
   }
 
   override def getAllCommunicationChannels = ops("Couldn't get list of all channels") {

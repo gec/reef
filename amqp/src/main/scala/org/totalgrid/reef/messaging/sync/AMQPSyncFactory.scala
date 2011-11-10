@@ -52,6 +52,9 @@ trait AMQPSyncFactory extends AMQPConnectionReactor with ClientSessionFactory {
     broadcaster _
   }
 
+  def bindServiceHandler(exchange: String, service: AsyncService.ServiceFunction, executor: Executor, destination: Destination, competing: Boolean) = {
+    bindService(exchange, service, executor, destination, competing)
+  }
   /**
    * experimental synchronous bindService call
    * @param executor it is mandatory to dispatch incoming messages to an executor. If we handle the messsage on the

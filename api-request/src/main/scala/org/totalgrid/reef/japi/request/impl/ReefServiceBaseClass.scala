@@ -26,9 +26,13 @@ import org.totalgrid.reef.japi.client.{ Subscription => JavaSubscription }
 import org.totalgrid.reef.sapi.client.{ RestOperations, SubscriptionManagement, Subscription, ClientSession }
 import org.totalgrid.reef.japi.client._
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.messaging.ClientSessionFactory
 
 // TODO rename BaseReefService or similar, class is redundant.
 trait ReefServiceBaseClass extends ClientSource with SubscriptionCreator {
+
+  def clientSessionFactory: ClientSessionFactory =
+    throw new Exception("Cannot bind services with this wrapper, use pooled wrapper")
 
   def useSubscription[S, R <: GeneratedMessage](session: SubscriptionManagement, klass: Class[_])(block: Subscription[R] => S): SubscriptionResult[S, R] = {
     val sub: Subscription[R] = session.addSubscription[R](klass)
