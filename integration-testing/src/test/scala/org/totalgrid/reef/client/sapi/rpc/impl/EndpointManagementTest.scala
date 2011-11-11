@@ -117,9 +117,11 @@ class EndpointManagementTest
       endpoints.foreach { e => client.enableEndpointConnection(e.getUuid).await }
     }
 
+    // cant use original map because it will probably have sem multiple transitions to true, COMMS_UP
+    // we need to verify that the endpoints are all going to end up good starting now.
+    val postMap = new EndpointConnectionStateMap(client.subscribeToAllEndpointConnections().await)
     // eventually we should get back to enabled COMMS_UP
-    map.checkAllState(true, COMMS_UP)
-
+    postMap.checkAllState(true, COMMS_UP)
   }
 
   class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {

@@ -31,6 +31,7 @@ import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.client.rpc.MeasurementService;
 
 import org.totalgrid.reef.client.rpc.PointService;
+import org.totalgrid.reef.proto.FEP;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;
 
@@ -55,6 +56,15 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase
 
         MeasurementService ms = helpers;
         PointService ps = helpers;
+
+        // make sure all of the endpoints are enabled and COMMS_UP so measurements should be published
+        List<FEP.CommEndpointConfig> endpoints = helpers.getAllEndpoints();
+        for ( FEP.CommEndpointConfig endpoint : endpoints )
+        {
+            FEP.CommEndpointConnection connection = helpers.getEndpointConnection( endpoint.getUuid() );
+            assertEquals( connection.getEnabled(), true );
+            assertEquals( connection.getState(), FEP.CommEndpointConnection.State.COMMS_UP );
+        }
 
         // mock object that will receive queue and measurement subscription
         MockSubscriptionEventAcceptor<Measurements.Measurement> mock = new MockSubscriptionEventAcceptor<Measurements.Measurement>();
