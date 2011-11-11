@@ -257,7 +257,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val convertValues = getElements[Transform](name, pointType, _.getTransform.toList)
     triggers = triggers ::: convertValues.map { transform => toTrigger(name, transform, unit) }
 
-    if (!triggers.isEmpty) addTriggers(modelLoader, point, triggers)
+    if (!triggers.isEmpty) addTriggers(commonLoader.triggerCache, point, triggers)
 
     pointEntity
   }

@@ -26,6 +26,7 @@ import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
 
 import org.totalgrid.reef.proto.Model.{ EntityEdge, Point, Entity, PointType => PointTypeProto }
+import scala.collection.mutable
 
 /**
  * Utility methods to crate protos
@@ -76,21 +77,18 @@ object ProtoUtils {
     triggerSet.clearTriggers
     triggers.foreach(triggerSet.addTriggers(_))
 
-    //println("insertTrigger: after insert triggerSet: \n" + triggerSet.toString)
-
     triggerSet
   }
 
-  def addTriggers(client: ModelLoader, point: Point, triggers: List[Trigger.Builder]) {
-    var triggerSets = client.getOrThrow(toTriggerSet(point))
-    var triggerSet = triggerSets.size match {
-      case 0 => TriggerSet.newBuilder.setPoint(point)
-      case 1 => triggerSets.head.toBuilder
-      case n => throw new Exception("Service returned multiple TriggerSets for point '" + point.getName + "'. Should be one or none.")
-    }
+  def addTriggers(triggerCache: mutable.Map[String, TriggerSet], point: Point, triggers: List[Trigger.Builder]) {
+
+    var triggerSet = triggerCache.get(point.getName).map(_.toBuilder).getOrElse(TriggerSet.newBuilder.setPoint(point))
+
     triggers.foreach(trigger => triggerSet = insertTrigger(triggerSet, trigger))
-    val ts = triggerSet.build
-    client.putOrThrow(ts)
+
+    triggerCache.put(point.getName, triggerSet.build)
+
+    println("insertTrigger: after insert triggerSet: \n" + triggerSet.toString)
   }
 
   /**

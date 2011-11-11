@@ -468,13 +468,16 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
         val point = toPoint(name)
 
-        addTriggers(modelLoader, point, toTrigger(name, s) :: Nil)
+        addTriggers(commonLoader.triggerCache, point, toTrigger(name, s) :: Nil)
 
         unit
       } else {
         if (!point.isSetUnit) "" else point.getUnit
       }
       if (isDataSource) loadCache.addPoint(endpointName, name, index, unit)
+
+      // once we have added any comms triggers the trigger set is complete and we can upload it
+      commonLoader.triggerCache.get(name).foreach { ts => modelLoader.putOrThrow(ts) }
     }
   }
 
