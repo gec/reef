@@ -474,10 +474,12 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       } else {
         if (!point.isSetUnit) "" else point.getUnit
       }
-      if (isDataSource) loadCache.addPoint(endpointName, name, index, unit)
 
-      // once we have added any comms triggers the trigger set is complete and we can upload it
-      commonLoader.triggerCache.get(name).foreach { ts => modelLoader.putOrThrow(ts) }
+      if (isDataSource) {
+        loadCache.addPoint(endpointName, name, index, unit)
+        // once we have added any comms triggers the trigger set is complete and we can upload it
+        commonLoader.triggerCache.get(name).foreach { ts => modelLoader.putOrThrow(ts) }
+      }
     }
   }
 
@@ -716,7 +718,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     logger.debug("SIM POINT -> " + name)
     val builder = SimMapping.MeasSim.newBuilder.setName(name).setUnit(point.getUnit)
 
-    var triggerSet = modelLoader.getOrThrow(toTriggerSet(toPoint(name))).headOption
+    val triggerSet = commonLoader.triggerCache.get(name)
 
     var inBoundsRatio = 0.85
     var changeChance = 1.0

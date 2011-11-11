@@ -24,7 +24,6 @@ import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
 import com.weiglewilczek.slf4s.Logging
-import collection.mutable.Map
 
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.commons.ui.RequestViewer
@@ -34,7 +33,6 @@ import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
 
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
-  private val triggers = scala.collection.mutable.Map.empty[String, TriggerSet]
   private val modelContainer = new ModelContainer
 
   def putOrThrow(entity: Entity) {
@@ -92,25 +90,13 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
   }
 
   def putOrThrow(triggerSet: TriggerSet) {
-    triggers.put(triggerSet.getPoint.getName, triggerSet);
+    puts ::= triggerSet;
     modelContainer.add(triggerSet)
     autoFlush
   }
 
-  def getOrThrow(e: TriggerSet): List[TriggerSet] = {
-    client.map {
-      _.get(e).await :: Nil
-    }.getOrElse(triggers.get(e.getPoint.getName).map {
-      _ :: Nil
-    }.getOrElse(Nil))
-  }
-
   def autoFlush {
     client.foreach(flush(_, None))
-  }
-
-  def getTriggerSets(): Map[String, TriggerSet] = {
-    triggers.clone()
   }
 
   def flush(client: LoaderServices, stream: Option[PrintStream]) = {
@@ -124,7 +110,7 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
 
       RequestSpy.withRequestSpy(client, viewer) {
 
-        val uploadOrder = (puts.reverse ::: triggers.map { _._2 }.toList)
+        val uploadOrder = puts.reverse.toList
         var i = 0
         uploadOrder.foreach { eq =>
           i = i + 1
@@ -154,10 +140,9 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
   def reset() {
     puts = List.empty[AnyRef]
     modelContainer.reset
-    triggers.clear
   }
 
-  def size = puts.size + triggers.keys.size
-  def allProtos = (triggers.values.toList ::: puts).reverse
+  def size = puts.size
+  def allProtos = puts.reverse
 }
 

@@ -87,8 +87,6 @@ object ProtoUtils {
     triggers.foreach(trigger => triggerSet = insertTrigger(triggerSet, trigger))
 
     triggerCache.put(point.getName, triggerSet.build)
-
-    println("insertTrigger: after insert triggerSet: \n" + triggerSet.toString)
   }
 
   /**
