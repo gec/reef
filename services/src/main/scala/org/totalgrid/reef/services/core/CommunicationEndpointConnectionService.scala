@@ -32,6 +32,7 @@ import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -73,6 +74,16 @@ class CommunicationEndpointConnectionServiceModel
     throw new BadRequestException("Cannot create frontend connections via the public interface")
 
   override def updateFromProto(context: RequestContext, proto: ConnProto, existing: FrontEndAssignment): (FrontEndAssignment, Boolean) = {
+    try {
+      attemptUpdate(context, proto, existing)
+    } catch {
+      case e: ExclusiveAccessException =>
+        logger.warn("ExclusiveAcess collision during update, retrying")
+        attemptUpdate(context, proto, table.lookup(existing.id).getOrElse(existing))
+    }
+  }
+
+  private def attemptUpdate(context: RequestContext, proto: ConnProto, existing: FrontEndAssignment) = {
 
     lazy val endpoint = existing.endpoint.value.get
     lazy val eventArgs = "name" -> endpoint.entityName :: Nil
