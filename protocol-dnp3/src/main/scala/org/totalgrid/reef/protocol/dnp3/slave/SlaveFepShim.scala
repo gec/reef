@@ -47,8 +47,8 @@ object SlaveFepShim {
 
         new Cancelable {
           def cancel() {
-            protocol.foreach(_.Shutdown)
             registration.foreach { _.unregister() }
+            protocol.foreach(_.Shutdown)
           }
         }
       }
