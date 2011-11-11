@@ -29,7 +29,7 @@ object EndpointView {
   }
 
   def header = {
-    "Endpoint" :: "Protocol" :: "State" :: "Enabled" :: "FrontEnd" :: "Port" :: "Port State" :: Nil
+    "Endpoint" :: "Protocol" :: "State" :: "Enabled" :: "FrontEnd" :: "Port" :: "Port State" :: "MeasProc?" :: Nil
   }
 
   def row(a: CommEndpointConnection) = {
@@ -40,6 +40,7 @@ object EndpointView {
       a.frontEnd.appConfig.instanceName.getOrElse("Unassigned") ::
       a.endpoint.channel.name.getOrElse("unknown") ::
       a.endpoint.channel.state.map { _.toString }.getOrElse("unknown") ::
+      a.routing.serviceRoutingKey.map { s => true }.getOrElse(false).toString ::
       Nil
   }
 }

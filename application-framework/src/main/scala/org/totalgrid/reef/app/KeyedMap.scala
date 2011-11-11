@@ -69,7 +69,7 @@ trait KeyedMap[A] extends ClearableMap[A] with Logging {
 
   def remove(connection: A) {
     active.get(getKey(connection)) match {
-      case None => logger.warn("Remove on unregistered key: " + getKey(connection) + ", connection: " + connection)
+      case None => logger.info("Remove on unregistered key: " + getKey(connection))
       case Some(x) =>
         logger.info("removing key: " + getKey(connection))
         removeEntry(x)
