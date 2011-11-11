@@ -58,6 +58,7 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
   private def publish = this.synchronized {
     pubFunc(batch.toList)
     batch.clear
+    queuedEvent = None
   }
 
   def cancel() = this.synchronized {

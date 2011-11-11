@@ -35,6 +35,7 @@ import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAccept
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.proto.Measurements.Measurement
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
@@ -102,6 +103,22 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
       map.checkAllState(true, COMMS_UP)
       println("Enabled to COMMS_UP in: " + (System.currentTimeMillis() - disabled))
     }
+  }
+
+  test("Check measurements match") {
+
+    val measList = new SyncVar(List.empty[Measurement])
+
+    val subResult = services.subscribeToMeasurementsByNames("RoundtripSubstation.Line01.Current" :: Nil).await
+    subResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
+      def onEvent(event: SubscriptionEvent[Measurement]) {
+        measList.atomic(a => event.getValue :: a)
+      }
+    })
+
+    val meas = services.getMeasurementByName("OriginalSubstation.Line01.Current").await
+
+    measList.waitFor(_.find(m => m.getDoubleVal == meas.getDoubleVal && m.getTime == meas.getTime).isDefined)
   }
 
   class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
