@@ -32,7 +32,7 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import FrontEndTestHelpers._
 import org.totalgrid.reef.clientapi.sapi.client.Promise
-import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.clientapi.SubscriptionResult
 import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.MockExecutor

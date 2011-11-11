@@ -29,10 +29,10 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.clientapi.sapi.client.Promise
-import org.totalgrid.reef.clientapi.AddressableDestination
+import org.totalgrid.reef.clientapi.{ SubscriptionResult, AddressableDestination }
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, Client, SubscriptionResult }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 

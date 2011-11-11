@@ -26,12 +26,12 @@ import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection, Me
 
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.clientapi.sapi.client.Promise
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionResult, Client, Connection }
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.clientapi.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.clientapi.AddressableDestination
+import org.totalgrid.reef.clientapi.{ SubscriptionResult, AddressableDestination }
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
