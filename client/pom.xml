@@ -37,7 +37,7 @@
 							<docletArtifact>
 								<groupId>org.totalgrid.reef</groupId>
 								<artifactId>reef-api-enhancer</artifactId>
-								<version>0.4.0-SNAPSHOT</version>
+								<version>${reef.version}</version>
 							</docletArtifact>
 							<reportOutputDirectory>.</reportOutputDirectory>
 							<destDir>target/generated-sources</destDir>
@@ -117,14 +117,14 @@
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-client-api</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
 			<scope>compile</scope>
         </dependency>
 
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-test-util</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

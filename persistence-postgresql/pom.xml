@@ -53,12 +53,12 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-api</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-api</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

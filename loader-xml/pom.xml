@@ -73,19 +73,19 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-loader-commons</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-client</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
