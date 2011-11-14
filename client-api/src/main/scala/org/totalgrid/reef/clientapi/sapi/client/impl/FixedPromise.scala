@@ -19,7 +19,7 @@
 package org.totalgrid.reef.clientapi.sapi.client.impl
 
 import org.totalgrid.reef.clientapi.sapi.client.Promise
-import net.agileautomata.executor4s.Result
+import net.agileautomata.executor4s.{ Failure, Success, Result }
 
 class FixedPromise[A](result: Result[A]) extends Promise[A] {
   def await: A = result.get
@@ -29,5 +29,10 @@ class FixedPromise[A](result: Result[A]) extends Promise[A] {
   }
   def extract: Result[A] = result
   def map[B](fun: A => B): Promise[B] = new FixedPromise[B](result.map(fun))
+  def flatMap[B](fun: A => Promise[B]): Promise[B] = result match {
+    case Success(x) => fun(x)
+    case fail: Failure => new FixedPromise[B](fail)
+  }
+
   def isComplete: Boolean = true
 }

@@ -20,7 +20,9 @@ package org.totalgrid.reef.clientapi.sapi.client.impl
 
 import org.totalgrid.reef.clientapi.sapi.client.Promise
 import net.agileautomata.executor4s.{ Settable, Success, Result }
+import java.lang.IllegalStateException
 
+// TODO - get rid of synchronized promise in favor of wrapping a future
 final class SynchronizedPromise[A] private (private var result: Option[A]) extends Promise[A] with Settable[A] {
 
   def this(result: A) = this(Some(result))
@@ -44,6 +46,8 @@ final class SynchronizedPromise[A] private (private var result: Option[A]) exten
   }
 
   override def map[B](fun: A => B): Promise[B] = new SynchronizedPromise[B](fun(this.await))
+
+  override def flatMap[B](fun: A => Promise[B]): Promise[B] = throw new Exception("Unimplemented")
 
   override def await: A = extract.get
 

@@ -30,6 +30,7 @@ trait Promise[+A] {
   def listen(fun: Promise[A] => Unit): Promise[A]
   def extract: Result[A]
   def map[B](fun: A => B): Promise[B]
+  def flatMap[B](fun: A => Promise[B]): Promise[B]
   def isComplete: Boolean
 }
 

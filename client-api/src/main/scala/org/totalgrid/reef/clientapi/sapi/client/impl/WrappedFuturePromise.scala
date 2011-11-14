@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.clientapi.sapi.client.impl
 
-import net.agileautomata.executor4s.{ Future, Result }
 import org.totalgrid.reef.clientapi.sapi.client.Promise
+import net.agileautomata.executor4s.{ Failure, Success, Future, Result }
 
 class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
 
@@ -29,8 +29,28 @@ class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
     this
   }
   def extract: Result[A] = future.await
-  def map[B](fun: A => B) = Promise.from(future.map(_.map(fun)))
+  def map[B](fun: A => B) = Promise.from(future.map(r => r.map(fun)))
   def isComplete: Boolean = future.isComplete
 
+  def flatMap[B](fun: A => Promise[B]): Promise[B] = {
+    println("flat mapping a promise")
+    val f = future.replicate[Result[B]]
+    val promise = Promise.from(f)
+    def onResult(a: Result[A]) = {
+      println("Result: " + a)
+      a match {
+        case Success(x) =>
+        println("about to convert")
+        fun(x).listen {
+          p =>
+            println("got a final result in flatmap")
+            f.set(p.extract)
+        }
+        case fail: Failure => f.set(fail)
+      }
+    }
+    future.listen(onResult)
+    promise
+  }
 }
 
