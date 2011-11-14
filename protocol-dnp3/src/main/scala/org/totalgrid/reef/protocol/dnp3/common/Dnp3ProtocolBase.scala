@@ -80,9 +80,9 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
   override def removeEndpoint(endpointName: String) = {
     logger.info { "removing stack with name: " + endpointName }
 
-    dnp3.RemoveStack(endpointName)
+    map.get(endpointName).foreach { _.cancel() }
 
-    map.get(endpointName).foreach { _.cancel }
+    dnp3.RemoveStack(endpointName)
 
     map -= endpointName
 
