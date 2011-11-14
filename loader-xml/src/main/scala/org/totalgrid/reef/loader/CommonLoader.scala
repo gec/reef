@@ -105,8 +105,6 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
   }
 
   def addInfo(entity: Entity, info: Info) {
-    logger.info("adding info for entity: " + entity + ", info: " + info)
-
     exceptionCollector.collect("Adding info for entity: " + entity.getName) {
 
       info.getConfigFile.map(configFile => loadConfigFile(configFile, Some(entity)))

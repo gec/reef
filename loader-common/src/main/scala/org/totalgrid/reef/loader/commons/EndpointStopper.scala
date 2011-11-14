@@ -35,12 +35,12 @@ object EndpointStopper {
    */
   def stopEndpoints(local: LoaderServices, endpoints: List[CommEndpointConfig], stream: Option[PrintStream]) {
 
-    val endpointUuids = endpoints.map { _.getUuid }
+    val endpointUuids = endpoints.map { e => e.getUuid -> e.getName }.toMap
 
     stream.foreach { _.println("Disabling endpoints: " + endpoints.map { _.getName }.mkString(", ")) }
 
     // first we disable all of the endpoints
-    endpointUuids.foreach { local.disableEndpointConnection(_).await }
+    endpointUuids.foreach { e => local.disableEndpointConnection(e._1).await }
 
     // then subscribe to all of the connections
     val subResult = local.subscribeToAllEndpointConnections().await
@@ -67,11 +67,11 @@ object EndpointStopper {
          * never return
          */
         @annotation.tailrec
-        def waitForEmptyList(endpointUuids: List[ReefUUID], timeout: Int) {
+        def waitForEmptyList(endpointUuids: Map[ReefUUID, String], timeout: Int) {
           if (!endpointUuids.isEmpty) {
-            stream.foreach { _.println("Waiting for " + endpointUuids.size + " endpoints to stop...") }
+            stream.foreach { _.println("Waiting for " + endpointUuids.values.mkString(", ") + " to stop...") }
             val nextEvent = queue.poll(timeout, TimeUnit.MILLISECONDS)
-            if (nextEvent == null) throw new Exception("Couldn't stop all endpoints.")
+            if (nextEvent == null) throw new Exception("Couldn't stop all endpoints: " + endpointUuids.values.mkString(", "))
             waitForEmptyList(filterEndpoints(endpointUuids, nextEvent), timeout)
           }
         }
@@ -86,9 +86,9 @@ object EndpointStopper {
     }
   }
 
-  private def filterEndpoints(stillRunningEndpoints: List[ReefUUID], connection: CommEndpointConnection) = {
+  private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: CommEndpointConnection) = {
     if (connection.getState != CommEndpointConnection.State.COMMS_UP) {
-      stillRunningEndpoints.filterNot { _ == connection.getEndpoint.getUuid }
+      stillRunningEndpoints - connection.getEndpoint.getUuid
     } else {
       stillRunningEndpoints
     }

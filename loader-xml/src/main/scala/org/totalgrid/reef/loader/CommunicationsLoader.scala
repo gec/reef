@@ -768,8 +768,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(simMapping.toByteString)
 
-    logger.info("simulator mapping: endpoint: " + endpointName + ", mapping: " + simMapping.toString)
-
     configFileBuilder
   }
 }
