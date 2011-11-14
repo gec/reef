@@ -37,7 +37,6 @@
             <directory>target/dependencies/unix/apache-karaf-${karaf.version}</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
-                <exclude>etc/jre.properties</exclude>
                 <exclude>etc/startup.properties</exclude>
                 <exclude>etc/custom.properties</exclude>
                 <exclude>etc/org.apache.karaf.features.cfg</exclude>
