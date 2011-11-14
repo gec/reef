@@ -24,11 +24,8 @@ import net.agileautomata.executor4s.{ Failure, Success, Future, Result }
 class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
 
   def await: A = future.await.get
-  def listen(fun: Promise[A] => Unit) = {
-    // we can't pass our listeners this promise because if try to extract
-    // or await on the value it will deadlock the future which is waiting
-    // for the all of the listen callbacks to complete.
-    future.listen(result => fun(new DefinedFuture(result, this)))
+  def listen(fun: Result[A] => Unit) = {
+    future.listen(result => fun(result))
     this
   }
   def extract: Result[A] = future.await
@@ -43,12 +40,11 @@ class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
       println("Result: " + a)
       a match {
         case Success(x) =>
-        println("about to convert")
-        fun(x).listen {
-          p =>
+          println("about to convert")
+          fun(x).listen { p =>
             println("got a final result in flatmap")
-            f.set(p.extract)
-        }
+            f.set(p)
+          }
         case fail: Failure => f.set(fail)
       }
     }
@@ -56,14 +52,3 @@ class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
     promise
   }
 }
-
-class DefinedFuture[A](value: Result[A], originalPromise: Promise[A]) extends Promise[A] {
-  def await = value.get
-  def extract = value
-  def isComplete = true
-
-  // pipe the listen and map calls back to the original promise
-  def listen(fun: (Promise[A]) => Unit) = originalPromise.listen(fun)
-  def map[B](fun: (A) => B) = originalPromise.map(fun)
-}
-

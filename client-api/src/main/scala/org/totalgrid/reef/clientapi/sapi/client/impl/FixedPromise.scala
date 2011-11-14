@@ -23,8 +23,8 @@ import net.agileautomata.executor4s.{ Failure, Success, Result }
 
 class FixedPromise[A](result: Result[A]) extends Promise[A] {
   def await: A = result.get
-  def listen(fun: Promise[A] => Unit): Promise[A] = {
-    fun(this)
+  def listen(fun: Result[A] => Unit): Promise[A] = {
+    fun(result)
     this
   }
   def extract: Result[A] = result

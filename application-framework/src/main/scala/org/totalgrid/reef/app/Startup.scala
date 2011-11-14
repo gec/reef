@@ -30,20 +30,13 @@ import org.totalgrid.reef.proto.Application
 object Startup {
 
   def login(broker: BrokerConnection, exe: Executor, settings: UserSettings): Promise[Client] = {
-    println("logging in!")
     val conn = ReefServices(broker, exe)
-    val p = conn.login(settings.getUserName, settings.getUserPassword)
-    p.listen(r => println("Client: " + r.extract))
-    println("done logging in!")
-    p
+    conn.login(settings.getUserName, settings.getUserPassword)
   }
 
   def enroll(client: Client, nodeSettings: NodeSettings, instanceName: String, capabilities: List[String]): Promise[Application.ApplicationConfig] = {
-    println("enrolling!")
     val services = client.getRpcInterface(classOf[AllScadaService])
-    val p = services.registerApplication(nodeSettings, instanceName, capabilities)
-    println("done enrolling")
-    p
+    services.registerApplication(nodeSettings, instanceName, capabilities)
   }
 
 }

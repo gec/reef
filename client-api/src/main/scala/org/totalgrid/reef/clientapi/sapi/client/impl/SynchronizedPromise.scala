@@ -18,54 +18,34 @@
  */
 package org.totalgrid.reef.clientapi.sapi.client.impl
 
-import org.totalgrid.reef.clientapi.sapi.client.Promise
-import net.agileautomata.executor4s.{ Settable, Success, Result }
+import net.agileautomata.executor4s.{ Settable, Success }
 import java.lang.IllegalStateException
 
-// TODO - get rid of synchronized promise in favor of wrapping a future
-final class SynchronizedPromise[A] private (private var result: Option[A]) extends Promise[A] with Settable[A] {
+// TODO - change the name of this to something else, it's not a promise anymore
+final class SynchronizedPromise[A] private (private var result: Option[A]) extends Settable[A] {
 
   def this(result: A) = this(Some(result))
   def this() = this(None)
 
-  private var listeners: List[Promise[A] => Unit] = Nil
   private val mutex = new Object
 
-  override def isComplete = result.isDefined
-
-  override def set(value: A) = mutex.synchronized {
+  def set(value: A) = mutex.synchronized {
     result match {
       case Some(x) =>
         throw new IllegalStateException("Result already defined to be: " + result + ", tried to set it to: " + value)
       case None =>
         result = Some(value)
         mutex.notifyAll()
-        listeners.foreach(_.apply(this))
-        listeners = Nil
     }
   }
 
-  override def map[B](fun: A => B): Promise[B] = new SynchronizedPromise[B](fun(this.await))
-
-  override def flatMap[B](fun: A => Promise[B]): Promise[B] = throw new Exception("Unimplemented")
-
-  override def await: A = extract.get
-
-  override def extract: Result[A] = mutex.synchronized {
+  def await: A = mutex.synchronized {
     result match {
       case None =>
         mutex.wait()
-        extract
-      case Some(x) => Success(x)
+        await
+      case Some(x) => x
     }
-  }
-
-  override def listen(fun: Promise[A] => Unit) = mutex.synchronized {
-    result match {
-      case Some(x) => fun(this)
-      case None => listeners = fun :: listeners
-    }
-    this
   }
 
 }

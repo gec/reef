@@ -40,7 +40,7 @@ class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dat
 
   service.execute {
     service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName }).listen { p =>
-      val subscriptionResult = p.await
+      val subscriptionResult = p.get
       subscription = Some(ServiceContext.attachToServiceContext(subscriptionResult, this))
     }
   }
