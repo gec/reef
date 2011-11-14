@@ -37,6 +37,12 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
 
   val strand = Strand(exe)
 
+  private var state: State = {
+    val measurements = config.getMeasurementsList.map(x => x.getName -> MeasRecord(x.getName, x.getUnit, RandomValues(x))).toMap
+    val commands = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
+    State(measurements, commands, config.getDelay, None)
+  }
+
   // do an integrity poll on all values at startup
   strand.execute {
     mutate { state =>
@@ -61,12 +67,6 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
       value.apply(point)
       point.build
     }
-  }
-
-  private var state: State = {
-    val measurements = config.getMeasurementsList.map(x => x.getName -> MeasRecord(x.getName, x.getUnit, RandomValues(x))).toMap
-    val commands = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
-    State(measurements, commands, config.getDelay, None)
   }
 
   private case class State(measurements: Map[String, MeasRecord], commands: Map[String, CommandStatus], delayMs: Long, timer: Option[Timer]) {
