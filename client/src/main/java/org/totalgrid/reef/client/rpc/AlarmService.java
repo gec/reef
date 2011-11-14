@@ -39,6 +39,8 @@ import java.util.List;
  * <p/>
  * During the configuration process, the system designer decides what events trigger alarms. The primary consumers of
  * alarms are operators tasked with monitoring the system in real-time and responding to abnormal conditions.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface AlarmService extends SubscriptionCreator
 {

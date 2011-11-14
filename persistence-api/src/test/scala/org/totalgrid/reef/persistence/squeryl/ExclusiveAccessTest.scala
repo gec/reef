@@ -82,7 +82,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
       AccessSchema.acs.insert(new AccessTable(0)).id
       AccessSchema.acs.insert(new AccessTable(0)).id
     }
-    val accessor = testFunMulti(List(0, 1, 2), _.value == 1)
+    val accessor = testFunMulti(List(1, 2, 3), _.value == 1)
 
     intercept[AcquireConditionNotMetException] {
       accessor(a => throw new Exception)

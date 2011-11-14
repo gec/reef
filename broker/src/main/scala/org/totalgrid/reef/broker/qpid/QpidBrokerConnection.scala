@@ -21,6 +21,7 @@ package org.totalgrid.reef.broker.qpid
 import org.totalgrid.reef.broker._
 import org.apache.qpid.transport._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 
 final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool with ConnectionListener with Logging {
 
@@ -33,12 +34,14 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
   override def disconnect(): Boolean = mutex.synchronized {
     if (!disconnected) {
       disconnected = true
+      closeWorkerChannels()
       conn.close()
       true
     } else true
   }
 
   def listen(): BrokerSubscription = {
+    if (disconnected) throw new ServiceIOException("Connection closed")
     val session = conn.createSession(0)
     val q = QpidChannelOperations.declareQueue(session, "*", true, true)
     val subscription = new QpidBrokerSubscription(session, q)
@@ -46,6 +49,7 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
   }
 
   def listen(queue: String): BrokerSubscription = {
+    if (disconnected) throw new ServiceIOException("Connection closed")
     val session = conn.createSession(0)
     val q = QpidChannelOperations.declareQueue(session, queue, false, false)
     assert(queue == q)
@@ -57,6 +61,7 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
 
   def closed(conn: Connection) = {
     this.onDisconnect(disconnected)
+    disconnected = true
   }
 
   def opened(conn: Connection) = {}

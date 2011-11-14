@@ -24,6 +24,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler
 
 trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
@@ -138,4 +139,28 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     }
   }
 
+  override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
+    ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getUuid) { session =>
+      import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
+      import org.totalgrid.reef.clientapi.AddressableDestination
+      import net.agileautomata.executor4s._
+
+      val connectionFuture = session.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build)
+
+      connectionFuture.flatMap {
+        _.one match {
+          case Success(connection) =>
+            val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
+            val service = new EndpointCommandHandlerImpl(handler)
+
+            // TODO: use defined future
+            val f2 = client.future[Result[Cancelable]]
+            f2.set(Success(client.bindService(service, client, destination, true)))
+            f2
+          case fail: Failure =>
+            connectionFuture.asInstanceOf[Future[Result[Cancelable]]]
+        }
+      }
+    }
+  }
 }

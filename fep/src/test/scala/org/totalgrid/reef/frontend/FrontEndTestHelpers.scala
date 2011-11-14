@@ -22,8 +22,7 @@ import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
-import org.totalgrid.reef.clientapi.sapi.client._
+import org.totalgrid.reef.clientapi.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
 
 object FrontEndTestHelpers {
 
@@ -59,8 +58,8 @@ object FrontEndTestHelpers {
   class MockSubscription[A](val id: String = "queue") extends Subscription[A] {
     def getId = id
     var canceled = false
-    var acceptor = Option.empty[Event[A] => Unit]
-    def start(acc: Event[A] => Unit) = {
+    var acceptor = Option.empty[SubscriptionEventAcceptor[A]]
+    def start(acc: SubscriptionEventAcceptor[A]) {
       acceptor = Some(acc)
       this
     }
@@ -68,7 +67,10 @@ object FrontEndTestHelpers {
     def cancel() = canceled = true
   }
 
-  class MockSubscriptionResult[A](result: List[A], val mockSub: MockSubscription[A]) extends SubscriptionResult[List[A], A](result, mockSub) {
+  class MockSubscriptionResult[A](result: List[A], val mockSub: MockSubscription[A]) extends SubscriptionResult[List[A], A] {
+
+    def getResult = result
+    def getSubscription = mockSub
 
     def this(one: A) = this(one :: Nil, new MockSubscription[A]())
     def this(many: List[A]) = this(many, new MockSubscription[A]())

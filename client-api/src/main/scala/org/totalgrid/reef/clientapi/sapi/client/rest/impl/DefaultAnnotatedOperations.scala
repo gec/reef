@@ -24,8 +24,9 @@ import org.totalgrid.reef.clientapi.exceptions.{ InternalClientError, ReefServic
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
 
 import org.totalgrid.reef.clientapi.sapi.client.{ SubscriptionCreatorManager, Subscription, Promise }
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionResult, RestOperations, AnnotatedOperations }
-import org.totalgrid.reef.clientapi.javaimpl.SubscriptionWrapper
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RestOperations, AnnotatedOperations }
+import org.totalgrid.reef.clientapi.javaimpl.{ SubscriptionResultWrapper, SubscriptionWrapper }
+import org.totalgrid.reef.clientapi.SubscriptionResult
 
 final class DefaultAnnotatedOperations(client: RestOperations, manager: SubscriptionCreatorManager) extends AnnotatedOperations {
 
@@ -68,7 +69,7 @@ final class DefaultAnnotatedOperations(client: RestOperations, manager: Subscrip
           if (r.isFailure) sub.cancel()
         }
         opFuture.listen(onResult)
-        opFuture.map(_.map(a => SubscriptionResult(a, sub)))
+        opFuture.map(_.map(a => subscriptionResult(a, sub)))
       case Failure(ex) =>
         subscribeFuture.map { r =>
           // TODO: make Failure typable
@@ -77,5 +78,9 @@ final class DefaultAnnotatedOperations(client: RestOperations, manager: Subscrip
     }
 
     Promise.from(future)
+  }
+
+  private def subscriptionResult[A, B](result: A, subscription: Subscription[B]): SubscriptionResult[A, B] = {
+    new SubscriptionResultWrapper(result, subscription)
   }
 }

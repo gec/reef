@@ -23,6 +23,7 @@ import org.totalgrid.reef.broker._
 import net.agileautomata.executor4s.Executor
 
 import collection.immutable.Set
+import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 
 class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Executor) extends BrokerConnection {
 
@@ -33,7 +34,7 @@ class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Execut
 
     def factory = fac match {
       case Some(x) => x
-      case None => throw new Exception("Connection is closed")
+      case None => throw new ServiceIOException("Connection is closed")
     }
 
     def declareQueue(name: String): ConnectionState = {
@@ -44,6 +45,7 @@ class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Execut
     def disconnect: ConnectionState = fac match {
       case Some(f) =>
         f.update(s => queues.foldLeft(s)((old, q) => old.dropQueue(q)))
+        onDisconnect(true)
         ConnectionState(None, Set.empty[String])
       case None =>
         this

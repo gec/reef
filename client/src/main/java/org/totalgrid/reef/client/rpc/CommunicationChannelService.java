@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * In reef a communication channel is the representation of the "low-level" connection to an external resource
  * like a serial port or tcp socket.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface CommunicationChannelService
 {

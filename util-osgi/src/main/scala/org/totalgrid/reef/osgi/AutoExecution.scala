@@ -18,14 +18,25 @@
  */
 package org.totalgrid.reef.osgi
 
-import java.util.concurrent.{ Executors => JExecutors }
+import java.util.concurrent.{ ThreadFactory, Executors => JExecutors }
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import net.agileautomata.executor4s.{ Executor, Executors }
 
 trait ExecutorBundleActivator extends BundleActivator {
 
-  private val executor = JExecutors.newCachedThreadPool()
-  private val scheduler = JExecutors.newSingleThreadScheduledExecutor()
+  // TODO: rename all activator classes to have more descriptive name (not just Activator)
+  private val simpleNameOfClass = this.getClass.getSimpleName
+
+  def threadFactory(subName: String) = new ThreadFactory {
+    var threadsCreated = 0
+    def newThread(r: Runnable) = this.synchronized {
+      threadsCreated += 1
+      new Thread(r, simpleNameOfClass + "-" + subName + "-" + threadsCreated)
+    }
+  }
+
+  private val executor = JExecutors.newCachedThreadPool(threadFactory("pool"))
+  private val scheduler = JExecutors.newSingleThreadScheduledExecutor(threadFactory("sched"))
   private val exe = Executors.newCustomExecutor(executor, scheduler)
 
   final override def start(context: BundleContext) = start(context, exe)

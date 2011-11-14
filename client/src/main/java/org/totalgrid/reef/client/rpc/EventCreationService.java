@@ -35,6 +35,7 @@ import java.util.List;
  *  - severity, rendered, alarm fields are all set based on the matching EventConfig record
  *  - uid is the Event id, if the returned event doesn't have this field set it means it was logged or dropped
  *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface EventCreationService
 {

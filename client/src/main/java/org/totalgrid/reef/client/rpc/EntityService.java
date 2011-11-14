@@ -67,6 +67,8 @@ import org.totalgrid.reef.proto.Model.ReefUUID;
  * easier to consume and reason about, there should be accompanying documentation that describe what those constraints
  * are. In a future release those constraints will themselves be queryable so applications can be more self configuring,
  * Currently the developer needs to have a decent idea as to the model to construct a useful query.</p>
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface EntityService
 {

@@ -31,9 +31,11 @@ import org.squeryl.PrimitiveTypeMode._
  */
 object ExclusiveAccess {
 
-  class ObjectMissingException extends Exception
-  class AcquireConditionNotMetException extends Exception
-  class AcquireConditionStillValidException extends Exception
+  class ExclusiveAccessException(msg: String) extends Exception(msg)
+  class ObjectMissingException(msg: String) extends ExclusiveAccessException(msg)
+  class AcquireConditionNotMetException(msg: String) extends ExclusiveAccessException(msg)
+  class AcquireConditionStillValidException(msg: String) extends ExclusiveAccessException(msg)
+  class InvalidUpdateException(msg: String) extends ExclusiveAccessException(msg)
 
   def exclusiveAccess[A <: KeyedEntity[Long]](
     table: Table[A],
@@ -59,16 +61,16 @@ object ExclusiveAccess {
       val objList = table.where(c => c.id in ids).forUpdate.toList
 
       // Fail if we have nothing
-      if (objList.size < 1) throw new ObjectMissingException
+      if (objList.size < ids.size) throw new ObjectMissingException("Missing objects: " + ids + " got: " + objList.map { _.id })
 
       // Precondition on all objects
-      if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException
+      if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException("Couldn't acquire objects")
 
       // Get results, do any work inside the lock
       val results = lockFun(objList)
 
       // Postcondition on all objects
-      if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException
+      if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException("Objects were not updated")
 
       // Call update for each row
       results.foreach(updateFun(_))

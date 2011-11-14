@@ -36,7 +36,6 @@ trait ModelLoader {
   def putOrThrow(e: CommChannel)
 
   def putOrThrow(e: TriggerSet)
-  def getOrThrow(e: TriggerSet): List[TriggerSet]
 
   def getModelContainer: ModelContainer
   def reset()

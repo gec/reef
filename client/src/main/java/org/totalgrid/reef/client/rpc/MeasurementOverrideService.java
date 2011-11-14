@@ -33,6 +33,8 @@ import org.totalgrid.reef.proto.Processing.MeasOverride;
  * override that data to its nominal value.
  * - Training/Testing purposes, when an operator or integrator is testing alarms/UI/apps its often valuable to just
  * be able to quickly override a value and see that the correct behaviors occur.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface MeasurementOverrideService
 {

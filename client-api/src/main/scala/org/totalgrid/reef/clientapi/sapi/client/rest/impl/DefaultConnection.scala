@@ -50,13 +50,17 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
   // TODO - fail all all request once disconnected
   def onDisconnect(expected: Boolean): Unit = {
+    logger.info("connection disconnected: " + expected)
     conn.removeListener(this)
-    subscription.close()
     correlator.close()
     this.notifyListenersOfClose(expected)
   }
 
-  def disconnect() = conn.disconnect()
+  def disconnect() = {
+    logger.info("disconnect called.")
+    subscription.close()
+    conn.disconnect()
+  }
 
   def login(authToken: String): Client = createClient(authToken, Strand(executor))
 

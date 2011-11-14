@@ -118,29 +118,29 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
     val list = table.where(c => c.id in ids).toList
 
     // Fail if we have nothing
-    if (objList.size < 1) throw new ObjectMissingException
+    if (objList.size < ids.size) throw new ObjectMissingException("Cannot find objects with ids: " + ids)
 
     // Precondition on all objects
-    if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException
+    if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException("Not all objects have correct condition.")
 
     // Get results, do any work inside the lock
     val results = fun(objList)
 
-    if (results.length != objList.length) throw new Exception("Updated entries must be 1 to 1 map from input list")
+    if (results.length != objList.length) throw new InvalidUpdateException("Updated entries must be 1 to 1 map from input list")
 
     // Postcondition on all objects
-    if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException
+    if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException("Not all entries have updated the necessary fields")
 
     // Do the update, get the list of actual rows (after model hooks)
     val retList = results.zip(list).map {
       case (entry, previous) =>
         // Assert this is the same table row
         if (entry.id != previous.id)
-          throw new Exception("Updated entries must be 1 to 1 map from input list")
+          throw new InvalidUpdateException("Updated entries must be 1 to 1 map from input list")
 
         // Perform the update
         val (sql, updated) = update(context, entry, previous)
-        if (!updated) throw new Exception("Entry not updated!")
+        if (!updated) throw new InvalidUpdateException("Entry not updated!")
         sql
     }
 

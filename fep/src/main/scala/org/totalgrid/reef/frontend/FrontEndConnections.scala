@@ -52,7 +52,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
       (updated.hasRouting && updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey)
   }
 
-  def addEntry(c: CommEndpointConnection) = {
+  def addEntry(c: CommEndpointConnection) = try {
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
@@ -72,10 +72,12 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     endpointComponents += endpointName -> EndpointComponent(service)
 
     logger.info("Added endpoint: " + endpointName + " on protocol: " + protocol.name + ", routing key: " + c.getRouting.getServiceRoutingKey)
+  } catch {
+    case ex: Exception =>
+      logger.error("Can't add endpoint: " + c.getEndpoint.getName, ex)
   }
 
-  def removeEntry(c: CommEndpointConnection) {
-
+  def removeEntry(c: CommEndpointConnection) = try {
     val endpointName = c.getEndpoint.getName
 
     logger.info("Removing endpoint: " + endpointName)
@@ -90,6 +92,9 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
 
     endpointComponents -= endpointName
     logger.info("Removed endpoint: " + endpointName + " on protocol: " + protocol.name)
+  } catch {
+    case ex: Exception =>
+      logger.error("Can't remove endpoint: " + c.getEndpoint.getName, ex)
   }
 
   // TODO -fail the process if we can't publish measurements or state?

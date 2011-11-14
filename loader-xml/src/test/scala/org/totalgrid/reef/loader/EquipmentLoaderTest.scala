@@ -42,10 +42,11 @@ import org.totalgrid.reef.proto.Model
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with MockitoSugar with Logging {
 
   case class Fixture(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, loader: EquipmentLoader,
-      model: EquipmentModel) {
+      model: EquipmentModel, commonLoader: CommonLoader) {
     def reset {
       loader.reset
       modelLoader.reset()
+      commonLoader.reset()
       exceptionCollector.reset()
       model.reset
     }
@@ -64,7 +65,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("."))
       val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEquipment, exceptionCollector, commonLoader)
 
-      test(Fixture(modelLoader, exceptionCollector, loader, model))
+      test(Fixture(modelLoader, exceptionCollector, loader, model, commonLoader))
     }
 
   def testEquipmentModelProfiles(fixture: Fixture) =
@@ -123,7 +124,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       var container: ModelContainer = loader.getModelLoader.getModelContainer
       var protos = container.getModels
       protos.length should equal(12)
-      modelLoader.getModelContainer.getTriggerSets().length should equal(1)
+      commonLoader.triggerCache.size should equal(1)
 
       // TODO break into two tests
       reset
@@ -133,7 +134,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       container = loader.getModelLoader.getModelContainer
       protos = container.getModels
       protos.length should equal(12)
-      modelLoader.getModelContainer.getTriggerSets().length should equal(1)
+      commonLoader.triggerCache.size should equal(1)
 
       loader.getExceptionCollector.hasErrors should equal(false)
     }

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
+import org.totalgrid.reef.clientapi.SubscriptionResult
 
 trait SubscriptionHandler[A] {
 
@@ -28,6 +28,7 @@ trait SubscriptionHandler[A] {
   def cancel()
 }
 
+// TODO: remove all
 trait SubscriptionHandlerBase[A] extends SubscriptionHandler[A] with Cancelable { self: ServiceContext[A] =>
 
   var subscription: Option[Cancelable] = None

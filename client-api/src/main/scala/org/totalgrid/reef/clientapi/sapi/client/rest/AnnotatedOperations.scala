@@ -22,6 +22,7 @@ import org.totalgrid.reef.clientapi.types.TypeDescriptor
 
 import net.agileautomata.executor4s.{ Future, Result }
 import org.totalgrid.reef.clientapi.sapi.client.{ Promise, Subscription }
+import org.totalgrid.reef.clientapi.SubscriptionResult
 
 /**
  *  Defines an interface for composite subcribe/rest operations. Used in the RPC API implementations.
