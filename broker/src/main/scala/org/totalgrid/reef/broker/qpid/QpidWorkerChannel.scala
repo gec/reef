@@ -56,4 +56,12 @@ final class QpidWorkerChannel(val session: Session) extends SessionListener with
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[BrokerDestination]) =
     QpidChannelOperations.publish(session, exchange, key, b, replyTo)
 
+  def close() {
+    if (isOpen) try {
+      session.close()
+    } catch {
+      case ex: Exception =>
+        logger.error("Error closing session", ex)
+    }
+  }
 }

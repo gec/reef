@@ -28,8 +28,17 @@ import org.totalgrid.reef.loader.EnhancedXmlClasses._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 import org.totalgrid.reef.util.IOHelpers
+import org.totalgrid.reef.proto.Processing.TriggerSet
+
+import scala.collection.mutable
 
 class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {
+
+  val triggerCache = mutable.Map.empty[String, TriggerSet]
+
+  def reset() {
+    triggerCache.clear()
+  }
 
   def getExceptionCollector: ExceptionCollector = {
     exceptionCollector

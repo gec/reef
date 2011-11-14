@@ -95,6 +95,35 @@ class EndpointManagementTest
 
   }
 
+  test("Enable and disable as fast as possible") {
+
+    // this test is a stress test on the coordinator and fep and benchmark protocol and also
+    // indirectly tests the exclusive update support in the endpoint_connection_service
+    val endpoints = client.getAllEndpoints().await.toList
+
+    endpoints.isEmpty should equal(false)
+
+    val result = client.subscribeToAllEndpointConnections().await
+
+    val map = new EndpointConnectionStateMap(result)
+
+    // make sure everything starts comms_up and enabled
+    map.checkAllState(true, COMMS_UP)
+
+    (1 to 10).foreach { i =>
+      // cycle the enabled field as fast as possible
+      endpoints.foreach { e => client.disableEndpointConnection(e.getUuid).await }
+
+      endpoints.foreach { e => client.enableEndpointConnection(e.getUuid).await }
+    }
+
+    // cant use original map because it will probably have sem multiple transitions to true, COMMS_UP
+    // we need to verify that the endpoints are all going to end up good starting now.
+    val postMap = new EndpointConnectionStateMap(client.subscribeToAllEndpointConnections().await)
+    // eventually we should get back to enabled COMMS_UP
+    postMap.checkAllState(true, COMMS_UP)
+  }
+
   class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
 
     private def makeEntry(e: CommEndpointConnection) = {

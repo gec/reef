@@ -38,6 +38,8 @@ object CommunicationsLoader {
   val DNP3 = "dnp3"
   val DNP3Slave = "dnp3-slave"
   val MODBUS = "modbus"
+
+  val INDEXED_PROTOCOLS = DNP3 :: DNP3Slave :: MODBUS :: Nil
 }
 
 /**
@@ -180,7 +182,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     // Validate that the indexes within each type are unique
     val errorMsg = "Endpoint '" + endpointName + "':"
-    val isBenchmark = overriddenProtocolName == BENCHMARK
+    val isBenchmark = INDEXED_PROTOCOLS.find(_ == overriddenProtocolName).isEmpty
     logger.debug("checking indices: isBenchmark: " + isBenchmark + ", overridden protocol name: " + overriddenProtocolName)
     exceptionCollector.collect("Checking Indexes: " + endpointName) {
       validateIndexesAreUnique[Control](controls, isBenchmark, errorMsg, compareControls)
@@ -466,13 +468,18 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
         val point = toPoint(name)
 
-        addTriggers(modelLoader, point, toTrigger(name, s) :: Nil)
+        addTriggers(commonLoader.triggerCache, point, toTrigger(name, s) :: Nil)
 
         unit
       } else {
         if (!point.isSetUnit) "" else point.getUnit
       }
-      if (isDataSource) loadCache.addPoint(endpointName, name, index, unit)
+
+      if (isDataSource) {
+        loadCache.addPoint(endpointName, name, index, unit)
+        // once we have added any comms triggers the trigger set is complete and we can upload it
+        commonLoader.triggerCache.get(name).foreach { ts => modelLoader.putOrThrow(ts) }
+      }
     }
   }
 
@@ -711,7 +718,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     logger.debug("SIM POINT -> " + name)
     val builder = SimMapping.MeasSim.newBuilder.setName(name).setUnit(point.getUnit)
 
-    var triggerSet = modelLoader.getOrThrow(toTriggerSet(toPoint(name))).headOption
+    val triggerSet = commonLoader.triggerCache.get(name)
 
     var inBoundsRatio = 0.85
     var changeChance = 1.0

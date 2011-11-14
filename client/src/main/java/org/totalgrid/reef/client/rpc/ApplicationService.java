@@ -25,6 +25,9 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Application.ApplicationConfig;
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot;
 
+/**
+ * Tag for api-enhancer, do not delete: !api-definition!
+ */
 public interface ApplicationService
 {
     /**

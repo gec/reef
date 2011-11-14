@@ -78,6 +78,8 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
           SuccessResponse(status, batchResults)
         case fail: FailureResponse =>
           requests.foreach { _.future.set(fail) }
+          // make sure all of the sub future listen() calls have fired
+          requests.foreach { _.future.await }
           fail
       }
     }

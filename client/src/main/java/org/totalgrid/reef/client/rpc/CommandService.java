@@ -26,6 +26,8 @@ import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.proto.Model.Command;
 import org.totalgrid.reef.proto.Model.ReefUUID;
+import net.agileautomata.executor4s.Cancelable;
+import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler;
 
 /**
  *
@@ -82,6 +84,8 @@ import org.totalgrid.reef.proto.Model.ReefUUID;
  *   By default, Denial locks do not timeout like "execution locks".</p>
  *
  *  TODO command names to UUID - reef-149
+ *
+ *  Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface CommandService
 {
@@ -313,4 +317,17 @@ public interface CommandService
      * @return all commands that are related to point
      */
     List<Command> getCommandsThatFeedbackToPoint( ReefUUID pointUuid ) throws ReefServiceException;
+
+    /**
+     * Binds a commandHandler to the broker that will be responsible for all commands on a single endpoint. The
+     * same command handler can be used for endpoints if desired. All commands received on this channel are
+     * already authorized by the services and should executed as soon as possible.
+     *
+     * @param endpointUuid uuid of the endpoint to handle all commands
+     * @param handler an application controled object that
+     * @return a cancelable that should be canceled when the application is done being a command handler for
+     *         the endpoint
+     */
+    Cancelable bindCommandHandler( ReefUUID endpointUuid, CommandRequestHandler handler ) throws ReefServiceException;
+
 }

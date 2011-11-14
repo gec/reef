@@ -35,6 +35,8 @@ import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAccept
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.proto.Measurements.Quality.Validity
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
@@ -102,6 +104,36 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
       map.checkAllState(true, COMMS_UP)
       println("Enabled to COMMS_UP in: " + (System.currentTimeMillis() - disabled))
     }
+  }
+
+  test("Check measurements match") {
+
+    val measList = new SyncVar(List.empty[Measurement])
+
+    def validMeas(meas: Measurement) = meas.getQuality.getValidity == Validity.GOOD
+
+    val subResult = services.subscribeToMeasurementsByNames("RoundtripSubstation.Line01.Current" :: Nil).await
+    subResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
+      def onEvent(event: SubscriptionEvent[Measurement]) {
+        measList.atomic(a => if (validMeas(event.getValue)) event.getValue :: a else a)
+      }
+    })
+
+    // wait for the original substation to publish a measurement
+    val originalList = new SyncVar(List.empty[Measurement])
+
+    val originalResult = services.subscribeToMeasurementsByNames("OriginalSubstation.Line01.Current" :: Nil).await
+    originalResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
+      def onEvent(event: SubscriptionEvent[Measurement]) {
+        originalList.atomic(a => if (validMeas(event.getValue)) event.getValue :: a else a)
+      }
+    })
+
+    originalList.waitFor(_.size > 0)
+
+    val meas = originalList.current.apply(0)
+
+    measList.waitFor(_.find(m => m.getDoubleVal == meas.getDoubleVal && m.getTime == meas.getTime).isDefined)
   }
 
   class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {

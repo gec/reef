@@ -25,12 +25,25 @@ class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
 
   def await: A = future.await.get
   def listen(fun: Promise[A] => Unit) = {
-    future.listen(result => fun(this))
+    // we can't pass our listeners this promise because if try to extract
+    // or await on the value it will deadlock the future which is waiting
+    // for the all of the listen callbacks to complete.
+    future.listen(result => fun(new DefinedFuture(result, this)))
     this
   }
   def extract: Result[A] = future.await
   def map[B](fun: A => B) = Promise.from(future.map(_.map(fun)))
   def isComplete: Boolean = future.isComplete
 
+}
+
+class DefinedFuture[A](value: Result[A], originalPromise: Promise[A]) extends Promise[A] {
+  def await = value.get
+  def extract = value
+  def isComplete = true
+
+  // pipe the listen and map calls back to the original promise
+  def listen(fun: (Promise[A]) => Unit) = originalPromise.listen(fun)
+  def map[B](fun: (A) => B) = originalPromise.map(fun)
 }
 

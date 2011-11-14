@@ -29,7 +29,7 @@ import org.totalgrid.reef.clientapi.proto.Envelope
 
 import org.totalgrid.reef.clientapi.AnyNodeDestination
 
-import org.totalgrid.reef.clientapi.sapi.client.{ SuccessResponse, Response }
+import org.totalgrid.reef.clientapi.sapi.client.{ Promise, SuccessResponse, Response }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 
@@ -63,6 +63,36 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
       c.put(i).await should equal(Response(Envelope.Status.OK, i.increment))
     }
   }
+
+  //  test("Service calls can be listened for") {
+  //    fixture(true) { c =>
+  //      val i = SomeInteger(1)
+  //      val future = c.put(i)
+  //      var listenFired = false
+  //      future.listen { result =>
+  //        result should equal(Response(Envelope.Status.OK, i.increment))
+  //        listenFired = true
+  //      }
+  //      // await should force future.listen calls to have fired
+  //      future.await
+  //      listenFired should equal(true)
+  //    }
+  //  }
+  //
+  //  test("Service calls can be listened for (promise)") {
+  //    fixture(true) { c =>
+  //      val i = SomeInteger(1)
+  //      val promise = Promise.from(c.put(i).map { _.one })
+  //      var listenFired = false
+  //      promise.listen { prom =>
+  //        prom.await should equal(i.increment)
+  //        listenFired = true
+  //      }
+  //      // await should force promise listens to have fired
+  //      promise.await
+  //      listenFired should equal(true)
+  //    }
+  //  }
 
   test("Subscription calls work") { //subscriptions not currently working with embedded broker
     fixture(true) { c =>

@@ -26,6 +26,8 @@ import java.util.List;
 
 /**
  *  // TODO: find flint's good eventconfig documentation and move it here
+ *
+ *  Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface EventConfigService
 {

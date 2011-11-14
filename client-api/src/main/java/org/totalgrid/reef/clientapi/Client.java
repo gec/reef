@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.clientapi;
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.clientapi.rpc.RpcProviderInfo;
 
 /**
  * A client represents an authenticated link with a Reef server.
@@ -65,4 +65,10 @@ public interface Client
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException If the interface can not be found
      */
     <A> A getRpcInterface( Class<A> klass );
+
+    /**
+     * adds a factory for an RpcClass
+     * @param info defines the impl and the interfaces it implements
+     */
+    void addRpcProvider( RpcProviderInfo info );
 }

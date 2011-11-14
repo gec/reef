@@ -22,23 +22,28 @@ import org.totalgrid.reef.util.Cancelable
 
 import org.totalgrid.reef.clientapi.proto.Envelope
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionResult
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.{ SubscriptionResult, SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {
-  def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: ServiceContext[U]): Cancelable = {
+  def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: SubscriptionDataHandler[U]): Cancelable = {
     context.handleResponse(result.getResult)
 
+    var canceled = false
     val sub = result.getSubscription
 
-    sub.start(new SubscriptionEventAcceptor[U] {
-      def onEvent(event: SubscriptionEvent[U]) {
-        context.handleEvent(event.getEventType, event.getValue)
+    sub.start(new SubscriptionEventAcceptor[U] with Logging {
+      def onEvent(event: SubscriptionEvent[U]) = sub.synchronized {
+        if (!canceled) context.handleEvent(event.getEventType, event.getValue)
+        else logger.info("Discarding canceled subscription event: " + event.getValue().asInstanceOf[AnyRef].getClass.getSimpleName)
       }
     })
 
     new Cancelable {
-      def cancel() = sub.cancel
+      def cancel() = sub.synchronized {
+        canceled = true
+        sub.cancel
+      }
     }
   }
 }
@@ -50,7 +55,7 @@ object ServiceContext {
  * event occurs. Provides event handlers suitable for use
  * with ServiceHandler
  */
-trait ServiceContext[A] {
+trait ServiceContext[A] extends SubscriptionDataHandler[A] {
 
   // Define these functions
   def add(obj: A)
@@ -69,4 +74,10 @@ trait ServiceContext[A] {
     case Envelope.Event.REMOVED => remove(result)
   }
 
+}
+
+trait SubscriptionDataHandler[A] {
+  def handleResponse(result: List[A])
+
+  def handleEvent(event: Envelope.Event, result: A)
 }

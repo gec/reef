@@ -30,6 +30,8 @@ import java.util.List;
  * password, and a set of permissions in the Reef system. An Agent can be a
  * real user that logs into the system or a software service that "owns" an
  * agent it uses to access to other services.
+ *
+ * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface AgentService
 {
