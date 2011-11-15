@@ -59,7 +59,8 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
       this.synchronized { watchers.foreach { _.onConnectionOpened(broker.get) } }
     } catch {
       case ex: ReefServiceException =>
-        logger.info("Couldn't connect, delaying reconnect: " + nextDelay * 2)
+        logger.info("Error connecting to broker: " + ex.getMessage, ex)
+        logger.info("Delaying reconnect: " + nextDelay * 2)
         scheduleReconnect(nextDelay, nextDelay * 2)
     }
   }
