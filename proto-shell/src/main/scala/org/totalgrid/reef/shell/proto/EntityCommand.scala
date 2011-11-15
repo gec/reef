@@ -23,6 +23,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.shell.proto.presentation.{ EntityView }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
+import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders.Relation
 
 @Command(scope = "entity", name = "entity", description = "Prints all entities or information on a specific entity.")
 class EntityCommand extends ReefCommandSupport {
@@ -105,6 +106,58 @@ class EntityTreeCommand extends ReefCommandSupport {
         services.getEntityChildren(root.getUuid, relationship, depth, types) :: Nil
 
     }
+    entities.foreach { EntityView.printTreeRecursively(_) }
+  }
+}
+
+@Command(scope = "entity", name = "relations", description = "Prints the results of complex tree queries on the entity system. Each relationship descriptor " +
+  "is made of 4 parts seperated by colons. Examples:\n" +
+  "Get all child points regardless of depth:\n\tentity:relations Root owns:*:true:Point\n" +
+  "Get all points and commands organized by equipment:\n\tentity:relations Root owns:*:true:Equipment owns:*:true:Point,Command\n" +
+  "Get all Equipment organized by EquipmentGroup:\n\tentity:relations Root owns:1:true:EquipmentGroup owns:1:true:Equipment\n" +
+  "Get all of an Endpoints commands and their owning equipment:\n\tentity:relations -name NullEndpoint source:*:true:Command owns:1:false:Equipment\n" +
+  "Stars can be used as a wildcard for depth and types.")
+class EntityRelationsCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "Entity Type", description = "Entity name.", required = false, multiValued = false)
+  var rootType: String = null
+
+  @Argument(index = 1, name = "Relationship descriptor", description = "[relationship]:[depth]:[child]:[type1,type2,..]", required = true, multiValued = true)
+  var relUris: java.util.List[String] = null
+
+  @GogoOption(name = "-name", description = "First argument is a specific entity name")
+  var rootTypeIsName: Boolean = false
+
+  @GogoOption(name = "-displayRequest", description = "Display the request proto")
+  var displayRequest: Boolean = false
+
+  def doCommand() = {
+
+    val relations = relUris.toList.map { s =>
+      val parts = s.split(":")
+      if (parts.size != 4) throw new Exception(s + " shoudl be 4 parts seperated by colons.")
+
+      var types = parts(3).split(",").toList
+      if (types == List("*")) types = Nil
+
+      val depth = parts(1) match {
+        case "*" => None
+        case s: String => Some(Integer.parseInt(s))
+      }
+
+      Relation(parts(0), types, parts(2).toBoolean, depth)
+    }
+
+    val request = rootTypeIsName match {
+      case false =>
+        EntityRequestBuilders.getRelatedEntities(rootType, relations)
+      case true =>
+        val root = services.getEntityByName(rootType)
+        EntityRequestBuilders.getRelatedEntities(root.getUuid, relations)
+    }
+    if (displayRequest) println(request)
+
+    val entities = services.getEntities(request).toList
     entities.foreach { EntityView.printTreeRecursively(_) }
   }
 }

@@ -100,6 +100,32 @@ object EntityRequestBuilders {
     Entity.newBuilder.addTypes(rootType).addRelations(childrenRelatedWithTypeRecursive(relationship, constrainingTypes, depth - 1)).build
   }
 
+  case class Relation(relationship: String, types: List[String], descendent: Boolean, depth: Option[Int])
+
+  private def relatedByRelation(relations: List[Relation]): Relationship.Builder = {
+    val relation = relations.head
+    val child = if (relations.tail.isEmpty) {
+      Entity.newBuilder.addAllTypes(relation.types)
+    } else {
+      Entity.newBuilder.addAllTypes(relation.types).addRelations(relatedByRelation(relations.tail))
+    }
+    val r = Relationship.newBuilder
+      .setDescendantOf(relation.descendent)
+      .setRelationship(relation.relationship)
+      .addEntities(child)
+    relation.depth.foreach { r.setDistance(_) }
+    r
+  }
+
+  def getRelatedEntities(rootType: String, relations: List[Relation]) = {
+    import scala.collection.JavaConversions._
+    Entity.newBuilder.addTypes(rootType).addRelations(relatedByRelation(relations)).build
+  }
+  def getRelatedEntities(rootUuid: ReefUUID, relations: List[Relation]) = {
+    import scala.collection.JavaConversions._
+    Entity.newBuilder.setUuid(rootUuid).addRelations(relatedByRelation(relations)).build
+  }
+
   def getAllPointsSortedByOwningEquipment(rootUid: ReefUUID) = {
     Entity.newBuilder.setUuid(rootUid).addRelations(
       Relationship.newBuilder.setDescendantOf(true).setRelationship("owns").addEntities(
