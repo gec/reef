@@ -56,6 +56,7 @@ class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Execut
     update(_.disconnect)
     true
   }
+  def isConnected() = state.fac.isDefined
 
   def declareQueue(queue: String = "*", autoDelete: Boolean = true, exclusive: Boolean = true): String = {
     val name = if (queue == "*") UUID.randomUUID().toString else queue

@@ -21,6 +21,8 @@ package org.totalgrid.reef.broker.qpid
 import org.totalgrid.reef.broker._
 import org.apache.qpid.transport.Connection
 import org.totalgrid.reef.clientapi.settings.AmqpSettings
+import java.io.File
+import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 
 object QpidBrokerConnectionFactory {
 
@@ -33,11 +35,21 @@ object QpidBrokerConnectionFactory {
         throw new IllegalArgumentException("ssl is enabled, trustStorePassword must be not null and not empty")
       }
 
+      val trustStoreFile = new File(config.getTrustStore)
+      if (!trustStoreFile.canRead) throw new ServiceIOException("Cannot access trustStore file: " + trustStoreFile.getAbsolutePath)
+
       System.setProperty("javax.net.ssl.trustStore", config.getTrustStore)
       System.setProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword)
 
-      System.setProperty("javax.net.ssl.keyStore", if (config.getKeyStore == "") config.getTrustStore else config.getKeyStore)
-      System.setProperty("javax.net.ssl.keyStorePassword", if (config.getKeyStore == "") config.getTrustStorePassword else config.getKeyStorePassword)
+      if (config.getKeyStore != null && config.getKeyStore != "") {
+        val keyStoreFile = new File(config.getKeyStore)
+        if (!keyStoreFile.canRead) throw new ServiceIOException("Cannot access keyStore file: " + trustStoreFile.getAbsolutePath)
+        System.setProperty("javax.net.ssl.keyStore", config.getKeyStore)
+        System.setProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword)
+      } else {
+        System.setProperty("javax.net.ssl.keyStore", config.getTrustStore)
+        System.setProperty("javax.net.ssl.keyStorePassword", config.getTrustStorePassword)
+      }
     }
   }
 
@@ -46,11 +58,16 @@ object QpidBrokerConnectionFactory {
 class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnectionFactory {
 
   def connect: BrokerConnection = {
-    QpidBrokerConnectionFactory.loadssl(config)
-    val conn = new Connection
-    val broker = new QpidBrokerConnection(conn)
-    conn.connect(config.getHost, config.getPort, config.getVirtualHost, config.getUser, config.getPassword, config.getSsl)
-    broker
+    try {
+      QpidBrokerConnectionFactory.loadssl(config)
+      val conn = new Connection
+      val broker = new QpidBrokerConnection(conn)
+      conn.connect(config.getHost, config.getPort, config.getVirtualHost, config.getUser, config.getPassword, config.getSsl)
+      broker
+    } catch {
+      case ex: Exception =>
+        throw new ServiceIOException("Cannot connect to broker: " + config.toString + " - " + ex.getMessage, ex)
+    }
   }
 
 }

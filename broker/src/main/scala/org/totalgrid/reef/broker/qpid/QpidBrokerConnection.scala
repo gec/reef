@@ -26,15 +26,18 @@ import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool with ConnectionListener with Logging {
 
   private var disconnected = false
+  private var sessions = Set.empty[Session]
 
   conn.addConnectionListener(this)
 
-  override def newChannel() = new QpidWorkerChannel(conn.createSession(0))
+  override def isConnected() = !disconnected
+
+  override def newChannel() = new QpidWorkerChannel(getSession(), this)
 
   override def disconnect(): Boolean = mutex.synchronized {
     if (!disconnected) {
       disconnected = true
-      closeWorkerChannels()
+      closeSessions()
       conn.close()
       true
     } else true
@@ -42,19 +45,17 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
 
   def listen(): BrokerSubscription = {
     if (disconnected) throw new ServiceIOException("Connection closed")
-    val session = conn.createSession(0)
+    val session = getSession()
     val q = QpidChannelOperations.declareQueue(session, "*", true, true)
-    val subscription = new QpidBrokerSubscription(session, q)
-    subscription
+    new QpidBrokerSubscription(session, q, this)
   }
 
   def listen(queue: String): BrokerSubscription = {
     if (disconnected) throw new ServiceIOException("Connection closed")
-    val session = conn.createSession(0)
+    val session = getSession()
     val q = QpidChannelOperations.declareQueue(session, queue, false, false)
-    assert(queue == q)
-    val subscription = new QpidBrokerSubscription(session, q)
-    subscription
+    if (queue != q) throw new ServiceIOException("Not given queue name we asked for. Got: " + q + " requested: " + queue)
+    new QpidBrokerSubscription(session, q, this)
   }
 
   /* --- Implement ConnectionListener --- */
@@ -62,6 +63,20 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
   def closed(conn: Connection) = {
     this.onDisconnect(disconnected)
     disconnected = true
+  }
+
+  private def getSession() = mutex.synchronized {
+    val session = conn.createSession(0)
+    sessions += session
+    session
+  }
+  private def closeSessions() = mutex.synchronized {
+    sessions.foreach { _.close() }
+  }
+  // child subscriptions and workers call back to remove themselves from the list of sessions
+  // if they have been closed manually by the user
+  def detachSession(session: Session) = mutex.synchronized {
+    sessions -= session
   }
 
   def opened(conn: Connection) = {}

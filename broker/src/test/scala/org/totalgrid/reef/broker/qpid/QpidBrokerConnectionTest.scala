@@ -27,6 +27,7 @@ import org.totalgrid.reef.broker._
 import net.agileautomata.commons.testing._
 import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
+import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
 class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
@@ -57,7 +58,27 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
   test("Connection Timeout") {
     val config = new AmqpSettings("127.0.0.1", 10000, "", "", "")
-    intercept[Exception](fixture(config) { conn => })
+    intercept[ServiceIOException](fixture(config) { conn => })
+  }
+
+  test("Bad Ssl configuration") {
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, true, "badFileName", "")
+    val ex = intercept[ServiceIOException](fixture(config) { conn => })
+    ex.getMessage should include("badFileName")
+  }
+
+  test("Bad Ssl password") {
+
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, true, "src/test/resources/trust-store.jks", "9090909")
+    val ex = intercept[ServiceIOException](fixture(config) { conn => })
+    ex.getMessage should include("SSL Context")
+  }
+
+  test("Valid Ssl configuration against non-ssl server") {
+
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, true, "src/test/resources/trust-store.jks", "jjjjjjj")
+    val ex = intercept[ServiceIOException](fixture(config) { conn => })
+    ex.getMessage should include("SSLReceiver")
   }
 
   test("Qpid subscriptions work") {
@@ -97,6 +118,63 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
       range.foreach { i => broker.publish("test2", "hi", i.toString.getBytes, None) }
 
       list shouldBecome range.toList within (defaultTimeout)
+    }
+  }
+
+  test("Qpid subscriptions throw correct exception on close") {
+    fixture(defaults) { broker =>
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = {}
+      }
+      val sub = broker.listen()
+
+      broker.disconnect()
+
+      intercept[ServiceIOException] {
+        sub.start(consumer)
+      }
+    }
+  }
+
+  test("Qpid subscriptions are only closed once") {
+    fixture(defaults) { broker =>
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = {}
+      }
+      val sub = broker.listen()
+
+      sub.close()
+    }
+  }
+
+  test("Throwing exception out of onMessage block") {
+    fixture(defaults) { broker =>
+
+      var explode = false
+      val list = new SynchronizedList[Int]
+      val exceptions = new SynchronizedList[Int]
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = {
+          if (explode) {
+            exceptions.append(msg.bytes.length)
+            throw new IllegalArgumentException
+          }
+          list.append(msg.bytes.length)
+        }
+      }
+      val sub = broker.listen().start(consumer)
+
+      broker.declareExchange("test")
+      broker.bindQueue(sub.getQueue, "test", "hi", false)
+      broker.publish("test", "hi", "hello".getBytes, None)
+      list shouldBecome List(5) within (defaultTimeout)
+      explode = true
+      broker.publish("test", "hi", "hellohello".getBytes, None)
+      exceptions shouldBecome List(10) within (defaultTimeout)
+      explode = false
+      broker.publish("test", "hi", "friend".getBytes, None)
+
+      list shouldBecome List(5, 6) within (defaultTimeout)
     }
   }
 

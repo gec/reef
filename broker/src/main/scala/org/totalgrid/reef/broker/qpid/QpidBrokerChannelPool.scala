@@ -25,9 +25,7 @@ trait QpidBrokerChannelPool extends BrokerConnection {
 
   protected def newChannel(): QpidWorkerChannel
 
-  private var closed = false
   private val channels = collection.mutable.Queue.empty[QpidWorkerChannel]
-  private val beingUsed = collection.mutable.Queue.empty[QpidWorkerChannel]
 
   protected def execute[A](fun: QpidWorkerChannel => A): A = {
 
@@ -40,23 +38,13 @@ trait QpidBrokerChannelPool extends BrokerConnection {
   }
 
   private def borrow(): QpidWorkerChannel = channels.synchronized {
-    if (closed) throw new ServiceIOException("Connection closed")
-    val channel = if (!channels.isEmpty) channels.dequeue()
+    if (!isConnected) throw new ServiceIOException("Connection closed")
+    if (!channels.isEmpty) channels.dequeue()
     else newChannel()
-    beingUsed.enqueue(channel)
-    channel
   }
 
   private def unborrow(channel: QpidWorkerChannel): Unit = channels.synchronized {
     if (channel.isOpen) channels.enqueue(channel)
-    beingUsed.dequeueFirst(_ == channel)
-  }
-
-  protected def closeWorkerChannels(): Unit = channels.synchronized {
-    closed = true
-    beingUsed.foreach { _.close() }
-    channels.foreach { _.close() }
-    channels.clear()
   }
 
   def declareQueue(queue: String = "*", autoDelete: Boolean = true, exclusive: Boolean = true): String =

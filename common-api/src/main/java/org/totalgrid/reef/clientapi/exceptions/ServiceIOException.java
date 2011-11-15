@@ -30,4 +30,9 @@ public class ServiceIOException extends ReefServiceException
     {
         super( msg, Envelope.Status.LOCAL_ERROR );
     }
+
+    public ServiceIOException( String msg, Throwable cause )
+    {
+        super( msg, Envelope.Status.LOCAL_ERROR, cause );
+    }
 }

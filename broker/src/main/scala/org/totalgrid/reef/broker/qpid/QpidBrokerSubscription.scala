@@ -22,8 +22,9 @@ import org.totalgrid.reef.broker._
 import org.apache.qpid.transport._
 import scala.{ Option => ScalaOption }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 
-final class QpidBrokerSubscription(session: Session, queue: String) extends BrokerSubscription with Logging {
+final class QpidBrokerSubscription(session: Session, queue: String, connection: QpidBrokerConnection) extends BrokerSubscription with Logging {
 
   class Listener(consumer: BrokerMessageConsumer) extends SessionListener {
 
@@ -35,12 +36,20 @@ final class QpidBrokerSubscription(session: Session, queue: String) extends Brok
     override def message(s: Session, msg: MessageTransfer) {
       val replyTo = ScalaOption(msg.getHeader.get(classOf[MessageProperties]).getReplyTo)
       val dest = replyTo.map(r => new BrokerDestination(r.getExchange, r.getRoutingKey))
-      consumer.onMessage(BrokerMessage(msg.getBodyBytes, dest))
+      try {
+        consumer.onMessage(BrokerMessage(msg.getBodyBytes, dest))
+      } catch {
+        case ex: Exception =>
+          logger.error("Exception thrown during subscription event processing.", ex)
+      }
       s.processed(msg)
+
     }
   }
 
   def start(consumer: BrokerMessageConsumer): BrokerSubscription = {
+    if (!connection.isConnected()) throw new ServiceIOException("Connection closed")
+    // TODO: shoud we remove session listener on close?
     session.setSessionListener(new Listener(consumer))
     if (!session.isClosing) QpidChannelOperations.subscribe(session, queue)
     this
@@ -54,6 +63,7 @@ final class QpidBrokerSubscription(session: Session, queue: String) extends Brok
       case ex: Exception =>
         logger.error("Error closing session", ex)
     }
+    connection.detachSession(session)
   }
 
 }

@@ -26,7 +26,7 @@ import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.broker._
 
-final class QpidWorkerChannel(val session: Session) extends SessionListener with Logging {
+final class QpidWorkerChannel(val session: Session, connection: QpidBrokerConnection) extends SessionListener with Logging {
 
   def isOpen = !session.isClosing
 
@@ -63,5 +63,6 @@ final class QpidWorkerChannel(val session: Session) extends SessionListener with
       case ex: Exception =>
         logger.error("Error closing session", ex)
     }
+    connection.detachSession(session)
   }
 }

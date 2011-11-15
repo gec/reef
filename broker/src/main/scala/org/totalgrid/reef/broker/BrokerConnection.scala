@@ -38,6 +38,8 @@ trait BrokerConnection {
    */
   def disconnect(): Boolean
 
+  def isConnected(): Boolean
+
   def declareQueue(queue: String = "*", autoDelete: Boolean = true, exclusive: Boolean = true): String
 
   def declareExchange(exchange: String, exchangeType: String = "topic"): Unit
