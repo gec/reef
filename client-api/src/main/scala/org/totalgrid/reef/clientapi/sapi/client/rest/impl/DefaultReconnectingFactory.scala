@@ -39,33 +39,39 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
   def addConnectionWatcher(watcher: ConnectionWatcher) = this.synchronized { watchers += watcher }
   def removeConnectionWatcher(watcher: ConnectionWatcher) = this.synchronized { watchers -= watcher }
 
-  override def afterStart() {
+  override def afterStart() = this.synchronized {
     logger.info("Starting Persistent Connection")
     scheduleReconnect(0, startDelay)
   }
 
-  override def beforeStop() {
+  override def beforeStop() = this.synchronized {
     reconnectDelay.foreach { _.cancel() }
-    broker.foreach { _.disconnect }
+    if (broker.isDefined) broker.foreach { _.disconnect }
+    else watchers.foreach { _.onConnectionClosed(true) }
   }
 
   private def tryConnection(nextDelay: Long) {
     try {
       logger.info("Connecting to broker")
-      broker = Some(factory.connect)
+      val connection = factory.connect
       logger.info("Connected to broker")
-      broker.get.addListener(this)
 
-      this.synchronized { watchers.foreach { _.onConnectionOpened(broker.get) } }
+      this.synchronized {
+        broker = Some(connection)
+        connection.addListener(this)
+        watchers.foreach { _.onConnectionOpened(broker.get) }
+      }
     } catch {
       case ex: ReefServiceException =>
         logger.info("Error connecting to broker: " + ex.getMessage, ex)
         logger.info("Delaying reconnect: " + nextDelay * 2)
-        scheduleReconnect(nextDelay, nextDelay * 2)
+        this.synchronized {
+          scheduleReconnect(nextDelay, nextDelay * 2)
+        }
     }
   }
 
-  def onDisconnect(expected: Boolean) {
+  def onDisconnect(expected: Boolean) = this.synchronized {
     logger.info("Disconnected from broker, expected: " + expected)
     broker.foreach(_.removeListener(this))
     broker = None

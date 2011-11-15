@@ -99,6 +99,24 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
 
   }
 
+  test("Stopping while failed to connect calls watcher with a failure") {
+    val (exe, broker, connection, captor, watcher, reconnector) = goodConnection()
+
+    // startup the reconnector, should enqueue the first connection attempt
+    reconnector.start()
+    exe.numQueuedTimers should equal(1)
+
+    exe.tick(5000.milliseconds)
+    exe.numQueuedTimers should equal(1)
+    (1 to 4).foreach { i =>
+      exe.tick(5000.milliseconds)
+      exe.numQueuedTimers should equal(1)
+    }
+
+    reconnector.stop()
+    Mockito.verify(watcher).onConnectionClosed(true)
+  }
+
   test("Requeues connection on unexpected close") {
 
     val (exe, broker, connection, captor, watcher, reconnector) = goodConnection()
