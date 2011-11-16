@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.measproc
 
+import scala.collection.JavaConversions._
+
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
@@ -54,7 +56,10 @@ class MeasurementStreamProcessingNode(
       logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
   }
 
-  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _)
+  val endpoint = client.getEndpoint(connection.getLogicalNode.getUuid).await
+  val expectedPoints = endpoint.getOwnerships.getPointsList.toList
+
+  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints)
 
   addHookedObject(processingPipeline)
 

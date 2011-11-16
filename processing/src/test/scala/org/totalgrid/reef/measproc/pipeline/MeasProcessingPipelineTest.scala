@@ -43,7 +43,8 @@ class MeasProcessingPipelineTest extends Suite with ShouldMatchers {
     val proc = new MeasProcessingPipeline(
       MeasProcObjectCaches(measCache, overCache, stateCache),
       measQueue.enqueue(_),
-      { b => eventQueue.enqueue(b.build) })
+      { b => eventQueue.enqueue(b.build) },
+      List("meas01"))
 
     def process(m: Measurement) {
       proc.process(MeasurementBatch.newBuilder.setWallTime(0).addMeas(m).build)

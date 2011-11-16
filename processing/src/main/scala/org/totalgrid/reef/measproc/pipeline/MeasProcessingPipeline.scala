@@ -26,7 +26,8 @@ import org.totalgrid.reef.measproc.{ MeasBatchProcessor, processing, MeasProcObj
 class MeasProcessingPipeline(
     caches: MeasProcObjectCaches,
     publish: Measurement => Unit,
-    eventSink: Events.Event.Builder => Unit) extends MeasBatchProcessor with MetricsHookContainer {
+    eventSink: Events.Event.Builder => Unit,
+    pointNames: List[String]) extends MeasBatchProcessor with MetricsHookContainer {
 
   // pipeline ends up being defined backwards, output from each step is wired into input of previous step
   // basicProcessingNode -> overrideProc -> triggerProc -> batchOutput
@@ -36,11 +37,12 @@ class MeasProcessingPipeline(
   val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink)
   val triggerProc = new processing.TriggerProcessor(batchOutput.pubMeas, triggerFactory, caches.stateCache)
   val overProc = new processing.OverrideProcessor(overrideProcess, caches.overCache, caches.measCache.get)
+  val measurementFilter = new processing.MeasurementFilter(overProc.process, pointNames)
 
   // start the pipeline
-  val processor = new MeasPipelinePump(overProc.process, batchOutput.flushCache)
+  val processor = new MeasPipelinePump(measurementFilter.process, batchOutput.flushCache)
 
-  addHookedObject(processor :: overProc :: triggerProc :: Nil)
+  addHookedObject(processor :: overProc :: triggerProc :: measurementFilter :: Nil)
 
   // Each MeasOverride add/remove is processed seperatley (not in a meas batch)
   def overrideProcess(m: Measurement, flushNow: Boolean) {
