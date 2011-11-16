@@ -20,6 +20,8 @@ package org.totalgrid.reef.loader.commons
 
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.clientapi.sapi.client.rest.BatchOperations
+import com.google.protobuf.GeneratedMessage
 
 class EquipmentRemoverCache extends ModelDeleterCache
 
@@ -58,15 +60,14 @@ trait ModelDeleterCache extends ModelCollector {
   }
   def addEdge(edge: EntityEdge) = {}
 
-  def doDeletes(local: LoaderServices) {
+  def doDeletes(local: LoaderServices, batchSize: Int) {
     // we need to delete endpoints first because we can't delete points and commands that
     // are sourced by endpoints
-    endpoints.foreach(local.delete(_).await)
-    channel.foreach(local.delete(_).await)
-    commands.foreach(local.delete(_).await)
-    points.foreach(local.delete(_).await)
-    equipment.foreach(local.delete(_).await)
-    configFiles.foreach(local.delete(_).await)
+    // NOTE: we need the List.empty[GeneratedMessage] to tell the compiler what the type is, when it tries to guess it can run forever
+    val toDelete: List[GeneratedMessage] = endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: List.empty[GeneratedMessage]
+    val toDeleteOps = toDelete.map { entry => (c: LoaderServices) => c.delete(entry) }
+
+    BatchOperations.batchOperations(local, toDeleteOps, batchSize)
   }
 
   def size = endpoints.size + channel.size + commands.size + points.size + equipment.size + configFiles.size

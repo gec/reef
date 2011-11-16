@@ -27,7 +27,7 @@ import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
 import org.totalgrid.reef.proto.Model.Entity
 
 object ModelDeleter {
-  def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, stream: Option[PrintStream])(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
+  def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, stream: Option[PrintStream], batchSize: Int = 25)(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
 
     val cachingImporter = new EquipmentRemoverCache
 
@@ -63,7 +63,7 @@ object ModelDeleter {
 
         val viewer = stream.map { new RequestViewer(_, cachingImporter.size) }
         RequestSpy.withRequestSpy(local, viewer) {
-          cachingImporter.doDeletes(local)
+          cachingImporter.doDeletes(local, batchSize)
         }
         viewer.foreach { _.finish }
 
@@ -75,8 +75,8 @@ object ModelDeleter {
     itemsToDelete
   }
 
-  def deleteEverything(local: LoaderServices, dryRun: Boolean, stream: Option[PrintStream]): Long = {
-    deleteChildren(local, Nil, dryRun, stream) { (traverse, collector) =>
+  def deleteEverything(local: LoaderServices, dryRun: Boolean, stream: Option[PrintStream], batchSize: Int = 25): Long = {
+    deleteChildren(local, Nil, dryRun, stream, batchSize) { (traverse, collector) =>
       local.modifyHeaders(_.setResultLimit(50000))
 
       // since we never look at entities when we are deleting we dont need to look them up
