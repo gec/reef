@@ -147,10 +147,10 @@ class EntityRelationsCommand extends ReefCommandSupport {
 
     val entities = rootTypeIsName match {
       case false =>
-        service.getEntityRelationsFromTypeRoots(rootType, relations).toList
+        services.getEntityRelationsFromTypeRoots(rootType, relations).toList
       case true =>
         val root = services.getEntityByName(rootType)
-        service.getEntityRelationsFromTypeRoots(root.getUuid, relations).toList
+        services.getEntityRelations(root.getUuid, relations).toList
     }
 
     entities.foreach { EntityView.printTreeRecursively(_) }
