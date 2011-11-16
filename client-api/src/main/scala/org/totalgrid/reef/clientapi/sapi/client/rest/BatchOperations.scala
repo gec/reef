@@ -19,7 +19,7 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest
 
 import net.agileautomata.executor4s.Future
-import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.clientapi.sapi.client.{ Promise, Response }
 import org.totalgrid.reef.clientapi.proto.Envelope.BatchServiceRequest
 
 trait BatchServiceFlush {
@@ -31,4 +31,28 @@ trait BatchOperations {
   def startBatchRequests()
   def stopBatchRequests()
   def flushBatchRequests(): Future[Response[BatchServiceRequest]]
+}
+
+object BatchOperations {
+  def batchOperations[A <: BatchOperations](client: A, uploadActions: scala.List[A => Promise[_]], batchSize: Int) {
+
+    try {
+      if (batchSize > 0) client.startBatchRequests()
+      var i = 0
+      uploadActions.foreach { action =>
+        i = i + 1
+        if (batchSize > 0) {
+          action(client)
+          if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
+        } else {
+          action(client).await
+        }
+      }
+      if (batchSize > 0) {
+        client.flushBatchRequests().await.expectOne
+      }
+    } finally {
+      if (batchSize > 0) client.stopBatchRequests()
+    }
+  }
 }

@@ -29,7 +29,8 @@ import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.commons.ui.RequestViewer
 
 import java.io.PrintStream
-import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
+import org.totalgrid.reef.clientapi.sapi.client.{ Promise, RequestSpy }
+import org.totalgrid.reef.clientapi.sapi.client.rest.BatchOperations
 
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
@@ -101,32 +102,16 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
 
   def flush(client: LoaderServices, stream: Option[PrintStream]) = {
 
-    val addedObjects = size
+    val uploadOrder = puts.reverse.toList
+    val uploadActions: List[LoaderServices => Promise[_]] = uploadOrder.map { eq => (c: LoaderServices) => c.put(eq) }
 
-    val viewer = stream.map { new RequestViewer(_, addedObjects) }
+    val viewer = stream.map { new RequestViewer(_, uploadActions.size) }
 
     try {
-      if (batchSize > 0) client.startBatchRequests()
-
       RequestSpy.withRequestSpy(client, viewer) {
-
-        val uploadOrder = puts.reverse.toList
-        var i = 0
-        uploadOrder.foreach { eq =>
-          i = i + 1
-          if (batchSize > 0) {
-            client.put(eq)
-            if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
-          } else {
-            client.put(eq).await
-          }
-        }
-      }
-      if (batchSize > 0) {
-        client.flushBatchRequests().await.expectOne
+        BatchOperations.batchOperations(client, uploadActions, batchSize)
       }
     } finally {
-      if (batchSize > 0) client.stopBatchRequests()
       viewer.foreach { _.finish }
     }
 
