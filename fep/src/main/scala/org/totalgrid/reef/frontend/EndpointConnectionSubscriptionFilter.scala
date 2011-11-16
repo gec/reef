@@ -36,6 +36,7 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
   def add(c: CommEndpointConnection) = tryWrap("Error adding connProto: " + c) {
+    logEndpointMessage(c, "ADD")
     // the coordinator assigns FEPs when available but meas procs may not be online yet
     // re sends with routing information when meas_proc is online
     if (shouldStart(c)) connections.add(populator.populate(c))
@@ -43,11 +44,13 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
   }
 
   def modify(c: CommEndpointConnection) = tryWrap("Error modifying connProto: " + c) {
+    logEndpointMessage(c, "MODIFY")
     if (shouldStart(c)) connections.modify(populator.populate(c))
     else connections.remove(c)
   }
 
   def remove(c: CommEndpointConnection) = tryWrap("Error removing connProto: " + c) {
+    logEndpointMessage(c, "REMOVE")
     connections.remove(c)
   }
 
@@ -61,6 +64,11 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
    * otherwise we remove it
    */
   private def shouldStart(c: CommEndpointConnection) = c.hasRouting && c.hasEnabled && c.getEnabled
+
+  // temporary logging to help track down intermittent error
+  private def logEndpointMessage(c: CommEndpointConnection, verb: String) {
+    logger.info(verb + " : " + c.getEndpoint.getName + " enabled: " + c.getEnabled + " state: " + c.getState + " routing: " + c.getRouting.getServiceRoutingKey)
+  }
 
   /**
    * when setting up asynchronous callbacks it is doubly important to catch exceptions
