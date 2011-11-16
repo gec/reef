@@ -27,6 +27,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import net.agileautomata.executor4s.{ Result, Future }
 import org.totalgrid.reef.client.sapi.rpc.EntityService
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.rpc.entities.EntityRelation
 
 trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
@@ -100,8 +101,22 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityChildrenFromTypeRoots(parentType: String, relationship: String, depth: Int, constrainingTypes: List[String]) = {
-    ops.operation("Couldn't get tree for from type roots: " + parentType + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
+    ops.operation("Couldn't get tree from type roots: " + parentType + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
       val request = EntityRequestBuilders.getChildrenAtDepth(parentType, relationship, depth, constrainingTypes)
+      session.get(request).map(_.many)
+    }
+  }
+
+  def getEntityRelations(parent: ReefUUID, relations: List[EntityRelation]) = {
+    ops.operation("Couldn't get tree for entity: " + parent + " relations: " + relations.mkString(", ")) { session =>
+      val request = EntityRequestBuilders.getRelatedEntities(parent, relations)
+      flatEntities(session.get(request).map(_.one))
+    }
+  }
+
+  def getEntityRelationsFromTypeRoots(parentType: String, relations: List[EntityRelation]) = {
+    ops.operation("Couldn't get tree from type roots: " + parentType + " relations: " + relations.mkString(", ")) { session =>
+      val request = EntityRequestBuilders.getRelatedEntities(parentType, relations)
       session.get(request).map(_.many)
     }
   }

@@ -117,12 +117,17 @@ public class TestCommandService extends ReefConnectionTestBase
         for ( Command cmd : commands )
         {
             CommandAccess accessResponse = cs.createCommandExecutionLock( cmd );
-            assertTrue( accessResponse.getExpireTime() > 0 );
-            CommandStatus cmdResponse = cs.executeCommandAsControl( cmd );
-            assertEquals( cmdResponse, CommandStatus.SUCCESS );
-
-            // delete select by reference (UID)
-            cs.deleteCommandLock( accessResponse );
+            try
+            {
+                assertTrue( accessResponse.getExpireTime() > 0 );
+                CommandStatus cmdResponse = cs.executeCommandAsControl( cmd );
+                assertEquals( cmdResponse, CommandStatus.SUCCESS );
+            }
+            finally
+            {
+                // delete select by reference (UID)
+                cs.deleteCommandLock( accessResponse );
+            }
         }
     }
 

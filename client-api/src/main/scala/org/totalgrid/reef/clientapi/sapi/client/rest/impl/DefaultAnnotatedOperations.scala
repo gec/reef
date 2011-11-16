@@ -49,6 +49,8 @@ final class DefaultAnnotatedOperations(client: RestOperations, manager: Subscrip
         case e: Exception => Failure(new InternalClientError("ops() call: unexpected error: " + e.getMessage, e))
       }
     }
+
+    // TODO: need to catch exceptions thrown out of operation blocks themselves
     fun(client).map(convert)
   }
 

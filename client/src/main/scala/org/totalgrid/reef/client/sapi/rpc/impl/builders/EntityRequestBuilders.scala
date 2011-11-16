@@ -21,6 +21,8 @@ package org.totalgrid.reef.client.sapi.rpc.impl.builders
 import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.client.rpc.entities.EntityRelation
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 object EntityRequestBuilders {
 
@@ -91,16 +93,30 @@ object EntityRequestBuilders {
   }
 
   def getChildrenAtDepth(rootUid: ReefUUID, relationship: String, depth: Int, constrainingTypes: java.util.List[String]) = {
-    import scala.collection.JavaConversions._
     Entity.newBuilder.setUuid(rootUid).addRelations(childrenRelatedWithTypeRecursive(relationship, constrainingTypes, depth - 1)).build
   }
 
   def getChildrenAtDepth(rootType: String, relationship: String, depth: Int, constrainingTypes: java.util.List[String]) = {
-    import scala.collection.JavaConversions._
     Entity.newBuilder.addTypes(rootType).addRelations(childrenRelatedWithTypeRecursive(relationship, constrainingTypes, depth - 1)).build
   }
 
-  case class Relation(relationship: String, types: List[String], descendent: Boolean, depth: Option[Int])
+  private case class Relation(relationship: String, types: List[String], descendent: Boolean, depth: Option[Int])
+
+  private def makeRelation(r: EntityRelation) = {
+
+    val depth = r.getDepth match {
+      case -1 => None
+      case x: Int if x <= 0 => throw new BadRequestException("Depth must be positive")
+      case x: Int => Some(x)
+    }
+
+    Relation(r.getRelationship, Option(r.getTypes).map { _.toList }.getOrElse(Nil), r.getChild, depth)
+  }
+
+  private def makeRelations(relations: List[EntityRelation]) = {
+    if (relations.isEmpty) throw new BadRequestException("Must include atleast one relation in request")
+    relations.map { makeRelation(_) }
+  }
 
   private def relatedByRelation(relations: List[Relation]): Relationship.Builder = {
     val relation = relations.head
@@ -117,13 +133,11 @@ object EntityRequestBuilders {
     r
   }
 
-  def getRelatedEntities(rootType: String, relations: List[Relation]) = {
-    import scala.collection.JavaConversions._
-    Entity.newBuilder.addTypes(rootType).addRelations(relatedByRelation(relations)).build
+  def getRelatedEntities(rootType: String, relations: List[EntityRelation]) = {
+    Entity.newBuilder.addTypes(rootType).addRelations(relatedByRelation(makeRelations(relations))).build
   }
-  def getRelatedEntities(rootUuid: ReefUUID, relations: List[Relation]) = {
-    import scala.collection.JavaConversions._
-    Entity.newBuilder.setUuid(rootUuid).addRelations(relatedByRelation(relations)).build
+  def getRelatedEntities(rootUuid: ReefUUID, relations: List[EntityRelation]) = {
+    Entity.newBuilder.setUuid(rootUuid).addRelations(relatedByRelation(makeRelations(relations))).build
   }
 
   def getAllPointsSortedByOwningEquipment(rootUid: ReefUUID) = {

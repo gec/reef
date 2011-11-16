@@ -23,7 +23,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.shell.proto.presentation.{ EntityView }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders.Relation
+import org.totalgrid.reef.client.rpc.entities.EntityRelation
 
 @Command(scope = "entity", name = "entity", description = "Prints all entities or information on a specific entity.")
 class EntityCommand extends ReefCommandSupport {
@@ -128,9 +128,6 @@ class EntityRelationsCommand extends ReefCommandSupport {
   @GogoOption(name = "-name", description = "First argument is a specific entity name")
   var rootTypeIsName: Boolean = false
 
-  @GogoOption(name = "-displayRequest", description = "Display the request proto")
-  var displayRequest: Boolean = false
-
   def doCommand() = {
 
     val relations = relUris.toList.map { s =>
@@ -141,23 +138,21 @@ class EntityRelationsCommand extends ReefCommandSupport {
       if (types == List("*")) types = Nil
 
       val depth = parts(1) match {
-        case "*" => None
-        case s: String => Some(Integer.parseInt(s))
+        case "*" => -1
+        case s: String => Integer.parseInt(s)
       }
 
-      Relation(parts(0), types, parts(2).toBoolean, depth)
+      new EntityRelation(parts(0), types, parts(2).toBoolean, depth)
     }
 
-    val request = rootTypeIsName match {
+    val entities = rootTypeIsName match {
       case false =>
-        EntityRequestBuilders.getRelatedEntities(rootType, relations)
+        service.getEntityRelationsFromTypeRoots(rootType, relations).toList
       case true =>
         val root = services.getEntityByName(rootType)
-        EntityRequestBuilders.getRelatedEntities(root.getUuid, relations)
+        service.getEntityRelationsFromTypeRoots(root.getUuid, relations).toList
     }
-    if (displayRequest) println(request)
 
-    val entities = services.getEntities(request).toList
     entities.foreach { EntityView.printTreeRecursively(_) }
   }
 }

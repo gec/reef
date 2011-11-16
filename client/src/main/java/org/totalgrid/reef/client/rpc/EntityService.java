@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.rpc;
 
 import java.util.List;
 
+import org.totalgrid.reef.client.rpc.entities.EntityRelation;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.EntityAttributes;
@@ -194,6 +195,24 @@ public interface EntityService
      */
     List<Entity> getEntityChildrenFromTypeRoots( String parentType, String relationship, int depth, List<String> constrainingTypes )
         throws ReefServiceException;
+
+    /**
+     * Collect a more interesting tree structure
+     * @param parentType   a type for all of the roots we want to use ("Root")
+     * @param relations    list of relations we want to use, first entry in the list is relations to
+     * @return  list of entities with of ParentType and their relations below them
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityRelationsFromTypeRoots( String parentType, List<EntityRelation> relations ) throws ReefServiceException;
+
+    /**
+     * Return a tree of upto depth with all nodes in constraining types related to each other.
+     * @param parent   UUID for parent we want children for
+     * @param relations list of relationship types
+     * @return  list of first level child entities any children they have are contained in the Entity.getRelatations
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityRelations( ReefUUID parent, List<EntityRelation> relations ) throws ReefServiceException;
 
     /**
      * Return a tree of entities based on a complex entity model query. It is usually possible to satisfy most entity requirements

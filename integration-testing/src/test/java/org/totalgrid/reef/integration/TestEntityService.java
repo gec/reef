@@ -23,17 +23,14 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.totalgrid.reef.client.rpc.entities.EntityRelation;
+import org.totalgrid.reef.clientapi.exceptions.BadRequestException;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.client.rpc.EntityService;
 import org.totalgrid.reef.client.rpc.PointService;
 import org.totalgrid.reef.proto.Model.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
+import java.util.*;
 
 import org.totalgrid.reef.integration.helpers.*;
 
@@ -99,7 +96,7 @@ public class TestEntityService extends ReefConnectionTestBase
     {
         EntityService es = helpers;
         List<Entity> list = es.getAllEntitiesWithType( "EquipmentGroup" );
-        assertEquals( 2, list.size() );
+        assertTrue( 2 <= list.size() );
         for ( Entity e : list )
         {
             assertTrue( e.getTypesList().contains( "EquipmentGroup" ) );
@@ -116,7 +113,7 @@ public class TestEntityService extends ReefConnectionTestBase
         EntityService es = helpers;
 
         List<Entity> list = es.getAllEntitiesWithTypes( Arrays.asList( "bkrStatus" ) );
-        assertEquals( 2, list.size() );
+        assertTrue( 2 <= list.size() );
 
         for ( Entity e : list )
         {
@@ -134,7 +131,7 @@ public class TestEntityService extends ReefConnectionTestBase
         EntityService es = helpers;
 
         List<Entity> list = es.getAllEntitiesWithTypes( Arrays.asList( "Setpoint" ) );
-        assertEquals( 2, list.size() );
+        assertTrue( 2 <= list.size() );
 
         for ( Entity e : list )
         {
@@ -198,16 +195,12 @@ public class TestEntityService extends ReefConnectionTestBase
     public void allControlsHaveOnePointForFeedback() throws ReefServiceException
     {
 
-        // get all commands in the system and fill out any relationships of type feedback with
-        // points
-        Entity request =
-            Entity.newBuilder().addTypes( "Command" ).addRelations(
-                    Relationship.newBuilder().setRelationship( "feedback" ).setDescendantOf( false ).addEntities(
-                            Entity.newBuilder().addTypes( "Point" ) ) ).build();
+        List<EntityRelation> relations = new LinkedList<EntityRelation>();
+        relations.add( new EntityRelation( "feedback", "Point", false ) );
 
         EntityService es = helpers;
 
-        List<Entity> result = es.getEntities( request );
+        List<Entity> result = es.getEntityRelationsFromTypeRoots( "Command", relations );
 
         for ( Entity e : result )
         {
@@ -233,22 +226,12 @@ public class TestEntityService extends ReefConnectionTestBase
         // First get a substation we can use as an example root
         Entity sub = es.getEntityByName( "StaticSubstation" );
 
-        // Tree request, asks for points under this substation and the commands associated with those points.
-        Entity request =
-            Entity.newBuilder().setUuid( sub.getUuid() ).addRelations(
-                    Relationship.newBuilder().setRelationship( "owns" ).setDescendantOf( true ).addEntities(
-                            Entity.newBuilder().addTypes( "Point" ).addRelations(
-                                    Relationship.newBuilder().setRelationship( "feedback" ).setDescendantOf( true ).addEntities(
-                                            Entity.newBuilder().addTypes( "Command" ) ) ) ) ).build();
+        List<EntityRelation> relations = new LinkedList<EntityRelation>();
+        relations.add( new EntityRelation( "owns", "Point", true ) ); // all point children
+        relations.add( new EntityRelation( "feedback", "Command", true ) ); // feedback commands for those points
 
-        // Request will return the substation as a root node, with the relationship tree below it
-        Entity tree = es.getEntityTree( request );
-
-        // Only owns should be there
-        assertEquals( tree.getRelationsCount(), 1 );
-
-        // One step down we have all the points
-        List<Entity> points = tree.getRelationsList().get( 0 ).getEntitiesList();
+        // Request will return the points and their children beneath them
+        List<Entity> points = es.getEntityRelations( sub.getUuid(), relations );
 
         // There are three points for thsi substation in the integration test configuration
         assertEquals( points.size(), 3 );
@@ -316,4 +299,42 @@ public class TestEntityService extends ReefConnectionTestBase
 
     }
 
+    @Test
+    public void testEntityRelationCallsFailWithBadRequests() throws ReefServiceException
+    {
+
+        List<EntityRelation> relations = new LinkedList<EntityRelation>();
+        EntityService es = helpers;
+
+        try
+        {
+            List<Entity> result = es.getEntityRelationsFromTypeRoots( "Command", relations );
+            assertEquals( "Should have thrown exception", "" );
+        }
+        catch ( BadRequestException e )
+        {
+            // expected failure
+        }
+        try
+        {
+            relations.add( new EntityRelation( "owns", true, 0 ) );
+            List<Entity> result = es.getEntityRelationsFromTypeRoots( "Command", relations );
+            assertEquals( "Should have thrown exception", "" );
+        }
+        catch ( BadRequestException e )
+        {
+            // expected failure
+        }
+        try
+        {
+            relations.clear();
+            relations.add( new EntityRelation( "owns", true, -2 ) );
+            List<Entity> result = es.getEntityRelationsFromTypeRoots( "Command", relations );
+            assertEquals( "Should have thrown exception", "" );
+        }
+        catch ( BadRequestException e )
+        {
+            // expected failure
+        }
+    }
 }
