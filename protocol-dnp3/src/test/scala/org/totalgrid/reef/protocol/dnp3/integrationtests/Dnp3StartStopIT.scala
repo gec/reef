@@ -102,11 +102,15 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
       endpoints.foreach { e => services.enableEndpointConnection(e.getUuid).await }
 
       map.checkAllState(true, COMMS_UP)
-      println("Enabled to COMMS_UP in: " + (System.currentTimeMillis() - disabled))
+      val enabled = System.currentTimeMillis()
+      println("Enabled to COMMS_UP in: " + (enabled - disabled))
+
+      waitForRepublishedMeasurement()
+      println("COMMS_UP to first measurement roundtripped in: " + (System.currentTimeMillis() - enabled))
     }
   }
 
-  test("Check measurements match") {
+  def waitForRepublishedMeasurement() {
 
     val measList = new SyncVar(List.empty[Measurement])
 
