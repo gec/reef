@@ -55,7 +55,7 @@ object RandomValues {
   }
 
   case class DoubleValue(value: Double, min: Double, max: Double, maxChange: Double, changeProbability: Double) extends RandomValue {
-    def generate() = this.copy(value = value + maxChange * 2 * ((rand.nextDouble - 0.5)).max(min).min(max))
+    def generate() = this.copy(value = (value + maxChange * 2 * ((rand.nextDouble - 0.5))).max(min).min(max))
     def apply(meas: Measurements.Measurement.Builder) = meas.setDoubleVal(value).setType(Type.DOUBLE)
     def newChangeProbablity(p: Double) = this.copy(changeProbability = p)
   }
