@@ -22,7 +22,7 @@ import org.totalgrid.reef.util.ShutdownHook
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.clientapi.settings.{ NodeSettings, UserSettings, AmqpSettings }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.app.Startup
+import org.totalgrid.reef.functional.Startup
 import net.agileautomata.executor4s.{ Executors }
 
 object ExampleApplication extends ShutdownHook with App {
@@ -40,16 +40,19 @@ object ExampleApplication extends ShutdownHook with App {
     val brokerSettings = new AmqpSettings(PropertyReader.readFromFile("org.totalgrid.reef.amqp.cfg"))
     val userSettings = new UserSettings(PropertyReader.readFromFile("org.totalgrid.reef.user.cfg"))
     val nodeSettings = new NodeSettings(PropertyReader.readFromFile("org.totalgrid.reef.node.cfg"))
+    val factory = new QpidBrokerConnectionFactory(brokerSettings)
 
-    val broker = new QpidBrokerConnectionFactory(brokerSettings).connect
+
+    val broker = factory.connect
+
 
     val appConfig = for {
       client <- Startup.login(broker, exe, userSettings)
       config <- Startup.enroll(client, nodeSettings, "myName", List("stuff"))
     } yield config
 
-    appConfig.await
-    println("done awaiting")
+    // in a completely parallel, non-blocking strand we want to heartbeat our application
+    // if the heartbeating fails, shutdown the application process
   }
 
 }

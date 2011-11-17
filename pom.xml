@@ -34,6 +34,7 @@
 		<module>measurementstore-squeryl</module>
         <module>memory-broker</module>
 		<module>application-framework</module>
+        <module>process-framework</module>
 		<module>proto-shell</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>

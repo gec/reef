@@ -33,20 +33,11 @@ class WrappedFuturePromise[A](future: Future[Result[A]]) extends Promise[A] {
   def isComplete: Boolean = future.isComplete
 
   def flatMap[B](fun: A => Promise[B]): Promise[B] = {
-    println("flat mapping a promise")
     val f = future.replicate[Result[B]]
     val promise = Promise.from(f)
-    def onResult(a: Result[A]) = {
-      println("Result: " + a)
-      a match {
-        case Success(x) =>
-          println("about to convert")
-          fun(x).listen { p =>
-            println("got a final result in flatmap")
-            f.set(p)
-          }
-        case fail: Failure => f.set(fail)
-      }
+    def onResult(a: Result[A]) = a match {
+      case Success(x) => fun(x).listen(f.set)
+      case fail: Failure => f.set(fail)
     }
     future.listen(onResult)
     promise
