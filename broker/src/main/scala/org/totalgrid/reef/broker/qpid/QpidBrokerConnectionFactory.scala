@@ -19,7 +19,7 @@
 package org.totalgrid.reef.broker.qpid
 
 import org.totalgrid.reef.broker._
-import org.apache.qpid.transport.Connection
+import org.apache.qpid.transport.{ ConnectionSettings, Connection }
 import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import java.io.File
 import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
@@ -57,12 +57,27 @@ object QpidBrokerConnectionFactory {
 
 class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnectionFactory {
 
+  private def makeSettings = {
+    // need to manually create the ConnectionSettings object because there is no overload that
+    // includes the heartbeatTime setting
+    val settings = new ConnectionSettings()
+    settings.setHost(config.getHost)
+    settings.setPort(config.getPort)
+    settings.setVhost(config.getVirtualHost)
+    settings.setUsername(config.getUser)
+    settings.setPassword(config.getPassword)
+    settings.setUseSSL(config.getSsl)
+    settings.setSaslMechs("PLAIN")
+    settings.setHeartbeatInterval(config.getHeartbeatTimeSeconds)
+    settings
+  }
+
   def connect: BrokerConnection = {
     try {
       QpidBrokerConnectionFactory.loadssl(config)
       val conn = new Connection
       val broker = new QpidBrokerConnection(conn)
-      conn.connect(config.getHost, config.getPort, config.getVirtualHost, config.getUser, config.getPassword, config.getSsl)
+      conn.connect(makeSettings)
       broker
     } catch {
       case ex: Exception =>

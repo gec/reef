@@ -20,6 +20,8 @@ Major refactoring of communication client and threading structure.
 * Connecting to a reef broker is now by default a synchronous "single-shot" operation
 * Service Specific Java interfaces are now used to auto-generate wrappers around scala implementations
 * BatchServiceRequest is used by the loader-xml project to load models up to 70% faster than in 0.3.3. reef-175
+* BatchServiceRequest is used to unload model, up to 90% faster than in 0.3.3
+* Now setting qpid heartbeat timeout, requires new setting in config files: org.totalgrid.reef.amqp.heartbeatTimeSeconds=30. Fixes reef-183
 
 ### Shell Commands:
 

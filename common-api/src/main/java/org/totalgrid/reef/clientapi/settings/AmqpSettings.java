@@ -35,6 +35,8 @@ public class AmqpSettings
     private final String password;
     private final String virtualHost;
 
+    private final int heartbeatTimeSeconds;
+
     private final boolean ssl;
     private final String trustStore;
     private final String trustStorePassword;
@@ -44,18 +46,18 @@ public class AmqpSettings
     /**
      * non-ssl overload
      */
-    public AmqpSettings( String host, int port, String user, String password, String virtualHost )
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds )
     {
-        this( host, port, user, password, virtualHost, false, null, null, null, null );
+        this( host, port, user, password, virtualHost, heartbeatTimeSeconds, false, null, null, null, null );
     }
 
     /**
      * ssl overload
      */
-    public AmqpSettings( String host, int port, String user, String password, String virtualHost, boolean ssl, String trustStore,
-        String trustStorePassword )
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds, boolean ssl,
+        String trustStore, String trustStorePassword )
     {
-        this( host, port, user, password, virtualHost, ssl, trustStore, trustStorePassword, null, null );
+        this( host, port, user, password, virtualHost, heartbeatTimeSeconds, ssl, trustStore, trustStorePassword, null, null );
     }
 
     /**
@@ -64,18 +66,20 @@ public class AmqpSettings
      * @param user        The username for the connection
      * @param password    The password for the connection
      * @param virtualHost The virtual host to use, default is '/'
+     * @param heartbeatTimeSeconds heartbeat time in seconds, 0 disables heartbeats
      * @param ssl         If connection is encrypted using SSL
      * @param trustStore  Path to trustStore file (trust-store.jks)
      * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
      */
-    private AmqpSettings( String host, int port, String user, String password, String virtualHost, boolean ssl, String trustStore,
-        String trustStorePassword, String keyStore, String keyStorePassword )
+    private AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds, boolean ssl,
+        String trustStore, String trustStorePassword, String keyStore, String keyStorePassword )
     {
         this.host = host;
         this.port = port;
         this.user = user;
         this.password = password;
         this.virtualHost = virtualHost;
+        this.heartbeatTimeSeconds = heartbeatTimeSeconds;
         this.ssl = ssl;
         this.trustStore = trustStore;
         this.trustStorePassword = trustStorePassword;
@@ -112,6 +116,7 @@ public class AmqpSettings
         user = PropertyLoading.getString( "org.totalgrid.reef.amqp.user", props );
         password = PropertyLoading.getString( "org.totalgrid.reef.amqp.password", props );
         virtualHost = PropertyLoading.getString( "org.totalgrid.reef.amqp.virtualHost", props );
+        heartbeatTimeSeconds = PropertyLoading.getInt( "org.totalgrid.reef.amqp.heartbeatTimeSeconds", props );
         ssl = PropertyLoading.getBoolean( "org.totalgrid.reef.amqp.ssl", props, false );
         trustStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStore", props, "" );
         trustStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStorePassword", props, "" );
@@ -169,6 +174,14 @@ public class AmqpSettings
     public String getVirtualHost()
     {
         return virtualHost;
+    }
+
+    /**
+     * @return heartbeat time in seconds, 0 disables
+     */
+    public int getHeartbeatTimeSeconds()
+    {
+        return heartbeatTimeSeconds;
     }
 
     /**

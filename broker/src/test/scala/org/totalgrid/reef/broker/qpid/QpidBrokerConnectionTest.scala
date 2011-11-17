@@ -57,26 +57,26 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
   }
 
   test("Connection Timeout") {
-    val config = new AmqpSettings("127.0.0.1", 10000, "", "", "")
+    val config = new AmqpSettings("127.0.0.1", 10000, "", "", "", 30)
     intercept[ServiceIOException](fixture(config) { conn => })
   }
 
   test("Bad Ssl configuration") {
-    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, true, "badFileName", "")
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "badFileName", "")
     val ex = intercept[ServiceIOException](fixture(config) { conn => })
     ex.getMessage should include("badFileName")
   }
 
   test("Bad Ssl password") {
 
-    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, true, "src/test/resources/trust-store.jks", "9090909")
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "src/test/resources/trust-store.jks", "9090909")
     val ex = intercept[ServiceIOException](fixture(config) { conn => })
     ex.getMessage should include("SSL Context")
   }
 
   test("Valid Ssl configuration against non-ssl server") {
 
-    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, true, "src/test/resources/trust-store.jks", "jjjjjjj")
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "src/test/resources/trust-store.jks", "jjjjjjj")
     val ex = intercept[ServiceIOException](fixture(config) { conn => })
     ex.getMessage should include("SSLReceiver")
   }
