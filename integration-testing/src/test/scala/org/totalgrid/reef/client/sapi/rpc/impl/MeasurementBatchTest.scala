@@ -26,6 +26,7 @@ import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilders
 
+import org.totalgrid.reef.benchmarks.measurements.MeasurementRoundtripTimer
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 import org.totalgrid.reef.util.{ SyncVar, Timing }
@@ -84,7 +85,7 @@ class MeasurementBatchTest
 
     val now = System.currentTimeMillis() + 1
 
-    val handler = new MeasurementRoundtripTester(sub)
+    val handler = new MeasurementRoundtripTimer(sub)
 
     println("isDirect,size,pubTime,firstMessage,roundtrip,hist")
     (1 to 24).foreach { i =>
@@ -145,40 +146,4 @@ class MeasurementBatchTest
     ex2.getMessage should include("StaticSubstation.Line02.UnknownPoint")
   }
 
-  class MeasurementRoundtripTester(result: SubscriptionResult[List[Measurement], Measurement]) extends SubscriptionEventAcceptor[Measurement] {
-    result.getSubscription.start(this)
-
-    val expected = new SyncVar(List.empty[Measurement])
-    var unexpected = List.empty[Measurement]
-
-    var startTime: Long = 0
-    var firstMessage = Option.empty[Long]
-
-    def start(meases: List[Measurement]) {
-      startTime = System.nanoTime()
-      firstMessage = None
-      expected.update(meases)
-      // make sure the syncvar is not sitting on an empty state
-      expected.waitFor(_.size == meases.size)
-      unexpected = Nil
-    }
-
-    def await() = {
-      expected.waitFor(_.size == 0, throwOnFailure = false)
-      unexpected.reverse should equal(Nil)
-      expected.current should equal(Nil)
-      (System.nanoTime() - startTime) / 1000000
-    }
-
-    def onEvent(event: SubscriptionEvent[Measurement]) {
-      if (firstMessage.isEmpty) firstMessage = Some((System.nanoTime() - startTime) / 1000000)
-      val meas = event.getValue
-      val head = expected.current.head
-      if (head.getName == meas.getName && head.getTime == meas.getTime) {
-        expected.atomic(_.tail)
-      } else {
-        unexpected ::= meas
-      }
-    }
-  }
 }

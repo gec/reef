@@ -159,6 +159,12 @@
             <version>${reef.version}</version>
 			<scope>test</scope>
         </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-benchmarks</artifactId>
+            <version>${reef.version}</version>
+			<scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

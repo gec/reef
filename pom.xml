@@ -23,6 +23,7 @@
         <module>common-api</module>
         <module>client-api</module>
 		<module>client</module>
+		<module>benchmarks</module>
 		<module>integration-testing</module>
         <module>executor</module>
 		<module>util</module>
@@ -156,15 +157,15 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<descriptors>
-						<descriptor>bundle-dist.xml</descriptor>
-					</descriptors>
-				</configuration>
-			</plugin>
+			<!--<plugin>-->
+				<!--<artifactId>maven-assembly-plugin</artifactId>-->
+				<!--<version>2.2</version>-->
+				<!--<configuration>-->
+					<!--<descriptors>-->
+						<!--<descriptor>bundle-dist.xml</descriptor>-->
+					<!--</descriptors>-->
+				<!--</configuration>-->
+			<!--</plugin>-->
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
