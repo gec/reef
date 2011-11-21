@@ -27,8 +27,9 @@ import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommEndpointConfig
 import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 import java.util.concurrent.{ TimeUnit, LinkedBlockingDeque }
+import com.weiglewilczek.slf4s.Logging
 
-object EndpointStopper {
+object EndpointStopper extends Logging {
   /**
    * synchronous function that blocks until all passed in endpoints are stopped
    * TODO: use endpoint stopper before reef:unload
@@ -39,11 +40,12 @@ object EndpointStopper {
 
     stream.foreach { _.println("Disabling endpoints: " + endpoints.map { _.getName }.mkString(", ")) }
 
+    // then subscribe to all of the connections
+    val subResult = local.subscribeToAllEndpointConnections().await
+
     // first we disable all of the endpoints
     endpointUuids.foreach { e => local.disableEndpointConnection(e._1).await }
 
-    // then subscribe to all of the connections
-    val subResult = local.subscribeToAllEndpointConnections().await
     try {
       // we filter out all of the endpoints that are not COMMS_UP
       val stillRunning = subResult.getResult.toList.foldLeft(endpointUuids)(filterEndpoints)
@@ -55,7 +57,9 @@ object EndpointStopper {
         val queue = new LinkedBlockingDeque[CommEndpointConnection]()
         subResult.getSubscription.start(new SubscriptionEventAcceptor[CommEndpointConnection] {
           def onEvent(event: SubscriptionEvent[CommEndpointConnection]) {
-            queue.push(event.getValue)
+            val conn = event.getValue
+            logger.info("EndpointChange " + event.getEventType + " " + conn.getEndpoint.getName + " e: " + conn.getEnabled + " s: " + conn.getState)
+            queue.push(conn)
           }
         })
 
@@ -87,7 +91,7 @@ object EndpointStopper {
   }
 
   private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: CommEndpointConnection) = {
-    if (connection.getState != CommEndpointConnection.State.COMMS_UP) {
+    if (connection.getState != CommEndpointConnection.State.COMMS_UP && !connection.hasFrontEnd) {
       stillRunningEndpoints - connection.getEndpoint.getUuid
     } else {
       stillRunningEndpoints
