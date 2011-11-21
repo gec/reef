@@ -33,7 +33,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.sapi._
-import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
+import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
@@ -45,11 +45,7 @@ import org.totalgrid.reef.clientapi.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.clientapi.AddressableDestination
 
-abstract class EndpointRelatedTestBase extends DatabaseUsingTestBaseNoTransaction with Logging {
-
-  override def beforeEach() {
-    ServiceBootstrap.resetDb
-  }
+abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 
   class CountingEventSink extends SystemEventSink {
     import scala.collection.mutable.{ Map, ListBuffer }

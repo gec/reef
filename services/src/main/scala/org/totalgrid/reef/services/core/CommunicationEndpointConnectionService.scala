@@ -116,6 +116,7 @@ class CommunicationEndpointConnectionServiceModel
   }
 
   override def postUpdate(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
+    logger.info("CommEndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " uid " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
     coordinator.onFepConnectionChange(context, sql, existing)
   }
 }

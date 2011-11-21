@@ -38,7 +38,7 @@ trait MeasurementStreamCoordinator {
    * whenever the endpoint definition is updated we check the meas proc assignment and forcefully
    * reassign each fep
    */
-  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint)
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint)
 
   /**
    * endpoints should only be deleted when they are not enabled so we can simply delete the assignment protos

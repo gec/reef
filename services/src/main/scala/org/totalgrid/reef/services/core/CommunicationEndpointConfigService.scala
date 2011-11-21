@@ -60,7 +60,7 @@ class CommEndCfgServiceModel(
   override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
     val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
-    coordinator.onEndpointUpdated(context, sql)
+    coordinator.onEndpointUpdated(context, sql, existing)
     (sql, changed)
   }
 

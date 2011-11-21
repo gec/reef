@@ -56,7 +56,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     fepConnection.create(context, new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
   }
 
-  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint) {
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint) {
     val measProcAssignment = measProcTable.where(measProc => measProc.endpointId === ce.id).single
     checkMeasProcAssignment(context, measProcAssignment)
 

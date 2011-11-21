@@ -27,29 +27,32 @@ import org.totalgrid.reef.services.framework._
  * at the same time.
  */
 class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, contextSource: RequestContextSource) extends MeasurementStreamCoordinator {
-
+  // TODO: get rid of contextSource in SingleThreadedMeasurementStreamCoordinator
   private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
-    context.operationBuffer.queuePostTransaction {
-      this.synchronized {
-        contextSource.transaction { c2 =>
-          f(real, c2)
-        }
-      }
+    this.synchronized {
+      f(real, context)
     }
   }
 
-  def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) = handle(context) { (r, c) => r.onMeasProcAppChanged(c, app, added) }
+  def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
+    handle(context) { (r, c) => r.onMeasProcAppChanged(c, app, added) }
 
-  def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) = handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, meas) }
+  def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) =
+    handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, meas) }
 
-  def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) = handle(context) { (r, c) => r.onFepConnectionChange(c, sql, existing) }
+  def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) =
+    handle(context) { (r, c) => r.onFepConnectionChange(c, sql, existing) }
 
-  def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) = handle(context) { (r, c) => r.onFepAppChanged(c, app, added) }
+  def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
+    handle(context) { (r, c) => r.onFepAppChanged(c, app, added) }
 
-  def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }
+  def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) =
+    handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }
 
-  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointUpdated(c, ce) }
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint) =
+    handle(context) { (r, c) => r.onEndpointUpdated(c, ce, existing) }
 
-  def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointCreated(c, ce) }
+  def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) =
+    handle(context) { (r, c) => r.onEndpointCreated(c, ce) }
 
 }
