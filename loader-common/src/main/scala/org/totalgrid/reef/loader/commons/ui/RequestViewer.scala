@@ -25,10 +25,20 @@ import org.totalgrid.reef.clientapi.proto.Envelope.{ BatchServiceRequest, Status
 
 class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestSpy {
 
+  // TODO: remove explicit listen call counting when the futures await() call means listen calls have returned
+  private var outstandingCalls = 0
+
+  def onFutureCallback() = this.synchronized {
+    outstandingCalls -= 1
+    if (outstandingCalls == 0) this.notify()
+  }
+
   def onRequestReply[A](verb: Verb, request: A, future: Future[Response[A]]) = {
     if (request.asInstanceOf[AnyRef].getClass != classOf[BatchServiceRequest]) {
+      this.synchronized { outstandingCalls += 1 }
       future.listen { response =>
         update(response.status, request.asInstanceOf[AnyRef])
+        onFutureCallback()
       }
     }
   }
@@ -89,6 +99,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
   }
 
   def finish = {
+    this.synchronized { while (outstandingCalls > 0) wait() }
     stream.println("|")
     stream.println("Statistics. Finished in: " + ((System.nanoTime() - startTime) / 1000000) + " milliseconds")
     counts.foreach {
