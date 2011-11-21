@@ -48,14 +48,8 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
 
   override val descriptor = Descriptors.commEndpointConnection
 
-  override def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType = {
-    import org.totalgrid.reef.proto.OptionalProtos._
-
-    val builder = CommunicationEndpointConnectionConversion.convertToProto(current).toBuilder
-    req.state.foreach { builder.setState(_) }
-    req.enabled.foreach { builder.setEnabled(_) }
-    builder.build
-  }
+  // we will manually merge by checking to see what fields are set and using exclusive acccess blocks
+  override def merge(context: RequestContext, req: ConnProto, current: FrontEndAssignment) = req
 }
 
 import org.totalgrid.reef.services.coordinators._
