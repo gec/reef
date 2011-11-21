@@ -126,7 +126,7 @@ class SquerylBackedMeasurementStreamCoordinator(
   private def checkFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint) {
     val newAssign = determineFepAssignment(assign, ce)
     // update the fep assignment if it changed
-    newAssign.foreach(newAssignment => fepConnection.update(context, newAssignment, assign))
+    newAssign.foreach(newAssignment => exclusiveUpdateFep(context, assign, newAssignment))
   }
 
   def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
@@ -189,6 +189,15 @@ class SquerylBackedMeasurementStreamCoordinator(
         serviceRoutingKey = serviceRoutingKey,
         readyTime = None)
       measProcModel.update(context, newAssign, assign)
+    }
+  }
+
+  private def exclusiveUpdateFep(context: RequestContext, assign: FrontEndAssignment, newAssign: FrontEndAssignment) {
+    def isSame(as: FrontEndAssignment) = as.applicationId == assign.applicationId &&
+      as.serviceRoutingKey == assign.serviceRoutingKey &&
+      as.enabled == assign.enabled && as.state == assign.state
+    fepConnection.exclusiveUpdate(context, assign, isSame _) { toChange =>
+      newAssign
     }
   }
 
