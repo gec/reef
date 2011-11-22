@@ -34,6 +34,6 @@ class TeamCityStatisticsXml(fileName: String) {
 
     val safeLabel = label.replaceAll("[,.^&*(_]", "")
 
-    printStream.println("\t<statisticsValue key=\"%s\" value=\"%s\" />".format(safeLabel, value))
+    printStream.println("\t<statisticValue key=\"%s\" value=\"%s\" />".format(safeLabel, value))
   }
 }
