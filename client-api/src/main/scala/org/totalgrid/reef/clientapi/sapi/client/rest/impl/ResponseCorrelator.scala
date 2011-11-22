@@ -55,8 +55,8 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
     uuid
   }
 
-  def fail(uuid: String, response: FailureResponse) = map.synchronized {
-    map.remove(uuid) match {
+  def fail(uuid: String, response: FailureResponse) = {
+    map.synchronized(map.remove(uuid)) match {
       case Some(Record(timer, callback)) =>
         timer.cancel()
         callback(Left(response))
@@ -66,20 +66,23 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
   }
 
   // terminates all existing registered callbacks with an exception
-  def close() = map.synchronized {
-    if (map.size > 0) logger.warn("Closing response corrolater with some outstanding requests: " + map.size)
-    map.values.foreach {
+  def close() = {
+    map.synchronized {
+      if (map.size > 0) logger.warn("Closing response corrolater with some outstanding requests: " + map.size)
+      // collect the callbacks to fail, then clear the map
+      val values = map.values.toList
+      map.clear()
+      values
+    }.foreach {
       case Record(timer, callback) =>
         timer.cancel()
         callback(Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")))
     }
-    map.clear()
   }
 
-  private def onTimeout(uuid: String) = map.synchronized {
-    map.get(uuid) match {
+  private def onTimeout(uuid: String) = {
+    map.synchronized(map.remove(uuid)) match {
       case Some(Record(timer, callback)) =>
-        map.remove(uuid)
         callback(Left(ResponseTimeout))
       case None =>
         logger.warn("Unexpected service response timeout w/ uuid: " + uuid)
@@ -94,11 +97,10 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
     }
   }
 
-  private def onResponse(rsp: ServiceResponse) = map.synchronized {
-    map.get(rsp.getId) match {
+  private def onResponse(rsp: ServiceResponse) = {
+    map.synchronized(map.remove(rsp.getId)) match {
       case Some(Record(timer, callback)) =>
         timer.cancel()
-        map.remove(rsp.getId)
         callback(Right(rsp))
       case None =>
         logger.warn("Unexpected request response w/ uuid: " + rsp.getId)
