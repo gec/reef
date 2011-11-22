@@ -130,6 +130,8 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
 
     captor.getValue.onDisconnect(false)
 
+    exe.runUntilIdle()
+
     exe.numQueuedTimers should equal(1)
     Mockito.verify(watcher).onConnectionClosed(false)
 

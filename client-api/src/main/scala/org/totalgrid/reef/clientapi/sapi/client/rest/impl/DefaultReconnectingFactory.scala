@@ -44,10 +44,13 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
     scheduleReconnect(0, startDelay)
   }
 
-  override def beforeStop() = this.synchronized {
-    reconnectDelay.foreach { _.cancel() }
-    if (broker.isDefined) broker.foreach { _.disconnect }
-    else watchers.foreach { _.onConnectionClosed(true) }
+  override def beforeStop() = {
+    // can't hold lock while canceling
+    this.synchronized(reconnectDelay).foreach { _.cancel() }
+    this.synchronized {
+      if (broker.isDefined) broker.foreach { _.disconnect }
+      else watchers.foreach { _.onConnectionClosed(true) }
+    }
   }
 
   private def tryConnection(nextDelay: Long) {
@@ -71,7 +74,7 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
     }
   }
 
-  def onDisconnect(expected: Boolean) = this.synchronized {
+  private def handleDisconnect(expected: Boolean) = this.synchronized {
     logger.info("Disconnected from broker, expected: " + expected)
     broker.foreach(_.removeListener(this))
     broker = None
@@ -80,6 +83,12 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
       logger.warn("Unexpected disconnection. Attempting reconnect.")
       scheduleReconnect(0, startDelay)
     }
+  }
+
+  def onDisconnect(expected: Boolean) = {
+    // we need to marshall the disconnected message off the qpid thread so it
+    // can continue shutting down
+    exe.execute { handleDisconnect(expected) }
   }
 
   private def scheduleReconnect(delay: Long, nextDelay: Long) = {

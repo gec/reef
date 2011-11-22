@@ -48,6 +48,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
       conn.addServiceInfo(ExampleServiceList.info)
       fun(conn.login("foo"), conn)
     } finally {
+      b.disconnect()
       executor.terminate()
     }
   }

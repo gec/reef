@@ -48,18 +48,27 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   conn.bindQueue(subscription.getQueue, "amq.direct", subscription.getQueue)
   conn.addListener(this)
 
-  // TODO - fail all all request once disconnected
-  def onDisconnect(expected: Boolean): Unit = {
+  // only called on unexpected disconnections
+  def onDisconnect(expected: Boolean): Unit = executor.execute {
     logger.info("connection disconnected: " + expected)
+    handleDisconnect(expected)
+  }
+
+  private def handleDisconnect(expected: Boolean) {
+    subscription.close()
     conn.removeListener(this)
     correlator.close()
     this.notifyListenersOfClose(expected)
   }
 
+  // TODO: disconnect should probably block until disconnected?
   def disconnect() = {
-    logger.info("disconnect called.")
-    subscription.close()
-    conn.disconnect()
+    val currentlyConnected = conn.isConnected()
+    logger.info("disconnect called, connected: " + currentlyConnected)
+    if (currentlyConnected) {
+      handleDisconnect(true)
+      conn.disconnect()
+    }
   }
 
   def login(authToken: String): Client = createClient(authToken, Strand(executor))
