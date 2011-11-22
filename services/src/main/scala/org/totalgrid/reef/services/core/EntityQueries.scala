@@ -323,6 +323,10 @@ trait EntityTreeQueries { self: EntityQueries =>
      * @param upperNodes Set of mutable result tree-nodes to be filled out
      */
     def fillChildren(upperQuery: Query[Entity], upperNodes: List[ResultNodeBuilder]): Unit = {
+
+      // short circuit the queries if we have no parent nodes
+      if (upperNodes.isEmpty) return
+
       val entEdges = lowerQuery(upperQuery)
       val entsOnlyQuery = from(entEdges)(entEdge => select(entEdge._1))
 
