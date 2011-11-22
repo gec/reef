@@ -20,6 +20,10 @@ package org.totalgrid.reef.broker
 
 trait BrokerConnectionListener {
 
+  /**
+   * the user code needs to marshall this callback to another thread as soon as possible
+   * because blocking the qpid closed() callback can cause deadlocks
+   */
   def onDisconnect(expected: Boolean): Unit
 
 }

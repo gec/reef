@@ -44,14 +44,12 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
   }
 
   def listen(): BrokerSubscription = {
-    if (disconnected) throw new ServiceIOException("Connection closed")
     val session = getSession()
     val q = QpidChannelOperations.declareQueue(session, "*", true, true)
     new QpidBrokerSubscription(session, q, this)
   }
 
   def listen(queue: String): BrokerSubscription = {
-    if (disconnected) throw new ServiceIOException("Connection closed")
     val session = getSession()
     val q = QpidChannelOperations.declareQueue(session, queue, false, false)
     if (queue != q) throw new ServiceIOException("Not given queue name we asked for. Got: " + q + " requested: " + queue)
@@ -61,17 +59,30 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
   /* --- Implement ConnectionListener --- */
 
   def closed(conn: Connection) = {
-    this.onDisconnect(disconnected)
-    disconnected = true
+
+    val expected = mutex.synchronized {
+      val temp = disconnected
+      // we want to make sure we have set the connection into a closed state
+      // before informing client applications they have been disconnected
+      // in case they try to use the connection. they should also marshall all
+      // calls to the
+      disconnected = true
+      temp
+    }
+
+    this.onDisconnect(expected)
   }
 
   private def getSession() = mutex.synchronized {
+    if (disconnected) throw new ServiceIOException("Connection closed")
     val session = conn.createSession(0)
     sessions += session
     session
   }
-  private def closeSessions() = mutex.synchronized {
-    sessions.foreach { _.close() }
+  private def closeSessions() = {
+    mutex.synchronized(sessions.toList).foreach { session =>
+      QpidChannelOperations.close(session)
+    }
   }
   // child subscriptions and workers call back to remove themselves from the list of sessions
   // if they have been closed manually by the user
