@@ -32,7 +32,7 @@ class TeamCityStatisticsXml(fileName: String) {
 
   def addRow(label: String, value: Any) {
 
-    val safeLabel = label.replaceAll("[,.^&*(]", "")
+    val safeLabel = label.replaceAll("[,.^&*(_]", "")
 
     printStream.println("\t<statisticsValue key=\"%s\" value=\"%s\" />".format(safeLabel, value))
   }
