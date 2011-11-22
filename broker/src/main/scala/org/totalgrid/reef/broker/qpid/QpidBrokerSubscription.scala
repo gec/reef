@@ -57,12 +57,7 @@ final class QpidBrokerSubscription(session: Session, queue: String, connection: 
 
   def getQueue = queue
   def close() {
-    if (!session.isClosing) try {
-      session.close()
-    } catch {
-      case ex: Exception =>
-        logger.error("Error closing session", ex)
-    }
+    QpidChannelOperations.close(session)
     connection.detachSession(session)
   }
 

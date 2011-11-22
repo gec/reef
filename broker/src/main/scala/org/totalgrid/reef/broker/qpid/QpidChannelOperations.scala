@@ -110,6 +110,19 @@ object QpidChannelOperations extends Logging {
   def describeBinding(queue: String, exchange: String, key: String): String =
     "queue " + queue + " to exchange " + exchange + " w/ key " + key
 
+  /**
+   * try to close the connection, silently eating failures if the closing fails (usually
+   * this means it is already closed)
+   */
+  def close(session: Session) {
+    if (!session.isClosing) try {
+      session.close()
+    } catch {
+      case ex: Exception =>
+        logger.error("Error closing session", ex)
+    }
+  }
+
   private def rewrap[A](msg: => String)(fun: => A): A = {
     try {
       fun

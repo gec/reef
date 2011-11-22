@@ -57,12 +57,7 @@ final class QpidWorkerChannel(val session: Session, connection: QpidBrokerConnec
     QpidChannelOperations.publish(session, exchange, key, b, replyTo)
 
   def close() {
-    if (isOpen) try {
-      session.close()
-    } catch {
-      case ex: Exception =>
-        logger.error("Error closing session", ex)
-    }
+    QpidChannelOperations.close(session)
     connection.detachSession(session)
   }
 }
