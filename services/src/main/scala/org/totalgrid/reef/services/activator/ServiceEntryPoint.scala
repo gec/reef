@@ -31,7 +31,7 @@ import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 
 object ServiceEntryPoint extends ShutdownHook {
   def main(args: Array[String]) = {
-    val scheduler = JExecutors.newScheduledThreadPool(Runtime.getRuntime.availableProcessors())
+    val scheduler = JExecutors.newScheduledThreadPool(5)
     val executor = JExecutors.newCachedThreadPool()
 
     val exe = Executors.newCustomExecutor(executor, scheduler)

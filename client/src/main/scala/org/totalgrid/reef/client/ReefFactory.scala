@@ -27,7 +27,7 @@ import org.totalgrid.reef.broker.BrokerConnection
 
 class ReefFactory(amqpSettings: AmqpSettings) {
   private val factory = new QpidBrokerConnectionFactory(amqpSettings)
-  private val exe = Executors.newScheduledThreadPool()
+  private val exe = Executors.newScheduledThreadPool(5)
 
   private var broker = Option.empty[BrokerConnection]
   private var connection = Option.empty[Connection]

@@ -30,7 +30,7 @@ import org.totalgrid.reef.clientapi.javaimpl.ConnectionWrapper
 
 class ReefConnectionFactory(settings: AmqpSettings) extends ConnectionFactory {
   private val factory = new QpidBrokerConnectionFactory(settings)
-  private val exe = Executors.newScheduledThreadPool
+  private val exe = Executors.newScheduledThreadPool(5)
 
   @throws(classOf[ReefServiceException])
   def connect(): Connection = new ConnectionWrapper(ReefServices.apply(factory.connect, exe))

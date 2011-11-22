@@ -34,7 +34,7 @@ object StandaloneLoader {
       def client = {
         val factory = new QpidBrokerConnectionFactory(connectionInfo)
         val broker = factory.connect
-        val exe = Executors.newScheduledThreadPool()
+        val exe = Executors.newScheduledThreadPool(5)
         val conn = ReefServices(broker, exe)
 
         val session = conn.login(userSettings.getUserName, userSettings.getUserPassword).await

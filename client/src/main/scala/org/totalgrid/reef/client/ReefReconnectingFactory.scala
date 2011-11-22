@@ -32,7 +32,7 @@ class ReefReconnectingFactory(amqpSettings: AmqpSettings, startDelay: Long, maxD
     extends ReconnectingConnectionFactory with SConnectionWatcher {
 
   private val brokerFactory = new QpidBrokerConnectionFactory(amqpSettings)
-  private val exe = Executors.newScheduledThreadPool
+  private val exe = Executors.newScheduledThreadPool(5)
 
   private val factory = new DefaultReconnectingFactory(brokerFactory, exe, startDelay, maxDelay)
   factory.addConnectionWatcher(this)

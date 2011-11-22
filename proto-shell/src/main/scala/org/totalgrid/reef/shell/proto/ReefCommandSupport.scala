@@ -64,7 +64,7 @@ object ReefCommandSupport extends Logging {
 
     val factory = new QpidBrokerConnectionFactory(amqpSettings)
     val broker = factory.connect
-    val exe = Executors.newScheduledThreadPool()
+    val exe = Executors.newScheduledThreadPool(5)
     val conn = ReefServices(broker, exe)
 
     val cancel = new Cancelable {

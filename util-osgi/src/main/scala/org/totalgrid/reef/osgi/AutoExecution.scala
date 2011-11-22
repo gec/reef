@@ -36,7 +36,7 @@ trait ExecutorBundleActivator extends BundleActivator {
   }
 
   private val executor = JExecutors.newCachedThreadPool(threadFactory("pool"))
-  private val scheduler = JExecutors.newSingleThreadScheduledExecutor(threadFactory("sched"))
+  private val scheduler = JExecutors.newScheduledThreadPool(5, threadFactory("sched"))
   private val exe = Executors.newCustomExecutor(executor, scheduler)
 
   final override def start(context: BundleContext) = start(context, exe)

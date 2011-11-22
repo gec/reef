@@ -27,7 +27,7 @@ final class Activator extends BundleActivator {
 
   // the thread pool will grow, but always retain the number of threads == number of cores
 
-  val scheduler = JExecutors.newSingleThreadScheduledExecutor()
+  val scheduler = JExecutors.newScheduledThreadPool(5)
   val executor = JExecutors.newCachedThreadPool()
 
   val exe = Executors.newCustomExecutor(executor, scheduler)
