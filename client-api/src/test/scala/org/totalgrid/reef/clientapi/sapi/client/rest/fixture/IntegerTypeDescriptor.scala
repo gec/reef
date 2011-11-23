@@ -19,9 +19,7 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest.fixture
 
 import java.io._
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
-
-import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.types.{ ServiceInfo, TypeDescriptor }
 
 case class SomeInteger(num: Int) extends Serializable {
   def increment = SomeInteger(num + 1)
@@ -33,7 +31,7 @@ object SomeIntegerTypeDescriptor extends SerializableTypeDescriptor[SomeInteger]
 }
 
 object ExampleServiceList {
-  def info = ServiceInfo(SomeIntegerTypeDescriptor)
+  def info = new ServiceInfo(SomeIntegerTypeDescriptor, SomeIntegerTypeDescriptor)
 }
 
 trait SerializableTypeDescriptor[A <: Serializable] extends TypeDescriptor[A] {

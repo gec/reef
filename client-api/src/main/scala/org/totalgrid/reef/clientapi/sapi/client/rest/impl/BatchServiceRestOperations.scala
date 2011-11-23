@@ -42,14 +42,14 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
     val uuid = UUID.randomUUID().toString
 
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId(uuid)
-    builder.setPayload(ByteString.copyFrom(info.descriptor.serialize(payload)))
+    builder.setPayload(ByteString.copyFrom(info.getDescriptor.serialize(payload)))
     headers.foreach { _.toEnvelopeRequestHeaders.foreach(builder.addHeaders) }
 
-    val cachedRequest = SelfIdentityingServiceRequest.newBuilder.setExchange(info.descriptor.id).setRequest(builder).build
+    val cachedRequest = SelfIdentityingServiceRequest.newBuilder.setExchange(info.getDescriptor.id).setRequest(builder).build
 
     val future = client.future[Response[A]]
 
-    pendingRequests.enqueue(RequestWithFuture(cachedRequest, future, info.descriptor))
+    pendingRequests.enqueue(RequestWithFuture(cachedRequest, future, info.getDescriptor))
     client.notifyRequestSpys(verb, payload, future)
 
     future

@@ -21,7 +21,6 @@ package org.totalgrid.reef.clientapi.sapi.client.rest.impl
 import net.agileautomata.executor4s._
 
 import org.totalgrid.reef.broker._
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
 import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.proto.SimpleAuth.AuthRequest
 import org.totalgrid.reef.clientapi.sapi.client.rest._
@@ -30,8 +29,9 @@ import org.totalgrid.reef.clientapi.sapi.client._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.clientapi.{ AnyNodeDestination, Routable }
 
-import org.totalgrid.reef.clientapi.sapi.types.{ ServiceInfo, BuiltInDescriptors }
+import org.totalgrid.reef.clientapi.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.clientapi.types.{ ServiceTypeInformation, TypeDescriptor }
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -96,14 +96,16 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
     }
 
-    def send(info: ServiceInfo[A, _]) = {
+    def send(info: ServiceTypeInformation[A, _]) = {
       val timeout = headers.getTimeout.getOrElse(timeoutms)
-      val uuid = correlator.register(executor, timeout.milliseconds, onResponse(info.descriptor))
+      val descriptor = info.getDescriptor
+
+      val uuid = correlator.register(executor, timeout.milliseconds, onResponse(descriptor))
       try {
-        val request = RestHelpers.buildServiceRequest(verb, payload, info.descriptor, uuid, headers)
+        val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
         val destination = headers.getDestination.getOrElse(new AnyNodeDestination)
-        conn.publish(info.descriptor.id, destination.getKey, request.toByteArray, replyTo)
+        conn.publish(descriptor.id, destination.getKey, request.toByteArray, replyTo)
       } catch {
         case ex: Exception =>
           correlator.fail(uuid, FailureResponse(Envelope.Status.BUS_UNAVAILABLE, ex.getMessage))
@@ -132,11 +134,13 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
     def subscribe[A](klass: Class[A], competing: Boolean): BrokerSubscription = {
       val info = getServiceInfo(klass)
-      conn.declareExchange(info.subExchange)
-      conn.declareExchange(info.descriptor.id)
+      conn.declareExchange(info.getEventExchange)
+      val descriptor = info.getDescriptor
+      conn.declareExchange(descriptor.id)
+      // TODO: should this service.descriptor? why are we looking it up then?
       val sub = if (competing) conn.listen(service.descriptor.id + "_server")
       else conn.listen()
-      conn.bindQueue(sub.getQueue, info.descriptor.id, destination.getKey)
+      conn.bindQueue(sub.getQueue, descriptor.id, destination.getKey)
       sub
     }
 
@@ -170,19 +174,19 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
   override def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit = {
     val info = getServiceInfo(ClassLookup.get(value))
-    val desc = info.subType.asInstanceOf[TypeDescriptor[A]]
+    val desc = info.getSubscriptionDescriptor.asInstanceOf[TypeDescriptor[A]]
     val event = RestHelpers.getEvent(typ, value, desc)
-    conn.publish(info.subExchange, key, event.toByteArray)
+    conn.publish(info.getEventExchange, key, event.toByteArray)
   }
 
   override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit = {
     val info = getServiceInfo(klass)
-    conn.bindQueue(subQueue, info.subExchange, key)
+    conn.bindQueue(subQueue, info.getEventExchange, key)
   }
 
   override def declareEventExchange(klass: Class[_]) = {
     val info = getServiceInfo(klass)
-    conn.declareExchange(info.subExchange)
+    conn.declareExchange(info.getEventExchange)
   }
 
   private def safely(msg: String)(fun: => Unit): Unit = {

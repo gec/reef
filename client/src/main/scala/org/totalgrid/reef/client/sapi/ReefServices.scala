@@ -25,8 +25,9 @@ import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShim
 import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.clientapi.rpc.ServicesList
 
-object ReefServices {
+object ReefServices extends ServicesList {
   def apply(broker: BrokerConnection, exe: Executor) = {
     val conn = new DefaultConnection(broker, exe, 5000)
     prepareConnection(conn)
@@ -38,4 +39,9 @@ object ReefServices {
     conn.addRpcProvider(AllScadaServiceImpl.serviceInfo)
     conn.addRpcProvider(AllScadaServiceJavaShim.serviceInfo)
   }
+
+  import scala.collection.JavaConversions._
+  def getServiceTypeInformation = ReefServicesList.getServicesList
+
+  def getServiceProviders = AllScadaServiceImpl.serviceInfo :: AllScadaServiceJavaShim.serviceInfo :: Nil
 }

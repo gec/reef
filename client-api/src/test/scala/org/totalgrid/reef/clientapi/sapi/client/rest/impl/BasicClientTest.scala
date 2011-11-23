@@ -43,7 +43,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
   def fixture(fun: (Client, Connection) => Unit): Unit = broker { b =>
     val executor = Executors.newScheduledSingleThread()
     try {
-      b.declareExchange(ExampleServiceList.info.subExchange) //normally a service would do this in bindService
+      b.declareExchange(ExampleServiceList.info.getEventExchange) //normally a service would do this in bindService
       val conn = new DefaultConnection(b, executor, 5000)
       conn.addServiceInfo(ExampleServiceList.info)
       fun(conn.login("foo"), conn)

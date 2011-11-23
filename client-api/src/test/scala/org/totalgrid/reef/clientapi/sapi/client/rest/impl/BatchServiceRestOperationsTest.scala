@@ -29,7 +29,7 @@ import org.mockito.Mockito
 import net.agileautomata.executor4s.testing.MockFuture
 import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
-import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.types.ServiceTypeInformation
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, ServiceRegistry, Client, RestOperations }
 import org.totalgrid.reef.clientapi.proto.Envelope.{ BatchServiceRequest, Verb }
 
@@ -54,14 +54,14 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
     def getServiceInfo[A](klass: Class[A]) = {
       klass should equal(classOf[SomeInteger])
-      ExampleServiceList.info.asInstanceOf[ServiceInfo[A, A]]
+      ExampleServiceList.info.asInstanceOf[ServiceTypeInformation[A, A]]
     }
 
     override def future[A] = new MockFuture(None)
 
     def subscribe[A](descriptor: TypeDescriptor[A]) = throw new Exception
     def addRpcProvider(info: RpcProviderInfo) = throw new Exception
-    def addServiceInfo[A](info: ServiceInfo[A, _]) = throw new Exception
+    def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = throw new Exception
     def attempt[A](fun: => A) = throw new Exception
     def execute(fun: => Unit) = throw new Exception
     def schedule(interval: TimeInterval)(fun: => Unit) = throw new Exception

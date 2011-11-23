@@ -18,10 +18,14 @@
  */
 package org.totalgrid.reef.clientapi.rpc;
 
+import java.util.List;
+
 /**
  * TODO: make RpcProvider implementable from pure java
  */
 public interface RpcProviderInfo
 {
+    RpcProviderFactory getFactory();
 
+    List<Class<?>> getInterfacesImplemented();
 }

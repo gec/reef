@@ -49,7 +49,7 @@ object ServiceBootstrap {
    */
   def defineEventExchanges(connection: Connection) {
     ReefServicesList.getServicesList.foreach { serviceInfo =>
-      connection.declareEventExchange(serviceInfo.descriptor.getKlass)
+      connection.declareEventExchange(serviceInfo.getDescriptor.getKlass)
     }
   }
 

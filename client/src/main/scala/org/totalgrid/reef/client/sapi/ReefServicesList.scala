@@ -18,9 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi
 
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
-
-import org.totalgrid.reef.clientapi.sapi.types.ServiceInfo
+import org.totalgrid.reef.clientapi.types.{ ServiceInfo, TypeDescriptor }
 import org.totalgrid.reef.proto.Descriptors
 
 object ReefServicesList {
@@ -62,8 +60,8 @@ object ReefServicesList {
     getEntry(Descriptors.measurement))
 
   private def getEntry[A, B](descriptor: TypeDescriptor[A], subClass: Option[TypeDescriptor[B]] = None) = subClass match {
-    case Some(subDescriptor) => ServiceInfo(descriptor, subDescriptor)
-    case None => ServiceInfo(descriptor)
+    case Some(subDescriptor) => new ServiceInfo(descriptor, subDescriptor)
+    case None => new ServiceInfo(descriptor, descriptor)
   }
 }
 

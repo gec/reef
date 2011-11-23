@@ -16,16 +16,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.clientapi.sapi.client.rest
+package org.totalgrid.reef.clientapi.types
 
-import org.totalgrid.reef.clientapi.types.ServiceTypeInformation
+class ServiceInfo[A, B](descriptor: TypeDescriptor[A], subType: TypeDescriptor[B]) extends ServiceTypeInformation[A, B] {
 
-trait ServiceRegistry {
+  def getDescriptor = descriptor
 
-  def addRpcProvider(info: RpcProviderInfo)
+  def getSubscriptionDescriptor = subType
 
-  def addServiceInfo[A](info: ServiceTypeInformation[A, _])
-
-  def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
+  def getEventExchange = subType.id + "_events"
 }
-
