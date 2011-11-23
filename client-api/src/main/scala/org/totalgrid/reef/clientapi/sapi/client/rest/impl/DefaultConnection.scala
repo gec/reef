@@ -49,7 +49,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   conn.addListener(this)
 
   // only called on unexpected disconnections
-  def onDisconnect(expected: Boolean): Unit = executor.execute {
+  def onDisconnect(expected: Boolean): Unit = {
     logger.info("connection disconnected: " + expected)
     handleDisconnect(expected)
   }

@@ -42,11 +42,9 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
     val connection = new BrokerConnection {
       def unexpectedDisconnect() = {
         onDisconnect(false)
-        exe.runUntilIdle()
       }
       def disconnect() = {
         onDisconnect(true)
-        exe.runUntilIdle()
         true
       }
 

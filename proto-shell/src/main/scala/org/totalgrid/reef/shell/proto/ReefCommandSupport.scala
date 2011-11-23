@@ -70,7 +70,7 @@ object ReefCommandSupport extends Logging {
 
     val cancel = new Cancelable {
       def cancel() = {
-        broker.disconnect()
+        conn.disconnect()
         // TODO: should be exe.shutdown, deadlocks when onDisconnect occurs
         exe.terminate()
       }

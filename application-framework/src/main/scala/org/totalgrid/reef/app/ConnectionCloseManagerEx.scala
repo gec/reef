@@ -105,8 +105,10 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
 
   override def afterStart() = factory.start
 
-  override def beforeStop() = this.synchronized {
-    consumers.keys.foreach { doBrokerConnectionLost(_) }
+  override def beforeStop() = {
+    this.synchronized {
+      consumers.keys.foreach { doBrokerConnectionLost(_) }
+    }
     factory.stop
   }
 

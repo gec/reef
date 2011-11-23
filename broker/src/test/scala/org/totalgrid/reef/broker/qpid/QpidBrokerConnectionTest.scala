@@ -46,13 +46,13 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
   test("Qpid disconnect events") {
     fixture(defaults) { conn =>
-      val list = new SynchronizedList[Boolean]
+      var list = List.empty[Boolean]
       val listener = new BrokerConnectionListener {
-        def onDisconnect(expected: Boolean) = list.append(expected)
+        def onDisconnect(expected: Boolean) = list ::= expected
       }
       conn.addListener(listener)
       conn.disconnect()
-      list shouldBecome List(true) within (defaultTimeout)
+      list should equal(List(true))
     }
   }
 

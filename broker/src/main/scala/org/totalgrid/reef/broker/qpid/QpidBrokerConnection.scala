@@ -26,6 +26,7 @@ import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool with ConnectionListener with Logging {
 
   private var disconnected = false
+  private var closed = false
   private var sessions = Set.empty[Session]
 
   conn.addConnectionListener(this)
@@ -39,8 +40,9 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
       disconnected = true
       closeSessions()
       conn.close()
-      true
-    } else true
+    }
+    while (!closed) mutex.wait()
+    true
   }
 
   def listen(): BrokerSubscription = {
@@ -71,6 +73,12 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
     }
 
     this.onDisconnect(expected)
+
+    mutex.synchronized {
+      closed = true
+      mutex.notifyAll()
+    }
+
   }
 
   private def getSession() = mutex.synchronized {
