@@ -43,12 +43,14 @@ public class TestReconnectingFactory
         ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, 100, 500 );
 
         final SyncVar closed = new SyncVar<Boolean>( Boolean.FALSE );
+        final SyncVar closeExpected = new EmptySyncVar<Boolean>();
         final SyncVar opened = new SyncVar<Boolean>( Boolean.FALSE );
         final SyncVar conn = new EmptySyncVar<Connection>();
 
         factory.addConnectionWatcher( new ConnectionWatcher() {
             public void onConnectionClosed( boolean expected )
             {
+                closeExpected.update( Boolean.valueOf( expected ) );
                 closed.update( Boolean.TRUE );
             }
 
@@ -70,5 +72,6 @@ public class TestReconnectingFactory
         factory.stop();
 
         closed.waitUntil( Boolean.TRUE );
+        closeExpected.waitUntil( Boolean.TRUE );
     }
 }

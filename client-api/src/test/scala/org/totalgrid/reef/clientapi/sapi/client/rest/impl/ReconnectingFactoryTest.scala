@@ -24,9 +24,9 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection, BrokerConnectionFactory }
+import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory, BrokerDestination }
 import org.totalgrid.reef.clientapi.sapi.client.rest.ConnectionWatcher
-import org.mockito.{ ArgumentCaptor, Mockito }
+import org.mockito.Mockito
 import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
@@ -39,21 +39,38 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
       def connect = connection.getOrElse(throw new ServiceIOException("test failure"))
     }
 
-    val connection = Mockito.mock(classOf[BrokerConnection])
-    val captor = ArgumentCaptor.forClass(classOf[BrokerConnectionListener])
-    Mockito.doNothing().when(connection).addListener(captor.capture())
+    val connection = new BrokerConnection {
+      def unexpectedDisconnect() = {
+        onDisconnect(false)
+        exe.runUntilIdle()
+      }
+      def disconnect() = {
+        onDisconnect(true)
+        exe.runUntilIdle()
+        true
+      }
+
+      def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean) {}
+      def declareExchange(exchange: String, exchangeType: String) {}
+      def declareQueue(queue: String, autoDelete: Boolean, exclusive: Boolean) = null
+      def isConnected() = true
+      def listen() = null
+      def listen(queue: String) = null
+      def publish(exchange: String, key: String, bytes: Array[Byte], replyTo: Option[BrokerDestination]) {}
+      def unbindQueue(queue: String, exchange: String, key: String) {}
+    }
 
     val watcher = Mockito.mock(classOf[ConnectionWatcher])
 
     val reconnector = new DefaultReconnectingFactory(broker, exe, 1000, 5000)
     reconnector.addConnectionWatcher(watcher)
 
-    (exe, broker, connection, captor, watcher, reconnector)
+    (exe, broker, connection, watcher, reconnector)
   }
 
   test("Sucessfull Connection calls listener") {
 
-    val (exe, broker, connection, captor, watcher, reconnector) = goodConnection()
+    val (exe, broker, connection, watcher, reconnector) = goodConnection()
 
     broker.connection = Some(connection)
 
@@ -74,12 +91,11 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
 
     // now stop the reconnector, make sure it calls disconnect
     reconnector.stop()
-    Mockito.verify(connection).disconnect()
     exe.numQueuedTimers should equal(0)
   }
 
   test("Failure to connect queues new attempt") {
-    val (exe, broker, connection, captor, watcher, reconnector) = goodConnection()
+    val (exe, broker, connection, watcher, reconnector) = goodConnection()
 
     // startup the reconnector, should enqueue the first connection attempt
     reconnector.start()
@@ -100,7 +116,7 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
   }
 
   test("Stopping while failed to connect calls watcher with a failure") {
-    val (exe, broker, connection, captor, watcher, reconnector) = goodConnection()
+    val (exe, broker, connection, watcher, reconnector) = goodConnection()
 
     // startup the reconnector, should enqueue the first connection attempt
     reconnector.start()
@@ -119,7 +135,7 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
 
   test("Requeues connection on unexpected close") {
 
-    val (exe, broker, connection, captor, watcher, reconnector) = goodConnection()
+    val (exe, broker, connection, watcher, reconnector) = goodConnection()
 
     broker.connection = Some(connection)
 
@@ -128,7 +144,7 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
     exe.tick(5000.milliseconds)
     Mockito.verify(watcher).onConnectionOpened(connection)
 
-    captor.getValue.onDisconnect(false)
+    connection.unexpectedDisconnect()
 
     exe.runUntilIdle()
 

@@ -48,8 +48,11 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
     // can't hold lock while canceling
     this.synchronized(reconnectDelay).foreach { _.cancel() }
     this.synchronized {
-      if (broker.isDefined) broker.foreach { _.disconnect }
-      else watchers.foreach { _.onConnectionClosed(true) }
+      if (broker.isDefined) {
+        broker.foreach { _.disconnect() }
+        // wait for the broker onDisconnect callback to fire
+        while (broker != None) this.wait()
+      } else watchers.foreach { _.onConnectionClosed(true) }
     }
   }
 
@@ -78,10 +81,12 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
     logger.info("Disconnected from broker, expected: " + expected)
     broker.foreach(_.removeListener(this))
     broker = None
-    this.synchronized { watchers.foreach { _.onConnectionClosed(expected) } }
+    watchers.foreach { _.onConnectionClosed(expected) }
     if (!expected) {
       logger.warn("Unexpected disconnection. Attempting reconnect.")
       scheduleReconnect(0, startDelay)
+    } else {
+      this.notifyAll()
     }
   }
 
