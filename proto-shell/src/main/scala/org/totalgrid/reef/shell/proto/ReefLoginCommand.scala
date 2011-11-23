@@ -41,28 +41,28 @@ class ReefLoginCommand extends ReefCommandSupport {
   def doCommand() {
 
     if (isLoggedIn) {
-      System.out.println(getLoginString)
-      System.out.println("\nUse \"reef:logout\" first to logout")
+      println(getLoginString)
+      println("\nUse \"reef:logout\" first to logout")
     } else {
       val userSettings = if (userName == null) {
         val user = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
-        System.out.println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file.")
+        println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file.")
         user
       } else {
         if (password == null) {
           val stdIn = new BufferedReader(new InputStreamReader(System.in))
 
-          System.out.println("Enter Password: ")
+          println("Enter Password: ")
           password = stdIn.readLine.trim
         } else {
-          System.out.println("WARNING: Password will be visible in karaf command history!")
+          println("WARNING: Password will be visible in karaf command history!")
         }
         new UserSettings(userName, password)
       }
 
       val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
 
-      ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings)
+      ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
     }
   }
 }

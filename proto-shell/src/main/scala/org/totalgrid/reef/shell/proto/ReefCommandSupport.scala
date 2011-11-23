@@ -29,19 +29,20 @@ import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.clientapi.ConnectionCloseListener
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
     session.put("context", context)
     session.put("client", client)
     session.put("reefSession", service)
+    session.put("user", userName)
+    session.put("authToken", authToken)
     session.get("cancelable") match {
       case null => // nothing to close
       case x => x.asInstanceOf[Cancelable].cancel
     }
     session.put("cancelable", cancelable)
-    session.put("user", userName)
-    session.put("authToken", authToken)
   }
 
   def getAuthenticatedClient(session: CommandSession, connection: Connection, context: String, cancelable: Cancelable, userSettings: UserSettings) {
@@ -60,7 +61,7 @@ object ReefCommandSupport extends Logging {
     }
   }
 
-  def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings) = {
+  def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings, unexpectedDisconnectCallback: () => Unit) = {
 
     val factory = new QpidBrokerConnectionFactory(amqpSettings)
     val broker = factory.connect
@@ -70,9 +71,15 @@ object ReefCommandSupport extends Logging {
     val cancel = new Cancelable {
       def cancel() = {
         broker.disconnect()
+        // TODO: should be exe.shutdown, deadlocks when onDisconnect occurs
         exe.terminate()
       }
     }
+    conn.addConnectionListener(new ConnectionCloseListener {
+      def onConnectionClosed(expected: Boolean) {
+        if (!expected) unexpectedDisconnectCallback()
+      }
+    })
 
     getAuthenticatedClient(session, conn, amqpSettings.toString, cancel, userSettings)
   }
@@ -130,6 +137,11 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     }
   }
 
+  protected def handleDisconnect() {
+    println("Connection to broker lost! You have been logged out.")
+    logout()
+  }
+
   override protected def doExecute(): Object = {
     println("")
     try {
@@ -139,7 +151,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
           val userSettings = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
           val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
           println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file: " + userSettings.getUserName)
-          ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings)
+          ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
           doCommand()
         } catch {
           case _ =>
