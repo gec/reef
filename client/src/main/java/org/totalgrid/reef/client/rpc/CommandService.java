@@ -244,10 +244,10 @@ public interface CommandService
 
     /**
      * Get a command lock by UUID
-     * @param uid the uid of the command to lock
+     * @param id the id of the command to lock
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess getCommandLock( ReefID uid ) throws ReefServiceException;
+    CommandAccess getCommandLockById( ReefID id ) throws ReefServiceException;
 
     /**
      * Get the command lock (if it exists) for a Command

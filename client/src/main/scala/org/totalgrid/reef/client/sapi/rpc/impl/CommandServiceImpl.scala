@@ -83,7 +83,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.get(CommandAccessRequestBuilders.getAll).map(_.many)
   }
 
-  override def getCommandLock(uid: ReefID) = ops.operation("Couldn't get command lock with uid: " + uid) {
+  override def getCommandLockById(uid: ReefID) = ops.operation("Couldn't get command lock with uid: " + uid) {
     _.get(CommandAccessRequestBuilders.getForUid(uid)).map(_.one)
   }
 
