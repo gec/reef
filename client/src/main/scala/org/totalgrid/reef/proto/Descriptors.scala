@@ -262,6 +262,12 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.proto.Model.ReefUUID]
     def id = "reef_uuid"
   }
+  def reefID() = new TypeDescriptor[org.totalgrid.reef.proto.Model.ReefID] {
+    def serialize(typ: org.totalgrid.reef.proto.Model.ReefID): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.ReefID.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Model.ReefID]
+    def id = "reef_id"
+  }
   def entity() = new TypeDescriptor[org.totalgrid.reef.proto.Model.Entity] {
     def serialize(typ: org.totalgrid.reef.proto.Model.Entity): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Model.Entity.parseFrom(bytes)

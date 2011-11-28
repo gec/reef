@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 
 import org.totalgrid.reef.proto.OptionalProtos._
 
@@ -62,19 +62,19 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
     }
   }
 
-  override def alterEndpointConnectionState(connectionUid: String, state: CommEndpointConnection.State) = {
-    ops.operation("Couldn't alter endpoint connection: " + connectionUid + " to : " + state) {
-      _.post(CommEndpointConnection.newBuilder.setUid(connectionUid).setState(state).build).map(_.one)
+  override def alterEndpointConnectionState(uid: ReefID, state: CommEndpointConnection.State) = {
+    ops.operation("Couldn't alter endpoint connection: " + uid + " to : " + state) {
+      _.post(CommEndpointConnection.newBuilder.setUid(uid).setState(state).build).map(_.one)
     }
   }
 
   override def getAllEndpointConnections() = ops.operation("Couldn't get list of all endpoint connections") {
-    _.get(CommEndpointConnection.newBuilder.setUid("*").build).map(_.many)
+    _.get(CommEndpointConnection.newBuilder.setUid(ReefID.newBuilder.setValue("*")).build).map(_.many)
   }
 
   override def subscribeToAllEndpointConnections() = {
     ops.subscription(Descriptors.commEndpointConnection, "Couldn't subscribe to all endpoint connections") { (sub, client) =>
-      client.get(CommEndpointConnection.newBuilder.setUid("*").build, sub).map(_.many)
+      client.get(CommEndpointConnection.newBuilder.setUid(ReefID.newBuilder.setValue("*")).build, sub).map(_.many)
     }
   }
 

@@ -102,7 +102,7 @@
  *     REMOVED       = 4;  // Alarm not visible in standard Alarm List.
  *   }
  * 
- *   optional string   uid      = 1;  // UID of alarm is not equal to event.uid
+ *   optional org.totalgrid.reef.proto.Model.ReefID   uid      = 1;  // UID of alarm is not equal to event.uid
  *   optional State    state    = 2;
  *   optional org.totalgrid.reef.proto.Events.Event event = 3;
  *   optional string   rendered = 4;  // This alarm rendered as a localized string.

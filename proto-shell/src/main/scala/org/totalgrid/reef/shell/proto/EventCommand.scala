@@ -23,8 +23,8 @@ import org.totalgrid.reef.shell.proto.presentation.{ EventView }
 import scala.collection.JavaConversions._
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import org.totalgrid.reef.proto.Utils.Attribute
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match
 import org.totalgrid.reef.proto.Alarms.{ EventConfig, Alarm }
+import org.totalgrid.reef.proto.Model.ReefID
 
 @Command(scope = "event", name = "list", description = "Prints all recent events.")
 class EventListCommand extends ReefCommandSupport {
@@ -49,7 +49,7 @@ class EventViewCommand extends ReefCommandSupport {
   var eventId: String = null
 
   def doCommand() = {
-    EventView.printInspect(services.getEvent(eventId))
+    EventView.printInspect(services.getEvent(ReefID.newBuilder.setValue(eventId).build))
   }
 }
 

@@ -69,7 +69,7 @@ class AlarmServiceModel
   override def getEventProtoAndKey(alarm: AlarmModel) = {
     val (_, eventKeys) = EventConversion.makeEventProtoAndKey(alarm.event.value)
     val proto = convertToProto(alarm)
-    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.uid :: Nil) + "." + _ }
+    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.uid.value :: Nil) + "." + _ }
 
     (proto, keys)
   }
@@ -78,7 +78,7 @@ class AlarmServiceModel
   override def getSubscribeKeys(req: Alarm): List[String] = {
     val eventKeys = EventConversion.makeSubscribeKeys(req.event.getOrElse(EventProto.newBuilder.build))
 
-    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uid :: Nil) + "." + _ }
+    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uid.value :: Nil) + "." + _ }
   }
 
   override def createFromProto(context: RequestContext, req: Alarm): AlarmModel = {
@@ -140,10 +140,11 @@ trait AlarmConversion
     entry.state != existing.state
   }
 
+  // TODO: remove createModelEntry in alarm service
   def createModelEntry(proto: Alarm): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
-      proto.getEvent.getUid.toLong)
+      proto.getEvent.getUid.getValue.toLong)
   }
 
   def convertToProto(entry: AlarmModel): Alarm = {
@@ -152,7 +153,7 @@ trait AlarmConversion
 
   def convertToProto(entry: AlarmModel, event: EventStore): Alarm = {
     Alarm.newBuilder
-      .setUid(entry.id.toString)
+      .setUid(makeId(entry))
       .setState(Alarm.State.valueOf(entry.state))
       .setEvent(EventConversion.convertToProto(event))
       .build
@@ -176,7 +177,7 @@ trait AlarmQueries {
   }
 
   def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
-    (proto.uid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
+    (proto.uid.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {

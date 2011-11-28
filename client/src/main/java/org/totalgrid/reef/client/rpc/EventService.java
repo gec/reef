@@ -23,6 +23,7 @@ import org.totalgrid.reef.clientapi.SubscriptionResult;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Events.Event;
 import org.totalgrid.reef.proto.Events.EventSelect;
+import org.totalgrid.reef.proto.Model.ReefID;
 
 import java.util.List;
 
@@ -40,7 +41,7 @@ public interface EventService extends SubscriptionCreator
      *
      * @param uid event
      */
-    Event getEvent( String uid ) throws ReefServiceException;
+    Event getEvent( ReefID uid ) throws ReefServiceException;
 
     /**
      * get the most recent events

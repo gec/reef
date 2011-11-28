@@ -136,7 +136,7 @@
  * }
  * 
  * message MeasurementProcessingConnection{
- *     optional string                       uid                   = 1;
+ *     optional org.totalgrid.reef.proto.Model.ReefID                       uid                   = 1;
  *     optional org.totalgrid.reef.proto.Application.ApplicationConfig meas_proc = 2;
  *     optional org.totalgrid.reef.proto.Model.Entity logicalNode         = 3;
  *     optional MeasurementProcessingRouting routing               = 5;

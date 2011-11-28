@@ -26,10 +26,11 @@ import org.totalgrid.reef.client.sapi.rpc.EventService
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ EventRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.proto.Model.ReefID
 
 trait EventServiceImpl extends HasAnnotatedOperations with EventService {
 
-  override def getEvent(uid: String) = ops.operation("Couldn't get event with uid: " + uid) {
+  override def getEvent(uid: ReefID) = ops.operation("Couldn't get event with uid: " + uid) {
     _.get(EventRequestBuilders.getByUID(uid)).map(_.one)
   }
 

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.proto.Commands.CommandAccess
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
+import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
@@ -44,7 +44,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     }
   }
 
-  override def deleteCommandLock(uid: String) = ops.operation("Couldn't delete command lock with uid: " + uid) {
+  override def deleteCommandLock(uid: ReefID) = ops.operation("Couldn't delete command lock with uid: " + uid) {
     _.delete(CommandAccessRequestBuilders.getForUid(uid)).map(_.one)
   }
 
@@ -83,7 +83,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.get(CommandAccessRequestBuilders.getAll).map(_.many)
   }
 
-  override def getCommandLock(uid: String) = ops.operation("Couldn't get command lock with uid: " + uid) {
+  override def getCommandLock(uid: ReefID) = ops.operation("Couldn't get command lock with uid: " + uid) {
     _.get(CommandAccessRequestBuilders.getForUid(uid)).map(_.one)
   }
 

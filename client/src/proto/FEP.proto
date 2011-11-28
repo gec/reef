@@ -97,7 +97,7 @@ message CommEndpointConnection {
         ERROR = 4;
     }
 
-    optional string                 uid                 = 1;
+    optional org.totalgrid.reef.proto.Model.ReefID                 uid                 = 1;
     optional FrontEndProcessor      front_end           = 2;
     optional CommEndpointConfig     endpoint            = 3;
     optional State                  state               = 4;

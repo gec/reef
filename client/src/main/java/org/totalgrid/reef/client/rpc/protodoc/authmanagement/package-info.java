@@ -35,7 +35,7 @@
  * }
  * 
  * message Permission{
- *     optional string  uid      = 1;
+ *     optional org.totalgrid.reef.proto.Model.ReefID  uid      = 1;
  *     optional bool    allow    = 2;
  *     optional string  resource = 3;
  *     optional string  verb     = 4;
@@ -49,7 +49,7 @@
  * }
  * 
  * message AuthToken{
- *     optional string        uid             = 1;
+ *     optional org.totalgrid.reef.proto.Model.ReefID        uid             = 1;
  *     optional Agent         agent           = 2;
  *     optional string        login_location  = 3;
  *     repeated PermissionSet permission_sets = 4;

@@ -38,7 +38,7 @@
  * -/
  * message UserCommandRequest {
  * 
- * 	optional string         uid             = 1;
+ * 	optional org.totalgrid.reef.proto.Model.ReefID         uid             = 1;
  * 	optional CommandRequest command_request = 2;
  * 	optional CommandStatus  status          = 3;
  * 	optional string         user            = 4;
@@ -65,7 +65,7 @@
  *     ALLOWED = 1;
  *     BLOCKED = 2;
  *   }
- *   optional string       uid             = 1;
+ *   optional org.totalgrid.reef.proto.Model.ReefID       uid             = 1;
  *   repeated string       commands        = 2;
  *   optional AccessMode   access          = 3;
  *   optional uint64       expire_time     = 4;

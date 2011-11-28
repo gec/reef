@@ -26,6 +26,7 @@ import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.proto.Model.Command;
 import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.proto.Model.ReefID;
 import net.agileautomata.executor4s.Cancelable;
 import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler;
 
@@ -164,7 +165,7 @@ public interface CommandService
      * @param commandUid
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess deleteCommandLock( String commandUid ) throws ReefServiceException;
+    CommandAccess deleteCommandLock( ReefID commandUid ) throws ReefServiceException;
 
     /**
      * Clear all of the command locks in the system. This is a dangerous operation that should only
@@ -246,7 +247,7 @@ public interface CommandService
      * @param uid the uid of the command to lock
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess getCommandLock( String uid ) throws ReefServiceException;
+    CommandAccess getCommandLock( ReefID uid ) throws ReefServiceException;
 
     /**
      * Get the command lock (if it exists) for a Command

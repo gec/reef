@@ -19,11 +19,11 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
+import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 
 object UserCommandRequestBuilders {
 
-  def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(uid).build
+  def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(ReefID.newBuilder.setValue(uid)).build
   def getForName(command: String) = {
     val cr = CommandRequest.newBuilder.setName(command)
     UserCommandRequest.newBuilder.setCommandRequest(cr).build

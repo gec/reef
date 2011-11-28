@@ -28,8 +28,19 @@
  * import "Utils.proto";
  * 
  * 
+ * /*
+ *  UUIDs are used for "long lasting" elements in the system that are we expect
+ *  to not grow in value
+ * -/
  * message ReefUUID {
  *   required string uuid = 1;
+ * }
+ * 
+ * /*
+ *   Items in the system that are not expected to
+ * -/
+ * message ReefID {
+ *   required string value = 1;
  * }
  * 
  * /*

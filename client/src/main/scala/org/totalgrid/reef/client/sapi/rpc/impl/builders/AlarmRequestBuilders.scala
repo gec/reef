@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.proto.Alarms.Alarm
 import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity }
+import org.totalgrid.reef.proto.Model.{ ReefID, Entity }
 
 object AlarmRequestBuilders {
   // state != REMOVED by default
@@ -35,6 +35,6 @@ object AlarmRequestBuilders {
   }
 
   def getByUID(uid: String) = {
-    Alarm.newBuilder.setUid(uid).build
+    Alarm.newBuilder.setUid(ReefID.newBuilder.setValue(uid)).build
   }
 }

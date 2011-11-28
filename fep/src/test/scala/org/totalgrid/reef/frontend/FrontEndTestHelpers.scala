@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
@@ -28,6 +28,9 @@ object FrontEndTestHelpers {
 
   private def makeUuid(str: String) = ReefUUID.newBuilder.setUuid(str).build
   implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
+
+  private def makeId(str: String) = ReefID.newBuilder.setValue(str).build
+  implicit def makeIdFromString(str: String): ReefID = makeId(str)
 
   def getConnectionProto(enabled: Boolean, routingKey: Option[String]) = {
     val pt = CommChannel.newBuilder.setUuid("port").setName("port")

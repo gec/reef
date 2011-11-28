@@ -86,7 +86,7 @@
  * // An Event
  * //
  * message Event {
- *   optional string   uid           =  1;   // Unique ID for this instance. Only available for events coming from the DB.
+ *   optional org.totalgrid.reef.proto.Model.ReefID   uid           =  1;   // Unique ID for this instance. Only available for events coming from the DB.
  *   optional string   event_type    =  2;   // The type of event. Ex: UserLogout, BreakerTrip, etc.
  *   optional bool     alarm         =  3 [default = false];  // True: This event is an Alarm
  *   optional uint64   time          =  4;   // milliseconds since midnight January 1, 1970 not counting leap seconds (Unix time, but with milliseconds)

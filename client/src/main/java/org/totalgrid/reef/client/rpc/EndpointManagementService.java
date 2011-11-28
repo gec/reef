@@ -24,6 +24,7 @@ import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection;
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State;
 import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.proto.Model.ReefID;
 
 import java.util.List;
 
@@ -111,7 +112,7 @@ public interface EndpointManagementService
      * @param state          COMMS_UP, COMMS_DOWN, COMMS_ERROR ...
      * @return updated state
      */
-    CommEndpointConnection alterEndpointConnectionState( String connectionUid, State state ) throws ReefServiceException;
+    CommEndpointConnection alterEndpointConnectionState( ReefID connectionUid, State state ) throws ReefServiceException;
 
 
 }

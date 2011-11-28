@@ -116,7 +116,7 @@ object CommandView {
   }
 
   def historyRow(a: UserCommandRequest) = {
-    a.uid.getOrElse("unknown") ::
+    a.uid.value.getOrElse("unknown") ::
       a.commandRequest.name.getOrElse("unknown") ::
       a.status.map { _.toString }.getOrElse("unknown") ::
       a.user.getOrElse("unknown") ::

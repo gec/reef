@@ -20,7 +20,6 @@ package org.totalgrid.reef.frontend
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
@@ -30,6 +29,7 @@ import org.totalgrid.reef.api.protocol.api.Protocol
 import org.totalgrid.reef.clientapi.AddressableDestination
 
 import net.agileautomata.executor4s.{ Failure, Success }
+import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices) extends KeyedMap[CommEndpointConnection] {
@@ -43,7 +43,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
 
-  def getKey(c: CommEndpointConnection) = c.getUid
+  def getKey(c: CommEndpointConnection) = c.getUid.getValue
 
   val protocols = comms.map(p => p.name -> p).toMap
 
@@ -108,7 +108,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     }
   }
 
-  private def newEndpointStatePublisher(connectionUid: String, endpointName: String) = new Protocol.EndpointPublisher {
+  private def newEndpointStatePublisher(connectionUid: ReefID, endpointName: String) = new Protocol.EndpointPublisher {
     def publish(state: CommEndpointConnection.State) = {
       client.alterEndpointConnectionState(connectionUid, state).extract match {
         case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)

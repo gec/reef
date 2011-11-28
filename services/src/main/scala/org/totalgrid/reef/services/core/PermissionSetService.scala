@@ -135,7 +135,7 @@ trait PermissionConversions
   val table = ApplicationSchema.permissions
 
   def convertToProto(entry: AuthPermission): Permission = {
-    val b = Permission.newBuilder.setUid(makeUid(entry))
+    val b = Permission.newBuilder.setUid(makeId(entry))
     b.setAllow(entry.allow)
     b.setResource(entry.resource)
     b.setVerb(entry.verb)
@@ -145,7 +145,7 @@ trait PermissionConversions
   def uniqueQuery(proto: Permission, sql: AuthPermission) = {
     // should be uid
     List(
-      proto.uid.asParam(sql.id === _.toInt))
+      proto.uid.value.asParam(sql.id === _.toInt))
   }
 
   def searchQuery(proto: Permission, sql: AuthPermission) = {
