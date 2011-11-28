@@ -44,7 +44,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     val proc = new OverrideProcessor((m, b) => measQueue.enqueue(m), overCache, measCache.get(_))
 
     def configure(config: List[MeasOverride]) = proc.subscribed(config)
-    def event(ev: Envelope.Event, proto: MeasOverride) = proc.handleEvent(ev, proto)
+    def event(ev: Envelope.SubscriptionEventType, proto: MeasOverride) = proc.handleEvent(ev, proto)
 
     def sendAndCheckMeas(m: Measurement) {
       proc.process(m)
@@ -158,7 +158,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     val orig = makeAnalog("meas01", 5.3)
     r.measCache.update(orig.getName, orig)
     val over = makeOverride("meas01", 89, "V")
-    r.event(Envelope.Event.ADDED, over)
+    r.event(Envelope.SubscriptionEventType.ADDED, over)
     r.checkReplacePublished(over.getMeas)
     r.receiveAndCheckOver(orig)
     r.sendAndCheckOver(makeAnalog("meas01", 44))
@@ -170,18 +170,18 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     val orig = makeAnalog("meas01", 5.3)
     r.measCache.update(orig.getName, orig)
     val nis = makeNIS("meas01")
-    r.event(Envelope.Event.ADDED, nis)
+    r.event(Envelope.SubscriptionEventType.ADDED, nis)
     r.checkNISPublished(orig)
     r.receiveAndCheckOver(orig)
 
     val replace = makeOverride("meas01", 89, "V")
-    r.event(Envelope.Event.ADDED, replace)
+    r.event(Envelope.SubscriptionEventType.ADDED, replace)
     r.checkReplacePublished(replace.getMeas)
 
     r.sendAndCheckOver(makeAnalog("meas01", 44))
   }
 
-  def doublePush(event: Envelope.Event) {
+  def doublePush(event: Envelope.SubscriptionEventType) {
     val r = new TestRig
     r.configure(Nil)
 
@@ -202,10 +202,10 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
   }
 
   def testDoubleAdd {
-    doublePush(Envelope.Event.ADDED)
+    doublePush(Envelope.SubscriptionEventType.ADDED)
   }
   def testDoubleModify {
-    doublePush(Envelope.Event.MODIFIED)
+    doublePush(Envelope.SubscriptionEventType.MODIFIED)
   }
 
   def testRemoved {
@@ -217,7 +217,7 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
     val orig = makeAnalog("meas01", 5.3)
     r.overCache.update(orig.getName, orig)
     val nisRemove = makeNIS("meas01")
-    r.event(Envelope.Event.REMOVED, nisRemove)
+    r.event(Envelope.SubscriptionEventType.REMOVED, nisRemove)
     r.receiveAndCheckMeas(orig)
     r.overCache.delQueue.length should equal(1)
     r.overCache.delQueue.dequeue should equal("meas01")

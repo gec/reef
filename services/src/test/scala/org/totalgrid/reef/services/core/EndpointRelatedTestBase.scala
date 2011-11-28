@@ -82,7 +82,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
 
       val measProcAssign = event.value
-      if (event.event != Envelope.Event.ADDED) return
+      if (event.event != Envelope.SubscriptionEventType.ADDED) return
 
       val measProc = new MeasBatchProcessor {
         def process(m: MeasurementBatch) {
@@ -164,7 +164,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
       val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env).expectMany()
 
-      conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.Event.ADDED, c)))
+      conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.SubscriptionEventType.ADDED, c)))
 
       measProcMap += (name -> mockMeas)
 

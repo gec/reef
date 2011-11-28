@@ -40,5 +40,5 @@ public interface SubscriptionEvent<T>
      *
      * @return The type of the event (ADDED, MODIFIED, REMOVED)
      */
-    Envelope.Event getEventType();
+    Envelope.SubscriptionEventType getEventType();
 }

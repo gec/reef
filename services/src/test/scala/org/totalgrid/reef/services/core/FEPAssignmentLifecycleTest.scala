@@ -25,7 +25,7 @@ import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.clientapi.proto.Envelope.Event
+import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
 
 @RunWith(classOf[JUnitRunner])
 class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
@@ -69,7 +69,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
       val device1 = coord.addDnp3Device("dev1")
 
-      dnpEvents.pop(5000).event should equal(Event.MODIFIED)
+      dnpEvents.pop(5000).event should equal(SubscriptionEventType.MODIFIED)
 
       coord.checkAssignments(1, Some(dnp), Some(meas))
       coord.checkPoints(1, 1)
@@ -78,8 +78,8 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
       val device2 = coord.addDevice("dev1")
 
-      dnpEvents.pop(5000).event should equal(Event.REMOVED)
-      benchmarkEvents.pop(5000).event should equal(Event.ADDED)
+      dnpEvents.pop(5000).event should equal(SubscriptionEventType.REMOVED)
+      benchmarkEvents.pop(5000).event should equal(SubscriptionEventType.ADDED)
 
       coord.checkAssignments(1, Some(benchmark), Some(meas))
       coord.checkPoints(1, 1)
@@ -97,7 +97,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
       val fepEvents = coord.subscribeFepAssignements(0, fep)
       val device1 = coord.addDnp3Device("dev1")
 
-      fepEvents.pop(5000).event should equal(Event.MODIFIED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.MODIFIED)
 
       coord.checkAssignments(1, Some(fep), Some(meas))
       coord.checkPoints(1, 1)
@@ -106,8 +106,8 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
       val device2 = coord.addDevice("dev1")
 
-      fepEvents.pop(5000).event should equal(Event.REMOVED)
-      fepEvents.pop(5000).event should equal(Event.ADDED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.REMOVED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.ADDED)
 
       coord.checkAssignments(1, Some(fep), Some(meas))
       coord.checkPoints(1, 1)

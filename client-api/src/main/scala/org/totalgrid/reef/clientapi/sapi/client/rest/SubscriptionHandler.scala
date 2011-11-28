@@ -22,7 +22,7 @@ import org.totalgrid.reef.clientapi.proto.Envelope
 
 trait SubscriptionHandler {
 
-  def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit
+  def publishEvent[A](typ: Envelope.SubscriptionEventType, value: A, key: String): Unit
 
   def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit
 }

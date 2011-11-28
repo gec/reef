@@ -26,7 +26,7 @@ import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.proto.Envelope.Event
+import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.app.{ ServiceContext, SubscriptionDataHandler }
 import org.totalgrid.reef.util.Cancelable
 
@@ -51,6 +51,6 @@ class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dat
   }
 
   def handleResponse(result: List[Measurement]) = packTimer.addEntries(result)
-  def handleEvent(event: Event, result: Measurement) = packTimer.addEntry(result)
+  def handleEvent(event: SubscriptionEventType, result: Measurement) = packTimer.addEntry(result)
 
 }

@@ -83,7 +83,7 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase
 
         // check that at least one measurement has been updated in the queue
         SubscriptionEvent<Measurements.Measurement> m = mock.pop( 10000 );
-        assertEquals( m.getEventType(), Envelope.Event.MODIFIED );
+        assertEquals( m.getEventType(), Envelope.SubscriptionEventType.MODIFIED );
 
         // now cancel the subscription
         sub.cancel();

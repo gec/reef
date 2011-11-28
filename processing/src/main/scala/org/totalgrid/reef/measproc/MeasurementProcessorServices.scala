@@ -82,7 +82,7 @@ class MeasurementProcessorServicesImpl(client: Client)
   }
 
   override def publishIndividualMeasurementAsEvent(meas: Measurement) {
-    client.publishEvent(Envelope.Event.MODIFIED, meas, meas.getName)
+    client.publishEvent(Envelope.SubscriptionEventType.MODIFIED, meas, meas.getName)
   }
 
   override def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long) = {

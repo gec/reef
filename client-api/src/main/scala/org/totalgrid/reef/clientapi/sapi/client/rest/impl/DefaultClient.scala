@@ -21,7 +21,7 @@ package org.totalgrid.reef.clientapi.sapi.client.rest.impl
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client }
 import org.totalgrid.reef.clientapi.sapi.client.{ RequestSpyHook, BasicRequestHeaders }
-import org.totalgrid.reef.clientapi.proto.Envelope.{ Event, Verb }
+import org.totalgrid.reef.clientapi.proto.Envelope.{ SubscriptionEventType, Verb }
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 
 import org.totalgrid.reef.clientapi.Routable
@@ -47,7 +47,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     strand.scheduleWithFixedOffset(initial, offset)(fun)
 
   final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
-  final override def publishEvent[A](typ: Event, value: A, key: String) = conn.publishEvent(typ, value, key)
+  final override def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) = conn.publishEvent(typ, value, key)
 
   final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = conn.bindService(service, dispatcher, destination, competing)
   final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)

@@ -26,7 +26,7 @@ import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
 import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.proto.Envelope.Event
+import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.event.EventType
@@ -53,7 +53,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.checkAssignments(1, Some(fep), Some(meas))
 
       // we should have sent an update to the fep to tell it the new routing address
-      fepEvents.pop(5000).event should equal(Event.MODIFIED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.MODIFIED)
     }
   }
 

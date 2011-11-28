@@ -115,11 +115,11 @@ public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAccept
         return list;
     }
 
-    public List<Envelope.Event> getEventCodes()
+    public List<Envelope.SubscriptionEventType> getEventCodes()
     {
         if ( !storeResults )
             throw new RuntimeException( "Not storing results" );
-        List<Envelope.Event> list = new LinkedList<Envelope.Event>();
+        List<Envelope.SubscriptionEventType> list = new LinkedList<Envelope.SubscriptionEventType>();
         for ( SubscriptionEvent<T> p : results )
         {
             list.add( p.getEventType() );

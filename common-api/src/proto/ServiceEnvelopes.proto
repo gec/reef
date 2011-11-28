@@ -10,7 +10,7 @@ enum Verb{
     POST      = 4; // handled like PUT but allows partial updates
 }
 
-enum Event{
+enum SubscriptionEventType{
     ADDED     = 1;
     MODIFIED  = 2;
     REMOVED   = 3;
@@ -58,7 +58,7 @@ message ServiceResponse{
 }
 
 message ServiceNotification{
-    required Event event   = 1;   // updated, created or deleted
+    required SubscriptionEventType event   = 1;   // added, modified or removed
     required bytes payload = 2;   // will only be one payload message per event
 }
 

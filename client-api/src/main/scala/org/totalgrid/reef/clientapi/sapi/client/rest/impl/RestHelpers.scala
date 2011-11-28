@@ -26,10 +26,10 @@ import com.google.protobuf.{ GeneratedMessage, ByteString }
 
 object RestHelpers {
 
-  def getEvent(typ: Envelope.Event, value: GeneratedMessage): Envelope.ServiceNotification =
+  def getEvent(typ: Envelope.SubscriptionEventType, value: GeneratedMessage): Envelope.ServiceNotification =
     Envelope.ServiceNotification.newBuilder.setEvent(typ).setPayload(value.toByteString).build
 
-  def getEvent[A](typ: Envelope.Event, value: A, desc: TypeDescriptor[A]): Envelope.ServiceNotification =
+  def getEvent[A](typ: Envelope.SubscriptionEventType, value: A, desc: TypeDescriptor[A]): Envelope.ServiceNotification =
     Envelope.ServiceNotification.newBuilder.setEvent(typ).setPayload(ByteString.copyFrom(desc.serialize(value))).build
 
   def buildServiceRequest[A](verb: Envelope.Verb, request: A, desc: TypeDescriptor[A], uuid: String, env: BasicRequestHeaders): Envelope.ServiceRequest = {

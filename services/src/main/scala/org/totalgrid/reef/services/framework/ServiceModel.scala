@@ -115,7 +115,7 @@ trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
  */
 trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
 
-  protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: MessageType, key: String): Unit = {
+  protected def publishEvent(context: RequestContext, event: Envelope.SubscriptionEventType, resp: MessageType, key: String): Unit = {
     context.subHandler.publishEvent(event, resp, key)
   }
 }

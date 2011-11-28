@@ -97,7 +97,7 @@ sealed case class FailureResponse(status: Envelope.Status = Envelope.Status.INTE
 
 object ResponseTimeout extends FailureResponse(Envelope.Status.RESPONSE_TIMEOUT)
 
-case class Event[A](event: Envelope.Event, value: A) extends SubscriptionEvent[A] {
+case class Event[A](event: Envelope.SubscriptionEventType, value: A) extends SubscriptionEvent[A] {
 
   final override def getEventType() = event
   final override def getValue() = value

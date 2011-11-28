@@ -114,7 +114,7 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
 
       val range = 0 to 1500
 
-      range.foreach { i => c.publishEvent(Envelope.Event.MODIFIED, SomeInteger(i), "key") }
+      range.foreach { i => c.publishEvent(Envelope.SubscriptionEventType.MODIFIED, SomeInteger(i), "key") }
 
       events shouldBecome range.toList within 5000
       sub.cancel()

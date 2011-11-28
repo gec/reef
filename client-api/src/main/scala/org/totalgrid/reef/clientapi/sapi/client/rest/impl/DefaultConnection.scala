@@ -172,7 +172,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     new Cancelable { def cancel() = sub.close() }
   }
 
-  override def publishEvent[A](typ: Envelope.Event, value: A, key: String): Unit = {
+  override def publishEvent[A](typ: Envelope.SubscriptionEventType, value: A, key: String): Unit = {
     val info = getServiceInfo(ClassLookup.get(value))
     val desc = info.getSubscriptionDescriptor.asInstanceOf[TypeDescriptor[A]]
     val event = RestHelpers.getEvent(typ, value, desc)

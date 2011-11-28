@@ -31,7 +31,7 @@ class SomeIntegerIncrementService(handler: SubscriptionHandler) extends SyncServ
   final override def put(req: SomeInteger, headers: BasicRequestHeaders): Response[ServiceType] = {
     val rsp = req.increment
     headers.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
-    handler.publishEvent(Envelope.Event.MODIFIED, req.increment, "all")
+    handler.publishEvent(Envelope.SubscriptionEventType.MODIFIED, req.increment, "all")
     Response(Envelope.Status.OK, rsp)
   }
 }
