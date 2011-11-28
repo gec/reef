@@ -35,20 +35,20 @@ public interface EventConfigService
     /**
      * get all of the event handling configurations
      */
-    List<EventConfig> getAllEventConfigurations() throws ReefServiceException;
+    List<EventConfig> getEventConfigurations() throws ReefServiceException;
 
     /**
      * @param builtIn event configurations fall into two categories, either builtIn or custom.
      *                users can only delete custom configurations
      * @return get a subset of the event configurations
      */
-    List<EventConfig> getAllEventConfigurations( boolean builtIn ) throws ReefServiceException;
+    List<EventConfig> getEventConfigurations( boolean builtIn ) throws ReefServiceException;
 
     /**
      * get a single event handling configuration or throw an exception it doesn't exist
      * @param eventType get a single
      */
-    EventConfig getEventConfiguration( String eventType ) throws ReefServiceException;
+    EventConfig getEventConfigurationByType( String eventType ) throws ReefServiceException;
 
     /**
      * Create a new event routing configuration that routes only to log file

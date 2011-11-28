@@ -49,7 +49,7 @@ public interface EndpointManagementService
     /**
      * @return list of all endpoints in the system
      */
-    List<CommEndpointConfig> getAllEndpoints() throws ReefServiceException;
+    List<CommEndpointConfig> getEndpoints() throws ReefServiceException;
 
     /**
      * @param name name of endpoint
@@ -61,7 +61,7 @@ public interface EndpointManagementService
      * @param endpointUuid uuid of endpoint
      * @return the endpoint with that uuid or throws an exception
      */
-    CommEndpointConfig getEndpoint( ReefUUID endpointUuid ) throws ReefServiceException;
+    CommEndpointConfig getEndpointByUuid( ReefUUID endpointUuid ) throws ReefServiceException;
 
     /**
      * disables automatic protocol adapter assignment and begins stopping any running protocol adapters.
@@ -87,15 +87,15 @@ public interface EndpointManagementService
      *
      * @return list of all endpoint connection objects
      */
-    List<CommEndpointConnection> getAllEndpointConnections() throws ReefServiceException;
+    List<CommEndpointConnection> getEndpointConnections() throws ReefServiceException;
 
     /**
-     * Same as getAllEndpointConnections but subscribes the user to all changes
+     * Same as getEndpointConnections but subscribes the user to all changes
      *
      * @return list of all endpoint connection objects
-     * @see #getAllEndpointConnections()
+     * @see #getEndpointConnections()
      */
-    SubscriptionResult<List<CommEndpointConnection>, CommEndpointConnection> subscribeToAllEndpointConnections() throws ReefServiceException;
+    SubscriptionResult<List<CommEndpointConnection>, CommEndpointConnection> subscribeToEndpointConnections() throws ReefServiceException;
 
     /**
      * Get current endpoint connection state for an endpoint
@@ -103,7 +103,7 @@ public interface EndpointManagementService
      * @param endpointUuid uuid of endpoint
      * @return the connection object representing the current connection state
      */
-    CommEndpointConnection getEndpointConnection( ReefUUID endpointUuid ) throws ReefServiceException;
+    CommEndpointConnection getEndpointConnectionByUuid( ReefUUID endpointUuid ) throws ReefServiceException;
 
     /**
      * Protocol Adapters will update the endpoint connection state to indicate when the endpoint

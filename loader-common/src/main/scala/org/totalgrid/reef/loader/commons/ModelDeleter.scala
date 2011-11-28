@@ -82,13 +82,13 @@ object ModelDeleter {
       // since we never look at entities when we are deleting we dont need to look them up
       val fakeEntity = Entity.newBuilder.build
 
-      local.getAllEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
+      local.getEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
       val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
-      local.getAllEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
+      local.getEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
 
       local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
       local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
-      local.getAllPoints().await.foreach { collector.addPoint(_, fakeEntity) }
+      local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
       local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
 
       // TODO: add deleting of eventConfigurations

@@ -32,7 +32,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 trait EndpointManagementServiceImpl extends HasAnnotatedOperations with EndpointManagementService {
 
-  override def getAllEndpoints() = ops.operation("Couldn't get list of all endpoints") {
+  override def getEndpoints() = ops.operation("Couldn't get list of all endpoints") {
     _.get(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)
   }
 
@@ -40,7 +40,7 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
     _.get(CommEndpointConfig.newBuilder.setName(name).build).map(_.one)
   }
 
-  override def getEndpoint(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint with uuid: " + endpointUuid.uuid) {
+  override def getEndpointByUuid(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint with uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConfig.newBuilder.setUuid(endpointUuid).build).map(_.one)
   }
 
@@ -68,17 +68,17 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
     }
   }
 
-  override def getAllEndpointConnections() = ops.operation("Couldn't get list of all endpoint connections") {
+  override def getEndpointConnections() = ops.operation("Couldn't get list of all endpoint connections") {
     _.get(CommEndpointConnection.newBuilder.setUid(ReefID.newBuilder.setValue("*")).build).map(_.many)
   }
 
-  override def subscribeToAllEndpointConnections() = {
+  override def subscribeToEndpointConnections() = {
     ops.subscription(Descriptors.commEndpointConnection, "Couldn't subscribe to all endpoint connections") { (sub, client) =>
       client.get(CommEndpointConnection.newBuilder.setUid(ReefID.newBuilder.setValue("*")).build, sub).map(_.many)
     }
   }
 
-  override def getEndpointConnection(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
+  override def getEndpointConnectionByUuid(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map(_.one)
   }
 

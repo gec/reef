@@ -44,7 +44,7 @@ public interface PointService
      *
      * @return all points
      */
-    List<Point> getAllPoints() throws ReefServiceException;
+    List<Point> getPoints() throws ReefServiceException;
 
     /**
      * retrieve a point by name, throws exception if point is unknown
@@ -68,7 +68,7 @@ public interface PointService
      * @param uuid of the Point we are retrieving
      * @return the point object with matching name
      */
-    Point getPointByUid( ReefUUID uuid ) throws ReefServiceException;
+    Point getPointByUuid( ReefUUID uuid ) throws ReefServiceException;
 
     /**
      * retrieve all points that are have the relationship "owns" to the parent entity

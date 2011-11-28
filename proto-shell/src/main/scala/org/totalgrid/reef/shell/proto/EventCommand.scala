@@ -49,7 +49,7 @@ class EventViewCommand extends ReefCommandSupport {
   var eventId: String = null
 
   def doCommand() = {
-    EventView.printInspect(services.getEvent(ReefID.newBuilder.setValue(eventId).build))
+    EventView.printInspect(services.getEventById(ReefID.newBuilder.setValue(eventId).build))
   }
 }
 
@@ -105,7 +105,7 @@ class EventPublishCommand extends ReefCommandSupport {
 class EventConfigListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    EventView.printConfigTable(services.getAllEventConfigurations.toList)
+    EventView.printConfigTable(services.getEventConfigurations.toList)
   }
 }
 
@@ -116,7 +116,7 @@ class EventConfigViewCommand extends ReefCommandSupport {
   var eventType: String = null
 
   def doCommand() = {
-    EventView.printConfigTable(services.getEventConfiguration(eventType) :: Nil)
+    EventView.printConfigTable(services.getEventConfigurationByType(eventType) :: Nil)
   }
 }
 
@@ -127,7 +127,7 @@ class EventConfigDeleteCommand extends ReefCommandSupport {
   var eventType: String = null
 
   def doCommand() = {
-    EventView.printConfigTable(services.deleteEventConfig(services.getEventConfiguration(eventType)) :: Nil)
+    EventView.printConfigTable(services.deleteEventConfig(services.getEventConfigurationByType(eventType)) :: Nil)
   }
 }
 

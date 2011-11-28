@@ -56,7 +56,7 @@ class MeasurementStreamProcessingNode(
       logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
   }
 
-  val endpoint = client.getEndpoint(connection.getLogicalNode.getUuid).await
+  val endpoint = client.getEndpointByUuid(connection.getLogicalNode.getUuid).await
   val expectedPoints = endpoint.getOwnerships.getPointsList.toList
 
   val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints)

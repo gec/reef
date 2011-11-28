@@ -27,7 +27,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
-  override def getAllPoints() = ops.operation("Failed getting all points in system") {
+  override def getPoints() = ops.operation("Failed getting all points in system") {
     _.get(PointRequestBuilders.getAll).map(_.many)
   }
 
@@ -39,7 +39,7 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
     _.get(PointRequestBuilders.getByName(name)).map(_.oneOrNone)
   }
 
-  override def getPointByUid(uuid: ReefUUID) = ops.operation("Point not found with uuid: " + uuid) {
+  override def getPointByUuid(uuid: ReefUUID) = ops.operation("Point not found with uuid: " + uuid) {
     _.get(PointRequestBuilders.getByUid(uuid)).map(_.one)
   }
 

@@ -80,16 +80,16 @@ public interface EntityService
      * @return all entities in the system
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    List<Entity> getAllEntities() throws ReefServiceException;
+    List<Entity> getEntities() throws ReefServiceException;
 
     /**
      * Get an entity using its unique identification.
      *
-     * @param uid The entity id.
+     * @param uuid The entity id.
      * @return The entity object.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    Entity getEntityByUid( ReefUUID uid ) throws ReefServiceException;
+    Entity getEntityByUuid( ReefUUID uuid ) throws ReefServiceException;
 
     /**
      * Get an entity using its name.
@@ -116,7 +116,7 @@ public interface EntityService
      * @return The list of entities that have the specified type.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    List<Entity> getAllEntitiesWithType( String typeName ) throws ReefServiceException;
+    List<Entity> getEntitiesWithType( String typeName ) throws ReefServiceException;
 
     /**
      * Find all entities matching at least one of the specified types.
@@ -125,7 +125,7 @@ public interface EntityService
      * @return The list of entities that have the specified types.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    List<Entity> getAllEntitiesWithTypes( List<String> types ) throws ReefServiceException;
+    List<Entity> getEntitiesWithTypes( List<String> types ) throws ReefServiceException;
 
     /**
      * Return all child entities that have the correct type and a matching

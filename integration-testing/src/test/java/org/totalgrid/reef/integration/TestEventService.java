@@ -95,7 +95,7 @@ public class TestEventService extends ReefConnectionTestBase
             assertTrue( e.getEntity().hasUuid() );
             assertNotSame( 0, e.getEntity().getUuid().getValue().length() );
 
-            Events.Event e2 = eventService.getEvent( e.getUid() );
+            Events.Event e2 = eventService.getEventById( e.getUid() );
             assertEquals( e2, e );
 
             assertTrue( e.hasTime() );
@@ -210,8 +210,8 @@ public class TestEventService extends ReefConnectionTestBase
     public void cleanupEventConfigs() throws ReefServiceException
     {
         EventConfigService configService = helpers;
-        configService.deleteEventConfig( configService.getEventConfiguration( "Test.Event" ) );
-        configService.deleteEventConfig( configService.getEventConfiguration( "Test.Alarm" ) );
+        configService.deleteEventConfig( configService.getEventConfigurationByType( "Test.Event" ) );
+        configService.deleteEventConfig( configService.getEventConfigurationByType( "Test.Alarm" ) );
     }
 
 }

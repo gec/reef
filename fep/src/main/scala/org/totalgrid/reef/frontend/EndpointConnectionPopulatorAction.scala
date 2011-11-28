@@ -33,7 +33,7 @@ class EndpointConnectionPopulatorAction(client: FrontEndProviderServices) {
 
     val endpointUuid = conn.getEndpoint.getUuid
 
-    val ep = client.getEndpoint(endpointUuid).await
+    val ep = client.getEndpointByUuid(endpointUuid).await
     val endpoint = CommEndpointConfig.newBuilder(ep)
 
     ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getConfigFileByUuid(cf.getUuid).await))

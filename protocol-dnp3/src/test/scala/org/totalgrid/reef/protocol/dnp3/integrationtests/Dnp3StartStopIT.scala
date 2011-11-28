@@ -80,11 +80,11 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
   }
 
   test("Cycle endpoints") {
-    val endpoints = services.getAllEndpoints().await.toList
+    val endpoints = services.getEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
-    val result = services.subscribeToAllEndpointConnections().await
+    val result = services.subscribeToEndpointConnections().await
 
     val map = new EndpointConnectionStateMap(result)
 
@@ -144,7 +144,7 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
   class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
 
     private def makeEntry(e: CommEndpointConnection) = {
-      //println(e.getEndpoint.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
+      //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
       e.getEndpoint.getUuid -> e
     }
 

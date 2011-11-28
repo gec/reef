@@ -28,7 +28,7 @@ import scala.collection.JavaConversions._
 class EndpointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    EndpointView.printTable(services.getAllEndpointConnections.toList)
+    EndpointView.printTable(services.getEndpointConnections.toList)
   }
 }
 
@@ -57,7 +57,7 @@ class EndpointEnableCommand extends ReefCommandSupport with EndpointRetrieval {
 trait EndpointRetrieval { self: ReefCommandSupport =>
   def endpoints(endpointName: String) = {
     endpointName match {
-      case "*" => services.getAllEndpoints().toList
+      case "*" => services.getEndpoints().toList
       case _ => services.getEndpointByName(endpointName) :: Nil
     }
   }

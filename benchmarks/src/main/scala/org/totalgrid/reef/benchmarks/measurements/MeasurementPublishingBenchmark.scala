@@ -56,7 +56,7 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
 
     val names = endpoint.getOwnerships.getPointsList.toList
     val destination = if (direct) {
-      val connection = client.getEndpointConnection(endpoint.getUuid).await
+      val connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
       new AddressableDestination(connection.getRouting.getServiceRoutingKey)
     } else {
       new AnyNodeDestination()

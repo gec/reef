@@ -47,7 +47,7 @@ object AllBenchmarksEntryPoint {
 
       val stream = Some(Console.out)
 
-      val endpoints = services.getAllEndpoints().await.filter(_.getProtocol == "benchmark").map { _.getName }
+      val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark").map { _.getName }
 
       if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
 

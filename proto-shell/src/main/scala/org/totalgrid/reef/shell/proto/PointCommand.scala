@@ -28,7 +28,7 @@ import org.totalgrid.reef.shell.proto.presentation.PointView
 class PointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    PointView.printPointTable(services.getAllPoints.toList)
+    PointView.printPointTable(services.getPoints.toList)
   }
 }
 

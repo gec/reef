@@ -52,7 +52,7 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
     val putEndpoint = CommEndpointConfig.newBuilder.setName("TestEndpoint").setProtocol("null").setOwnerships(owner).build
     val endpoint = loaderServices.addEndpoint(putEndpoint).await
 
-    var connection = client.getEndpointConnection(endpoint.getUuid).await
+    var connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
 
     var count = 0
     while (connection.getRouting.getServiceRoutingKey == "" && count < 5) {
@@ -60,7 +60,7 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
       Thread.sleep(100)
       count += 1
       client.enableEndpointConnection(endpoint.getUuid).await
-      connection = client.getEndpointConnection(endpoint.getUuid).await
+      connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
     }
     connection.getRouting.getServiceRoutingKey should not equal ("")
 
