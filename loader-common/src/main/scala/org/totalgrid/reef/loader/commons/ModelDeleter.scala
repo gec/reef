@@ -86,8 +86,8 @@ object ModelDeleter {
       val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
       local.getAllEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
 
-      local.getAllCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
-      local.getAllConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
+      local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
+      local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
       local.getAllPoints().await.foreach { collector.addPoint(_, fakeEntity) }
       local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
 

@@ -36,9 +36,9 @@ class EndpointConnectionPopulatorAction(client: FrontEndProviderServices) {
     val ep = client.getEndpoint(endpointUuid).await
     val endpoint = CommEndpointConfig.newBuilder(ep)
 
-    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getConfigFileByUid(cf.getUuid).await))
+    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getConfigFileByUuid(cf.getUuid).await))
 
-    if (ep.hasChannel) endpoint.setChannel(client.getCommunicationChannel(ep.getChannel.getUuid).await)
+    if (ep.hasChannel) endpoint.setChannel(client.getCommunicationChannelByUuid(ep.getChannel.getUuid).await)
     cp.setEndpoint(endpoint).build
   }
 }

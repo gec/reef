@@ -49,7 +49,7 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   def finish() {
     // much more efficient to grab all config files and filter off ones we don't know
     // versus asking for a config file for every entity
-    client.getAllConfigFiles.await.toList.foreach { cf =>
+    client.getConfigFiles.await.toList.foreach { cf =>
       val users = cf.getEntitiesList.toList
       val knownUsers = users.filter(u => seenEntities.get(u.getUuid.getValue).isDefined)
       if (!knownUsers.isEmpty) {
@@ -125,9 +125,9 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
     } else if (types.find(_ == "CommunicationEndpoint").isDefined) {
       client.getEndpoint(entity.getUuid).await
     } else if (types.find(_ == "Channel").isDefined) {
-      client.getCommunicationChannel(entity.getUuid).await
+      client.getCommunicationChannelByUuid(entity.getUuid).await
     } else if (types.find(_ == "ConfigurationFile").isDefined) {
-      client.getConfigFileByUid(entity.getUuid).await
+      client.getConfigFileByUuid(entity.getUuid).await
     } // TODO: do we want a "child having" type?
     else if (types.find(t => t == "Equipment" || t == "EquipmentGroup" || t == "Site" || t == "Root" || t == "Region").isDefined) {
       entity

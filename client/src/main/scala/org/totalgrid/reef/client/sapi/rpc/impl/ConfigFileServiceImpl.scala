@@ -38,11 +38,11 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
  */
 trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileService {
 
-  override def getAllConfigFiles() = ops.operation("Couldn't get list of all config files") {
+  override def getConfigFiles() = ops.operation("Couldn't get list of all config files") {
     _.get(ConfigFileRequestBuilders.getAll).map(_.many)
   }
 
-  override def getConfigFileByUid(uid: ReefUUID) = ops.operation("Couldn't get config file with uid: " + uid.uuid) {
+  override def getConfigFileByUuid(uid: ReefUUID) = ops.operation("Couldn't get config file with uid: " + uid.uuid) {
     _.get(ConfigFileRequestBuilders.getByUid(uid)).map(_.one)
   }
 

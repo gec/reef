@@ -29,7 +29,7 @@ import org.totalgrid.reef.util.IOHelpers
 class ConfigFileListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = services.getAllConfigFiles
+    val results = services.getConfigFiles
     ConfigFileView.printTable(results.toList)
   }
 }
