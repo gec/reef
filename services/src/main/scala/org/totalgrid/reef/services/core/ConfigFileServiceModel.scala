@@ -124,7 +124,7 @@ class ConfigFileServiceModel
 trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
   def getRoutingKey(configFileProto: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
-    configFileProto.uuid.uuid :: configFileProto.name :: configFileProto.mimeType :: Nil
+    configFileProto.uuid.value :: configFileProto.name :: configFileProto.mimeType :: Nil
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
@@ -139,7 +139,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   }
 
   def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("ConfigurationFile")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }

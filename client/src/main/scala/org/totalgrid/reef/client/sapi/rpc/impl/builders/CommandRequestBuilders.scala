@@ -30,6 +30,6 @@ object CommandRequestBuilders {
     Command.newBuilder.setEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(uuid, "Command")).build
   }
   def getSourcedByEndpoint(entityUuid: ReefUUID) = {
-    Command.newBuilder.setLogicalNode(EntityRequestBuilders.getByUid(entityUuid)).build
+    Command.newBuilder.setEndpoint(EntityRequestBuilders.getByUid(entityUuid)).build
   }
 }

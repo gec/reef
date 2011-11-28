@@ -111,9 +111,9 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
    * this is the subscription routingKey
    */
   def getRoutingKey(req: PointProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uuid.value ::
       req.name ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       req.abnormal :: // this subscribes the users to all points that have their abnormal field changed
       Nil
   }
@@ -122,23 +122,23 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
    * this is the service event notifaction routingKey
    */
   def getRoutingKey(req: PointProto, entry: Point) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uuid.value ::
       req.name ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       Some(entry.abnormalUpdated) :: // we actually publish the key to intrested parties on change, not on current state
       Nil
   }
 
   def uniqueQuery(proto: PointProto, sql: Point) = {
 
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Point")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")))
   }
 
   def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
-    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal
@@ -152,7 +152,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     sql.entity.asOption.foreach(e => b.setEntity(EntityQueryManager.entityToProto(e)))
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
@@ -183,7 +183,7 @@ object PointTiedModel {
     val pb = PointProto.newBuilder
     pb.setName(point.entityName).setUuid(makeUuid(point))
     pb.setEntity(EntityQueryManager.entityToProto(point.entity.value))
-    point.logicalNode.value.foreach(p => pb.setLogicalNode(EntityQueryManager.entityToProto(p)))
+    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQueryManager.entityToProto(p)))
     pb
   }
 }

@@ -38,7 +38,7 @@ object CommandView {
     a.getName ::
       a.getDisplayName ::
       a.getType.toString ::
-      a.logicalNode.name.getOrElse("") ::
+      a.endpoint.name.getOrElse("") ::
       Nil
   }
 

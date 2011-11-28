@@ -75,15 +75,15 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
           getEntity(c.getUuid, depth + 1) // load commands so we can set the feedback relationship immediatley
           collector.addEdge(entity, c, "feedback")
         }
-        if (point.hasLogicalNode) {
-          val endpoint = getEntity(point.getLogicalNode.getUuid, depth + 1)
+        if (point.hasEndpoint) {
+          val endpoint = getEntity(point.getEndpoint.getUuid, depth + 1)
           collector.addEdge(endpoint, entity, "source")
         }
 
       case command: Command =>
         collector.addCommand(command, entity)
-        if (command.hasLogicalNode) {
-          val endpoint = getEntity(command.getLogicalNode.getUuid, depth + 1)
+        if (command.hasEndpoint) {
+          val endpoint = getEntity(command.getEndpoint.getUuid, depth + 1)
           collector.addEdge(endpoint, entity, "source")
         }
 

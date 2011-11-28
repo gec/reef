@@ -36,7 +36,7 @@ object PointView {
     a.getName ::
       a.getType.toString ::
       a.getUnit ::
-      a.logicalNode.name.getOrElse("") ::
+      a.endpoint.name.getOrElse("") ::
       Nil
   }
 

@@ -103,14 +103,14 @@ object ProtoHelper {
   }
 
   def makePointByNodeUid(nodeUid: String): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByUid(nodeUid)).build
+    Point.newBuilder.setEndpoint(makeNodeByUid(nodeUid)).build
   }
   def makePointByNodeUid(nodeUid: ReefUUID): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByUid(nodeUid)).build
+    Point.newBuilder.setEndpoint(makeNodeByUid(nodeUid)).build
   }
 
   def makePointByNodeName(name: String): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByName(name)).build
+    Point.newBuilder.setEndpoint(makeNodeByName(name)).build
   }
 
   def makeNIS(name: String) = {

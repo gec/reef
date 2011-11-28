@@ -113,11 +113,11 @@ trait EntityTreeQueries { self: EntityQueries =>
   def protoTreeQuery(proto: EntityProto): List[ResultNode] = {
 
     // For the moment not allowing a root set of everything
-    if (proto.uuid.uuid == None && proto.name == None && proto.getTypesCount == 0)
+    if (proto.uuid.value == None && proto.name == None && proto.getTypesCount == 0)
       throw new BadRequestException("Must specify root set")
 
     def expr(ent: Entity, typ: EntityToTypeJoins) = {
-      proto.uuid.uuid.map(ent.id === UUID.fromString(_)) ::
+      proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
         proto.name.map(ent.name === _) ::
         ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
           and (typ.entityId === ent.id))) ::
@@ -131,7 +131,7 @@ trait EntityTreeQueries { self: EntityQueries =>
           select (ent)).distinct
     } else {
       from(entities)(ent =>
-        where((proto.uuid.uuid.map(ent.id === UUID.fromString(_)) ::
+        where((proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
           proto.name.map(ent.name === _) :: Nil).flatten)
           select (ent))
     }
@@ -650,7 +650,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def findIdsOfChildren(rootNode: EntityProto, relation: String, childType: String): Query[UUID] = {
-    if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
+    if (rootNode.uuid.value == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
       // TODO: get entitiy queries to use and respect requestContext - backlog-70
@@ -687,7 +687,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   val table = ApplicationSchema.entities
   def uniqueQuery(proto: EntityProto, sql: Entity) = {
     List(
-      proto.uuid.uuid.asParam(sql.id === UUID.fromString(_)),
+      proto.uuid.value.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
       EntityQueryManager.noneIfEmpty(proto.types).asParam(sql.id in EntityQueryManager.entityIdsFromTypes(_)))
   }

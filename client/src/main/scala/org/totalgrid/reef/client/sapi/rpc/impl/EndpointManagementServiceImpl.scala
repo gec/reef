@@ -40,7 +40,7 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
     _.get(CommEndpointConfig.newBuilder.setName(name).build).map(_.one)
   }
 
-  override def getEndpoint(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint with uuid: " + endpointUuid.uuid) {
+  override def getEndpoint(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint with uuid: " + endpointUuid.getValue) {
     _.get(CommEndpointConfig.newBuilder.setUuid(endpointUuid).build).map(_.one)
   }
 
@@ -49,7 +49,7 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
   override def enableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, true)
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean): Promise[CommEndpointConnection] = {
-    ops.operation("Couldn't alter endpoint: " + endpointUuid.uuid + " to enabled: " + enabled) { client =>
+    ops.operation("Couldn't alter endpoint: " + endpointUuid.getValue + " to enabled: " + enabled) { client =>
       val f1 = client.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map(_.one)
 
       // this tricky little SOB creates another future based on the result of the last one, either by
@@ -78,7 +78,7 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
     }
   }
 
-  override def getEndpointConnection(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint connection uuid: " + endpointUuid.uuid) {
+  override def getEndpointConnection(endpointUuid: ReefUUID) = ops.operation("Couldn't get endpoint connection uuid: " + endpointUuid.getValue) {
     _.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map(_.one)
   }
 

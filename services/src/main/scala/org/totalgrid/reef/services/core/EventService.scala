@@ -162,7 +162,7 @@ trait EventConversion
       req.severity ::
       req.subsystem ::
       req.userId ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       Nil
   }
 

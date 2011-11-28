@@ -30,14 +30,19 @@
  * 
  * /*
  *  UUIDs are used for "long lasting" elements in the system that are we expect
- *  to not grow in value
+ *  to not grow unbounded will have an UUID. Evetything with a UUID will also have
+ *  an Entity and can be linked to other entites using edges. A "concrete" object
+ *  and its Entity repersentation will have the same UUID. UUIDs (universally unique
+ *  identitifers) are unique across all tables in the system.
  * -/
  * message ReefUUID {
- *   required string uuid = 1;
+ *   required string value = 1;
  * }
  * 
  * /*
- *   Items in the system that are not expected to
+ *   Items in the system that are by their nature transient but still important will be
+ *   assigned an ID by the system. These are often increasing numeric values but that
+ *   should not be relied on as it is subject to change.
  * -/
  * message ReefID {
  *   required string value = 1;
@@ -116,13 +121,13 @@
  * 
  *   Every Point is associated with an Entity of type "Point". The point's location in the system
  *   model is determined by this entity. Points are also associated with entities designated as
- *   "logical nodes", which represent the communications interface/source.
+ *   "endpoints", which represent the communications interface/source.
  * 
  * -/
  * message Point {
  *   optional ReefUUID uuid = 1;
  *   optional string  name = 2;
- *   optional Entity logicalNode = 5; // live state
+ *   optional Entity endpoint = 5; // live state
  *   optional Entity entity   = 7;    // The point entity
  *   optional bool    abnormal = 6;   // live state
  *   optional PointType type = 8;
@@ -138,14 +143,14 @@
  * 
  *   Every Command is associated with an Entity of type "Command". The command's location in the
  *   system model is determined by this entity. Commands are also associated with entities designated
- *   as "logical nodes", which represent the communications interface/source.
+ *   as "endpoints, which represent the communications interface/source.
  * 
  * -/
  * message Command {
  *   optional ReefUUID uuid = 1;
  *   optional string  name = 2;
  *   optional string display_name = 3;
- *   optional Entity logicalNode = 5;
+ *   optional Entity endpoint = 5;
  *   optional Entity entity   = 6;
  *   optional CommandType type = 7;
  * }

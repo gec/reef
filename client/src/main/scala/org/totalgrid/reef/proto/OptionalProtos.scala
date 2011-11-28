@@ -330,7 +330,7 @@ object OptionalProtos {
   }
   implicit def proto2OptModelReefUUID(a: org.totalgrid.reef.proto.Model.ReefUUID): OptModelReefUUID = new OptModelReefUUID(Some(a))
   class OptModelReefUUID(real: Option[org.totalgrid.reef.proto.Model.ReefUUID]) extends OptionalStruct(real) {
-    val uuid = optionally(_.getValue)
+    val value = optionally(_.getValue)
   }
   implicit def proto2OptModelReefID(a: org.totalgrid.reef.proto.Model.ReefID): OptModelReefID = new OptModelReefID(Some(a))
   class OptModelReefID(real: Option[org.totalgrid.reef.proto.Model.ReefID]) extends OptionalStruct(real) {
@@ -366,7 +366,7 @@ object OptionalProtos {
   class OptModelPoint(real: Option[org.totalgrid.reef.proto.Model.Point]) extends OptionalStruct(real) {
     val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
-    val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
+    val endpoint = new OptModelEntity(optionally(_.hasEndpoint, _.getEndpoint))
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val abnormal = optionally(_.hasAbnormal, _.getAbnormal)
     val _type = optionally(_.hasType, _.getType)
@@ -377,7 +377,7 @@ object OptionalProtos {
     val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val displayName = optionally(_.hasDisplayName, _.getDisplayName)
-    val logicalNode = new OptModelEntity(optionally(_.hasLogicalNode, _.getLogicalNode))
+    val endpoint = new OptModelEntity(optionally(_.hasEndpoint, _.getEndpoint))
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val _type = optionally(_.hasType, _.getType)
   }

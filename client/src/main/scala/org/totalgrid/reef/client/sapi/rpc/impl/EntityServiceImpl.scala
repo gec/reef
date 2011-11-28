@@ -35,7 +35,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     _.get(EntityRequestBuilders.getAll).map(_.many)
   }
 
-  override def getEntityByUid(uid: ReefUUID) = ops.operation("Couldn't get entity with uuid: " + uid.uuid) {
+  override def getEntityByUid(uid: ReefUUID) = ops.operation("Couldn't get entity with uuid: " + uid.getValue) {
     _.get(EntityRequestBuilders.getByUid(uid)).map(_.one)
   }
 
@@ -59,7 +59,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String) = {
-    ops.operation("Couldn't get children of entity: " + parent.uuid + " relation: " + relationship + " type: " + typ) { session =>
+    ops.operation("Couldn't get children of entity: " + parent.getValue + " relation: " + relationship + " type: " + typ) { session =>
 
       val future = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ)).map(_.one)
 
@@ -129,7 +129,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     _.get(entityTree).map(_.many)
   }
 
-  override def getEntityAttributes(uid: ReefUUID) = ops.operation("Couldn't get attributes for entity: " + uid.uuid) {
+  override def getEntityAttributes(uid: ReefUUID) = ops.operation("Couldn't get attributes for entity: " + uid.getValue) {
     _.get(EntityAttributesBuilders.getForEntityUid(uid)).map(_.one)
   }
 
@@ -162,13 +162,13 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def clearEntityAttributes(uid: ReefUUID) = {
-    ops.operation("Couldn't clear all attributes for entity: " + uid.uuid) {
+    ops.operation("Couldn't clear all attributes for entity: " + uid.getValue) {
       _.delete(EntityAttributesBuilders.getForEntityUid(uid)).map(_.oneOrNone)
     }
   }
 
   protected def addSingleAttribute(uid: ReefUUID, attr: Attribute) = {
-    ops.operation("Couldn't add attribute for entity: " + uid.uuid + " attr: " + attr) { session =>
+    ops.operation("Couldn't add attribute for entity: " + uid.getValue + " attr: " + attr) { session =>
       // TODO: fix getEntityAttributes futureness
       val prev = getEntityAttributes(uid).await
       val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)

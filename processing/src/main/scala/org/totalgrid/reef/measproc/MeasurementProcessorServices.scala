@@ -58,14 +58,14 @@ class MeasurementProcessorServicesImpl(client: Client)
 
   override def subscribeToTriggerSetsForConnection(conn: MeasurementProcessingConnection) = {
     ops.subscription(Descriptors.triggerSet, "Couldn't subscribe for triggers associated with endpoint: " + conn.getLogicalNode.getName) { (sub, client) =>
-      val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
+      val point = Point.newBuilder.setEndpoint(conn.getLogicalNode)
       client.get(TriggerSet.newBuilder.setPoint(point).build, sub).map { _.many }
     }
   }
 
   override def subscribeToOverridesForConnection(conn: MeasurementProcessingConnection) = {
     ops.subscription(Descriptors.measOverride, "Couldn't subscribe for measurement overrides associated with endpoint: " + conn.getLogicalNode.getName) { (sub, client) =>
-      val point = Point.newBuilder.setLogicalNode(conn.getLogicalNode)
+      val point = Point.newBuilder.setEndpoint(conn.getLogicalNode)
       client.get(MeasOverride.newBuilder.setPoint(point).build, sub).map { _.many }
     }
   }

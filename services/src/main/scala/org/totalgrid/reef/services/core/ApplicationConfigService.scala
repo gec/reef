@@ -92,7 +92,7 @@ trait ApplicationConfigConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
-    proto.uuid.uuid :: proto.instanceName :: Nil
+    proto.uuid.value :: proto.instanceName :: Nil
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
@@ -102,7 +102,7 @@ trait ApplicationConfigConversion
   }
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.instanceName, proto.instanceName.map(x => List("Application")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
     List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 

@@ -95,19 +95,19 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid :: req.name :: req.entity.uuid.uuid :: Nil
+    req.uuid.value :: req.name :: req.entity.uuid.value :: Nil
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
 
-    val esearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Command")))
+    val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
       esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = List(
-    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def createModelEntry(proto: CommandProto): Command = {
     Command.newInstance(proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
@@ -130,7 +130,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     }
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }

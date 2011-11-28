@@ -76,7 +76,7 @@ trait FrontEndProcessorConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(req: FrontEndProcessor) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid :: Nil
+    req.uuid.value :: Nil
   }
 
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
@@ -86,7 +86,7 @@ trait FrontEndProcessorConversion
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    proto.uuid.uuid.asParam(sql.id === _.toLong) ::
+    proto.uuid.value.asParam(sql.id === _.toLong) ::
       proto.appConfig.instanceName.asParam(sql.instanceName === _) ::
       Nil
   }

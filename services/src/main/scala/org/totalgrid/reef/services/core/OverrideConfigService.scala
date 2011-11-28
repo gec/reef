@@ -80,7 +80,7 @@ trait OverrideConfigConversion
   val table = ApplicationSchema.overrides
 
   def getRoutingKey(req: MeasOverride) = ProtoRoutingKeys.generateRoutingKey(
-    req.point.logicalNode.uuid.uuid :: req.point.name :: Nil)
+    req.point.endpoint.uuid.value :: req.point.name :: Nil)
 
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
     List(

@@ -37,6 +37,6 @@ object PointRequestBuilders {
     getOwnedByEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(name, "Point"))
   }
   def getSourcedByEndpoint(entityUuid: ReefUUID) = {
-    Point.newBuilder.setLogicalNode(EntityRequestBuilders.getByUid(entityUuid)).build
+    Point.newBuilder.setEndpoint(EntityRequestBuilders.getByUid(entityUuid)).build
   }
 }

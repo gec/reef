@@ -74,7 +74,7 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
     client.disableEndpointConnection(endpoint.getUuid).await
     loaderServices.delete(endpoint).await
 
-    (0 to numberOfPoints).foreach { i => Timing.time("delete: " + (i * multiplier)) { loaderServices.delete(points.get(i).toBuilder.clearLogicalNode().build).await } }
+    (0 to numberOfPoints).foreach { i => Timing.time("delete: " + (i * multiplier)) { loaderServices.delete(points.get(i).toBuilder.clearEndpoint.build).await } }
   }
 
   private def publishNMeasurements(numMeas: Int, name: String) {

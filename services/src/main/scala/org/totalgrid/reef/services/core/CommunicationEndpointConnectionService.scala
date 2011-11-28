@@ -129,7 +129,7 @@ trait CommunicationEndpointConnectionConversion
   val table = ApplicationSchema.frontEndAssignments
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.frontEnd.uuid.uuid :: req.uid.value :: Nil
+    req.frontEnd.uuid.value :: req.uid.value :: Nil
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {

@@ -29,7 +29,7 @@ object UUIDConversions {
   }
 
   implicit def convertOptReefUUIDToUUID(optUUID: OptModelReefUUID) = {
-    optUUID.uuid.map { ru => UUID.fromString(ru) }
+    optUUID.value.map { ru => UUID.fromString(ru) }
   }
 
   implicit def convertUUIDtoReefUUID(uuid: UUID) = {

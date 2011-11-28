@@ -131,12 +131,12 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
   val table = ApplicationSchema.endpoints
 
   def getRoutingKey(proto: CommEndCfgProto) = ProtoRoutingKeys.generateRoutingKey {
-    proto.uuid.uuid :: proto.name :: Nil
+    proto.uuid.value :: proto.name :: Nil
   }
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.uuid.uuid.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uid)).build, { _.id })),
+      proto.uuid.value.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uid)).build, { _.id })),
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 
