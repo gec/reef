@@ -326,7 +326,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
       .setSubsystem("FEP")
       .setUserId(userId)
       .setArgs(alist.toProto)
-    entityId.foreach(x => b.setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(x)).build))
+    entityId.foreach(x => b.setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue(x)).build))
     b.build
   }
 
@@ -382,7 +382,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
   /*def makeAL_UidAfter(states: List[Alarm.State], uid: String, userId: String) = {
 
     val es = EventSelect.newBuilder
-    es.setUuidAfter(uid)
+    es.setValueAfter(uid)
     if (userId != "") es.addUserId(userId)
 
     val as = AlarmSelect.newBuilder

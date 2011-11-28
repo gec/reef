@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 
 object ServiceResponseTestingHelpers {
 
-  private def makeUuid(str: String) = ReefUUID.newBuilder.setUuid(str).build
+  private def makeUuid(str: String) = ReefUUID.newBuilder.setValue(str).build
   implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
 
   private def makeId(str: String) = ReefID.newBuilder.setValue(str).build

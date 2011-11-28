@@ -80,13 +80,13 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
     fix.permissionSetService.put(makePermissionSet("set3")).expectOne()
 
     fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectMany(3)
-    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectMany(3)
+    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectMany(3)
 
     fix.permissionSetService.delete(makePermissionSet("all")).expectOne()
     fix.permissionSetService.delete(makePermissionSet("read_only")).expectOne()
     fix.permissionSetService.delete(makePermissionSet("set3")).expectOne()
 
     fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectNone()
-    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectNone()
+    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectNone()
   }
 }

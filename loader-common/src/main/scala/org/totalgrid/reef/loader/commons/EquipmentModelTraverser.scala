@@ -51,7 +51,7 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
     // versus asking for a config file for every entity
     client.getAllConfigFiles.await.toList.foreach { cf =>
       val users = cf.getEntitiesList.toList
-      val knownUsers = users.filter(u => seenEntities.get(u.getUuid.getUuid).isDefined)
+      val knownUsers = users.filter(u => seenEntities.get(u.getUuid.getValue).isDefined)
       if (!knownUsers.isEmpty) {
         val cfEntity = client.getEntityByUid(cf.getUuid).await
         notifier.foreach { _.display(cfEntity, 0) }
@@ -62,7 +62,7 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   }
 
   private def handleEntity(entity: Entity, depth: Int): Entity = {
-    seenEntities.put(entity.getUuid.getUuid, entity)
+    seenEntities.put(entity.getUuid.getValue, entity)
 
     notifier.foreach { _.display(entity, depth) }
 
@@ -140,13 +140,13 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   // retrieve the full object because we can't reply on the system to give us fully populated
   // entities for linked objects (configfiles inside endpoints just have name and uuid).
   private def getEntity(logicalNode: ReefUUID, depth: Int) = {
-    val cached = seenEntities.get(logicalNode.getUuid)
+    val cached = seenEntities.get(logicalNode.getValue)
     if (!cached.isDefined) traverseEquipment(client.getEntityByUid(logicalNode).await, depth)
     else cached.get
   }
 
   private def traverseEquipment(entity: Entity, depth: Int): Entity = {
-    val cached = seenEntities.get(entity.getUuid.getUuid)
+    val cached = seenEntities.get(entity.getUuid.getValue)
     if (!cached.isDefined) handleEntity(entity, depth)
     else cached.get
   }

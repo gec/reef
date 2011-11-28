@@ -26,7 +26,7 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 object EntityRequestBuilders {
 
-  def getAll = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
+  def getAll = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
 
   def getByUid(uuid: ReefUUID) = Entity.newBuilder.setUuid(uuid).build
   def getByUid(entity: Entity): Entity = getByUid(entity.getUuid)

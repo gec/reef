@@ -91,7 +91,7 @@ object ProtoHelper {
   }
 
   def makeNodeByUid(nodeUid: String): Entity = {
-    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(nodeUid)).build
+    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(nodeUid)).build
   }
 
   def makeNodeByUid(nodeUid: ReefUUID): Entity = {

@@ -33,11 +33,11 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   }
 
   override def getAgents() = ops.operation("Couldn't get list of all agents") {
-    _.get(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).map(_.many)
+    _.get(Agent.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)
   }
 
   override def getPermissionSets() = ops.operation("Couldn't get list of all permission sets") {
-    _.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).map(_.many)
+    _.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)
   }
 
   override def getPermissionSet(name: String) = ops.operation("Couldn't get permission set with name: " + name) {

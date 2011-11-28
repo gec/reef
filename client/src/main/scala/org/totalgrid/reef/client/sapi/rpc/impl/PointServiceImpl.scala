@@ -50,13 +50,13 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
   }
 
   override def getPointsBelongingToEndpoint(endpointUuid: ReefUUID) = {
-    ops.operation("Couldn't find points belong to endpoint: " + endpointUuid.getUuid) {
+    ops.operation("Couldn't find points belong to endpoint: " + endpointUuid.getValue) {
       _.get(PointRequestBuilders.getSourcedByEndpoint(endpointUuid)).map(_.many)
     }
   }
 
   override def getPointsThatFeedbackForCommand(commandUuid: ReefUUID) = {
-    ops.operation("Couldn't find points that are feedback to endpoint: " + commandUuid.getUuid) { client =>
+    ops.operation("Couldn't find points that are feedback to endpoint: " + commandUuid.getValue) { client =>
 
       val entity = EntityRequestBuilders.getCommandsFeedbackPoints(commandUuid)
       val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }

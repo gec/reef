@@ -106,10 +106,10 @@ class EntityRequestTest
 
     val uuid = UUID.randomUUID.toString
 
-    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject").addTypes("TestType").build
+    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject").addTypes("TestType").build
 
     val created = session.put(upload).await.expectOne
 
-    created.getUuid.getUuid.toString should equal(uuid)
+    created.getUuid.getValue.toString should equal(uuid)
   }
 }

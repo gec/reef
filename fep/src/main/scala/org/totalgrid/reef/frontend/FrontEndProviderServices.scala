@@ -65,7 +65,7 @@ class FrontEndProviderServicesImpl(client: Client)
   }
 
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor] = {
-    ops.operation("Failed registering application: " + applicationUuid.getUuid + " as frontend") {
+    ops.operation("Failed registering application: " + applicationUuid.getValue + " as frontend") {
       _.put(FrontEndProcessor.newBuilder.setAppConfig(ApplicationConfig.newBuilder.setUuid(applicationUuid)).addAllProtocols(protocols).build).map(_.one)
     }
   }

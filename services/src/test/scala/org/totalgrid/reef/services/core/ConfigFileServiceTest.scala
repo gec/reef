@@ -77,7 +77,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     s.put(configFile3).expectOne(Status.CREATED)
     s.put(configFile4).expectOne(Status.CREATED)
 
-    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectMany(4)
+    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectMany(4)
     s.get(ConfigFile.newBuilder.setMimeType("text").build).expectMany(2)
     s.get(ConfigFile.newBuilder.setMimeType("html").build).expectMany(2)
     s.get(ConfigFile.newBuilder.setMimeType("xml").build).expectNone()
@@ -111,7 +111,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val cf = s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
 
-    cf.getName should equal(cf.getUuid.getUuid)
+    cf.getName should equal(cf.getUuid.getValue)
 
     s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
 

@@ -49,7 +49,7 @@ class FrontEndProcessorServiceModel(
     with FrontEndProcessorConversion {
 
   override def createFromProto(context: RequestContext, req: FrontEndProcessor): ApplicationInstance = {
-    val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getUuid)).single
+    val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getValue)).single
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, appInstance.id)))
     logger.info("Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList)
     coordinator.onFepAppChanged(context, appInstance, true)

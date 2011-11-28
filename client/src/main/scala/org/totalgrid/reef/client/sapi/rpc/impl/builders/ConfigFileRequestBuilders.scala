@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile }
  * minimize duplication of Builder code.
  */
 object ConfigFileRequestBuilders {
-  def getAll() = ConfigFile.newBuilder().setUuid(ReefUUID.newBuilder.setUuid("*")).build
+  def getAll() = ConfigFile.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build
   def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUuid(uid).build
   def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
 

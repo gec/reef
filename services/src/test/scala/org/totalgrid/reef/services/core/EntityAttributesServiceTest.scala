@@ -40,7 +40,7 @@ import java.util.UUID
 class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def seedEntity(name: String, typ: String) = {
-    ReefUUID.newBuilder.setUuid(EntityQueryManager.addEntity(name, typ).id.toString).build
+    ReefUUID.newBuilder.setValue(EntityQueryManager.addEntity(name, typ).id.toString).build
   }
 
   protected val service = SyncService(new EntityAttributesService)
@@ -69,7 +69,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }*/
 
   test("Bad put - entity doesn't exist") {
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(new UUID(0, 0).toString)).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(new UUID(0, 0).toString)).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build))
@@ -90,7 +90,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     EntityQueryManager.addEntity("ent02", "entType2")
 
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
-    ReefUUID.newBuilder.setUuid(id.toString).build
+    ReefUUID.newBuilder.setValue(id.toString).build
   }
 
   def attrReq(entityUid: ReefUUID, attributes: List[Attribute]) = {
@@ -151,7 +151,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Get all") {
     simpleGetScenario
 
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = service.get(entAttr).expectMany(2)
@@ -197,7 +197,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr03", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr04", Some("again"), None, None, None, None))
 
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = service.get(entAttr).expectMany(2)
@@ -268,11 +268,11 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val entId1 = EntityQueryManager.addEntity("ent01", "entType1").id
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
-    ReefUUID.newBuilder.setUuid(entId1.toString).build
+    ReefUUID.newBuilder.setValue(entId1.toString).build
   }
 
   def noneForEntity(entId: ReefUUID) = {
-    ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getUuid)).toList should equal(Nil)
+    ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getValue)).toList should equal(Nil)
   }
 
 }

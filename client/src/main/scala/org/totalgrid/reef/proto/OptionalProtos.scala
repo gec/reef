@@ -330,7 +330,7 @@ object OptionalProtos {
   }
   implicit def proto2OptModelReefUUID(a: org.totalgrid.reef.proto.Model.ReefUUID): OptModelReefUUID = new OptModelReefUUID(Some(a))
   class OptModelReefUUID(real: Option[org.totalgrid.reef.proto.Model.ReefUUID]) extends OptionalStruct(real) {
-    val uuid = optionally(_.getUuid)
+    val uuid = optionally(_.getValue)
   }
   implicit def proto2OptModelReefID(a: org.totalgrid.reef.proto.Model.ReefID): OptModelReefID = new OptModelReefID(Some(a))
   class OptModelReefID(real: Option[org.totalgrid.reef.proto.Model.ReefID]) extends OptionalStruct(real) {

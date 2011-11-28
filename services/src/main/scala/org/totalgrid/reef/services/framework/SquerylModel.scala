@@ -175,16 +175,16 @@ object SquerylModel {
     ReefID.newBuilder.setValue(entry.id.toString)
   }
   def makeUuid(entry: EntityBasedModel) = {
-    ReefUUID.newBuilder.setUuid(entry.entityId.toString)
+    ReefUUID.newBuilder.setValue(entry.entityId.toString)
   }
   def makeUuid(entry: ModelWithUUID) = {
-    ReefUUID.newBuilder.setUuid(entry.id.toString)
+    ReefUUID.newBuilder.setValue(entry.id.toString)
   }
   def makeUuid(id: Long) = {
-    ReefUUID.newBuilder.setUuid(id.toString)
+    ReefUUID.newBuilder.setValue(id.toString)
   }
   def makeUuid(id: java.util.UUID) = {
-    ReefUUID.newBuilder.setUuid(id.toString)
+    ReefUUID.newBuilder.setValue(id.toString)
   }
 
   import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }

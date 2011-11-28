@@ -33,7 +33,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 trait EndpointManagementServiceImpl extends HasAnnotatedOperations with EndpointManagementService {
 
   override def getAllEndpoints() = ops.operation("Couldn't get list of all endpoints") {
-    _.get(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).map(_.many)
+    _.get(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)
   }
 
   override def getEndpointByName(name: String) = ops.operation("Couldn't get endpoint with name: " + name) {

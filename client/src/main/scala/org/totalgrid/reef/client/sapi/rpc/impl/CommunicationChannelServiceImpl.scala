@@ -40,13 +40,13 @@ trait CommunicationChannelServiceImpl extends HasAnnotatedOperations with Commun
   }
 
   override def alterCommunicationChannelState(channelUuid: ReefUUID, state: CommChannel.State) = {
-    ops.operation("Couldn't alter channel: " + channelUuid.getUuid + " to : " + state) {
+    ops.operation("Couldn't alter channel: " + channelUuid.getValue + " to : " + state) {
       _.post(CommChannel.newBuilder.setUuid(channelUuid).setState(state).build).map(_.one)
     }
   }
 
   override def getEndpointsUsingChannel(channel: ReefUUID) = {
-    ops.operation("Can't find endpoints for channel uuid: " + channel.getUuid) {
+    ops.operation("Can't find endpoints for channel uuid: " + channel.getValue) {
       _.get(CommEndpointConfig.newBuilder.setUuid(channel).build).map(_.many)
     }
   }

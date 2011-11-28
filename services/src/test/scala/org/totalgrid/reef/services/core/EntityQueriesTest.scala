@@ -280,7 +280,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
     }
 
     def checkEnt(proto: EntityProto, uid: UUID, name: String, typ: String, relCount: Int) = {
-      proto.getUuid.getUuid should equal(uid.toString)
+      proto.getUuid.getValue should equal(uid.toString)
       proto.getName should equal(name)
       proto.getTypesCount should equal(1)
       proto.getTypes(0) should equal(typ)
@@ -470,7 +470,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Get all") {
-    val req = EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*"))
+    val req = EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*"))
 
     val ents = ApplicationSchema.entities.where(t => true === true)
     val spec = ents.map(_.name).toList
@@ -482,7 +482,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   test("Double types") {
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA").head
     val req = EntityProto.newBuilder
-      .setUuid(ReefUUID.newBuilder.setUuid(entRoot.id.toString))
+      .setUuid(ReefUUID.newBuilder.setValue(entRoot.id.toString))
       .setName("RegA-SubA")
       .addTypes("Substation")
       .addTypes("EquipmentGroup")

@@ -34,19 +34,19 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val uuid = UUID.randomUUID.toString
 
-    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject").addTypes("TestType").build
+    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject").addTypes("TestType").build
 
     val created = service.put(upload).expectOne
 
-    created.getUuid.getUuid.toString should equal(uuid)
+    created.getUuid.getValue.toString should equal(uuid)
   }
 
   test("Put two entities with same uuids") {
 
     val uuid = UUID.randomUUID.toString
 
-    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject").addTypes("TestType").build
-    val upload2 = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject2").addTypes("TestType").build
+    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject").addTypes("TestType").build
+    val upload2 = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject2").addTypes("TestType").build
 
     service.put(upload).expectOne
 

@@ -116,19 +116,19 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def getCommandsOwnedByEntity(parentUuid: ReefUUID) = {
-    ops.operation("Couldn't find commands owned by parent entity: " + parentUuid.getUuid) {
+    ops.operation("Couldn't find commands owned by parent entity: " + parentUuid.getValue) {
       _.get(CommandRequestBuilders.getOwnedByEntityWithUuid(parentUuid)).map(_.many)
     }
   }
 
   override def getCommandsBelongingToEndpoint(endpointUuid: ReefUUID) = {
-    ops.operation("Couldn't find commands sourced by endpoint: " + endpointUuid.getUuid) {
+    ops.operation("Couldn't find commands sourced by endpoint: " + endpointUuid.getValue) {
       _.get(CommandRequestBuilders.getSourcedByEndpoint(endpointUuid)).map(_.many)
     }
   }
 
   override def getCommandsThatFeedbackToPoint(pointUuid: ReefUUID) = {
-    ops.operation("Couldn't find commands that feedback to point: " + pointUuid.getUuid) { client =>
+    ops.operation("Couldn't find commands that feedback to point: " + pointUuid.getValue) { client =>
 
       val entity = EntityRequestBuilders.getPointsFeedbackCommands(pointUuid)
       val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
@@ -140,7 +140,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
-    ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getUuid) { session =>
+    ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
       import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
       import org.totalgrid.reef.clientapi.AddressableDestination
       import net.agileautomata.executor4s._

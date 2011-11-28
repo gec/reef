@@ -116,10 +116,10 @@ object EntityAttributesService {
   }
 
   def queryEntities(proto: EntityProto): List[AttrProto] = {
-    val join = if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    val join = if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allJoin
     } else if (proto.hasUuid) {
-      uidJoin(proto.getUuid.getUuid)
+      uidJoin(proto.getUuid.getValue)
     } else if (proto.hasName) {
       nameJoin(proto.getName)
     } else {

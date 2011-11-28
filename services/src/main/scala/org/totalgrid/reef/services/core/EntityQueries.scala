@@ -426,7 +426,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
   def findEntity(proto: EntityProto): Option[Entity] = {
     if (proto.hasUuid) {
-      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getUuid)).toList)
+      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getValue)).toList)
     } else if (proto.hasName) {
       returnSingleOption(entities.where(t => t.name === proto.getName).toList)
     } else {
@@ -440,7 +440,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
   // Main entry point for requests in the form of protos
   def fullQuery(proto: EntityProto): List[EntityProto] = {
-    if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allQuery.map(entityToProto(_).build).toList
     } else {
       protoTreeQuery(proto).map(_.toProto)
@@ -448,7 +448,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def fullQueryAsModels(proto: EntityProto): List[Entity] = {
-    if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allQuery
     } else {
       protoTreeQuery(proto).map { _.flatEntites }.flatten

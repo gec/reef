@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.OptionalProtos.OptModelReefUUID
 object UUIDConversions {
 
   implicit def convertReefUUIDToUUID(optUUID: Option[ReefUUID]) = {
-    optUUID.map { ru => UUID.fromString(ru.getUuid) }
+    optUUID.map { ru => UUID.fromString(ru.getValue) }
   }
 
   implicit def convertOptReefUUIDToUUID(optUUID: OptModelReefUUID) = {
@@ -33,6 +33,6 @@ object UUIDConversions {
   }
 
   implicit def convertUUIDtoReefUUID(uuid: UUID) = {
-    ReefUUID.newBuilder.setUuid(uuid.toString).build
+    ReefUUID.newBuilder.setValue(uuid.toString).build
   }
 }

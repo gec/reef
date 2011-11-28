@@ -72,7 +72,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityImmediateChildren(parent: ReefUUID, relationship: String) = {
-    ops.operation("Couldn't get immediate children of entity: " + parent.getUuid + " relation: " + relationship) { session =>
+    ops.operation("Couldn't get immediate children of entity: " + parent.getValue + " relation: " + relationship) { session =>
       val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship)
       flatEntities(session.get(request).map(_.one))
 
@@ -80,21 +80,21 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityImmediateChildren(parent: ReefUUID, relationship: String, constrainingTypes: List[String]) = {
-    ops.operation("Couldn't get immediate children of entity: " + parent.getUuid + " relation: " + relationship) { session =>
+    ops.operation("Couldn't get immediate children of entity: " + parent.getValue + " relation: " + relationship) { session =>
       val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship, constrainingTypes)
       flatEntities(session.get(request).map(_.one))
     }
   }
 
   override def getEntityChildren(parent: ReefUUID, relationship: String, depth: Int, constrainingTypes: List[String]) = {
-    ops.operation("Couldn't get tree for entity: " + parent.getUuid + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
+    ops.operation("Couldn't get tree for entity: " + parent.getValue + " relation: " + relationship + " depth: " + depth + " types: " + constrainingTypes.toList) { session =>
       val request = EntityRequestBuilders.getChildrenAtDepth(parent, relationship, depth, constrainingTypes)
       session.get(request).map(_.one)
     }
   }
 
   override def getEntityChildren(parent: ReefUUID, relationship: String, depth: Int) = {
-    ops.operation("Couldn't get tree for entity: " + parent.getUuid + " relation: " + relationship + " depth: " + depth) { session =>
+    ops.operation("Couldn't get tree for entity: " + parent.getValue + " relation: " + relationship + " depth: " + depth) { session =>
       val request = EntityRequestBuilders.getChildrenAtDepth(parent, relationship, depth, Nil)
       session.get(request).map(_.one)
     }
