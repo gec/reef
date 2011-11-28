@@ -25,15 +25,20 @@ import org.totalgrid.reef.clientapi.{ ConnectionFactory, Connection }
 
 import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.clientapi.javaimpl.ConnectionWrapper
+import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.clientapi.rpc.ServicesList
 
-class ReefConnectionFactory(settings: AmqpSettings) extends ConnectionFactory {
+class ReefConnectionFactory(settings: AmqpSettings, servicesList: ServicesList) extends ConnectionFactory {
   private val factory = new QpidBrokerConnectionFactory(settings)
   private val exe = Executors.newScheduledThreadPool(5)
 
   @throws(classOf[ReefServiceException])
-  def connect(): Connection = new ConnectionWrapper(ReefServices.apply(factory.connect, exe))
+  def connect(): Connection = {
+    val connection = new DefaultConnection(factory.connect, exe, 5000)
+    connection.addServicesList(servicesList)
+    new ConnectionWrapper(connection)
+  }
 
   def terminate() = exe.terminate()
 }

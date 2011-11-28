@@ -25,8 +25,8 @@ import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.clientapi.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
 import org.totalgrid.reef.clientapi.{ Client => JClient }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
 
 trait LoaderServices extends AllScadaService {
   def addEquipment(entity: Entity): Promise[Entity]
@@ -44,7 +44,7 @@ trait LoaderServices extends AllScadaService {
 }
 
 object LoaderClient {
-  private val serviceInfo = new RpcProviderInfo({ c: Client => new LoaderServicesImpl(c) },
+  private val serviceInfo = RpcProvider(new LoaderServicesImpl(_),
     List(
       classOf[LoaderServices]))
 

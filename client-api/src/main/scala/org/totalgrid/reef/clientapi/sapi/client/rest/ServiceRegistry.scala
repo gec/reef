@@ -19,8 +19,11 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest
 
 import org.totalgrid.reef.clientapi.types.ServiceTypeInformation
+import org.totalgrid.reef.clientapi.rpc.{ RpcProviderInfo, ServicesList }
 
 trait ServiceRegistry {
+
+  def addServicesList(servicesList: ServicesList)
 
   def addRpcProvider(info: RpcProviderInfo)
 

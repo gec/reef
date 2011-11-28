@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc._
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
 
 /**
@@ -46,7 +46,7 @@ trait AllScadaServiceImpl
 class AllScadaServiceWrapper(client: Client) extends ApiBase(client) with AllScadaServiceImpl
 
 object AllScadaServiceImpl {
-  val serviceInfo = new RpcProviderInfo({ c: Client => new AllScadaServiceWrapper(c) },
+  val serviceInfo = RpcProvider(new AllScadaServiceWrapper(_),
     List(
       classOf[AllScadaService],
       classOf[AuthTokenService],
@@ -64,5 +64,4 @@ object AllScadaServiceImpl {
       classOf[EndpointManagementService],
       classOf[ApplicationService],
       classOf[CommunicationChannelService]))
-
 }

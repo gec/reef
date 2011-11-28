@@ -30,12 +30,13 @@ import net.agileautomata.executor4s.testing.MockFuture
 import org.totalgrid.reef.clientapi.sapi.client.rest.fixture._
 import org.totalgrid.reef.clientapi.types.TypeDescriptor
 import org.totalgrid.reef.clientapi.types.ServiceTypeInformation
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, ServiceRegistry, Client, RestOperations }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ ServiceRegistry, Client, RestOperations }
 import org.totalgrid.reef.clientapi.proto.Envelope.{ BatchServiceRequest, Verb }
 
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s.{ Failure, TimeInterval, Executor }
 import org.totalgrid.reef.clientapi.sapi.client._
+import org.totalgrid.reef.clientapi.rpc.{ ServicesList, RpcProviderInfo }
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
@@ -60,8 +61,9 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
     override def future[A] = new MockFuture(None)
 
     def subscribe[A](descriptor: TypeDescriptor[A]) = throw new Exception
-    def addRpcProvider(info: RpcProviderInfo) = throw new Exception
     def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = throw new Exception
+    def addServicesList(servicesList: ServicesList) = throw new Exception
+    def addRpcProvider(info: RpcProviderInfo) = throw new Exception
     def attempt[A](fun: => A) = throw new Exception
     def execute(fun: => Unit) = throw new Exception
     def schedule(interval: TimeInterval)(fun: => Unit) = throw new Exception

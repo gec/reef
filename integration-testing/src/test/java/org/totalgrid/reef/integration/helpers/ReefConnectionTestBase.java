@@ -21,6 +21,7 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.After;
 import org.junit.Before;
 
+import org.totalgrid.reef.client.sapi.ReefServices;
 import org.totalgrid.reef.clientapi.Client;
 import org.totalgrid.reef.clientapi.Connection;
 import org.totalgrid.reef.clientapi.SubscriptionBinding;
@@ -67,7 +68,7 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
         try
         {
             AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            this.factory = new ReefConnectionFactory( s );
+            this.factory = new ReefConnectionFactory( s, ReefServices.getInstance() );
         }
         catch ( Exception ex )
         {

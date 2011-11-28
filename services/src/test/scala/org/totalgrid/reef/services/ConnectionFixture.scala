@@ -23,6 +23,7 @@ import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
+import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
 
 object ConnectionFixture {
   def mock(exe: ExecutorService = new InstantExecutorService4S)(test: Connection => Unit): Unit = {
@@ -31,7 +32,8 @@ object ConnectionFixture {
     try {
       val brokerConnection = broker.connect
 
-      val connection = ReefServices(brokerConnection, exe)
+      val connection = new DefaultConnection(brokerConnection, exe, 5000)
+      connection.addServicesList(ReefServices)
       test(connection)
     } finally {
       exe.terminate()

@@ -31,6 +31,7 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
 
 /**
  * gets other modules used by the services so can implemented via OSGI or directly
@@ -48,7 +49,8 @@ object ServiceFactory {
     new ConnectionConsumer {
       def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
 
-        val connection = ReefServices(brokerConnection, exe)
+        val connection = new DefaultConnection(brokerConnection, exe, 5000)
+        connection.addServicesList(ReefServices)
 
         modules.getDbConnector()
 

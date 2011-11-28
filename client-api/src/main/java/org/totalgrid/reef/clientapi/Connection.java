@@ -20,6 +20,7 @@ package org.totalgrid.reef.clientapi;
 
 
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.clientapi.rpc.ServicesList;
 import org.totalgrid.reef.clientapi.settings.UserSettings;
 
 /**
@@ -73,5 +74,5 @@ public interface Connection
      */
     void disconnect();
 
-
+    void addServicesList( ServicesList servicesList );
 }

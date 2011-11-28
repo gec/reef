@@ -20,11 +20,10 @@ package org.totalgrid.reef.loader
 
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
+import org.totalgrid.reef.client.ReefFactory
 
 object StandaloneLoader {
   def run(connectionInfo: AmqpSettings, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {
@@ -32,17 +31,14 @@ object StandaloneLoader {
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
-        val factory = new QpidBrokerConnectionFactory(connectionInfo)
-        val broker = factory.connect
-        val exe = Executors.newScheduledThreadPool(5)
-        val conn = ReefServices(broker, exe)
+        val factory = new ReefFactory(connectionInfo, ReefServices)
+        val conn = factory.connect
 
         val session = conn.login(userSettings.getUserName, userSettings.getUserPassword).await
 
         cancelable = Some(new Cancelable {
           def cancel() = {
-            broker.disconnect()
-            exe.terminate()
+            factory.terminate()
           }
         })
 

@@ -30,6 +30,7 @@ import org.totalgrid.reef.client.rpc.AllScadaService
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.client.sapi.ReefServices
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {
@@ -38,7 +39,7 @@ object ProtoShellApplication {
     val userSettings = new UserSettings(PropertyReader.readFromFile("org.totalgrid.reef.user.cfg"))
     val connectionInfo = new AmqpSettings(PropertyReader.readFromFile("org.totalgrid.reef.amqp.cfg"))
 
-    val factory = new ReefFactory(connectionInfo)
+    val factory = new ReefFactory(connectionInfo, ReefServices)
 
     val connection = factory.connect()
 

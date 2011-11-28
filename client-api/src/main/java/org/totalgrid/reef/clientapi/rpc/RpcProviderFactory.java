@@ -18,10 +18,16 @@
  */
 package org.totalgrid.reef.clientapi.rpc;
 
-import org.totalgrid.reef.clientapi.Client;
-
 public interface RpcProviderFactory
 {
-
-    Object createRpcProvider( Client client );
+    /**
+     * TODO: fix RpcProviderFactory so that rpc providers can be created in pure java.
+     *
+     * Currently we are passing the scala client to the rpc factoryies and casting to
+     * break the circular dependency between the scala and java clients.
+     *
+     * Once the java Client interface has all of the functions on the scala client we
+     * can fix this interface
+     */
+    Object createRpcProvider( Object client );
 }

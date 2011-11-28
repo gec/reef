@@ -19,8 +19,9 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest.impl
 
 import org.totalgrid.reef.clientapi.exceptions.UnknownServiceException
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client, RpcProviderInfo, RpcProviderFactory }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client }
 import org.totalgrid.reef.clientapi.types.ServiceTypeInformation
+import org.totalgrid.reef.clientapi.rpc.{ RpcProviderInfo, RpcProviderFactory, ServicesList }
 
 trait DefaultServiceRegistry {
 
@@ -29,8 +30,9 @@ trait DefaultServiceRegistry {
   private var servicemap = Map.empty[Class[_], ServiceTypeInformation[_, _]]
 
   def addRpcProvider(info: RpcProviderInfo) = this.synchronized {
-    info.interfaces.foreach { i =>
-      providers += i -> info.creator
+    import scala.collection.JavaConversions._
+    info.getInterfacesImplemented.foreach { i =>
+      providers += i -> info.getFactory
     }
   }
 
@@ -43,9 +45,15 @@ trait DefaultServiceRegistry {
 
   def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = servicemap.get(klass) match {
     case Some(info) => info.asInstanceOf[ServiceTypeInformation[A, Any]]
-    case None => throw new UnknownServiceException("Unknown service for klass: " + klass)
+    case None => throw new UnknownServiceException("Unknown service for klass: " + klass + ". Have you added a servicesList?")
   }
   def getServiceOption[A](klass: Class[A]): Option[ServiceTypeInformation[A, _]] = servicemap.get(klass).asInstanceOf[Option[ServiceTypeInformation[A, _]]]
 
   def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = servicemap += info.getDescriptor.getKlass -> info
+
+  def addServicesList(serviceList: ServicesList) {
+    import scala.collection.JavaConversions._
+    serviceList.getServiceTypeInformation.foreach { addServiceInfo(_) }
+    serviceList.getServiceProviders.foreach { addRpcProvider(_) }
+  }
 }

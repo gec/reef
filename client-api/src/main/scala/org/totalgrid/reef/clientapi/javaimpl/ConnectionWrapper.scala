@@ -23,6 +23,7 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
 
 import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection => SConnection }
 import org.totalgrid.reef.clientapi.{ Client, Connection, ConnectionCloseListener }
+import org.totalgrid.reef.clientapi.rpc.ServicesList
 
 class ConnectionWrapper(conn: SConnection) extends Connection {
   def addConnectionListener(listener: ConnectionCloseListener) = conn.addConnectionListener(listener)
@@ -36,4 +37,6 @@ class ConnectionWrapper(conn: SConnection) extends Connection {
   def login(authToken: String): Client = new ClientWrapper(conn.login(authToken))
 
   def disconnect(): Unit = conn.disconnect()
+
+  def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)
 }

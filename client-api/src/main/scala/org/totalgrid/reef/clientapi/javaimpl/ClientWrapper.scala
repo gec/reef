@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.clientapi.javaimpl
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo => SRpcProviderInfo, Client => SClient }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client => SClient }
 import org.totalgrid.reef.clientapi.{ SubscriptionCreationListener, RequestHeaders, Client }
 
 import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, RequestSpy }
@@ -43,6 +43,5 @@ class ClientWrapper(client: SClient) extends Client {
   def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)
 
   def getRpcInterface[A](klass: Class[A]) = client.getRpcInterface(klass)
-  // TODO: HACK get rid of this cast
-  def addRpcProvider(info: RpcProviderInfo) = client.addRpcProvider(info.asInstanceOf[SRpcProviderInfo])
+  def addRpcProvider(info: RpcProviderInfo) = client.addRpcProvider(info)
 }

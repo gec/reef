@@ -21,6 +21,7 @@ package org.totalgrid.reef.integration;
 import org.junit.Test;
 import org.totalgrid.reef.client.ReefReconnectingFactory;
 import org.totalgrid.reef.client.rpc.MeasurementService;
+import org.totalgrid.reef.client.sapi.ReefServices;
 import org.totalgrid.reef.clientapi.Client;
 import org.totalgrid.reef.clientapi.Connection;
 import org.totalgrid.reef.clientapi.ConnectionWatcher;
@@ -40,7 +41,7 @@ public class TestReconnectingFactory
         final AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
         final UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
 
-        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, 100, 500 );
+        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, ReefServices.getInstance(), 100, 500 );
 
         final SyncVar closed = new SyncVar<Boolean>( Boolean.FALSE );
         final SyncVar closeExpected = new EmptySyncVar<Boolean>();

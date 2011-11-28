@@ -30,6 +30,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 import org.totalgrid.reef.clientapi.ConnectionCloseListener
+import org.totalgrid.reef.client.ReefFactory
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
@@ -63,16 +64,13 @@ object ReefCommandSupport extends Logging {
 
   def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings, unexpectedDisconnectCallback: () => Unit) = {
 
-    val factory = new QpidBrokerConnectionFactory(amqpSettings)
-    val broker = factory.connect
-    val exe = Executors.newScheduledThreadPool(5)
-    val conn = ReefServices(broker, exe)
+    val factory = new ReefFactory(amqpSettings, ReefServices)
+    val conn = factory.connect
 
     val cancel = new Cancelable {
       def cancel() = {
-        conn.disconnect()
         // TODO: should be exe.shutdown, deadlocks when onDisconnect occurs
-        exe.terminate()
+        factory.terminate()
       }
     }
     conn.addConnectionListener(new ConnectionCloseListener {

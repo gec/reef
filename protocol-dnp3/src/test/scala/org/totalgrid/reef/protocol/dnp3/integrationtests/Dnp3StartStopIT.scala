@@ -37,6 +37,7 @@ import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.sapi.ReefServices
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
@@ -54,7 +55,7 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     val amqp = new AmqpSettings(props)
     val user = new UserSettings(props)
 
-    factoryOption = Some(new ReefFactory(amqp))
+    factoryOption = Some(new ReefFactory(amqp, ReefServices))
 
     val connection = factoryOption.get.connect()
     val c = connection.login(user.getUserName, user.getUserPassword).await

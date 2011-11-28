@@ -19,13 +19,14 @@
 package org.totalgrid.reef.clientapi.sapi.client.rest.impl
 
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client }
 import org.totalgrid.reef.clientapi.sapi.client.{ RequestSpyHook, BasicRequestHeaders }
 import org.totalgrid.reef.clientapi.proto.Envelope.{ Event, Verb }
 import org.totalgrid.reef.clientapi.sapi.service.AsyncService
 
 import org.totalgrid.reef.clientapi.Routable
 import org.totalgrid.reef.clientapi.types.{ ServiceTypeInformation, TypeDescriptor }
+import org.totalgrid.reef.clientapi.rpc.{ ServicesList, RpcProviderInfo }
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook {
 
@@ -60,6 +61,8 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
 
   final override def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = conn.addServiceInfo(info)
   final override def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
+
+  final override def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)
 
   final override def disconnect() = conn.disconnect()
 }

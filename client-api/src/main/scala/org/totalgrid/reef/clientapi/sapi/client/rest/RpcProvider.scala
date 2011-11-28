@@ -18,27 +18,24 @@
  */
 package org.totalgrid.reef.clientapi.sapi.client.rest
 
-import org.totalgrid.reef.clientapi.rpc.{ RpcProviderInfo => JRpcProvider, RpcProviderFactory => JRpcProviderFactory }
-import org.totalgrid.reef.clientapi.{ Client => JClient }
+import org.totalgrid.reef.clientapi.rpc.{ RpcProviderInfo, RpcProviderFactory }
 
 trait RpcProvider {
   def getRpcInterface[A](klass: Class[A]): A
 }
 
-trait RpcProviderFactory extends JRpcProviderFactory {
-  def createRpcProvider(client: Client): AnyRef
+/**
+ * helper object to make defining a provider nice looking in scala
+ */
+object RpcProvider {
+  def apply(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = {
+    new RpcProviderInfo {
+      override val getFactory = new RpcProviderFactory {
+        def createRpcProvider(client: AnyRef) = fun(client.asInstanceOf[Client])
+      }
 
-  // TODO: make this creatable from java
-  def createRpcProvider(client: JClient) = null
-}
-
-case class RpcProviderInfo(creator: RpcProviderFactory, interfaces: List[Class[_]]) extends JRpcProvider {
-  def this(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = this(new RpcProviderFactory {
-    override def createRpcProvider(client: Client) = fun(client)
-  }, interfaces)
-
-  def getFactory = creator
-
-  import scala.collection.JavaConversions._
-  def getInterfacesImplemented = interfaces
+      import scala.collection.JavaConversions._
+      override def getInterfacesImplemented = interfaces
+    }
+  }
 }

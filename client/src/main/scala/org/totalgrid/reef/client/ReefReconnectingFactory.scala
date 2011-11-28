@@ -20,15 +20,15 @@ package org.totalgrid.reef.client
 
 import org.totalgrid.reef.clientapi.settings.AmqpSettings
 import org.totalgrid.reef.clientapi.{ ReconnectingConnectionFactory, ConnectionWatcher }
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultReconnectingFactory
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, ConnectionWatcher => SConnectionWatcher }
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ ConnectionWatcher => SConnectionWatcher }
 import org.totalgrid.reef.clientapi.javaimpl.ConnectionWrapper
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.broker.BrokerConnection
+import org.totalgrid.reef.clientapi.sapi.client.rest.impl.{ DefaultConnection, DefaultReconnectingFactory }
+import org.totalgrid.reef.clientapi.rpc.ServicesList
 
-class ReefReconnectingFactory(amqpSettings: AmqpSettings, startDelay: Long, maxDelay: Long)
+class ReefReconnectingFactory(amqpSettings: AmqpSettings, servicesList: ServicesList, startDelay: Long, maxDelay: Long)
     extends ReconnectingConnectionFactory with SConnectionWatcher {
 
   private val brokerFactory = new QpidBrokerConnectionFactory(amqpSettings)
@@ -45,8 +45,9 @@ class ReefReconnectingFactory(amqpSettings: AmqpSettings, startDelay: Long, maxD
   def onConnectionClosed(expected: Boolean) =
     this.synchronized { watchers.foreach { _.onConnectionClosed(expected) } }
 
-  def onConnectionOpened(scalaConnection: BrokerConnection) = {
-    val connection = new ConnectionWrapper(ReefServices.apply(scalaConnection, exe))
+  def onConnectionOpened(broker: BrokerConnection) = {
+    val connection = new ConnectionWrapper(new DefaultConnection(broker, exe, 5000))
+    connection.addServicesList(servicesList)
     this.synchronized { watchers.foreach { _.onConnectionOpened(connection) } }
   }
 

@@ -27,6 +27,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.clientapi.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.client.sapi.ReefServices
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
@@ -69,7 +70,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
     val config = new AmqpSettings(props)
     val userConfig = new UserSettings(props)
-    factoryOption = Some(new ReefFactory(config))
+    factoryOption = Some(new ReefFactory(config, ReefServices))
     val conn = factoryOption.get.connect()
     sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))

@@ -23,7 +23,7 @@ import org.totalgrid.reef.clientapi.SubscriptionCreationListener
 import org.totalgrid.reef.client.rpc._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProviderInfo, Client }
+import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
 
 trait AllScadaServiceJavaShim
     extends AllScadaService
@@ -57,7 +57,7 @@ final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServi
 }
 
 object AllScadaServiceJavaShim {
-  val serviceInfo = new RpcProviderInfo({ c: Client => new AllScadaServiceJavaShimWrapper(c) },
+  val serviceInfo = RpcProvider(new AllScadaServiceJavaShimWrapper(_),
     List(
       classOf[AllScadaService],
       classOf[AuthTokenService],
