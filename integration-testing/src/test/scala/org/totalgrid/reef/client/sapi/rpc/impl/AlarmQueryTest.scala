@@ -79,7 +79,7 @@ class AlarmQueryTest
 
   test("Test alarm failure") {
     val exc = intercept[ReefServiceException] {
-      client.getAlarm("1234567890123456789").await
+      client.getAlarmById("1234567890123456789").await
     }.getMessage
     exc.contains("1234567890123456789") should equal(true)
     exc.contains("uid") should equal(true)

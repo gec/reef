@@ -32,8 +32,8 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {
 
-  override def getAlarm(uid: String) = ops.operation("Couldn't get alarm with uid: " + uid) {
-    _.get(AlarmRequestBuilders.getByUID(uid)).map(_.one)
+  override def getAlarmById(id: String) = ops.operation("Couldn't get alarm with uid: " + id) {
+    _.get(AlarmRequestBuilders.getByUID(id)).map(_.one)
   }
 
   override def getActiveAlarms(limit: Int) = ops.operation("Couldn't get the last " + limit + " active alarms") {

@@ -48,7 +48,7 @@ class UserAuthorizationTest
   }
 
   test("Can update own password") {
-    val agent = client.getAgent(username)
+    val agent = client.getAgentByName(username)
 
     // change password
     client.setAgentPassword(agent, password + password)
@@ -74,7 +74,7 @@ class UserAuthorizationTest
   ignore("Can't update others passwords") {
     // need attributes for agent updates
 
-    val agent = client.getAgent("operator")
+    val agent = client.getAgentByName("operator")
     intercept[UnauthorizedException] {
       client.setAgentPassword(agent, password)
     }

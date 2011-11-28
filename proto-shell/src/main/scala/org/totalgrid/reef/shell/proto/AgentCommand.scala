@@ -56,7 +56,7 @@ class AgentSetPasswordCommand extends SingleAgentCommandBase {
   def doCommand() = {
 
     val newPassword = getRepeatedPassword()
-    val agent = authService.getAgent(agentName)
+    val agent = authService.getAgentByName(agentName)
 
     authService.setAgentPassword(agent, newPassword)
     System.out.println("Updated password for agent: " + agentName)
@@ -162,7 +162,7 @@ class AgentDeleteCommand extends SingleAgentCommandBase {
 
   def doCommand() = {
 
-    val agent = authService.getAgent(agentName)
+    val agent = authService.getAgentByName(agentName)
     val deletedAgent = authService.deleteAgent(agent)
 
     AgentView.printAgents(deletedAgent :: Nil)

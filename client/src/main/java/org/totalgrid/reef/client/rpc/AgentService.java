@@ -39,7 +39,7 @@ public interface AgentService
      * @param name of agent to find
      * @return the agent requested or throws exception
      */
-    Agent getAgent( String name ) throws ReefServiceException;
+    Agent getAgentByName( String name ) throws ReefServiceException;
 
     /**
      * @return list of all agents

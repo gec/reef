@@ -48,9 +48,9 @@ public interface AlarmService extends SubscriptionCreator
     /**
      * Get a single alarm
      *
-     * @param uid uid of alarm
+     * @param id uid of alarm
      */
-    Alarm getAlarm( String uid ) throws ReefServiceException;
+    Alarm getAlarmById( String id ) throws ReefServiceException;
 
     /**
      * Get the most recent alarms
