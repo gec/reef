@@ -25,6 +25,7 @@ import org.totalgrid.reef.models._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.framework.{ RequestContext, LinkedBufferedEvaluation }
+import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
 
 class SquerylBackedMeasurementStreamCoordinator(
   measProcModel: MeasurementProcessingConnectionServiceModel,
@@ -123,10 +124,22 @@ class SquerylBackedMeasurementStreamCoordinator(
   /**
    * checks the fep assignment and sends out an update if there was a change
    */
-  private def checkFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint) {
-    val newAssign = determineFepAssignment(assign, ce)
-    // update the fep assignment if it changed
-    newAssign.foreach(newAssignment => exclusiveUpdateFep(context, assign, newAssignment))
+  private def checkFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint, retry: Boolean = true) {
+    try {
+      val newAssign = determineFepAssignment(assign, ce)
+      // update the fep assignment if it changed
+      newAssign.foreach(newAssignment => exclusiveUpdateFep(context, assign, newAssignment))
+    } catch {
+      case ex: ExclusiveAccessException =>
+        logger.warn("Lost race to update fep assignment, retrying")
+        val reloadedAssignment = ApplicationSchema.frontEndAssignments.lookup(assign.id)
+        val reloadedEndpoint = ApplicationSchema.endpoints.lookup(ce.id)
+        if (reloadedAssignment.isDefined && reloadedEndpoint.isDefined) {
+          checkFepAssignment(context, reloadedAssignment.get, reloadedEndpoint.get, false)
+        } else {
+          logger.warn("fep or endpoint deleted, not retrying.")
+        }
+    }
   }
 
   def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {

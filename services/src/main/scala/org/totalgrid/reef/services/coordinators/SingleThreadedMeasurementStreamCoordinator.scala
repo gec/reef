@@ -27,32 +27,47 @@ import org.totalgrid.reef.services.framework._
  * at the same time.
  */
 class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, contextSource: RequestContextSource) extends MeasurementStreamCoordinator {
-  // TODO: get rid of contextSource in SingleThreadedMeasurementStreamCoordinator
+
   private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
-    this.synchronized {
-      f(real, context)
+    context.operationBuffer.queuePostTransaction {
+      // we have to actually give up our original transaction and wait for the lock on the coordinator
+      // outside of a transaction. If not its possible to deadlock at the database level because the
+      // original transactions may have acquired locks on the tables we are going to try to alter.
+      // Postgres can't "see" the deadlock because it doesn't know that our thread
+      contextSource.transaction { c =>
+        this.synchronized {
+          f(real, c)
+        }
+      }
     }
   }
 
   def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
-    handle(context) { (r, c) => r.onMeasProcAppChanged(c, app, added) }
+    handle(context) { (r, c) => r.onMeasProcAppChanged(c, reloadApp(app), added) }
 
   def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) =
-    handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, meas) }
+    handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, reloadMeas(meas)) }
 
   def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) =
-    handle(context) { (r, c) => r.onFepConnectionChange(c, sql, existing) }
+    handle(context) { (r, c) => r.onFepConnectionChange(c, reloadFep(sql), existing) }
 
   def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
-    handle(context) { (r, c) => r.onFepAppChanged(c, app, added) }
+    handle(context) { (r, c) => r.onFepAppChanged(c, reloadApp(app), added) }
 
   def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) =
     handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }
 
   def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint) =
-    handle(context) { (r, c) => r.onEndpointUpdated(c, ce, existing) }
+    handle(context) { (r, c) => r.onEndpointUpdated(c, reloadCe(ce), existing) }
 
   def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) =
-    handle(context) { (r, c) => r.onEndpointCreated(c, ce) }
+    handle(context) { (r, c) => r.onEndpointCreated(c, reloadCe(ce)) }
+
+  import org.totalgrid.reef.clientapi.exceptions.InternalServiceException
+  import org.squeryl.PrimitiveTypeMode._
+  private def reloadApp(ce: ApplicationInstance): ApplicationInstance = ApplicationSchema.apps.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
+  private def reloadMeas(ce: MeasProcAssignment) = ApplicationSchema.measProcAssignments.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
+  private def reloadFep(ce: FrontEndAssignment) = ApplicationSchema.frontEndAssignments.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
+  private def reloadCe(ce: CommunicationEndpoint) = ApplicationSchema.endpoints.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
 
 }
