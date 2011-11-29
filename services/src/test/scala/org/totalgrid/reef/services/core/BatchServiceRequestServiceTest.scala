@@ -90,7 +90,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   }
 
   def commandAccess(verb: Envelope.Verb = PUT, name: String = "cmd01") = {
-    val ca = CommandAccess.newBuilder.addCommands(name).setAccess(CommandAccess.AccessMode.ALLOWED)
+    val ca = CommandAccess.newBuilder.addCommands(Command.newBuilder.setName(name)).setAccess(CommandAccess.AccessMode.ALLOWED)
       .setExpireTime(System.currentTimeMillis + 40000)
     makeRequest(verb, ca.build, Descriptors.commandAccess)
   }

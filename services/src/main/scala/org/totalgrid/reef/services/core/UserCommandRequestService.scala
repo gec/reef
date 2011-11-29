@@ -49,7 +49,7 @@ class UserCommandRequestService(
 
     contextSource.transaction { context =>
 
-      val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
+      val command = Command.findByNames(request.getCommandRequest.getCommand.getName :: Nil).single
 
       val address = command.endpoint.value match {
         case Some(ep) =>
@@ -106,7 +106,7 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
 
   override protected def preCreate(context: RequestContext, proto: UserCommandRequest) = {
 
-    if (!proto.getCommandRequest.hasName)
+    if (!proto.getCommandRequest.getCommand.hasName)
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
 
     if (proto.hasStatus)

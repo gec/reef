@@ -21,6 +21,7 @@ package org.totalgrid.reef.frontend
 import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, ClearableMap }
+import net.agileautomata.executor4s.Executor
 
 /**
  * When we have subscribed to handle a set of endpoints we need to make sure that we only add enabled and routed
@@ -28,7 +29,7 @@ import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, Clearab
  *
  * Keep in mind that most "live system" updates are going to be modifies of the enabled bit
  */
-class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction)
+class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction, exe: Executor)
     extends ServiceContext[CommEndpointConnection]
     with SubscriptionHandlerBase[CommEndpointConnection]
     with Logging {
@@ -54,9 +55,9 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
     connections.remove(c)
   }
 
-  def subscribed(list: List[CommEndpointConnection]) = list.foreach(add(_))
+  def subscribed(list: List[CommEndpointConnection]) = exe.execute { list.foreach(add(_)) }
 
-  def clear() = connections.clear()
+  def clear() = exe.attempt { connections.clear() }.await
 
   /**
    * we will get messages regardless of whether the endpoint is usable, we need to check that it is

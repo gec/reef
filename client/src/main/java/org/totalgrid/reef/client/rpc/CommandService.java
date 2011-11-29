@@ -84,7 +84,6 @@ import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler;
  * <p>
  *   By default, Denial locks do not timeout like "execution locks".</p>
  *
- *  TODO command names to UUID - reef-149
  *
  *  Tag for api-enhancer, do not delete: !api-definition!
  */

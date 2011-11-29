@@ -25,29 +25,14 @@ import scala.None
 
 object CommandAccessRequestBuilders {
 
-  def allowAccessForCommand(command: Command): CommandAccess = allowAccessForCommandName(command.getName)
-  def allowAccessForCommandName(command: String): CommandAccess = {
+  def allowAccessForCommand(command: Command): CommandAccess =
     CommandAccess.newBuilder.addCommands(command).setAccess(CommandAccess.AccessMode.ALLOWED).build
-  }
 
-  def blockAccessForCommand(command: Command): CommandAccess = blockAccessForCommandName(command.getName)
-  def blockAccessForCommandName(command: String): CommandAccess = {
+  def blockAccessForCommand(command: Command): CommandAccess =
     CommandAccess.newBuilder.addCommands(command).setAccess(CommandAccess.AccessMode.BLOCKED).build
-  }
-
-  // we defer the execution to the java list implmentation because thats what the proto addAllX methods use
-  def allowAccessForCommandNames(commands: List[String]): CommandAccess = allowAccessForCommandNames(commands: java.util.List[String])
-  def allowAccessForCommandNames(commands: java.util.List[String]): CommandAccess = {
-    CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.ALLOWED).build
-  }
-
-  // we defer to scala implementation to collect names b/c there is no good way to handle java lists in scala
-  def allowAccessForCommands(commands: List[Command]): CommandAccess = {
-    allowAccessForCommands(commands, None)
-  }
 
   def allowAccessForCommands(commands: List[Command], expirationTimeMilli: Option[Long]): CommandAccess = {
-    val access = CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).setAccess(CommandAccess.AccessMode.ALLOWED)
+    val access = CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.ALLOWED)
     expirationTimeMilli match {
       case Some(time) => access.setExpireTime(time)
       case None =>
@@ -60,21 +45,14 @@ object CommandAccessRequestBuilders {
   def allowAccessForCommands(commands: java.util.List[Command], expirationTimeMilli: Option[Long]): CommandAccess = allowAccessForCommands(commands.toList,
     expirationTimeMilli)
 
-  def blockAccessForCommandNames(commands: List[String]): CommandAccess = blockAccessForCommandNames(commands: java.util.List[String])
-  def blockAccessForCommandNames(commands: java.util.List[String]): CommandAccess = {
-    CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.BLOCKED).build
-  }
-
   def blockAccessForCommands(commands: List[Command]): CommandAccess = {
-    CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).setAccess(CommandAccess.AccessMode.BLOCKED).build
+    CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.BLOCKED).build
   }
   def blockAccessForCommands(commands: java.util.List[Command]): CommandAccess = blockAccessForCommands(commands.toList)
 
   def getAll() = CommandAccess.newBuilder.setUid(ReefID.newBuilder.setValue("*")).build
-  def getByCommand(command: Command) = CommandAccess.newBuilder.addCommands(command.getName).build
-  def getByCommands(commands: java.util.List[Command]) = CommandAccess.newBuilder.addAllCommands(commands.map { _.getName }).build
-  def getByCommandName(command: String) = CommandAccess.newBuilder.addCommands(command).build
-  def getByCommandNames(commands: java.util.List[String]) = CommandAccess.newBuilder.addAllCommands(commands).build
+  def getByCommand(command: Command) = CommandAccess.newBuilder.addCommands(command).build
+  def getByCommands(commands: java.util.List[Command]) = CommandAccess.newBuilder.addAllCommands(commands).build
 
   def getForUid(uid: ReefID) = CommandAccess.newBuilder.setUid(uid).build
 

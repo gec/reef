@@ -22,6 +22,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
+import org.totalgrid.reef.proto.Model.{ Command => CommandProto }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandAccess }
 import CommandAccess._
 
@@ -50,13 +51,14 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
   }
 
+  private def cmdReq = CommandRequest.newBuilder.setCommand(CommandProto.newBuilder.setName("cmd01")).build
+
   val env = BasicRequestHeaders.empty.setUserName("user01")
   val context = new HeadersRequestContext(env)
 
   def markCompleted(status: CommandStatus) {
     val r = new TestRig
 
-    val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
     val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
 
     r.userRequests.markCompleted(context, inserted, status)
@@ -79,7 +81,6 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   test("Mark expired") {
     val r = new TestRig
 
-    val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
     val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
 
     r.userRequests.findAndMarkExpired(context)
@@ -96,8 +97,6 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val r = new TestRig
     r.scenario(mode, time, user)
 
-    val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
-
     intercept[ReefServiceException] {
       r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
     }
@@ -107,8 +106,6 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val r = new TestRig
     val time = System.currentTimeMillis + 40000
     r.scenario(AccessMode.ALLOWED, time, "user01")
-
-    val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
     r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
 
@@ -161,8 +158,6 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     val select1 = r.scenario(AccessMode.ALLOWED, now - 40000, "user01")
     val select2 = r.scenario(AccessMode.ALLOWED, now - 20000, "user01")
     val select3 = r.scenario(AccessMode.ALLOWED, now + 40000, "user01")
-
-    val cmdReq = CommandRequest.newBuilder.setName("cmd01").build
 
     r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
     r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)

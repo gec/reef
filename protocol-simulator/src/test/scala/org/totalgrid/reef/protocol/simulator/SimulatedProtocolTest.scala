@@ -27,6 +27,7 @@ import org.totalgrid.reef.api.protocol.api.{ NullEndpointPublisher, Publisher }
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s.Executor
 import java.lang.Exception
+import org.totalgrid.reef.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
@@ -60,7 +61,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
   }
 
   def getCmdRequest(name: String) = {
-    Commands.CommandRequest.newBuilder.setName(name).build
+    Commands.CommandRequest.newBuilder.setCommand(Command.newBuilder.setName(name)).build
   }
 
   class QueueingPublisher[A] extends Publisher[A] {
@@ -71,7 +72,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
   }
 
   class BatchPublisher extends QueueingPublisher[Measurements.MeasurementBatch]
-  class ResponsePublisher extends QueueingPublisher[Commands.CommandResponse]
+  class ResponsePublisher extends QueueingPublisher[Commands.CommandStatus]
 
   def fixture(test: (MockExecutor, SimulatedProtocol, BatchPublisher, ResponsePublisher) => Unit) = {
     val exe = new MockExecutor
@@ -190,12 +191,12 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
 
       cmd.issue(getCmdRequest("success"), responses)
       responses.queue.size should equal(1)
-      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.NOT_SUPPORTED)
+      responses.queue.dequeue() should equal(Commands.CommandStatus.NOT_SUPPORTED)
 
       protocol.addPluginFactory(new MockSimulatorFactory(1))
       cmd.issue(getCmdRequest("success"), responses)
       responses.queue.size should equal(1)
-      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.SUCCESS)
+      responses.queue.dequeue() should equal(Commands.CommandStatus.SUCCESS)
     }
   }
 

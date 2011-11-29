@@ -18,15 +18,12 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ UserCommandRequestBuilders, CommandAccessRequestBuilders }
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest }
-import org.totalgrid.reef.proto.Commands
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.proto.Commands.CommandStatus
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest
@@ -43,16 +40,16 @@ class UserCommandRequestTest
   test("Issue command") {
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
-    val acc = CommandAccessRequestBuilders.allowAccessForCommandName(cmdName)
-    val accResp = session.put(acc).await.expectOne
+    val cmd = client.getCommandByName(cmdName).await
+
+    val lock = client.createCommandExecutionLock(cmd).await
 
     recorder.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
-    val executingCommand = session.put(UserCommandRequestBuilders.executeControl(cmdName)).await.expectOne
+    val commandStatus = client.executeCommandAsControl(cmd).await
 
-    recorder.addExplanation("Current status of request", "Get the status of a already-issued command request.")
-    session.get(UserCommandRequestBuilders.getStatus(executingCommand)).await.expectOne
+    commandStatus should equal(CommandStatus.SUCCESS)
 
-    session.delete(accResp).await.expectOne
+    client.deleteCommandLock(lock)
   }
 
 }

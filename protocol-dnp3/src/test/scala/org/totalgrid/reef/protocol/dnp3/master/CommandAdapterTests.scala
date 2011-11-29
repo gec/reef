@@ -27,6 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.protocol.dnp3.mock.MockCommandAcceptor
 import org.totalgrid.reef.protocol.dnp3._
+import org.totalgrid.reef.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {
@@ -34,8 +35,8 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
   import org.totalgrid.reef.api.protocol.api.Protocol._
 
   class MockResponseHandler extends ResponsePublisher {
-    val responses = new mutable.Queue[Commands.CommandResponse]
-    final override def publish(rsp: Commands.CommandResponse) = {
+    val responses = new mutable.Queue[Commands.CommandStatus]
+    final override def publish(rsp: Commands.CommandStatus) = {
       responses += rsp
     }
   }
@@ -51,7 +52,7 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
     runATest(List(assoc)) { (adapt, acceptor, rspHandler) =>
       val request = Commands.CommandRequest.newBuilder
       request.setType(Commands.CommandRequest.ValType.NONE)
-      request.setName("testCommand")
+      request.setCommand(Command.newBuilder.setName("testCommand"))
       request.setCorrelationId("testCommandID")
 
       adapt.issue(request.build, rspHandler)
@@ -69,8 +70,7 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
 
       rspHandler.responses.size should equal(1)
       pop(rspHandler.responses) { rsp =>
-        rsp.getCorrelationId() should equal("testCommandID")
-        rsp.getStatus() should equal(Commands.CommandStatus.SUCCESS)
+        rsp should equal(Commands.CommandStatus.SUCCESS)
       }
 
     }
@@ -85,7 +85,7 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
     runATest(List(assoc)) { (adapt, acceptor, rspHandler) =>
       val request = Commands.CommandRequest.newBuilder
       request.setType(Commands.CommandRequest.ValType.INT)
-      request.setName("testSetpoint")
+      request.setCommand(Command.newBuilder.setName("testSetpoint"))
       request.setCorrelationId("testSetpointID")
 
       adapt.issue(request.build, rspHandler)
@@ -103,8 +103,7 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
 
       rspHandler.responses.size should equal(1)
       pop(rspHandler.responses) { rsp =>
-        rsp.getCorrelationId() should equal("testSetpointID")
-        rsp.getStatus() should equal(Commands.CommandStatus.SUCCESS)
+        rsp should equal(Commands.CommandStatus.SUCCESS)
       }
     }
   }
@@ -116,13 +115,13 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
     runATest(a.toList) { (adapt, acceptor, rspHandler) =>
       var request = Commands.CommandRequest.newBuilder
       request.setType(Commands.CommandRequest.ValType.NONE)
-      request.setName("testCommand1")
+      request.setCommand(Command.newBuilder.setName("testCommand1"))
       request.setCorrelationId("testCommandID1")
       adapt.issue(request.build, rspHandler)
 
       request = Commands.CommandRequest.newBuilder
       request.setType(Commands.CommandRequest.ValType.NONE)
-      request.setName("testCommand2")
+      request.setCommand(Command.newBuilder.setName("testCommand2"))
       request.setCorrelationId("testCommandID2")
       adapt.issue(request.build, rspHandler)
 
@@ -139,18 +138,17 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
         cmd._3 should equal(2)
       }
 
-      val resp = new CommandResponse(CommandStatus.CS_SUCCESS)
-      adapt.AcceptResponse(resp, 2)
-      adapt.AcceptResponse(resp, 1)
+      val resp2 = new CommandResponse(CommandStatus.CS_SUCCESS)
+      adapt.AcceptResponse(resp2, 2)
+      val resp1 = new CommandResponse(CommandStatus.CS_ALREADY_ACTIVE)
+      adapt.AcceptResponse(resp1, 1)
 
       rspHandler.responses.size should equal(2)
       pop(rspHandler.responses) { rsp =>
-        rsp.getCorrelationId() should equal("testCommandID2")
-        rsp.getStatus() should equal(Commands.CommandStatus.SUCCESS)
+        rsp should equal(Commands.CommandStatus.SUCCESS)
       }
       pop(rspHandler.responses) { rsp =>
-        rsp.getCorrelationId() should equal("testCommandID1")
-        rsp.getStatus() should equal(Commands.CommandStatus.SUCCESS)
+        rsp should equal(Commands.CommandStatus.ALREADY_ACTIVE)
       }
     }
   }
@@ -161,12 +159,12 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
     runATest(a.toList) { (adapt, acceptor, rspHandler) =>
       var request = Commands.CommandRequest.newBuilder
       request.setType(Commands.CommandRequest.ValType.NONE)
-      request.setName("testCommand")
+      request.setCommand(Command.newBuilder.setName("testCommand"))
       request.setCorrelationId("testCommandID1")
       adapt.issue(request.build, rspHandler)
       request = Commands.CommandRequest.newBuilder
       request.setType(Commands.CommandRequest.ValType.NONE)
-      request.setName("testCommand")
+      request.setCommand(Command.newBuilder.setName("testCommand"))
       request.setCorrelationId("testCommandID2")
       adapt.issue(request.build, rspHandler)
 
@@ -182,18 +180,17 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
         cmd._3 should equal(2)
       }
 
-      val resp = new CommandResponse(CommandStatus.CS_SUCCESS)
-      adapt.AcceptResponse(resp, 2)
-      adapt.AcceptResponse(resp, 1)
+      val resp2 = new CommandResponse(CommandStatus.CS_SUCCESS)
+      adapt.AcceptResponse(resp2, 2)
+      val resp1 = new CommandResponse(CommandStatus.CS_ALREADY_ACTIVE)
+      adapt.AcceptResponse(resp1, 1)
 
       rspHandler.responses.size should equal(2)
       pop(rspHandler.responses) { rsp =>
-        rsp.getCorrelationId() should equal("testCommandID2")
-        rsp.getStatus() should equal(Commands.CommandStatus.SUCCESS)
+        rsp should equal(Commands.CommandStatus.SUCCESS)
       }
       pop(rspHandler.responses) { rsp =>
-        rsp.getCorrelationId() should equal("testCommandID1")
-        rsp.getStatus() should equal(Commands.CommandStatus.SUCCESS)
+        rsp should equal(Commands.CommandStatus.ALREADY_ACTIVE)
       }
 
     }

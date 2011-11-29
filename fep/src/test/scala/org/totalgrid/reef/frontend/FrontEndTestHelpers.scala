@@ -53,7 +53,7 @@ object FrontEndTestHelpers {
     }
   }
 
-  class MockCancelable extends Cancelable {
+  class MockCancelable extends net.agileautomata.executor4s.Cancelable {
     var canceled = false
     def cancel() = canceled = true
   }

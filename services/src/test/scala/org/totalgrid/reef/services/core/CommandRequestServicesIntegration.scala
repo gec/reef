@@ -121,14 +121,13 @@ class CommandRequestServicesIntegration
   }
   */
 
-  def commandAccessSearch(names: String*) = CommandAccess.newBuilder.addAllCommands(names).build
   def commandAccess(
     name: String = "cmd01",
     mode: AccessMode = AccessMode.ALLOWED,
     time: Long = System.currentTimeMillis + 40000 /*user: String = "user01"*/ ) = {
 
     CommandAccess.newBuilder
-      .addCommands(name)
+      .addCommands(Command.newBuilder.setName(name))
       .setAccess(mode)
       .setExpireTime(time)
       .build
@@ -139,7 +138,7 @@ class CommandRequestServicesIntegration
     correlationId: Option[String] = None,
     status: Option[CommandStatus] = None): UserCommandRequest = {
 
-    val c = CommandRequest.newBuilder.setName(commandName)
+    val c = CommandRequest.newBuilder.setCommand(Command.newBuilder.setName(commandName))
     correlationId.foreach(c.setCorrelationId(_))
     val b = UserCommandRequest.newBuilder
       .setCommandRequest(c)

@@ -32,9 +32,10 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.{ EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.api.protocol.api.{ CommandHandler, Publisher }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto }
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
+import org.totalgrid.reef.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
@@ -116,9 +117,9 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
 
   def issueAndWaitForCommandResponse(cmdAcceptor: CommandHandler, commandRequest: CommandRequestProto) {
     val response = new EmptySyncVar[CommandStatusProto]
-    val rspHandler = new Publisher[CommandResponseProto] {
-      def publish(proto: CommandResponseProto) {
-        response.update(proto.getStatus)
+    val rspHandler = new Publisher[CommandStatusProto] {
+      def publish(status: CommandStatusProto) {
+        response.update(status)
       }
     }
     cmdAcceptor.issue(commandRequest, rspHandler)
@@ -126,7 +127,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
   }
 
   private def makeControl(name: String, id: String) = {
-    CommandRequestProto.newBuilder().setName(name).setType(CommandRequestProto.ValType.NONE).setCorrelationId(id).build
+    CommandRequestProto.newBuilder().setCommand(Command.newBuilder.setName(name)).setType(CommandRequestProto.ValType.NONE).setCorrelationId(id).build
   }
 
   private def getClient(port: Int, name: String) = {
