@@ -26,4 +26,10 @@ public class AnyNodeDestination implements Routable
     {
         return "request";
     }
+
+    @Override
+    public String toString()
+    {
+        return "RoutingKey: " + getKey();
+    }
 }

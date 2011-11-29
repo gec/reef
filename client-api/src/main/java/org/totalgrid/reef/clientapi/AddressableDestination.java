@@ -33,4 +33,9 @@ public class AddressableDestination implements Routable
         return address;
     }
 
+    @Override
+    public String toString()
+    {
+        return "RoutingKey: " + address;
+    }
 }
