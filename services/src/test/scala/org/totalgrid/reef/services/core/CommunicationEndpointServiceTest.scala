@@ -57,10 +57,10 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   val headers = BasicRequestHeaders.empty.setUserName("user")
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
-    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
+    Endpoint.newBuilder().setProtocol(protocol).setName(name)
   }
   def getSinkEndpoint(name: String = "device", protocol: String = "benchmark") = {
-    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name).setDataSource(false)
+    Endpoint.newBuilder().setProtocol(protocol).setName(name).setDataSource(false)
   }
   def getIPPort(name: String = "device") = {
     CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork("any").setAddress("localhost").setPort(1200))
@@ -87,8 +87,8 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     mimeType.foreach(typ => cf.setMimeType(typ))
     cf
   }
-  def getConnection(name: String = "device", enabled: Option[Boolean] = None, state: Option[CommEndpointConnection.State] = None) = {
-    val b = CommEndpointConnection.newBuilder.setEndpoint(getEndpoint(name))
+  def getConnection(name: String = "device", enabled: Option[Boolean] = None, state: Option[EndpointConnection.State] = None) = {
+    val b = EndpointConnection.newBuilder.setEndpoint(getEndpoint(name))
     enabled.foreach(b.setEnabled(_))
     state.foreach(b.setState(_))
     b
@@ -195,14 +195,14 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val endpoint = endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
 
     val initialConnectionState = connectionService.get(getConnection().build).expectOne()
-    initialConnectionState.getState should equal(CommEndpointConnection.State.COMMS_DOWN)
+    initialConnectionState.getState should equal(EndpointConnection.State.COMMS_DOWN)
     initialConnectionState.getEnabled should equal(true)
 
     // cannot delete enabled endpoints
     intercept[BadRequestException] { endpointService.delete(endpoint) }
 
     // cannot delete endpoint because it is "enabled" and "online", would confuse Feps
-    connectionService.put(getConnection(state = Some(CommEndpointConnection.State.COMMS_UP)).build, headers)
+    connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build, headers)
     intercept[BadRequestException] { endpointService.delete(endpoint) }
 
     // cannot delete endpoint because even though it has been disabled it is still "online"
@@ -210,7 +210,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     intercept[BadRequestException] { endpointService.delete(endpoint) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    connectionService.put(getConnection(state = Some(CommEndpointConnection.State.COMMS_DOWN)).build, headers)
+    connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build, headers)
     endpointService.delete(endpoint).expectOne(Status.DELETED)
   }
 

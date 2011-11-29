@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, UnauthorizedException }
 import org.totalgrid.reef.proto.Model
@@ -38,7 +38,7 @@ class CommandTestRig {
     ApplicationSchema.commands.insert(sql)
   }
 
-  def seed(sql: CommandAccessModel): CommandAccessModel = {
+  def seed(sql: CommandLockModel): CommandLockModel = {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String): Command = {
@@ -47,7 +47,7 @@ class CommandTestRig {
 }
 
 @RunWith(classOf[JUnitRunner])
-class CommandAccessServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
   import AccessProto._
 

@@ -19,8 +19,8 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
-import org.totalgrid.reef.models.{ CommandAccessModel => AccessModel }
+import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
+import org.totalgrid.reef.models.{ CommandLockModel => AccessModel }
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
@@ -33,8 +33,8 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.proto.Descriptors
 
-class CommandAccessService(protected val model: CommandAccessServiceModel)
-    extends SyncModeledServiceBase[AccessProto, AccessModel, CommandAccessServiceModel]
+class CommandLockService(protected val model: CommandLockServiceModel)
+    extends SyncModeledServiceBase[AccessProto, AccessModel, CommandLockServiceModel]
     with GetEnabled
     with SubscribeEnabled
     with PutOnlyCreates

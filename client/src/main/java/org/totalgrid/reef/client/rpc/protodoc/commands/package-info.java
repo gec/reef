@@ -46,7 +46,7 @@
  * }
  * 
  * /*
- *   CommandAccess
+ *   CommandLock
  * 
  *   Represents the "access table" for the system. Access entries have one or two
  *   modes, "allowed" and "blocked". Commands cannot be issued unless they have an
@@ -60,7 +60,7 @@
  *   If not provided, expire_time will be a server-specified default.
  * 
  * -/
- * message CommandAccess {
+ * message CommandLock {
  *   enum AccessMode {
  *     ALLOWED = 1;
  *     BLOCKED = 2;

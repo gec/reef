@@ -31,7 +31,7 @@ trait ModelLoader {
   def putOrThrow(e: Command)
   def putOrThrow(e: Point)
   def putOrThrow(e: EventConfig)
-  def putOrThrow(e: CommEndpointConfig)
+  def putOrThrow(e: Endpoint)
   def putOrThrow(e: ConfigFile)
   def putOrThrow(e: CommChannel)
 

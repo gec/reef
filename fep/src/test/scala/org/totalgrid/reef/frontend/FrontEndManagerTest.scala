@@ -27,7 +27,7 @@ import org.mockito.Mockito
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import FrontEndTestHelpers._
@@ -43,11 +43,11 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
   val applicationUuid: ReefUUID = "0"
   val protocolList = List("mock")
 
-  def fixture(services: FrontEndProviderServices, autoStart: Boolean = true)(test: (FrontEndProviderServices, MockExecutor, MockSubscriptionHandler[CommEndpointConnection], FrontEndManager) => Unit) = {
+  def fixture(services: FrontEndProviderServices, autoStart: Boolean = true)(test: (FrontEndProviderServices, MockExecutor, MockSubscriptionHandler[EndpointConnection], FrontEndManager) => Unit) = {
 
     val exe = new MockExecutor
 
-    val mp = new MockSubscriptionHandler[CommEndpointConnection]
+    val mp = new MockSubscriptionHandler[EndpointConnection]
     val appConfig = ApplicationConfig.newBuilder.setUuid(applicationUuid).build
     val fem = new FrontEndManager(services, exe, mp, appConfig, protocolList, 5000)
 
@@ -55,7 +55,7 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
     test(services, exe, mp, fem)
   }
 
-  def responses(fepResult: => Promise[FrontEndProcessor], subResult: => Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]]) = {
+  def responses(fepResult: => Promise[FrontEndProcessor], subResult: => Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]]) = {
     val services = Mockito.mock(classOf[FrontEndProviderServices], new MockitoStubbedOnly)
 
     Mockito.doReturn(fepResult).when(services).registerApplicationAsFrontEnd(applicationUuid, protocolList)
@@ -66,7 +66,7 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
 
   test("Announces on startup") {
     val fep = new FixedPromise(Success(FrontEndProcessor.newBuilder.setUuid("someuid").build))
-    val sub = new FixedPromise(Success(new MockSubscriptionResult[CommEndpointConnection](Nil)))
+    val sub = new FixedPromise(Success(new MockSubscriptionResult[EndpointConnection](Nil)))
     fixture(responses(fep, sub), false) { (services, exe, mp, fem) =>
       fem.start()
       mp.sub should equal(Some(sub.await))

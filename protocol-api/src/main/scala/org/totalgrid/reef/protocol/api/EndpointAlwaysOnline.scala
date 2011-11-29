@@ -36,14 +36,14 @@ trait EndpointAlwaysOnline extends Protocol with Logging {
 
     val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher)
     endpointMap += endpoint -> endpointPublisher
-    endpointPublisher.publish(FEP.CommEndpointConnection.State.COMMS_UP)
+    endpointPublisher.publish(FEP.EndpointConnection.State.COMMS_UP)
     ret
   }
 
   abstract override def removeEndpoint(endpoint: String): Unit = {
     super.removeEndpoint(endpoint)
     endpointMap.remove(endpoint) match {
-      case Some(x) => x.publish(FEP.CommEndpointConnection.State.COMMS_DOWN)
+      case Some(x) => x.publish(FEP.EndpointConnection.State.COMMS_DOWN)
       case None => logger.error("Referenced endpoint not in map: " + endpoint)
     }
   }

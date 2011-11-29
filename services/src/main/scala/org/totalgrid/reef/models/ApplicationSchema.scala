@@ -56,7 +56,7 @@ object ApplicationSchema extends Schema {
   val configFiles = table[ConfigFile]
 
   val userRequests = table[UserCommandModel]
-  val commandAccess = table[CommandAccessModel]
+  val commandAccess = table[CommandLockModel]
   val commandToBlocks = table[CommandBlockJoin]
 
   val events = table[EventStore]

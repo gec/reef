@@ -100,10 +100,10 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.proto.Commands.UserCommandRequest]
     def id = "user_command_request"
   }
-  def commandAccess() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandAccess] {
-    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandAccess): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandAccess.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandAccess]
+  def commandAccess() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandLock] {
+    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandLock): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandLock.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandLock]
     def id = "command_access"
   }
   def commandRequest() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandRequest] {
@@ -172,16 +172,16 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.proto.FEP.EndpointOwnership]
     def id = "endpoint_ownership"
   }
-  def commEndpointConfig() = new TypeDescriptor[org.totalgrid.reef.proto.FEP.CommEndpointConfig] {
-    def serialize(typ: org.totalgrid.reef.proto.FEP.CommEndpointConfig): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommEndpointConfig.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommEndpointConfig]
+  def commEndpointConfig() = new TypeDescriptor[org.totalgrid.reef.proto.FEP.Endpoint] {
+    def serialize(typ: org.totalgrid.reef.proto.FEP.Endpoint): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.Endpoint.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.FEP.Endpoint]
     def id = "comm_endpoint_config"
   }
-  def commEndpointConnection() = new TypeDescriptor[org.totalgrid.reef.proto.FEP.CommEndpointConnection] {
-    def serialize(typ: org.totalgrid.reef.proto.FEP.CommEndpointConnection): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.CommEndpointConnection.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.FEP.CommEndpointConnection]
+  def commEndpointConnection() = new TypeDescriptor[org.totalgrid.reef.proto.FEP.EndpointConnection] {
+    def serialize(typ: org.totalgrid.reef.proto.FEP.EndpointConnection): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.FEP.EndpointConnection.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.proto.FEP.EndpointConnection]
     def id = "comm_endpoint_connection"
   }
   def measMap() = new TypeDescriptor[org.totalgrid.reef.proto.Mapping.MeasMap] {

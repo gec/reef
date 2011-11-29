@@ -19,7 +19,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
+import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, Endpoint, CommChannel, EndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.clientapi.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
@@ -34,8 +34,8 @@ object FrontEndTestHelpers {
 
   def getConnectionProto(enabled: Boolean, routingKey: Option[String]) = {
     val pt = CommChannel.newBuilder.setUuid("port").setName("port")
-    val cfg = CommEndpointConfig.newBuilder.setProtocol("mock").setUuid("config").setChannel(pt).setName("endpoint1")
-    val b = CommEndpointConnection.newBuilder.setId("connection").setEndpoint(cfg).setEnabled(enabled)
+    val cfg = Endpoint.newBuilder.setProtocol("mock").setUuid("config").setChannel(pt).setName("endpoint1")
+    val b = EndpointConnection.newBuilder.setId("connection").setEndpoint(cfg).setEnabled(enabled)
     routingKey.foreach { s => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(s).build) }
     b.build
   }

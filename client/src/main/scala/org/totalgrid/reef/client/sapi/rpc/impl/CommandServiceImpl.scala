@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.proto.Commands.CommandLock
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
@@ -34,27 +34,27 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
   override def createCommandExecutionLock(ids: List[Command]) = {
     ops.operation("Couldn't get command execution lock for: " + ids.map { _.getName }) {
-      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids)).map(_.one)
+      _.put(CommandLockRequestBuilders.allowAccessForCommands(ids)).map(_.one)
     }
   }
 
   override def createCommandExecutionLock(ids: List[Command], expirationTimeMilli: Long) = {
     ops.operation("Couldn't get command execution lock for: " + ids.map { _.getName }) {
-      _.put(CommandAccessRequestBuilders.allowAccessForCommands(ids, Option(expirationTimeMilli))).map(_.one)
+      _.put(CommandLockRequestBuilders.allowAccessForCommands(ids, Option(expirationTimeMilli))).map(_.one)
     }
   }
 
   override def deleteCommandLock(id: ReefID) = ops.operation("Couldn't delete command lock with id: " + id) {
-    _.delete(CommandAccessRequestBuilders.getForId(id)).map(_.one)
+    _.delete(CommandLockRequestBuilders.getForId(id)).map(_.one)
   }
 
-  override def deleteCommandLock(ca: CommandAccess) = ops.operation("Couldn't delete command lock: " + ca) {
-    _.delete(CommandAccessRequestBuilders.getForId(ca.getId)).map(_.one)
+  override def deleteCommandLock(ca: CommandLock) = ops.operation("Couldn't delete command lock: " + ca) {
+    _.delete(CommandLockRequestBuilders.getForId(ca.getId)).map(_.one)
 
   }
 
   override def clearCommandLocks() = ops.operation("Couldn't delete all command locks in system.") {
-    _.delete(CommandAccessRequestBuilders.getAll).map(_.many)
+    _.delete(CommandLockRequestBuilders.getAll).map(_.many)
   }
 
   override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id) {
@@ -75,27 +75,27 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
   override def createCommandDenialLock(ids: List[Command]) = {
     ops.operation("Couldn't create denial lock on ids: " + ids) {
-      _.put(CommandAccessRequestBuilders.blockAccessForCommands(ids)).map(_.one)
+      _.put(CommandLockRequestBuilders.blockAccessForCommands(ids)).map(_.one)
     }
   }
 
   override def getCommandLocks() = ops.operation("Couldn't get all command locks in system") {
-    _.get(CommandAccessRequestBuilders.getAll).map(_.many)
+    _.get(CommandLockRequestBuilders.getAll).map(_.many)
   }
 
   override def getCommandLockById(id: ReefID) = ops.operation("Couldn't get command lock with id: " + id) {
-    _.get(CommandAccessRequestBuilders.getForId(id)).map(_.one)
+    _.get(CommandLockRequestBuilders.getForId(id)).map(_.one)
   }
 
   override def findCommandLockOnCommand(id: Command) = {
     ops.operation("couldn't find command lock for command: " + id) {
-      _.get(CommandAccessRequestBuilders.getByCommand(id)).map { _.oneOrNone }
+      _.get(CommandLockRequestBuilders.getByCommand(id)).map { _.oneOrNone }
     }
   }
 
   override def getCommandLocksOnCommands(ids: List[Command]) = {
     ops.operation("Couldn't get command locks for: " + ids) {
-      _.get(CommandAccessRequestBuilders.getByCommands(ids)).map(_.many)
+      _.get(CommandLockRequestBuilders.getByCommands(ids)).map(_.many)
     }
   }
 
@@ -141,12 +141,12 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
     ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
-      import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
+      import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection }
       import org.totalgrid.reef.clientapi.AddressableDestination
       import net.agileautomata.executor4s._
 
       // TODO: reimplement with flatMap once strand/await/flatMap is sorted out
-      val connection = session.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map(_.one).await.get
+      val connection = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build).map(_.one).await.get
       val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
       val service = new EndpointCommandHandlerImpl(handler)
 

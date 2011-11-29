@@ -28,7 +28,7 @@ import org.totalgrid.reef.loader.commons.LoaderServices;
 import org.totalgrid.reef.proto.Commands;
 import org.totalgrid.reef.proto.FEP;
 import org.totalgrid.reef.proto.FEP.EndpointOwnership;
-import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
+import org.totalgrid.reef.proto.FEP.Endpoint;
 import org.totalgrid.reef.proto.Model;
 import org.totalgrid.reef.proto.Model.Command;
 import org.totalgrid.reef.proto.Model.CommandType;
@@ -45,8 +45,8 @@ public class TestCommandHandler extends ReefConnectionTestBase
     {
 
         Command cmd = null;
-        CommEndpointConfig endpoint = null;
-        FEP.CommEndpointConnection conn = null;
+        Endpoint endpoint = null;
+        FEP.EndpointConnection conn = null;
 
         LoaderServices loader = client.getRpcInterface( LoaderServices.class );
         try
@@ -54,8 +54,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
             cmd = Command.newBuilder().setName( "test.command" ).setDisplayName( "test.command" ).setType( CommandType.SETPOINT_INT ).build();
 
             EndpointOwnership owners = EndpointOwnership.newBuilder().addCommands( "test.command" ).build();
-            CommEndpointConfig newEndpoint =
-                CommEndpointConfig.newBuilder().setName( "Test.Endpoint" ).setProtocol( "null" ).setOwnerships( owners ).build();
+            Endpoint newEndpoint = Endpoint.newBuilder().setName( "Test.Endpoint" ).setProtocol( "null" ).setOwnerships( owners ).build();
 
             loader.put( cmd ).await();
             endpoint = loader.put( newEndpoint ).await();
@@ -70,7 +69,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
                     throw new ExpectationException( "meas proc never came online" );
                 Thread.sleep( 250 );
             }
-            helpers.alterEndpointConnectionState( conn.getId(), FEP.CommEndpointConnection.State.COMMS_UP );
+            helpers.alterEndpointConnectionState( conn.getId(), FEP.EndpointConnection.State.COMMS_UP );
 
             doCommandRequest( cmd, endpoint.getUuid() );
         }
@@ -79,7 +78,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
             if ( endpoint != null )
             {
                 helpers.disableEndpointConnection( endpoint.getUuid() );
-                helpers.alterEndpointConnectionState( conn.getId(), FEP.CommEndpointConnection.State.COMMS_DOWN );
+                helpers.alterEndpointConnectionState( conn.getId(), FEP.EndpointConnection.State.COMMS_DOWN );
                 loader.delete( endpoint ).await();
             }
             if ( cmd != null )
@@ -90,7 +89,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
     private void doCommandRequest( Command cmd, Model.ReefUUID endpointUuid ) throws Exception
     {
         Cancelable cancelable = null;
-        Commands.CommandAccess access = null;
+        Commands.CommandLock access = null;
         try
         {
             CommandRequestHandler handler = new CommandRequestHandler() {

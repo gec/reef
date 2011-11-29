@@ -20,7 +20,7 @@ package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.proto.Model.Command
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandLock, UserCommandRequest }
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.util.Table
 
@@ -42,7 +42,7 @@ object CommandView {
       Nil
   }
 
-  //def selectResponse(resp: CommandAccess)
+  //def selectResponse(resp: CommandLock)
   def commandResponse(resp: UserCommandRequest) = {
     val rows = ("ID: " :: "[" + resp.getId + "]" :: Nil) ::
       ("Command:" :: resp.commandRequest.command.name.getOrElse("unknown") :: Nil) ::
@@ -57,17 +57,17 @@ object CommandView {
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }
 
-  def removeBlockResponse(removed: List[CommandAccess]) = {
+  def removeBlockResponse(removed: List[CommandLock]) = {
     val rows = removed.map(acc => "Removed:" :: "[" + acc.getId + "]" :: Nil)
     Table.renderRows(rows, " ")
   }
 
-  def blockResponse(acc: CommandAccess) = {
+  def blockResponse(acc: CommandLock) = {
     println("Block successful.")
     accessInspect(acc)
   }
 
-  def accessInspect(acc: CommandAccess) = {
+  def accessInspect(acc: CommandLock) = {
     val commands = acc.getCommandsList.toList
     val first = commands.headOption.map { _.name }.flatten.toString
     val tail = commands.tail
@@ -83,13 +83,13 @@ object CommandView {
     Table.renderRows(rows ::: cmdRows, " ")
   }
 
-  def timeString(acc: CommandAccess) = new java.util.Date(acc.getExpireTime).toString
+  def timeString(acc: CommandLock) = new java.util.Date(acc.getExpireTime).toString
 
   def accessHeader = {
     "Id" :: "Mode" :: "User" :: "Commands" :: "Expire Time" :: Nil
   }
 
-  def accessRow(acc: CommandAccess): List[String] = {
+  def accessRow(acc: CommandLock): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
     "[" + acc.getId.getValue + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
@@ -103,7 +103,7 @@ object CommandView {
     }
   }
 
-  def printAccessTable(list: List[CommandAccess]) = {
+  def printAccessTable(list: List[CommandLock]) = {
     Table.printTable(accessHeader, list.map(accessRow(_)))
   }
 

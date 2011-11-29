@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.rpc;
 
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.proto.FEP.CommEndpointConfig;
+import org.totalgrid.reef.proto.FEP.Endpoint;
 import org.totalgrid.reef.proto.FEP.CommChannel;
 import org.totalgrid.reef.proto.FEP.CommChannel.State;
 import org.totalgrid.reef.proto.Model.ReefUUID;
@@ -66,5 +66,5 @@ public interface CommunicationChannelService
      * @param channelUuid
      * @return list of endpoints using this channel
      */
-    List<CommEndpointConfig> getEndpointsUsingChannel( ReefUUID channelUuid ) throws ReefServiceException;
+    List<Endpoint> getEndpointsUsingChannel( ReefUUID channelUuid ) throws ReefServiceException;
 }

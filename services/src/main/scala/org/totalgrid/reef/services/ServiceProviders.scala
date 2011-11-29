@@ -74,7 +74,7 @@ class ServiceProviders(
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
 
-    new CommandAccessService(modelFac.accesses),
+    new CommandLockService(modelFac.accesses),
 
     new UserCommandRequestService(modelFac.userRequests),
 

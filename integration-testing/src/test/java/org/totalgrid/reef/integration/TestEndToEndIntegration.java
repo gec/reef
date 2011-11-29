@@ -58,12 +58,12 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase
         PointService ps = helpers;
 
         // make sure all of the endpoints are enabled and COMMS_UP so measurements should be published
-        List<FEP.CommEndpointConfig> endpoints = helpers.getEndpoints();
-        for ( FEP.CommEndpointConfig endpoint : endpoints )
+        List<FEP.Endpoint> endpoints = helpers.getEndpoints();
+        for ( FEP.Endpoint endpoint : endpoints )
         {
-            FEP.CommEndpointConnection connection = helpers.getEndpointConnectionByUuid( endpoint.getUuid() );
+            FEP.EndpointConnection connection = helpers.getEndpointConnectionByUuid( endpoint.getUuid() );
             assertEquals( connection.getEnabled(), true );
-            assertEquals( connection.getState(), FEP.CommEndpointConnection.State.COMMS_UP );
+            assertEquals( connection.getState(), FEP.EndpointConnection.State.COMMS_UP );
         }
 
         // mock object that will receive queue and measurement subscription

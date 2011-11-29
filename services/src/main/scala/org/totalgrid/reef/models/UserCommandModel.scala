@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.models
 
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
 import org.squeryl.PrimitiveTypeMode._
 
 // Related to UserCommandRequest proto
@@ -33,7 +33,7 @@ case class UserCommandModel(
   def command = hasOne(ApplicationSchema.commands, commandId)
 }
 
-object CommandAccessModel {
+object CommandLockModel {
   private val blockInt = AccessProto.AccessMode.BLOCKED.getNumber
 
   def activeSelectsForCommands(ids: List[Long]) = {
@@ -55,7 +55,7 @@ object CommandAccessModel {
         select (acc))
   }
 
-  def activeSelect(selectId: Option[Long]): Option[CommandAccessModel] = {
+  def activeSelect(selectId: Option[Long]): Option[CommandLockModel] = {
     selectId.flatMap { id =>
       val select = from(ApplicationSchema.commandAccess)(acc =>
         where((acc.id === id) and (acc.access === blockInt or acc.expireTime.isNull or acc.expireTime > System.currentTimeMillis))
@@ -69,7 +69,7 @@ object CommandAccessModel {
   }
 }
 
-case class CommandAccessModel(
+case class CommandLockModel(
     val access: Int,
     val expireTime: Option[Long],
     val agent: Option[String]) extends ModelWithId {

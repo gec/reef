@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection => ConnProto, Endpoint => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.clientapi.sapi.types.Optional._

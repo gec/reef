@@ -138,7 +138,7 @@
  * /*
  *   Command
  * 
- *   Represents a configured output point. CommandAccess and UserCommandRequest services use
+ *   Represents a configured output point. CommandLock and UserCommandRequest services use
  *   this command name.
  * 
  *   Every Command is associated with an Entity of type "Command". The command's location in the

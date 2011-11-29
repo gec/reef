@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.benchmarks.endpoints
 
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.benchmarks.FailedBenchmarkException
 
-class EndpointStateTransitionTimer(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection], endpointUuids: List[ReefUUID]) extends SubscriptionEventAcceptor[CommEndpointConnection] {
+class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConnection], EndpointConnection], endpointUuids: List[ReefUUID]) extends SubscriptionEventAcceptor[EndpointConnection] {
 
   case class TimingInfo(var stateTime: Option[Long], var enabledTime: Option[Long], var routingKeyTime: Option[Long])
 
@@ -36,7 +36,7 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[CommEndpointC
 
   result.getSubscription.start(this)
 
-  def onEvent(ea: SubscriptionEvent[CommEndpointConnection]) = syncVar.atomic { m =>
+  def onEvent(ea: SubscriptionEvent[EndpointConnection]) = syncVar.atomic { m =>
     val update = ea.getValue
     m.get(update.getEndpoint.getUuid) match {
       case Some(tuple) =>
@@ -56,12 +56,12 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[CommEndpointC
     startTime = System.nanoTime()
   }
 
-  def checkAllState(enabled: Boolean, state: CommEndpointConnection.State) {
+  def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
     if (!syncVar.waitFor(x => x.values.forall(e => e._1.getEnabled == enabled && e._1.getState == state), 20000, false)) {
       throw new FailedBenchmarkException("Not all endpoints made it to enabled: " + enabled + " state: " + state + " - " + finalStateAsString)
     }
   }
-  def checkState(uuid: ReefUUID, enabled: Boolean, state: CommEndpointConnection.State) {
+  def checkState(uuid: ReefUUID, enabled: Boolean, state: EndpointConnection.State) {
     if (!syncVar.waitFor(x => x.get(uuid).map(e => e._1.getEnabled == enabled && e._1.getState == state).getOrElse(false), 20000, false)) {
       throw new FailedBenchmarkException("Endpoints " + uuid + " didnt make it to enabled: " + enabled + " state: " + state + " - " + finalStateAsString)
     }

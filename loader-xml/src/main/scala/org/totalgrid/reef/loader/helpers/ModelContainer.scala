@@ -20,7 +20,7 @@ package org.totalgrid.reef.loader.helpers
 
 import org.totalgrid.reef.proto.Alarms.EventConfig
 import org.totalgrid.reef.proto.Model.{ ConfigFile, Point, Command, EntityAttributes, EntityEdge, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig }
+import org.totalgrid.reef.proto.FEP.{ CommChannel, Endpoint }
 import collection.mutable.{ ArrayBuffer }
 import com.google.protobuf.GeneratedMessage
 import collection.Iterator
@@ -90,7 +90,7 @@ class ModelContainer extends Logging {
     eventConfig
   }
 
-  def add(endpointConfig: CommEndpointConfig): CommEndpointConfig =
+  def add(endpointConfig: Endpoint): Endpoint =
     {
       addModel(endpointConfig)
       endpointConfig

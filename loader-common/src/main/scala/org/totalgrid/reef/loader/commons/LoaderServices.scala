@@ -33,7 +33,7 @@ trait LoaderServices extends AllScadaService {
   def addPoint(point: Point): Promise[Point]
   def addCommand(cmd: Command): Promise[Command]
   def addConfigFile(eq: ConfigFile): Promise[ConfigFile]
-  def addEndpoint(eq: CommEndpointConfig): Promise[CommEndpointConfig]
+  def addEndpoint(eq: Endpoint): Promise[Endpoint]
   def addChannel(eq: CommChannel): Promise[CommChannel]
   def addEdge(obj: EntityEdge): Promise[EntityEdge]
   def get[A <: AnyRef](obj: A): Promise[A]
@@ -74,7 +74,7 @@ class LoaderServicesImpl(client: Client) extends ApiBase(client) with LoaderServ
     _.put(eq).map { _.one }
   }
 
-  def addEndpoint(eq: CommEndpointConfig) = ops.operation("Can't add endpoint: " + eq.getUuid.getValue + " name: " + eq.getName) {
+  def addEndpoint(eq: Endpoint) = ops.operation("Can't add endpoint: " + eq.getUuid.getValue + " name: " + eq.getName) {
     _.put(eq).map { _.one }
   }
 
