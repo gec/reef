@@ -100,7 +100,7 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
         }
         LoaderClient.prepareClient( client );
         client.addSubscriptionCreationListener( this );
-        helpers = client.getRpcInterface( AllScadaService.class );
+        helpers = client.getService(AllScadaService.class);
     }
 
     @After

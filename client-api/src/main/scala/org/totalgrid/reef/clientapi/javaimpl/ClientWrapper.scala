@@ -43,5 +43,5 @@ class ClientWrapper(client: SClient) extends Client {
   def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)
 
   def getRpcInterface[A](klass: Class[A]) = client.getRpcInterface(klass)
-  def addRpcProvider(info: RpcProviderInfo) = client.addRpcProvider(info)
+  def addServiceProvider(info: RpcProviderInfo) = client.addRpcProvider(info)
 }

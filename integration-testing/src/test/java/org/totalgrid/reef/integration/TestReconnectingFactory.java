@@ -68,7 +68,7 @@ public class TestReconnectingFactory
 
         Connection c = (Connection)conn.current();
         Client client = c.login( userSettings );
-        client.getRpcInterface( MeasurementService.class );
+        client.getService(MeasurementService.class);
 
         factory.stop();
 

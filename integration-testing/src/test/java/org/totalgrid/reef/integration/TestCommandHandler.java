@@ -48,7 +48,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
         Endpoint endpoint = null;
         FEP.EndpointConnection conn = null;
 
-        LoaderServices loader = client.getRpcInterface( LoaderServices.class );
+        LoaderServices loader = client.getService(LoaderServices.class);
         try
         {
             cmd = Command.newBuilder().setName( "test.command" ).setDisplayName( "test.command" ).setType( CommandType.SETPOINT_INT ).build();

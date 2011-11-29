@@ -53,7 +53,7 @@ object LoaderClient {
   }
 
   def prepareClient(client: JClient) {
-    client.addRpcProvider(serviceInfo)
+    client.addServiceProvider(serviceInfo)
   }
 }
 
