@@ -28,6 +28,7 @@ import org.totalgrid.reef.simulator.example.ExampleSimulatorFactory
 import net.agileautomata.executor4s.testing.MockExecutor
 import org.totalgrid.reef.api.protocol.api.Publisher
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
@@ -61,7 +62,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
     SimMapping.CommandSim.newBuilder.setName(name).setResponseStatus(Commands.CommandStatus.SUCCESS)
 
   def buildCommand(name: String) =
-    Commands.CommandRequest.newBuilder.setType(Commands.CommandRequest.ValType.NONE).setName(name).build()
+    Commands.CommandRequest.newBuilder.setType(Commands.CommandRequest.ValType.NONE).setCommand(Command.newBuilder.setName(name)).build()
 
   test("Correctly identifies endpoint") {
     ExampleSimulatorFactory.getSimLevel("test", simpleMapping("breaker.kW_a")) should equal(1)

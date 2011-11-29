@@ -45,7 +45,7 @@ object CommandView {
   //def selectResponse(resp: CommandAccess)
   def commandResponse(resp: UserCommandRequest) = {
     val rows = ("ID: " :: "[" + resp.getUid + "]" :: Nil) ::
-      ("Command:" :: resp.getCommandRequest.getName :: Nil) ::
+      ("Command:" :: resp.commandRequest.command.name.getOrElse("unknown") :: Nil) ::
       ("User:" :: resp.getUser :: Nil) ::
       ("Status:" :: resp.getStatus.toString :: Nil) :: Nil
 
@@ -69,16 +69,16 @@ object CommandView {
 
   def accessInspect(acc: CommandAccess) = {
     val commands = acc.getCommandsList.toList
-    val first = commands.headOption.getOrElse("")
+    val first = commands.headOption.map { _.name }.flatten.toString
     val tail = commands.tail
 
-    val rows: List[List[String]] = ("ID:" :: "[" + acc.getUid + "]" :: Nil) ::
+    val rows: List[List[String]] = ("ID:" :: "[" + acc.getUid.getValue + "]" :: Nil) ::
       ("Mode:" :: acc.getAccess.toString :: Nil) ::
       ("User:" :: acc.getUser :: Nil) ::
       ("Expires:" :: timeString(acc) :: Nil) ::
       ("Commands:" :: first :: Nil) :: Nil
 
-    val cmdRows = tail.map(cmd => ("" :: cmd.toString :: Nil))
+    val cmdRows = tail.map(cmd => ("" :: cmd.name.toString :: Nil))
 
     Table.renderRows(rows ::: cmdRows, " ")
   }
@@ -92,14 +92,14 @@ object CommandView {
   def accessRow(acc: CommandAccess): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
-    "[" + acc.getUid + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
+    "[" + acc.getUid.getValue + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
   }
 
-  def commandsEllipsis(names: List[String]) = {
+  def commandsEllipsis(names: List[Command]) = {
     names.length match {
       case 0 => ""
-      case 1 => names.head
-      case _ => "(" + names.head + ", ...)"
+      case 1 => names.head.name.getOrElse("unknown")
+      case _ => "(" + names.head.name.getOrElse("unknown") + ", ...)"
     }
   }
 
@@ -117,7 +117,7 @@ object CommandView {
 
   def historyRow(a: UserCommandRequest) = {
     a.uid.value.getOrElse("unknown") ::
-      a.commandRequest.name.getOrElse("unknown") ::
+      a.commandRequest.command.name.getOrElse("unknown") ::
       a.status.map { _.toString }.getOrElse("unknown") ::
       a.user.getOrElse("unknown") ::
       a.commandRequest._type.toString ::

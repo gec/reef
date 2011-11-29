@@ -120,7 +120,7 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
   override def factory = parent
   override def simLevel: Int = 0
 
-  override def issue(cr: Commands.CommandRequest): Commands.CommandStatus = state.commands.get(cr.getName) match {
+  override def issue(cr: Commands.CommandRequest): Commands.CommandStatus = state.commands.get(cr.getCommand.getName) match {
     case Some(status) => status
     case None =>
       logger.warn("Response for command not found, returning default")

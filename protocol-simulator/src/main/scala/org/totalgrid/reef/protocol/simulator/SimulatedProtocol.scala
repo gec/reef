@@ -75,9 +75,6 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
 
   class EndpointCommandHandler(endpoint: String) extends CommandHandler {
 
-    def buildResponse(cmd: Commands.CommandRequest, status: Commands.CommandStatus) =
-      Commands.CommandResponse.newBuilder.setCorrelationId(cmd.getCorrelationId).setStatus(status).build
-
     def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher): Unit = mutex.synchronized {
       endpoints.get(endpoint) match {
         case Some(record) =>
@@ -87,7 +84,7 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
               logger.error("Benchmark protocol received command for endpoint, but no plugin was loaded for endpoint: " + endpoint)
               Commands.CommandStatus.NOT_SUPPORTED
           }
-          publisher.publish(buildResponse(cmd, status))
+          publisher.publish(status)
         case None =>
           logger.error("Benchmark protocol received command for unregistered endpoint: " + endpoint)
       }

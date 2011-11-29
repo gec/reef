@@ -107,7 +107,7 @@ class UserCommandRequestServiceModel(
     }
 
     issueRequest(context,
-      findCommand(req.getCommandRequest.getName),
+      findCommand(req.getCommandRequest.getCommand.getName),
       id,
       user,
       req.getTimeoutMs,
@@ -130,7 +130,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
     req.uid.value ::
       req.user ::
-      req.commandRequest.name ::
+      req.commandRequest.command.name ::
       req.commandRequest.correlationId :: Nil
   }
 
@@ -145,7 +145,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
     List(
       proto.user.map(sql.agent === _),
       proto.status.map(st => sql.status === st.getNumber),
-      proto.commandRequest.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
+      proto.commandRequest.command.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
   }
 
   def isModified(existing: UserCommandModel, updated: UserCommandModel): Boolean = {

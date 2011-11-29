@@ -45,7 +45,7 @@ object Protocol {
   type BatchPublisher = Publisher[MeasurementBatch]
   type EndpointPublisher = Publisher[FEP.CommEndpointConnection.State]
   type ChannelPublisher = Publisher[CommChannel.State]
-  type ResponsePublisher = Publisher[Commands.CommandResponse]
+  type ResponsePublisher = Publisher[Commands.CommandStatus]
 }
 
 trait CommandHandler {

@@ -112,12 +112,6 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandRequest]
     def id = "command_request"
   }
-  def commandResponse() = new TypeDescriptor[org.totalgrid.reef.proto.Commands.CommandResponse] {
-    def serialize(typ: org.totalgrid.reef.proto.Commands.CommandResponse): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Commands.CommandResponse.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.proto.Commands.CommandResponse]
-    def id = "command_response"
-  }
   def event() = new TypeDescriptor[org.totalgrid.reef.proto.Events.Event] {
     def serialize(typ: org.totalgrid.reef.proto.Events.Event): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.proto.Events.Event.parseFrom(bytes)

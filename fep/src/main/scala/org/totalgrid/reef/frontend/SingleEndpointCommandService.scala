@@ -18,15 +18,15 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.Commands.{ UserCommandRequest => Command, CommandResponse }
-
 import org.totalgrid.reef.api.protocol.api.CommandHandler
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.clientapi.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.clientapi.proto.Envelope
 
 import org.totalgrid.reef.clientapi.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest => Command }
 
+// TODO: delete SingleEndpointCommandService
 class SingleEndpointCommandService(handler: CommandHandler) extends AsyncServiceBase[Command] {
 
   import org.totalgrid.reef.api.protocol.api.Protocol.ResponsePublisher
@@ -36,8 +36,8 @@ class SingleEndpointCommandService(handler: CommandHandler) extends AsyncService
   override def putAsync(req: Command, env: BasicRequestHeaders)(callback: Response[Command] => Unit): Unit = {
 
     val rspPublisher = new ResponsePublisher {
-      def publish(rsp: CommandResponse) = {
-        val response = Command.newBuilder(req).setStatus(rsp.getStatus).build()
+      def publish(status: CommandStatus) = {
+        val response = Command.newBuilder(req).setStatus(status).build()
         callback(SuccessResponse(Envelope.Status.OK, List(response)))
       }
     }

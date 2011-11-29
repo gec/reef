@@ -104,7 +104,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def getCommandHistory(cmd: Command) = ops.operation("Couldn't get command history") {
-    _.get(UserCommandRequestBuilders.getForName(cmd.getName)).map(_.many)
+    _.get(UserCommandRequestBuilders.getForCommand(cmd)).map(_.many)
   }
 
   override def getCommands() = ops.operation("Couldn't get all commands") {

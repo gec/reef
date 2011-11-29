@@ -24,28 +24,25 @@ import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 object UserCommandRequestBuilders {
 
   def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(ReefID.newBuilder.setValue(uid)).build
-  def getForName(command: String) = {
-    val cr = CommandRequest.newBuilder.setName(command)
+  def getForCommand(command: Command) = {
+    val cr = CommandRequest.newBuilder.setCommand(command)
     UserCommandRequest.newBuilder.setCommandRequest(cr).build
   }
 
   def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
 
-  def executeControl(command: Command): UserCommandRequest = executeControl(command.getName)
-  def executeControl(command: String): UserCommandRequest = {
-    val cr = CommandRequest.newBuilder.setName(command).setType(CommandRequest.ValType.NONE)
+  def executeControl(command: Command): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setCommand(command).setType(CommandRequest.ValType.NONE)
     UserCommandRequest.newBuilder.setCommandRequest(cr).build
   }
 
-  def executeSetpoint(command: Command, value: Int): UserCommandRequest = executeSetpoint(command.getName, value)
-  def executeSetpoint(command: String, value: Int): UserCommandRequest = {
-    val cr = CommandRequest.newBuilder.setName(command).setType(CommandRequest.ValType.INT).setIntVal(value)
+  def executeSetpoint(command: Command, value: Int): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setCommand(command).setType(CommandRequest.ValType.INT).setIntVal(value)
     UserCommandRequest.newBuilder.setCommandRequest(cr).build
   }
 
-  def executeSetpoint(command: Command, value: Double): UserCommandRequest = executeSetpoint(command.getName, value)
-  def executeSetpoint(command: String, value: Double): UserCommandRequest = {
-    val cr = CommandRequest.newBuilder.setName(command).setType(CommandRequest.ValType.DOUBLE).setDoubleVal(value)
+  def executeSetpoint(command: Command, value: Double): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setCommand(command).setType(CommandRequest.ValType.DOUBLE).setDoubleVal(value)
     UserCommandRequest.newBuilder.setCommandRequest(cr).build
   }
 

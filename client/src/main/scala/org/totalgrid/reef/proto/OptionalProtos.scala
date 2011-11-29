@@ -121,23 +121,18 @@ object OptionalProtos {
   implicit def proto2OptCommandsCommandAccess(a: org.totalgrid.reef.proto.Commands.CommandAccess): OptCommandsCommandAccess = new OptCommandsCommandAccess(Some(a))
   class OptCommandsCommandAccess(real: Option[org.totalgrid.reef.proto.Commands.CommandAccess]) extends OptionalStruct(real) {
     val uid = new OptModelReefID(optionally(_.hasUid, _.getUid))
-    val commands = optionally(_.getCommandsList.toList)
+    val commands = optionally(_.getCommandsList.toList.map { i => new OptModelCommand(Some(i)) })
     val access = optionally(_.hasAccess, _.getAccess)
     val expireTime = optionally(_.hasExpireTime, _.getExpireTime)
     val user = optionally(_.hasUser, _.getUser)
   }
   implicit def proto2OptCommandsCommandRequest(a: org.totalgrid.reef.proto.Commands.CommandRequest): OptCommandsCommandRequest = new OptCommandsCommandRequest(Some(a))
   class OptCommandsCommandRequest(real: Option[org.totalgrid.reef.proto.Commands.CommandRequest]) extends OptionalStruct(real) {
-    val name = optionally(_.hasName, _.getName)
+    val command = new OptModelCommand(optionally(_.hasCommand, _.getCommand))
     val correlationId = optionally(_.hasCorrelationId, _.getCorrelationId)
     val _type = optionally(_.hasType, _.getType)
     val intVal = optionally(_.hasIntVal, _.getIntVal)
     val doubleVal = optionally(_.hasDoubleVal, _.getDoubleVal)
-  }
-  implicit def proto2OptCommandsCommandResponse(a: org.totalgrid.reef.proto.Commands.CommandResponse): OptCommandsCommandResponse = new OptCommandsCommandResponse(Some(a))
-  class OptCommandsCommandResponse(real: Option[org.totalgrid.reef.proto.Commands.CommandResponse]) extends OptionalStruct(real) {
-    val correlationId = optionally(_.getCorrelationId)
-    val status = optionally(_.getStatus)
   }
   implicit def proto2OptEventsEvent(a: org.totalgrid.reef.proto.Events.Event): OptEventsEvent = new OptEventsEvent(Some(a))
   class OptEventsEvent(real: Option[org.totalgrid.reef.proto.Events.Event]) extends OptionalStruct(real) {

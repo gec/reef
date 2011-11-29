@@ -66,7 +66,7 @@
  *     BLOCKED = 2;
  *   }
  *   optional org.totalgrid.reef.proto.Model.ReefID       uid             = 1;
- *   repeated string       commands        = 2;
+ *   repeated org.totalgrid.reef.proto.Model.Command      commands        = 2;
  *   optional AccessMode   access          = 3;
  *   optional uint64       expire_time     = 4;
  *   optional string       user            = 5;
@@ -97,7 +97,7 @@
  * 	}
  * 	
  * 	// unique name of the control in the system. Whomever executes the control knows protocol specific details (if necessary)
- * 	optional string  name = 1;
+ * 	optional org.totalgrid.reef.proto.Model.Command command = 1;
  * 
  * 	// correlation id for the request, used to match requests to response
  * 	// field used for service/FEP interaction, not client/server interaction
@@ -130,17 +130,6 @@
  * 	NOT_AUTHORIZED = 10;
  * 	UNDEFINED      = 11;
  * 	EXECUTING      = 12;
- * }
- * 
- * /*
- *   CommandResponse
- * 
- *   Used for communication between the services and FEPs. Indicates the result of a command request.
- * 
- * -/
- * message CommandResponse {
- * 	required string        correlation_id = 1; // needs to match id of request
- * 	required CommandStatus status         = 2; // status code
  * }
  * </pre>
  */

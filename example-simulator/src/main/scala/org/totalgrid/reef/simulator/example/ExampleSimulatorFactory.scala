@@ -106,7 +106,7 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
       .addMeas(createStatus(names.status, "status", status)).build
   }
 
-  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getName match {
+  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getCommand.getName match {
     case names.trip =>
       executor.execute(publisher.publish(createBreakerBatch(true)))
       Commands.CommandStatus.SUCCESS
