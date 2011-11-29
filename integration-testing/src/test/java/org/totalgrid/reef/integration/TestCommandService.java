@@ -23,6 +23,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
+import org.totalgrid.reef.clientapi.exceptions.ExpectationException;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.clientapi.proto.Envelope;
 import org.totalgrid.reef.client.rpc.CommandService;
@@ -77,7 +78,7 @@ public class TestCommandService extends ReefConnectionTestBase
         Command c = cs.getCommands().get( 0 );
         try
         {
-            cs.executeCommandAsControl( c );
+            executeCommandAsRightType( cs, c, 50.0 );
             fail( "should throw exception" );
         }
         catch ( ReefServiceException rse )
@@ -120,7 +121,7 @@ public class TestCommandService extends ReefConnectionTestBase
             try
             {
                 assertTrue( accessResponse.getExpireTime() > 0 );
-                CommandStatus cmdResponse = cs.executeCommandAsControl( cmd );
+                CommandStatus cmdResponse = executeCommandAsRightType( cs, cmd, 99.0 );
                 assertEquals( cmdResponse, CommandStatus.SUCCESS );
             }
             finally
@@ -212,7 +213,7 @@ public class TestCommandService extends ReefConnectionTestBase
         assertTrue( accessResponse.getExpireTime() > 0 );
 
         // execute
-        CommandStatus cmdResponse = cs.executeCommandAsControl( cmd );
+        CommandStatus cmdResponse = executeCommandAsRightType( cs, cmd, 50.0 );
         assertEquals( CommandStatus.SUCCESS, cmdResponse );
 
         // delete
@@ -221,7 +222,7 @@ public class TestCommandService extends ReefConnectionTestBase
         try
         {
             // second execute fails
-            cs.executeCommandAsControl( cmd );
+            executeCommandAsRightType( cs, cmd, 50.0 );
             fail( "should throw exception" );
         }
         catch ( ReefServiceException pse )
@@ -232,5 +233,20 @@ public class TestCommandService extends ReefConnectionTestBase
         List<UserCommandRequest> requests = cs.getCommandHistory( cmd );
 
         assertTrue( intialRequests.size() < requests.size() );
+    }
+
+    private CommandStatus executeCommandAsRightType( CommandService cs, Command cmd, double value ) throws ReefServiceException
+    {
+        switch( cmd.getType() )
+        {
+            case CONTROL:
+                return cs.executeCommandAsControl( cmd );
+            case SETPOINT_INT:
+                return cs.executeCommandAsSetpoint( cmd, (int)value );
+            case SETPOINT_DOUBLE:
+                return cs.executeCommandAsSetpoint( cmd, value );
+            default:
+                throw new ExpectationException( "Unknown command type." );
+        }
     }
 }
