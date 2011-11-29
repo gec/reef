@@ -28,6 +28,7 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
 import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
+import org.totalgrid.reef.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 class UserCommandRequestServiceModel(
@@ -79,10 +80,21 @@ class UserCommandRequestServiceModel(
   def issueRequest(context: RequestContext, cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
     if (accessModel.userHasSelect(cmd, user, atTime)) {
 
+      def checkCommandType(modelType: Int, requestType: CommandType) {
+        if (modelType != requestType.getNumber)
+          throw new BadRequestException("Cannot execute command with type: " + CommandType.valueOf(modelType) + " with request of type: " + requestType)
+      }
+
       val (code, valueArg) = cmdRequest._type match {
-        case Some(ValType.NONE) | None => (EventType.Scada.ControlExe, "value" -> "")
-        case Some(ValType.INT) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
-        case Some(ValType.DOUBLE) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
+        case Some(ValType.NONE) | None =>
+          checkCommandType(cmd.commandType, CommandType.CONTROL)
+          (EventType.Scada.ControlExe, "value" -> "")
+        case Some(ValType.INT) =>
+          checkCommandType(cmd.commandType, CommandType.SETPOINT_INT)
+          (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
+        case Some(ValType.DOUBLE) =>
+          checkCommandType(cmd.commandType, CommandType.SETPOINT_DOUBLE)
+          (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
       }
       postSystemEvent(context, code, Some(cmd.entity.value), "command" -> cmd.entityName :: valueArg :: Nil)
 

@@ -34,6 +34,7 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
     LoaderClient.prepareClient(session)
 
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
 
     ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
   }
@@ -54,6 +55,7 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
     LoaderClient.prepareClient(session)
 
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
 
     ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
   }
