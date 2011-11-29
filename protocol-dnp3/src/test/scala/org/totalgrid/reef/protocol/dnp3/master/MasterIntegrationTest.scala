@@ -36,10 +36,13 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, 
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
 import org.totalgrid.reef.proto.Model.Command
+import org.mockito.Mockito
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
 
+  val client = Mockito.mock(classOf[Client])
   val slave = new StackManager
   val commandAcceptor = new InstantCommandResponder(CommandStatus.CS_SUCCESS)
   val numSlaves = 1
@@ -75,9 +78,9 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
       val measListener = new LastValueListener[MeasurementBatch](false)
       val portListener = new LastValueListener[FEP.CommChannel.State]
 
-      protocol.addChannel(getClient(port, channelName), portListener)
+      protocol.addChannel(getClient(port, channelName), portListener, client)
 
-      val commandAdapter = protocol.addEndpoint("endpoint" + port, channelName, configFiles, measListener, endpointListener)
+      val commandAdapter = protocol.addEndpoint("endpoint" + port, channelName, configFiles, measListener, endpointListener, client)
 
       (portListener, endpointListener, measListener, commandAdapter)
     }

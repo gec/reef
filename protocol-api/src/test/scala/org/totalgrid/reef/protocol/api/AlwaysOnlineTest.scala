@@ -27,9 +27,13 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.mockito.Mockito
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
+
+  val client = Mockito.mock(classOf[Client])
 
   class MockPublisher[A] extends Publisher[A] {
     var queue = Queue.empty[A]
@@ -42,7 +46,7 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     val mp = new NullProtocol with RecordingProtocol with ChannelAlwaysOnline
     val pub = new MockPublisher[CommChannel.State]
 
-    mp.addChannel(CommChannel.newBuilder.setName("channel1").build, pub)
+    mp.addChannel(CommChannel.newBuilder.setName("channel1").build, pub, client)
     mp.removeChannel("channel1")
 
     pub.queue should equal(Queue(CommChannel.State.OPENING, CommChannel.State.OPEN, CommChannel.State.CLOSED))
@@ -52,7 +56,7 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
     val mp = new NullProtocol with RecordingProtocol with EndpointAlwaysOnline
     val pub = new MockPublisher[CommEndpointConnection.State]
 
-    mp.addEndpoint("endpoint1", "", Nil, NullBatchPublisher, pub)
+    mp.addEndpoint("endpoint1", "", Nil, NullBatchPublisher, pub, client)
     pub.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))
 
     mp.removeEndpoint("endpoint1")

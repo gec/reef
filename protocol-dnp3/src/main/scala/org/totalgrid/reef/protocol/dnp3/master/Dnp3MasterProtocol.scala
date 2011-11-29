@@ -25,6 +25,7 @@ import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCo
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.dnp3.IStackObserver
 import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver,
   batchPublisher: Publisher[MeasurementBatch], commandAdapter: CommandAdapter)
@@ -40,7 +41,8 @@ class Dnp3MasterProtocol extends Dnp3ProtocolBase[MasterObjectsContainer] {
     channelName: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
+    endpointPublisher: EndpointPublisher,
+    client: Client): ProtocolCommandHandler = {
 
     logger.info("Adding device with id: " + endpointName + " onto channel " + channelName)
 

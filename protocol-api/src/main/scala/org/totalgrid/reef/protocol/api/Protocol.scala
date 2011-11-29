@@ -23,6 +23,7 @@ import Measurements.MeasurementBatch
 import FEP.CommChannel
 import org.totalgrid.reef.proto.Model.ConfigFile
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 trait Publisher[A] {
   /**
@@ -79,18 +80,18 @@ trait Protocol {
   def requiresChannel: Boolean
 
   def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler
+    endpointPublisher: EndpointPublisher, client: Client): CommandHandler
 
   def removeEndpoint(endpoint: String): Unit
 
-  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit
+  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client): Unit
 
   def removeChannel(channel: String): Unit
 
 }
 
 trait ChannelIgnoringProtocol extends Protocol {
-  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher): Unit =
+  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client): Unit =
     {}
 
   def removeChannel(channel: String): Unit =
@@ -99,9 +100,9 @@ trait ChannelIgnoringProtocol extends Protocol {
 
 trait LoggingProtocol extends Protocol with Logging {
 
-  abstract override def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) {
+  abstract override def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher, client: Client) {
     logger.info("protocol: " + name + ": adding channel: " + channel + ", channelPublisher: " + channelPublisher)
-    super.addChannel(channel, channelPublisher)
+    super.addChannel(channel, channelPublisher, client)
   }
 
   abstract override def removeChannel(channel: String) {
@@ -110,9 +111,9 @@ trait LoggingProtocol extends Protocol with Logging {
   }
 
   abstract override def addEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
-    endpointPublisher: Protocol.EndpointPublisher) = {
+    endpointPublisher: Protocol.EndpointPublisher, client: Client) = {
     logger.info("protocol: " + name + ": adding endpoint: " + endpointName + ", channelName: " + channelName);
-    super.addEndpoint(endpointName, channelName, config, batchPublisher, endpointPublisher)
+    super.addEndpoint(endpointName, channelName, config, batchPublisher, endpointPublisher, client)
   }
 
   abstract override def removeEndpoint(endpoint: String) {

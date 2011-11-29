@@ -26,6 +26,7 @@ import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol with Logging {
 
@@ -48,7 +49,7 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
 
   final def Shutdown() = dnp3.Shutdown()
 
-  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
+  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher, client: Client) = {
 
     val physMonitor = createChannelObserver(p.getName, publisher)
 

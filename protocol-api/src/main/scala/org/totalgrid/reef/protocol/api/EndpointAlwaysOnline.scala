@@ -20,6 +20,7 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.proto.{ Model, FEP }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 trait EndpointAlwaysOnline extends Protocol with Logging {
 
@@ -32,9 +33,10 @@ trait EndpointAlwaysOnline extends Protocol with Logging {
     channel: String,
     config: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = {
+    endpointPublisher: EndpointPublisher,
+    client: Client): CommandHandler = {
 
-    val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher)
+    val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher, client)
     endpointMap += endpoint -> endpointPublisher
     endpointPublisher.publish(FEP.CommEndpointConnection.State.COMMS_UP)
     ret

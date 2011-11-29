@@ -23,7 +23,7 @@ import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
-import org.totalgrid.reef.protocol.dnp3.slave.SlaveFepShim
+import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
 import net.agileautomata.executor4s.Executor
 
@@ -32,17 +32,17 @@ class Activator extends ExecutorBundleActivator {
   // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
   System.loadLibrary("dnp3java")
   System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
-  val protocol = new Dnp3MasterProtocol with AddRemoveValidation
-  val slaveShim = new SlaveFepShim
+  val masterProtocol = new Dnp3MasterProtocol with AddRemoveValidation
+  val slaveProtocol = new Dnp3SlaveProtocol with AddRemoveValidation
 
   override def start(context: BundleContext, exe: Executor) {
-    context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
-    slaveShim.start(context, exe)
+    context.createService(masterProtocol, "protocol" -> masterProtocol.name, interface[Protocol])
+    context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol])
   }
 
   override def stop(context: BundleContext, executor: Executor) {
-    protocol.Shutdown()
-    slaveShim.stop(context)
+    masterProtocol.Shutdown()
+    slaveProtocol.Shutdown()
   }
 
 }

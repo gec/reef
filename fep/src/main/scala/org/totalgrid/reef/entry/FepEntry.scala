@@ -93,7 +93,7 @@ final class FepActivator extends ExecutorBundleActivator with Logging {
   private def create(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
     val services = new FrontEndProviderServicesImpl(client)
 
-    val frontEndConnections = new FrontEndConnections(protocols, services)
+    val frontEndConnections = new FrontEndConnections(protocols, services, client)
     val populator = new EndpointConnectionPopulatorAction(services)
     val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
 

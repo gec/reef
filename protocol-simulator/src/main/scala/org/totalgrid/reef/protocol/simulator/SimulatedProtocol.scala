@@ -25,6 +25,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
 import org.totalgrid.reef.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
@@ -48,7 +49,8 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
     channel: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = mutex.synchronized {
+    endpointPublisher: EndpointPublisher,
+    client: Client): CommandHandler = mutex.synchronized {
 
     endpoints.get(endpoint) match {
       case Some(x) =>

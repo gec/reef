@@ -32,12 +32,14 @@ import org.mockito.{ Matchers, Mockito }
 import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler
 import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
 import net.agileautomata.executor4s.Success
+import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
   test("Add/remove proto") {
     val config = getConnectionProto(true, Some("routing"))
     val client = Mockito.mock(classOf[FrontEndProviderServices], new MockitoStubbedOnly)
+    val rawClient = Mockito.mock(classOf[Client])
     val cancelable = new MockCancelable
     val commandBinding = new FixedPromise(Success(cancelable))
     Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))
@@ -49,7 +51,7 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
 
     cancelable.canceled should equal(false)
 
-    val connections = new FrontEndConnections(mp :: Nil, client)
+    val connections = new FrontEndConnections(mp :: Nil, client, rawClient)
 
     connections.add(config)
 
