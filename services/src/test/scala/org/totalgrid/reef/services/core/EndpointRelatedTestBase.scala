@@ -171,20 +171,20 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       meas
     }
 
-    def addDevice(name: String, pname: String = "test_point"): CommEndpointConfig = {
-      val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("benchmark")
+    def addDevice(name: String, pname: String = "test_point"): Endpoint = {
+      val send = Endpoint.newBuilder.setName(name).setProtocol("benchmark")
       addEndpointPointsAndCommands(send, List(name + "." + pname), List(name + ".test_commands"))
     }
 
-    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None, portName: Option[String] = None): CommEndpointConfig = {
+    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None, portName: Option[String] = None): Endpoint = {
       val netPort = network.map { net => CommChannel.newBuilder.setName(portName.getOrElse(name + "-port")).setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
       val locPort = location.map { loc => CommChannel.newBuilder.setName(portName.getOrElse(name + "-serial")).setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
       val port = portService.put(netPort.getOrElse(locPort.get)).expectOne()
-      val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("dnp3").setChannel(port)
+      val send = Endpoint.newBuilder.setName(name).setProtocol("dnp3").setChannel(port)
       addEndpointPointsAndCommands(send, List(name + ".test_point"), List(name + ".test_commands"))
     }
 
-    def addEndpointPointsAndCommands(ce: CommEndpointConfig.Builder, pointNames: List[String], commandNames: List[String]) = {
+    def addEndpointPointsAndCommands(ce: Endpoint.Builder, pointNames: List[String], commandNames: List[String]) = {
       val owns = EndpointOwnership.newBuilder
       pointNames.foreach { pname =>
         owns.addPoints(pname)
@@ -223,12 +223,12 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def listenForMeasurements(measProcName: String) = measProcMap.get(measProcName).get.mb
 
-    def checkFeps(fep: CommEndpointConnection, online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
+    def checkFeps(fep: EndpointConnection, online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
       checkFeps(List(fep), online, frontEndId, hasServiceRouting)
 
-    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
+    def checkFeps(feps: List[EndpointConnection], online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
-      //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
+      //feps.forall { f => f.getState == EndpointConnection.State.COMMS_UP } should equal(true)
       feps.forall { f => f.hasFrontEnd == frontEndId.isDefined && (frontEndId.isEmpty || frontEndId.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
       //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
@@ -241,7 +241,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
 
     def checkAssignments(num: Int, fepFrontEndId: Option[FrontEndProcessor], measProcId: Option[ApplicationConfig]) {
-      val feps = frontEndConnection.get(CommEndpointConnection.newBuilder.setId("*").build).expectMany(num)
+      val feps = frontEndConnection.get(EndpointConnection.newBuilder.setId("*").build).expectMany(num)
       val procs = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setId("*").build).expectMany(num)
 
       checkFeps(feps, false, fepFrontEndId, measProcId.isDefined)
@@ -250,18 +250,18 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {
       val (updates, env) = getEventQueueWithCode(client, Descriptors.commEndpointConnection)
-      frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
+      frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
       updates.size should equal(0)
       updates
     }
 
-    def setEndpointEnabled(ce: CommEndpointConnection, enabled: Boolean) = {
+    def setEndpointEnabled(ce: EndpointConnection, enabled: Boolean) = {
       val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build, headers).expectOne()
       ret.getEnabled should equal(enabled)
       ret
     }
 
-    def setEndpointState(ce: CommEndpointConnection, state: CommEndpointConnection.State) = {
+    def setEndpointState(ce: EndpointConnection, state: EndpointConnection.State) = {
       val ret = frontEndConnection.put(ce.toBuilder.setState(state).build, headers).expectOne()
       ret.getState should equal(state)
       ret

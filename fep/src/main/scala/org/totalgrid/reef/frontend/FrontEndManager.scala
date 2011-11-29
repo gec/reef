@@ -19,7 +19,7 @@
 package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.proto.FEP.EndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.Lifecycle
 class FrontEndManager(
   client: FrontEndProviderServices,
   exe: Executor,
-  connectionContext: SubscriptionHandler[CommEndpointConnection],
+  connectionContext: SubscriptionHandler[EndpointConnection],
   appConfig: ApplicationConfig,
   protocolNames: List[String],
   retryms: Long)

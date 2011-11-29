@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.rpc;
 import java.util.List;
 
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.proto.Commands.CommandAccess;
+import org.totalgrid.reef.proto.Commands.CommandLock;
 import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.proto.Model.Command;
@@ -64,7 +64,7 @@ import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler;
  * <p>Issue a command: select, execute, deselect.</p>
  * <pre>
  *    Command cmd = getCommandByName( "substation1.breaker2.trip");
- *    CommandAccess lock = createCommandExecutionLock( cmd);
+ *    CommandLock lock = createCommandExecutionLock( cmd);
  *    executeCommandAsControl( cmd);
  *    deleteCommandLock( lock);
  * </pre>
@@ -106,7 +106,7 @@ public interface CommandService
      * @return an object describing the lock.
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandExecutionLock( List<Command> cmds ) throws ReefServiceException;
+    CommandLock createCommandExecutionLock( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * Select (i.e. lock) a list of commands and lock for the supplied expiration time.
@@ -125,7 +125,7 @@ public interface CommandService
      * @return an object describing the lock.
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandExecutionLock( List<Command> cmds, long expirationTimeMilli ) throws ReefServiceException;
+    CommandLock createCommandExecutionLock( List<Command> cmds, long expirationTimeMilli ) throws ReefServiceException;
 
     /**
      * Select (i.e lock) a command.
@@ -134,7 +134,7 @@ public interface CommandService
      * @return an object describing the lock.
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandExecutionLock( Command command ) throws ReefServiceException;
+    CommandLock createCommandExecutionLock( Command command ) throws ReefServiceException;
 
     /**
      * Select (i.e lock) a command.
@@ -144,7 +144,7 @@ public interface CommandService
      * @return an object describing the lock.
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandExecutionLock( Command command, long expirationTimeMilli ) throws ReefServiceException;
+    CommandLock createCommandExecutionLock( Command command, long expirationTimeMilli ) throws ReefServiceException;
 
     /**
      * Deselect a command or set of commands. When we have completed the execution of a command
@@ -155,7 +155,7 @@ public interface CommandService
      * @return the deleted lock
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess deleteCommandLock( CommandAccess ca ) throws ReefServiceException;
+    CommandLock deleteCommandLock( CommandLock ca ) throws ReefServiceException;
 
     /**
      * Deselect a command or set of commands. When we have completed the execution of a command
@@ -164,7 +164,7 @@ public interface CommandService
      * @param commandId
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess deleteCommandLock( ReefID commandId ) throws ReefServiceException;
+    CommandLock deleteCommandLock( ReefID commandId ) throws ReefServiceException;
 
     /**
      * Clear all of the command locks in the system. This is a dangerous operation that should only
@@ -174,7 +174,7 @@ public interface CommandService
      * @return the deleted locks
      * @throws ReefServiceException if an error occurs
      */
-    List<CommandAccess> clearCommandLocks() throws ReefServiceException;
+    List<CommandLock> clearCommandLocks() throws ReefServiceException;
 
     // TODO add checks for control vs. setpoint execution - backlog-62
     /**
@@ -233,20 +233,20 @@ public interface CommandService
      * @return an object describing the lock
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess createCommandDenialLock( List<Command> cmds ) throws ReefServiceException;
+    CommandLock createCommandDenialLock( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * Get a list of all command locks in system
      * @throws ReefServiceException if an error occurs
      */
-    List<CommandAccess> getCommandLocks() throws ReefServiceException;
+    List<CommandLock> getCommandLocks() throws ReefServiceException;
 
     /**
      * Get a command lock by UUID
      * @param id the id of the command to lock
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess getCommandLockById( ReefID id ) throws ReefServiceException;
+    CommandLock getCommandLockById( ReefID id ) throws ReefServiceException;
 
     /**
      * Get the command lock (if it exists) for a Command
@@ -255,7 +255,7 @@ public interface CommandService
      * @return the command lock or null if no matching lock found
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess findCommandLockOnCommand( Command cmd ) throws ReefServiceException;
+    CommandLock findCommandLockOnCommand( Command cmd ) throws ReefServiceException;
 
     /**
      * Gets a list of all command locks that are active for any of the commands. This is useful
@@ -263,7 +263,7 @@ public interface CommandService
      * @param cmds the commands to find the lock for
      * @throws ReefServiceException if an error occurs
      */
-    List<CommandAccess> getCommandLocksOnCommands( List<Command> cmds ) throws ReefServiceException;
+    List<CommandLock> getCommandLocksOnCommands( List<Command> cmds ) throws ReefServiceException;
 
     /**
      * Get a recent history of issued commands. Information returned is who issued them and what

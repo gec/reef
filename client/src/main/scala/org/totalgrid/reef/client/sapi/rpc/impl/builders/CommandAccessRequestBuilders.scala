@@ -19,20 +19,20 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.proto.Commands.CommandLock
 import org.totalgrid.reef.proto.Model.{ ReefID, Command }
 import scala.None
 
-object CommandAccessRequestBuilders {
+object CommandLockRequestBuilders {
 
-  def allowAccessForCommand(command: Command): CommandAccess =
-    CommandAccess.newBuilder.addCommands(command).setAccess(CommandAccess.AccessMode.ALLOWED).build
+  def allowAccessForCommand(command: Command): CommandLock =
+    CommandLock.newBuilder.addCommands(command).setAccess(CommandLock.AccessMode.ALLOWED).build
 
-  def blockAccessForCommand(command: Command): CommandAccess =
-    CommandAccess.newBuilder.addCommands(command).setAccess(CommandAccess.AccessMode.BLOCKED).build
+  def blockAccessForCommand(command: Command): CommandLock =
+    CommandLock.newBuilder.addCommands(command).setAccess(CommandLock.AccessMode.BLOCKED).build
 
-  def allowAccessForCommands(commands: List[Command], expirationTimeMilli: Option[Long]): CommandAccess = {
-    val access = CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.ALLOWED)
+  def allowAccessForCommands(commands: List[Command], expirationTimeMilli: Option[Long]): CommandLock = {
+    val access = CommandLock.newBuilder.addAllCommands(commands).setAccess(CommandLock.AccessMode.ALLOWED)
     expirationTimeMilli match {
       case Some(time) => access.setExpireTime(time)
       case None =>
@@ -40,24 +40,24 @@ object CommandAccessRequestBuilders {
     access.build
   }
 
-  def allowAccessForCommands(commands: java.util.List[Command]): CommandAccess = allowAccessForCommands(commands, None)
+  def allowAccessForCommands(commands: java.util.List[Command]): CommandLock = allowAccessForCommands(commands, None)
 
-  def allowAccessForCommands(commands: java.util.List[Command], expirationTimeMilli: Option[Long]): CommandAccess = allowAccessForCommands(commands.toList,
+  def allowAccessForCommands(commands: java.util.List[Command], expirationTimeMilli: Option[Long]): CommandLock = allowAccessForCommands(commands.toList,
     expirationTimeMilli)
 
-  def blockAccessForCommands(commands: List[Command]): CommandAccess = {
-    CommandAccess.newBuilder.addAllCommands(commands).setAccess(CommandAccess.AccessMode.BLOCKED).build
+  def blockAccessForCommands(commands: List[Command]): CommandLock = {
+    CommandLock.newBuilder.addAllCommands(commands).setAccess(CommandLock.AccessMode.BLOCKED).build
   }
-  def blockAccessForCommands(commands: java.util.List[Command]): CommandAccess = blockAccessForCommands(commands.toList)
+  def blockAccessForCommands(commands: java.util.List[Command]): CommandLock = blockAccessForCommands(commands.toList)
 
-  def getAll() = CommandAccess.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
-  def getByCommand(command: Command) = CommandAccess.newBuilder.addCommands(command).build
-  def getByCommands(commands: java.util.List[Command]) = CommandAccess.newBuilder.addAllCommands(commands).build
+  def getAll() = CommandLock.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
+  def getByCommand(command: Command) = CommandLock.newBuilder.addCommands(command).build
+  def getByCommands(commands: java.util.List[Command]) = CommandLock.newBuilder.addAllCommands(commands).build
 
-  def getForId(id: ReefID) = CommandAccess.newBuilder.setId(id).build
+  def getForId(id: ReefID) = CommandLock.newBuilder.setId(id).build
 
-  def getForUser(user: String) = CommandAccess.newBuilder.setUser(user).build
+  def getForUser(user: String) = CommandLock.newBuilder.setUser(user).build
 
-  def deleteById(id: String) = CommandAccess.newBuilder.setId(ReefID.newBuilder.setValue(id)).build
-  def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setId(cmd.getId).build
+  def deleteById(id: String) = CommandLock.newBuilder.setId(ReefID.newBuilder.setValue(id)).build
+  def delete(cmd: CommandLock) = CommandLock.newBuilder.setId(cmd.getId).build
 }

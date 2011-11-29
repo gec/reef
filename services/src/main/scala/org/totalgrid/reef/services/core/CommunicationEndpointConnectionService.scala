@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection => ConnProto }
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, CommunicationEndpoint, ApplicationInstance, MeasProcAssignment }
 
@@ -116,7 +116,7 @@ class CommunicationEndpointConnectionServiceModel
   }
 
   override def postUpdate(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
-    logger.info("CommEndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " id " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
+    logger.info("EndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " id " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
     coordinator.onFepConnectionChange(context, sql, existing)
   }
 }
@@ -175,7 +175,7 @@ trait CommunicationEndpointConnectionConversion
   // we add some interesting data about the endpoint in the connection proto but we dont want to
   // include the list of all points/commands in these communication related protos
   private def makeSparseEndpointProto(endpoint: CommunicationEndpoint) = {
-    val b = CommEndpointConfig.newBuilder
+    val b = Endpoint.newBuilder
       .setUuid(makeUuid(endpoint.entity.value))
       .setName(endpoint.entity.value.name)
       .setProtocol(endpoint.protocol)

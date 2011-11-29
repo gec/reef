@@ -44,7 +44,7 @@ object Protocol {
     }
 
   type BatchPublisher = Publisher[MeasurementBatch]
-  type EndpointPublisher = Publisher[FEP.CommEndpointConnection.State]
+  type EndpointPublisher = Publisher[FEP.EndpointConnection.State]
   type ChannelPublisher = Publisher[CommChannel.State]
   type ResponsePublisher = Publisher[Commands.CommandStatus]
 }
@@ -59,7 +59,7 @@ trait NullPublisher[A] extends Publisher[A] {
 
 case object NullBatchPublisher extends NullPublisher[MeasurementBatch]
 
-case object NullEndpointPublisher extends NullPublisher[FEP.CommEndpointConnection.State]
+case object NullEndpointPublisher extends NullPublisher[FEP.EndpointConnection.State]
 
 case object NullChannelPublisher extends NullPublisher[CommChannel.State]
 

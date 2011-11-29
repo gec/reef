@@ -118,8 +118,8 @@ object OptionalProtos {
     val user = optionally(_.hasUser, _.getUser)
     val timeoutMs = optionally(_.hasTimeoutMs, _.getTimeoutMs)
   }
-  implicit def proto2OptCommandsCommandAccess(a: org.totalgrid.reef.proto.Commands.CommandAccess): OptCommandsCommandAccess = new OptCommandsCommandAccess(Some(a))
-  class OptCommandsCommandAccess(real: Option[org.totalgrid.reef.proto.Commands.CommandAccess]) extends OptionalStruct(real) {
+  implicit def proto2OptCommandsCommandLock(a: org.totalgrid.reef.proto.Commands.CommandLock): OptCommandsCommandLock = new OptCommandsCommandLock(Some(a))
+  class OptCommandsCommandLock(real: Option[org.totalgrid.reef.proto.Commands.CommandLock]) extends OptionalStruct(real) {
     val id = new OptModelReefID(optionally(_.hasId, _.getId))
     val commands = optionally(_.getCommandsList.toList.map { i => new OptModelCommand(Some(i)) })
     val access = optionally(_.hasAccess, _.getAccess)
@@ -215,8 +215,8 @@ object OptionalProtos {
     val points = optionally(_.getPointsList.toList)
     val commands = optionally(_.getCommandsList.toList)
   }
-  implicit def proto2OptFEPCommEndpointConfig(a: org.totalgrid.reef.proto.FEP.CommEndpointConfig): OptFEPCommEndpointConfig = new OptFEPCommEndpointConfig(Some(a))
-  class OptFEPCommEndpointConfig(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConfig]) extends OptionalStruct(real) {
+  implicit def proto2OptFEPEndpoint(a: org.totalgrid.reef.proto.FEP.Endpoint): OptFEPEndpoint = new OptFEPEndpoint(Some(a))
+  class OptFEPEndpoint(real: Option[org.totalgrid.reef.proto.FEP.Endpoint]) extends OptionalStruct(real) {
     val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val name = optionally(_.hasName, _.getName)
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
@@ -226,11 +226,11 @@ object OptionalProtos {
     val configFiles = optionally(_.getConfigFilesList.toList.map { i => new OptModelConfigFile(Some(i)) })
     val dataSource = optionally(_.hasDataSource, _.getDataSource)
   }
-  implicit def proto2OptFEPCommEndpointConnection(a: org.totalgrid.reef.proto.FEP.CommEndpointConnection): OptFEPCommEndpointConnection = new OptFEPCommEndpointConnection(Some(a))
-  class OptFEPCommEndpointConnection(real: Option[org.totalgrid.reef.proto.FEP.CommEndpointConnection]) extends OptionalStruct(real) {
+  implicit def proto2OptFEPEndpointConnection(a: org.totalgrid.reef.proto.FEP.EndpointConnection): OptFEPEndpointConnection = new OptFEPEndpointConnection(Some(a))
+  class OptFEPEndpointConnection(real: Option[org.totalgrid.reef.proto.FEP.EndpointConnection]) extends OptionalStruct(real) {
     val id = new OptModelReefID(optionally(_.hasId, _.getId))
     val frontEnd = new OptFEPFrontEndProcessor(optionally(_.hasFrontEnd, _.getFrontEnd))
-    val endpoint = new OptFEPCommEndpointConfig(optionally(_.hasEndpoint, _.getEndpoint))
+    val endpoint = new OptFEPEndpoint(optionally(_.hasEndpoint, _.getEndpoint))
     val state = optionally(_.hasState, _.getState)
     val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
     val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)

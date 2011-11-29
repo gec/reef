@@ -23,8 +23,8 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Model.{ Command => CommandProto }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandAccess }
-import CommandAccess._
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandLock }
+import CommandLock._
 
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
@@ -41,7 +41,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     def scenario(mode: AccessMode, time: Long, user: String) = {
 
       val updated = cmd
-      val select = seed(new CommandAccessModel(mode.getNumber, Some(time), Some(user)))
+      val select = seed(new CommandLockModel(mode.getNumber, Some(time), Some(user)))
       ApplicationSchema.commandToBlocks.insert(new CommandBlockJoin(updated.id, select.id))
 
       updated.lastSelectId = Some(select.id)

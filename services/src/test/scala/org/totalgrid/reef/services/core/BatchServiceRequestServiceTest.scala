@@ -32,7 +32,7 @@ import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 import org.totalgrid.reef.services.ServiceBootstrap
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.proto.Commands.CommandLock
 
 import scala.collection.JavaConversions._
 import org.scalatest.matchers.ShouldMatchers
@@ -56,7 +56,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   val modelFac = new ModelFactories(deps)
   val services = List(
     new CommandService(modelFac.cmds),
-    new CommandAccessService(modelFac.accesses))
+    new CommandLockService(modelFac.accesses))
 
   val service = new SyncService(new BatchServiceRequestService(services), contextSource)
 
@@ -90,7 +90,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   }
 
   def commandAccess(verb: Envelope.Verb = PUT, name: String = "cmd01") = {
-    val ca = CommandAccess.newBuilder.addCommands(Command.newBuilder.setName(name)).setAccess(CommandAccess.AccessMode.ALLOWED)
+    val ca = CommandLock.newBuilder.addCommands(Command.newBuilder.setName(name)).setAccess(CommandLock.AccessMode.ALLOWED)
       .setExpireTime(System.currentTimeMillis + 40000)
     makeRequest(verb, ca.build, Descriptors.commandAccess)
   }

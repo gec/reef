@@ -20,7 +20,7 @@ package org.totalgrid.reef.benchmarks.endpoints
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection._
+import org.totalgrid.reef.proto.FEP.EndpointConnection._
 import org.totalgrid.reef.benchmarks.{ BenchmarkReading, FailedBenchmarkException, BenchmarkTest }
 
 case class EndpointCycleReading(endpointName: String, protocol: String, finalState: State, stateTransitionTime: Long) extends BenchmarkReading {

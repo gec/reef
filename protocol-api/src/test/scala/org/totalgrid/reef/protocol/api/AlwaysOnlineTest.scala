@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.protocol.api.mock.{ RecordingProtocol, NullProtocol }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection, CommChannel }
 
 import scala.collection.immutable.Queue
 
@@ -54,13 +54,13 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
   test("Endpoint callbacks") {
     val mp = new NullProtocol with RecordingProtocol with EndpointAlwaysOnline
-    val pub = new MockPublisher[CommEndpointConnection.State]
+    val pub = new MockPublisher[EndpointConnection.State]
 
     mp.addEndpoint("endpoint1", "", Nil, NullBatchPublisher, pub, client)
-    pub.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP))
+    pub.queue should equal(Queue(EndpointConnection.State.COMMS_UP))
 
     mp.removeEndpoint("endpoint1")
-    pub.queue should equal(Queue(CommEndpointConnection.State.COMMS_UP, CommEndpointConnection.State.COMMS_DOWN))
+    pub.queue should equal(Queue(EndpointConnection.State.COMMS_UP, EndpointConnection.State.COMMS_DOWN))
   }
 
 }

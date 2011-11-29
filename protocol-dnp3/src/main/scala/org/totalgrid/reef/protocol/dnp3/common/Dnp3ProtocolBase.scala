@@ -112,10 +112,10 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
     }
   }
 
-  private def translateStackState(state: StackStates): FEP.CommEndpointConnection.State = state match {
-    case StackStates.SS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
-    case StackStates.SS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
-    case StackStates.SS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
+  private def translateStackState(state: StackStates): FEP.EndpointConnection.State = state match {
+    case StackStates.SS_COMMS_DOWN => FEP.EndpointConnection.State.COMMS_DOWN
+    case StackStates.SS_COMMS_UP => FEP.EndpointConnection.State.COMMS_UP
+    case StackStates.SS_UNKNOWN => FEP.EndpointConnection.State.UNKNOWN
   }
 
   private def translatePhysicalLayerState(state: PhysicalLayerState): FEP.CommChannel.State = state match {

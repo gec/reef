@@ -35,7 +35,7 @@ object ModelCollector {
 trait ModelCollector {
   def addPoint(obj: Point, entity: Entity)
   def addCommand(obj: Command, entity: Entity)
-  def addEndpoint(obj: CommEndpointConfig, entity: Entity)
+  def addEndpoint(obj: Endpoint, entity: Entity)
   def addChannel(obj: CommChannel, entity: Entity)
   def addEquipment(entity: Entity)
   def addConfigFile(configFile: ConfigFile, entity: Entity)

@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 class UserCommandRequestServiceModel(
-  accessModel: CommandAccessServiceModel)
+  accessModel: CommandLockServiceModel)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]
     with EventedServiceModel[UserCommandRequest, UserCommandModel]
     with UserCommandRequestConversion

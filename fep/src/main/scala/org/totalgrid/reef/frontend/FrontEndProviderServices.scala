@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, FrontEndProcessor }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.proto.Model.ReefUUID
 
@@ -36,7 +36,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 trait FrontEndProviderServices extends AllScadaService {
 
-  def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]]
+  def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]]
 
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor]
 }
@@ -44,9 +44,9 @@ trait FrontEndProviderServices extends AllScadaService {
 class FrontEndProviderServicesImpl(client: Client)
     extends ApiBase(client) with FrontEndProviderServices with AllScadaServiceImpl {
 
-  override def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]] = {
+  override def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]] = {
     ops.subscription(Descriptors.commEndpointConnection, "Couldn't subscribe for endpoints assigned to: " + fep.getAppConfig.getInstanceName) { (sub, client) =>
-      client.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, sub).map(_.many)
+      client.get(EndpointConnection.newBuilder.setFrontEnd(fep).build, sub).map(_.many)
     }
   }
 

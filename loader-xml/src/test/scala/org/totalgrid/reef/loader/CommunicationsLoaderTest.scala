@@ -30,7 +30,7 @@ import org.scalatest.{ Assertions, BeforeAndAfterAll }
 import collection.mutable.{ HashMap }
 
 import collection.Seq
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
+import org.totalgrid.reef.proto.FEP.{ Endpoint => EndpointProto, CommChannel }
 import org.totalgrid.reef.proto.Model.ConfigFile
 import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
@@ -281,9 +281,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     commChannelList.length should equal(1)
     commChannelList.apply(0).asInstanceOf[CommChannel].getName should equal("tcp://127.0.0.1:7799@any")
 
-    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
+    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[EndpointProto])
     endPointConfigList.length should equal(1)
-    endPointConfigList.apply(0).asInstanceOf[CommEndpointConfig].getName should equal(endpoint.getName)
+    endPointConfigList.apply(0).asInstanceOf[EndpointProto].getName should equal(endpoint.getName)
 
     val configFileList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[ConfigFile])
     configFileList.length should equal(1)
@@ -305,9 +305,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     val protos: Seq[AnyRef] = modelLoader.allProtos.toSeq
     protos.length should equal(3)
 
-    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
+    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[EndpointProto])
     endPointConfigList.length should equal(1)
-    endPointConfigList.apply(0).asInstanceOf[CommEndpointConfig].getName should equal(endpoint.getName)
+    endPointConfigList.apply(0).asInstanceOf[EndpointProto].getName should equal(endpoint.getName)
 
     val configFileList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[ConfigFile])
     configFileList.length should equal(1)

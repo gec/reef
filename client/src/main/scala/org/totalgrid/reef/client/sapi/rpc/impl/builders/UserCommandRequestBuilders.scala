@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
-import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandAccess }
+import org.totalgrid.reef.proto.Commands.{ CommandRequest, UserCommandRequest, CommandLock }
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 
 object UserCommandRequestBuilders {

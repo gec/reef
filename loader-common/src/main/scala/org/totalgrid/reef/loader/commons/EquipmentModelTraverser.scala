@@ -19,7 +19,7 @@
 package org.totalgrid.reef.loader.commons
 
 import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig }
+import org.totalgrid.reef.proto.FEP.{ CommChannel, Endpoint }
 
 import scala.collection.JavaConversions._
 
@@ -87,7 +87,7 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
           collector.addEdge(endpoint, entity, "source")
         }
 
-      case endpoint: CommEndpointConfig =>
+      case endpoint: Endpoint =>
         // add channel first, adding endpoint will automatically create channel with wrong uuid
         if (endpoint.hasChannel) getEntity(endpoint.getChannel.getUuid, depth + 1)
         collector.addEndpoint(endpoint, entity)

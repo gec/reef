@@ -74,7 +74,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
     val listeners = (portStart to portEnd).map { port =>
       val channelName = "port" + port
 
-      val endpointListener = new LastValueListener[FEP.CommEndpointConnection.State]
+      val endpointListener = new LastValueListener[FEP.EndpointConnection.State]
       val measListener = new LastValueListener[MeasurementBatch](false)
       val portListener = new LastValueListener[FEP.CommChannel.State]
 
@@ -89,7 +89,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
       case (portListener, endpointListener, measListener, commandAdapter) =>
 
         portListener.lastValue.waitUntil(FEP.CommChannel.State.OPEN)
-        endpointListener.lastValue.waitUntil(FEP.CommEndpointConnection.State.COMMS_UP)
+        endpointListener.lastValue.waitUntil(FEP.EndpointConnection.State.COMMS_UP)
         measListener.lastValue.waitFor(m => m.getMeasCount > 0)
 
         issueAndWaitForCommandResponse(commandAdapter, makeControl("control1", "00"))
@@ -104,7 +104,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
 
     listeners.foreach {
       case (portListener, endpointListener, measListener, commandAdapter) =>
-        endpointListener.lastValue.waitUntil(FEP.CommEndpointConnection.State.COMMS_DOWN)
+        endpointListener.lastValue.waitUntil(FEP.EndpointConnection.State.COMMS_DOWN)
         portListener.lastValue.waitUntil(FEP.CommChannel.State.CLOSED)
     }
 

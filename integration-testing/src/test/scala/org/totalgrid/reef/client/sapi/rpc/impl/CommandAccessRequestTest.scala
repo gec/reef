@@ -27,8 +27,8 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 @RunWith(classOf[JUnitRunner])
-class CommandAccessRequestTest
-    extends ClientSessionSuite("CommandAccess.xml", "CommandAccess",
+class CommandLockRequestTest
+    extends ClientSessionSuite("CommandLock.xml", "CommandLock",
       <div>
         <p>
           Represents the "access table" for the system. Access entries have one or two
@@ -63,7 +63,7 @@ class CommandAccessRequestTest
 
     // TODO: add getCommandLocksByUser call
     //recorder.addExplanation("Get for user", "Search for all access entries for the given user.")
-    //session.get(CommandAccessRequestBuilders.getForUser(firstResp.getUser)).await.expectMany()
+    //session.get(CommandLockRequestBuilders.getForUser(firstResp.getUser)).await.expectMany()
 
     client.deleteCommandLock(firstResp).await
     client.deleteCommandLock(secondResp).await

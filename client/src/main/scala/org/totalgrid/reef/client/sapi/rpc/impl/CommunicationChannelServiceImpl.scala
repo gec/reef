@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.proto.Model.ReefUUID
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
+import org.totalgrid.reef.proto.FEP.{ Endpoint, CommChannel }
 
 import org.totalgrid.reef.client.sapi.rpc.CommunicationChannelService
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
@@ -47,7 +47,7 @@ trait CommunicationChannelServiceImpl extends HasAnnotatedOperations with Commun
 
   override def getEndpointsUsingChannel(channel: ReefUUID) = {
     ops.operation("Can't find endpoints for channel uuid: " + channel.getValue) {
-      _.get(CommEndpointConfig.newBuilder.setUuid(channel).build).map(_.many)
+      _.get(Endpoint.newBuilder.setUuid(channel).build).map(_.many)
     }
   }
 }

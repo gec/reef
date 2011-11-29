@@ -33,7 +33,7 @@ trait ModelDeleterCache extends ModelCollector {
 
   var points = List.empty[Point]
   var commands = List.empty[Command]
-  var endpoints = List.empty[CommEndpointConfig]
+  var endpoints = List.empty[Endpoint]
   var channel = List.empty[CommChannel]
   var equipment = List.empty[Entity]
   var configFiles = List.empty[ConfigFile]
@@ -46,7 +46,7 @@ trait ModelDeleterCache extends ModelCollector {
   def addCommand(obj: Command, entity: Entity) = {
     commands ::= obj.toBuilder.clearEndpoint.build
   }
-  def addEndpoint(obj: CommEndpointConfig, entity: Entity) = {
+  def addEndpoint(obj: Endpoint, entity: Entity) = {
     endpoints ::= obj
   }
   def addChannel(obj: CommChannel, entity: Entity) = {

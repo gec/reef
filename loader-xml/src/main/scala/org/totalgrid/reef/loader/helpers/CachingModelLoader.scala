@@ -72,7 +72,7 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
     autoFlush
   }
 
-  def putOrThrow(endpointConfig: CommEndpointConfig) {
+  def putOrThrow(endpointConfig: Endpoint) {
     puts ::= endpointConfig;
     modelContainer.add(endpointConfig);
     autoFlush

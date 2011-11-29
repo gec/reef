@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.proto.FEP.EndpointConnection
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.clientapi.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.clientapi.proto.Envelope
@@ -55,9 +55,9 @@ class UserCommandRequestService(
         case Some(ep) =>
           val frontEndAssignment = ep.frontEndAssignment.value
 
-          val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
+          val endpointState = EndpointConnection.State.valueOf(frontEndAssignment.state)
 
-          if (endpointState != CommEndpointConnection.State.COMMS_UP) {
+          if (endpointState != EndpointConnection.State.COMMS_UP) {
             throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP, current state: " + endpointState)
           }
 

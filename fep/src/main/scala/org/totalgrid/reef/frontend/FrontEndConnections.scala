@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection, CommChannel }
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.clientapi.AddressableDestination
 
@@ -35,7 +35,7 @@ import org.totalgrid.reef.protocol.api.{ CommandHandler, Protocol }
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServices, client: Client) extends KeyedMap[CommEndpointConnection] {
+class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServices, client: Client) extends KeyedMap[EndpointConnection] {
 
   case class EndpointComponent(commandAdapter: Cancelable)
 
@@ -46,16 +46,16 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
 
-  def getKey(c: CommEndpointConnection) = c.getId.getValue
+  def getKey(c: EndpointConnection) = c.getId.getValue
 
   val protocols = comms.map(p => p.name -> p).toMap
 
-  def hasChangedEnoughForReload(updated: CommEndpointConnection, existing: CommEndpointConnection) = {
+  def hasChangedEnoughForReload(updated: EndpointConnection, existing: EndpointConnection) = {
     updated.hasRouting != existing.hasRouting ||
       (updated.hasRouting && updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey)
   }
 
-  def addEntry(c: CommEndpointConnection) = try {
+  def addEntry(c: EndpointConnection) = try {
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
@@ -80,7 +80,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
       logger.error("Can't add endpoint: " + c.getEndpoint.getName, ex)
   }
 
-  def removeEntry(c: CommEndpointConnection) = try {
+  def removeEntry(c: EndpointConnection) = try {
     val endpointName = c.getEndpoint.getName
 
     logger.info("Removing endpoint: " + endpointName)
@@ -112,7 +112,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
   }
 
   private def newEndpointStatePublisher(connectionId: ReefID, endpointName: String) = new Protocol.EndpointPublisher {
-    def publish(state: CommEndpointConnection.State) = {
+    def publish(state: EndpointConnection.State) = {
       services.alterEndpointConnectionState(connectionId, state).extract match {
         case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
         case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)

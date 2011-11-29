@@ -62,7 +62,7 @@ public class TestCommandService extends ReefConnectionTestBase
 
         cs.clearCommandLocks();
 
-        List<CommandAccess> noAccess = cs.getCommandLocks();
+        List<CommandLock> noAccess = cs.getCommandLocks();
         assertEquals( noAccess.size(), 0 );
     }
 
@@ -91,7 +91,7 @@ public class TestCommandService extends ReefConnectionTestBase
      * Test that command access request can be get, put, and deleted
      */
     @Test
-    public void testGetPutDeleteCommandAccess() throws ReefServiceException
+    public void testGetPutDeleteCommandLock() throws ReefServiceException
     {
 
         CommandService cs = helpers;
@@ -99,7 +99,7 @@ public class TestCommandService extends ReefConnectionTestBase
         Command cmd = cs.getCommands().get( 0 );
 
         // would allow user "user1" to exclusively execute commands
-        CommandAccess ca = cs.createCommandExecutionLock( cmd );
+        CommandLock ca = cs.createCommandExecutionLock( cmd );
         // removes the command access request by name
         cs.deleteCommandLock( ca );
     }
@@ -117,7 +117,7 @@ public class TestCommandService extends ReefConnectionTestBase
 
         for ( Command cmd : commands )
         {
-            CommandAccess accessResponse = cs.createCommandExecutionLock( cmd );
+            CommandLock accessResponse = cs.createCommandExecutionLock( cmd );
             try
             {
                 assertTrue( accessResponse.getExpireTime() > 0 );
@@ -142,7 +142,7 @@ public class TestCommandService extends ReefConnectionTestBase
         CommandService cs = helpers;
         List<Command> cmds = cs.getCommands();
 
-        CommandAccess accessResponse1 = cs.createCommandExecutionLock( cmds.subList( 0, 3 ) );
+        CommandLock accessResponse1 = cs.createCommandExecutionLock( cmds.subList( 0, 3 ) );
         assertTrue( accessResponse1.getExpireTime() > 0 );
 
         try
@@ -171,27 +171,27 @@ public class TestCommandService extends ReefConnectionTestBase
         Command cmd1 = cmds.get( 0 );
         Command cmd2 = cmds.get( 1 );
 
-        CommandAccess noAccess = cs.findCommandLockOnCommand( cmd1 );
+        CommandLock noAccess = cs.findCommandLockOnCommand( cmd1 );
         assertNull( noAccess );
 
         cs.createCommandExecutionLock( cmd1 );
         cs.createCommandExecutionLock( cmd2 );
 
-        CommandAccess foundAccesses = cs.findCommandLockOnCommand( cmd1 );
+        CommandLock foundAccesses = cs.findCommandLockOnCommand( cmd1 );
         assertNotNull( foundAccesses );
         assertEquals( foundAccesses.getCommandsCount(), 1 );
         assertEquals( foundAccesses.getCommands( 0 ).getName(), cmd1.getName() );
 
         cs.deleteCommandLock( foundAccesses );
 
-        CommandAccess foundAccesses2 = cs.findCommandLockOnCommand( cmd2 );
+        CommandLock foundAccesses2 = cs.findCommandLockOnCommand( cmd2 );
         assertNotNull( foundAccesses2 );
         assertEquals( foundAccesses2.getCommandsCount(), 1 );
         assertEquals( foundAccesses2.getCommands( 0 ).getName(), cmd2.getName() );
 
         cs.deleteCommandLock( foundAccesses2 );
 
-        CommandAccess noAccess2 = cs.findCommandLockOnCommand( cmd2 );
+        CommandLock noAccess2 = cs.findCommandLockOnCommand( cmd2 );
         assertNull( noAccess2 );
     }
 
@@ -209,7 +209,7 @@ public class TestCommandService extends ReefConnectionTestBase
         List<UserCommandRequest> intialRequests = cs.getCommandHistory( cmd );
 
         // select
-        CommandAccess accessResponse = cs.createCommandExecutionLock( cmd );
+        CommandLock accessResponse = cs.createCommandExecutionLock( cmd );
         assertTrue( accessResponse.getExpireTime() > 0 );
 
         // execute

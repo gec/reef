@@ -28,7 +28,7 @@ import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient }
 import org.totalgrid.reef.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.util.Timing
 import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, EndpointOwnership, CommEndpointConfig }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection, EndpointOwnership, Endpoint }
 
 @RunWith(classOf[JUnitRunner])
 class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete", <div></div>) {
@@ -49,7 +49,7 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
 
     val owner = EndpointOwnership.newBuilder.addAllPoints(names)
 
-    val putEndpoint = CommEndpointConfig.newBuilder.setName("TestEndpoint").setProtocol("null").setOwnerships(owner).build
+    val putEndpoint = Endpoint.newBuilder.setName("TestEndpoint").setProtocol("null").setOwnerships(owner).build
     val endpoint = loaderServices.addEndpoint(putEndpoint).await
 
     var connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await

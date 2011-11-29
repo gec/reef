@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
 
 import java.io.PrintStream
 import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommEndpointConfig }
+import org.totalgrid.reef.proto.FEP.{ EndpointConnection, Endpoint }
 
 import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
@@ -34,7 +34,7 @@ object EndpointStopper extends Logging {
    * synchronous function that blocks until all passed in endpoints are stopped
    * TODO: use endpoint stopper before reef:unload
    */
-  def stopEndpoints(local: LoaderServices, endpoints: List[CommEndpointConfig], stream: Option[PrintStream]) {
+  def stopEndpoints(local: LoaderServices, endpoints: List[Endpoint], stream: Option[PrintStream]) {
 
     val endpointUuids = endpoints.map { e => e.getUuid -> e.getName }.toMap
 
@@ -54,9 +54,9 @@ object EndpointStopper extends Logging {
       if (endpointUuids.size > 0) {
 
         // start the subscription, shunting all incoming values to a queue
-        val queue = new LinkedBlockingDeque[CommEndpointConnection]()
-        subResult.getSubscription.start(new SubscriptionEventAcceptor[CommEndpointConnection] {
-          def onEvent(event: SubscriptionEvent[CommEndpointConnection]) {
+        val queue = new LinkedBlockingDeque[EndpointConnection]()
+        subResult.getSubscription.start(new SubscriptionEventAcceptor[EndpointConnection] {
+          def onEvent(event: SubscriptionEvent[EndpointConnection]) {
             val conn = event.getValue
             logger.info("EndpointChange " + event.getEventType + " " + conn.getEndpoint.getName + " e: " + conn.getEnabled + " s: " + conn.getState)
             queue.push(conn)
@@ -90,8 +90,8 @@ object EndpointStopper extends Logging {
     }
   }
 
-  private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: CommEndpointConnection) = {
-    if (connection.getState != CommEndpointConnection.State.COMMS_UP && !connection.hasFrontEnd) {
+  private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: EndpointConnection) = {
+    if (connection.getState != EndpointConnection.State.COMMS_UP && !connection.hasFrontEnd) {
       stillRunningEndpoints - connection.getEndpoint.getUuid
     } else {
       stillRunningEndpoints

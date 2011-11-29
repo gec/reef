@@ -28,12 +28,12 @@ import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State._
+import org.totalgrid.reef.proto.FEP.EndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Measurements.Quality.Validity
@@ -141,9 +141,9 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     measList.waitFor(_.find(m => m.getDoubleVal == meas.getDoubleVal && m.getTime == meas.getTime).isDefined)
   }
 
-  class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
+  class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection]) {
 
-    private def makeEntry(e: CommEndpointConnection) = {
+    private def makeEntry(e: EndpointConnection) = {
       //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
       e.getEndpoint.getUuid -> e
     }
@@ -151,16 +151,16 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     val endpointStateMap = result.getResult.map { makeEntry(_) }.toMap
     val syncVar = new SyncVar(endpointStateMap)
 
-    result.getSubscription.start(new SubscriptionEventAcceptor[CommEndpointConnection] {
-      def onEvent(event: SubscriptionEvent[CommEndpointConnection]) {
+    result.getSubscription.start(new SubscriptionEventAcceptor[EndpointConnection] {
+      def onEvent(event: SubscriptionEvent[EndpointConnection]) {
         syncVar.atomic(m => m + makeEntry(event.getValue))
       }
     })
 
-    def checkAllState(enabled: Boolean, state: CommEndpointConnection.State) {
+    def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
       syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
     }
-    def checkState(uuid: ReefUUID, enabled: Boolean, state: CommEndpointConnection.State) {
+    def checkState(uuid: ReefUUID, enabled: Boolean, state: EndpointConnection.State) {
       syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
     }
   }

@@ -31,7 +31,7 @@ class CommandRequestTest
     extends ClientSessionSuite("Command.xml", "Command",
       <div>
         <p>
-          A Command represents a configured output point. CommandAccess and UserCommandRequest services use
+          A Command represents a configured output point. CommandLock and UserCommandRequest services use
   this command name.
         </p>
         <p>

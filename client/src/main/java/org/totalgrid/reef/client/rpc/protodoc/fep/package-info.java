@@ -97,7 +97,7 @@
  * }
  * 
  * // and endpoint config _is_a_ LogicalNode with the extra port + protocol parameters
- * message CommEndpointConfig {
+ * message Endpoint {
  *     optional org.totalgrid.reef.proto.Model.ReefUUID       uuid          = 1;
  *     optional string            name         = 2;
  *     optional org.totalgrid.reef.proto.Model.Entity entity = 7;
@@ -109,7 +109,7 @@
  *     optional bool dataSource = 8;
  * }
  * 
- * message CommEndpointConnection {
+ * message EndpointConnection {
  * 
  *     enum State {
  *         COMMS_UP = 1;
@@ -120,7 +120,7 @@
  * 
  *     optional org.totalgrid.reef.proto.Model.ReefID                 id                 = 1;
  *     optional FrontEndProcessor      front_end           = 2;
- *     optional CommEndpointConfig     endpoint            = 3;
+ *     optional Endpoint     endpoint            = 3;
  *     optional State                  state               = 4;
  *     optional CommEndpointRouting    routing             = 5;
  *     optional uint64                 last_update         = 7;

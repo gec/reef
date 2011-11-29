@@ -22,20 +22,20 @@ import org.squeryl.{ Table, Query }
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, UnauthorizedException }
 
-import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
+import org.totalgrid.reef.models.{ ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 import java.util.Date
 
-class CommandAccessServiceModel
+class CommandLockServiceModel
     extends SquerylServiceModel[AccessProto, AccessModel]
     with EventedServiceModel[AccessProto, AccessModel]
-    with CommandAccessConversion {
+    with CommandLockConversion {
 
   def commandModel = modelOption.get
   var modelOption: Option[CommandServiceModel] = None
@@ -166,7 +166,7 @@ class CommandAccessServiceModel
   }
 }
 
-trait CommandAccessConversion
+trait CommandLockConversion
     extends UniqueAndSearchQueryable[AccessProto, AccessModel] {
 
   import org.squeryl.PrimitiveTypeMode._
