@@ -64,7 +64,7 @@ public class TestAuthService extends ReefConnectionTestBase
         // logon as all permission user
         String token = as.createNewAuthorizationToken( "system", "system" );
         Client client = factory.connect().login( token );
-        helpers = client.getService(AllScadaService.class);
+        helpers = client.getService( AllScadaService.class );
 
         PointService ps = helpers;
         // request will now not be rejected
