@@ -20,8 +20,8 @@ package org.totalgrid.reef.protocol.dnp3.master
 
 import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
 import org.totalgrid.reef.proto.Model
-import org.totalgrid.reef.api.protocol.api.Protocol._
-import org.totalgrid.reef.api.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.protocol.api.Protocol._
+import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.dnp3.IStackObserver
 import org.totalgrid.reef.util.Cancelable

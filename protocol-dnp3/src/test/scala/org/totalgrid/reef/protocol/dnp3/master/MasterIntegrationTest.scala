@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.{ Model, FEP }
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.{ EmptySyncVar, XMLHelper }
-import org.totalgrid.reef.api.protocol.api.{ CommandHandler, Publisher }
+import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto }
 import org.totalgrid.reef.protocol.dnp3._

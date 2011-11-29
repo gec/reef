@@ -16,14 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.protocol.simulator
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
-import org.totalgrid.reef.api.protocol.api.{ NullEndpointPublisher, Publisher }
+import org.totalgrid.reef.protocol.api.{ NullEndpointPublisher, Publisher }
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s.Executor
 import java.lang.Exception

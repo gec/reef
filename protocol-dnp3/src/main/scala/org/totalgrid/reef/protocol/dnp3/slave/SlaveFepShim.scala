@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.api.protocol.api.{ Protocol, AddRemoveValidation }
+import org.totalgrid.reef.protocol.api.{ Protocol, AddRemoveValidation }
 
 import org.osgi.framework.BundleContext
 

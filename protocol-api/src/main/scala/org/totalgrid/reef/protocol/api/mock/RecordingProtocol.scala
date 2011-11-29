@@ -16,11 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.api.mock
+package org.totalgrid.reef.protocol.api.mock
 
 import org.totalgrid.reef.proto.{ FEP, Model, Commands }
-import org.totalgrid.reef.api.protocol.api.Protocol._
-import org.totalgrid.reef.api.protocol.api.{ Protocol, CommandHandler }
+import org.totalgrid.reef.protocol.api.Protocol._
+import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler }
 
 object RecordingProtocol {
 

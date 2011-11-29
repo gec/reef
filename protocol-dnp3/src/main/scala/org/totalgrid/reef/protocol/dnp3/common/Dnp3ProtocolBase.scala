@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
 
-import org.totalgrid.reef.api.protocol.api._
+import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 

@@ -20,7 +20,7 @@ package org.totalgrid.reef.simulator.random
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.api.protocol.simulator.SimulatorPluginFactory
+import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory
 import net.agileautomata.executor4s.Cancelable
 
 class Activator extends BundleActivator {

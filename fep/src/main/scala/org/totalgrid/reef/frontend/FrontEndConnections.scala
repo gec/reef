@@ -31,7 +31,7 @@ import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.rpc.commands.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest }
-import org.totalgrid.reef.api.protocol.api.{ CommandHandler, Protocol }
+import org.totalgrid.reef.protocol.api.{ CommandHandler, Protocol }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices) extends KeyedMap[CommEndpointConnection] {

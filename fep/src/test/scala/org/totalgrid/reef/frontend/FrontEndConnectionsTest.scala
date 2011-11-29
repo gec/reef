@@ -26,8 +26,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.test.MockitoStubbedOnly
 
 import FrontEndTestHelpers._
-import org.totalgrid.reef.api.protocol.api.mock.{ NullProtocol, RecordingProtocol }
-import org.totalgrid.reef.api.protocol.api.mock.RecordingProtocol._
+import org.totalgrid.reef.protocol.api.mock.{ NullProtocol, RecordingProtocol }
+import org.totalgrid.reef.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
 import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler
 import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise

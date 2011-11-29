@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.dnp3.common
 
 import org.osgi.framework.BundleContext
-import org.totalgrid.reef.api.protocol.api.{ AddRemoveValidation, Protocol }
+import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol

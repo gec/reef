@@ -20,7 +20,7 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.api.protocol.api.Protocol
+import org.totalgrid.reef.protocol.api.Protocol
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.app._

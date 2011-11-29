@@ -19,8 +19,8 @@
 package org.totalgrid.reef.simulator.example
 
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
+import org.totalgrid.reef.protocol.api.Publisher
+import org.totalgrid.reef.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
 import org.totalgrid.reef.proto.{ Commands, Measurements, SimMapping }
 import com.weiglewilczek.slf4s.Logging
 import scala.collection.JavaConversions._

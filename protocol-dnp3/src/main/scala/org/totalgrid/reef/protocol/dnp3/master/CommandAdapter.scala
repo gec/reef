@@ -24,7 +24,7 @@ import org.totalgrid.reef.util.SafeExecution
 
 import org.totalgrid.reef.proto.{ Mapping, Commands }
 
-import org.totalgrid.reef.api.protocol.api.{ CommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
@@ -38,7 +38,7 @@ import com.weiglewilczek.slf4s.Logging
 class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     extends IResponseAcceptor with ProtocolCommandHandler with Logging with SafeExecution {
 
-  import org.totalgrid.reef.api.protocol.api.Protocol.ResponsePublisher
+  import org.totalgrid.reef.protocol.api.Protocol.ResponsePublisher
 
   case class ResponseInfo(id: String, publisher: ResponsePublisher, obj: Object)
 

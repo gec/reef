@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.Model.Command
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {
 
-  import org.totalgrid.reef.api.protocol.api.Protocol._
+  import org.totalgrid.reef.protocol.api.Protocol._
 
   class MockResponseHandler extends ResponsePublisher {
     val responses = new mutable.Queue[Commands.CommandStatus]

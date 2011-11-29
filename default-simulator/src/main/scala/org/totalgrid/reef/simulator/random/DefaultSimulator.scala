@@ -26,11 +26,11 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.proto.{ SimMapping, Measurements, Commands }
 
-import org.totalgrid.reef.api.protocol.api.Publisher
+import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.simulator.random.RandomValues.RandomValue
 import org.totalgrid.reef.proto.Commands.CommandStatus
 import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
-import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPluginFactory, SimulatorPlugin }
+import org.totalgrid.reef.protocol.simulator.{ SimulatorPluginFactory, SimulatorPlugin }
 
 final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: DefaultSimulatorFactory)
     extends SimulatorPlugin with ControllableSimulator with Logging {
