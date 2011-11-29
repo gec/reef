@@ -25,7 +25,7 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.client.rpc.AlarmService;
 import org.totalgrid.reef.client.rpc.EntityService;
 import org.totalgrid.reef.client.rpc.EventConfigService;
-import org.totalgrid.reef.client.rpc.EventCreationService;
+import org.totalgrid.reef.client.rpc.EventPublishingService;
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders;
 import org.totalgrid.reef.proto.Alarms.*;
@@ -46,7 +46,7 @@ public class TestAlarmService extends ReefConnectionTestBase
     public void prepareAlarms() throws ReefServiceException
     {
         EventConfigService configService = helpers;
-        EventCreationService pub = helpers;
+        EventPublishingService pub = helpers;
 
         configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
 

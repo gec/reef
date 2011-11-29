@@ -26,10 +26,10 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.client.sapi.rpc.EventCreationService
+import org.totalgrid.reef.client.sapi.rpc.EventPublishingService
 import org.totalgrid.reef.clientapi.sapi.client.rest.RestOperations
 
-trait EventCreationServiceImpl extends HasAnnotatedOperations with EventCreationService {
+trait EventPublishingServiceImpl extends HasAnnotatedOperations with EventPublishingService {
 
   override def publishEvent(event: Event) = ops.operation("Couldn't publish event: " + event) {
     _.put(event).map(_.one)

@@ -28,12 +28,12 @@ trait AllScadaService
   with MeasurementService
   with MeasurementOverrideService
   with EventService
-  with EventCreationService
+  with EventPublishingService
   with EventConfigService
   with CommandService
   with PointService
   with AlarmService
   with AgentService
-  with EndpointManagementService
+  with EndpointService
   with ApplicationService
   with CommunicationChannelService

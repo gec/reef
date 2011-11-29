@@ -33,13 +33,13 @@ trait AllScadaServiceJavaShim
     with MeasurementServiceJavaShim
     with MeasurementOverrideServiceJavaShim
     with EventServiceJavaShim
-    with EventCreationServiceJavaShim
+    with EventPublishingServiceJavaShim
     with EventConfigServiceJavaShim
     with CommandServiceJavaShim
     with PointServiceJavaShim
     with AlarmServiceJavaShim
     with AgentServiceJavaShim
-    with EndpointManagementServiceJavaShim
+    with EndpointServiceJavaShim
     with ApplicationServiceJavaShim
     with CommunicationChannelServiceJavaShim {
 
@@ -66,13 +66,13 @@ object AllScadaServiceJavaShim {
       classOf[MeasurementService],
       classOf[MeasurementOverrideService],
       classOf[EventService],
-      classOf[EventCreationService],
+      classOf[EventPublishingService],
       classOf[EventConfigService],
       classOf[CommandService],
       classOf[PointService],
       classOf[AlarmService],
       classOf[AgentService],
-      classOf[EndpointManagementService],
+      classOf[EndpointService],
       classOf[ApplicationService],
       classOf[CommunicationChannelService]))
 

@@ -37,7 +37,7 @@ import java.util.List;
  *
  * Tag for api-enhancer, do not delete: !api-definition!
  */
-public interface EventCreationService
+public interface EventPublishingService
 {
     /**
      * publish a custom built Event proto to the event service. The severity, alarm, rendered, time, id and user_id fields

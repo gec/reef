@@ -25,12 +25,12 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
 
 import net.agileautomata.executor4s.{ Failure, Success }
-import org.totalgrid.reef.client.sapi.rpc.EndpointManagementService
+import org.totalgrid.reef.client.sapi.rpc.EndpointService
 import org.totalgrid.reef.clientapi.sapi.client.Promise
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
 
-trait EndpointManagementServiceImpl extends HasAnnotatedOperations with EndpointManagementService {
+trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
 
   override def getEndpoints() = ops.operation("Couldn't get list of all endpoints") {
     _.get(CommEndpointConfig.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)

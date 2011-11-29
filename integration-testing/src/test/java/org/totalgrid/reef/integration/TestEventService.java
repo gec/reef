@@ -50,7 +50,7 @@ public class TestEventService extends ReefConnectionTestBase
     public void validateLongEventConfigStrings() throws ReefServiceException
     {
         EventConfigService configService = helpers;
-        EventCreationService es = helpers;
+        EventPublishingService es = helpers;
 
         StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < 1000; i++ )
@@ -74,7 +74,7 @@ public class TestEventService extends ReefConnectionTestBase
     @Test
     public void prepareEvents() throws ReefServiceException
     {
-        EventCreationService es = helpers;
+        EventPublishingService es = helpers;
         EntityService entityService = helpers;
         EventConfigService configService = helpers;
 
@@ -124,7 +124,7 @@ public class TestEventService extends ReefConnectionTestBase
         SubscriptionResult<List<Events.Event>, Events.Event> events = es.subscribeToRecentEvents( types, 10 );
         assertEquals( events.getResult().size(), 10 );
 
-        EventCreationService pub = helpers;
+        EventPublishingService pub = helpers;
 
         Events.Event pubEvent = pub.publishEvent( "Test.Event", "Tests", getUUID( entityForEvents ) );
 
@@ -153,7 +153,7 @@ public class TestEventService extends ReefConnectionTestBase
         EventConfigService configService = helpers;
         configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
 
-        EventCreationService es = helpers;
+        EventPublishingService es = helpers;
 
         // populate some alarms
         for ( int i = 0; i < 5; i++ )
@@ -174,7 +174,7 @@ public class TestEventService extends ReefConnectionTestBase
         List<Alarm> events = result.getResult();
         assertEquals( events.size(), 2 );
 
-        EventCreationService pub = helpers;
+        EventPublishingService pub = helpers;
 
         pub.publishEvent( "Test.Alarm", "Tests", getUUID( entityForEvents ) );
 

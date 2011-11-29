@@ -33,13 +33,13 @@ trait AllScadaServiceImpl
   with MeasurementServiceImpl
   with MeasurementOverrideServiceImpl
   with EventServiceImpl
-  with EventCreationServiceImpl
+  with EventPublishingServiceImpl
   with EventConfigServiceImpl
   with CommandServiceImpl
   with PointServiceImpl
   with AlarmServiceImpl
   with AgentServiceImpl
-  with EndpointManagementServiceImpl
+  with EndpointServiceImpl
   with ApplicationServiceImpl
   with CommunicationChannelServiceImpl
 
@@ -55,13 +55,13 @@ object AllScadaServiceImpl {
       classOf[MeasurementService],
       classOf[MeasurementOverrideService],
       classOf[EventService],
-      classOf[EventCreationService],
+      classOf[EventPublishingService],
       classOf[EventConfigService],
       classOf[CommandService],
       classOf[PointService],
       classOf[AlarmService],
       classOf[AgentService],
-      classOf[EndpointManagementService],
+      classOf[EndpointService],
       classOf[ApplicationService],
       classOf[CommunicationChannelService]))
 }

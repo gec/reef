@@ -43,7 +43,7 @@ import java.util.List;
  *
  * Tag for api-enhancer, do not delete: !api-definition!
  */
-public interface EndpointManagementService
+public interface EndpointService
 {
 
     /**

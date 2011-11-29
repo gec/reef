@@ -32,13 +32,13 @@ public abstract class AllScadaService implements
                                      MeasurementService,
                                      MeasurementOverrideService,
                                      EventService,
-                                     EventCreationService,
+                                     EventPublishingService,
                                      EventConfigService,
                                      CommandService,
                                      PointService,
                                      AlarmService,
                                      AgentService,
-                                     EndpointManagementService,
+                                     EndpointService,
                                      ApplicationService,
                                      CommunicationChannelService
 {
