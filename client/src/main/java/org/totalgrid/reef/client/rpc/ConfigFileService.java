@@ -49,7 +49,7 @@ public interface ConfigFileService
     /**
      * retrieve a config file by its UID
      */
-    ConfigFile getConfigFileByUuid( ReefUUID id ) throws ReefServiceException;
+    ConfigFile getConfigFileByUuid( ReefUUID uuid ) throws ReefServiceException;
 
     /**
      * retrieve a config file by its name
@@ -64,12 +64,12 @@ public interface ConfigFileService
     /**
      * search for all config files "used" by an entity
      */
-    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityId ) throws ReefServiceException;
+    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUuid ) throws ReefServiceException;
 
     /**
      * search for all config files "used" by an entity, only returns files with matching mimeType
      */
-    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityId, String mimeType ) throws ReefServiceException;
+    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUuid, String mimeType ) throws ReefServiceException;
 
     /**
      * create a "free-floating" ConfigFile that isnt "used" by any entities. This means is only retrievable
@@ -80,13 +80,13 @@ public interface ConfigFileService
     /**
      * create a ConfigFile that is "used" by an Entity, it is now queryable by name, mimeType and entity.
      */
-    ConfigFile createConfigFile( String name, String mimeType, byte[] data, ReefUUID entityId ) throws ReefServiceException;
+    ConfigFile createConfigFile( String name, String mimeType, byte[] data, ReefUUID entityUuid ) throws ReefServiceException;
 
     /**
      * create a ConfigFile that is "used" by an Entiny and only findable via that entity, it has no name of its own.
      * Queryable by mimeType and entity only.
      */
-    ConfigFile createConfigFile( String mimeType, byte[] data, ReefUUID entityId ) throws ReefServiceException;
+    ConfigFile createConfigFile( String mimeType, byte[] data, ReefUUID entityUuid ) throws ReefServiceException;
 
     /**
      * update the text of the previously retrieved ConfigFile
@@ -96,7 +96,7 @@ public interface ConfigFileService
     /**
      * adds another Entity as a "user" of the ConfigFile
      */
-    ConfigFile addConfigFileUsedByEntity( ConfigFile configFile, ReefUUID entityId ) throws ReefServiceException;
+    ConfigFile addConfigFileUsedByEntity( ConfigFile configFile, ReefUUID entityUuid ) throws ReefServiceException;
 
     /**
      * delete the passed in config file and all "using" relationships to Entities
