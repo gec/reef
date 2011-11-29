@@ -97,7 +97,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
       amqp.bindService(measBatchService, client, destination, false)
 
-      logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
+      logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " id " + measProcAssign.getId }
 
       measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
     }
@@ -223,29 +223,29 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def listenForMeasurements(measProcName: String) = measProcMap.get(measProcName).get.mb
 
-    def checkFeps(fep: CommEndpointConnection, online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
-      checkFeps(List(fep), online, frontEndUid, hasServiceRouting)
+    def checkFeps(fep: CommEndpointConnection, online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
+      checkFeps(List(fep), online, frontEndId, hasServiceRouting)
 
-    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
+    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
       //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
-      feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
+      feps.forall { f => f.hasFrontEnd == frontEndId.isDefined && (frontEndId.isEmpty || frontEndId.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
       //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
     }
 
-    def checkMeasProcs(procs: List[MeasurementProcessingConnection], measProcUid: Option[ApplicationConfig], serviceRouting: Boolean) {
+    def checkMeasProcs(procs: List[MeasurementProcessingConnection], measProcId: Option[ApplicationConfig], serviceRouting: Boolean) {
       procs.forall { f => f.hasLogicalNode == true } should equal(true)
-      procs.forall { f => f.hasMeasProc == measProcUid.isDefined && (measProcUid.isEmpty || measProcUid.get.getUuid == f.getMeasProc.getUuid) } should equal(true)
+      procs.forall { f => f.hasMeasProc == measProcId.isDefined && (measProcId.isEmpty || measProcId.get.getUuid == f.getMeasProc.getUuid) } should equal(true)
       procs.forall { f => f.hasRouting == serviceRouting } should equal(true)
     }
 
-    def checkAssignments(num: Int, fepFrontEndUid: Option[FrontEndProcessor], measProcUid: Option[ApplicationConfig]) {
-      val feps = frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectMany(num)
-      val procs = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build).expectMany(num)
+    def checkAssignments(num: Int, fepFrontEndId: Option[FrontEndProcessor], measProcId: Option[ApplicationConfig]) {
+      val feps = frontEndConnection.get(CommEndpointConnection.newBuilder.setId("*").build).expectMany(num)
+      val procs = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setId("*").build).expectMany(num)
 
-      checkFeps(feps, false, fepFrontEndUid, measProcUid.isDefined)
-      checkMeasProcs(procs, measProcUid, measProcUid.isDefined)
+      checkFeps(feps, false, fepFrontEndId, measProcId.isDefined)
+      checkMeasProcs(procs, measProcId, measProcId.isDefined)
     }
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {

@@ -126,13 +126,13 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 
       coord.pointsInDatabase should equal(9)
 
-      feps.foreach { fepUid =>
-        val fassign = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepUid).build).expectMany(3)
-        coord.checkFeps(fassign, false, Some(fepUid), true)
+      feps.foreach { fepId =>
+        val fassign = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepId).build).expectMany(3)
+        coord.checkFeps(fassign, false, Some(fepId), true)
       }
-      procs.foreach { measUid =>
-        val massign = coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measUid).build).expectMany(3)
-        coord.checkMeasProcs(massign, Some(measUid), true)
+      procs.foreach { measId =>
+        val massign = coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measId).build).expectMany(3)
+        coord.checkMeasProcs(massign, Some(measId), true)
       }
     }
   }

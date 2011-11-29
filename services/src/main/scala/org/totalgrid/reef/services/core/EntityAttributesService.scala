@@ -123,7 +123,7 @@ object EntityAttributesService {
     } else if (proto.hasName) {
       nameJoin(proto.getName)
     } else {
-      throw new BadRequestException("Must search for entities by uid or name.")
+      throw new BadRequestException("Must search for entities by id or name.")
     }
 
     if (join.isEmpty)
@@ -138,9 +138,9 @@ object EntityAttributesService {
     }
   }
 
-  def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
+  def uidJoin(id: String): List[(Entity, Option[AttrModel])] = {
     join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
-      where(ent.id === UUID.fromString(uid))
+      where(ent.id === UUID.fromString(id))
         select (ent, attr)
         on (Some(ent.id) === attr.map(_.entityId))).toList
   }

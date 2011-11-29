@@ -61,7 +61,7 @@
  *     optional Flow   flow       = 7 [default = FLOW_NONE]; 
  * }
  * 
- * // this is a wrapper type that we can reference by name or uid which contains channel details
+ * // this is a wrapper type that we can reference by name or id which contains channel details
  * // either ip or serial will be populated, client code must check which is set.
  * message CommChannel {
  * 
@@ -118,7 +118,7 @@
  *         ERROR = 4;
  *     }
  * 
- *     optional org.totalgrid.reef.proto.Model.ReefID                 uid                 = 1;
+ *     optional org.totalgrid.reef.proto.Model.ReefID                 id                 = 1;
  *     optional FrontEndProcessor      front_end           = 2;
  *     optional CommEndpointConfig     endpoint            = 3;
  *     optional State                  state               = 4;

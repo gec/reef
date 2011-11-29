@@ -43,7 +43,7 @@ class MeasAdapterTests extends Suite with ShouldMatchers {
       MapEntry(0, "control0", Mapping.DataType.CONTROL_STATUS),
       MapEntry(0, "setpoint0", Mapping.DataType.SETPOINT_STATUS))
 
-    val map = Mapping.IndexMapping.newBuilder.setDeviceUid("test") // device uid is irrelevant
+    val map = Mapping.IndexMapping.newBuilder.setDeviceId("test") // device id is irrelevant
     mappings.foreach { x =>
       map.addMeasmap(Mapping.MeasMap.newBuilder.setIndex(x.index).setPointName(x.name).setType(x.typ))
     }

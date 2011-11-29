@@ -153,7 +153,7 @@ class CommandRequestServicesIntegration
     // Send a select (access request)
     val select = commandAccess()
     val selectResult = fixture.access.put(select).expectOne()
-    val selectId = selectResult.getUid
+    val selectId = selectResult.getId
 
     // the 'remote' service that will handle the call
     val service = new SyncServiceBase[UserCommandRequest] {
@@ -164,7 +164,7 @@ class CommandRequestServicesIntegration
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 
-    val conn = fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectOne()
+    val conn = fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setId("*").build).expectOne()
 
     // act like the FEP and mark the endpoint as comms_up
     fixture.setEndpointState(conn, CommEndpointConnection.State.COMMS_UP)

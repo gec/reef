@@ -27,15 +27,15 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile }
  */
 object ConfigFileRequestBuilders {
   def getAll() = ConfigFile.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build
-  def getByUid(uid: ReefUUID) = ConfigFile.newBuilder().setUuid(uid).build
+  def getById(id: ReefUUID) = ConfigFile.newBuilder().setUuid(id).build
   def getByName(name: String) = ConfigFile.newBuilder().setName(name).build
 
   def getByMimeType(mimeType: String) = ConfigFile.newBuilder().setMimeType(mimeType).build
 
-  def getByEntity(entityUid: ReefUUID) = ConfigFile.newBuilder().addEntities(EntityRequestBuilders.getByUid(entityUid)).build
+  def getByEntity(entityId: ReefUUID) = ConfigFile.newBuilder().addEntities(EntityRequestBuilders.getById(entityId)).build
 
-  def getByEntity(entityUid: ReefUUID, mimeType: String) = {
-    ConfigFile.newBuilder().setMimeType(mimeType).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
+  def getByEntity(entityId: ReefUUID, mimeType: String) = {
+    ConfigFile.newBuilder().setMimeType(mimeType).addEntities(EntityRequestBuilders.getById(entityId)).build
   }
 
   private def makeBasicConfigFile(name: String, mimeType: String, data: Array[Byte]) = {
@@ -46,11 +46,11 @@ object ConfigFileRequestBuilders {
     makeBasicConfigFile(name, mimeType, data).build
   }
 
-  def makeConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
-    makeBasicConfigFile(name, mimeType, data).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
+  def makeConfigFile(name: String, mimeType: String, data: Array[Byte], entityId: ReefUUID) = {
+    makeBasicConfigFile(name, mimeType, data).addEntities(EntityRequestBuilders.getById(entityId)).build
   }
 
-  def makeConfigFile(mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
-    ConfigFile.newBuilder().setMimeType(mimeType).setFile(ByteString.copyFrom(data)).addEntities(EntityRequestBuilders.getByUid(entityUid)).build
+  def makeConfigFile(mimeType: String, data: Array[Byte], entityId: ReefUUID) = {
+    ConfigFile.newBuilder().setMimeType(mimeType).setFile(ByteString.copyFrom(data)).addEntities(EntityRequestBuilders.getById(entityId)).build
   }
 }

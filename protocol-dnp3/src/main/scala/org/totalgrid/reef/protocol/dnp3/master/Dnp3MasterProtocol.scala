@@ -42,7 +42,7 @@ class Dnp3MasterProtocol extends Dnp3ProtocolBase[MasterObjectsContainer] {
     batchPublisher: BatchPublisher,
     endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
 
-    logger.info("Adding device with uid: " + endpointName + " onto channel " + channelName)
+    logger.info("Adding device with id: " + endpointName + " onto channel " + channelName)
 
     val (masterConfig, filterLevel) = MasterXmlConfig.getMasterConfig(files)
 

@@ -79,7 +79,7 @@ public class TestAlarmService extends ReefConnectionTestBase
         Entity substation = entityService.getEntityByName( "StaticSubstation" );
 
         // Get all the points in the substation. Alarms are associated with individual points.
-        Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid( substation, "Point" );
+        Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootId( substation, "Point" );
 
         // Get the alarms on both the substation and devices under the substation.
         List<String> alarmTypes = new LinkedList<String>();

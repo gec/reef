@@ -56,7 +56,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   /**
    *  client code need to return a list that has all of the fields necessary to determine
    * if 2 records are referring to the "same object", it may be one field or a combination
-   * of all the fields to define the "sameness". In most cases a uid field will be in this list
+   * of all the fields to define the "sameness". In most cases a id field will be in this list
    * and by definition if that field is filled in we will get that record and no others. If
    * however the model was a one where every user could set a user_specific_status for every command
    * then the search would look like: List(user_name, command_name). To make a unique match the

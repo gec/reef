@@ -39,7 +39,7 @@ case class EventStore(
   // extra constructor for squeryl type inference
   def this() = this("", false, 0, Some(0), 0, "", "", Some(new UUID(0, 0)), Array[Byte](), "")
 
-  val associatedAlarm = LazyVar(ApplicationSchema.alarms.where(a => a.eventUid === id).single)
+  val associatedAlarm = LazyVar(ApplicationSchema.alarms.where(a => a.eventId === id).single)
 
   val entity = LazyVar(mayHaveOneByUuid(ApplicationSchema.entities, entityId))
 
@@ -94,12 +94,12 @@ object AlarmModel {
  */
 class AlarmModel(
     val state: Int,
-    val eventUid: Long) extends ModelWithId {
+    val eventId: Long) extends ModelWithId {
 
   import AlarmModel._
 
   // Get an EventStore based on an EventType
-  val event = LazyVar(hasOne(ApplicationSchema.events, eventUid))
+  val event = LazyVar(hasOne(ApplicationSchema.events, eventId))
 
   /**
    * Can we transition from our current state to the specified next state?

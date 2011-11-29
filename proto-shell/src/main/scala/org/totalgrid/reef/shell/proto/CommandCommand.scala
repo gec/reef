@@ -86,7 +86,7 @@ class AccessCommand extends ReefCommandSupport {
 
   def doCommand() = {
     Option(id) match {
-      case Some(uid) =>
+      case Some(id) =>
         CommandView.accessInspect(services.getCommandLockById(ReefID.newBuilder.setValue(id).build))
       case None =>
         CommandView.printAccessTable(services.getCommandLocks().toList)

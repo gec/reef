@@ -53,7 +53,7 @@ class EntityRequestTest
     val targetUuid = allEntities.head.getUuid
 
     recorder.addExplanation("Get by UID", "Finds a specific entity by UID.")
-    session.get(EntityRequestBuilders.getByUid(targetUuid)).await.expectOne
+    session.get(EntityRequestBuilders.getById(targetUuid)).await.expectOne
   }
 
   test("Get by types") {
@@ -67,16 +67,16 @@ class EntityRequestTest
 
   test("Children") {
     val subs = session.get(EntityRequestBuilders.getByType("Substation")).await.expectMany()
-    val subUid = subs.head.getUuid
+    val subId = subs.head.getUuid
 
     recorder.addExplanation("Get descendants", "Finds all descendants of the root entity with the relationship \"owns\".")
-    session.get(EntityRequestBuilders.getAllRelatedChildrenFromRootUid(subUid, "owns")).await.expectMany()
+    session.get(EntityRequestBuilders.getAllRelatedChildrenFromRootId(subId, "owns")).await.expectMany()
 
     recorder.addExplanation("Get direct descendants", "Finds all descendants of the root entity with the relationship \"owns\" and that are a distance 1 away.")
-    session.get(EntityRequestBuilders.getDirectChildrenFromRootUid(subUid, "owns")).await.expectMany()
+    session.get(EntityRequestBuilders.getDirectChildrenFromRootId(subId, "owns")).await.expectMany()
 
     recorder.addExplanation("Get descendants of a type", "Finds all descendants of the root entity with the relationship \"owns\" and that are of type \"Point\".")
-    session.get(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(subUid, "Point")).await.expectMany()
+    session.get(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootId(subId, "Point")).await.expectMany()
 
   }
 
@@ -91,12 +91,12 @@ class EntityRequestTest
 
   test("Multilevel") {
     val subs = session.get(EntityRequestBuilders.getByType("Substation")).await.expectMany()
-    val subUid = subs.head.getUuid
+    val subId = subs.head.getUuid
 
     val desc = <div>Starting from a root node ("Substation"), the request asks for children of type "Breaker", and children of those of type "Point".</div>
 
     recorder.addExplanation("Multi-level tree query", desc)
-    val resp = session.get(EntityRequestBuilders.getAllPointsSortedByOwningEquipment(subUid)).await.expectMany()
+    val resp = session.get(EntityRequestBuilders.getAllPointsSortedByOwningEquipment(subId)).await.expectMany()
 
   }
 

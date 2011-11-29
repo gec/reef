@@ -33,7 +33,7 @@ import org.totalgrid.reef.proto.Model.ReefUUID;
  * lists in java.
  * <p/>
  * Config files are for larger hunks of opaque data for use by external applications. Config files can be
- * used by 0, 1 or many entities. Config files can be searched for by name, uid or by entities they are
+ * used by 0, 1 or many entities. Config files can be searched for by name, id or by entities they are
  * related to. Names must be unique system-wide. Searches can all be filtered by mimeType, which can be
  * helpful is name is unknown.
  *
@@ -49,7 +49,7 @@ public interface ConfigFileService
     /**
      * retrieve a config file by its UID
      */
-    ConfigFile getConfigFileByUuid( ReefUUID uid ) throws ReefServiceException;
+    ConfigFile getConfigFileByUuid( ReefUUID id ) throws ReefServiceException;
 
     /**
      * retrieve a config file by its name
@@ -64,29 +64,29 @@ public interface ConfigFileService
     /**
      * search for all config files "used" by an entity
      */
-    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid ) throws ReefServiceException;
+    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityId ) throws ReefServiceException;
 
     /**
      * search for all config files "used" by an entity, only returns files with matching mimeType
      */
-    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityUid, String mimeType ) throws ReefServiceException;
+    List<ConfigFile> getConfigFilesUsedByEntity( ReefUUID entityId, String mimeType ) throws ReefServiceException;
 
     /**
      * create a "free-floating" ConfigFile that isnt "used" by any entities. This means is only retrievable
-     * by name or uid (or mimeType if there is only one file with that type in system)
+     * by name or id (or mimeType if there is only one file with that type in system)
      */
     ConfigFile createConfigFile( String name, String mimeType, byte[] data ) throws ReefServiceException;
 
     /**
      * create a ConfigFile that is "used" by an Entity, it is now queryable by name, mimeType and entity.
      */
-    ConfigFile createConfigFile( String name, String mimeType, byte[] data, ReefUUID entityUid ) throws ReefServiceException;
+    ConfigFile createConfigFile( String name, String mimeType, byte[] data, ReefUUID entityId ) throws ReefServiceException;
 
     /**
      * create a ConfigFile that is "used" by an Entiny and only findable via that entity, it has no name of its own.
      * Queryable by mimeType and entity only.
      */
-    ConfigFile createConfigFile( String mimeType, byte[] data, ReefUUID entityUid ) throws ReefServiceException;
+    ConfigFile createConfigFile( String mimeType, byte[] data, ReefUUID entityId ) throws ReefServiceException;
 
     /**
      * update the text of the previously retrieved ConfigFile
@@ -96,7 +96,7 @@ public interface ConfigFileService
     /**
      * adds another Entity as a "user" of the ConfigFile
      */
-    ConfigFile addConfigFileUsedByEntity( ConfigFile configFile, ReefUUID entityUid ) throws ReefServiceException;
+    ConfigFile addConfigFileUsedByEntity( ConfigFile configFile, ReefUUID entityId ) throws ReefServiceException;
 
     /**
      * delete the passed in config file and all "using" relationships to Entities

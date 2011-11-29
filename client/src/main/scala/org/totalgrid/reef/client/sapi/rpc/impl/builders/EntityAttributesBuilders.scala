@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
 
 object EntityAttributesBuilders {
 
-  def getForEntityUid(uuid: ReefUUID) = {
+  def getForEntityId(uuid: ReefUUID) = {
     EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uuid)).build
   }
 
@@ -32,7 +32,7 @@ object EntityAttributesBuilders {
     EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setName(name)).build
   }
 
-  def putAttributesToEntityUid(uuid: ReefUUID, attributes: java.util.List[Attribute]) = {
+  def putAttributesToEntityId(uuid: ReefUUID, attributes: java.util.List[Attribute]) = {
     EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uuid)).addAllAttributes(attributes).build
   }
 

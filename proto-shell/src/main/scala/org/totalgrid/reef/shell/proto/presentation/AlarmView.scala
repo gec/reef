@@ -35,7 +35,7 @@ object AlarmView {
 
   def row(a: Alarm) = {
     val e = a.getEvent
-    a.getUid.getValue :: a.getState.toString :: e.getEventType :: e.getSeverity.toString :: associatedEntity(e) :: e.getUserId :: EventView.timeString(e.time) :: e.getRendered :: Nil
+    a.getId.getValue :: a.getState.toString :: e.getEventType :: e.getSeverity.toString :: associatedEntity(e) :: e.getUserId :: EventView.timeString(e.time) :: e.getRendered :: Nil
   }
 
   def associatedEntity(e: Event): String = {

@@ -35,14 +35,14 @@ object EventView {
   }
 
   def header = {
-    "Uid" :: "Type" :: "Alarm" :: "Sev" :: "User" :: "Entity" :: "Message" :: "Time" :: Nil
+    "Id" :: "Type" :: "Alarm" :: "Sev" :: "User" :: "Entity" :: "Message" :: "Time" :: Nil
   }
 
   val dateFormat = new SimpleDateFormat("HH:mm:ss MM-dd-yy")
   def timeString(time: Option[Long]) = time.map { t => dateFormat.format(new java.util.Date(t)) }.getOrElse("")
 
   def row(e: Event) = {
-    e.getUid.getValue :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getUserId :: e.entity.name.getOrElse("") :: e.getRendered :: timeString(e.time) :: Nil
+    e.getId.getValue :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getUserId :: e.entity.name.getOrElse("") :: e.getRendered :: timeString(e.time) :: Nil
   }
 
   private def getValueAsString(attr: Attribute): String = {
@@ -66,7 +66,7 @@ object EventView {
     }.getOrElse(Nil)
 
     val lines: List[List[String]] =
-      ("Uid" :: e.getUid.getValue :: Nil) ::
+      ("Id" :: e.getId.getValue :: Nil) ::
         ("Type" :: e.getEventType :: Nil) ::
         ("Alarm" :: e.getAlarm.toString :: Nil) ::
         ("Sev" :: e.getSeverity.toString :: Nil) ::

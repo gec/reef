@@ -254,83 +254,83 @@ public interface EntityService
     /**
      * Get all attributes associated with a specified Entity.
      *
-     * @param uid The entity uid.
+     * @param id The entity id.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes getEntityAttributes( ReefUUID uid ) throws ReefServiceException;
+    EntityAttributes getEntityAttributes( ReefUUID id ) throws ReefServiceException;
 
     /**
      * Remove a specific attribute by name for a specified Entity.
      *
-     * @param uid      The entity uid.
+     * @param id      The entity id.
      * @param attrName The name of the attribute.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes removeEntityAttribute( ReefUUID uid, String attrName ) throws ReefServiceException;
+    EntityAttributes removeEntityAttribute( ReefUUID id, String attrName ) throws ReefServiceException;
 
     /**
      * Clear all attributes for a specified Entity.
      *
-     * @param uid The entity uid.
+     * @param id The entity id.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes clearEntityAttributes( ReefUUID uid ) throws ReefServiceException;
+    EntityAttributes clearEntityAttributes( ReefUUID id ) throws ReefServiceException;
 
     /**
      * Set a boolean attribute by name for a specified Entity.
      *
-     * @param uid   The entity uid.
+     * @param id   The entity id.
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes setEntityAttribute( ReefUUID uid, String name, boolean value ) throws ReefServiceException;
+    EntityAttributes setEntityAttribute( ReefUUID id, String name, boolean value ) throws ReefServiceException;
 
     /**
      * Set a signed 64-bit integer attribute by name for a specified Entity.
      *
-     * @param uid   The entity uid.
+     * @param id   The entity id.
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes setEntityAttribute( ReefUUID uid, String name, long value ) throws ReefServiceException;
+    EntityAttributes setEntityAttribute( ReefUUID id, String name, long value ) throws ReefServiceException;
 
     /**
      * Set a double attribute by name for a specified Entity.
      *
-     * @param uid   The entity uid.
+     * @param id   The entity id.
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes setEntityAttribute( ReefUUID uid, String name, double value ) throws ReefServiceException;
+    EntityAttributes setEntityAttribute( ReefUUID id, String name, double value ) throws ReefServiceException;
 
     /**
      * Set a string attribute by name for a specified Entity.
      *
-     * @param uid   The entity uid.
+     * @param id   The entity id.
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes setEntityAttribute( ReefUUID uid, String name, String value ) throws ReefServiceException;
+    EntityAttributes setEntityAttribute( ReefUUID id, String name, String value ) throws ReefServiceException;
 
     /**
      * Set an Array<Byte> attribute by name for a specified Entity.
      *
-     * @param uid   The entity uid.
+     * @param id   The entity id.
      * @param name  The name of the attribute.
      * @param value The attribute value.
      * @return The entity and its associated attributes.
      * @throws org.totalgrid.reef.clientapi.exceptions.ReefServiceException
      */
-    EntityAttributes setEntityAttribute( ReefUUID uid, String name, byte[] value ) throws ReefServiceException;
+    EntityAttributes setEntityAttribute( ReefUUID id, String name, byte[] value ) throws ReefServiceException;
 }

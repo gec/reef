@@ -36,7 +36,7 @@ object EventRequestBuilders {
     Event.newBuilder.setEventType(eventType).setArgs(attrs).build
   }
 
-  def getByUID(uid: ReefID) = {
-    Event.newBuilder.setUid(uid).build
+  def getByUID(id: ReefID) = {
+    Event.newBuilder.setId(id).build
   }
 }

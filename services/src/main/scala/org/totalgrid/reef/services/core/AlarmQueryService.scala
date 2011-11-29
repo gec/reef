@@ -104,7 +104,7 @@ class AlarmQueryService
     val results =
       from(alarms, events)((alarm, event) =>
         where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
-          alarm.eventUid === event.id)
+          alarm.eventId === event.id)
           select ((alarm, event))
           orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList
 

@@ -44,7 +44,7 @@ object CommandView {
 
   //def selectResponse(resp: CommandAccess)
   def commandResponse(resp: UserCommandRequest) = {
-    val rows = ("ID: " :: "[" + resp.getUid + "]" :: Nil) ::
+    val rows = ("ID: " :: "[" + resp.getId + "]" :: Nil) ::
       ("Command:" :: resp.commandRequest.command.name.getOrElse("unknown") :: Nil) ::
       ("User:" :: resp.getUser :: Nil) ::
       ("Status:" :: resp.getStatus.toString :: Nil) :: Nil
@@ -58,7 +58,7 @@ object CommandView {
   }
 
   def removeBlockResponse(removed: List[CommandAccess]) = {
-    val rows = removed.map(acc => "Removed:" :: "[" + acc.getUid + "]" :: Nil)
+    val rows = removed.map(acc => "Removed:" :: "[" + acc.getId + "]" :: Nil)
     Table.renderRows(rows, " ")
   }
 
@@ -72,7 +72,7 @@ object CommandView {
     val first = commands.headOption.map { _.name }.flatten.toString
     val tail = commands.tail
 
-    val rows: List[List[String]] = ("ID:" :: "[" + acc.getUid.getValue + "]" :: Nil) ::
+    val rows: List[List[String]] = ("ID:" :: "[" + acc.getId.getValue + "]" :: Nil) ::
       ("Mode:" :: acc.getAccess.toString :: Nil) ::
       ("User:" :: acc.getUser :: Nil) ::
       ("Expires:" :: timeString(acc) :: Nil) ::
@@ -92,7 +92,7 @@ object CommandView {
   def accessRow(acc: CommandAccess): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
-    "[" + acc.getUid.getValue + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
+    "[" + acc.getId.getValue + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
   }
 
   def commandsEllipsis(names: List[Command]) = {
@@ -112,11 +112,11 @@ object CommandView {
   }
 
   def historyHeader = {
-    "Uid" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
+    "Id" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
   }
 
   def historyRow(a: UserCommandRequest) = {
-    a.uid.value.getOrElse("unknown") ::
+    a.id.value.getOrElse("unknown") ::
       a.commandRequest.command.name.getOrElse("unknown") ::
       a.status.map { _.toString }.getOrElse("unknown") ::
       a.user.getOrElse("unknown") ::

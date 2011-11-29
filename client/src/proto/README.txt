@@ -53,11 +53,11 @@ Object names should be capitalized/camel-cased and describe their function in a 
 4) Field names should be all lower-case, with words separated by underscores, as specified by the protobuf style guide.
 
 
-5) Uid field:
+5) Id field:
 
-  optional string uid = 1;
+  optional string id = 1;
   
-All proto objects which refer to persistent resources should specify the per-resource-type unique identifier in string form and named "uid". The format of the uid field is opaque; it is just a variable used to refer back to a unique object.
+All proto objects which refer to persistent resources should specify the per-resource-type unique identifier in string form and named "id". The format of the id field is opaque; it is just a variable used to refer back to a unique object.
   
 
 6) Repeated fields:

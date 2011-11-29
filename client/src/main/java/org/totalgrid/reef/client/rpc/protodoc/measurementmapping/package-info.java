@@ -59,8 +59,8 @@
  * }
  * 
  * message IndexMapping {
- *     //optional string           uid          = 1;
- *     optional string           device_uid   = 2;
+ *     //optional string           id          = 1;
+ *     optional string           device_id   = 2;
  *     repeated MeasMap          measmap      = 3;
  *     repeated CommandMap       commandmap   = 4;
  * }

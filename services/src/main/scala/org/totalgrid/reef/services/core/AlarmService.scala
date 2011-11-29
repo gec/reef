@@ -69,7 +69,7 @@ class AlarmServiceModel
   override def getEventProtoAndKey(alarm: AlarmModel) = {
     val (_, eventKeys) = EventConversion.makeEventProtoAndKey(alarm.event.value)
     val proto = convertToProto(alarm)
-    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.uid.value :: Nil) + "." + _ }
+    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.id.value :: Nil) + "." + _ }
 
     (proto, keys)
   }
@@ -78,7 +78,7 @@ class AlarmServiceModel
   override def getSubscribeKeys(req: Alarm): List[String] = {
     val eventKeys = EventConversion.makeSubscribeKeys(req.event.getOrElse(EventProto.newBuilder.build))
 
-    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uid.value :: Nil) + "." + _ }
+    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.id.value :: Nil) + "." + _ }
   }
 
   override def createFromProto(context: RequestContext, req: Alarm): AlarmModel = {
@@ -118,7 +118,7 @@ class AlarmServiceModel
   private def updateModelEntry(proto: Alarm, existing: AlarmModel): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
-      existing.eventUid) // Use the existing event so there's no possibility of an update.
+      existing.eventId) // Use the existing event so there's no possibility of an update.
   }
 }
 
@@ -144,7 +144,7 @@ trait AlarmConversion
   def createModelEntry(proto: Alarm): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
-      proto.getEvent.getUid.getValue.toLong)
+      proto.getEvent.getId.getValue.toLong)
   }
 
   def convertToProto(entry: AlarmModel): Alarm = {
@@ -153,7 +153,7 @@ trait AlarmConversion
 
   def convertToProto(entry: AlarmModel, event: EventStore): Alarm = {
     Alarm.newBuilder
-      .setUid(makeId(entry))
+      .setId(makeId(entry))
       .setState(Alarm.State.valueOf(entry.state))
       .setEvent(EventConversion.convertToProto(event))
       .build
@@ -177,7 +177,7 @@ trait AlarmQueries {
   }
 
   def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
-    (proto.uid.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
+    (proto.id.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
@@ -194,7 +194,7 @@ trait AlarmQueries {
         uniqueEventQuery(event, req.event) :::
         searchQuery(req, alarm) :::
         searchEventQuery(event, req.event)) and
-        alarm.eventUid === event.id)
+        alarm.eventId === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)
 
@@ -206,7 +206,7 @@ trait AlarmQueries {
     //    val results = from(ApplicationSchema.alarms, ApplicationSchema.events, ApplicationSchema.entities)((alarm, event, entity) =>
     //        where(buildQuery(req, alarm) and
     //          optionalEventQuery(event, req.event) and
-    //          alarm.eventUid === event.id and event.entityId === entity.id)
+    //          alarm.eventId === event.id and event.entityId === entity.id)
     //          select ((alarm, event, entity))
     //          orderBy (new OrderByArg(event.time).desc)).page(0, 50)
 
@@ -219,7 +219,7 @@ trait AlarmQueries {
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
       where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
         uniqueEventQuery(event, req.event)) and
-        alarm.eventUid === event.id)
+        alarm.eventId === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)
 

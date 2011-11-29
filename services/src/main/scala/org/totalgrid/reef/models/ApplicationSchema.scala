@@ -73,7 +73,7 @@ object ApplicationSchema extends Schema {
 
   val alarms = table[AlarmModel]
   on(alarms)(s => declare(
-    s.eventUid is (indexed)))
+    s.eventId is (indexed)))
 
   val agents = table[Agent]
   val permissions = table[AuthPermission]

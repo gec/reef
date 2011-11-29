@@ -42,7 +42,7 @@ trait MeasurementOverrideServiceImpl extends HasAnnotatedOperations with Measure
   }
 
   override def deleteMeasurementOverride(measOverride: MeasOverride) = {
-    // TODO: measurementOverride needs uid - backlog-63
+    // TODO: measurementOverride needs id - backlog-63
     ops.operation("Couldn't delete measurementOverride: " + measOverride.meas + " on: " + measOverride.point) {
       _.delete(measOverride).map(_.one)
     }

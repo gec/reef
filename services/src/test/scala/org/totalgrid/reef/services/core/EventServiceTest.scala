@@ -104,7 +104,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
     event.alarm.get should be(true)
     event.severity.get should be(3)
     event.rendered.get should be("Test Alarm")
-    event.uid should not be (None)
+    event.id should not be (None)
 
     val alarm = fix.alarmService.get(makeAlarm(event)).expectOne
     alarm.state.get should be(Alarm.State.UNACK_AUDIBLE)
@@ -129,7 +129,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
     val alarm = fix.alarmService.put(alarmRequest).expectOne
     // make sure we added a new event than the template
-    alarm.event.uid.get should not equal (event.uid.get)
+    alarm.event.id.get should not equal (event.id.get)
     alarm.event.rendered should equal(event.rendered)
     alarm.state should equal(Some(Alarm.State.UNACK_AUDIBLE))
   }
@@ -192,7 +192,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
    */
   def makeAlarm(alarm: Alarm, state: Alarm.State) =
     Alarm.newBuilder
-      .setUid(alarm.getUid)
+      .setId(alarm.getId)
       .setState(state)
       .build
 

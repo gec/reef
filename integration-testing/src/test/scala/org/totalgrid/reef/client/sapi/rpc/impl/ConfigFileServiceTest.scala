@@ -39,7 +39,7 @@ class ConfigFileServiceTest
     extends ClientSessionSuite("ConfigFile.xml", "Config Files", <div>
                                                                    <p>
                                                                      Config files are for larger hunks of opaque data for use by external applications. Config files can be related to 0 to many entities.
-        Config files can be searched for by name, uid or by entities they are related to. Searches can all be filtered by mimeType if the name is
+        Config files can be searched for by name, id or by entities they are related to. Searches can all be filtered by mimeType if the name is
         unknown. Names must be unique system-wide.
                                                                    </p>
                                                                  </div>)
@@ -55,7 +55,7 @@ class ConfigFileServiceTest
     recorder.addExplanation("Config File Data Updates", "Config Files can be updated 'in place'")
     client.updateConfigFile(cf, "New Data".getBytes()).await
 
-    recorder.addExplanation("Config Files must be deleted by uid", "")
+    recorder.addExplanation("Config Files must be deleted by id", "")
     client.deleteConfigFile(cf).await
   }
 

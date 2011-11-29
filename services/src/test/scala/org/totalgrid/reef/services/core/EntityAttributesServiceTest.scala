@@ -46,9 +46,9 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   protected val service = SyncService(new EntityAttributesService)
 
   test("Put") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -76,9 +76,9 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Bad put - type but no value") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -93,15 +93,15 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     ReefUUID.newBuilder.setValue(id.toString).build
   }
 
-  def attrReq(entityUid: ReefUUID, attributes: List[Attribute]) = {
-    val entity = Entity.newBuilder.setUuid(entityUid).build
+  def attrReq(entityId: ReefUUID, attributes: List[Attribute]) = {
+    val entity = Entity.newBuilder.setUuid(entityId).build
     EntityAttributes.newBuilder.setEntity(entity).addAllAttributes(attributes.toList).build
   }
 
   test("Second put modifies") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -120,18 +120,18 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put fully replaces") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
     val initial = Attribute.newBuilder.setName("testAttr01").setVtype(Attribute.Type.SINT64).setValueSint64(56).build ::
       Attribute.newBuilder.setName("testAttr02").setVtype(Attribute.Type.SINT64).setValueSint64(23).build ::
       Nil
 
-    val entAttr = attrReq(entUid, initial)
+    val entAttr = attrReq(entId, initial)
 
     val result = service.put(entAttr).expectOne(Status.CREATED)
     result.getAttributesCount should equal(2)
 
-    val req2 = attrReq(entUid, List(Attribute.newBuilder.setName("testAttr03").setVtype(Attribute.Type.SINT64).setValueSint64(400).build))
+    val req2 = attrReq(entId, List(Attribute.newBuilder.setName("testAttr03").setVtype(Attribute.Type.SINT64).setValueSint64(400).build))
     val result2 = service.put(req2).expectOne(Status.UPDATED)
 
     result2.getAttributesCount should equal(1)
@@ -169,10 +169,10 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     }
   }
 
-  test("Get by uid") {
-    val entUid = simpleGetScenario
+  test("Get by id") {
+    val entId = simpleGetScenario
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     checkSimpleGetScenario(entAttr)
@@ -207,16 +207,16 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def roundtrip[A](v: A, typ: Attribute.Type, setup: (Attribute.Builder, A) => Unit, get: Attribute => A) = {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(typ)
     setup(attribute, v)
 
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
     service.put(entAttr).expectOne(Status.CREATED)
 
-    val result = service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entUid)).build).expectOne(Status.OK)
+    val result = service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build).expectOne(Status.OK)
 
     result.getAttributesCount should equal(1)
     val attr = result.getAttributesList.get(0)

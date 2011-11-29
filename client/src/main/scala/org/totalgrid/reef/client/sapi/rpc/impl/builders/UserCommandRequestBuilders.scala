@@ -23,13 +23,13 @@ import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 
 object UserCommandRequestBuilders {
 
-  def getForUid(uid: String) = UserCommandRequest.newBuilder.setUid(ReefID.newBuilder.setValue(uid)).build
+  def getForId(id: String) = UserCommandRequest.newBuilder.setId(ReefID.newBuilder.setValue(id)).build
   def getForCommand(command: Command) = {
     val cr = CommandRequest.newBuilder.setCommand(command)
     UserCommandRequest.newBuilder.setCommandRequest(cr).build
   }
 
-  def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setUid(request.getUid).build
+  def getStatus(request: UserCommandRequest) = UserCommandRequest.newBuilder.setId(request.getId).build
 
   def executeControl(command: Command): UserCommandRequest = {
     val cr = CommandRequest.newBuilder.setCommand(command).setType(CommandRequest.ValType.NONE)

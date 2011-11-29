@@ -78,11 +78,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     none(s.get(Trigger.newBuilder.setTriggerName("trigname1").setPoint(makePoint("meas03")).build))
 
     many(3, s.get(Trigger.newBuilder.setPoint(makePoint("meas01")).build))
-    many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build))
+    many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeId(node.getUuid)).build))
     many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeName(node.getName)).build))
 
     many(4, s.get(Trigger.newBuilder.setPoint(makePoint("*")).build))
-    many(4, s.get(Trigger.newBuilder.setPoint(makePointByNodeUid("*")).build))
+    many(4, s.get(Trigger.newBuilder.setPoint(makePointByNodeId("*")).build))
     many(4, s.get(Trigger.newBuilder.setPoint(makePointByNodeName("*")).build))
   }*/
 
@@ -110,11 +110,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     gotten.getMeas.getIntVal should equal(999)
 
     s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build).expectOne()
-    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build).expectOne()
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeId(node.getUuid)).build).expectOne()
     s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName(node.getName)).build).expectOne()
 
     s.get(MeasOverride.newBuilder.setPoint(makePoint("*")).build).expectMany(2)
-    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid("*")).build).expectMany(2)
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeId("*")).build).expectMany(2)
     s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName("*")).build).expectMany(2)
   }
 }

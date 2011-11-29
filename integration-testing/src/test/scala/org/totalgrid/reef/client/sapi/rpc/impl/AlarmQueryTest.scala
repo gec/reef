@@ -82,7 +82,7 @@ class AlarmQueryTest
       client.getAlarmById("1234567890123456789").await
     }.getMessage
     exc.contains("1234567890123456789") should equal(true)
-    exc.contains("uid") should equal(true)
+    exc.contains("id") should equal(true)
   }
 
 }

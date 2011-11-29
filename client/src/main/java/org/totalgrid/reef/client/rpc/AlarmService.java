@@ -48,7 +48,7 @@ public interface AlarmService extends SubscriptionCreator
     /**
      * Get a single alarm
      *
-     * @param id uid of alarm
+     * @param id id of alarm
      */
     Alarm getAlarmById( String id ) throws ReefServiceException;
 

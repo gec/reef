@@ -108,11 +108,11 @@ public interface EndpointManagementService
     /**
      * Protocol Adapters will update the endpoint connection state to indicate when the endpoint
      * changes communication state.
-     * @param connectionUid  string uid for the endpoint connection
+     * @param connectionId  string id for the endpoint connection
      * @param state          COMMS_UP, COMMS_DOWN, COMMS_ERROR ...
      * @return updated state
      */
-    CommEndpointConnection alterEndpointConnectionState( ReefID connectionUid, State state ) throws ReefServiceException;
+    CommEndpointConnection alterEndpointConnectionState( ReefID connectionId, State state ) throws ReefServiceException;
 
 
 }

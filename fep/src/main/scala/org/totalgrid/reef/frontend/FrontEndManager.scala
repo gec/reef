@@ -54,7 +54,7 @@ class FrontEndManager(
 
     try {
       val fep = client.registerApplicationAsFrontEnd(appConfig.getUuid, protocolNames).await
-      logger.info("Registered application as FEP with uid: " + fep.getUuid.getValue)
+      logger.info("Registered application as FEP with id: " + fep.getUuid.getValue)
       val result = client.subscribeToEndpointConnectionsForFrontEnd(fep).await
       connectionContext.setSubscription(result)
     } catch {

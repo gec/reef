@@ -104,7 +104,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     b.build
   }
 
-  test("Add parts seperatley (uid)") {
+  test("Add parts seperatley (id)") {
 
     pointService.put(getPoint().build).expectOne()
     commandService.put(getCommand().build).expectOne()

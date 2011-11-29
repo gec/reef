@@ -161,10 +161,10 @@ public interface CommandService
      * Deselect a command or set of commands. When we have completed the execution of a command
      * we delete the system-wide lock we had. This releases the resource so other agents can
      * access those commands.
-     * @param commandUid
+     * @param commandId
      * @throws ReefServiceException if an error occurs
      */
-    CommandAccess deleteCommandLock( ReefID commandUid ) throws ReefServiceException;
+    CommandAccess deleteCommandLock( ReefID commandId ) throws ReefServiceException;
 
     /**
      * Clear all of the command locks in the system. This is a dangerous operation that should only

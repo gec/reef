@@ -176,7 +176,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
   def makeMappings(list: CommandMap*) = {
     val map = IndexMapping.newBuilder
-    map.setDeviceUid("test")
+    map.setDeviceId("test")
     list.foreach { map.addCommandmap(_) }
     map.build
   }

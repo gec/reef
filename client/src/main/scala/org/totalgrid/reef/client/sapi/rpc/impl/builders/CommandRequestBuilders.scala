@@ -23,13 +23,13 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Command }
 object CommandRequestBuilders {
   def getAll() = Command.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
 
-  def getByEntityUid(uid: ReefUUID) = Command.newBuilder.setUuid(uid).build
+  def getByEntityId(id: ReefUUID) = Command.newBuilder.setUuid(id).build
   def getByEntityName(name: String) = Command.newBuilder.setName(name).build
 
   def getOwnedByEntityWithUuid(uuid: ReefUUID) = {
-    Command.newBuilder.setEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid(uuid, "Command")).build
+    Command.newBuilder.setEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootId(uuid, "Command")).build
   }
   def getSourcedByEndpoint(entityUuid: ReefUUID) = {
-    Command.newBuilder.setEndpoint(EntityRequestBuilders.getByUid(entityUuid)).build
+    Command.newBuilder.setEndpoint(EntityRequestBuilders.getById(entityUuid)).build
   }
 }

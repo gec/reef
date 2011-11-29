@@ -40,7 +40,7 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
   }
 
   override def getPointByUuid(uuid: ReefUUID) = ops.operation("Point not found with uuid: " + uuid) {
-    _.get(PointRequestBuilders.getByUid(uuid)).map(_.one)
+    _.get(PointRequestBuilders.getById(uuid)).map(_.one)
   }
 
   override def getPointsOwnedByEntity(parentEntity: Entity) = {
@@ -61,7 +61,7 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
       val entity = EntityRequestBuilders.getCommandsFeedbackPoints(commandUuid)
       val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
 
-      def getPointWithUuid(uuid: ReefUUID) = client.get(PointRequestBuilders.getByUid(uuid)).map(_.one)
+      def getPointWithUuid(uuid: ReefUUID) = client.get(PointRequestBuilders.getById(uuid)).map(_.one)
       MultiRequestHelper.scatterGatherQuery(entityList, getPointWithUuid _)
     }
   }

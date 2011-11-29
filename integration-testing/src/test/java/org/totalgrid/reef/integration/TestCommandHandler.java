@@ -70,7 +70,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
                     throw new ExpectationException( "meas proc never came online" );
                 Thread.sleep( 250 );
             }
-            helpers.alterEndpointConnectionState( conn.getUid(), FEP.CommEndpointConnection.State.COMMS_UP );
+            helpers.alterEndpointConnectionState( conn.getId(), FEP.CommEndpointConnection.State.COMMS_UP );
 
             doCommandRequest( cmd, endpoint.getUuid() );
         }
@@ -79,7 +79,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
             if ( endpoint != null )
             {
                 helpers.disableEndpointConnection( endpoint.getUuid() );
-                helpers.alterEndpointConnectionState( conn.getUid(), FEP.CommEndpointConnection.State.COMMS_DOWN );
+                helpers.alterEndpointConnectionState( conn.getId(), FEP.CommEndpointConnection.State.COMMS_DOWN );
                 loader.delete( endpoint ).await();
             }
             if ( cmd != null )

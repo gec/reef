@@ -44,12 +44,12 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     }
   }
 
-  override def deleteCommandLock(uid: ReefID) = ops.operation("Couldn't delete command lock with uid: " + uid) {
-    _.delete(CommandAccessRequestBuilders.getForUid(uid)).map(_.one)
+  override def deleteCommandLock(id: ReefID) = ops.operation("Couldn't delete command lock with id: " + id) {
+    _.delete(CommandAccessRequestBuilders.getForId(id)).map(_.one)
   }
 
   override def deleteCommandLock(ca: CommandAccess) = ops.operation("Couldn't delete command lock: " + ca) {
-    _.delete(CommandAccessRequestBuilders.getForUid(ca.getUid)).map(_.one)
+    _.delete(CommandAccessRequestBuilders.getForId(ca.getId)).map(_.one)
 
   }
 
@@ -83,8 +83,8 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.get(CommandAccessRequestBuilders.getAll).map(_.many)
   }
 
-  override def getCommandLockById(uid: ReefID) = ops.operation("Couldn't get command lock with uid: " + uid) {
-    _.get(CommandAccessRequestBuilders.getForUid(uid)).map(_.one)
+  override def getCommandLockById(id: ReefID) = ops.operation("Couldn't get command lock with id: " + id) {
+    _.get(CommandAccessRequestBuilders.getForId(id)).map(_.one)
   }
 
   override def findCommandLockOnCommand(id: Command) = {
@@ -100,7 +100,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def getCommandHistory() = ops.operation("Couldn't get command history") {
-    _.get(UserCommandRequestBuilders.getForUid("*")).map(_.many)
+    _.get(UserCommandRequestBuilders.getForId("*")).map(_.many)
   }
 
   override def getCommandHistory(cmd: Command) = ops.operation("Couldn't get command history") {
@@ -133,7 +133,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
       val entity = EntityRequestBuilders.getPointsFeedbackCommands(pointUuid)
       val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
 
-      def getCommandWithUuid(uuid: ReefUUID) = client.get(CommandRequestBuilders.getByEntityUid(uuid)).map(_.one)
+      def getCommandWithUuid(uuid: ReefUUID) = client.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
 
       MultiRequestHelper.scatterGatherQuery(entityList, getCommandWithUuid _)
     }

@@ -47,7 +47,7 @@
  * //
  * //  <== Result: EventList
  * //  { event:
- * //      //  uid   event_type      alarm   time      severity subsystem user_id    entity
+ * //      //  id   event_type      alarm   time      severity subsystem user_id    entity
  * //      //  ===== =============   ======  ========  ======== ========= ========   ==================
  * //      [ [ 1235, "BreakerClose", true,   98273496, 2,       "FEP",    "system",  "subst42.breaker23" ],
  * //        [ 1234, "BreakerOpen",  true,   98273495, 2,       "FEP",    "system",  "subst42.breaker23" ],
@@ -72,7 +72,7 @@
  * //
  * //  <== Result: EventList
  * //  { event:
- * //      //  uid   event_type      alarm   time      severity subsystem user_id    entity
+ * //      //  id   event_type      alarm   time      severity subsystem user_id    entity
  * //      //  ===== =============   ======  ========  ======== ========= ========   ==================
  * //      [ [ 1235, "BreakerClose", true,   98273496, 2,       "FEP",    "system",  "subst42.breaker23" ],
  * //        [ 1234, "BreakerOpen",  true,   98273495, 2,       "FEP",    "system",  "subst42.breaker23" ],
@@ -86,7 +86,7 @@
  * // An Event
  * //
  * message Event {
- *   optional org.totalgrid.reef.proto.Model.ReefID   uid           =  1;   // Unique ID for this instance. Only available for events coming from the DB.
+ *   optional org.totalgrid.reef.proto.Model.ReefID   id           =  1;   // Unique ID for this instance. Only available for events coming from the DB.
  *   optional string   event_type    =  2;   // The type of event. Ex: UserLogout, BreakerTrip, etc.
  *   optional bool     alarm         =  3 [default = false];  // True: This event is an Alarm
  *   optional uint64   time          =  4;   // milliseconds since midnight January 1, 1970 not counting leap seconds (Unix time, but with milliseconds)
@@ -117,7 +117,7 @@
  *   repeated org.totalgrid.reef.proto.Model.Entity entity =  8;   // List of devices or points (ex: southeast.substationAlpha.bay42.breaker23)
  *   optional uint32   limit              =  9 ;  // Max number of rows for select result
  *   optional bool     ascending          = 10 ;  // Time sort order. If not present, order is descending.
- *   //optional string   uid_after          = 11 ;  // Get events after this UID (not including this uid). Used for getting new events since last select.
+ *   //optional string   uid_after          = 11 ;  // Get events after this UID (not including this id). Used for getting new events since last select.
  * }
  * 
  * 

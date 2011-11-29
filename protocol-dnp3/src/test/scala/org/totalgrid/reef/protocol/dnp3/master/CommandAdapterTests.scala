@@ -198,7 +198,7 @@ class CommandAdapterTests extends Suite with ShouldMatchers {
 
   def runATest(mappings: List[Mapping.CommandMap.Builder])(testfun: (CommandAdapter, MockCommandAcceptor, MockResponseHandler) => Unit) = {
     val map = Mapping.IndexMapping.newBuilder
-    map.setDeviceUid("test")
+    map.setDeviceId("test")
     for (mapping <- mappings) map.addCommandmap(mapping)
     val acceptor = new MockCommandAcceptor
     testfun(new CommandAdapter(map.build, acceptor), acceptor, new MockResponseHandler)

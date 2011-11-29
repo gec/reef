@@ -50,14 +50,14 @@ object CommandAccessRequestBuilders {
   }
   def blockAccessForCommands(commands: java.util.List[Command]): CommandAccess = blockAccessForCommands(commands.toList)
 
-  def getAll() = CommandAccess.newBuilder.setUid(ReefID.newBuilder.setValue("*")).build
+  def getAll() = CommandAccess.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
   def getByCommand(command: Command) = CommandAccess.newBuilder.addCommands(command).build
   def getByCommands(commands: java.util.List[Command]) = CommandAccess.newBuilder.addAllCommands(commands).build
 
-  def getForUid(uid: ReefID) = CommandAccess.newBuilder.setUid(uid).build
+  def getForId(id: ReefID) = CommandAccess.newBuilder.setId(id).build
 
   def getForUser(user: String) = CommandAccess.newBuilder.setUser(user).build
 
-  def deleteByUid(uid: String) = CommandAccess.newBuilder.setUid(ReefID.newBuilder.setValue(uid)).build
-  def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setUid(cmd.getUid).build
+  def deleteById(id: String) = CommandAccess.newBuilder.setId(ReefID.newBuilder.setValue(id)).build
+  def delete(cmd: CommandAccess) = CommandAccess.newBuilder.setId(cmd.getId).build
 }

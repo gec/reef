@@ -43,7 +43,7 @@ trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileServic
   }
 
   override def getConfigFileByUuid(uuid: ReefUUID) = ops.operation("Couldn't get config file with uuid: " + uuid.getValue) {
-    _.get(ConfigFileRequestBuilders.getByUid(uuid)).map(_.one)
+    _.get(ConfigFileRequestBuilders.getById(uuid)).map(_.one)
   }
 
   override def getConfigFileByName(name: String) = ops.operation("Couldn't get config file with name: " + name) {
@@ -54,15 +54,15 @@ trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileServic
     _.get(ConfigFileRequestBuilders.getByName(name)).map(_.oneOrNone)
   }
 
-  override def getConfigFilesUsedByEntity(entityUid: ReefUUID) = {
-    ops.operation("Couldn't get config files used by entity: " + entityUid.getValue) {
-      _.get(ConfigFileRequestBuilders.getByEntity(entityUid)).map(_.many)
+  override def getConfigFilesUsedByEntity(entityId: ReefUUID) = {
+    ops.operation("Couldn't get config files used by entity: " + entityId.getValue) {
+      _.get(ConfigFileRequestBuilders.getByEntity(entityId)).map(_.many)
     }
   }
 
-  override def getConfigFilesUsedByEntity(entityUid: ReefUUID, mimeType: String) = {
-    ops.operation("Couldn't get config files used by entity: " + entityUid.getValue + " mimeType: " + mimeType) {
-      _.get(ConfigFileRequestBuilders.getByEntity(entityUid, mimeType)).map(_.many)
+  override def getConfigFilesUsedByEntity(entityId: ReefUUID, mimeType: String) = {
+    ops.operation("Couldn't get config files used by entity: " + entityId.getValue + " mimeType: " + mimeType) {
+      _.get(ConfigFileRequestBuilders.getByEntity(entityId, mimeType)).map(_.many)
     }
   }
 
@@ -72,17 +72,17 @@ trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileServic
     }
   }
 
-  override def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
+  override def createConfigFile(name: String, mimeType: String, data: Array[Byte], entityId: ReefUUID) = {
     ops.operation("Couldn't create config file with name: " + name + " mimeType: " + mimeType + " dataLength: " + data.length
-      + " for entity: " + entityUid.getValue) {
-      _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityUid)).map(_.one)
+      + " for entity: " + entityId.getValue) {
+      _.put(ConfigFileRequestBuilders.makeConfigFile(name, mimeType, data, entityId)).map(_.one)
     }
   }
 
-  override def createConfigFile(mimeType: String, data: Array[Byte], entityUid: ReefUUID) = {
+  override def createConfigFile(mimeType: String, data: Array[Byte], entityId: ReefUUID) = {
     ops.operation("Couldn't create config file with mimeType: " + mimeType + " dataLength: " + data.length
-      + " for entity: " + entityUid.getValue) {
-      _.put(ConfigFileRequestBuilders.makeConfigFile(mimeType, data, entityUid)).map(_.one)
+      + " for entity: " + entityId.getValue) {
+      _.put(ConfigFileRequestBuilders.makeConfigFile(mimeType, data, entityId)).map(_.one)
     }
   }
 
@@ -96,11 +96,11 @@ trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileServic
     }
   }
 
-  override def addConfigFileUsedByEntity(configFile: ConfigFile, entityUid: ReefUUID) = {
+  override def addConfigFileUsedByEntity(configFile: ConfigFile, entityId: ReefUUID) = {
 
-    ops.operation("Couldn't not associate: " + entityUid.getValue + " with configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
+    ops.operation("Couldn't not associate: " + entityId.getValue + " with configFile uuid: " + configFile.uuid + " name: " + configFile.name) { session =>
       if (!configFile.hasUuid) throw new ExpectationException("uuid field is expected to be set.")
-      session.put(configFile.toBuilder.addEntities(EntityRequestBuilders.getByUid(entityUid)).build).map(_.one)
+      session.put(configFile.toBuilder.addEntities(EntityRequestBuilders.getById(entityId)).build).map(_.one)
     }
   }
 

@@ -62,8 +62,8 @@ public class TestEventService extends ReefConnectionTestBase
 
         Events.Event event = es.publishEvent( "Test.EventSuperLong", "Tests", new LinkedList<Utils.Attribute>() );
         assertEquals( longString, event.getRendered() );
-        assertTrue( event.hasUid() );
-        assertNotSame( 0, event.getUid().getValue().length() );
+        assertTrue( event.hasId() );
+        assertNotSame( 0, event.getId().getValue().length() );
 
         assertTrue( event.hasTime() );
         assertTrue( event.getTime() > 0 );
@@ -89,13 +89,13 @@ public class TestEventService extends ReefConnectionTestBase
         for ( int i = 0; i < 15; i++ )
         {
             Events.Event e = es.publishEvent( "Test.Event", "Tests", entity.getUuid() );
-            assertTrue( e.hasUid() );
-            assertNotSame( 0, e.getUid().getValue().length() );
+            assertTrue( e.hasId() );
+            assertNotSame( 0, e.getId().getValue().length() );
             assertTrue( e.hasEntity() );
             assertTrue( e.getEntity().hasUuid() );
             assertNotSame( 0, e.getEntity().getUuid().getValue().length() );
 
-            Events.Event e2 = eventService.getEventById( e.getUid() );
+            Events.Event e2 = eventService.getEventById( e.getId() );
             assertEquals( e2, e );
 
             assertTrue( e.hasTime() );

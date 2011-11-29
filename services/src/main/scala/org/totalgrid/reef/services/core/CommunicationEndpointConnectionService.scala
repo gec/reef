@@ -116,7 +116,7 @@ class CommunicationEndpointConnectionServiceModel
   }
 
   override def postUpdate(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
-    logger.info("CommEndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " uid " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
+    logger.info("CommEndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " id " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
     coordinator.onFepConnectionChange(context, sql, existing)
   }
 }
@@ -129,7 +129,7 @@ trait CommunicationEndpointConnectionConversion
   val table = ApplicationSchema.frontEndAssignments
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.frontEnd.uuid.value :: req.uid.value :: Nil
+    req.frontEnd.uuid.value :: req.id.value :: Nil
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {
@@ -140,7 +140,7 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
-    proto.uid.value.asParam(sql.id === _.toLong) ::
+    proto.id.value.asParam(sql.id === _.toLong) ::
       proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })) ::
       Nil
   }
@@ -157,7 +157,7 @@ trait CommunicationEndpointConnectionConversion
 
   def convertToProto(entry: FrontEndAssignment): ConnProto = {
 
-    val b = ConnProto.newBuilder.setUid(makeId(entry))
+    val b = ConnProto.newBuilder.setId(makeId(entry))
 
     entry.application.value.foreach(app => b.setFrontEnd(FrontEndProcessor.newBuilder.setUuid(makeUuid(app)).setAppConfig(ApplicationConfig.newBuilder.setInstanceName(app.instanceName))))
     entry.endpoint.value.foreach(endpoint => b.setEndpoint(makeSparseEndpointProto(endpoint)))

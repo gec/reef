@@ -7,7 +7,7 @@ option java_outer_classname = "SimpleAuth";
 // The user can make a request to the fully featured AuthToken service with this auth token to delete
 // the auth token.
 message AuthRequest{
-    optional string uid             = 1;
+    optional string id             = 1;
     optional string name            = 2;
     optional string password        = 3;
     optional string login_location  = 4;

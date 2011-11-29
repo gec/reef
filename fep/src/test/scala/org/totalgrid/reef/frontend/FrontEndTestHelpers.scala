@@ -35,7 +35,7 @@ object FrontEndTestHelpers {
   def getConnectionProto(enabled: Boolean, routingKey: Option[String]) = {
     val pt = CommChannel.newBuilder.setUuid("port").setName("port")
     val cfg = CommEndpointConfig.newBuilder.setProtocol("mock").setUuid("config").setChannel(pt).setName("endpoint1")
-    val b = CommEndpointConnection.newBuilder.setUid("connection").setEndpoint(cfg).setEnabled(enabled)
+    val b = CommEndpointConnection.newBuilder.setId("connection").setEndpoint(cfg).setEnabled(enabled)
     routingKey.foreach { s => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(s).build) }
     b.build
   }

@@ -32,7 +32,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {
 
-  override def getAlarmById(id: String) = ops.operation("Couldn't get alarm with uid: " + id) {
+  override def getAlarmById(id: String) = ops.operation("Couldn't get alarm with id: " + id) {
     _.get(AlarmRequestBuilders.getByUID(id)).map(_.one)
   }
 
@@ -63,7 +63,7 @@ trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {
   override def silenceAlarm(alarm: Alarm) = changeAlarmState(alarm, Alarm.State.UNACK_SILENT)
 
   private def changeAlarmState(alarm: Alarm, state: Alarm.State) = {
-    ops.operation("Couldn't update alarm: " + alarm.uid + " to state: " + state) {
+    ops.operation("Couldn't update alarm: " + alarm.id + " to state: " + state) {
       _.put(alarm.toBuilder.setState(state).build).map(_.one)
     }
   }

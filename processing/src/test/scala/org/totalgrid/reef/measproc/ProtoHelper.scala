@@ -90,23 +90,23 @@ object ProtoHelper {
     Point.newBuilder.setName(pointName).build
   }
 
-  def makeNodeByUid(nodeUid: String): Entity = {
-    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(nodeUid)).build
+  def makeNodeById(nodeId: String): Entity = {
+    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(nodeId)).build
   }
 
-  def makeNodeByUid(nodeUid: ReefUUID): Entity = {
-    Entity.newBuilder.setUuid(nodeUid).build
+  def makeNodeById(nodeId: ReefUUID): Entity = {
+    Entity.newBuilder.setUuid(nodeId).build
   }
 
   def makeNodeByName(name: String): Entity = {
     Entity.newBuilder.setName(name).build
   }
 
-  def makePointByNodeUid(nodeUid: String): Point = {
-    Point.newBuilder.setEndpoint(makeNodeByUid(nodeUid)).build
+  def makePointByNodeId(nodeId: String): Point = {
+    Point.newBuilder.setEndpoint(makeNodeById(nodeId)).build
   }
-  def makePointByNodeUid(nodeUid: ReefUUID): Point = {
-    Point.newBuilder.setEndpoint(makeNodeByUid(nodeUid)).build
+  def makePointByNodeId(nodeId: ReefUUID): Point = {
+    Point.newBuilder.setEndpoint(makeNodeById(nodeId)).build
   }
 
   def makePointByNodeName(name: String): Point = {

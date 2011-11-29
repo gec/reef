@@ -23,8 +23,8 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, Point }
 object PointRequestBuilders {
   def getAll = Point.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
 
-  def getByUid(uuid: ReefUUID): Point = Point.newBuilder.setUuid(uuid).build
-  def getByUid(point: Point): Point = getByUid(point.getUuid)
+  def getById(uuid: ReefUUID): Point = Point.newBuilder.setUuid(uuid).build
+  def getById(point: Point): Point = getById(point.getUuid)
 
   def getByName(name: String) = Point.newBuilder.setName(name).build
 
@@ -37,6 +37,6 @@ object PointRequestBuilders {
     getOwnedByEntity(EntityRequestBuilders.getOwnedChildrenOfTypeFromRootName(name, "Point"))
   }
   def getSourcedByEndpoint(entityUuid: ReefUUID) = {
-    Point.newBuilder.setEndpoint(EntityRequestBuilders.getByUid(entityUuid)).build
+    Point.newBuilder.setEndpoint(EntityRequestBuilders.getById(entityUuid)).build
   }
 }

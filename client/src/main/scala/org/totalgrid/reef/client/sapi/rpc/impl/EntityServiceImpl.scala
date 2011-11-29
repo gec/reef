@@ -36,7 +36,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityByUuid(uuid: ReefUUID) = ops.operation("Couldn't get entity with uuid: " + uuid.getValue) {
-    _.get(EntityRequestBuilders.getByUid(uuid)).map(_.one)
+    _.get(EntityRequestBuilders.getById(uuid)).map(_.one)
   }
 
   override def getEntityByName(name: String) = ops.operation("Couldn't get entity with name: " + name) {
@@ -61,7 +61,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   override def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String) = {
     ops.operation("Couldn't get children of entity: " + parent.getValue + " relation: " + relationship + " type: " + typ) { session =>
 
-      val future = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootUid(parent, relationship, typ)).map(_.one)
+      val future = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootId(parent, relationship, typ)).map(_.one)
 
       flatEntities(future)
     }
@@ -73,7 +73,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
   override def getEntityImmediateChildren(parent: ReefUUID, relationship: String) = {
     ops.operation("Couldn't get immediate children of entity: " + parent.getValue + " relation: " + relationship) { session =>
-      val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship)
+      val request = EntityRequestBuilders.getDirectChildrenFromRootId(parent, relationship)
       flatEntities(session.get(request).map(_.one))
 
     }
@@ -81,7 +81,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
   override def getEntityImmediateChildren(parent: ReefUUID, relationship: String, constrainingTypes: List[String]) = {
     ops.operation("Couldn't get immediate children of entity: " + parent.getValue + " relation: " + relationship) { session =>
-      val request = EntityRequestBuilders.getDirectChildrenFromRootUid(parent, relationship, constrainingTypes)
+      val request = EntityRequestBuilders.getDirectChildrenFromRootId(parent, relationship, constrainingTypes)
       flatEntities(session.get(request).map(_.one))
     }
   }
@@ -129,51 +129,51 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     _.get(entityTree).map(_.many)
   }
 
-  override def getEntityAttributes(uid: ReefUUID) = ops.operation("Couldn't get attributes for entity: " + uid.getValue) {
-    _.get(EntityAttributesBuilders.getForEntityUid(uid)).map(_.one)
+  override def getEntityAttributes(id: ReefUUID) = ops.operation("Couldn't get attributes for entity: " + id.getValue) {
+    _.get(EntityAttributesBuilders.getForEntityId(id)).map(_.one)
   }
 
-  override def setEntityAttribute(uid: ReefUUID, name: String, value: Boolean) = {
-    addSingleAttribute(uid, EntityAttributesBuilders.boolAttribute(name, value))
+  override def setEntityAttribute(id: ReefUUID, name: String, value: Boolean) = {
+    addSingleAttribute(id, EntityAttributesBuilders.boolAttribute(name, value))
   }
 
-  override def setEntityAttribute(uid: ReefUUID, name: String, value: Long) = {
-    addSingleAttribute(uid, EntityAttributesBuilders.longAttribute(name, value))
+  override def setEntityAttribute(id: ReefUUID, name: String, value: Long) = {
+    addSingleAttribute(id, EntityAttributesBuilders.longAttribute(name, value))
   }
 
-  override def setEntityAttribute(uid: ReefUUID, name: String, value: Double) = {
-    addSingleAttribute(uid, EntityAttributesBuilders.doubleAttribute(name, value))
+  override def setEntityAttribute(id: ReefUUID, name: String, value: Double) = {
+    addSingleAttribute(id, EntityAttributesBuilders.doubleAttribute(name, value))
   }
 
-  override def setEntityAttribute(uid: ReefUUID, name: String, value: String) = {
-    addSingleAttribute(uid, EntityAttributesBuilders.stringAttribute(name, value))
+  override def setEntityAttribute(id: ReefUUID, name: String, value: String) = {
+    addSingleAttribute(id, EntityAttributesBuilders.stringAttribute(name, value))
   }
 
-  override def setEntityAttribute(uid: ReefUUID, name: String, value: Array[Byte]) = {
-    addSingleAttribute(uid, EntityAttributesBuilders.byteArrayAttribute(name, value))
+  override def setEntityAttribute(id: ReefUUID, name: String, value: Array[Byte]) = {
+    addSingleAttribute(id, EntityAttributesBuilders.byteArrayAttribute(name, value))
   }
 
-  override def removeEntityAttribute(uid: ReefUUID, attrName: String) = {
-    ops.operation("Couldn't remove attribute for entity: " + uid + " attrName: " + attrName) { session =>
-      val prev = getEntityAttributes(uid).await
+  override def removeEntityAttribute(id: ReefUUID, attrName: String) = {
+    ops.operation("Couldn't remove attribute for entity: " + id + " attrName: " + attrName) { session =>
+      val prev = getEntityAttributes(id).await
       val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
-      session.put(EntityAttributesBuilders.putAttributesToEntityUid(uid, set)).map(_.one)
+      session.put(EntityAttributesBuilders.putAttributesToEntityId(id, set)).map(_.one)
     }
   }
 
-  override def clearEntityAttributes(uid: ReefUUID) = {
-    ops.operation("Couldn't clear all attributes for entity: " + uid.getValue) {
-      _.delete(EntityAttributesBuilders.getForEntityUid(uid)).map(_.oneOrNone)
+  override def clearEntityAttributes(id: ReefUUID) = {
+    ops.operation("Couldn't clear all attributes for entity: " + id.getValue) {
+      _.delete(EntityAttributesBuilders.getForEntityId(id)).map(_.oneOrNone)
     }
   }
 
-  protected def addSingleAttribute(uid: ReefUUID, attr: Attribute) = {
-    ops.operation("Couldn't add attribute for entity: " + uid.getValue + " attr: " + attr) { session =>
+  protected def addSingleAttribute(id: ReefUUID, attr: Attribute) = {
+    ops.operation("Couldn't add attribute for entity: " + id.getValue + " attr: " + attr) { session =>
       // TODO: fix getEntityAttributes futureness
-      val prev = getEntityAttributes(uid).await
+      val prev = getEntityAttributes(id).await
       val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
 
-      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(uid))
+      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(id))
       prevSet.foreach(req.addAttributes)
       req.addAttributes(attr)
 

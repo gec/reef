@@ -47,7 +47,7 @@
  * //
  * //  <== Result: AlarmList
  * //  { alarm:
- * //      //  uid  state                   id     event_type      time      severity subsystem user_id    entity
+ * //      //  id  state                   id     event_type      time      severity subsystem user_id    entity
  * //      //  ===  =============           ====== =============   ========  ======== ========= ========   ==================
  * //      [ { 501, UNACK_SILENT,   event: { 1235,  "BreakerClose", 98273496, 2,       "FEP",    "system",  {"subst42.breaker23"} }},
  * //        { 500, ACKNOWLEDGED,  event: { 1234,  "BreakerOpen",  98273495, 2,       "FEP",    "system",  {"subst42.breaker23"} }}
@@ -65,7 +65,7 @@
  * //
  * //  <== Result: AlarmList
  * //  { alarm:
- * //      //  uid  state                   id     event_type      time      severity subsystem user_id    entity
+ * //      //  id  state                   id     event_type      time      severity subsystem user_id    entity
  * //      //  ===  =============           ====== ==========      ========  ======== ========= ========   ==================
  * //      [ { 501, UNACK_SILENT,   event: { 1235,  "BreakerClose", 98273496, 2,       "FEP",    "system",  {"subst42.breaker23"} }}
  * //      ]
@@ -102,7 +102,7 @@
  *     REMOVED       = 4;  // Alarm not visible in standard Alarm List.
  *   }
  * 
- *   optional org.totalgrid.reef.proto.Model.ReefID   uid      = 1;  // UID of alarm is not equal to event.uid
+ *   optional org.totalgrid.reef.proto.Model.ReefID   id      = 1;  // UID of alarm is not equal to event.id
  *   optional State    state    = 2;
  *   optional org.totalgrid.reef.proto.Events.Event event = 3;
  *   optional string   rendered = 4;  // This alarm rendered as a localized string.

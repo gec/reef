@@ -50,11 +50,11 @@ class MeasurementOverrideTest
     recorder.addExplanation("Read NIS value", "Check that value is marked appropriately.")
     val nised = client.getMeasurementByPoint(point).await
 
-    recorder.addExplanation("Override point", "Override the value to 100. Notice the uid is the same as for the NIS.")
+    recorder.addExplanation("Override point", "Override the value to 100. Notice the id is the same as for the NIS.")
     val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build).await
 
-    // TODO: add uid to measurement override - backlog-63
-    //over.getUid should equal(nis.getUid)
+    // TODO: add id to measurement override - backlog-63
+    //over.getId should equal(nis.getId)
 
     recorder.addExplanation("Read Overriden Value", "Check that value is marked appropriately.")
     val overriden = client.getMeasurementByPoint(point).await

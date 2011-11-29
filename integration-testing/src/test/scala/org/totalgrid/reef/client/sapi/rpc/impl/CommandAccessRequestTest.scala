@@ -56,7 +56,7 @@ class CommandAccessRequestTest
     val thirdResp = client.createCommandDenialLock(cmd0 :: cmd1 :: Nil).await
 
     recorder.addExplanation("Get by UID", "Search for an access entry by UID.")
-    client.getCommandLockById(firstResp.getUid).await
+    client.getCommandLockById(firstResp.getId).await
 
     recorder.addExplanation("Get all", "Search for all access entries.")
     client.getCommandLocks().await
@@ -80,7 +80,7 @@ class CommandAccessRequestTest
     val createResp = client.createCommandExecutionLock(cmd).await
 
     val delDesc = "The same proto object that was used to create an entry can be used to delete it. " +
-      "The service identifies the object by uid, other fields are ignored."
+      "The service identifies the object by id, other fields are ignored."
 
     recorder.addExplanation("Delete access using original object", delDesc)
     client.deleteCommandLock(createResp).await

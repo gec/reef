@@ -279,8 +279,8 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
       n
     }
 
-    def checkEnt(proto: EntityProto, uid: UUID, name: String, typ: String, relCount: Int) = {
-      proto.getUuid.getValue should equal(uid.toString)
+    def checkEnt(proto: EntityProto, id: UUID, name: String, typ: String, relCount: Int) = {
+      proto.getUuid.getValue should equal(id.toString)
       proto.getName should equal(name)
       proto.getTypesCount should equal(1)
       proto.getTypes(0) should equal(typ)

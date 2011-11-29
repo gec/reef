@@ -124,7 +124,7 @@ trait EntityTreeQueries { self: EntityQueries =>
           Nil
     }
 
-    // If query specifies type, do a join, otherwise simpler query on uid/name
+    // If query specifies type, do a join, otherwise simpler query on id/name
     val rootQuery = if (proto.getTypesCount != 0) {
       from(entities, entityTypes)((ent, typ) =>
         where(expr(ent, typ).flatten)
@@ -674,7 +674,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
     // TODO: evaluate if we should be deleting events when entities get deleted
     val events = ApplicationSchema.events.where(e => e.entityId in entityIds)
-    ApplicationSchema.alarms.deleteWhere(a => a.eventUid in events.map { _.id })
+    ApplicationSchema.alarms.deleteWhere(a => a.eventId in events.map { _.id })
     ApplicationSchema.events.deleteWhere(e => e.entityId in entityIds)
 
     ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)

@@ -29,7 +29,7 @@ class ProcessingNodeMap(connector: MeasStreamConnector)
 
   def subscribed(list: List[ConnProto]) = list.foreach(add(_))
 
-  protected override def getKey(c: ConnProto) = c.getUid.getValue
+  protected override def getKey(c: ConnProto) = c.getId.getValue
 
   private var map = Map.empty[String, Cancelable]
 

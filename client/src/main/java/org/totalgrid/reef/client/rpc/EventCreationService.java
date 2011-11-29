@@ -33,17 +33,17 @@ import java.util.List;
  *  - time when the event occured (actually records when the event service processes the put, if a very specific
  *    time is desired use device_time)
  *  - severity, rendered, alarm fields are all set based on the matching EventConfig record
- *  - uid is the Event id, if the returned event doesn't have this field set it means it was logged or dropped
+ *  - id is the Event id, if the returned event doesn't have this field set it means it was logged or dropped
  *
  * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface EventCreationService
 {
     /**
-     * publish a custom built Event proto to the event service. The severity, alarm, rendered, time, uid and user_id fields
+     * publish a custom built Event proto to the event service. The severity, alarm, rendered, time, id and user_id fields
      * will be overwritten by server so they do not need to be set.
      * @param event fully constructed event proto
-     * @return created Event which will have uid, alarm, severity, rendered etc all set correctly
+     * @return created Event which will have id, alarm, severity, rendered etc all set correctly
      */
     Event publishEvent( Event event ) throws ReefServiceException;
 

@@ -43,7 +43,7 @@ class Dnp3SlaveProtocol(services: AllScadaService) extends Dnp3ProtocolBase[Slav
     batchPublisher: BatchPublisher,
     endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
 
-    logger.info("Adding device with uid: " + endpointName + " onto channel " + channelName)
+    logger.info("Adding device with id: " + endpointName + " onto channel " + channelName)
 
     val mapping = getMappingProto(files)
     val (slaveConfig, filterLevel) = SlaveXmlConfig.getSlaveConfigFromConfigFiles(files, mapping)

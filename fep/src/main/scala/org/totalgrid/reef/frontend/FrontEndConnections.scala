@@ -45,7 +45,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     case None => throw new IllegalArgumentException("Unknown protocol: " + name)
   }
 
-  def getKey(c: CommEndpointConnection) = c.getUid.getValue
+  def getKey(c: CommEndpointConnection) = c.getId.getValue
 
   val protocols = comms.map(p => p.name -> p).toMap
 
@@ -64,7 +64,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
 
     val batchPublisher = newMeasBatchPublisher(c.getRouting.getServiceRoutingKey)
     val channelListener = newChannelStatePublisher(port.getUuid, port.getName)
-    val endpointListener = newEndpointStatePublisher(c.getUid, endpointName)
+    val endpointListener = newEndpointStatePublisher(c.getId, endpointName)
 
     // add the device, get the command issuer callback
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
@@ -110,9 +110,9 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     }
   }
 
-  private def newEndpointStatePublisher(connectionUid: ReefID, endpointName: String) = new Protocol.EndpointPublisher {
+  private def newEndpointStatePublisher(connectionId: ReefID, endpointName: String) = new Protocol.EndpointPublisher {
     def publish(state: CommEndpointConnection.State) = {
-      client.alterEndpointConnectionState(connectionUid, state).extract match {
+      client.alterEndpointConnectionState(connectionId, state).extract match {
         case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
         case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
       }
