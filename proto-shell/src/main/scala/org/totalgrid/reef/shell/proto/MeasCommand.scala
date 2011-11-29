@@ -58,7 +58,7 @@ class MeasListCommand extends ReefCommandSupport {
   }
 
   def getAllMeasurements = {
-    val points = services.getAllPoints
+    val points = services.getPoints
     services.getMeasurementsByPoints(points).toList
   }
 

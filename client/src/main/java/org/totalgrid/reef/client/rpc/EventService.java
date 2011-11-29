@@ -39,9 +39,9 @@ public interface EventService extends SubscriptionCreator
     /**
      * get a single event
      *
-     * @param uid event
+     * @param id event
      */
-    Event getEvent( ReefID uid ) throws ReefServiceException;
+    Event getEventById( ReefID id ) throws ReefServiceException;
 
     /**
      * get the most recent events

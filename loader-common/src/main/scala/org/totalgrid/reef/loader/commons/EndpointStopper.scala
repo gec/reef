@@ -41,7 +41,7 @@ object EndpointStopper extends Logging {
     stream.foreach { _.println("Disabling endpoints: " + endpoints.map { _.getName }.mkString(", ")) }
 
     // then subscribe to all of the connections
-    val subResult = local.subscribeToAllEndpointConnections().await
+    val subResult = local.subscribeToEndpointConnections().await
 
     // first we disable all of the endpoints
     endpointUuids.foreach { e => local.disableEndpointConnection(e._1).await }

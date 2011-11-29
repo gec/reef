@@ -53,7 +53,7 @@ public class TestAuthService extends ReefConnectionTestBase
         {
             // will fail because we don't havent logged in to get auth tokens
             PointService ps = helpers;
-            ps.getAllPoints();
+            ps.getPoints();
             assertTrue( false );
         }
         catch ( UnauthorizedException pse )
@@ -68,6 +68,6 @@ public class TestAuthService extends ReefConnectionTestBase
 
         PointService ps = helpers;
         // request will now not be rejected
-        ps.getAllPoints();
+        ps.getPoints();
     }
 }

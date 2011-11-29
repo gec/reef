@@ -27,7 +27,7 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 trait CommunicationChannelServiceImpl extends HasAnnotatedOperations with CommunicationChannelService {
 
-  override def getAllCommunicationChannels = ops.operation("Couldn't get list of all channels") {
+  override def getCommunicationChannels = ops.operation("Couldn't get list of all channels") {
     _.get(CommChannel.newBuilder().setName("*").build).map(_.many)
   }
 
@@ -35,7 +35,7 @@ trait CommunicationChannelServiceImpl extends HasAnnotatedOperations with Commun
     _.get(CommChannel.newBuilder().setName(channelName).build).map(_.one)
   }
 
-  override def getCommunicationChannel(channelUuid: ReefUUID) = ops.operation("Couldn't get channel with uuid: " + channelUuid) {
+  override def getCommunicationChannelByUuid(channelUuid: ReefUUID) = ops.operation("Couldn't get channel with uuid: " + channelUuid) {
     _.get(CommChannel.newBuilder().setUuid(channelUuid).build).map(_.one)
   }
 

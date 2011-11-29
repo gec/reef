@@ -41,7 +41,7 @@ class EndpointManagementBenchmark(endpointNames: List[String], cycles: Int) exte
 
     if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints to cycle")
 
-    val result = client.subscribeToAllEndpointConnections().await
+    val result = client.subscribeToEndpointConnections().await
 
     val map = new EndpointStateTransitionTimer(result, endpoints.map { _.getUuid })
 

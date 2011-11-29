@@ -38,13 +38,13 @@ public interface CommunicationChannelService
      *
      * @return list of all of the communication channels
      */
-    List<CommChannel> getAllCommunicationChannels() throws ReefServiceException;
+    List<CommChannel> getCommunicationChannels() throws ReefServiceException;
 
     /**
      * @param channelUuid uuid of channel
      * @return channel with matching uuid or exception if doesn't exist
      */
-    CommChannel getCommunicationChannel( ReefUUID channelUuid ) throws ReefServiceException;
+    CommChannel getCommunicationChannelByUuid( ReefUUID channelUuid ) throws ReefServiceException;
 
     /**
      * @param channelName name of the channel

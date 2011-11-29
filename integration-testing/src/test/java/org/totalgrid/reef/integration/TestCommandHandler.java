@@ -63,7 +63,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
             int i = 0;
             while ( true )
             {
-                conn = helpers.getEndpointConnection( endpoint.getUuid() );
+                conn = helpers.getEndpointConnectionByUuid( endpoint.getUuid() );
                 if ( !conn.getRouting().getServiceRoutingKey().equals( "" ) )
                     break;
                 if ( i++ > 5 )

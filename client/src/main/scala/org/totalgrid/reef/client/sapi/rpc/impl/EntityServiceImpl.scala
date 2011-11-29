@@ -31,12 +31,12 @@ import org.totalgrid.reef.client.rpc.entities.EntityRelation
 
 trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
-  override def getAllEntities() = ops.operation("Couldn't get list of all entities") {
+  override def getEntities() = ops.operation("Couldn't get list of all entities") {
     _.get(EntityRequestBuilders.getAll).map(_.many)
   }
 
-  override def getEntityByUid(uid: ReefUUID) = ops.operation("Couldn't get entity with uuid: " + uid.getValue) {
-    _.get(EntityRequestBuilders.getByUid(uid)).map(_.one)
+  override def getEntityByUuid(uuid: ReefUUID) = ops.operation("Couldn't get entity with uuid: " + uuid.getValue) {
+    _.get(EntityRequestBuilders.getByUid(uuid)).map(_.one)
   }
 
   override def getEntityByName(name: String) = ops.operation("Couldn't get entity with name: " + name) {
@@ -47,12 +47,12 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     _.get(EntityRequestBuilders.getByName(name)).map(_.oneOrNone)
   }
 
-  override def getAllEntitiesWithType(typ: String) = {
+  override def getEntitiesWithType(typ: String) = {
     val request = if (typ == "*") EntityRequestBuilders.getAll else EntityRequestBuilders.getByType(typ)
     ops.operation("Couldn't get entities with type: " + typ)(_.get(request).map(_.many))
   }
 
-  override def getAllEntitiesWithTypes(typ: List[String]) = {
+  override def getEntitiesWithTypes(typ: List[String]) = {
     ops.operation("Couldn't get entities with types: " + typ) {
       _.get(EntityRequestBuilders.getByTypes(typ.toList)).map(_.many)
     }

@@ -25,15 +25,15 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperat
 
 trait EventConfigServiceImpl extends HasAnnotatedOperations with EventConfigService {
 
-  override def getAllEventConfigurations = ops.operation("Couldn't get all event configs") {
+  override def getEventConfigurations = ops.operation("Couldn't get all event configs") {
     _.get(EventConfig.newBuilder.setEventType("*").build).map(_.many)
   }
 
-  override def getAllEventConfigurations(builtIn: Boolean) = ops.operation("Couldn't get all " + (if (builtIn) "builtIn" else "custom") + " event configs") {
+  override def getEventConfigurations(builtIn: Boolean) = ops.operation("Couldn't get all " + (if (builtIn) "builtIn" else "custom") + " event configs") {
     _.get(EventConfig.newBuilder.setBuiltIn(builtIn).build).map(_.many)
   }
 
-  override def getEventConfiguration(eventType: String) = ops.operation("Couldn't get event config with type: " + eventType) {
+  override def getEventConfigurationByType(eventType: String) = ops.operation("Couldn't get event config with type: " + eventType) {
     _.get(EventConfig.newBuilder.setEventType(eventType).build).map(_.one)
   }
 

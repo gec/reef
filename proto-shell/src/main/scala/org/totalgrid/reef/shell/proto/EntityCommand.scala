@@ -34,7 +34,7 @@ class EntityCommand extends ReefCommandSupport {
   def doCommand() = {
     Option(entityName) match {
       case Some(entId) => EntityView.printInspect(services.getEntityByName(entityName))
-      case None => EntityView.printList(services.getAllEntities().toList)
+      case None => EntityView.printList(services.getEntities().toList)
     }
   }
 }
@@ -46,7 +46,7 @@ class EntityTypeCommand extends ReefCommandSupport {
   var typeName: String = null
 
   def doCommand() = {
-    EntityView.printList(services.getAllEntitiesWithType(typeName).toList)
+    EntityView.printList(services.getEntitiesWithType(typeName).toList)
   }
 
 }

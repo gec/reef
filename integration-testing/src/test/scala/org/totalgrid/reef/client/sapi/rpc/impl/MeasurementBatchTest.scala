@@ -78,7 +78,7 @@ class MeasurementBatchTest
 
     val points = names.map { client.getPointByName(_).await }
 
-    val connection = client.getEndpointConnection(points.head.getEndpoint.getUuid).await
+    val connection = client.getEndpointConnectionByUuid(points.head.getEndpoint.getUuid).await
 
     val sub = client.subscribeToMeasurementsByNames(names).await
     var originals = sub.getResult

@@ -44,7 +44,7 @@ public class TestMeasSnapshotService extends ReefConnectionTestBase
     {
         PointService ps = helpers;
         MeasurementService ms = helpers;
-        List<Point> plist = ps.getAllPoints();
+        List<Point> plist = ps.getPoints();
         List<Measurement> mlist = ms.getMeasurementsByPoints( plist );
         assertEquals( plist.size(), mlist.size() );
     }

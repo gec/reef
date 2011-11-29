@@ -44,12 +44,12 @@ public interface ConfigFileService
     /**
      * Get all config files
      */
-    List<ConfigFile> getAllConfigFiles() throws ReefServiceException;
+    List<ConfigFile> getConfigFiles() throws ReefServiceException;
 
     /**
      * retrieve a config file by its UID
      */
-    ConfigFile getConfigFileByUid( ReefUUID uid ) throws ReefServiceException;
+    ConfigFile getConfigFileByUuid( ReefUUID uid ) throws ReefServiceException;
 
     /**
      * retrieve a config file by its name

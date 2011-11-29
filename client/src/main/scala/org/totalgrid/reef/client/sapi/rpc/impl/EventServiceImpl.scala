@@ -30,7 +30,7 @@ import org.totalgrid.reef.proto.Model.ReefID
 
 trait EventServiceImpl extends HasAnnotatedOperations with EventService {
 
-  override def getEvent(uid: ReefID) = ops.operation("Couldn't get event with uid: " + uid) {
+  override def getEventById(uid: ReefID) = ops.operation("Couldn't get event with uid: " + uid) {
     _.get(EventRequestBuilders.getByUID(uid)).map(_.one)
   }
 

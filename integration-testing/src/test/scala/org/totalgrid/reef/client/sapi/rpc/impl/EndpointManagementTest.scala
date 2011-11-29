@@ -45,12 +45,12 @@ class EndpointManagementTest
   test("Endpoint operations") {
 
     recorder.addExplanation("Get all endpoints", "")
-    val endpoints = client.getAllEndpoints().await.toList
+    val endpoints = client.getEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
     recorder.addExplanation("Get all endpoint connections", "")
-    val result = client.subscribeToAllEndpointConnections().await
+    val result = client.subscribeToEndpointConnections().await
 
     val map = new EndpointConnectionStateMap(result)
 
@@ -74,11 +74,11 @@ class EndpointManagementTest
 
   test("Disable All Endpoints") {
 
-    val endpoints = client.getAllEndpoints().await.toList
+    val endpoints = client.getEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
-    val result = client.subscribeToAllEndpointConnections().await
+    val result = client.subscribeToEndpointConnections().await
 
     val map = new EndpointConnectionStateMap(result)
 
@@ -99,11 +99,11 @@ class EndpointManagementTest
 
     // this test is a stress test on the coordinator and fep and benchmark protocol and also
     // indirectly tests the exclusive update support in the endpoint_connection_service
-    val endpoints = client.getAllEndpoints().await.toList
+    val endpoints = client.getEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
-    val result = client.subscribeToAllEndpointConnections().await
+    val result = client.subscribeToEndpointConnections().await
 
     val map = new EndpointConnectionStateMap(result)
 
@@ -119,7 +119,7 @@ class EndpointManagementTest
 
     // cant use original map because it will probably have sem multiple transitions to true, COMMS_UP
     // we need to verify that the endpoints are all going to end up good starting now.
-    val postMap = new EndpointConnectionStateMap(client.subscribeToAllEndpointConnections().await)
+    val postMap = new EndpointConnectionStateMap(client.subscribeToEndpointConnections().await)
     // eventually we should get back to enabled COMMS_UP
     postMap.checkAllState(true, COMMS_UP)
   }
@@ -127,7 +127,7 @@ class EndpointManagementTest
   class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
 
     private def makeEntry(e: CommEndpointConnection) = {
-      //println(e.getEndpoint.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
+      //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
       e.getEndpoint.getUuid -> e
     }
 
