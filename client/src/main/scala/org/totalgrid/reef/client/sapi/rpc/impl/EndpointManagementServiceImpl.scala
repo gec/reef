@@ -50,15 +50,9 @@ trait EndpointManagementServiceImpl extends HasAnnotatedOperations with Endpoint
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean): Promise[CommEndpointConnection] = {
     ops.operation("Couldn't alter endpoint: " + endpointUuid.getValue + " to enabled: " + enabled) { client =>
-      val f1 = client.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map(_.one)
-
-      // this tricky little SOB creates another future based on the result of the last one, either by
-      f1.flatMap { r =>
-        r match {
-          case Success(conn) => client.post(CommEndpointConnection.newBuilder.setUid(conn.getUid).setEnabled(enabled).build).map(_.one)
-          case Failure(ex) => f1
-        }
-      }
+      val conn = client.get(CommEndpointConnection.newBuilder.setEndpoint(CommEndpointConfig.newBuilder.setUuid(endpointUuid)).build).map(_.one).await.get
+      // TODO: reimplement with flatMap once strand/await/flatMap is sorted out
+      client.post(CommEndpointConnection.newBuilder.setUid(conn.getUid).setEnabled(enabled).build).map(_.one)
     }
   }
 
