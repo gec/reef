@@ -29,20 +29,25 @@ import FrontEndTestHelpers._
 import org.totalgrid.reef.api.protocol.api.mock.{ NullProtocol, RecordingProtocol }
 import org.totalgrid.reef.api.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
-import org.totalgrid.reef.api.protocol.api.CommandHandler
+import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler
+import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
+import net.agileautomata.executor4s.Success
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
   test("Add/remove proto") {
     val config = getConnectionProto(true, Some("routing"))
     val client = Mockito.mock(classOf[FrontEndProviderServices], new MockitoStubbedOnly)
-    val commandBinding = new MockCancelable
-    Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config), Matchers.any(classOf[CommandHandler]))
+    val cancelable = new MockCancelable
+    val commandBinding = new FixedPromise(Success(cancelable))
+    Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))
 
     val mp = new NullProtocol("mock") with RecordingProtocol { override def requiresChannel = true }
 
     val channelName = config.getEndpoint.getChannel.getName
     val endpointName = config.getEndpoint.getName
+
+    cancelable.canceled should equal(false)
 
     val connections = new FrontEndConnections(mp :: Nil, client)
 
@@ -58,6 +63,6 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
     mp.next() should equal(Some(RemoveChannel(channelName)))
     mp.next() should equal(None)
 
-    commandBinding.canceled should equal(true)
+    cancelable.canceled should equal(true)
   }
 }

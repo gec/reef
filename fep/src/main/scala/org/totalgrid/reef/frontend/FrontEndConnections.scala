@@ -24,12 +24,14 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
 import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommChannel }
-import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.api.protocol.api.Protocol
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.clientapi.AddressableDestination
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.rpc.commands.{ CommandResultCallback, CommandRequestHandler }
+import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest }
+import org.totalgrid.reef.api.protocol.api.{ CommandHandler, Protocol }
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices) extends KeyedMap[CommEndpointConnection] {
@@ -68,7 +70,7 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
     if (protocol.requiresChannel) protocol.addChannel(port, channelListener)
     val cmdHandler = protocol.addEndpoint(endpointName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener)
 
-    val service = client.bindCommandHandler(c, cmdHandler)
+    val service = client.bindCommandHandler(c.getEndpoint.getUuid, createCommandRequestHandler(cmdHandler)).await
     endpointComponents += endpointName -> EndpointComponent(service)
 
     logger.info("Added endpoint: " + endpointName + " on protocol: " + protocol.name + ", routing key: " + c.getRouting.getServiceRoutingKey)
@@ -123,6 +125,16 @@ class FrontEndConnections(comms: Seq[Protocol], client: FrontEndProviderServices
         case Success(x) => logger.info("Updated channel state: " + x.getName + " state: " + x.getState)
         case Failure(ex) => logger.error("Couldn't update channelState: " + ex.getMessage)
       }
+    }
+  }
+
+  private def createCommandRequestHandler(cmdHandler: CommandHandler) = new CommandRequestHandler {
+    def handleCommandRequest(cmdRequest: CommandRequest, resultCallback: CommandResultCallback) {
+      cmdHandler.issue(cmdRequest, new Protocol.ResponsePublisher {
+        def publish(value: CommandStatus) {
+          resultCallback.setCommandResult(value)
+        }
+      })
     }
   }
 }
