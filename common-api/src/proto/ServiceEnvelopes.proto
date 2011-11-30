@@ -1,6 +1,6 @@
-package org.totalgrid.reef.clientapi.proto.Envelope;
+package org.totalgrid.reef.client.proto.Envelope;
 
-option java_package = "org.totalgrid.reef.clientapi.proto";
+option java_package = "org.totalgrid.reef.client.proto";
 option java_outer_classname = "Envelope";
 
 enum Verb{

@@ -24,7 +24,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, UnauthorizedException }
+import org.totalgrid.reef.client.exceptions.{ BadRequestException, UnauthorizedException }
 import org.totalgrid.reef.proto.Model
 
 class CommandTestRig {

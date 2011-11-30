@@ -20,15 +20,15 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.RestHelpers
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.proto.Envelope.Status._
-import org.totalgrid.reef.clientapi.proto.Envelope.Verb._
+import org.totalgrid.reef.client.sapi.client.rest.impl.RestHelpers
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.Status._
+import org.totalgrid.reef.client.proto.Envelope.Verb._
 import org.totalgrid.reef.proto.Descriptors
 import java.util.UUID
-import org.totalgrid.reef.clientapi.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 import org.totalgrid.reef.services.ServiceBootstrap
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.Commands.CommandLock
 import scala.collection.JavaConversions._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {

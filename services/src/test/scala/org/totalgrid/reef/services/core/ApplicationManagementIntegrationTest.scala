@@ -26,11 +26,11 @@ import org.totalgrid.reef.proto.ProcessStatus._
 
 import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.sapi.client.Event
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.Event
 
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.proto.Descriptors
 
 import org.totalgrid.reef.services.{ ConnectionFixture, ServiceBootstrap }

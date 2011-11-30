@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.activator
 
-import org.totalgrid.reef.clientapi.settings.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.app.ConnectionConsumer
 import org.totalgrid.reef.broker.BrokerConnection
 import net.agileautomata.executor4s.Executor
@@ -28,10 +28,10 @@ import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBootstrap, ServiceOptions }
 import org.totalgrid.reef.util.{ Cancelable, LifecycleManager }
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
 /**
  * gets other modules used by the services so can implemented via OSGI or directly

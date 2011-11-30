@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.totalgrid.reef.clientapi.proto.Envelope;
-import org.totalgrid.reef.clientapi.SubscriptionEvent;
-import org.totalgrid.reef.clientapi.SubscriptionEventAcceptor;
+import org.totalgrid.reef.client.proto.Envelope;
+import org.totalgrid.reef.client.SubscriptionEvent;
+import org.totalgrid.reef.client.SubscriptionEventAcceptor;
 
 import java.util.Comparator;
 import java.util.LinkedList;

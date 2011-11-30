@@ -21,10 +21,10 @@ package org.totalgrid.reef.app
 import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.clientapi.settings.AmqpSettings
+import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.util.{ Lifecycle, Cancelable => UCancelable }
-import org.totalgrid.reef.clientapi.sapi.client.rest.ConnectionWatcher
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultReconnectingFactory
+import org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultReconnectingFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 
 /**

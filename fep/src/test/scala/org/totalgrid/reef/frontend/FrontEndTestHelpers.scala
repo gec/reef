@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, Endpoint, CommChannel, EndpointConnection }
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.clientapi.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
+import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
 
 object FrontEndTestHelpers {
 

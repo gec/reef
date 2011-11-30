@@ -26,8 +26,8 @@ import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
-import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }

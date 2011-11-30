@@ -25,14 +25,14 @@ import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exceptions.BadRequestException
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
 
 import net.agileautomata.executor4s.Futures
-import org.totalgrid.reef.clientapi.AddressableDestination
+import org.totalgrid.reef.client.AddressableDestination
 
-import org.totalgrid.reef.clientapi.sapi.client._
+import org.totalgrid.reef.client.sapi.client._
 
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {

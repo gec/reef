@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.clientapi.sapi.service.AsyncServiceBase
+import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.client.service.commands.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }
 
 class EndpointCommandHandlerImpl(handler: CommandRequestHandler) extends AsyncServiceBase[UserCommandRequest] {
 

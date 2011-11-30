@@ -19,9 +19,9 @@
 package org.totalgrid.reef.services.metrics
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
-import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.client.sapi.client.Response
 
 class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long, chattyTransactionThreshold: Int)
     extends ServiceEntryPoint[A]

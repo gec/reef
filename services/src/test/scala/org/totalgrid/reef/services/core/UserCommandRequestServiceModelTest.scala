@@ -27,8 +27,8 @@ import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, Comman
 import CommandLock._
 
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.exceptions.{ ReefServiceException, BadRequestException }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.exceptions.{ ReefServiceException, BadRequestException }
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {

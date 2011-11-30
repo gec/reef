@@ -20,9 +20,9 @@ package org.totalgrid.reef.client.sapi.rpc.impl.util
 
 import xml.Node
 import scala.collection.mutable.Queue
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.clientapi.sapi.client.{ Response, Promise, RequestSpy }
+import org.totalgrid.reef.client.sapi.client.{ Response, Promise, RequestSpy }
 import net.agileautomata.executor4s.Future
 
 /**

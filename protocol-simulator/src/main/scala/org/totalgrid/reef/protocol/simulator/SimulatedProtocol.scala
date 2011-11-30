@@ -25,7 +25,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
 import org.totalgrid.reef.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior

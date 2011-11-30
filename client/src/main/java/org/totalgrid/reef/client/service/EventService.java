@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.client.service;
 
-import org.totalgrid.reef.clientapi.SubscriptionCreator;
-import org.totalgrid.reef.clientapi.SubscriptionResult;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.SubscriptionCreator;
+import org.totalgrid.reef.client.SubscriptionResult;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Events.Event;
 import org.totalgrid.reef.proto.Events.EventSelect;
 import org.totalgrid.reef.proto.Model.ReefID;

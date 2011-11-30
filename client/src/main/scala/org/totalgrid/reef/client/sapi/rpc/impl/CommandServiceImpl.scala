@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 import org.totalgrid.reef.client.service.commands.CommandRequestHandler
 
 trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
@@ -142,7 +142,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
     ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
       import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection }
-      import org.totalgrid.reef.clientapi.AddressableDestination
+      import org.totalgrid.reef.client.AddressableDestination
       import net.agileautomata.executor4s._
 
       // TODO: reimplement with flatMap once strand/await/flatMap is sorted out

@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.{ FEP, Model }
 import scala.collection.immutable
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 trait AddRemoveValidation extends Protocol with Logging {
 

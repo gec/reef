@@ -30,7 +30,7 @@ import org.mockito.{ ArgumentCaptor, Mockito }
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {

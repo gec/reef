@@ -19,12 +19,13 @@ package org.totalgrid.reef.client.factory
  * the License.
  */
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.clientapi.settings.AmqpSettings
+import org.totalgrid.reef.client.settings.AmqpSettings
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.clientapi.rpc.ServicesList
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.client.ServicesList
+import org.totalgrid.reef.client.ServicesList
 
 class ReefFactory(amqpSettings: AmqpSettings, servicesList: ServicesList) {
   private val factory = new QpidBrokerConnectionFactory(amqpSettings)

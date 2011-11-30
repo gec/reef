@@ -96,7 +96,14 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Protocol Buffers Library</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.proto, org.totalgrid.reef.client.*</Export-Package>
+                        <Export-Package>
+                            org.totalgrid.reef.proto,
+                            org.totalgrid.reef.client.service.*,
+                            org.totalgrid.reef.client.factory,
+                            org.totalgrid.reef.client.sapi,
+                            org.totalgrid.reef.client.sapi.rpc.*,
+                            org.totalgrid.reef.proto
+                        </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>

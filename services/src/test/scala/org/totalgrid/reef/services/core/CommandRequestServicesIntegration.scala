@@ -30,12 +30,12 @@ import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection, EndpointOwne
 import CommandLock._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration

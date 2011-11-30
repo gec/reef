@@ -26,7 +26,7 @@ import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.app.{ ServiceContext, SubscriptionDataHandler }
 import org.totalgrid.reef.util.Cancelable
 

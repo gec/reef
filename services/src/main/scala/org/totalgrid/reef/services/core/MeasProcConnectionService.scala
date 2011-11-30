@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
 import org.squeryl.PrimitiveTypeMode._
@@ -32,7 +32,7 @@ import org.totalgrid.reef.proto.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class MeasurementProcessingConnectionService(protected val model: MeasurementProcessingConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, MeasProcAssignment, MeasurementProcessingConnectionServiceModel]

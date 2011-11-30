@@ -63,7 +63,7 @@ class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementS
   def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) =
     handle(context) { (r, c) => r.onEndpointCreated(c, reloadCe(ce)) }
 
-  import org.totalgrid.reef.clientapi.exceptions.InternalServiceException
+  import org.totalgrid.reef.client.exceptions.InternalServiceException
   import org.squeryl.PrimitiveTypeMode._
   private def reloadApp(ce: ApplicationInstance): ApplicationInstance = ApplicationSchema.apps.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
   private def reloadMeas(ce: MeasProcAssignment) = ApplicationSchema.measProcAssignments.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))

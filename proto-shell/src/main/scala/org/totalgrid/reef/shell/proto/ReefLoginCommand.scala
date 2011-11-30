@@ -23,9 +23,9 @@ import java.io.{ BufferedReader, InputStreamReader }
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exceptions.ReefServiceException
 
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 
 @Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefCommandSupport {

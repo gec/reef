@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.proto
 
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import org.totalgrid.reef.client.types.TypeDescriptor
 
 import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.proto.Commands._

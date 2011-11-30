@@ -24,7 +24,7 @@ import java.io.PrintStream
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ EndpointConnection, Endpoint }
 
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 import java.util.concurrent.{ TimeUnit, LinkedBlockingDeque }
 import com.weiglewilczek.slf4s.Logging

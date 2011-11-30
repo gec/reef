@@ -21,8 +21,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 
@@ -35,7 +35,7 @@ import org.totalgrid.reef.services.framework.ServiceBehaviors._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val model: FrontEndPortServiceModel)

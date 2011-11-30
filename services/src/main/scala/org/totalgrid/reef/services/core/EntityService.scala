@@ -24,9 +24,9 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.sapi.client.Response
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.Entity
 import org.totalgrid.reef.services.framework._
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.metrics
 
-import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.client.sapi.client.Response
 
 class CallbackInterceptor[A](callback: Response[A] => Unit, timerFun: (Long, Response[A]) => Unit) {
 

@@ -25,7 +25,7 @@ import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 @RunWith(classOf[JUnitRunner])
 class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {

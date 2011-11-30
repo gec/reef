@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
@@ -35,7 +35,7 @@ import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 // Implicits
 import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 

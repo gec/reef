@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.Application._
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.proto.Model.ReefUUID
 

@@ -31,19 +31,19 @@ import collection.JavaConversions._
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.sapi._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.sapi._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.proto.Events
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client, Connection }
-import org.totalgrid.reef.clientapi.sapi.client.{ Event, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.proto.Commands.UserCommandRequest
-import org.totalgrid.reef.clientapi.AddressableDestination
+import org.totalgrid.reef.client.AddressableDestination
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 

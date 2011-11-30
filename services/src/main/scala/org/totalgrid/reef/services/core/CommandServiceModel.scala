@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 import org.totalgrid.reef.proto.Descriptors
 
@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }

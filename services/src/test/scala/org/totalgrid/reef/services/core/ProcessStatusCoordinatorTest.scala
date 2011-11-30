@@ -25,10 +25,10 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.client.proto.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {

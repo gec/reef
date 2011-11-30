@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 
 import net.agileautomata.executor4s.{ Result, Future }
 import org.totalgrid.reef.client.sapi.rpc.EntityService
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 import org.totalgrid.reef.client.service.entities.EntityRelation
 
 trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {

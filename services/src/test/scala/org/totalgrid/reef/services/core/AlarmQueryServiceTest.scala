@@ -24,8 +24,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 

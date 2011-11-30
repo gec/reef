@@ -23,7 +23,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exceptions.ReefServiceException
 
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.util.Lifecycle

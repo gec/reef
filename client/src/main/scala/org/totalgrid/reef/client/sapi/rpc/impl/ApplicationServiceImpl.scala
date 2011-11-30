@@ -20,10 +20,10 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
-import org.totalgrid.reef.clientapi.settings.NodeSettings
+import org.totalgrid.reef.client.settings.NodeSettings
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 
 trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationService {

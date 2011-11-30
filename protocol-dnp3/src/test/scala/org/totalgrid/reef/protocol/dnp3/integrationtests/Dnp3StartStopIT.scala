@@ -22,16 +22,16 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.factory.ReefFactory
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
+import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.loader.commons.{ LoaderClient, LoaderServices, ModelDeleter }
 import org.totalgrid.reef.loader.LoadManager
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.FEP.EndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging

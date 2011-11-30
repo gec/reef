@@ -23,7 +23,7 @@ import Measurements.MeasurementBatch
 import FEP.CommChannel
 import org.totalgrid.reef.proto.Model.ConfigFile
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 trait Publisher[A] {
   /**

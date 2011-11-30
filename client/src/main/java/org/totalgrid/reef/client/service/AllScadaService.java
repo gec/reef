@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.service;
 
-import org.totalgrid.reef.clientapi.SubscriptionCreator;
+import org.totalgrid.reef.client.SubscriptionCreator;
 
 /**
  * "Super" interface that includes all of the individual service interfaces. This could be broken down

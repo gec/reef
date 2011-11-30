@@ -29,8 +29,8 @@ import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.commons.ui.RequestViewer
 
 import java.io.PrintStream
-import org.totalgrid.reef.clientapi.sapi.client.{ Promise, RequestSpy }
-import org.totalgrid.reef.clientapi.sapi.client.rest.BatchOperations
+import org.totalgrid.reef.client.sapi.client.{ Promise, RequestSpy }
+import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]

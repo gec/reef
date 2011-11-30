@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.Auth._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 object OptionalProtos {
 

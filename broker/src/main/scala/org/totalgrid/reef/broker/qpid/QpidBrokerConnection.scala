@@ -21,7 +21,7 @@ package org.totalgrid.reef.broker.qpid
 import org.totalgrid.reef.broker._
 import org.apache.qpid.transport._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exceptions.ServiceIOException
 
 final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool with ConnectionListener with Logging {
 

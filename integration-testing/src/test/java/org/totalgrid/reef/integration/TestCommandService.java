@@ -23,9 +23,9 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
-import org.totalgrid.reef.clientapi.exceptions.ExpectationException;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.clientapi.proto.Envelope;
+import org.totalgrid.reef.client.exceptions.ExpectationException;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.proto.Envelope;
 import org.totalgrid.reef.client.service.CommandService;
 import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;

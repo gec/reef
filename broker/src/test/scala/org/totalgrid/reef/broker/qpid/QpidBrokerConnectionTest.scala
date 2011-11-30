@@ -25,9 +25,9 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.broker._
 import net.agileautomata.commons.testing._
-import org.totalgrid.reef.clientapi.settings.AmqpSettings
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
-import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
+import org.totalgrid.reef.client.settings.AmqpSettings
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.client.exceptions.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
 class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {

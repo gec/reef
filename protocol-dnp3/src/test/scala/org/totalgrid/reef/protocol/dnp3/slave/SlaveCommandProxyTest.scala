@@ -27,9 +27,9 @@ import org.mockito.{ Mockito, Matchers }
 import org.totalgrid.reef.proto.Model.Command
 import org.totalgrid.reef.proto.Mapping._
 import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandLock }
-import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.sapi.rpc.CommandService

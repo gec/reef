@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.clientapi.sapi.service._
-import org.totalgrid.reef.clientapi.sapi.client.Response
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.sapi.service._
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.proto.Envelope
 
 /**
  * defines the get verb and provides a default fail operation

@@ -20,11 +20,11 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 
-import org.totalgrid.reef.clientapi.Subscription;
-import org.totalgrid.reef.clientapi.SubscriptionEvent;
-import org.totalgrid.reef.clientapi.SubscriptionResult;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.clientapi.proto.Envelope;
+import org.totalgrid.reef.client.Subscription;
+import org.totalgrid.reef.client.SubscriptionEvent;
+import org.totalgrid.reef.client.SubscriptionResult;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.proto.Envelope;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 

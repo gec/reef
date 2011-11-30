@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.metrics
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
 /// the metrics collected on any single service request
 class ServiceVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {

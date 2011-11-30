@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.proto.FEP
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.mockito.Mockito
 
 @RunWith(classOf[JUnitRunner])

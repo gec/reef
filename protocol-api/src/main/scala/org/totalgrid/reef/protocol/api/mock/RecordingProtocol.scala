@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.{ FEP, Model, Commands }
 import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler }
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 object RecordingProtocol {
 

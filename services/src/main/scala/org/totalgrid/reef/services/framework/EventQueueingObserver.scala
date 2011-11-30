@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 trait SubscribeFunctions[ServiceType <: GeneratedMessage] {
 

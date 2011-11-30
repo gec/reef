@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.clientapi.sapi.request
+package org.totalgrid.reef.client.sapi.request
 
 import org.scalatest.matchers.ShouldMatchers
 import scala.collection.JavaConversions._

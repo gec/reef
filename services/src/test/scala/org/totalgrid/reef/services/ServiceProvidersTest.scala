@@ -25,14 +25,14 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, AsyncService }
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.services.authz.NullAuthService
 
 /**

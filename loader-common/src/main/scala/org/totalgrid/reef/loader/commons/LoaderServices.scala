@@ -18,15 +18,15 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 
 import org.totalgrid.reef.proto.Model._
 import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.clientapi.sapi.client.Promise
+import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.clientapi.{ Client => JClient }
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
+import org.totalgrid.reef.client.{ Client => JClient }
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider, Client }
 
 trait LoaderServices extends AllScadaService {
   def addEquipment(entity: Entity): Promise[Entity]

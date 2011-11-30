@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, ReefServiceException }
+import org.totalgrid.reef.client.exceptions.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
@@ -34,9 +34,9 @@ import java.util.UUID
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 

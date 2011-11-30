@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.clientapi.sapi.service.HasServiceType
+import org.totalgrid.reef.client.sapi.service.HasServiceType
 
 trait CanAuthorizeCreate extends HasServiceType {
 

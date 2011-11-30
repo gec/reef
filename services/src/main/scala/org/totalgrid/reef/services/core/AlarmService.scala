@@ -29,12 +29,12 @@ import org.squeryl.Table
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 // implicit proto properties
 import SquerylModel._
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class AlarmService(protected val model: AlarmServiceModel)
     extends SyncModeledServiceBase[Alarm, AlarmModel, AlarmServiceModel]

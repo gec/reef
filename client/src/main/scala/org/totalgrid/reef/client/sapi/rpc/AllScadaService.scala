@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc
 
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ClientOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.ClientOperations
 
 trait AllScadaService
   extends ClientOperations

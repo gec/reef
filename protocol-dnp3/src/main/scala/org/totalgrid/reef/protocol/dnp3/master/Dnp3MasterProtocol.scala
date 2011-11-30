@@ -25,7 +25,7 @@ import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCo
 import org.totalgrid.reef.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.dnp3.IStackObserver
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver,
   batchPublisher: Publisher[MeasurementBatch], commandAdapter: CommandAdapter)

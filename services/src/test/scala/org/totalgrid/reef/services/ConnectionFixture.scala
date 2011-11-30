@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.ReefServices
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
 object ConnectionFixture {
   def mock(exe: ExecutorService = new InstantExecutorService4S)(test: Connection => Unit): Unit = {

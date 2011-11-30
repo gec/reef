@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.service;
 
 import java.util.List;
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Commands.CommandLock;
 import org.totalgrid.reef.proto.Commands.CommandStatus;
 import org.totalgrid.reef.proto.Commands.UserCommandRequest;

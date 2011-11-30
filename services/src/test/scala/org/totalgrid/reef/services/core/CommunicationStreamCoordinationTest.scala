@@ -25,8 +25,8 @@ import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.proto.FEP._
 import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.proto.Envelope.SubscriptionEventType
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.event.EventType

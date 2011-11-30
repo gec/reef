@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.service;
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Alarms.EventConfig;
 import org.totalgrid.reef.proto.Alarms.EventConfig.Designation;
 

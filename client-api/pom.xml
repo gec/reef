@@ -31,7 +31,12 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Client API</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.clientapi.*</Export-Package>
+                        <Export-Package>
+                            org.totalgrid.reef.client,
+                            org.totalgrid.reef.client.javaimpl,
+                            org.totalgrid.reef.client.sapi.client.*,
+                            org.totalgrid.reef.client.sapi.service,
+                        </Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>

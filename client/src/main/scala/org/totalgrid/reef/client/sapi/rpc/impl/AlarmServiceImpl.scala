@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Model.Entity
 
 import org.totalgrid.reef.client.sapi.rpc.AlarmService
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {
 

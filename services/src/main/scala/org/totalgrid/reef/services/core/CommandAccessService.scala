@@ -27,10 +27,10 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Descriptors
 
 import ServiceBehaviors._
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.proto.Descriptors
 
 class CommandLockService(protected val model: CommandLockServiceModel)

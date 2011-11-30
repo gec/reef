@@ -28,7 +28,7 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import EndpointConnection.State._
-import org.totalgrid.reef.clientapi.SubscriptionResult
+import org.totalgrid.reef.client.SubscriptionResult
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
 

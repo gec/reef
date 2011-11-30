@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.Auth._
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.client.sapi.rpc.AgentService
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   override def getAgentByName(name: String) = ops.operation("Couldn't get agent with name: " + name) {

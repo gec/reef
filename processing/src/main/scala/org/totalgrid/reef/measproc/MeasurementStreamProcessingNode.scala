@@ -24,7 +24,7 @@ import org.totalgrid.reef.metrics.MetricsHookContainer
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exceptions.ReefServiceException
 
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline

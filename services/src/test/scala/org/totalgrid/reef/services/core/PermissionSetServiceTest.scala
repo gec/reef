@@ -24,7 +24,7 @@ import org.totalgrid.reef.proto.Auth._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 import org.totalgrid.reef.proto.Model.ReefUUID
 
 import org.totalgrid.reef.services.core.SyncServiceShims._

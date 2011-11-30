@@ -18,15 +18,15 @@ package org.totalgrid.reef.client.factory
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.clientapi.settings.AmqpSettings
-import org.totalgrid.reef.clientapi.{ ReconnectingConnectionFactory, ConnectionWatcher }
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ ConnectionWatcher => SConnectionWatcher }
-import org.totalgrid.reef.clientapi.javaimpl.ConnectionWrapper
+import org.totalgrid.reef.client.settings.AmqpSettings
+import org.totalgrid.reef.client.sapi.client.rest.{ ConnectionWatcher => SConnectionWatcher }
+import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.{ DefaultConnection, DefaultReconnectingFactory }
-import org.totalgrid.reef.clientapi.rpc.ServicesList
+import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultConnection, DefaultReconnectingFactory }
+import org.totalgrid.reef.client.{ ServicesList, ReconnectingConnectionFactory, ConnectionWatcher }
+import org.totalgrid.reef.client.ServicesList
 
 class ReefReconnectingFactory(amqpSettings: AmqpSettings, servicesList: ServicesList, startDelay: Long, maxDelay: Long)
     extends ReconnectingConnectionFactory with SConnectionWatcher {

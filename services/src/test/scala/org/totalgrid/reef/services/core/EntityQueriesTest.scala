@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 import java.util.UUID

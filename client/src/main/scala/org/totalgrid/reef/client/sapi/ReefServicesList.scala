@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi
 
-import org.totalgrid.reef.clientapi.types.{ ServiceInfo, TypeDescriptor }
+import org.totalgrid.reef.client.types.{ ServiceInfo, TypeDescriptor }
 import org.totalgrid.reef.proto.Descriptors
 
 object ReefServicesList {

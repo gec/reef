@@ -27,7 +27,7 @@ import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 
 import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 

@@ -23,13 +23,13 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.AllScadaService
 import org.apache.felix.service.command.CommandSession
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.clientapi.ConnectionCloseListener
+import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.client.ConnectionCloseListener
 import org.totalgrid.reef.client.factory.ReefFactory
 
 object ReefCommandSupport extends Logging {

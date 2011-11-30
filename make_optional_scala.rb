@@ -181,7 +181,7 @@ package org.totalgrid.reef.proto
 #{scala_imports}
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 object OptionalProtos {
 
@@ -192,7 +192,7 @@ deseralizers = File.open(File.join(File.dirname(__FILE__),"./client/src/main/sca
 deseralizers.puts <<EOF
 package org.totalgrid.reef.proto
 
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import org.totalgrid.reef.client.types.TypeDescriptor
 
 #{scala_imports}
 

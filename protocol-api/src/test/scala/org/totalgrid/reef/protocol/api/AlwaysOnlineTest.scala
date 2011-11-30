@@ -28,7 +28,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.mockito.Mockito
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class AlwaysOnlineTest extends FunSuite with ShouldMatchers {

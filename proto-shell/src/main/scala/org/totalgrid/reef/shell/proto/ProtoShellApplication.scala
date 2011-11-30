@@ -24,11 +24,11 @@ import org.apache.felix.gogo.runtime.CommandProcessorImpl
 
 import jline.Terminal
 import java.io.{ PrintStream, InputStream }
-import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.AllScadaService
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.client.sapi.ReefServices
 

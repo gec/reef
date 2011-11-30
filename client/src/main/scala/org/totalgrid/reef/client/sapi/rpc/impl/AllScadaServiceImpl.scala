@@ -19,8 +19,8 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc._
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider, Client }
+import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 
 /**
  * "Super" implementation of all of the service interfaces

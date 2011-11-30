@@ -22,15 +22,15 @@ import org.junit.After;
 import org.junit.Before;
 
 import org.totalgrid.reef.client.sapi.ReefServices;
-import org.totalgrid.reef.clientapi.Client;
-import org.totalgrid.reef.clientapi.Connection;
-import org.totalgrid.reef.clientapi.SubscriptionBinding;
-import org.totalgrid.reef.clientapi.SubscriptionCreationListener;
-import org.totalgrid.reef.clientapi.settings.AmqpSettings;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.Client;
+import org.totalgrid.reef.client.Connection;
+import org.totalgrid.reef.client.SubscriptionBinding;
+import org.totalgrid.reef.client.SubscriptionCreationListener;
+import org.totalgrid.reef.client.settings.AmqpSettings;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
 
-import org.totalgrid.reef.clientapi.settings.UserSettings;
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
+import org.totalgrid.reef.client.settings.UserSettings;
+import org.totalgrid.reef.client.settings.util.PropertyReader;
 import org.totalgrid.reef.client.factory.ReefConnectionFactory;
 import org.totalgrid.reef.client.service.AllScadaService;
 import org.totalgrid.reef.loader.commons.LoaderClient;

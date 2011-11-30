@@ -26,9 +26,9 @@ import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection }
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.sapi.rpc.EndpointService
-import org.totalgrid.reef.clientapi.sapi.client.Promise
+import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
 

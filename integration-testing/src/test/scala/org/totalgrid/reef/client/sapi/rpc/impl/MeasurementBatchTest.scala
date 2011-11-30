@@ -23,14 +23,14 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilders
 
 import org.totalgrid.reef.benchmarks.measurements.MeasurementRoundtripTimer
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 import org.totalgrid.reef.util.{ SyncVar, Timing }
-import org.totalgrid.reef.clientapi._
+import org.totalgrid.reef.client._
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest

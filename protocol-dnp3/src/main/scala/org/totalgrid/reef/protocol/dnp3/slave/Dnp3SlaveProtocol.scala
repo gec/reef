@@ -26,7 +26,7 @@ import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandle
 import org.totalgrid.reef.proto.Commands.CommandRequest
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 case class SlaveObjectsContainer(stackObserver: IStackObserver, commandProxy: ICommandAcceptor, measProxy: SlaveMeasurementProxy)
     extends Cancelable {

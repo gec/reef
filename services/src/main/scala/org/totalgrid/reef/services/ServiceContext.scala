@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.client.sapi.service.AsyncService
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.clientapi.AnyNodeDestination
+import org.totalgrid.reef.client.AnyNodeDestination
 
 /**
  * sets up the "production" ServiceContainer for the service providers

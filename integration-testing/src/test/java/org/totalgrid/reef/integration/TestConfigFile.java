@@ -19,7 +19,7 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.proto.Model;
 

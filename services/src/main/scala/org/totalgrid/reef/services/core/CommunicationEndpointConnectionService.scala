@@ -31,12 +31,12 @@ import org.totalgrid.reef.proto.Descriptors
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exceptions.BadRequestException
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class CommunicationEndpointConnectionService(protected val model: CommunicationEndpointConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]

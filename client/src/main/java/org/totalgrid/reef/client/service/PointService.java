@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.service;
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exceptions.ReefServiceException;
 import org.totalgrid.reef.proto.Model.Entity;
 import org.totalgrid.reef.proto.Model.Point;
 import org.totalgrid.reef.proto.Model.ReefUUID;

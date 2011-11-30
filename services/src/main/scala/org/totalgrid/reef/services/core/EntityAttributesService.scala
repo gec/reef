@@ -22,9 +22,9 @@ import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes 
 import org.totalgrid.reef.proto.Utils.Attribute
 import org.totalgrid.reef.proto.Descriptors
 
-import org.totalgrid.reef.clientapi.sapi.client.Response
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 

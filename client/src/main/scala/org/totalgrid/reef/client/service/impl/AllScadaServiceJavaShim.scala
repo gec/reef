@@ -18,12 +18,12 @@ package org.totalgrid.reef.client.service.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.clientapi.SubscriptionCreationListener
+import org.totalgrid.reef.client.SubscriptionCreationListener
 
 import org.totalgrid.reef.client.service._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider, Client }
 
 trait AllScadaServiceJavaShim
     extends AllScadaService

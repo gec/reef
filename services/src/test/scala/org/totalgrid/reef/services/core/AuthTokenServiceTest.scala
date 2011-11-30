@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.clientapi.proto.Envelope._
+import org.totalgrid.reef.client.proto.Envelope._
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -35,8 +35,8 @@ import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.NullRequestContext
 import org.totalgrid.reef.services.framework.AuthorizesEverything
-import org.totalgrid.reef.clientapi.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.clientapi.exceptions.{ UnauthorizedException, ReefServiceException }
+import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.client.exceptions.{ UnauthorizedException, ReefServiceException }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
