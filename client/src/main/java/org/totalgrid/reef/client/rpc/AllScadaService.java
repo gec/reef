@@ -26,7 +26,6 @@ import org.totalgrid.reef.clientapi.SubscriptionCreator;
  */
 public abstract class AllScadaService implements
                                      SubscriptionCreator,
-                                     AuthTokenService,
                                      EntityService,
                                      ConfigFileService,
                                      MeasurementService,

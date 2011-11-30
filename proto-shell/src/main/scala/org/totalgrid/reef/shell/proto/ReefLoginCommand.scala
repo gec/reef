@@ -72,7 +72,7 @@ class ReefLogoutCommand extends ReefCommandSupport {
   def doCommand() = {
     try {
       this.get("authToken") match {
-        case Some(token) => services.deleteAuthorizationToken(token)
+        case Some(token) => //services.deleteAuthorizationToken(token) // TODO: reenable ability to actually delete it
         case None =>
       }
     } catch {

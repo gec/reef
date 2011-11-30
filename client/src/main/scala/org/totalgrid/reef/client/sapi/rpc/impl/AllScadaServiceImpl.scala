@@ -27,7 +27,6 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ApiBase
  */
 trait AllScadaServiceImpl
   extends AllScadaService
-  with AuthTokenServiceImpl
   with EntityServiceImpl
   with ConfigFileServiceImpl
   with MeasurementServiceImpl
@@ -49,7 +48,6 @@ object AllScadaServiceImpl {
   val serviceInfo = RpcProvider(new AllScadaServiceWrapper(_),
     List(
       classOf[AllScadaService],
-      classOf[AuthTokenService],
       classOf[EntityService],
       classOf[ConfigFileService],
       classOf[MeasurementService],

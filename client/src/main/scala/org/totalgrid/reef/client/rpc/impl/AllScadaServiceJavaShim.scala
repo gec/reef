@@ -27,7 +27,6 @@ import org.totalgrid.reef.clientapi.sapi.client.rest.{ RpcProvider, Client }
 
 trait AllScadaServiceJavaShim
     extends AllScadaService
-    with AuthTokenServiceJavaShim
     with EntityServiceJavaShim
     with ConfigFileServiceJavaShim
     with MeasurementServiceJavaShim
@@ -60,7 +59,6 @@ object AllScadaServiceJavaShim {
   val serviceInfo = RpcProvider(new AllScadaServiceJavaShimWrapper(_),
     List(
       classOf[AllScadaService],
-      classOf[AuthTokenService],
       classOf[EntityService],
       classOf[ConfigFileService],
       classOf[MeasurementService],

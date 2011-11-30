@@ -22,7 +22,6 @@ import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.ClientOperations
 
 trait AllScadaService
   extends ClientOperations
-  with AuthTokenService
   with EntityService
   with ConfigFileService
   with MeasurementService
