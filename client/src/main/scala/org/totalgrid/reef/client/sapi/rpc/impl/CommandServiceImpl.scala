@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 import org.totalgrid.reef.clientapi.sapi.client.rpc.framework.HasAnnotatedOperations
-import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler
+import org.totalgrid.reef.client.service.commands.CommandRequestHandler
 
 trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 

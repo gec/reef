@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.clientapi.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.client.rpc.commands.{ CommandResultCallback, CommandRequestHandler }
+import org.totalgrid.reef.client.service.commands.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
 import org.totalgrid.reef.clientapi.proto.Envelope
 import org.totalgrid.reef.clientapi.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }

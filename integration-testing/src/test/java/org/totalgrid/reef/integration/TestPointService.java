@@ -23,8 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.CommandService;
-import org.totalgrid.reef.client.rpc.PointService;
+import org.totalgrid.reef.client.service.CommandService;
+import org.totalgrid.reef.client.service.PointService;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.List;

@@ -28,9 +28,9 @@ import org.totalgrid.reef.clientapi.proto.Envelope;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
-import org.totalgrid.reef.client.rpc.MeasurementService;
+import org.totalgrid.reef.client.service.MeasurementService;
 
-import org.totalgrid.reef.client.rpc.PointService;
+import org.totalgrid.reef.client.service.PointService;
 import org.totalgrid.reef.proto.FEP;
 import org.totalgrid.reef.proto.Measurements;
 import org.totalgrid.reef.proto.Model;

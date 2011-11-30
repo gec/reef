@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.totalgrid.reef.client.ReefFactory
+import org.totalgrid.reef.client.factory.ReefFactory
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService

@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.integrationtests
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.client.ReefFactory
+import org.totalgrid.reef.client.factory.ReefFactory
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
 import org.totalgrid.reef.loader.commons.{ LoaderClient, LoaderServices, ModelDeleter }
 import org.totalgrid.reef.loader.LoadManager

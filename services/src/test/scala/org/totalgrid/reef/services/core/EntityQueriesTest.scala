@@ -28,7 +28,7 @@ import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 import java.util.UUID
-import org.totalgrid.reef.client.rpc.entities.EntityRelation
+import org.totalgrid.reef.client.service.entities.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
 
 @RunWith(classOf[JUnitRunner])

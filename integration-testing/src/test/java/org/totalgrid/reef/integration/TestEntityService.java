@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.totalgrid.reef.client.rpc.entities.EntityRelation;
+import org.totalgrid.reef.client.service.entities.EntityRelation;
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.EntityService;
-import org.totalgrid.reef.client.rpc.PointService;
+import org.totalgrid.reef.client.service.EntityService;
+import org.totalgrid.reef.client.service.PointService;
 import org.totalgrid.reef.proto.Model.*;
 
 import java.util.*;

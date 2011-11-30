@@ -20,8 +20,8 @@ package org.totalgrid.reef.integration;
 
 import net.agileautomata.executor4s.Cancelable;
 import org.junit.Test;
-import org.totalgrid.reef.client.rpc.commands.CommandRequestHandler;
-import org.totalgrid.reef.client.rpc.commands.CommandResultCallback;
+import org.totalgrid.reef.client.service.commands.CommandRequestHandler;
+import org.totalgrid.reef.client.service.commands.CommandResultCallback;
 import org.totalgrid.reef.clientapi.exceptions.ExpectationException;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.loader.commons.LoaderServices;

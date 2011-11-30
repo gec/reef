@@ -23,7 +23,7 @@ import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
-import org.totalgrid.reef.client.ReefFactory
+import org.totalgrid.reef.client.factory.ReefFactory
 
 object StandaloneLoader {
   def run(connectionInfo: AmqpSettings, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {

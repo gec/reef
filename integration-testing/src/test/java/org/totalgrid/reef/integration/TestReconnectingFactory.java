@@ -19,8 +19,8 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.client.ReefReconnectingFactory;
-import org.totalgrid.reef.client.rpc.MeasurementService;
+import org.totalgrid.reef.client.factory.ReefReconnectingFactory;
+import org.totalgrid.reef.client.service.MeasurementService;
 import org.totalgrid.reef.client.sapi.ReefServices;
 import org.totalgrid.reef.clientapi.Client;
 import org.totalgrid.reef.clientapi.Connection;

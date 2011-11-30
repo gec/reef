@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.client.rpc.impl.AllScadaServiceJavaShim
+import org.totalgrid.reef.client.service.impl.AllScadaServiceJavaShim
 import org.totalgrid.reef.clientapi.rpc.ServicesList
 
 object ReefServices extends ServicesList {

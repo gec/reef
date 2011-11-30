@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl.builders
 import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.rpc.entities.EntityRelation
+import org.totalgrid.reef.client.service.entities.EntityRelation
 import org.totalgrid.reef.clientapi.exceptions.BadRequestException
 
 object EntityRequestBuilders {

@@ -18,7 +18,7 @@
 +import org.totalgrid.reef.clientapi.ReconnectingConnectionFactory;
 
 -import org.totalgrid.reef.messaging.javaclient.AMQPConnection;
-+import org.totalgrid.reef.client.ReefReconnectingFactory;
++import org.totalgrid.reef.client.factory.ReefReconnectingFactory;
 
 -import org.totalgrid.reef.japi.Envelope;
 +import org.totalgrid.reef.clientapi.proto.Envelope;
@@ -30,5 +30,5 @@
 +import org.totalgrid.reef.clientapi.ConnectionWatcher;
 
 -import org.totalgrid.reef.japi.request.AllScadaService;
-+import org.totalgrid.reef.client.rpc.AllScadaService;
++import org.totalgrid.reef.client.service.AllScadaService;
 ``

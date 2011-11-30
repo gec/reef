@@ -24,8 +24,8 @@ import static org.junit.Assert.*;
 
 import org.totalgrid.reef.clientapi.SubscriptionResult;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.MeasurementOverrideService;
-import org.totalgrid.reef.client.rpc.MeasurementService;
+import org.totalgrid.reef.client.service.MeasurementOverrideService;
+import org.totalgrid.reef.client.service.MeasurementService;
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilders;
 import org.totalgrid.reef.proto.Measurements.*;

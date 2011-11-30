@@ -31,8 +31,8 @@ import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 
 import org.totalgrid.reef.clientapi.settings.UserSettings;
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
-import org.totalgrid.reef.client.ReefConnectionFactory;
-import org.totalgrid.reef.client.rpc.AllScadaService;
+import org.totalgrid.reef.client.factory.ReefConnectionFactory;
+import org.totalgrid.reef.client.service.AllScadaService;
 import org.totalgrid.reef.loader.commons.LoaderClient;
 
 import java.io.IOException;

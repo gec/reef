@@ -22,7 +22,7 @@ import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.clientapi.settings.util.PropertyReader
-import org.totalgrid.reef.client.ReefFactory
+import org.totalgrid.reef.client.factory.ReefFactory
 import org.totalgrid.reef.clientapi.sapi.client.rest.Client
 import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers

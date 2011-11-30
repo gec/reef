@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import org.totalgrid.reef.clientapi.exceptions.ExpectationException;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
 import org.totalgrid.reef.clientapi.proto.Envelope;
-import org.totalgrid.reef.client.rpc.CommandService;
+import org.totalgrid.reef.client.service.CommandService;
 import org.totalgrid.reef.proto.Commands.*;
 import org.totalgrid.reef.proto.Model.Command;
 

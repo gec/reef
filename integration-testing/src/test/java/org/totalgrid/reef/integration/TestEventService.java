@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.totalgrid.reef.clientapi.SubscriptionBinding;
 import org.totalgrid.reef.clientapi.SubscriptionCreationListener;
 import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.*;
+import org.totalgrid.reef.client.service.*;
 import org.totalgrid.reef.integration.helpers.BlockingQueue;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
