@@ -71,7 +71,7 @@ public class AmqpSettings
      * @param trustStore  Path to trustStore file (trust-store.jks)
      * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
      */
-    private AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds, boolean ssl,
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds, boolean ssl,
         String trustStore, String trustStorePassword, String keyStore, String keyStorePassword )
     {
         this.host = host;

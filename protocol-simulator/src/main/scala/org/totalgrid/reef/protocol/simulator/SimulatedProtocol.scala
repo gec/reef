@@ -36,7 +36,6 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
   import Protocol._
 
   final override def name: String = "benchmark"
-  final override def requiresChannel = false
 
   case class PluginRecord(endpoint: String, mapping: SimulatorMapping, publisher: BatchPublisher, current: Option[SimulatorPlugin])
 

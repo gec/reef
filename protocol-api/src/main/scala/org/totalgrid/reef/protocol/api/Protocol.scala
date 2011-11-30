@@ -91,6 +91,9 @@ trait Protocol {
 }
 
 trait ChannelIgnoringProtocol extends Protocol {
+
+  final override def requiresChannel = false
+
   def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client): Unit =
     {}
 
