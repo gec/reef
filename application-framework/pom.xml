@@ -51,7 +51,7 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-client</artifactId>
+            <artifactId>reef-service-client</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>

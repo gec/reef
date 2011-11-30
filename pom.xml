@@ -21,8 +21,8 @@
 		<module>api-enhancer</module>
 		<module>test-util</module>
         <module>common-api</module>
-        <module>client-api</module>
-		<module>client</module>
+        <module>client</module>
+		<module>service-client</module>
 		<module>benchmarks</module>
 		<module>integration-testing</module>
         <module>executor</module>
