@@ -33,6 +33,7 @@
                         <Bundle-Name>Reef Client API</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.client,
+                            org.totalgrid.reef.client.factory,
                             org.totalgrid.reef.client.javaimpl,
                             org.totalgrid.reef.client.sapi.client.*,
                             org.totalgrid.reef.client.sapi.service,
