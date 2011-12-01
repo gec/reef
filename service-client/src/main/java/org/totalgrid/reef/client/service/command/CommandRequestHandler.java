@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.service.commands;
+package org.totalgrid.reef.client.service.command;
 
 import org.totalgrid.reef.proto.Commands.CommandRequest;
 

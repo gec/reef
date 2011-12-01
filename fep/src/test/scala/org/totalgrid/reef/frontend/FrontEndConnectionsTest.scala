@@ -29,7 +29,7 @@ import FrontEndTestHelpers._
 import org.totalgrid.reef.protocol.api.mock.{ NullProtocol, RecordingProtocol }
 import org.totalgrid.reef.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
-import org.totalgrid.reef.client.service.commands.CommandRequestHandler
+import org.totalgrid.reef.client.service.command.CommandRequestHandler
 import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import net.agileautomata.executor4s.Success
 import org.totalgrid.reef.client.sapi.client.rest.Client

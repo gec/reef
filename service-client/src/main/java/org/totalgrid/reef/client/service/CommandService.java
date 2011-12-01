@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Model.Command;
 import org.totalgrid.reef.proto.Model.ReefUUID;
 import org.totalgrid.reef.proto.Model.ReefID;
 import net.agileautomata.executor4s.Cancelable;
-import org.totalgrid.reef.client.service.commands.CommandRequestHandler;
+import org.totalgrid.reef.client.service.command.CommandRequestHandler;
 
 /**
  *

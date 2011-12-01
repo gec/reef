@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.AddressableDestination
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
-import org.totalgrid.reef.client.service.commands.{ CommandResultCallback, CommandRequestHandler }
+import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Protocol }
 import org.totalgrid.reef.client.sapi.client.rest.Client

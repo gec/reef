@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.service.entities;
+package org.totalgrid.reef.client.service.entity;
 
 import java.util.LinkedList;
 import java.util.List;

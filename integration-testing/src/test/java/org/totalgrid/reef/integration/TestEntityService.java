@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.totalgrid.reef.client.service.entities.EntityRelation;
+import org.totalgrid.reef.client.service.entity.EntityRelation;
 import org.totalgrid.reef.client.exception.BadRequestException;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.EntityService;
