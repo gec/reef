@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
 
 @RunWith(classOf[JUnitRunner])

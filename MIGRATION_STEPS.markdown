@@ -6,7 +6,7 @@
 
 ``diff
 -import org.totalgrid.reef.japi.ReefServiceException;
-+import org.totalgrid.reef.client.exceptions.ReefServiceException;
++import org.totalgrid.reef.client.exception.ReefServiceException;
 
 -import org.totalgrid.reef.japi.client.AMQPConnectionSettings;
 +import org.totalgrid.reef.client.settings.AmqpSettings;

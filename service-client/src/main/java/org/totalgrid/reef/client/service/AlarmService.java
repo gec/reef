@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.SubscriptionCreator;
 import org.totalgrid.reef.client.SubscriptionResult;
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.proto.Alarms.Alarm;
 import org.totalgrid.reef.proto.Model.Entity;
 

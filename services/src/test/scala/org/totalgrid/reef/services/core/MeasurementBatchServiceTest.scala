@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.client.sapi.client.rest.Connection
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.util.AsyncValue
 

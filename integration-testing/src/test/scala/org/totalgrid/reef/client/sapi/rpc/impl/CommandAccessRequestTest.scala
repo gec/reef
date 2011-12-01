@@ -22,7 +22,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 

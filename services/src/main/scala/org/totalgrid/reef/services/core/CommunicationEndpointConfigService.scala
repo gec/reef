@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
 import org.totalgrid.reef.proto.FEP.{ EndpointConnection => ConnProto, Endpoint => CommEndCfgProto, EndpointOwnership, CommChannel }

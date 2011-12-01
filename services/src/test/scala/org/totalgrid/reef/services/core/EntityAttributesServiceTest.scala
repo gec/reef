@@ -28,7 +28,7 @@ import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._

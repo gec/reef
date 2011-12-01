@@ -31,7 +31,7 @@ import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.models.{
   Agent,

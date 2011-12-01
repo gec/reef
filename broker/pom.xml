@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-common-api</artifactId>
+            <artifactId>reef-client-common</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>

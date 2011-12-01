@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.client
 
 import net.agileautomata.executor4s.{ Result, Success, Failure }
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.ExpectationException
+import org.totalgrid.reef.client.exception.ExpectationException
 
 trait Expectations[+A] {
 

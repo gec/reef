@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import net.agileautomata.executor4s.{ Failure, Success, Result, Future }
 
-import org.totalgrid.reef.client.exceptions.{ InternalClientError, ReefServiceException }
+import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.types.TypeDescriptor
 
 import org.totalgrid.reef.client.sapi.client.{ SubscriptionCreatorManager, Subscription, Promise }
@@ -50,7 +50,7 @@ final class DefaultAnnotatedOperations(client: RestOperations, manager: Subscrip
       }
     }
 
-    // TODO: need to catch exceptions thrown out of operation blocks themselves
+    // TODO: need to catch exception thrown out of operation blocks themselves
     fun(client).map(convert)
   }
 

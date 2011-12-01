@@ -16,21 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
-
-import org.totalgrid.reef.client.proto.Envelope;
-
 /**
- *  A blanket exception that gets rethrown when an exception happens
- *  in the messaging stack. Used to prevent any non ReefServiceExceptions
- *  from bubbling out of api calls.
+ * Exceptions and protobuf Envelope type.
  */
-public class InternalClientError extends ReefServiceException
-{
-
-    public InternalClientError( String msg, Throwable cause )
-    {
-        super( msg, Envelope.Status.LOCAL_ERROR, cause );
-    }
-
-}
+package org.totalgrid.reef.client.exception;

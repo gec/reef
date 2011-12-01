@@ -60,7 +60,7 @@ public interface Client
      * @param klass The class of interface to return. Valid interfaces are found in org.totalgrid.reef.client.service
      * @param <A>
      * @return
-     * @throws org.totalgrid.reef.client.exceptions.ReefServiceException If the interface can not be found
+     * @throws org.totalgrid.reef.client.exception.ReefServiceException If the interface can not be found
      */
     <A> A getService( Class<A> klass );
 

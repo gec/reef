@@ -24,7 +24,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
 import org.totalgrid.reef.proto.Commands.CommandRequest.ValType

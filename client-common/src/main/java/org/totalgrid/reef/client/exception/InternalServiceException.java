@@ -16,17 +16,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Thrown when no response was received from the server before the timeout expired.
+ * thrown to represent an unexpected and uncaught error in the services. This is like
+ * a 500 Error code on the web, it means the request was well formed and valid
+ * but something unexpected occurred on the server which caused an internal error, retrying
+ * the same request is likely to cause the same error
  */
-public class ResponseTimeoutException extends ReefServiceException
+public class InternalServiceException extends ReplyException
 {
-    public ResponseTimeoutException( String msg )
+    public InternalServiceException( String msg )
     {
-        super( msg, Envelope.Status.RESPONSE_TIMEOUT );
+        super( msg, Envelope.Status.INTERNAL_ERROR );
+    }
+
+    public InternalServiceException( String msg, Throwable cause )
+    {
+        super( msg, Envelope.Status.INTERNAL_ERROR, cause );
     }
 }

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.settings.UserSettings
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 import org.totalgrid.reef.client._

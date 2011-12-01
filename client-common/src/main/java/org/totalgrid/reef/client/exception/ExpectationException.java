@@ -16,7 +16,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.exception;
+
+import org.totalgrid.reef.client.proto.Envelope;
+
 /**
- * Exceptions and protobuf Envelope type.
+ * Thrown if we got a response from the server but it didn't match the client side
+ * expectation. One example is a query that should return exactly one result but
+ * instead returned a list of ten results.
  */
-package org.totalgrid.reef.client.exceptions;
+public class ExpectationException extends ReplyException
+{
+    public ExpectationException( String msg )
+    {
+        super( msg, Envelope.Status.UNEXPECTED_RESPONSE );
+    }
+}

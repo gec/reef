@@ -27,7 +27,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 

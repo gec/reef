@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client;
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 
 /**
  * Interface that defines how a connection is created. A concrete implementation of this

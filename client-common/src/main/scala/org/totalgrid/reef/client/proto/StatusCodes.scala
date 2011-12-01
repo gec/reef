@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.proto
 
-import org.totalgrid.reef.client.exceptions._
+import org.totalgrid.reef.client.exception._
 
 object StatusCodes {
 

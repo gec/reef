@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, RequestSpy }
-import org.totalgrid.reef.client.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 import org.totalgrid.reef.client._
 import org.totalgrid.reef.client.ServiceProviderInfo
 

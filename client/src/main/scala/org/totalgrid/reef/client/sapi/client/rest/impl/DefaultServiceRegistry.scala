@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.totalgrid.reef.client.exceptions.UnknownServiceException
+import org.totalgrid.reef.client.exception.UnknownServiceException
 import org.totalgrid.reef.client.sapi.client.rest.{ Client }
 import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.{ ServiceProviderInfo, ServiceProviderFactory, ServicesList }

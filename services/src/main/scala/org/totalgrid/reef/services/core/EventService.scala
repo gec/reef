@@ -29,7 +29,7 @@ import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 //import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._

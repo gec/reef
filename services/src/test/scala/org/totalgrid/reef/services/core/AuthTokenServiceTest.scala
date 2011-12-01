@@ -36,7 +36,7 @@ import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.NullRequestContext
 import org.totalgrid.reef.services.framework.AuthorizesEverything
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.client.exceptions.{ UnauthorizedException, ReefServiceException }
+import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 

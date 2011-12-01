@@ -19,13 +19,13 @@ package org.totalgrid.reef.client.factory
  * the License.
  */
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.{ ServicesList, ConnectionFactory, Connection }
+import org.totalgrid.reef.client.{ ConnectionFactory, Connection }
 import org.totalgrid.reef.client.ServicesList
 
 class ReefConnectionFactory(settings: AmqpSettings, servicesList: ServicesList) extends ConnectionFactory {

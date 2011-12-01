@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client;
 
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.settings.UserSettings;
 
 /**

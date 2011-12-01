@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.services.framework.{ RequestContext, ServiceEntryPoint }
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 class MeasurementSnapshotService(cm: RTDatabase)
     extends ServiceEntryPoint[MeasurementSnapshot]

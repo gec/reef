@@ -23,7 +23,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.totalgrid.reef.client.SubscriptionResult;
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.MeasurementOverrideService;
 import org.totalgrid.reef.client.service.MeasurementService;
 

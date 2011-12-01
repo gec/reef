@@ -28,7 +28,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.proto.Model.ReefUUID
 import org.totalgrid.reef.proto.FEP.{ EndpointConnection, FrontEndProcessor }
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import FrontEndTestHelpers._
 import org.totalgrid.reef.client.sapi.client.Promise

@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
 import org.squeryl.PrimitiveTypeMode._

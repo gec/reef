@@ -207,7 +207,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
    * Put the point and pointEntity and setup the owns relationship.
    * Return the pointEntity
    *
-   * TODO: Handle exceptions from invalid name references (ex: control)
+   * TODO: Handle exception from invalid name references (ex: control)
    */
   def processPointType(pointType: PointType, equipmentEntity: Entity, childPrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._

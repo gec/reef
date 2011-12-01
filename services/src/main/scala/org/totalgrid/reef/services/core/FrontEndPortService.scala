@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 

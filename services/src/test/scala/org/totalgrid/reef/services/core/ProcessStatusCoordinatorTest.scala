@@ -26,7 +26,7 @@ import org.totalgrid.reef.proto.ProcessStatus._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.client.proto.Envelope
 

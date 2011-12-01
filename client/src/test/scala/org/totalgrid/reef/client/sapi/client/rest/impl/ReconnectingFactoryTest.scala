@@ -27,7 +27,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory, BrokerDestination }
 import org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
 import org.mockito.Mockito
-import org.totalgrid.reef.client.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
 class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {

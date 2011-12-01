@@ -16,20 +16,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Thrown when an agent attempts to perform an action for which they don't
- * have appropriate permissions
+ *  A blanket exception that gets rethrown when an exception happens
+ *  in the messaging stack. Used to prevent any non ReefServiceExceptions
+ *  from bubbling out of api calls.
  */
-public class UnauthorizedException extends BadRequestException
+public class InternalClientError extends ReefServiceException
 {
 
-    public UnauthorizedException( String msg )
+    public InternalClientError( String msg, Throwable cause )
     {
-        super( msg, Envelope.Status.UNAUTHORIZED );
+        super( msg, Envelope.Status.LOCAL_ERROR, cause );
     }
 
 }

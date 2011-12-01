@@ -25,7 +25,7 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 //implicits
 import org.totalgrid.reef.services.framework.ProtoSerializer._

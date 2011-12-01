@@ -26,7 +26,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
 
 import net.agileautomata.executor4s.Futures

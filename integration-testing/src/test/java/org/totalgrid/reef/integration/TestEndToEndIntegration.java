@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.totalgrid.reef.client.Subscription;
 import org.totalgrid.reef.client.SubscriptionEvent;
 import org.totalgrid.reef.client.SubscriptionResult;
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.proto.Envelope;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;

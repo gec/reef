@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.client.rpc.framework
 import org.totalgrid.reef.client.sapi.client.rest.{ BatchOperations, Client, AnnotatedOperations }
 import org.totalgrid.reef.client.sapi.client.rest.impl.{ BatchServiceRestOperations, DefaultAnnotatedOperations }
 import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener }
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client._
 import net.agileautomata.executor4s.{ TimeInterval, Executor }
 

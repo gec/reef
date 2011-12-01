@@ -16,23 +16,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Thrown because some abnormal IO condition exists with the connection/broker
+ * Thrown when no response was received from the server before the timeout expired.
  */
-public class ServiceIOException extends ReefServiceException
+public class ResponseTimeoutException extends ReefServiceException
 {
-
-    public ServiceIOException( String msg )
+    public ResponseTimeoutException( String msg )
     {
-        super( msg, Envelope.Status.LOCAL_ERROR );
-    }
-
-    public ServiceIOException( String msg, Throwable cause )
-    {
-        super( msg, Envelope.Status.LOCAL_ERROR, cause );
+        super( msg, Envelope.Status.RESPONSE_TIMEOUT );
     }
 }

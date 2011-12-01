@@ -22,7 +22,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.CommandService;
 import org.totalgrid.reef.client.service.PointService;
 import org.totalgrid.reef.proto.Model.*;

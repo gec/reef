@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.service
 import org.totalgrid.reef.client.proto.Envelope
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.client.sapi.client.Response
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.types.TypeDescriptor
 import com.weiglewilczek.slf4s.Logging
 

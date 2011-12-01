@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.client.Routable
 
-import org.totalgrid.reef.client.exceptions.ExpectationException
+import org.totalgrid.reef.client.exception.ExpectationException
 
 import org.totalgrid.reef.client.sapi.client.rest.RestOperations
 import org.totalgrid.reef.client.sapi.client.{ Subscription, BasicRequestHeaders }

@@ -29,7 +29,7 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
 import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.client
 
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 import net.agileautomata.executor4s.Future
 

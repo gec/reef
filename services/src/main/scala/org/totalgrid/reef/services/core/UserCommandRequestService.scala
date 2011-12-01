@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.FEP.EndpointConnection
 import org.totalgrid.reef.proto.Descriptors
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._

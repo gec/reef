@@ -50,7 +50,7 @@
                     <instructions>
                         <Bundle-Name>Reef Common Api</Bundle-Name>
                         <Export-Package>
-                            org.totalgrid.reef.client.exceptions,
+                            org.totalgrid.reef.client.exception,
                             org.totalgrid.reef.client.settings.*,
                             org.totalgrid.reef.client.types,
                             org.totalgrid.reef.client.proto,

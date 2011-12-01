@@ -28,7 +28,7 @@ import org.mockito.Mockito._
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.MockFuture
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.sapi.client._
 

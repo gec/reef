@@ -19,7 +19,7 @@
 package org.totalgrid.reef.broker.qpid
 
 import org.totalgrid.reef.broker._
-import org.totalgrid.reef.client.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 trait QpidBrokerChannelPool extends BrokerConnection {
 

@@ -16,25 +16,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
-
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * An exception that represents a mal-formed request to a service
+ * Thrown when the client tries to make a request to an unknown service.
  */
-public class BadRequestException extends ReplyException
+public class UnknownServiceException extends ReefServiceException
 {
 
-    public BadRequestException( String msg )
+    public UnknownServiceException( String msg )
     {
-        super( msg, Envelope.Status.BAD_REQUEST );
+        super( msg, Envelope.Status.LOCAL_ERROR );
     }
-
-    public BadRequestException( String msg, Envelope.Status status )
-    {
-        super( msg, status );
-    }
-
 }

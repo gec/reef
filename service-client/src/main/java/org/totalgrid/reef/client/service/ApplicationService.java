@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.service;
 import java.util.List;
 
 import org.totalgrid.reef.client.settings.NodeSettings;
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.proto.Application.ApplicationConfig;
 import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot;
 

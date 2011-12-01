@@ -9,7 +9,7 @@
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util-osgi/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-broker/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-memory-broker/${reef.version}</bundle>
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-common-api/${reef.version}</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client-common/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-service-client/${reef.version}</bundle>
 	</feature>

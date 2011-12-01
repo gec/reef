@@ -23,7 +23,7 @@ import java.io.{ BufferedReader, InputStreamReader }
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 

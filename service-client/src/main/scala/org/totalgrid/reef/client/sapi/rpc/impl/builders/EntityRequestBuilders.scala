@@ -22,7 +22,7 @@ import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.entities.EntityRelation
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 object EntityRequestBuilders {
 

@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.framework
 import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 /**
  * Interface for generic use of models by simple REST services

@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.Commands.CommandLock
 import scala.collection.JavaConversions._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {

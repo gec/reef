@@ -22,7 +22,7 @@ import org.totalgrid.reef.broker._
 import org.apache.qpid.transport.{ ConnectionSettings, Connection }
 import org.totalgrid.reef.client.settings.AmqpSettings
 import java.io.File
-import org.totalgrid.reef.client.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 object QpidBrokerConnectionFactory {
 

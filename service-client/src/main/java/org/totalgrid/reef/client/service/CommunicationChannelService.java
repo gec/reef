@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.service;
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.proto.FEP.Endpoint;
 import org.totalgrid.reef.proto.FEP.CommChannel;
 import org.totalgrid.reef.proto.FEP.CommChannel.State;

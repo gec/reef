@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
 import net.agileautomata.executor4s._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.IdempotentLifecycle
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.sapi.client.rest.{ ConnectionWatcher, ReconnectingConnectionFactory }
 import org.totalgrid.reef.broker.{ BrokerConnectionFactory, BrokerConnectionListener, BrokerConnection }
 

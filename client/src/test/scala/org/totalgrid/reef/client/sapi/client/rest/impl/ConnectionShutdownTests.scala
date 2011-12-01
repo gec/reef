@@ -28,7 +28,7 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.client.sapi.client.rest.fixture.SomeInteger
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
 class QpidConnectionShutdownTests extends ConnectionShutdownTests with QpidBrokerTestFixture

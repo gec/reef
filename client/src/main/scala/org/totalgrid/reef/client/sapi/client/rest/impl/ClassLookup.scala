@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 object ClassLookup {
 

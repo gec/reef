@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.client
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.SubscriptionEvent
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
-import org.totalgrid.reef.client.exceptions.ExpectationException
+import org.totalgrid.reef.client.exception.ExpectationException
 
 /* ---- Case classes that make the service api easier to use ---- */
 

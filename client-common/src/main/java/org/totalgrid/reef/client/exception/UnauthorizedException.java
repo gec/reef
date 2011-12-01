@@ -16,19 +16,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Thrown if we got a response from the server but it didn't match the client side
- * expectation. One example is a query that should return exactly one result but
- * instead returned a list of ten results.
+ * Thrown when an agent attempts to perform an action for which they don't
+ * have appropriate permissions
  */
-public class ExpectationException extends ReplyException
+public class UnauthorizedException extends BadRequestException
 {
-    public ExpectationException( String msg )
+
+    public UnauthorizedException( String msg )
     {
-        super( msg, Envelope.Status.UNEXPECTED_RESPONSE );
+        super( msg, Envelope.Status.UNAUTHORIZED );
     }
+
 }

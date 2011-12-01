@@ -16,23 +16,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Base class for all exceptions that represent non-successful replies from the server
+ * Thrown because some abnormal IO condition exists with the connection/broker
  */
-public class ReplyException extends ReefServiceException
+public class ServiceIOException extends ReefServiceException
 {
-    public ReplyException( String msg, Envelope.Status status, Throwable cause )
+
+    public ServiceIOException( String msg )
     {
-        super( msg, status, cause );
+        super( msg, Envelope.Status.LOCAL_ERROR );
     }
 
-    public ReplyException( String msg, Envelope.Status status )
+    public ServiceIOException( String msg, Throwable cause )
     {
-        super( msg, status );
+        super( msg, Envelope.Status.LOCAL_ERROR, cause );
     }
-
 }

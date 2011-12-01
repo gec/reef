@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import SquerylModel._
 
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }

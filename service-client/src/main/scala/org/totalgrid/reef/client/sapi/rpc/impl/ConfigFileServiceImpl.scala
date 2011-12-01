@@ -25,7 +25,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.proto.Model.{ ConfigFile, ReefUUID }
 
 import org.totalgrid.reef.client.sapi.rpc.ConfigFileService
-import org.totalgrid.reef.client.exceptions.ExpectationException
+import org.totalgrid.reef.client.exception.ExpectationException
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 

@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.proto.Envelope

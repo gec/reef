@@ -16,18 +16,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Thrown when the client tries to make a request to an unknown service.
+ * Base class for all exception that represent non-successful replies from the server
  */
-public class UnknownServiceException extends ReefServiceException
+public class ReplyException extends ReefServiceException
 {
-
-    public UnknownServiceException( String msg )
+    public ReplyException( String msg, Envelope.Status status, Throwable cause )
     {
-        super( msg, Envelope.Status.LOCAL_ERROR );
+        super( msg, status, cause );
     }
+
+    public ReplyException( String msg, Envelope.Status status )
+    {
+        super( msg, status );
+    }
+
 }

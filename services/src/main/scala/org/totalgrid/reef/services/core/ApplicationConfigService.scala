@@ -23,7 +23,7 @@ import org.totalgrid.reef.proto.Application._
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.proto.OptionalProtos._

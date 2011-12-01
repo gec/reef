@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.broker
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 trait BrokerConnectionFactory {
 

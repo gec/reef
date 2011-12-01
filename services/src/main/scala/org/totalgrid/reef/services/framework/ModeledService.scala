@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 /**
  * Shared dependencies for generic service implementations

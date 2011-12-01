@@ -21,7 +21,7 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.AlarmService;
 import org.totalgrid.reef.client.service.EntityService;
 import org.totalgrid.reef.client.service.EventConfigService;

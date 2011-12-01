@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.Connection;
 import org.totalgrid.reef.client.SubscriptionBinding;
 import org.totalgrid.reef.client.SubscriptionCreationListener;
 import org.totalgrid.reef.client.settings.AmqpSettings;
-import org.totalgrid.reef.client.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 
 import org.totalgrid.reef.client.settings.UserSettings;
 import org.totalgrid.reef.client.settings.util.PropertyReader;

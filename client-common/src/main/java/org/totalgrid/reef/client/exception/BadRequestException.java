@@ -16,25 +16,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
+
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * thrown to represent an unexpected and uncaught error in the services. This is like
- * a 500 Error code on the web, it means the request was well formed and valid
- * but something unexpected occurred on the server which caused an internal error, retrying
- * the same request is likely to cause the same error
+ * An exception that represents a mal-formed request to a service
  */
-public class InternalServiceException extends ReplyException
+public class BadRequestException extends ReplyException
 {
-    public InternalServiceException( String msg )
+
+    public BadRequestException( String msg )
     {
-        super( msg, Envelope.Status.INTERNAL_ERROR );
+        super( msg, Envelope.Status.BAD_REQUEST );
     }
 
-    public InternalServiceException( String msg, Throwable cause )
+    public BadRequestException( String msg, Envelope.Status status )
     {
-        super( msg, Envelope.Status.INTERNAL_ERROR, cause );
+        super( msg, status );
     }
+
 }

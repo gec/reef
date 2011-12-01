@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.client.exceptions.{ BadRequestException, ReefServiceException }
+import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }

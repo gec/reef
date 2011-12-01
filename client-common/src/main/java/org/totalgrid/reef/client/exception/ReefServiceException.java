@@ -16,13 +16,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.exceptions;
+package org.totalgrid.reef.client.exception;
 
 
 import org.totalgrid.reef.client.proto.Envelope;
 
 /**
- * Base class for all exceptions thrown by the api
+ * Base class for all exception thrown by the api
  */
 public class ReefServiceException extends Exception
 {

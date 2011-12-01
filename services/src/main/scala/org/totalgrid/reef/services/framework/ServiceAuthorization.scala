@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.services.authz.{ AuthService, AuthDenied, NullAuthService }
-import org.totalgrid.reef.client.exceptions.UnauthorizedException
+import org.totalgrid.reef.client.exception.UnauthorizedException
 
 import org.totalgrid.reef.client.sapi.service.HasComponentId
 

@@ -29,7 +29,7 @@ import org.totalgrid.reef.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SystemEventCreator
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.client.exceptions.{ ReefServiceException, BadRequestException }
+import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {

@@ -31,7 +31,7 @@ import org.totalgrid.reef.proto.Descriptors
 import ServiceBehaviors._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
-import org.totalgrid.reef.client.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
 
 // implicit proto properties
