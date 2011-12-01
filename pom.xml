@@ -20,7 +20,7 @@
 		<module>scala-base</module>
 		<module>api-enhancer</module>
 		<module>test-util</module>
-        <module>common-api</module>
+        <module>client-common</module>
         <module>client</module>
 		<module>service-client</module>
 		<module>benchmarks</module>

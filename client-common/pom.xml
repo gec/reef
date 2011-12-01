@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>reef-common-api</artifactId>
+    <artifactId>reef-client-common</artifactId>
 	<packaging>bundle</packaging>
 
 	<licenses>
