@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.app.ConnectionConsumer
 import org.totalgrid.reef.broker.BrokerConnection
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBootstrap, ServiceOptions }

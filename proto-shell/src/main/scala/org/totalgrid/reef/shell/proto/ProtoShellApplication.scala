@@ -30,7 +30,7 @@ import org.totalgrid.reef.client.service.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.service.list
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi
-
 import org.totalgrid.reef.client.types.{ ServiceInfo, TypeDescriptor }
 import org.totalgrid.reef.proto.Descriptors
 

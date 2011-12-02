@@ -25,7 +25,7 @@ import org.apache.felix.service.command.CommandSession
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }

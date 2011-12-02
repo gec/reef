@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.benchmarks.measurements.MeasurementPublishingBenchmark
 import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 
 object AllBenchmarksEntryPoint {
   def main(args: Array[String]) {

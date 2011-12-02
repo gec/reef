@@ -37,7 +37,7 @@ import org.totalgrid.reef.proto.FEP.EndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Measurements.Quality.Validity
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {

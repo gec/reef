@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor }
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)

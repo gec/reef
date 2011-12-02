@@ -20,7 +20,7 @@ package org.totalgrid.reef.loader
 
 import org.totalgrid.reef.util.Cancelable
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.factory.ReefFactory

@@ -20,7 +20,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
-import org.totalgrid.reef.client.sapi.ReefServices
+import org.totalgrid.reef.client.service.list.ReefServices
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
