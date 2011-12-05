@@ -56,7 +56,7 @@ trait EventServiceImpl extends HasAnnotatedOperations with EventService {
     }
   }
 
-  override def getEvents(selector: EventSelect) = ops.operation("Couldn't get events matching: " + selector) {
+  override def searchForEvents(selector: EventSelect) = ops.operation("Couldn't get events matching: " + selector) {
     _.get(EventListRequestBuilders.getByEventSelect(selector)).map(_.one.map(_.getEventsList.toList))
   }
 

@@ -77,7 +77,7 @@ public interface EventService extends SubscriptionCreator
      * @param selector a selector that allows us to express more specific queries
      * @return all matching events
      */
-    List<Event> getEvents( EventSelect selector ) throws ReefServiceException;
+    List<Event> searchForEvents( EventSelect selector ) throws ReefServiceException;
 
     /**
      * Allows querying and subscribing to specific event types
