@@ -99,8 +99,7 @@
                         <Export-Package>
                             org.totalgrid.reef.proto,
                             org.totalgrid.reef.client.service.*,
-                            org.totalgrid.reef.client.sapi.rpc.*,
-                            org.totalgrid.reef.proto
+                            org.totalgrid.reef.client.sapi.rpc.*
                         </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
