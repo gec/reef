@@ -237,11 +237,11 @@ public interface EntityService
      * @param entityTree Entity describing the tree request
      * @return a "filled out" copy of the original tree request.
      */
-    Entity getEntityTree( Entity entityTree ) throws ReefServiceException;
+    Entity searchForEntityTree( Entity entityTree ) throws ReefServiceException;
 
     /**
      * Return a list of entities based on a complex entity model query.
-     * This query is very similar to getEntityTree but doesn't assume a
+     * This query is very similar to searchForEntityTree but doesn't assume a
      * "root node" and can therefore be used to make any request including a EntityTree query
      * <p/>
      *
@@ -249,7 +249,7 @@ public interface EntityService
      * @return a list of Entities that matched query possibly with filled in relationships
      * @throws org.totalgrid.reef.client.exception.ReefServiceException
      */
-    List<Entity> getEntities( Entity entityTree ) throws ReefServiceException;
+    List<Entity> searchForEntities( Entity entityTree ) throws ReefServiceException;
 
     /**
      * Get all attributes associated with a specified Entity.

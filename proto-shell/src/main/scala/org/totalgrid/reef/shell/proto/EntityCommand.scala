@@ -70,7 +70,7 @@ class EntityChildrenCommand extends ReefCommandSupport {
 
     val selector = EntityRequestBuilders.optionalChildrenSelector(parentName, Option(relType), Option(subType).toList, depths)
 
-    val ents = services.getEntityTree(selector)
+    val ents = services.searchForEntityTree(selector)
     if (depths) {
       EntityView.printTreeMultiDepth(ents)
     } else {

@@ -121,11 +121,11 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     }
   }
 
-  override def getEntityTree(entityTree: Entity) = ops.operation("Couldn't get entity tree matching: " + entityTree) {
+  override def searchForEntityTree(entityTree: Entity) = ops.operation("Couldn't get entity tree matching: " + entityTree) {
     _.get(entityTree).map(_.one)
   }
 
-  override def getEntities(entityTree: Entity) = ops.operation("Couldn't get entity trees matching: " + entityTree) {
+  override def searchForEntities(entityTree: Entity) = ops.operation("Couldn't get entity trees matching: " + entityTree) {
     _.get(entityTree).map(_.many)
   }
 

@@ -50,7 +50,7 @@ class PointCommandsCommand extends ReefCommandSupport {
       case Some(entName) => Entity.newBuilder().setName(pointName).addRelations(EntityRequestBuilders.getAllFeedBackCommands).build
       case None => EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands
     }
-    var entities = services.getEntities(query).toList
+    var entities = services.searchForEntities(query).toList
 
     if (!showPointsWithoutCommands) entities = entities.filter { _.getRelationsCount > 0 }
 
