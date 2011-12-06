@@ -22,8 +22,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.ProcessStatus._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.ProcessStatus._
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.exception.BadRequestException

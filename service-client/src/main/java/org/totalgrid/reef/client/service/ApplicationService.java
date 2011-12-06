@@ -22,8 +22,8 @@ import java.util.List;
 
 import org.totalgrid.reef.client.settings.NodeSettings;
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Application.ApplicationConfig;
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot;
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig;
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot;
 
 /**
  * Tag for api-enhancer, do not delete: !api-definition!

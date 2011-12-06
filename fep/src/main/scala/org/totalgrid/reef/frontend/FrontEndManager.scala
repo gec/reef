@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.exception.ReefServiceException

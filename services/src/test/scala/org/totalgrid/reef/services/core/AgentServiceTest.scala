@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.proto.Auth.{ PermissionSet, Agent }
+import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet, Agent }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException

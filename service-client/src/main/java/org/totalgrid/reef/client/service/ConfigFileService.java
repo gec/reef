@@ -21,8 +21,8 @@ package org.totalgrid.reef.client.service;
 import java.util.List;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Model.ConfigFile;
-import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile;
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 
 /**
  * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.

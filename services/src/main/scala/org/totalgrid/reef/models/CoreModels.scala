@@ -26,7 +26,7 @@ import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
 import org.squeryl.Query
 
-import org.totalgrid.reef.proto.Model
+import org.totalgrid.reef.client.service.proto.Model
 
 object Point {
   def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Model.PointType, unit: String, uuid: Option[UUID]) = {

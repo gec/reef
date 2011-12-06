@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.common
 
-import org.totalgrid.reef.proto.FEP
+import org.totalgrid.reef.client.service.proto.FEP
 import org.totalgrid.reef.protocol.dnp3.xml.{ LogLevel, Log }
 import org.totalgrid.reef.protocol.dnp3._
 

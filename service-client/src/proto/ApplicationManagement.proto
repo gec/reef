@@ -1,7 +1,7 @@
 
-package org.totalgrid.reef.proto.Application;
+package org.totalgrid.reef.client.service.proto.Application;
 
-option java_package = "org.totalgrid.reef.proto";
+option java_package = "org.totalgrid.reef.client.service.proto";
 option java_outer_classname = "Application";
 
 import "Model.proto";
@@ -13,7 +13,7 @@ message HeartbeatConfig{
 }
 
 message ApplicationConfig{
-    optional org.totalgrid.reef.proto.Model.ReefUUID       uuid           = 1;
+    optional org.totalgrid.reef.client.service.proto.Model.ReefUUID       uuid           = 1;
     optional string user_name     = 2; // bus context user name (only used for output, doesn't need to be set when registering)
     optional string instance_name = 3; // name of this processing, should be unique per system
     optional string process_id    = 9; // a process identifier that shows when the containg process goes down

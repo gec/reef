@@ -23,9 +23,9 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
 import EndpointConnection.State._
 import org.totalgrid.reef.client.SubscriptionResult

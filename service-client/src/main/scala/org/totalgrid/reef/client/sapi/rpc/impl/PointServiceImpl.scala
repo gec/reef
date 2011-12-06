@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.rpc.PointService
-import org.totalgrid.reef.proto.Model.{ Entity, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 

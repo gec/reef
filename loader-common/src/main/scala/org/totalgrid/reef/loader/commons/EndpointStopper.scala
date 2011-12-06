@@ -21,8 +21,8 @@ package org.totalgrid.reef.loader.commons
 import scala.collection.JavaConversions._
 
 import java.io.PrintStream
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ EndpointConnection, Endpoint }
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, Endpoint }
 
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 

@@ -20,9 +20,9 @@
  * Proto definition file for Commands.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Commands;
+ * package org.totalgrid.reef.client.service.proto.Commands;
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "Commands";
  * 
  * import "Model.proto";
@@ -38,7 +38,7 @@
  * -/
  * message UserCommandRequest {
  * 
- * 	optional org.totalgrid.reef.proto.Model.ReefID         id             = 1;
+ * 	optional org.totalgrid.reef.client.service.proto.Model.ReefID         id             = 1;
  * 	optional CommandRequest command_request = 2;
  * 	optional CommandStatus  status          = 3;
  * 	optional string         user            = 4;
@@ -65,8 +65,8 @@
  *     ALLOWED = 1;
  *     BLOCKED = 2;
  *   }
- *   optional org.totalgrid.reef.proto.Model.ReefID       id             = 1;
- *   repeated org.totalgrid.reef.proto.Model.Command      commands        = 2;
+ *   optional org.totalgrid.reef.client.service.proto.Model.ReefID       id             = 1;
+ *   repeated org.totalgrid.reef.client.service.proto.Model.Command      commands        = 2;
  *   optional AccessMode   access          = 3;
  *   optional uint64       expire_time     = 4;
  *   optional string       user            = 5;
@@ -97,7 +97,7 @@
  * 	}
  * 	
  * 	// unique name of the control in the system. Whomever executes the control knows protocol specific details (if necessary)
- * 	optional org.totalgrid.reef.proto.Model.Command command = 1;
+ * 	optional org.totalgrid.reef.client.service.proto.Model.Command command = 1;
  * 
  * 	// correlation id for the request, used to match requests to response
  * 	// field used for service/FEP interaction, not client/server interaction

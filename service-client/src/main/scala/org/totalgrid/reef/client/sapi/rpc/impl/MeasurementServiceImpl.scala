@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Model.Point
+import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
-import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
+import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.Routable
 
 import org.totalgrid.reef.client.exception.ExpectationException

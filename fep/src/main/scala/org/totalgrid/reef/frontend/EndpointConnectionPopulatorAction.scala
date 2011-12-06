@@ -20,7 +20,7 @@ package org.totalgrid.reef.frontend
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection }
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 
 class EndpointConnectionPopulatorAction(client: FrontEndProviderServices) {
   /**

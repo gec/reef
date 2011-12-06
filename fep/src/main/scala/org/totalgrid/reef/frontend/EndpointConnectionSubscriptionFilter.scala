@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, ClearableMap }
 import net.agileautomata.executor4s.Executor

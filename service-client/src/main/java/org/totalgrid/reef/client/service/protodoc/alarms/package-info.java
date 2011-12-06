@@ -20,12 +20,12 @@
  * Proto definition file for Alarms.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Alarms;
+ * package org.totalgrid.reef.client.service.proto.Alarms;
  * 
  * import "Events.proto";
  * import "Model.proto";
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "Alarms";
  * 
  * //  MAJOR TYPES IN THIS PROTO:
@@ -102,9 +102,9 @@
  *     REMOVED       = 4;  // Alarm not visible in standard Alarm List.
  *   }
  * 
- *   optional org.totalgrid.reef.proto.Model.ReefID   id      = 1;  // UID of alarm is not equal to event.id
+ *   optional org.totalgrid.reef.client.service.proto.Model.ReefID   id      = 1;  // UID of alarm is not equal to event.id
  *   optional State    state    = 2;
- *   optional org.totalgrid.reef.proto.Events.Event event = 3;
+ *   optional org.totalgrid.reef.client.service.proto.Events.Event event = 3;
  *   optional string   rendered = 4;  // This alarm rendered as a localized string.
  * }
  * 
@@ -125,7 +125,7 @@
  *   // Select alarms by various event properties.
  *   // This is ANDed with any state selections above.
  *   //
- *   optional org.totalgrid.reef.proto.Events.EventSelect eventSelect =  2;
+ *   optional org.totalgrid.reef.client.service.proto.Events.EventSelect eventSelect =  2;
  * }
  * 
  * 

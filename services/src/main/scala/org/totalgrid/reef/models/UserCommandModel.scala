@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.models
 
-import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessProto }
 import org.squeryl.PrimitiveTypeMode._
 
 // Related to UserCommandRequest proto

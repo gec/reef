@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
-import org.totalgrid.reef.proto.Events.EventSelect
-import org.totalgrid.reef.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
-import org.totalgrid.reef.proto.Model.Entity
+import org.totalgrid.reef.client.service.proto.Events.EventSelect
+import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm, AlarmSelect, AlarmList }
+import org.totalgrid.reef.client.service.proto.Model.Entity
 
 object AlarmListRequestBuilders {
   def getByAlarmSelect(select: AlarmSelect): AlarmList = AlarmList.newBuilder.setSelect(select).build

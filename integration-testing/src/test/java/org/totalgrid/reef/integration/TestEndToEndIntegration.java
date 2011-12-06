@@ -31,9 +31,9 @@ import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.client.service.MeasurementService;
 
 import org.totalgrid.reef.client.service.PointService;
-import org.totalgrid.reef.proto.FEP;
-import org.totalgrid.reef.proto.Measurements;
-import org.totalgrid.reef.proto.Model;
+import org.totalgrid.reef.client.service.proto.FEP;
+import org.totalgrid.reef.client.service.proto.Measurements;
+import org.totalgrid.reef.client.service.proto.Model;
 
 import java.util.List;
 

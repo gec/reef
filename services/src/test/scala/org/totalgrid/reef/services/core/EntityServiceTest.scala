@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import java.util.UUID
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
 
 import SyncServiceShims._
 import org.totalgrid.reef.client.exception.ReefServiceException

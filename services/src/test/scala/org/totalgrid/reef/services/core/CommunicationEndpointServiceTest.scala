@@ -25,8 +25,8 @@ import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 
 import com.google.protobuf.ByteString
 
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Model._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Model._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.services.core.util.UUIDConversions._

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.client.settings.NodeSettings
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
 object ApplicationConfigBuilders {
 

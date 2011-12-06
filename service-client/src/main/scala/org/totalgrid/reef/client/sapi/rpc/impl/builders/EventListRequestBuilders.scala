@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Events.{ EventList, EventSelect }
+import org.totalgrid.reef.client.service.proto.Events.{ EventList, EventSelect }
 
 object EventListRequestBuilders {
   def getByEventSelect(select: EventSelect): EventList = EventList.newBuilder.setSelect(select).build

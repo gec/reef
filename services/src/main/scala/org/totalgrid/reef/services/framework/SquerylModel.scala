@@ -25,7 +25,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId }
-import org.totalgrid.reef.proto.Model.ReefID
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 /**
  * Supertype for Proto/Squeryl models
@@ -170,7 +170,7 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 }
 
 object SquerylModel {
-  import org.totalgrid.reef.proto.Model.ReefUUID
+  import org.totalgrid.reef.client.service.proto.Model.ReefUUID
   def makeId(entry: ModelWithId) = {
     ReefID.newBuilder.setValue(entry.id.toString)
   }

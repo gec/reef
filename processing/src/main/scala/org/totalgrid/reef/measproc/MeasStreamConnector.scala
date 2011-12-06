@@ -21,8 +21,8 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheAdapter, MeasurementStore }
 import org.totalgrid.reef.persistence.InMemoryObjectCache
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 import net.agileautomata.executor4s.Cancelable
 
 class MeasStreamConnector(client: MeasurementProcessorServices, measStore: MeasurementStore, instanceName: String) {

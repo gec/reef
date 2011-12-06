@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 import org.totalgrid.reef.client.sapi.client.Response
-import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
+import org.totalgrid.reef.client.service.proto.Auth.{ Agent, AuthToken }
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import org.totalgrid.reef.client.proto.Envelope

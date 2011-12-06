@@ -20,12 +20,12 @@
  * Proto definition file for FEP.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.FEP;
+ * package org.totalgrid.reef.client.service.proto.FEP;
  * 
  * import "ApplicationManagement.proto";
  * import "Model.proto";
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "FEP";
  * 
  * message IpPort {
@@ -74,7 +74,7 @@
  *     }
  * 
  * 
- *     optional org.totalgrid.reef.proto.Model.ReefUUID       uuid    = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefUUID       uuid    = 1;
  *     optional string     name   = 2;
  *     optional IpPort     ip     = 3;
  *     optional SerialPort serial = 4;
@@ -86,9 +86,9 @@
  * }
  * 
  * message FrontEndProcessor {
- *     optional org.totalgrid.reef.proto.Model.ReefUUID       uuid       = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefUUID       uuid       = 1;
  *     repeated string protocols = 2; // protocol names ex: dnp3, modbus, benchmark
- *     optional org.totalgrid.reef.proto.Application.ApplicationConfig app_config = 3;
+ *     optional org.totalgrid.reef.client.service.proto.Application.ApplicationConfig app_config = 3;
  * }
  * 
  * message EndpointOwnership {
@@ -98,13 +98,13 @@
  * 
  * // and endpoint config _is_a_ LogicalNode with the extra port + protocol parameters
  * message Endpoint {
- *     optional org.totalgrid.reef.proto.Model.ReefUUID       uuid          = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefUUID       uuid          = 1;
  *     optional string            name         = 2;
- *     optional org.totalgrid.reef.proto.Model.Entity entity = 7;
+ *     optional org.totalgrid.reef.client.service.proto.Model.Entity entity = 7;
  *     optional string            protocol     = 3;
  *     optional CommChannel       channel      = 4;
  *     optional EndpointOwnership ownerships   = 6;
- *     repeated org.totalgrid.reef.proto.Model.ConfigFile        config_files = 5;
+ *     repeated org.totalgrid.reef.client.service.proto.Model.ConfigFile        config_files = 5;
  *     // some endpoints produce data and need measurement processors
  *     optional bool dataSource = 8;
  * }
@@ -118,7 +118,7 @@
  *         ERROR = 4;
  *     }
  * 
- *     optional org.totalgrid.reef.proto.Model.ReefID                 id                 = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefID                 id                 = 1;
  *     optional FrontEndProcessor      front_end           = 2;
  *     optional Endpoint     endpoint            = 3;
  *     optional State                  state               = 4;

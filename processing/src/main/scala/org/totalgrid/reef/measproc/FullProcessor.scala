@@ -20,8 +20,8 @@ package org.totalgrid.reef.measproc
 
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.client.exception.ReefServiceException
 

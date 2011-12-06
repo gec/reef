@@ -22,9 +22,9 @@ import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.Routable;
 import org.totalgrid.reef.client.SubscriptionCreator;
 import org.totalgrid.reef.client.SubscriptionResult;
-import org.totalgrid.reef.proto.Measurements.Measurement;
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch;
-import org.totalgrid.reef.proto.Model.Point;
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement;
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch;
+import org.totalgrid.reef.client.service.proto.Model.Point;
 
 import java.util.List;
 

@@ -22,9 +22,9 @@ import java.util.List;
 
 import org.totalgrid.reef.client.service.entity.EntityRelation;
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Model.Entity;
-import org.totalgrid.reef.proto.Model.EntityAttributes;
-import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.client.service.proto.Model.Entity;
+import org.totalgrid.reef.client.service.proto.Model.EntityAttributes;
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 
 /**
  * <p>

@@ -22,11 +22,11 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
-import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.client.service.proto.Events.Event
 import org.totalgrid.reef.client.exception.ReefServiceException
 
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline
 
 /**

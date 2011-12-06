@@ -19,8 +19,8 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Commands.CommandLock
-import org.totalgrid.reef.proto.Model.{ ReefID, Command }
+import org.totalgrid.reef.client.service.proto.Commands.CommandLock
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, Command }
 import scala.None
 
 object CommandLockRequestBuilders {

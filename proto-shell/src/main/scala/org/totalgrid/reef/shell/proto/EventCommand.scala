@@ -22,9 +22,9 @@ import org.totalgrid.reef.shell.proto.presentation.{ EventView }
 
 import scala.collection.JavaConversions._
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
-import org.totalgrid.reef.proto.Utils.Attribute
-import org.totalgrid.reef.proto.Alarms.{ EventConfig, Alarm }
-import org.totalgrid.reef.proto.Model.ReefID
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Alarms.{ EventConfig, Alarm }
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 @Command(scope = "event", name = "list", description = "Prints all recent events.")
 class EventListCommand extends ReefCommandSupport {

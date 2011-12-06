@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measproc.processing
 
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.metrics.{ MetricsHooks, MetricsHookFunctions }
 import com.weiglewilczek.slf4s.Logging
 

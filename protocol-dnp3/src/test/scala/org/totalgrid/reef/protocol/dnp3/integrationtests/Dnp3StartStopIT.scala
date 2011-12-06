@@ -28,15 +28,15 @@ import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.proto.FEP.EndpointConnection.State._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.service.list.ReefServices
 
 @RunWith(classOf[JUnitRunner])

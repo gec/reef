@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
-import org.totalgrid.reef.proto.Commands.CommandStatus
+import org.totalgrid.reef.client.service.proto.Commands.CommandStatus
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestTest

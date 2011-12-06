@@ -18,15 +18,15 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Events.EventSelect
+import org.totalgrid.reef.client.service.proto.Events.EventSelect
 
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.rpc.EventService
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ EventRequestBuilders, EventListRequestBuilders }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
-import org.totalgrid.reef.proto.Model.ReefID
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 trait EventServiceImpl extends HasAnnotatedOperations with EventService {
 

@@ -24,7 +24,7 @@ import presentation.{ CommandView }
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Conversion
-import org.totalgrid.reef.proto.Model.ReefID
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 @Command(scope = "command", name = "list", description = "Lists commands")
 class CommandListCommand extends ReefCommandSupport {

@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.{ AnyNodeDestination, AddressableDestination }
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.benchmarks._
 import java.io.PrintStream
 

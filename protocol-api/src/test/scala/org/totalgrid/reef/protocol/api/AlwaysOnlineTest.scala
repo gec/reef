@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.protocol.api.mock.{ RecordingProtocol, NullProtocol }
-import org.totalgrid.reef.proto.FEP.{ EndpointConnection, CommChannel }
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
 import scala.collection.immutable.Queue
 

@@ -18,18 +18,18 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ EndpointConnection => ConnProto }
-import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection => ConnProto }
+import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, CommunicationEndpoint, ApplicationInstance, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 import ServiceBehaviors._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
@@ -46,7 +46,7 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
     with PostPartialUpdate
     with SubscribeEnabled {
 
-  override val descriptor = Descriptors.commEndpointConnection
+  override val descriptor = Descriptors.endpointConnection
 
   // we will manually merge by checking to see what fields are set and using exclusive acccess blocks
   override def merge(context: RequestContext, req: ConnProto, current: FrontEndAssignment) = req

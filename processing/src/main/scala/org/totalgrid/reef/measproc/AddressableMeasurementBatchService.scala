@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
 import org.totalgrid.reef.client.proto.Envelope
 

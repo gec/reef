@@ -21,10 +21,10 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Alarms.EventConfig
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 @RunWith(classOf[JUnitRunner])

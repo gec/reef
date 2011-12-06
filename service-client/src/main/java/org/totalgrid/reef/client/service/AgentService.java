@@ -19,9 +19,9 @@
 package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Auth.Agent;
-import org.totalgrid.reef.proto.Auth.Permission;
-import org.totalgrid.reef.proto.Auth.PermissionSet;
+import org.totalgrid.reef.client.service.proto.Auth.Agent;
+import org.totalgrid.reef.client.service.proto.Auth.Permission;
+import org.totalgrid.reef.client.service.proto.Auth.PermissionSet;
 
 import java.util.List;
 

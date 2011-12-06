@@ -23,15 +23,15 @@ import org.junit.runner.RunWith
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
-import org.totalgrid.reef.proto.Model.{ Point => PointProto }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship }
+import org.totalgrid.reef.client.service.proto.Model.{ Point => PointProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.proto.Model
+import org.totalgrid.reef.client.service.proto.Model
 
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {

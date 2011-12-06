@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.FEP.{ CommChannel, Endpoint }
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, Endpoint }
 
 import scala.collection.JavaConversions._
 

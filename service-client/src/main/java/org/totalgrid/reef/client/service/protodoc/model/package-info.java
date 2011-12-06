@@ -20,9 +20,9 @@
  * Proto definition file for Model.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Model;
+ * package org.totalgrid.reef.client.service.proto.Model;
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "Model";
  * 
  * import "Utils.proto";
@@ -99,7 +99,7 @@
  * 
  * message EntityAttributes {
  *   optional Entity entity = 1;
- *   repeated org.totalgrid.reef.proto.Utils.Attribute attributes = 2;
+ *   repeated org.totalgrid.reef.client.service.proto.Utils.Attribute attributes = 2;
  * }
  * 
  * enum PointType {

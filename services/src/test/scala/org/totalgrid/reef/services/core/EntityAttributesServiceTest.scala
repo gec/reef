@@ -21,8 +21,8 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
-import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityAttributes }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
 
 import org.totalgrid.reef.client.proto.Envelope.Status
 
@@ -33,7 +33,7 @@ import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, ApplicationSchema, EntityAttribute }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity, EntityAttributes }
 import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])

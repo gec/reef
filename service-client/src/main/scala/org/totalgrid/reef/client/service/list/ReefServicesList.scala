@@ -19,14 +19,14 @@ package org.totalgrid.reef.client.service.list
  * the License.
  */
 import org.totalgrid.reef.client.types.{ ServiceInfo, TypeDescriptor }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 object ReefServicesList {
   def getServicesList = List(
     getEntry(Descriptors.commChannel),
     getEntry(Descriptors.frontEndProcessor),
-    getEntry(Descriptors.commEndpointConfig),
-    getEntry(Descriptors.commEndpointConnection),
+    getEntry(Descriptors.endpoint),
+    getEntry(Descriptors.endpointConnection),
     getEntry(Descriptors.measurementProcessingConnection),
 
     getEntry(Descriptors.measurementBatch),
@@ -46,7 +46,7 @@ object ReefServicesList {
     getEntry(Descriptors.permissionSet),
 
     getEntry(Descriptors.userCommandRequest),
-    getEntry(Descriptors.commandAccess),
+    getEntry(Descriptors.commandLock),
 
     getEntry(Descriptors.applicationConfig),
 

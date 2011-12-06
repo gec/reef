@@ -20,8 +20,8 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-import org.totalgrid.reef.proto.FEP.FrontEndProcessor
-import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor
+import org.totalgrid.reef.client.service.proto.Auth.{ AuthToken, Agent }
 
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
 import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders

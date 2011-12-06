@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
-import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection }
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.sapi.rpc.EndpointService
 import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
@@ -67,7 +67,7 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
   }
 
   override def subscribeToEndpointConnections() = {
-    ops.subscription(Descriptors.commEndpointConnection, "Couldn't subscribe to all endpoint connections") { (sub, client) =>
+    ops.subscription(Descriptors.endpointConnection, "Couldn't subscribe to all endpoint connections") { (sub, client) =>
       client.get(EndpointConnection.newBuilder.setId(ReefID.newBuilder.setValue("*")).build, sub).map(_.many)
     }
   }

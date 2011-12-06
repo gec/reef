@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
+import org.totalgrid.reef.client.service.proto.Model.Point
+import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl

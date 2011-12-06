@@ -20,9 +20,9 @@
  * Proto definition file for Measurements.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Measurements;
+ * package org.totalgrid.reef.client.service.proto.Measurements;
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "Measurements";
  * 
  * //The descriptions below come from iec61850-7-3{ed1.0}en.pdf, page 15

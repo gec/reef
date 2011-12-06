@@ -24,15 +24,15 @@ import org.totalgrid.reef.client.sapi.client.rest.impl.RestHelpers
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.Status._
 import org.totalgrid.reef.client.proto.Envelope.Verb._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import java.util.UUID
 import org.totalgrid.reef.client.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 import org.totalgrid.reef.services.ServiceBootstrap
-import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.proto.Commands.CommandLock
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
+import org.totalgrid.reef.client.service.proto.Commands.CommandLock
 
 import scala.collection.JavaConversions._
 import org.scalatest.matchers.ShouldMatchers
@@ -92,7 +92,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   def commandAccess(verb: Envelope.Verb = PUT, name: String = "cmd01") = {
     val ca = CommandLock.newBuilder.addCommands(Command.newBuilder.setName(name)).setAccess(CommandLock.AccessMode.ALLOWED)
       .setExpireTime(System.currentTimeMillis + 40000)
-    makeRequest(verb, ca.build, Descriptors.commandAccess)
+    makeRequest(verb, ca.build, Descriptors.commandLock)
   }
 
   def makeRequest[A](verb: Envelope.Verb, usr: A, descriptor: TypeDescriptor[A]): SelfIdentityingServiceRequest = {

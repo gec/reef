@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.api.mock
 
-import org.totalgrid.reef.proto.{ FEP, Model, Commands }
+import org.totalgrid.reef.client.service.proto.{ FEP, Model, Commands }
 import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler }
 

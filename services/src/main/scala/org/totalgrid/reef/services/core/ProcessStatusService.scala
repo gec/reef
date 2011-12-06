@@ -21,19 +21,19 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.models.HeartbeatStatus
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.ProcessStatus._
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.ProcessStatus._
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 
 // Implicits
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.client.service.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.services.framework.ProtoSerializer._

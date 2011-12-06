@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.common
 import scala.collection.JavaConversions._
 
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
+import org.totalgrid.reef.client.service.proto.{ FEP, Mapping, Model }
 
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._

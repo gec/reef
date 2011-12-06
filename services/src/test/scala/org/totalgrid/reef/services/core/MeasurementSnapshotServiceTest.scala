@@ -20,8 +20,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.measurementstore.MeasSink.Meas
-import org.totalgrid.reef.proto.Measurements
-import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
+import org.totalgrid.reef.client.service.proto.Measurements
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 

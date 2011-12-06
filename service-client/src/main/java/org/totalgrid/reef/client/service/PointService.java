@@ -19,9 +19,9 @@
 package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Model.Entity;
-import org.totalgrid.reef.proto.Model.Point;
-import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.client.service.proto.Model.Entity;
+import org.totalgrid.reef.client.service.proto.Model.Point;
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 
 import java.util.List;
 

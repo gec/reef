@@ -21,7 +21,7 @@ package org.totalgrid.reef.app
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.service.list.ReefServices

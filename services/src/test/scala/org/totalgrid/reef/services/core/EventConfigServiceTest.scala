@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.Alarms._
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.models._
 
-import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig.Designation
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.core.SyncServiceShims._

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks.measurements
 
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.util.SyncVar
 
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }

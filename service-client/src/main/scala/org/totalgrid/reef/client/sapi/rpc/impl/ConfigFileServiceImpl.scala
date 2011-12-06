@@ -21,8 +21,8 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import com.google.protobuf.ByteString
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ ConfigFileRequestBuilders, EntityRequestBuilders }
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Model.{ ConfigFile, ReefUUID }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile, ReefUUID }
 
 import org.totalgrid.reef.client.sapi.rpc.ConfigFileService
 import org.totalgrid.reef.client.exception.ExpectationException

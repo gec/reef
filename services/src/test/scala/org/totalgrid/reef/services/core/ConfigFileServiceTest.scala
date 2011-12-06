@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders

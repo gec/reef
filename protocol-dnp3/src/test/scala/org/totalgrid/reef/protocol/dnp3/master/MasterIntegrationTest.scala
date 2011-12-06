@@ -22,20 +22,20 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.FEP.IpPort
+import org.totalgrid.reef.client.service.proto.FEP.IpPort
 import org.totalgrid.reef.protocol.dnp3.xml.{ LinkLayer, AppLayer, Stack, Master }
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.proto.{ Model, FEP }
+import org.totalgrid.reef.client.service.proto.{ Model, FEP }
 
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.{ EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto }
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.Command
 import org.mockito.Mockito
 import org.totalgrid.reef.client.sapi.client.rest.Client
 

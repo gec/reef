@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.proto.{ Mapping, Commands }
+import org.totalgrid.reef.client.service.proto.{ Mapping, Commands }
 import scala.collection.mutable
 
 import org.scalatest.Suite
@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.protocol.dnp3.mock.MockCommandAcceptor
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {

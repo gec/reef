@@ -21,15 +21,15 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
+import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]

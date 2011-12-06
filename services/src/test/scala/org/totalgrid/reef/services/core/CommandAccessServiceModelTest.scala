@@ -22,10 +22,10 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
-import org.totalgrid.reef.proto.Model
+import org.totalgrid.reef.client.service.proto.Model
 
 class CommandTestRig {
   val modelFactories = new ModelFactories(new ServiceDependenciesDefaults())

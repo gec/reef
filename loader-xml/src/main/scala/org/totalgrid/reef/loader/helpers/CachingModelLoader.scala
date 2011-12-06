@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
 import com.weiglewilczek.slf4s.Logging
 
