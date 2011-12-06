@@ -36,7 +36,7 @@ public interface Client
      * Sets the default RequestHeaders for the Client. Typical usage sequence is:
      *
      * 1) Read the current headers
-     * 2) Create a new request headers by calling on of the functions on 1)
+     * 2) Create a new request headers by calling one of the functions on 1)
      * 3) Set the default headers using the modified version in 2)
      *
      * @param headers The new default RequestHeaders for the client to use on all requestss

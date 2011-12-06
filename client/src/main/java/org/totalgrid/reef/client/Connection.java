@@ -65,7 +65,7 @@ public interface Connection
      * @param authToken pre-acquired authentication token
      * @return An authorized client
      */
-    Client login( String authToken );
+    Client createClient( String authToken );
 
     /**
      * logout by forcefully expiring the authToken associated with a client.

@@ -96,7 +96,7 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
         }
         else
         {
-            client = connection.login( "" );
+            client = connection.createClient( "" );
         }
         LoaderClient.prepareClient( client );
         client.addSubscriptionCreationListener( this );
