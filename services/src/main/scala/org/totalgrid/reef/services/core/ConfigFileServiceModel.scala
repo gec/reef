@@ -21,16 +21,16 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
+import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile => ConfigProto }
 import java.util.UUID
 
 class ConfigFileService(protected val model: ConfigFileServiceModel)

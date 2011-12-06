@@ -22,8 +22,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Entity }
-import org.totalgrid.reef.proto.Utils.{ Attribute }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity }
+import org.totalgrid.reef.client.service.proto.Utils.{ Attribute }
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityAttributesBuilders
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite

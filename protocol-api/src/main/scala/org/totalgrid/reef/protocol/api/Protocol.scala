@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ FEP, Commands, Measurements, Model }
+import org.totalgrid.reef.client.service.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
 import FEP.CommChannel
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
 

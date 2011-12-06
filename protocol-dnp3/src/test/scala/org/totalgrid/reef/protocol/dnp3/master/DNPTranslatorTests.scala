@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
+import org.totalgrid.reef.client.service.proto.{ Measurements, Commands, Mapping }
 
 import org.totalgrid.reef.protocol.dnp3._
 
@@ -26,7 +26,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class DNPTranslatorTests extends FunSuite with ShouldMatchers {

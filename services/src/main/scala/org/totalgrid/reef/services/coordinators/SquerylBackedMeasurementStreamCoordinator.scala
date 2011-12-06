@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.services.core.{ CommunicationEndpointConnectionServiceModel, MeasurementProcessingConnectionServiceModel }
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.models._
 
 import org.squeryl.PrimitiveTypeMode._

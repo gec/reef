@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.event
 
-import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.Events.Event
 
 trait SystemEventSink {
   def publishSystemEvent(evt: Event)

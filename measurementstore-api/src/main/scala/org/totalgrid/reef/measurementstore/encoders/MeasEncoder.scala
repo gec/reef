@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore.encoders
 
-import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.client.service.proto.Measurements
 
 trait MeasEncoder {
 

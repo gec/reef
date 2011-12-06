@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Processing.MeasOverride
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Model.Point
+import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementOverrideRequestBuilders
 
 import org.totalgrid.reef.client.sapi.rpc.MeasurementOverrideService

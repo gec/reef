@@ -23,7 +23,7 @@ import java.io.{ InputStreamReader, BufferedReader }
 import org.totalgrid.reef.shell.proto.presentation.AgentView
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Auth.Permission
+import org.totalgrid.reef.client.service.proto.Auth.Permission
 import org.totalgrid.reef.client.service.AgentService
 
 abstract class AgentCommandBase extends ReefCommandSupport {

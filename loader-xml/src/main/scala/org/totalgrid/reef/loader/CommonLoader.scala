@@ -26,9 +26,9 @@ import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFil
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
+import org.totalgrid.reef.client.service.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 import org.totalgrid.reef.util.IOHelpers
-import org.totalgrid.reef.proto.Processing.TriggerSet
+import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 
 import scala.collection.mutable
 
@@ -115,8 +115,8 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
   }
 
   def toAttribute(entity: Entity, attrElements: List[Attribute]): Option[EntityAttributes] = {
-    import org.totalgrid.reef.proto.Utils.{ Attribute => AttributeProto }
-    import org.totalgrid.reef.proto.Utils.Attribute.Type
+    import org.totalgrid.reef.client.service.proto.Utils.{ Attribute => AttributeProto }
+    import org.totalgrid.reef.client.service.proto.Utils.Attribute.Type
 
     if (attrElements.isEmpty) return None
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ FEP, Model }
+import org.totalgrid.reef.client.service.proto.{ FEP, Model }
 import scala.collection.immutable
 
 import com.weiglewilczek.slf4s.Logging

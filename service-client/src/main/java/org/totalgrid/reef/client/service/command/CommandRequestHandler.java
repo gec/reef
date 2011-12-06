@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.service.command;
 
-import org.totalgrid.reef.proto.Commands.CommandRequest;
+import org.totalgrid.reef.client.service.proto.Commands.CommandRequest;
 
 /**
  * CommandRequests can be asynchronously processed by the Handlers. Each request is paired with a callback

@@ -20,36 +20,36 @@
  * Proto definition file for AuthManagement.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Auth;
+ * package org.totalgrid.reef.client.service.proto.Auth;
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "Auth";
  * 
  * import "Model.proto";
  * 
  * message Agent{
- *     optional org.totalgrid.reef.proto.Model.ReefUUID       uuid                = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefUUID       uuid                = 1;
  *     optional string name               = 2;
  *     optional string password           = 3;
  *     repeated PermissionSet permission_sets = 4;
  * }
  * 
  * message Permission{
- *     optional org.totalgrid.reef.proto.Model.ReefID  id      = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
  *     optional bool    allow    = 2;
  *     optional string  resource = 3;
  *     optional string  verb     = 4;
  * }
  * 
  * message PermissionSet{
- *     optional org.totalgrid.reef.proto.Model.ReefUUID       uuid                     = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefUUID       uuid                     = 1;
  *     optional string     name                    = 2;
  *     optional uint64     default_expiration_time = 3;
  *     repeated Permission permissions             = 4;
  * }
  * 
  * message AuthToken{
- *     optional org.totalgrid.reef.proto.Model.ReefID        id             = 1;
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefID        id             = 1;
  *     optional Agent         agent           = 2;
  *     optional string        login_location  = 3;
  *     repeated PermissionSet permission_sets = 4;

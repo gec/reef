@@ -25,13 +25,13 @@ import org.totalgrid.reef.client.service.command.CommandResultCallback;
 import org.totalgrid.reef.client.exception.ExpectationException;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.loader.commons.LoaderServices;
-import org.totalgrid.reef.proto.Commands;
-import org.totalgrid.reef.proto.FEP;
-import org.totalgrid.reef.proto.FEP.EndpointOwnership;
-import org.totalgrid.reef.proto.FEP.Endpoint;
-import org.totalgrid.reef.proto.Model;
-import org.totalgrid.reef.proto.Model.Command;
-import org.totalgrid.reef.proto.Model.CommandType;
+import org.totalgrid.reef.client.service.proto.Commands;
+import org.totalgrid.reef.client.service.proto.FEP;
+import org.totalgrid.reef.client.service.proto.FEP.EndpointOwnership;
+import org.totalgrid.reef.client.service.proto.FEP.Endpoint;
+import org.totalgrid.reef.client.service.proto.Model;
+import org.totalgrid.reef.client.service.proto.Model.Command;
+import org.totalgrid.reef.client.service.proto.Model.CommandType;
 
 import java.util.List;
 

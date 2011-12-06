@@ -19,10 +19,10 @@
 package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.FEP.Endpoint;
-import org.totalgrid.reef.proto.FEP.CommChannel;
-import org.totalgrid.reef.proto.FEP.CommChannel.State;
-import org.totalgrid.reef.proto.Model.ReefUUID;
+import org.totalgrid.reef.client.service.proto.FEP.Endpoint;
+import org.totalgrid.reef.client.service.proto.FEP.CommChannel;
+import org.totalgrid.reef.client.service.proto.FEP.CommChannel.State;
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 
 import java.util.List;
 

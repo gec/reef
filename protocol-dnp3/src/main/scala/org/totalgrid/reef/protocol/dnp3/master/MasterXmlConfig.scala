@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.master
 import org.totalgrid.reef.protocol.dnp3.xml._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.util.XMLHelper
 

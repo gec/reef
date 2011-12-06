@@ -22,8 +22,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Model.{ Command => CommandProto }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, CommandLock }
+import org.totalgrid.reef.client.service.proto.Model.{ Command => CommandProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, CommandLock }
 import CommandLock._
 
 import org.totalgrid.reef.models._

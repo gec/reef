@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.service.command;
 
-import org.totalgrid.reef.proto.Commands.CommandStatus;
+import org.totalgrid.reef.client.service.proto.Commands.CommandStatus;
 
 /**
  * When a command has been processed by the application it needs to report the status

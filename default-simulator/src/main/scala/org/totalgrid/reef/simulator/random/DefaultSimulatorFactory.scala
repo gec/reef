@@ -20,7 +20,7 @@ package org.totalgrid.reef.simulator.random
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.proto.{ Measurements, SimMapping }
+import org.totalgrid.reef.client.service.proto.{ Measurements, SimMapping }
 import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory
 import net.agileautomata.executor4s.{ Cancelable, Executor }
 

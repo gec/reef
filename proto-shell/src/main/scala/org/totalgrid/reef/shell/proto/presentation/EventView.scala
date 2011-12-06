@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import java.text.SimpleDateFormat
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Utils.Attribute
-import org.totalgrid.reef.proto.Alarms.{ Alarm, EventConfig }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm, EventConfig }
 
 import org.totalgrid.reef.util.Table
 

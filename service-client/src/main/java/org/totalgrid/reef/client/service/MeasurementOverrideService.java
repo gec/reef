@@ -20,9 +20,9 @@ package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
 
-import org.totalgrid.reef.proto.Measurements.Measurement;
-import org.totalgrid.reef.proto.Model.Point;
-import org.totalgrid.reef.proto.Processing.MeasOverride;
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement;
+import org.totalgrid.reef.client.service.proto.Model.Point;
+import org.totalgrid.reef.client.service.proto.Processing.MeasOverride;
 
 /**
  * SCADA systems there is the concept of a stopping the measurement stream from field and publishing another value in

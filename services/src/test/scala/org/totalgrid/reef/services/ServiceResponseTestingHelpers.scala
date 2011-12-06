@@ -23,7 +23,7 @@ import org.totalgrid.reef.test.BlockingQueue
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Event }
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
 object ServiceResponseTestingHelpers {
 

@@ -20,9 +20,9 @@
  * Proto definition file for MeasurementMapping.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Mapping;
+ * package org.totalgrid.reef.client.service.proto.Mapping;
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "Mapping";
  * 
  * enum DataType {

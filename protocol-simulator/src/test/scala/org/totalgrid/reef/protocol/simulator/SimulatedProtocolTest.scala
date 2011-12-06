@@ -22,12 +22,12 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
+import org.totalgrid.reef.client.service.proto.{ Model, SimMapping, Measurements, Commands }
 import org.totalgrid.reef.protocol.api.{ NullEndpointPublisher, Publisher }
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s.Executor
 import java.lang.Exception
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.Command
 import org.mockito.Mockito
 import org.totalgrid.reef.client.sapi.client.rest.Client
 

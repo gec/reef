@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.protocol.simulator
 
-import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
+import org.totalgrid.reef.client.service.proto.{ SimMapping, Model, Commands }
 
 import org.totalgrid.reef.protocol.api._
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
-import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.client.service.proto.SimMapping.SimulatorMapping
+import org.totalgrid.reef.client.service.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
 

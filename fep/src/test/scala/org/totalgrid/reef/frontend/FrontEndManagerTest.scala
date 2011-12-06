@@ -24,10 +24,10 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.mockito.Mockito
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.test.MockitoStubbedOnly
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ EndpointConnection, FrontEndProcessor }
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, FrontEndProcessor }
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import FrontEndTestHelpers._

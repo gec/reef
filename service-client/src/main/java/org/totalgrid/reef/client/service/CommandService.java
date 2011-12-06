@@ -21,12 +21,12 @@ package org.totalgrid.reef.client.service;
 import java.util.List;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Commands.CommandLock;
-import org.totalgrid.reef.proto.Commands.CommandStatus;
-import org.totalgrid.reef.proto.Commands.UserCommandRequest;
-import org.totalgrid.reef.proto.Model.Command;
-import org.totalgrid.reef.proto.Model.ReefUUID;
-import org.totalgrid.reef.proto.Model.ReefID;
+import org.totalgrid.reef.client.service.proto.Commands.CommandLock;
+import org.totalgrid.reef.client.service.proto.Commands.CommandStatus;
+import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest;
+import org.totalgrid.reef.client.service.proto.Model.Command;
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
+import org.totalgrid.reef.client.service.proto.Model.ReefID;
 import net.agileautomata.executor4s.Cancelable;
 import org.totalgrid.reef.client.service.command.CommandRequestHandler;
 

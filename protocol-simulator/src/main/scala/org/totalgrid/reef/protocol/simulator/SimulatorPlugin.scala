@@ -19,7 +19,7 @@
 package org.totalgrid.reef.protocol.simulator
 
 import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.proto.{ Measurements, SimMapping, Commands }
+import org.totalgrid.reef.client.service.proto.{ Measurements, SimMapping, Commands }
 import net.agileautomata.executor4s.Executor
 
 trait SimulatorPluginFactory {

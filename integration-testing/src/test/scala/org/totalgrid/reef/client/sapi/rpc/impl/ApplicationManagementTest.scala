@@ -22,9 +22,9 @@ import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.settings.NodeSettings
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.proto.Application.HeartbeatConfig
+import org.totalgrid.reef.client.service.proto.Application.HeartbeatConfig
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementTest extends ClientSessionSuite("Application.xml", "Application", <div></div>) {

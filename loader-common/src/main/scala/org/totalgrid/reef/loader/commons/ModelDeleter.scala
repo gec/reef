@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
 import org.totalgrid.reef.client.sapi.client.RequestSpy
-import org.totalgrid.reef.proto.Model.Entity
+import org.totalgrid.reef.client.service.proto.Model.Entity
 
 object ModelDeleter {
   def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, stream: Option[PrintStream], batchSize: Int = 25)(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {

@@ -20,17 +20,17 @@ package org.totalgrid.reef.frontend
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
-import org.totalgrid.reef.proto.FEP.{ EndpointConnection, CommChannel }
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.AddressableDestination
 
 import net.agileautomata.executor4s.{ Failure, Success }
-import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Protocol }
 import org.totalgrid.reef.client.sapi.client.rest.Client
 

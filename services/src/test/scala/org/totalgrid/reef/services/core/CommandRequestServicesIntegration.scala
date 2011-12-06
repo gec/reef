@@ -23,9 +23,9 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandLock }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection, EndpointOwnership }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandLock }
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, EndpointOwnership }
 
 import CommandLock._
 
@@ -33,7 +33,7 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-import org.totalgrid.reef.proto.Model.{ CommandType, Command }
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Processing.TriggerSet
+import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 import org.totalgrid.reef.util.Table
 
 object TriggerView {

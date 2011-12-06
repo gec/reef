@@ -19,11 +19,11 @@
 package org.totalgrid.reef.protocol.dnp3.slave
 
 import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
 import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
-import org.totalgrid.reef.proto.Commands.CommandRequest
+import org.totalgrid.reef.client.service.proto.Commands.CommandRequest
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client

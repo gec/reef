@@ -22,9 +22,9 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.Mapping.{ DataType, MeasMap }
+import org.totalgrid.reef.client.service.proto.Mapping.{ DataType, MeasMap }
 import org.totalgrid.reef.protocol.dnp3.mock.MockDataObserver
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
 import org.totalgrid.reef.protocol.dnp3.{ DNPTestHelpers, AnalogQuality }
 
 @RunWith(classOf[JUnitRunner])

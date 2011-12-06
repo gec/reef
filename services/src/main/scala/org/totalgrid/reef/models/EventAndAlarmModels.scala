@@ -48,7 +48,7 @@ case class EventStore(
 }
 
 object EventConfigStore {
-  import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
+  import org.totalgrid.reef.client.service.proto.Alarms.EventConfig.Designation
 
   // Get the enum values from the proto.
   //
@@ -69,7 +69,7 @@ case class EventConfigStore(
  * The Model for the Alarm. It's part DB map and part Model.
  */
 object AlarmModel {
-  import org.totalgrid.reef.proto.Alarms.Alarm.State
+  import org.totalgrid.reef.client.service.proto.Alarms.Alarm.State
 
   // Get the enum values from the proto.
   //

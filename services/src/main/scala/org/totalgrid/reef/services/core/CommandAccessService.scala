@@ -19,19 +19,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.{ CommandLock => AccessProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.models.{ CommandLockModel => AccessModel }
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import ServiceBehaviors._
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 class CommandLockService(protected val model: CommandLockServiceModel)
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandLockServiceModel]
@@ -44,7 +44,7 @@ class CommandLockService(protected val model: CommandLockServiceModel)
 
   val defaultSelectTime = 30000
 
-  override val descriptor = Descriptors.commandAccess
+  override val descriptor = Descriptors.commandLock
 
   def deserialize(bytes: Array[Byte]) = AccessProto.parseFrom(bytes)
 

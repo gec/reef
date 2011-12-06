@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
-import org.totalgrid.reef.proto.Model.{ Entity, Relationship, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, Relationship, ReefUUID }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.entity.EntityRelation

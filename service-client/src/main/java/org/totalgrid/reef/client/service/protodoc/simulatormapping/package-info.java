@@ -20,9 +20,9 @@
  * Proto definition file for SimulatorMapping.
  * 
  * <pre>
- * package org.totalgrid.reef.proto.Simulator;
+ * package org.totalgrid.reef.client.service.proto.Simulator;
  * 
- * option java_package = "org.totalgrid.reef.proto";
+ * option java_package = "org.totalgrid.reef.client.service.proto";
  * option java_outer_classname = "SimMapping";
  * 
  * import "Measurements.proto";
@@ -32,7 +32,7 @@
  *     
  *     required string      name         = 1; // fully qualified name of the point
  *     required string      unit         = 2; 
- *     required org.totalgrid.reef.proto.Measurements.Measurement.Type type = 3;
+ *     required org.totalgrid.reef.client.service.proto.Measurements.Measurement.Type type = 3;
  * 
  *     optional double      initial      = 4; // if status use 0 or 1
  *     optional double      min          = 5; 
@@ -44,7 +44,7 @@
  * message CommandSim {
  *     required string      name         = 1; // fully qualified name of the command
  *     // command code to return to commands
- *     required org.totalgrid.reef.proto.Commands.CommandStatus  response_status  = 2;
+ *     required org.totalgrid.reef.client.service.proto.Commands.CommandStatus  response_status  = 2;
  * }
  * 
  * message SimulatorMapping {

@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.client.service.proto.Measurements._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
@@ -37,12 +37,12 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-import org.totalgrid.reef.proto.Events
+import org.totalgrid.reef.client.service.proto.Events
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
-import org.totalgrid.reef.proto.Commands.UserCommandRequest
+import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.client.AddressableDestination
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
@@ -249,7 +249,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {
-      val (updates, env) = getEventQueueWithCode(client, Descriptors.commEndpointConnection)
+      val (updates, env) = getEventQueueWithCode(client, Descriptors.endpointConnection)
       frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
       updates.size should equal(0)
       updates

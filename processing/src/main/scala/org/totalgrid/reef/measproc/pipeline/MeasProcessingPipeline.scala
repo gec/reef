@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.measproc.pipeline
 
-import org.totalgrid.reef.proto.Events
+import org.totalgrid.reef.client.service.proto.Events
 import org.totalgrid.reef.metrics.MetricsHookContainer
-import org.totalgrid.reef.proto.Measurements.{ MeasurementBatch, Measurement }
+import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, Measurement }
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, processing, MeasProcObjectCaches }
 
 class MeasProcessingPipeline(

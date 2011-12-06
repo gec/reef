@@ -19,10 +19,10 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ EntityAttributes, Entity, ReefUUID }
-import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Model.{ EntityAttributes, Entity, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ EntityAttributesBuilders, EntityRequestBuilders }
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import net.agileautomata.executor4s.{ Result, Future }
 import org.totalgrid.reef.client.sapi.rpc.EntityService

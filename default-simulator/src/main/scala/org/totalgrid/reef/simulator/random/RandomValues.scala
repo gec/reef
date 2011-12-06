@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.simulator.random
 
-import org.totalgrid.reef.proto.{ Measurements, SimMapping }
+import org.totalgrid.reef.client.service.proto.{ Measurements, SimMapping }
 import java.util.Random
-import org.totalgrid.reef.proto.Measurements.Measurement.Type
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement.Type
 
 /////////////////////////////////////////////////
 // Simple random walk simulation components

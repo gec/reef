@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import scala.collection.JavaConversions._
@@ -111,7 +111,7 @@ class EntityService extends ServiceEntryPoint[EntityProto] with AuthorizesEveryt
   }
 }
 
-import org.totalgrid.reef.proto.Model.{ EntityEdge => EntityEdgeProto }
+import org.totalgrid.reef.client.service.proto.Model.{ EntityEdge => EntityEdgeProto }
 import org.totalgrid.reef.models.{ EntityEdge }
 
 class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with AuthorizesCreate with AuthorizesUpdate with AuthorizesDelete with AuthorizesRead {

@@ -28,7 +28,7 @@ import org.totalgrid.reef.client.exception.BadRequestException;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.EntityService;
 import org.totalgrid.reef.client.service.PointService;
-import org.totalgrid.reef.proto.Model.*;
+import org.totalgrid.reef.client.service.proto.Model.*;
 
 import java.util.*;
 

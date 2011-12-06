@@ -19,7 +19,7 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.app.{ KeyedMap, SubscriptionHandlerBase, ServiceContext }
-import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
+import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
 import net.agileautomata.executor4s.Cancelable
 
 class ProcessingNodeMap(connector: MeasStreamConnector)

@@ -27,8 +27,8 @@ import org.totalgrid.reef.client.exception.ExpectationException;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.proto.Envelope;
 import org.totalgrid.reef.client.service.CommandService;
-import org.totalgrid.reef.proto.Commands.*;
-import org.totalgrid.reef.proto.Model.Command;
+import org.totalgrid.reef.client.service.proto.Commands.*;
+import org.totalgrid.reef.client.service.proto.Model.Command;
 
 import java.util.List;
 

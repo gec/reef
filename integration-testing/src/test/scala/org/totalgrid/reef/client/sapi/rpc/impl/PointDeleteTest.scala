@@ -25,10 +25,10 @@ import org.scalatest.junit.JUnitRunner
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient }
-import org.totalgrid.reef.proto.Model.{ PointType, Point }
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.proto.FEP.{ EndpointConnection, EndpointOwnership, Endpoint }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, EndpointOwnership, Endpoint }
 
 @RunWith(classOf[JUnitRunner])
 class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete", <div></div>) {

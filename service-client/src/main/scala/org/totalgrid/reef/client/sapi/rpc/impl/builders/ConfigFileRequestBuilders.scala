@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, ConfigFile }
 
 /**
  * the RequestBuilders objects are used to encapsulate most of the direct proto manipulations and

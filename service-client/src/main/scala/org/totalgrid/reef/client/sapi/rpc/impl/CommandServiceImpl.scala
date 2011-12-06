@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.proto.Commands.CommandLock
-import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID, Command }
+import org.totalgrid.reef.client.service.proto.Commands.CommandLock
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Command }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
@@ -141,7 +141,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
     ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
-      import org.totalgrid.reef.proto.FEP.{ Endpoint, EndpointConnection }
+      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
       import org.totalgrid.reef.client.AddressableDestination
       import net.agileautomata.executor4s._
 

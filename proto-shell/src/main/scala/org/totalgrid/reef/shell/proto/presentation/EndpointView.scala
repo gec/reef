@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.FEP.EndpointConnection
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.util.Table
 

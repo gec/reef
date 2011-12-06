@@ -22,9 +22,9 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-import org.totalgrid.reef.proto.Events.{ Event => EventProto }
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto }
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders

@@ -19,8 +19,8 @@
 package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.proto.Alarms.EventConfig;
-import org.totalgrid.reef.proto.Alarms.EventConfig.Designation;
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig;
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig.Designation;
 
 import java.util.List;
 

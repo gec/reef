@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
-import org.totalgrid.reef.proto.Alarms.Alarm
-import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.Model.{ ReefID, Entity }
+import org.totalgrid.reef.client.service.proto.Alarms.Alarm
+import org.totalgrid.reef.client.service.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, Entity }
 
 object AlarmRequestBuilders {
   // state != REMOVED by default
