@@ -67,6 +67,12 @@ public interface Connection
      */
     Client login( String authToken );
 
+    /**
+     * logout by forcefully expiring the authToken associated with a client.
+     * Can be retrieved from client.getHeaders().getAuthToken().
+     * @param authToken pre-acquired authentication token
+     */
+    void logout( String authToken );
 
     /**
      * Terminates the connection. ConnectionCloseListeners will receive "expected" = true

@@ -25,6 +25,7 @@ import org.totalgrid.reef.proto.Auth.{ Agent, AuthToken }
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
     extends ServiceEntryPoint[AuthRequest] {
@@ -37,4 +38,15 @@ class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
     callback(Response(Envelope.Status.OK, req.toBuilder.setToken(authTokenRecord.token).build))
   }
 
+  override def deleteAsync(source: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
+    val proto = AuthToken.newBuilder.setToken(req.getToken).build
+    val authToken = source.transaction { context =>
+      val existing = model.findRecords(context, proto)
+      if (existing.size != 1) throw new BadRequestException("More than one login matched auth token.")
+      val authTokenRecord = existing.head
+      model.delete(context, authTokenRecord)
+      authTokenRecord
+    }
+    callback(Response(Envelope.Status.DELETED, req.toBuilder.setToken(authToken.token).build))
+  }
 }

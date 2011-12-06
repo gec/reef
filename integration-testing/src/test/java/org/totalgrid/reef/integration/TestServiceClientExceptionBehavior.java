@@ -20,7 +20,12 @@ package org.totalgrid.reef.integration;
 
 import org.junit.*;
 
+import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.exception.UnauthorizedException;
 import org.totalgrid.reef.integration.helpers.*;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("unchecked")
 public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase
@@ -29,35 +34,50 @@ public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase
     @Test
     public void getAllEntities()
     {
-        // TODO: reimplement test
-        /*
-        client.close();
+        factory.terminate();
 
         try
         {
-            client.get( Entity.newBuilder().build() );
+            helpers.getApplications();
             fail( "Closed client should throw exception" );
         }
         catch ( ReefServiceException ex )
         {
+            assertTrue( true );
         }
-         */
     }
 
     @Test
     public void settingNullAuthTokenThrows()
     {
-        // TODO: reimplement test
-        /*
         try
         {
-            helpers.setHeaders( helpers.getHeaders().setAuthToken( null ) );
-            assertTrue( false );
+            client.setHeaders( client.getHeaders().setAuthToken( null ) );
+            fail( "Null authToken should cause error" );
         }
         catch ( IllegalArgumentException e )
         {
             assertTrue( true );
         }
-         */
+
+    }
+
+    @Test
+    public void logout() throws ReefServiceException
+    {
+        helpers.getAgents();
+
+        client.logout();
+        try
+        {
+            helpers.getAgents();
+
+            fail( "Since we logged out another request should cause auth failure" );
+        }
+        catch ( UnauthorizedException e )
+        {
+            assertTrue( true );
+        }
+
     }
 }

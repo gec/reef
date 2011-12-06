@@ -22,6 +22,7 @@ import org.totalgrid.reef.client.sapi.client.ConnectionListening
 
 trait Connection
     extends Login
+    with Logout
     with Bindable
     with SubscriptionHandler
     with ExchangeManagement

@@ -36,6 +36,8 @@ class ConnectionWrapper(conn: SConnection) extends Connection {
 
   def login(authToken: String): Client = new ClientWrapper(conn.login(authToken))
 
+  def logout(authToken: String) = conn.logout(authToken).await
+
   def disconnect(): Unit = conn.disconnect()
 
   def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)

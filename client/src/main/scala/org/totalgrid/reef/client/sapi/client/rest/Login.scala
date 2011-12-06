@@ -26,3 +26,12 @@ trait Login {
   def login(userName: String, password: String): Promise[Client]
 
 }
+
+trait Logout {
+  def logout(authToken: String): Promise[Boolean]
+  def logout(client: Client): Promise[Boolean]
+}
+
+trait ClientLogout {
+  def logout(): Promise[Boolean]
+}

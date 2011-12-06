@@ -69,4 +69,10 @@ public interface Client
      * @param info defines the impl and the interfaces it implements
      */
     void addServiceProvider( ServiceProviderInfo info );
+
+    /**
+     * Delete the authToken associated with this client, all future requests will fail with an
+     * UnauthorizedException
+     */
+    void logout();
 }

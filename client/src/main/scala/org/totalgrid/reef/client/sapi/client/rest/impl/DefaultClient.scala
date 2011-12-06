@@ -65,4 +65,8 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
   final override def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)
 
   final override def disconnect() = conn.disconnect()
+
+  final override def logout() = conn.logout(this)
+  final override def logout(authToken: String) = conn.logout(authToken)
+  final override def logout(client: Client) = conn.logout(client)
 }

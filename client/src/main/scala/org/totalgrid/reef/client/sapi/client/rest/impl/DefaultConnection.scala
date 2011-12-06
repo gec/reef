@@ -80,6 +80,15 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     Promise.from(request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert))
   }
 
+  def logout(authToken: String): Promise[Boolean] = logout(authToken, Strand(executor))
+  def logout(client: Client): Promise[Boolean] = logout(client.getHeaders.getAuthToken, client)
+
+  private def logout(authToken: String, strand: Executor): Promise[Boolean] = {
+    val agent = AuthRequest.newBuilder.setToken(authToken).build
+    def convert(response: Response[AuthRequest]): Result[Boolean] = response.one.map(r => true)
+    Promise.from(request(Envelope.Verb.DELETE, agent, BasicRequestHeaders.empty, strand).map(convert))
+  }
+
   private def createClient(authToken: String, strand: Strand) = {
     val client = new DefaultClient(this, strand)
     client.modifyHeaders(_.addAuthToken(authToken))

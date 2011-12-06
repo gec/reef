@@ -43,4 +43,6 @@ class ClientWrapper(client: SClient) extends Client {
 
   def getService[A](klass: Class[A]) = client.getRpcInterface(klass)
   def addServiceProvider(info: ServiceProviderInfo) = client.addRpcProvider(info)
+
+  def logout() = client.logout().await
 }
