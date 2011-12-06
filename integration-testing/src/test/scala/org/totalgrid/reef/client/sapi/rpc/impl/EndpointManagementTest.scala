@@ -124,6 +124,16 @@ class EndpointManagementTest
     postMap.checkAllState(true, COMMS_UP)
   }
 
+  test("Eventually endpoints all up") {
+
+    // since we were churning the endpoints its possible that we saw an intermediate state
+    // we want to wait here to make sure the endpoints have settled down
+    Thread.sleep(2000)
+
+    val postMap = new EndpointConnectionStateMap(client.subscribeToEndpointConnections().await)
+    postMap.checkAllState(true, COMMS_UP)
+  }
+
   class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection]) {
 
     private def makeEntry(e: EndpointConnection) = {
