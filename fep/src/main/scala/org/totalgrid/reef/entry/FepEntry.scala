@@ -25,7 +25,7 @@ import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.app._
 import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client

@@ -24,7 +24,7 @@ import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
 import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.proto.Commands.CommandRequest
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client
 

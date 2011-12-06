@@ -20,7 +20,7 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.proto.Model.Point
 import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
 

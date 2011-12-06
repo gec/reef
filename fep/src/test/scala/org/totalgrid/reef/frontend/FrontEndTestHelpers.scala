@@ -20,7 +20,7 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, Endpoint, CommChannel, EndpointConnection }
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
 import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
 

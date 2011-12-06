@@ -28,7 +28,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.app.{ ServiceContext, SubscriptionDataHandler }
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 
 class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver)
     extends SubscriptionDataHandler[Measurement] with Logging {

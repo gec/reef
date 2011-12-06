@@ -26,7 +26,8 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBootstrap, ServiceOptions }
-import org.totalgrid.reef.util.{ Cancelable, LifecycleManager }
+import org.totalgrid.reef.util.LifecycleManager
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor

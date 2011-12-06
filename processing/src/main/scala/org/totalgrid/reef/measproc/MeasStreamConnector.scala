@@ -23,7 +23,7 @@ import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheA
 import org.totalgrid.reef.persistence.InMemoryObjectCache
 import org.totalgrid.reef.proto.Measurements.Measurement
 import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 
 class MeasStreamConnector(client: MeasurementProcessorServices, measStore: MeasurementStore, instanceName: String) {
   val metricsPublisher = MetricsSink.getInstance(instanceName)

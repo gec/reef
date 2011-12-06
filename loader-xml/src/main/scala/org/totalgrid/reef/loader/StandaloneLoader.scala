@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.loader
 
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl

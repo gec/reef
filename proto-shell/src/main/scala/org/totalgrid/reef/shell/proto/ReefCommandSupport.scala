@@ -22,7 +22,7 @@ import org.apache.karaf.shell.console.OsgiCommandSupport
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.AllScadaService
 import org.apache.felix.service.command.CommandSession
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.service.list.ReefServices

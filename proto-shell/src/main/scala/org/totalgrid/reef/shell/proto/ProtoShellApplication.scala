@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.service.list.ReefServices
 
 object ProtoShellApplication {

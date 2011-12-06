@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.proto.Application.ApplicationConfig
 import org.totalgrid.reef.measproc.{ MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor, ProcessingNodeMap }
 import org.totalgrid.reef.app._
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.osgi.framework.BundleContext
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreFinder }
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
