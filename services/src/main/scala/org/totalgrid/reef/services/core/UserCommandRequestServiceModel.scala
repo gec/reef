@@ -128,7 +128,7 @@ class UserCommandRequestServiceModel(
 
   override def updateFromProto(context: RequestContext, req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
-      throw new BadRequestException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
+      throw new BadRequestException("Current status was not executing on update, already: " + CommandStatus.valueOf(existing.status), Envelope.Status.NOT_ALLOWED)
 
     update(context, existing.copy(status = req.getStatus.getNumber), existing)
   }

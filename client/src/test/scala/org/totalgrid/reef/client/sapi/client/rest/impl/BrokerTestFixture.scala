@@ -35,6 +35,7 @@ trait BrokerTestFixture {
     try {
       test(conn)
     } finally {
+      conn.disconnect()
       cleanup()
     }
   }

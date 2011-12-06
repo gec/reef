@@ -43,13 +43,14 @@ class UserCommandRequestTest
     val cmd = client.getCommandByName(cmdName).await
 
     val lock = client.createCommandExecutionLock(cmd).await
+    try {
+      recorder.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
+      val commandStatus = client.executeCommandAsControl(cmd).await
 
-    recorder.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
-    val commandStatus = client.executeCommandAsControl(cmd).await
-
-    commandStatus should equal(CommandStatus.SUCCESS)
-
-    client.deleteCommandLock(lock)
+      commandStatus should equal(CommandStatus.SUCCESS)
+    } finally {
+      client.deleteCommandLock(lock)
+    }
   }
 
 }

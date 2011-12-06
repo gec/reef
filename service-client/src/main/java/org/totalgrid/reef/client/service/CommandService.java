@@ -176,7 +176,6 @@ public interface CommandService
      */
     List<CommandLock> clearCommandLocks() throws ReefServiceException;
 
-    // TODO add checks for control vs. setpoint execution - backlog-62
     /**
      * Execute a control on a field device.
      * One type of Command in SCADA systems are referred to as "Controls". These can be thought of as
