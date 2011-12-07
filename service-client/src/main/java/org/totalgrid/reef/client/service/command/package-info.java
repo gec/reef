@@ -17,6 +17,6 @@
  * the License.
  */
 /**
- * Main classes and interfaces for interfacing with reef.
+ * Auxiliary classes used for creating a command handler using CommandService.
  */
-package org.totalgrid.reef.client;
+package org.totalgrid.reef.client.service.command;

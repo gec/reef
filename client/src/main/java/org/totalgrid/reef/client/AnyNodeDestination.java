@@ -19,6 +19,9 @@
 package org.totalgrid.reef.client;
 
 
+/**
+ * If we don't care which node processes a given request we use the AnyNodeDestination
+ */
 public class AnyNodeDestination implements Routable
 {
 

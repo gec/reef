@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client;
 
 /**
- * Interface to receive notifications when a subscription is created using a service
+ * Interface to receive notifications when a subscription binging is created using a service
  * wrapper. This makes it much easier to create leak-proof subscription handling, all
  * subscriptions should be eventually canceled.
  */

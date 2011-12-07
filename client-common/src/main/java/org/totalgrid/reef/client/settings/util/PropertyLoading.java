@@ -21,8 +21,19 @@ package org.totalgrid.reef.client.settings.util;
 
 import java.util.Dictionary;
 
+/**
+ * Static helper functions for pulling specific items out of a Dictionary object and
+ * casting them to primitive types.<br/>
+ *
+ * Used for the reef services settings objects, subject to change in future revisions.
+ */
 public class PropertyLoading
 {
+    private PropertyLoading()
+    {
+        // static helper class only
+    }
+
     public static String getString( String id, Dictionary props, String onDefault ) throws IllegalArgumentException
     {
         String prop = (String)props.get( id );

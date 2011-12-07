@@ -19,7 +19,9 @@
 package org.totalgrid.reef.client;
 
 /**
- * Represents a bound subscription that can be canceled
+ * Represents a subscription or local service handler that can be canceled later
+ * when stopping the application. If subscription bindings are not canceled resources
+ * will be wasted on the broker until it timesout the client.
  */
 public interface SubscriptionBinding
 {

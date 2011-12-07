@@ -63,15 +63,20 @@ import org.totalgrid.reef.client.service.command.CommandRequestHandler;
  * <h4>Usage</h4>
  * <p>Issue a command: select, execute, deselect.</p>
  * <pre>
- *    Command cmd = getCommandByName( "substation1.breaker2.trip");
+ *    Command cmd = getCommandByName( "Substation1.Breaker2.Trip");
  *    CommandLock lock = createCommandExecutionLock( cmd);
  *    executeCommandAsControl( cmd);
  *    deleteCommandLock( lock);
  * </pre>
  *
- * <p>Get a list of commands for a device.</p>
+ * <p>Operate all commands on a piece of equipment using one lock.</p>
  * <pre>
- *    ???
+ *    List<Command> cmds = getCommandsOwnedByEntity( "Substation1.Breaker2");
+ *    CommandLock lock = createCommandExecutionLock( cmds);
+ *    for(Command c : cmds){
+ *        executeCommandAsControl( c);
+ *    }
+ *    deleteCommandLock( lock);
  * </pre>
  *
  * <h3>Command Denial Lock</h3>

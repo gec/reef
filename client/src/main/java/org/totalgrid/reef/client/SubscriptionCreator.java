@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client;
 
 /**
- * Classes that may internally generate ISubscriptions will implement this interface
+ * Classes that may internally generate Subscriptions will implement this interface
  * so the consuming code can register for a notification when a subscription is generated
  * so subscription management can be handled in a single location.
  */
@@ -28,9 +28,12 @@ public interface SubscriptionCreator
 
     /**
      * Binds a listener to a class that can create subscriptions
-     * @param listener Callback that receives updates when a subcription is added
+     * @param listener Callback that receives updates when a subscription is added
      */
     void addSubscriptionCreationListener( SubscriptionCreationListener listener );
 
+    /**
+     * Remove this listener, no exception is thrown if the listener was not registered
+     */
     void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 }

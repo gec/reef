@@ -25,7 +25,27 @@ import org.totalgrid.reef.client.service.proto.Alarms.EventConfig.Designation;
 import java.util.List;
 
 /**
- *  // TODO: find flint's good eventconfig documentation and move it here
+ * Event Configs describe all of the types of "well known" event types in the system. When an event occurs,
+ * 1 of 3 things will occur:
+ *
+ * <ol>
+ * <li>
+ * <b>Log:</b>
+ * The event will be logged to a system file but not stored in the events table. This is
+ * primarily used when we want to suppress events that are deemed unimportant in this installation.
+ * </li>
+ * <li>
+ * <b>Event:</b>
+ * The event will be stored in the events table. This will generally be visibile on an HMI
+ * but usually wouldn't be cause a "push" notification to users.
+ * </li>
+ * <li>
+ * <b>Alarm:</b>
+ * If an event is configured to have type Alarm it is recorded as an event but an alarm
+ * notification is also generated. This is usually pushed to the users quickly since a user needs to interact
+ * with the system to silence and/or acknowledge the alarm.
+ * </li>
+ * </ol>
  *
  *  Tag for api-enhancer, do not delete: !api-definition!
  */

@@ -18,11 +18,34 @@
  */
 package org.totalgrid.reef.client.types;
 
+/**
+ * <p>Each object type that is used for a service needs a bit of meta data to describe the
+ * type of any generated subscription events.</p>
+ *
+ * <p>In most cases the subscription type will be identical to the request type but
+ * for services with multiple ways of requesting the same data the subscription type
+ * will be the underlying data type. In the default system the MeasurementSnapshot and
+ * MeasurementHistory services both provide subscriptions that deliver raw measurements
+ * not MeasurementHistory or MeasurementSnapshot protos.</p>
+ *
+ * @param <A> type of the request/response
+ * @param <B> type of the subscription events
+ */
 public interface ServiceTypeInformation<A, B>
 {
+    /**
+     * type descriptor for the request/response object
+     */
     TypeDescriptor<A> getDescriptor();
 
+    /**
+     * the descriptor for the objects that will be sent to any subscriptions
+     */
     TypeDescriptor<B> getSubscriptionDescriptor();
 
+    /**
+     * amqp level exchange name (TypeDescriptor.id()) for subscription events, usually the
+     * name of the request/response exchange appeneded with "_events"
+     */
     String getEventExchange();
 }

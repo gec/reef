@@ -18,13 +18,22 @@
  */
 package org.totalgrid.reef.client;
 
-
+/**
+ * If we need to address a particular node we can use an AddressableDestination constructed
+ * with the address we want to receive the request.
+ */
 public class AddressableDestination implements Routable
 {
     private String address;
 
+    /**
+     * @param address routing key for the request
+     * @throws IllegalArgumentException if the address is blank or null
+     */
     public AddressableDestination( String address )
     {
+        if ( address == null || address.length() == 0 )
+            throw new IllegalArgumentException( "Cannot use null or blank destination" );
         this.address = address;
     }
 

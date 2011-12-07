@@ -19,7 +19,10 @@
 package org.totalgrid.reef.client;
 
 /**
- * Immutable interface that defines what operations can be done to service headers
+ * <p>Headers that are sent along with each request to reef, very similar in usage and design to HTTP headers.</p>
+ *
+ * <p>Each RequestHeaders is attached to one client and if a client is copied the only header that is
+ * included in the copy is the authToken.</p>
  */
 public interface RequestHeaders
 {
@@ -47,7 +50,7 @@ public interface RequestHeaders
     /**
      * overrides the system default for maximum # of results to return at a time
      * @param resultLimit must be a positive integer
-     * @reutrn a new RequestHeaders with the result limit set
+     * @return a new RequestHeaders with the result limit set
      */
     RequestHeaders setResultLimit( int resultLimit );
 
@@ -72,7 +75,7 @@ public interface RequestHeaders
 
     /**
      * Overrides the system default destination
-     * @param key The Routable describining the destination
+     * @param key The Routable describing the destination
      * @return A new RequestHeaders with the specific destination set
      */
     RequestHeaders setDestination( Routable key );

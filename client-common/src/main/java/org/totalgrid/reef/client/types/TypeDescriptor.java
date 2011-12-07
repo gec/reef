@@ -19,7 +19,13 @@
 package org.totalgrid.reef.client.types;
 
 /**
- * Describes how to (de)serialize a type and it's class
+ * Describes how to (de)serialize a type and it's class.
+ *
+ * Used to describe how each object should be serialized and the amqp "exchange"
+ * that is used for sending and receiving messages (id).
+ *
+ * Generally these calls are just piped through to Protobuf objects but any serialization
+ * technology could be used.
  */
 public interface TypeDescriptor<A>
 {

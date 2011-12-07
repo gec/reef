@@ -21,7 +21,7 @@ package org.totalgrid.reef.client;
 /**
  * A client represents an authenticated link with a Reef server.
  *
- * Clients are NOT thread-safe as they carry specific state such as the default RequestHeaders
+ * Clients are NOT thread-safe as they carry specific state such as the RequestHeaders
  * and SubscriptionCreationListener instances.
  */
 public interface Client
@@ -33,13 +33,13 @@ public interface Client
     RequestHeaders getHeaders();
 
     /**
-     * Sets the default RequestHeaders for the Client. Typical usage sequence is:
+     * Sets the default RequestHeaders for the Client. Usage sequence is:
      *
      * 1) Read the current headers
      * 2) Create a new request headers by calling one of the functions on 1)
      * 3) Set the default headers using the modified version in 2)
      *
-     * @param headers The new default RequestHeaders for the client to use on all requestss
+     * @param headers The new RequestHeaders for the client to use on all requests
      */
     void setHeaders( RequestHeaders headers );
 
@@ -72,7 +72,7 @@ public interface Client
 
     /**
      * Delete the authToken associated with this client, all future requests will fail with an
-     * UnauthorizedException
+     * UnauthorizedException.
      */
     void logout();
 }

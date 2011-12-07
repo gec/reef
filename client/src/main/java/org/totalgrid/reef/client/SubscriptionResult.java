@@ -20,7 +20,15 @@ package org.totalgrid.reef.client;
 
 
 /**
- * A container class that wraps the response to a subscription request and the subscription interface itself
+ * A container class that wraps the response to a request with the "initial value" and the newly
+ * created subscription.
+ *
+ * It is generally assumed that the client should process the result to setup the subscription handling
+ * <ul>before</ul> starting the subscription. If the client application decides that they don't want
+ * to start the subscription (perhaps if the results were not as expected) then they will still need
+ * to cancel the subscription. It can be difficult to right this sort of cleanup code correctly (especially
+ * when using exceptions) so we recommend using the SubscriptionCreationListener to move all subscription
+ * canceling to a common location.
  *
  * @param <T> The type of result
  * @param <U> The type of the subscription
@@ -29,7 +37,7 @@ public interface SubscriptionResult<T, U>
 {
 
     /**
-     * @return The value of response
+     * @return The "integrity poll" value of the request
      */
     T getResult();
 

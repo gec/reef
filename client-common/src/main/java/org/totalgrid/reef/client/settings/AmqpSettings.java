@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.settings.util.PropertyLoading;
 import org.totalgrid.reef.client.settings.util.PropertyReader;
 
 /**
- * Settings class that defines properties for an AMQP connection
+ * Settings class that encapsulates the settings for connection to the AMQP broker.
  */
 public class AmqpSettings
 {
@@ -68,8 +68,10 @@ public class AmqpSettings
      * @param virtualHost The virtual host to use, default is '/'
      * @param heartbeatTimeSeconds heartbeat time in seconds, 0 disables heartbeats
      * @param ssl         If connection is encrypted using SSL
-     * @param trustStore  Path to trustStore file (trust-store.jks)
+     * @param trustStore  Relative path to trustStore file (trust-store.jks)
      * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
+     * @param keyStore    Relative path to keyStore file (key-store.jks) (only used with SASL_EXTERNAL)
+     * @param keyStorePassword Used to verify keyStore integrity, actually closer to a checksum than password
      */
     public AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds, boolean ssl,
         String trustStore, String trustStorePassword, String keyStore, String keyStorePassword )
@@ -103,7 +105,7 @@ public class AmqpSettings
      *     e.printStackTrace();
      *     // we'll then throw an exception when trying to load from emtpy properties file
      *   }
-     *   new AMQPConnectionSettings( props );
+     *   new AmqpSettings( props );
      * </pre>
      *
      * @param props properties object loaded with appropriate org.totalgrid.reef.amqp settings
@@ -124,9 +126,20 @@ public class AmqpSettings
         keyStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.keyStorePassword", props, "" );
     }
 
-    public AmqpSettings( String file ) throws IllegalArgumentException, IOException
+    /**
+     * loads the AmqpSettings object from a cfg text file.
+     *
+     * Equivalent to:
+     * <pre>
+     *     new AmqpSettings(PropertyReader.readFromFile( fileName ));
+     * </pre>
+     * @param fileName name of the cfg file to use.
+     * @throws IllegalArgumentException
+     * @throws IOException
+     */
+    public AmqpSettings( String fileName ) throws IllegalArgumentException, IOException
     {
-        this( PropertyReader.readFromFile( file ) );
+        this( PropertyReader.readFromFile( fileName ) );
     }
 
     @Override
@@ -137,7 +150,7 @@ public class AmqpSettings
     }
 
     /**
-     * @return host name
+     * @return host name or ip address
      */
     public String getHost()
     {

@@ -17,6 +17,6 @@
  * the License.
  */
 /**
- * Main classes and interfaces for interfacing with reef.
+ * Definitions for the handling of the objects sent using the apis.
  */
-package org.totalgrid.reef.client;
+package org.totalgrid.reef.client.types;

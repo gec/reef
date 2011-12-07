@@ -17,6 +17,6 @@
  * the License.
  */
 /**
- * Main classes and interfaces for interfacing with reef.
+ * Helpers to make loading the settings easier.
  */
-package org.totalgrid.reef.client;
+package org.totalgrid.reef.client.settings.util;

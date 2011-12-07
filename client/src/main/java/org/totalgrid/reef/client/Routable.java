@@ -24,5 +24,8 @@ package org.totalgrid.reef.client;
  */
 public interface Routable
 {
+    /**
+     * destination for the request, normally "request"
+     */
     String getKey();
 }

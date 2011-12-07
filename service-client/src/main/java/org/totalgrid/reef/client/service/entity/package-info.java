@@ -17,6 +17,6 @@
  * the License.
  */
 /**
- * Main classes and interfaces for interfacing with reef.
+ * Auxiliary classes used for complex entity queries.
  */
-package org.totalgrid.reef.client;
+package org.totalgrid.reef.client.service.entity;

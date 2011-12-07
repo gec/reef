@@ -19,15 +19,22 @@
 package org.totalgrid.reef.client;
 
 /**
- * ConnectionListener is informed of disconnections from the message broker (expected
- * or otherwise). Callbacks come in from the underlying connection's thread so it is important not to block the callbacks.
+ * ConnectionCloseListener is informed of disconnections from the message broker (expected
+ * or otherwise). Callbacks come in from the underlying connection's thread so it
+ * is important not to block the callback.
+ *
+ * Once this callback has been fired the connection is dead and all Client operations
+ * will fail so this is not generally a useful mechanism to shutdown an application
+ * because it will not be able to make any calls to reef during shutdown. Should only
+ * be used at the "top" of the application to shutdown the application in the "nasty case".
  */
 public interface ConnectionCloseListener
 {
 
     /**
-     * called when we lose connection to the broker. This means all subscriptions spawned from the IConnection during
-     * this time are dead and need to be re-established
+     * called when we lose connection to the broker. This means all subscriptions and clients
+     * created by the Connection are dead and the application as a whole needs to be restarted
+     * (if unexpected).
      *
      * @param expected True if the close was user initiated, false otherwise
      */

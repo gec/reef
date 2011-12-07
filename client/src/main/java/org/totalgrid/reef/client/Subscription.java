@@ -20,8 +20,11 @@ package org.totalgrid.reef.client;
 
 
 /**
- *  A object that represents an active subscription to a type A. Client code must call
- *  start() and provide a SubscriptuionEventAcceptor<A> before message delivery will begin.
+ *  <p>A object that represents an active subscription to a type A. Client code must call
+ *  start() and provide a SubscriptionEventAcceptor before message delivery will begin.</p>
+ *
+ *  <p>This class is implemented as an abstract class because all Subscriptions are
+ *  also SubscriptionBindings.</p>
  */
 public abstract class Subscription<A> implements SubscriptionBinding
 {

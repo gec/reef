@@ -33,13 +33,11 @@ public interface ReconnectingConnectionFactory
 {
     /**
      * add a connection watcher
-     * @param watcher
      */
     void addConnectionWatcher( ConnectionWatcher watcher );
 
     /**
      * remove a connection watcher
-     * @param watcher
      */
     void removeConnectionWatcher( ConnectionWatcher watcher );
 

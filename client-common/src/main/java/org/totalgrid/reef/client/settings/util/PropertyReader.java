@@ -21,24 +21,41 @@ package org.totalgrid.reef.client.settings.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 /**
- * Provides mechanisms for obtaining a Properties object
+ * Provides mechanism for obtaining a populated Properties object from a text file.
+ *
+ * This makes it easier to load the provided org.totalgrid.reef.xxx.cfg files without
+ * replicating this boiler plate code in multiple places.
  */
 public class PropertyReader
 {
+    private PropertyReader()
+    {
+        // static class should not be constructed
+    }
 
     /**
-     * Read a properties objectg from a file
+     * Read a properties object from a text file.
      * @param fileName Absolute or relative file path
      * @return Properties object
-     * @throws IOException
+     * @throws IOException if file is unreadable or inaccessible
      */
     public static Properties readFromFile( String fileName ) throws IOException
     {
-        File file = new File( fileName );
+        return readFromFile( new File( fileName ) );
+    }
 
+    /**
+     * Read a properties object from a text file.
+     * @param file File reference
+     * @return Properties object
+     * @throws IOException if file is unreadable or inaccessible
+     */
+    public static Properties readFromFile( File file ) throws IOException
+    {
         if ( !file.canRead() )
         {
             throw new IOException( "Cannot find or access file: " + file.getAbsolutePath() );

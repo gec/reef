@@ -22,8 +22,7 @@ import org.totalgrid.reef.client.proto.Envelope;
 
 /**
  *
- * Class received when an event occurs that matches a
- * subscription request.
+ * Class received when an event occurs on reef that we have an active subscription for.
  *
  * @param <T> The type of event
  */
@@ -31,13 +30,11 @@ public interface SubscriptionEvent<T>
 {
 
     /**
-     *
      * @return the value of event
      */
     T getValue();
 
     /**
-     *
      * @return The type of the event (ADDED, MODIFIED, REMOVED)
      */
     Envelope.SubscriptionEventType getEventType();

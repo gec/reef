@@ -22,10 +22,20 @@ import org.totalgrid.reef.client.types.ServiceTypeInformation;
 
 import java.util.List;
 
+/**
+ * Each service-client package will provide one ServicesList class that we provide to
+ * the Connection to enable the adding of more and different service client packages
+ * later.
+ */
 public interface ServicesList
 {
-
+    /**
+     * @return list of services types (protobuf objects) exposed or used by the service APIs
+     */
     List<ServiceTypeInformation<?, ?>> getServiceTypeInformation();
 
+    /**
+     * @return list of service providers
+     */
     List<ServiceProviderInfo> getServiceProviders();
 }

@@ -21,11 +21,19 @@ package org.totalgrid.reef.client;
 import java.util.List;
 
 /**
- * TODO: make RpcProvider implementable from pure java
+ * Each service-client API consists of an interface and an implementation. In many cases,
+ * including the default service-client APIs, a single class actually implements
+ * many of the service APIs.
  */
 public interface ServiceProviderInfo
 {
+    /**
+     * @return factory class that provides the implementation of the listed interfaces
+     */
     ServiceProviderFactory getFactory();
 
+    /**
+     * @return list of all interfaces implemented by this provider.
+     */
     List<Class<?>> getInterfacesImplemented();
 }

@@ -39,16 +39,16 @@ public interface Connection
 {
 
     /**
-     * register a listener for open/close events
+     * register a listener to be notified when the connection is closed
      *
-     * @param listener Interace to call back with open/close events
+     * @param listener callback to be fired when the connection is closed
      */
     void addConnectionListener( ConnectionCloseListener listener );
 
     /**
-     * remove a listener for open/close events
+     * remove a listener for connectionClosed event
      *
-     * @param listener Interace to call back with open/close events
+     * @param listener callback to remove, no exception is thrown if listener was not registered
      */
     void removeConnectionListener( ConnectionCloseListener listener );
 
@@ -79,5 +79,10 @@ public interface Connection
      */
     void disconnect();
 
+    /**
+     * After constructing the connection we will add the specific servicesList that has the
+     * apis we need to call. More than one list can be added if desired.
+     * @param servicesList ServicesList implementation included with the specific client package.
+     */
     void addServicesList( ServicesList servicesList );
 }

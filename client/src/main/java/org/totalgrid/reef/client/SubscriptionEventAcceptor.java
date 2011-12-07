@@ -19,11 +19,22 @@
 package org.totalgrid.reef.client;
 
 /**
- *  Interface that accepts events on some unspecified thread
+ * Classes that want to consume subscription events should implement this interface.
  */
 public interface SubscriptionEventAcceptor<A>
 {
 
+    /**
+     * Called on every received event that each call to this function will come in from
+     * an unknown thread but no more than one call at a time will occur at a time, the
+     * events will be pushed in one at a time.
+     *
+     * The onEvent handler shouldn't throw exceptions since they will be hard to track down
+     * as the stacktrace will be all implementation code. If an exception is thrown it will
+     * be logged and then discarded, it doesn't cancel the subscription.
+     *
+     * @param event message that contains code and the payload object
+     */
     void onEvent( SubscriptionEvent<A> event );
 
 }

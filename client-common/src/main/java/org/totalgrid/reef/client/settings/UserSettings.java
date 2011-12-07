@@ -25,6 +25,12 @@ import java.util.Dictionary;
 import org.totalgrid.reef.client.settings.util.PropertyLoading;
 import org.totalgrid.reef.client.settings.util.PropertyReader;
 
+/**
+ * Encapsulates the fields necessary to login to reef.
+ *
+ * Notice that the name and password will probably be different than the credentials used to
+ * connect to the broker.
+ */
 public class UserSettings
 {
     private String userName;

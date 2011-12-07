@@ -45,6 +45,13 @@
 						</configuration>
 					</execution>
 				</executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.totalgrid.reef</groupId>
+                        <artifactId>reef-api-enhancer</artifactId>
+                        <version>${reef.version}</version>
+                    </dependency>
+                </dependencies>
 				<inherited>false</inherited>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>

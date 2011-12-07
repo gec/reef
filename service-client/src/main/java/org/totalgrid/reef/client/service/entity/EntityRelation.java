@@ -45,7 +45,7 @@ import java.util.List;
  *
  * "get commands and their endpoints" =>
  *   List<EntityRelation> rels = new LinkedList<EntityRelation>();
- *   rels.add(new EntityRelation("owns", "Commands", true));
+ *   rels.add(new EntityRelation("owns", "Command", true));
  *   rels.add(new EntityRelation("source", "CommunicationEndpoint", false));
  *   getEntityRelations(parent, rels);
  * </pre>
